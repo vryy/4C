@@ -100,7 +100,7 @@ void electromagnetics_drt()
   Teuchos::RCP<Core::LinAlg::Solver> solver =
       Teuchos::rcp(new Core::LinAlg::Solver(problem->solver_params(linsolvernumber_elemag), comm,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // declare output writer
@@ -116,7 +116,7 @@ void electromagnetics_drt()
 
   // create algorithm depending on time-integration scheme
   Inpar::EleMag::DynamicType elemagdyna =
-      Core::UTILS::IntegralValue<Inpar::EleMag::DynamicType>(elemagparams, "TIMEINT");
+      Core::UTILS::integral_value<Inpar::EleMag::DynamicType>(elemagparams, "TIMEINT");
   Teuchos::RCP<EleMag::ElemagTimeInt> elemagalgo;
   switch (elemagdyna)
   {
@@ -172,7 +172,7 @@ void electromagnetics_drt()
   else
   {
     Inpar::EleMag::InitialField init =
-        Core::UTILS::IntegralValue<Inpar::EleMag::InitialField>(elemagparams, "INITIALFIELD");
+        Core::UTILS::integral_value<Inpar::EleMag::InitialField>(elemagparams, "INITIALFIELD");
 
     bool ishdg = false;
 
@@ -194,7 +194,7 @@ void electromagnetics_drt()
 
           scatradis->fill_complete();
 
-          Core::FE::CloneDiscretization<
+          Core::FE::clone_discretization<
               EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::hdg>>(
               elemagdishdg, scatradis, Global::Problem::instance()->cloning_material_map());
         }
@@ -204,7 +204,7 @@ void electromagnetics_drt()
               new Core::FE::Discretization((std::string) "scatra", newcomm, problem->n_dim()));
           scatradis->fill_complete();
 
-          Core::FE::CloneDiscretization<
+          Core::FE::clone_discretization<
               EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::polynomial>>(
               elemagdishdg, scatradis, Global::Problem::instance()->cloning_material_map());
         }
@@ -225,7 +225,7 @@ void electromagnetics_drt()
 
         // do the scatra
         const Inpar::ScaTra::VelocityField veltype =
-            Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+            Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
         switch (veltype)
         {
           case Inpar::ScaTra::velocity_zero:  // zero  (see case 1)
@@ -287,7 +287,7 @@ void electromagnetics_drt()
             Teuchos::RCP<Core::LinAlg::Solver> scatrasolver = Teuchos::rcp(new Core::LinAlg::Solver(
                 Global::Problem::instance()->solver_params(scatraparams->get<int>("LINEAR_SOLVER")),
                 scatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-                Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+                Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                     Global::Problem::instance()->io_params(), "VERBOSITY")));
 
             // create instance of scalar transport basis algorithm (empty fluid discretization)
@@ -373,7 +373,7 @@ void electromagnetics_drt()
   elemagalgo->integrate();
 
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
-  if (Core::UTILS::IntegralValue<bool>(elemagparams, "CALCERR"))
+  if (Core::UTILS::integral_value<bool>(elemagparams, "CALCERR"))
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors = elemagalgo->compute_error();
     elemagalgo->print_errors(errors);
@@ -381,7 +381,7 @@ void electromagnetics_drt()
 
   // print computing time
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      Core::Communication::toTeuchosComm<int>(comm);
+      Core::Communication::to_teuchos_comm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
 
   // do result test if required

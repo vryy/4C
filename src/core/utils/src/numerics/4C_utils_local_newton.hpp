@@ -62,13 +62,13 @@ namespace Core::UTILS
   template <typename DefaultAndFADScalarType>
   DefaultAndFADScalarType l2_norm(const DefaultAndFADScalarType& x)
   {
-    return Core::FADUtils::Norm(x);
+    return Core::FADUtils::norm(x);
   }
 
   template <unsigned n, typename ScalarType>
   ScalarType l2_norm(const Core::LinAlg::Matrix<n, 1, ScalarType>& x)
   {
-    return Core::FADUtils::VectorNorm(x);
+    return Core::FADUtils::vector_norm(x);
   }
   /// @}
 
@@ -171,8 +171,8 @@ namespace Core::UTILS
         FOUR_C_THROW(
             "The local Newton method did not converge within %d iterations. Residuum is %.3e > "
             "%.3e.",
-            max_iterations, FADUtils::CastToDouble(l2_norm(residuum)),
-            FADUtils::CastToDouble(tolerance));
+            max_iterations, FADUtils::cast_to_double(l2_norm(residuum)),
+            FADUtils::cast_to_double(tolerance));
       }
 
       local_newton_iteration(x_0, residuum, std::move(jacobian));

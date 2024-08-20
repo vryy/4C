@@ -69,7 +69,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, true, false);
 
@@ -79,7 +79,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, spatialconfiguration, true);
 
@@ -89,7 +89,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, spatialconfiguration);
 
       break;
@@ -98,7 +98,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, true);
 
       break;
@@ -108,7 +108,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp =
           discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       static_ke_spring(&elemat1, elevec1, my_dispnp, spatialconfiguration);
 
@@ -119,7 +119,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> dispnp =
           discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       static_ke_spring(&elemat1, elevec1, my_dispnp, true);
 
@@ -152,7 +152,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       compute_det_jac(elevec1, lm, my_dispnp);
 
@@ -651,8 +651,8 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      Core::FE::shape_function_2D(funct, e1, e2, distype);
-      Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      Core::FE::shape_function_2d(funct, e1, e2, distype);
+      Core::FE::shape_function_2d_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -831,8 +831,8 @@ void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
     if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      Core::FE::shape_function_2D(funct, e1, e2, distype);
-      Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      Core::FE::shape_function_2d(funct, e1, e2, distype);
+      Core::FE::shape_function_2d_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -841,7 +841,7 @@ void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
       gp(0) = e1;
       gp(1) = e2;
 
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     // compute jacobian matrix
@@ -1309,8 +1309,8 @@ void Discret::ELEMENTS::Ale2::compute_det_jac(Core::LinAlg::SerialDenseVector& e
 
     // get values of shape functions and derivatives in the gausspoint
     // shape functions and their derivatives for polynomials
-    Core::FE::shape_function_2D(funct, e1, e2, distype);
-    Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+    Core::FE::shape_function_2d(funct, e1, e2, distype);
+    Core::FE::shape_function_2d_deriv1(deriv, e1, e2, distype);
 
     /*--------------------------------------- compute jacobian Matrix */
     jacobian_matrix(xrefe, deriv, xjm, &det, numnode);

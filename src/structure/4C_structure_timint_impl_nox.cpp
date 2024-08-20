@@ -51,7 +51,7 @@ void Solid::TimIntImpl::nox_setup(const Teuchos::ParameterList& noxparams)
   // copy the input list
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
   // make all Yes/No integral values to Boolean
-  Input::BoolifyValidInputParameters(*noxparams_);
+  Input::boolify_valid_input_parameters(*noxparams_);
 
   // Remove legacy parameters
   {
@@ -125,7 +125,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
   }
   else
   {
-    FOUR_C_THROW("Norm %s is not available", Inpar::Solid::VectorNormString(iternorm_).c_str());
+    FOUR_C_THROW("Norm %s is not available", Inpar::Solid::vector_norm_string(iternorm_).c_str());
   }
 
   // combined residual force and displacement test

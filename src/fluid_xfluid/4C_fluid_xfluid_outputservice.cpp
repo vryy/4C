@@ -50,11 +50,11 @@ void FLD::XFluidOutputService::prepare_output()
   dofset_out_->assign_degrees_of_freedom(*discret_, 0, 0);
   const int ndim = Global::Problem::instance()->n_dim();
   // split based on complete fluid field (standard splitter that handles one dofset)
-  Core::LinAlg::CreateMapExtractorFromDiscretization(
+  Core::LinAlg::create_map_extractor_from_discretization(
       *discret_, *dofset_out_, ndim, *velpressplitter_out_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
-  outvec_fluid_ = Core::LinAlg::CreateVector(*dofset_out_->dof_row_map(), true);
+  outvec_fluid_ = Core::LinAlg::create_vector(*dofset_out_->dof_row_map(), true);
 }
 
 void FLD::XFluidOutputService::output(int step, double time, bool write_restart_data,
@@ -253,19 +253,19 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner)
     : XFluidOutputService(discret, cond_manager),
-      gmsh_sol_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),
-      gmsh_ref_sol_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_TIMINT_OUT")),
-      gmsh_debug_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
+      gmsh_sol_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_SOL_OUT")),
+      gmsh_ref_sol_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_TIMINT_OUT")),
+      gmsh_debug_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_DEBUG_OUT")),
       gmsh_debug_out_screen_(
-          (bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
-      gmsh_eos_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
-      gmsh_discret_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
+          (bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
+      gmsh_eos_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_EOS_OUT")),
+      gmsh_discret_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
       volume_cell_gauss_point_by_(
-          Core::UTILS::IntegralValue<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
+          Core::UTILS::integral_value<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
-  if (!(bool)Core::UTILS::IntegralValue<int>(
+  if (!(bool)Core::UTILS::integral_value<int>(
           Global::Problem::instance()->io_params(), "OUTPUT_GMSH"))
     FOUR_C_THROW(
         "If GMSH output is globally deactivated, don't create an instance of "
@@ -282,19 +282,19 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output(
   if (!gmsh_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->velnp());
+      Core::Rebalance::get_col_version_of_row_vector(discret_, state->velnp());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
   if (state->accnp() != Teuchos::null)
   {
-    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->accnp());
+    output_col_acc = Core::Rebalance::get_col_version_of_row_vector(discret_, state->accnp());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
 
   // no counter for standard solution output : -1
@@ -313,19 +313,19 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
   if (!gmsh_ref_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->veln());
+      Core::Rebalance::get_col_version_of_row_vector(discret_, state->veln());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
   if (state->accn() != Teuchos::null)
   {
-    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->accn());
+    output_col_acc = Core::Rebalance::get_col_version_of_row_vector(discret_, state->accn());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
 
   const std::string prefix("ref_SOL");
@@ -345,10 +345,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->velnp());
+      Core::Rebalance::get_col_version_of_row_vector(discret_, state->velnp());
   const std::string prefix("SOL");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, Teuchos::null,
       dispnp_col);
@@ -366,11 +366,11 @@ void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
 
   Teuchos::RCP<const Epetra_Vector> output_col_residual =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->residual());
+      Core::Rebalance::get_col_version_of_row_vector(discret_, state->residual());
   const std::string prefix("RES");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_residual,
       Teuchos::null, dispnp_col);
@@ -388,10 +388,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_incvel =
-      Core::Rebalance::GetColVersionOfRowVector(discret_, state->inc_vel());
+      Core::Rebalance::get_col_version_of_row_vector(discret_, state->inc_vel());
   const std::string prefix("INC");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_incvel, Teuchos::null,
       dispnp_col);
@@ -423,7 +423,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     filename_base_vel << filename_base << "_" << count << "_vel";
   else
     filename_base_vel << filename_base << "_vel";
-  const std::string filename_vel = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_vel = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_vel.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel(filename_vel.c_str());
@@ -435,7 +435,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     filename_base_press << filename_base << "_" << count << "_press";
   else
     filename_base_press << filename_base << "_press";
-  const std::string filename_press = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_press = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_press.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press(filename_press.c_str());
@@ -447,7 +447,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     filename_base_acc << filename_base << "_" << count << "_acc";
   else
     filename_base_acc << filename_base << "_acc";
-  const std::string filename_acc = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_acc = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_acc.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc(filename_acc.c_str());
@@ -459,7 +459,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     filename_base_bound << filename_base << "_" << count << "_bound";
   else
     filename_base_bound << filename_base << "_bound";
-  const std::string filename_bound = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_bound = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_bound.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_bound(filename_bound.c_str());
@@ -473,7 +473,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     filename_base_vel_ghost << filename_base << "_" << count << "_vel_ghost";
   else
     filename_base_vel_ghost << filename_base << "_vel_ghost";
-  const std::string filename_vel_ghost = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_vel_ghost = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_vel_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
@@ -485,7 +485,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     filename_base_press_ghost << filename_base << "_" << count << "_press_ghost";
   else
     filename_base_press_ghost << filename_base << "_press_ghost";
-  const std::string filename_press_ghost = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_press_ghost = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_press_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
@@ -497,7 +497,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     filename_base_acc_ghost << filename_base << "_" << count << "_acc_ghost";
   else
     filename_base_acc_ghost << filename_base << "_acc_ghost";
-  const std::string filename_acc_ghost = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_acc_ghost = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_acc_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc_ghost(filename_acc_ghost.c_str());
@@ -664,12 +664,12 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   }
 
   std::vector<double> m(la[0].lm_.size());
-  Core::FE::ExtractMyValues(*vel, m, la[0].lm_);
+  Core::FE::extract_my_values(*vel, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
   {
-    Core::FE::ExtractMyValues(*acc, m_acc, la[0].lm_);
+    Core::FE::extract_my_values(*acc, m_acc, la[0].lm_);
   }
 
   const bool ale_output(dispnp != Teuchos::null);
@@ -677,7 +677,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   std::vector<double> m_disp(la[0].lm_.size());
   if (ale_output)
   {
-    Core::FE::ExtractMyValues(*dispnp, m_disp, la[0].lm_);
+    Core::FE::extract_my_values(*dispnp, m_disp, la[0].lm_);
   }
 
   int numnode = 0;
@@ -792,12 +792,12 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   actele->location_vector(discret, nds, la, false);
 
   std::vector<double> m(la[0].lm_.size());
-  Core::FE::ExtractMyValues(*velvec, m, la[0].lm_);
+  Core::FE::extract_my_values(*velvec, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
   {
-    Core::FE::ExtractMyValues(*accvec, m_acc, la[0].lm_);
+    Core::FE::extract_my_values(*accvec, m_acc, la[0].lm_);
   }
 
   Core::LinAlg::SerialDenseMatrix vel(3, actele->num_node());
@@ -896,7 +896,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             {
               const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex8>;
               Core::LinAlg::Matrix<numnodes, 1> funct;
-              Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex8);
+              Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex8);
               Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
               Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
               Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -911,7 +911,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
               // TODO: check the output for hex20
               const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex20>;
               Core::LinAlg::Matrix<numnodes, 1> funct;
-              Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex20);
+              Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex20);
               Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
               Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
               Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -926,7 +926,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
               // TODO: check the output for hex27
               const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex27>;
               Core::LinAlg::Matrix<numnodes, 1> funct;
-              Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex27);
+              Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex27);
               Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
               Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
               Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1023,7 +1023,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           {
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex8>;
             Core::LinAlg::Matrix<numnodes, 1> funct;
-            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex8);
+            Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex8);
             Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1038,7 +1038,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             // TODO: check the output for hex20
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex20>;
             Core::LinAlg::Matrix<numnodes, 1> funct;
-            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex20);
+            Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex20);
             Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1053,7 +1053,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             // TODO: check the output for hex27
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex27>;
             Core::LinAlg::Matrix<numnodes, 1> funct;
-            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex27);
+            Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex27);
             Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1067,7 +1067,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           {
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::wedge6>;
             Core::LinAlg::Matrix<numnodes, 1> funct;
-            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::wedge6);
+            Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::wedge6);
             Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1081,7 +1081,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           {
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::wedge15>;
             Core::LinAlg::Matrix<numnodes, 1> funct;
-            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::wedge15);
+            Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::wedge15);
             Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1095,7 +1095,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           {
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tet4>;
             Core::LinAlg::Matrix<numnodes, 1> funct;
-            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::tet4);
+            Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::tet4);
             Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1109,7 +1109,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
           {
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tet10>;
             Core::LinAlg::Matrix<numnodes, 1> funct;
-            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::tet10);
+            Core::FE::shape_function_3d(funct, rst(0), rst(1), rst(2), Core::FE::CellType::tet10);
             Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
@@ -1230,8 +1230,8 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad4>;
             Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
             Core::LinAlg::Matrix<2, numnodes> deriv;
-            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad4);
-            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad4>(
+            Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad4);
+            Core::FE::compute_metric_tensor_for_boundary_ele<Core::FE::CellType::quad4>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1240,8 +1240,8 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tri3>;
             Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
             Core::LinAlg::Matrix<2, numnodes> deriv;
-            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::tri3);
-            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::tri3>(
+            Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::tri3);
+            Core::FE::compute_metric_tensor_for_boundary_ele<Core::FE::CellType::tri3>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1250,8 +1250,8 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad8>;
             Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
             Core::LinAlg::Matrix<2, numnodes> deriv;
-            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad8);
-            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad8>(
+            Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad8);
+            Core::FE::compute_metric_tensor_for_boundary_ele<Core::FE::CellType::quad8>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1260,8 +1260,8 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
             const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad9>;
             Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
             Core::LinAlg::Matrix<2, numnodes> deriv;
-            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad9);
-            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad9>(
+            Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad9);
+            Core::FE::compute_metric_tensor_for_boundary_ele<Core::FE::CellType::quad9>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1299,14 +1299,14 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
         "Core::FE::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("DISCRET",
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("DISCRET",
       discret_->writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
       discret_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
 
-  XFEM::UTILS::PrintDiscretizationToStream(discret_, discret_->name(), true, false, true, false,
+  XFEM::UTILS::print_discretization_to_stream(discret_, discret_->name(), true, false, true, false,
       print_faces, false, gmshfilecontent, curr_pos);
 
   // append other discretizations involved (cutter surface discretization, coupling discretization,
@@ -1330,7 +1330,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_eos(
         "Core::FE::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("EOS",
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("EOS",
       discret_->writer()->output()->file_name(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
       discret_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1357,7 +1357,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_eos(
           int ghost_penalty = it->second;
 
           if (ghost_penalty)
-            Core::IO::Gmsh::elementAtInitialPositionToStream(
+            Core::IO::Gmsh::element_at_initial_position_to_stream(
                 double(ghost_penalty), actele, gmshfilecontent);
         }
         else
@@ -1385,7 +1385,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_eos(
           int edge_stab = it->second;
 
           if (edge_stab)
-            Core::IO::Gmsh::elementAtInitialPositionToStream(
+            Core::IO::Gmsh::element_at_initial_position_to_stream(
                 double(edge_stab), actele, gmshfilecontent);
         }
       }

@@ -1075,7 +1075,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
         if (conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
         if (conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
         cardiovascular0downer.push_back(curr->second->owner());
-        Core::LinAlg::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        Core::LinAlg::assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
     }
   }
@@ -9257,7 +9257,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
       if (conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
       cardiovascular0downer.push_back(curr->second->owner());
       if (assvec1 and conditiontype != "dummy")
-        Core::LinAlg::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        Core::LinAlg::assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }
 

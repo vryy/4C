@@ -45,7 +45,7 @@ namespace POROFLUIDMULTIPHASE
   namespace UTILS
   {
     /// setup second materials for porosity evaluation within solid phase
-    void SetupMaterial(const Epetra_Comm& comm, const std::string& struct_disname,
+    void setup_material(const Epetra_Comm& comm, const std::string& struct_disname,
         const std::string& fluid_disname);
 
 
@@ -65,12 +65,12 @@ namespace POROFLUIDMULTIPHASE
       \param numdofpernode    : number of dofs per node of the vector (assumed to be equal for all
       nodes)
      */
-    Teuchos::RCP<Epetra_MultiVector> ConvertDofVectorToNodeBasedMultiVector(
+    Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_node_based_multi_vector(
         const Core::FE::Discretization& dis, const Epetra_Vector& vector, const int nds,
         const int numdofpernode);
 
     /// create solution algorithm depending on input file
-    Teuchos::RCP<Adapter::PoroFluidMultiphase> CreateAlgorithm(
+    Teuchos::RCP<Adapter::PoroFluidMultiphase> create_algorithm(
         Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme
             timintscheme,                                    //!< time discretization scheme
         Teuchos::RCP<Core::FE::Discretization> dis,          //!< discretization
@@ -88,7 +88,7 @@ namespace POROFLUIDMULTIPHASE
      * @return             set of nearby element pairs as seen from the artery discretization, each
      *                     artery element with a vector of close 3D elements
      */
-    std::map<int, std::set<int>> ExtendedGhostingArteryDiscretization(
+    std::map<int, std::set<int>> extended_ghosting_artery_discretization(
         Teuchos::RCP<Core::FE::Discretization> contdis,
         Teuchos::RCP<Core::FE::Discretization> artdis, const bool evaluate_on_lateral_surface,
         const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod);
@@ -100,12 +100,12 @@ namespace POROFLUIDMULTIPHASE
      * @param[in] evaluate_on_lateral_surface   is coupling evaluated on lateral surface?
      * @return               AABB of element as 3x2 Core::LinAlg::Matrix
      */
-    Core::LinAlg::Matrix<3, 2> GetAABB(Core::Elements::Element* ele,
+    Core::LinAlg::Matrix<3, 2> get_aabb(Core::Elements::Element* ele,
         std::map<int, Core::LinAlg::Matrix<3, 1>>& positions,
         const bool evaluate_on_lateral_surface);
 
     /// maximum distance between two nodes of an element
-    double GetMaxNodalDistance(
+    double get_max_nodal_distance(
         Core::Elements::Element* ele, Teuchos::RCP<Core::FE::Discretization> dis);
 
     /**
@@ -121,7 +121,7 @@ namespace POROFLUIDMULTIPHASE
      * @return                  set of nearby element pairs as seen from the artery discretization,
      *                          each artery element with a vector of close 3D elements
      */
-    std::map<int, std::set<int>> OctTreeSearch(Teuchos::RCP<Core::FE::Discretization> contdis,
+    std::map<int, std::set<int>> oct_tree_search(Teuchos::RCP<Core::FE::Discretization> contdis,
         Teuchos::RCP<Core::FE::Discretization> artdis,
         Teuchos::RCP<Core::FE::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
         const std::vector<int> artEleGIDs, std::set<int>& elecolset, std::set<int>& nodecolset);
@@ -132,7 +132,7 @@ namespace POROFLUIDMULTIPHASE
      * @param[in] nodemap  node-map of the discretization (can be either in row or column format)
      * @return             nodal position as a std::map<int, Core::LinAlg::Matrix<3, 1>>
      */
-    std::map<int, Core::LinAlg::Matrix<3, 1>> GetNodalPositions(
+    std::map<int, Core::LinAlg::Matrix<3, 1>> get_nodal_positions(
         Teuchos::RCP<Core::FE::Discretization> dis, const Epetra_Map* nodemap);
 
     //! Determine norm of vector
@@ -148,13 +148,13 @@ namespace POROFLUIDMULTIPHASE
      * @param doboundaryconditions  also do boundary conditions in fill-complete call
      * @return  fully-overlapping artery discretization
      */
-    Teuchos::RCP<Core::FE::Discretization> CreateFullyOverlappingArteryDiscretization(
+    Teuchos::RCP<Core::FE::Discretization> create_fully_overlapping_artery_discretization(
         Teuchos::RCP<Core::FE::Discretization> artdis, std::string disname,
         bool doboundaryconditions);
 
   }  // namespace UTILS
   // Print the logo
-  void PrintLogo();
+  void print_logo();
 }  // namespace POROFLUIDMULTIPHASE
 
 

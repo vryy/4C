@@ -24,16 +24,16 @@ namespace Core::LinAlg::INTERNAL
    \brief Utility function to get type string of a matrix/vector object
    */
   template <typename VectorOrMatrix>
-  inline std::string GetMatrixOrVectorString();
+  inline std::string get_matrix_or_vector_string();
 
   template <>
-  inline std::string GetMatrixOrVectorString<Core::LinAlg::SerialDenseMatrix::Base>()
+  inline std::string get_matrix_or_vector_string<Core::LinAlg::SerialDenseMatrix::Base>()
   {
     return "Matrix";
   }
 
   template <>
-  inline std::string GetMatrixOrVectorString<Core::LinAlg::SerialDenseVector::Base>()
+  inline std::string get_matrix_or_vector_string<Core::LinAlg::SerialDenseVector::Base>()
   {
     return "Vector";
   }
@@ -42,10 +42,10 @@ namespace Core::LinAlg::INTERNAL
    \brief Utility function to get the correct case string of a matrix/vector object
    */
   template <typename VectorOrMatrix>
-  inline std::string GetMatrixOrVectorCase(char ch);
+  inline std::string get_matrix_or_vector_case(char ch);
 
   template <>
-  inline std::string GetMatrixOrVectorCase<Core::LinAlg::SerialDenseMatrix::Base>(char ch)
+  inline std::string get_matrix_or_vector_case<Core::LinAlg::SerialDenseMatrix::Base>(char ch)
   {
     char c = std::toupper(ch);
     std::string s;
@@ -54,7 +54,7 @@ namespace Core::LinAlg::INTERNAL
   }
 
   template <>
-  inline std::string GetMatrixOrVectorCase<Core::LinAlg::SerialDenseVector::Base>(char ch)
+  inline std::string get_matrix_or_vector_case<Core::LinAlg::SerialDenseVector::Base>(char ch)
   {
     char c = std::tolower(ch);
     std::string s;
@@ -66,16 +66,16 @@ namespace Core::LinAlg::INTERNAL
    \brief Utility function to get type string of transposition operation
    */
   template <bool transpose>
-  inline std::string GetTransposeString();
+  inline std::string get_transpose_string();
 
   template <>
-  inline std::string GetTransposeString<false>()
+  inline std::string get_transpose_string<false>()
   {
     return "";
   }
 
   template <>
-  inline std::string GetTransposeString<true>()
+  inline std::string get_transpose_string<true>()
   {
     return "^T";
   }
@@ -84,24 +84,25 @@ namespace Core::LinAlg::INTERNAL
    \brief Utility function to check for error code of LINALG multiplication
    */
   template <bool transpose1, bool transpose2, typename VectorOrMatrix1, typename VectorOrMatrix2>
-  inline void CheckErrorCodeInDebug(
+  inline void check_error_code_in_debug(
       int errorCode, const VectorOrMatrix1& a, const VectorOrMatrix2& b, const VectorOrMatrix2& c)
   {
     FOUR_C_ASSERT(errorCode == 0,
         std::string(
             "Error code (" + std::to_string(errorCode) +
             ") is returned. Something goes wrong with the " +
-            GetMatrixOrVectorString<VectorOrMatrix1>() + "-" +
-            GetMatrixOrVectorString<VectorOrMatrix2>() + " multiplication " +
-            GetMatrixOrVectorCase<VectorOrMatrix2>('c') + " = " +
-            GetMatrixOrVectorCase<VectorOrMatrix1>('a') + GetTransposeString<transpose1>() + " * " +
-            GetMatrixOrVectorCase<VectorOrMatrix2>('b') + GetTransposeString<transpose2>() +
-            ". Dimensions of " + GetMatrixOrVectorCase<VectorOrMatrix1>('a') + ", " +
-            GetMatrixOrVectorCase<VectorOrMatrix2>('b') + " and " +
-            GetMatrixOrVectorCase<VectorOrMatrix2>('c') + " are (" + std::to_string(a.numRows()) +
-            "x" + std::to_string(a.numCols()) + "), (" + std::to_string(b.numRows()) + "x" +
-            std::to_string(b.numCols()) + ") and (" + std::to_string(c.numRows()) + "x" +
-            std::to_string(c.numCols()) + ") respectively.")
+            get_matrix_or_vector_string<VectorOrMatrix1>() + "-" +
+            get_matrix_or_vector_string<VectorOrMatrix2>() + " multiplication " +
+            get_matrix_or_vector_case<VectorOrMatrix2>('c') + " = " +
+            get_matrix_or_vector_case<VectorOrMatrix1>('a') + get_transpose_string<transpose1>() +
+            " * " + get_matrix_or_vector_case<VectorOrMatrix2>('b') +
+            get_transpose_string<transpose2>() + ". Dimensions of " +
+            get_matrix_or_vector_case<VectorOrMatrix1>('a') + ", " +
+            get_matrix_or_vector_case<VectorOrMatrix2>('b') + " and " +
+            get_matrix_or_vector_case<VectorOrMatrix2>('c') + " are (" +
+            std::to_string(a.numRows()) + "x" + std::to_string(a.numCols()) + "), (" +
+            std::to_string(b.numRows()) + "x" + std::to_string(b.numCols()) + ") and (" +
+            std::to_string(c.numRows()) + "x" + std::to_string(c.numCols()) + ") respectively.")
             .c_str());
   }
 }  // namespace Core::LinAlg::INTERNAL
@@ -119,7 +120,7 @@ namespace Core::LinAlg
       const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, A, b, 0.0);
-    INTERNAL::CheckErrorCodeInDebug<false, false>(err, A, b, c);
+    INTERNAL::check_error_code_in_debug<false, false>(err, A, b, c);
     return err;
   }
 
@@ -134,7 +135,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, A, b, beta);
-    INTERNAL::CheckErrorCodeInDebug<false, false>(err, A, b, c);
+    INTERNAL::check_error_code_in_debug<false, false>(err, A, b, c);
     return err;
   }
 
@@ -149,7 +150,7 @@ namespace Core::LinAlg
       const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, A, b, 0.0);
-    INTERNAL::CheckErrorCodeInDebug<true, false>(err, A, b, c);
+    INTERNAL::check_error_code_in_debug<true, false>(err, A, b, c);
     return err;
   }
 
@@ -164,7 +165,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, A, b, beta);
-    INTERNAL::CheckErrorCodeInDebug<true, false>(err, A, b, c);
+    INTERNAL::check_error_code_in_debug<true, false>(err, A, b, c);
     return err;
   }
 
@@ -179,7 +180,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, A, B, 0.0);
-    INTERNAL::CheckErrorCodeInDebug<false, false>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<false, false>(err, A, B, C);
     return err;
   }
 
@@ -194,7 +195,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, A, B, beta);
-    INTERNAL::CheckErrorCodeInDebug<false, false>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<false, false>(err, A, B, C);
     return err;
   }
 
@@ -209,7 +210,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, A, B, 0.0);
-    INTERNAL::CheckErrorCodeInDebug<true, false>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<true, false>(err, A, B, C);
     return err;
   }
 
@@ -224,7 +225,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, A, B, beta);
-    INTERNAL::CheckErrorCodeInDebug<true, false>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<true, false>(err, A, B, C);
     return err;
   }
 
@@ -239,7 +240,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, A, B, 0.0);
-    INTERNAL::CheckErrorCodeInDebug<false, true>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<false, true>(err, A, B, C);
     return err;
   }
 
@@ -254,7 +255,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, alpha, A, B, beta);
-    INTERNAL::CheckErrorCodeInDebug<false, true>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<false, true>(err, A, B, C);
     return err;
   }
 
@@ -269,7 +270,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, A, B, 0.0);
-    INTERNAL::CheckErrorCodeInDebug<true, true>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<true, true>(err, A, B, C);
     return err;
   }
 
@@ -284,7 +285,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::TRANS, alpha, A, B, beta);
-    INTERNAL::CheckErrorCodeInDebug<true, true>(err, A, B, C);
+    INTERNAL::check_error_code_in_debug<true, true>(err, A, B, C);
     return err;
   }
 }  // namespace Core::LinAlg

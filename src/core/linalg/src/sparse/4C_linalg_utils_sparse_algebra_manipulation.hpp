@@ -69,7 +69,7 @@ namespace Core::LinAlg
    *  \return the extracted partial Epetra_Vector as RCP
    *
    *  \author hiermeier \date 03/17 */
-  Teuchos::RCP<Epetra_Vector> ExtractMyVector(
+  Teuchos::RCP<Epetra_Vector> extract_my_vector(
       const Epetra_Vector& source, const Epetra_Map& target_map);
 
   /*! \brief Extract a partial Eptra_Vector from a given source vector
@@ -79,7 +79,7 @@ namespace Core::LinAlg
    *  \param target (out): this target vector is going to be filled
    *
    *  \author hiermeier \date 03/17 */
-  void ExtractMyVector(const Epetra_Vector& source, Epetra_Vector& target);
+  void extract_my_vector(const Epetra_Vector& source, Epetra_Vector& target);
 
   /*!
    \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
@@ -97,7 +97,7 @@ namespace Core::LinAlg
    \param A11rowmap : rowmap of A11 or null
    \param A22rowmap : rowmap of A22 or null
    */
-  bool SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
+  bool split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
       Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
       Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap);
 
@@ -120,7 +120,7 @@ namespace Core::LinAlg
    \param A21       : on exit matrix block A21
    \param A22       : on exit matrix block A22
    */
-  bool SplitMatrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetra_Map>& A11rowmap,
+  bool split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetra_Map>& A11rowmap,
       Teuchos::RCP<Epetra_Map>& A22rowmap, Teuchos::RCP<Epetra_CrsMatrix>& A11,
       Teuchos::RCP<Epetra_CrsMatrix>& A12, Teuchos::RCP<Epetra_CrsMatrix>& A21,
       Teuchos::RCP<Epetra_CrsMatrix>& A22);
@@ -146,7 +146,7 @@ namespace Core::LinAlg
    \param A21          : on exit matrix block A21
    \param A22          : on exit matrix block A22
    */
-  bool SplitMatrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
+  bool split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
       Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
       Teuchos::RCP<Epetra_Map>& A11domainmap, Teuchos::RCP<Epetra_Map>& A22domainmap,
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& A11, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A12,
@@ -162,7 +162,7 @@ namespace Core::LinAlg
    *  returns -1. In this case you should use replace_diagonal_values(), instead.
    *
    *  \author hiermeier \date 03/17 */
-  int InsertMyRowDiagonalIntoUnfilledMatrix(
+  int insert_my_row_diagonal_into_unfilled_matrix(
       Core::LinAlg::SparseMatrix& mat, const Epetra_Vector& diag);
 
   /*!
@@ -175,7 +175,7 @@ namespace Core::LinAlg
    \param[in] Agiven    : on entry submap that is given and part of Amap
    \return the remainder map of Amap that is not overlapping with Agiven
    */
-  Teuchos::RCP<Epetra_Map> SplitMap(const Epetra_Map& Amap, const Epetra_Map& Agiven);
+  Teuchos::RCP<Epetra_Map> split_map(const Epetra_Map& Amap, const Epetra_Map& Agiven);
 
   /*!
    \brief merges two given Epetra_Maps
@@ -189,7 +189,7 @@ namespace Core::LinAlg
    map is overlapping (default = true, overlap allowed)
    \return the (sorted) merged map of input maps map1 and map2
    */
-  Teuchos::RCP<Epetra_Map> MergeMap(
+  Teuchos::RCP<Epetra_Map> merge_map(
       const Epetra_Map& map1, const Epetra_Map& map2, bool overlap = true);
 
   /*!
@@ -201,7 +201,7 @@ namespace Core::LinAlg
    \param map2         : second map
    \return the (sorted) intersection map of input maps map1 and map2
    */
-  Teuchos::RCP<Epetra_Map> IntersectMap(const Epetra_Map& map1, const Epetra_Map& map2);
+  Teuchos::RCP<Epetra_Map> intersect_map(const Epetra_Map& map1, const Epetra_Map& map2);
 
 
   /*!
@@ -218,7 +218,7 @@ namespace Core::LinAlg
    map is overlapping (default = true, overlap allowed)
    \return the (sorted) merged map of input maps map1 and map2
    */
-  Teuchos::RCP<Epetra_Map> MergeMap(const Teuchos::RCP<const Epetra_Map>& map1,
+  Teuchos::RCP<Epetra_Map> merge_map(const Teuchos::RCP<const Epetra_Map>& map1,
       const Teuchos::RCP<const Epetra_Map>& map2, bool overlap = true);
 
   /*!
@@ -260,7 +260,7 @@ namespace Core::LinAlg
    *  \param(in) epetraMultiVector: A Epetra_MultiVector to write data to.
    *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
    */
-  void StdVectorToEpetraMultiVector(const std::vector<double>& stdVector,
+  void std_vector_to_epetra_multi_vector(const std::vector<double>& stdVector,
       Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, const int blockSize);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
@@ -272,7 +272,7 @@ namespace Core::LinAlg
    *  \param(in) stdVector:         A std::vector<double> to read data to.
    *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
    */
-  void EpetraMultiVectorToStdVector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
+  void epetra_multi_vector_to_std_vector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
       std::vector<double>& stdVector, const int blockSize);
 
 }  // namespace Core::LinAlg

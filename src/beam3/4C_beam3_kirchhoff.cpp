@@ -388,7 +388,7 @@ void Discret::ELEMENTS::Beam3k::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -599,10 +599,10 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
 
       // Get values of shape functions
       N_i_xi.clear();
-      Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
 
       // Determine storage position for the node colpt
-      ind = Core::LargeRotations::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+      ind = Core::LargeRotations::numbering_trafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
       // current value of derivatives at GP (derivatives in xi!)
       r_xi.clear();
@@ -622,7 +622,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
       if (ind > 1)  // only for internal CPs
       {
         Core::LinAlg::Matrix<3, 3> G_aux(true);
-        Core::LargeRotations::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
+        Core::LargeRotations::calculate_sr_triads<double>(r_xi, Gref[ind], G_aux);
         // rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind] = G_aux;
         Core::LargeRotations::triadtoquaternion(G_aux, qrefconv_[ind]);
@@ -653,10 +653,10 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
       L_i_xi.clear();
       N_i_xi.clear();
       N_i.clear();
-      Core::FE::shape_function_1D(L_i, xi, shape());
-      Core::FE::shape_function_1D_deriv1(L_i_xi, xi, shape());
-      Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
-      Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_1d(L_i, xi, shape());
+      Core::FE::shape_function_1d_deriv1(L_i_xi, xi, shape());
+      Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_hermite_1d(N_i, xi, length_, Core::FE::CellType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.clear();
@@ -817,12 +817,12 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       L_i.clear();
       N_i_xi.clear();
       N_i_xixi.clear();
-      Core::FE::shape_function_1D(L_i, xi, shape());
-      Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
-      Core::FE::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_1d(L_i, xi, shape());
+      Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_hermite_1d_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
 
       // Determine storage position for the node colpt
-      ind = Core::LargeRotations::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+      ind = Core::LargeRotations::numbering_trafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
       // current value of derivatives at GP (derivatives in xi!)
       r_xi.clear();
@@ -847,7 +847,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       if (ind > 1)  // only for internal CPs
       {
         Core::LinAlg::Matrix<3, 3> G_aux(true);
-        Core::LargeRotations::CalculateSRTriads<double>(r_xi, Gref[ind], G_aux);
+        Core::LargeRotations::calculate_sr_triads<double>(r_xi, Gref[ind], G_aux);
         // rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind] = G_aux;
         Core::LargeRotations::triadtoquaternion(G_aux, qrefconv_[ind]);
@@ -870,7 +870,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       {
         tangentref(i) = Gref[colpt](i, 0);
       }
-      Core::LargeRotations::CalculateSRTriads<double>(
+      Core::LargeRotations::calculate_sr_triads<double>(
           tangentref, Gref[REFERENCE_NODE], Lambdabarref);
       Core::LargeRotations::triadtoangleleft(phivec, Lambdabarref, Gref[colpt]);
       phi_cp[colpt] = 0.0;
@@ -893,11 +893,11 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       N_i_xi.clear();
       N_i_xixi.clear();
 
-      Core::FE::shape_function_1D(L_i, xi, shape());
-      Core::FE::shape_function_1D_deriv1(L_i_xi, xi, shape());
-      Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
-      Core::FE::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
-      Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_1d(L_i, xi, shape());
+      Core::FE::shape_function_1d_deriv1(L_i_xi, xi, shape());
+      Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_hermite_1d_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
+      Core::FE::shape_function_hermite_1d(N_i, xi, length_, Core::FE::CellType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.clear();
@@ -961,7 +961,7 @@ double Discret::ELEMENTS::Beam3k::get_jacobi_fac_at_xi(const double& xi) const
 
   // Matrices to store the the Hermite shape function derivative values
   Core::LinAlg::Matrix<1, 2 * nnode> N_i_xi;
-  Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+  Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
 
   // jacobi = ds/dxi = ||r'_0||
   Core::LinAlg::Matrix<3, 1> r_xi;
@@ -1123,7 +1123,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
   Core::LinAlg::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
+  Core::FE::shape_function_hermite_1d(N_i, xi, length_, Core::FE::CellType::line2);
   assemble_shapefunctions_n(N_i, N);
 
   // this part is associated with the variation of the centerline position
@@ -1188,7 +1188,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = Core::LargeRotations::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1196,14 +1196,14 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
 
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1213,7 +1213,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
     r_s.clear();
     r_s.multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = Core::FADUtils::Norm(r_s);
+    abs_r_s = Core::FADUtils::norm(r_s);
 
 
     calc_v_thetaperp<nnodecl>(v_thetaperp_cp[ind], N_s, r_s, abs_r_s);
@@ -1226,7 +1226,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
   // *******************************************************************************
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi, shape());
+  Core::FE::shape_function_1d(L_i, xi, shape());
 
   v_theta_bar.clear();
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
@@ -1335,7 +1335,7 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = Core::LargeRotations::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1343,14 +1343,14 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
 
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1360,7 +1360,7 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
     r_s.clear();
     r_s.multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = Core::FADUtils::Norm(r_s);
+    abs_r_s = Core::FADUtils::norm(r_s);
 
     g_1_cp.clear();
     g_1_cp.update(std::pow(abs_r_s, -1.0), r_s);
@@ -1377,7 +1377,7 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
   // re-interpolation of quantities at xi based on CP values
   // *******************************************************************************
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi, shape());
+  Core::FE::shape_function_1d(L_i, xi, shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -1418,7 +1418,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
   Core::LinAlg::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
+  Core::FE::shape_function_hermite_1d(N_i, xi, length_, Core::FE::CellType::line2);
   assemble_shapefunctions_n(N_i, N);
 
   // this part is associated with the increment of the centerline position
@@ -1491,7 +1491,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = Core::LargeRotations::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1499,13 +1499,13 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
 
     // get value of interpolating function for theta (Lagrange polynomials) at xi_cp
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1514,7 +1514,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
     r_s.clear();
     r_s.multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = Core::FADUtils::Norm(r_s);
+    abs_r_s = Core::FADUtils::norm(r_s);
 
 
     // lin_thetaperp
@@ -1723,7 +1723,7 @@ void Discret::ELEMENTS::Beam3k::add_ref_values_disp(
       Core::LinAlg::Matrix<4, 1> Qnew(true);
       for (unsigned int i = 0; i < 3; ++i)
       {
-        disptheta(i) = Core::FADUtils::CastToDouble(dofvec(7 * node + 3 + i));
+        disptheta(i) = Core::FADUtils::cast_to_double(dofvec(7 * node + 3 + i));
       }
 
       Core::LargeRotations::angletoquaternion(disptheta, deltaQ);
@@ -1835,17 +1835,17 @@ void Discret::ELEMENTS::Beam3k::set_tangents_and_triads_and_reference_triads_at_
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j) triad_aux2(i, j) = triad_aux(i, j);
 
-      Core::LargeRotations::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
+      Core::LargeRotations::calculate_sr_triads<T>(tangent, triad_aux2, triad_ref);
 
       // Store nodal reference triad
       Core::LinAlg::Matrix<4, 1, T> Qref(true);
       Core::LargeRotations::triadtoquaternion(triad_ref, Qref);
       for (unsigned int i = 0; i < 4; ++i)
-        Qref_new[node](i) = Core::FADUtils::CastToDouble(Qref(i));
+        Qref_new[node](i) = Core::FADUtils::cast_to_double(Qref(i));
 
       // calculate material triad
       triad_mat_cp[node].clear();
-      Core::LargeRotations::RotateTriad(triad_ref, alpha, triad_mat_cp[node]);
+      Core::LargeRotations::rotate_triad(triad_ref, alpha, triad_mat_cp[node]);
     }
   }
   else
@@ -1901,12 +1901,12 @@ void Discret::ELEMENTS::Beam3k::set_triads_and_reference_triads_at_remaining_col
     // node=0->xi=-1  node=1->xi=0 node=2->xi=1
     xi = (double)node / (double)(BEAM3K_COLLOCATION_POINTS - 1) * 2.0 - 1.0;
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi, shape());
+    Core::FE::shape_function_1d(L_i, xi, shape());
 
     // Determine storage position for the node node
-    ind = Core::LargeRotations::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1925,16 +1925,16 @@ void Discret::ELEMENTS::Beam3k::set_triads_and_reference_triads_at_remaining_col
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j) triad_aux2(i, j) = triad_aux(i, j);
 
-    Core::LargeRotations::CalculateSRTriads<T>(tangent, triad_aux2, triad_ref);
+    Core::LargeRotations::calculate_sr_triads<T>(tangent, triad_aux2, triad_ref);
 
     // Store nodal reference triad
     Core::LinAlg::Matrix<4, 1, T> Qref(true);
     Core::LargeRotations::triadtoquaternion(triad_ref, Qref);
-    for (unsigned int i = 0; i < 4; ++i) Qref_new[ind](i) = Core::FADUtils::CastToDouble(Qref(i));
+    for (unsigned int i = 0; i < 4; ++i) Qref_new[ind](i) = Core::FADUtils::cast_to_double(Qref(i));
 
     // calculate material triad
     triad_mat_cp[ind].clear();
-    Core::LargeRotations::RotateTriad(triad_ref, alpha, triad_mat_cp[ind]);
+    Core::LargeRotations::rotate_triad(triad_ref, alpha, triad_mat_cp[ind]);
   }
 }
 
@@ -1959,7 +1959,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
     Core::LinAlg::Matrix<ndim, 1, double>& velocity,
     const Core::LinAlg::Matrix<ndim, 1, double>& position, int gausspoint_index) const
 {
-  Discret::UTILS::Beam::CalcInterpolation<nnodecl, vpernode, ndim, double>(
+  Discret::UTILS::Beam::calc_interpolation<nnodecl, vpernode, ndim, double>(
       velocity_dofvec, N_i, velocity);
 }
 
@@ -1979,7 +1979,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
    * adapt the calculated velocity and compare it with the velocity calculated in time integrator
    * and handed in from outside for safety reasons */
   Core::LinAlg::Matrix<ndim, 1, double> velocity_test;
-  Discret::UTILS::Beam::CalcInterpolation<nnodecl, vpernode, ndim, double>(
+  Discret::UTILS::Beam::calc_interpolation<nnodecl, vpernode, ndim, double>(
       velocity_dofvec, N_i, velocity_test);
 
   // get time step size
@@ -1996,7 +1996,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
   for (unsigned int idim = 0; idim < ndim; ++idim)
   {
     unshiftedrconvmass_i(idim) = rconvmass_[gausspoint_index](idim);
-    position_i_double(idim) = Core::FADUtils::CastToDouble(position(idim));
+    position_i_double(idim) = Core::FADUtils::cast_to_double(position(idim));
   }
 
   // difference in position of this GP as compared to last time step
@@ -2103,16 +2103,16 @@ void Discret::ELEMENTS::Beam3k::calc_lin_thetapar(
   // Todo @grill: decide about alternatives, apparently no change in results
 
   // *********** alternative 1 ************
-  Core::LinAlg::Matrix<3, 3, double> g_1_dyadicproduct_g_1_bar_T(true);
+  Core::LinAlg::Matrix<3, 3, double> g_1dyadicproduct_g_1_bar_T(true);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
     for (unsigned int icol = 0; icol < 3; ++icol)
-      g_1_dyadicproduct_g_1_bar_T(irow, icol) = g_1(irow) * g_1_bar(icol);
+      g_1dyadicproduct_g_1_bar_T(irow, icol) = g_1(irow) * g_1_bar(icol);
 
-  Core::LinAlg::Matrix<3, 3, double> g_1_dyadicproduct_g_1_bar_T_S_of_g_1(true);
-  g_1_dyadicproduct_g_1_bar_T_S_of_g_1.multiply(g_1_dyadicproduct_g_1_bar_T, S_of_g_1);
+  Core::LinAlg::Matrix<3, 3, double> g_1dyadicproduct_g_1_bar_T_S_of_g_1(true);
+  g_1dyadicproduct_g_1_bar_T_S_of_g_1.multiply(g_1dyadicproduct_g_1_bar_T, S_of_g_1);
 
-  lin_thetapar.multiply(g_1_dyadicproduct_g_1_bar_T_S_of_g_1, N_s);
+  lin_thetapar.multiply(g_1dyadicproduct_g_1_bar_T_S_of_g_1, N_s);
 
   // *********** alternative 2 ************
 
@@ -2370,7 +2370,7 @@ void Discret::ELEMENTS::Beam3k::calc_lin_moment_inertia(
   auxmatrix.update(lin_prefactor_acc, C_rho, 1.0);
 
 
-  Core::LinAlg::Matrix<3, 3, double> Tmat_of_deltatheta = Core::LargeRotations::Tmatrix(deltatheta);
+  Core::LinAlg::Matrix<3, 3, double> Tmat_of_deltatheta = Core::LargeRotations::tmatrix(deltatheta);
   Core::LinAlg::Matrix<3, 3, double> Lambda_conv_Tmat_of_deltatheta(true);
   Lambda_conv_Tmat_of_deltatheta.multiply_tn(triad_mat_conv, Tmat_of_deltatheta);
 
@@ -2415,7 +2415,7 @@ void Discret::ELEMENTS::Beam3k::calc_lin_moment_viscous(
     for (unsigned int j = 0; j < 3; ++j)
       gamma_g1_g1_conv(i, j) = triad_mat(i, 0) * triad_mat_conv(j, 0) * gamma_polar / dt;
 
-  Core::LinAlg::Matrix<3, 3, double> Tmat_of_deltatheta = Core::LargeRotations::Tmatrix(deltatheta);
+  Core::LinAlg::Matrix<3, 3, double> Tmat_of_deltatheta = Core::LargeRotations::tmatrix(deltatheta);
 
   auxmatrix.multiply(gamma_g1_g1_conv, Tmat_of_deltatheta);
 

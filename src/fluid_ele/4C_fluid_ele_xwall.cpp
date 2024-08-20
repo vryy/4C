@@ -69,7 +69,7 @@ void Discret::ELEMENTS::FluidXWallType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidXWallType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 void Discret::ELEMENTS::FluidXWallType::setup_element_definition(
@@ -121,7 +121,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidXWall::clone() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall::lines()
 {
-  return Core::Communication::GetElementLines<FluidXWallBoundary, FluidXWall>(*this);
+  return Core::Communication::get_element_lines<FluidXWallBoundary, FluidXWall>(*this);
 }
 
 
@@ -130,7 +130,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<FluidXWallBoundary, FluidXWall>(*this);
+  return Core::Communication::get_element_surfaces<FluidXWallBoundary, FluidXWall>(*this);
 }
 
 /*----------------------------------------------------------------------*

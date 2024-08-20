@@ -194,9 +194,9 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Abb = a_->get_matrix(block, block);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Peye =
-          Core::LinAlg::CreateIdentityMatrix(Abb->domain_map());
+          Core::LinAlg::create_identity_matrix(Abb->domain_map());
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Reye =
-          Core::LinAlg::CreateIdentityMatrix(Abb->range_map());
+          Core::LinAlg::create_identity_matrix(Abb->range_map());
 
       for (int level = 0; level < num_level_max_; level++) A_level[level] = Abb;
 
@@ -691,11 +691,11 @@ void Core::LinearSolver::AMGNxN::MonolithicHierarchy::setup()
             Teuchos::RCP<Core::LinAlg::SparseMatrix> R_spa = r_[level - 1]->get_matrix(row, row);
 
             Teuchos::RCP<Core::LinAlg::SparseMatrix> AP_spa = Teuchos::null;
-            AP_spa = Core::LinAlg::MLMultiply(*A_spa, *P_spa, true);
+            AP_spa = Core::LinAlg::ml_multiply(*A_spa, *P_spa, true);
             if (AP_spa == Teuchos::null) FOUR_C_THROW("Error in AP");
 
             Teuchos::RCP<Core::LinAlg::SparseMatrix> RAP_spa = Teuchos::null;
-            RAP_spa = Core::LinAlg::MLMultiply(*R_spa, *AP_spa, true);
+            RAP_spa = Core::LinAlg::ml_multiply(*R_spa, *AP_spa, true);
             if (RAP_spa == Teuchos::null) FOUR_C_THROW("Error in RAP");
 
             a_[level]->set_matrix(RAP_spa, row, col);

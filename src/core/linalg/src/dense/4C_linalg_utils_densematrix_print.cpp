@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::PrintSerialDenseMatrixInMatlabFormat(
+void Core::LinAlg::print_serial_dense_matrix_in_matlab_format(
     std::string filename, const Core::LinAlg::SerialDenseMatrix& A, const bool newfile)
 {
   std::ofstream os;

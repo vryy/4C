@@ -80,7 +80,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::Ale3Impl<distype>>(
@@ -136,7 +136,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp;
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       my_dispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, false);
@@ -148,7 +148,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp;
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       my_dispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, true);
@@ -159,7 +159,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, true);
@@ -170,7 +170,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, false);
@@ -181,7 +181,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, false);
 
@@ -191,7 +191,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, true);
 
@@ -201,7 +201,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::impl(this)->element_node_normal(this, elevec1, my_dispnp);
 
@@ -300,8 +300,8 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::element_node_normal(
     const double e3 = intpoints.qxg[iquad][2];
 
     // get values of shape functions and derivatives in the gausspoint
-    Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
-    Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    Core::FE::shape_function_3d(funct, e1, e2, e3, distype);
+    Core::FE::shape_function_3d_deriv1(deriv, e1, e2, e3, distype);
 
     // compute jacobian matrix
     // determine jacobian at point r,s,t
@@ -1429,8 +1429,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     if (distype != Core::FE::CellType::nurbs8 && distype != Core::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
-      Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      Core::FE::shape_function_3d(funct, e1, e2, e3, distype);
+      Core::FE::shape_function_3d_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
@@ -1440,7 +1440,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
       gp(1) = e2;
       gp(2) = e3;
 
-      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_3d_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
     /* compute the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -1667,8 +1667,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
     if (distype != Core::FE::CellType::nurbs8 && distype != Core::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
-      Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      Core::FE::shape_function_3d(funct, e1, e2, e3, distype);
+      Core::FE::shape_function_3d_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
@@ -1678,7 +1678,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
       gp(1) = e2;
       gp(2) = e3;
 
-      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_3d_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     // determine jacobian matrix at point r,s,t

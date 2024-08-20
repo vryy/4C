@@ -37,7 +37,7 @@ namespace GEOMETRYPAIR
    * @param discretization_type (in)
    * @return Human readable string representation of the enum.
    */
-  std::string DiscretizationTypeGeometryToString(
+  std::string discretization_type_geometry_to_string(
       const DiscretizationTypeGeometry discretization_type);
 
   /**
@@ -53,7 +53,7 @@ namespace GEOMETRYPAIR
    * @tparam B Scalar type of segment_out.
    */
   template <typename A, typename B>
-  void CopySegment(const LineSegment<A>& segment_in, LineSegment<B>& segment_out)
+  void copy_segment(const LineSegment<A>& segment_in, LineSegment<B>& segment_out)
   {
     // Add the start and end points.
     segment_out.get_start_point().set_from_other_point_double(segment_in.get_start_point());
@@ -74,7 +74,7 @@ namespace GEOMETRYPAIR
    * @brief Add the current displacement state of a pair to an output stream
    */
   template <typename PairType, typename ScalarType, typename... OptionalType>
-  void PrintPairInformation(std::ostream& out, const PairType* pair,
+  void print_pair_information(std::ostream& out, const PairType* pair,
       const ElementData<typename PairType::t_line, ScalarType>& element_data_line,
       const ElementData<typename PairType::t_other, ScalarType>& element_data_other)
   {

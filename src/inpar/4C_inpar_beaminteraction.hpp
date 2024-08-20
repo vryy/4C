@@ -101,7 +101,7 @@ namespace Inpar
     };
 
     //! Map type std::string to enum
-    inline enum JointType String2JointType(const std::string& name)
+    inline enum JointType string_to_joint_type(const std::string& name)
     {
       JointType type = beam3r_line2_rigid;
       if (name == "beam3rline2rigid")
@@ -117,7 +117,7 @@ namespace Inpar
     };
 
     //! Map type std::string to enum
-    inline enum FilamentType String2FilamentType(const std::string& name)
+    inline enum FilamentType string_to_filament_type(const std::string& name)
     {
       FilamentType type = filtype_arbitrary;
       if (name == "arbitrary")
@@ -133,7 +133,7 @@ namespace Inpar
     };
 
     //! Map type std::string to enum
-    inline enum CrosslinkerType String2CrosslinkerType(const std::string& name)
+    inline enum CrosslinkerType string_to_crosslinker_type(const std::string& name)
     {
       CrosslinkerType type = linkertype_arbitrary;
       if (name == "arbitrary")
@@ -156,7 +156,7 @@ namespace Inpar
     };
 
     //! Map action type enum to std::string
-    static inline std::string CrosslinkerType2String(const enum CrosslinkerType type)
+    static inline std::string crosslinker_type_to_string(const enum CrosslinkerType type)
     {
       switch (type)
       {
@@ -177,14 +177,14 @@ namespace Inpar
     /**
      * \brief Get all available beam interaction conditions, excluding the default value.
      */
-    void BeamInteractionConditionsGetAll(
+    void beam_interaction_conditions_get_all(
         std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions>& interactions);
 
     /// set the beam interaction parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set beam interaction specific conditions
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace BEAMINTERACTION

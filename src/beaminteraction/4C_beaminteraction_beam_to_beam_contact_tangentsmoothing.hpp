@@ -51,21 +51,21 @@ namespace BEAMINTERACTION
   namespace Beam3TangentSmoothing
   {
     //! \brief Determine the neighbour elements of an element
-    Teuchos::RCP<B3CNeighbor> DetermineNeigbors(const Core::Elements::Element* element1);
+    Teuchos::RCP<B3CNeighbor> determine_neigbors(const Core::Elements::Element* element1);
 
     //! \brief Get boundary node
-    int GetBoundaryNode(const int nnode);
+    int get_boundary_node(const int nnode);
 
     //! \brief Get the element length based on element positions
-    double GetEleLength(const Core::LinAlg::SerialDenseMatrix& elepos, const int nright);
+    double get_ele_length(const Core::LinAlg::SerialDenseMatrix& elepos, const int nright);
 
     //! \brief Get the nodal derivative matrix
-    Core::LinAlg::SerialDenseMatrix GetNodalDerivatives(
+    Core::LinAlg::SerialDenseMatrix get_nodal_derivatives(
         const int node, const int nnode, double length, const Core::FE::CellType distype);
 
     //! \brief Get the nodal tangent matrix
     template <int numnodes>
-    Core::LinAlg::Matrix<3 * numnodes, 1> CalculateNodalTangents(
+    Core::LinAlg::Matrix<3 * numnodes, 1> calculate_nodal_tangents(
         std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
         Core::LinAlg::Matrix<3 * numnodes, 1> ele1pos_linalg, Core::Elements::Element* ele1,
         Teuchos::RCP<B3CNeighbor> neighbors1)
@@ -80,7 +80,7 @@ namespace BEAMINTERACTION
 
       // determine boundary node of element1
       const int numnode1 = 2;
-      const int n_right1 = GetBoundaryNode(numnode1);
+      const int n_right1 = get_boundary_node(numnode1);
 
       // vectors for shape functions and their derivatives
       Core::LinAlg::SerialDenseMatrix ele1pos(3, numnode1);
@@ -88,7 +88,7 @@ namespace BEAMINTERACTION
       for (int i = 0; i < 3; i++)
         for (int j = 0; j < numnode1; j++) ele1pos(i, j) = ele1pos_linalg(3 * j + i);
 
-      const double length_ele1 = GetEleLength(ele1pos, n_right1);
+      const double length_ele1 = get_ele_length(ele1pos, n_right1);
       const Core::FE::CellType distype1 = ele1->shape();
 
       // contribution of element
@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
       {
         // calculate nodal derivatives
         Core::LinAlg::SerialDenseMatrix deriv1 =
-            GetNodalDerivatives(node, numnode1, length_ele1, distype1);
+            get_nodal_derivatives(node, numnode1, length_ele1, distype1);
 
         for (int k = 0; k < 3; k++)
           for (int j = 0; j < numnode1; j++)
@@ -119,11 +119,11 @@ namespace BEAMINTERACTION
           for (int i = 0; i < 3; i++) temppos(i, j) = tempposvector(i);
         }
 
-        const int n_boundary = GetBoundaryNode(numnode_ele1l);
-        const double length_ele1l = GetEleLength(temppos, n_boundary);
+        const int n_boundary = get_boundary_node(numnode_ele1l);
+        const double length_ele1l = get_ele_length(temppos, n_boundary);
 
         Core::LinAlg::SerialDenseMatrix deriv_neighbors_ele1l =
-            GetNodalDerivatives(node_ele1l, numnode_ele1l, length_ele1l, distype_ele1l);
+            get_nodal_derivatives(node_ele1l, numnode_ele1l, length_ele1l, distype_ele1l);
 
         for (int j = 0; j < numnode_ele1l; j++)
         {
@@ -153,11 +153,11 @@ namespace BEAMINTERACTION
           for (int i = 0; i < 3; i++) temppos(i, j) = tempposvector(i);
         }
 
-        const int n_boundary = GetBoundaryNode(numnode_ele1r);
-        const double length_ele1r = GetEleLength(temppos, n_boundary);
+        const int n_boundary = get_boundary_node(numnode_ele1r);
+        const double length_ele1r = get_ele_length(temppos, n_boundary);
 
         Core::LinAlg::SerialDenseMatrix deriv_neighbors_ele1r =
-            GetNodalDerivatives(node_ele1r, numnode_ele1r, length_ele1r, distype_ele1r);
+            get_nodal_derivatives(node_ele1r, numnode_ele1r, length_ele1r, distype_ele1r);
 
         for (int j = 0; j < numnode_ele1r; j++)
         {
@@ -177,7 +177,7 @@ namespace BEAMINTERACTION
 
     //! \brief Get the tangent and derivative matrix
     template <int numnodes, int numnodalvalues>
-    void ComputeTangentsAndDerivs(Core::LinAlg::Matrix<3, 1, TYPE>& t,
+    void compute_tangents_and_derivs(Core::LinAlg::Matrix<3, 1, TYPE>& t,
         Core::LinAlg::Matrix<3, 1, TYPE>& t_xi,
         const Core::LinAlg::Matrix<3 * numnodes, 1> nodaltangentssmooth1,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,

@@ -42,7 +42,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
 
         // extract local values of the global vectors
         std::vector<double> myscalar(la[2].lm_.size());
-        Core::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
+        Core::FE::extract_my_values(*scalarnp, myscalar, la[2].lm_);
 
         if (num_material() < 3) FOUR_C_THROW("no third material defined for Wall poro element!");
         Teuchos::RCP<Core::Mat::Material> scatramat = material(2);
@@ -265,7 +265,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
             std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
                 discretization.get_state(1, "porofluid");
-            Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+            Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
             nonlinear_stiffness_poroelast_pressure_based(
@@ -335,7 +335,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
             std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
                 discretization.get_state(1, "porofluid");
-            Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+            Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
             nonlinear_stiffness_poroelast_pressure_based(
@@ -392,7 +392,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
           Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
-          Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+          Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
           Core::LinAlg::Matrix<numdim_, numnod_> mydisp(true);
           extract_values_from_global_vector(
@@ -448,7 +448,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
           Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
-          Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+          Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
           // calculate tangent stiffness matrix
           nonlinear_stiffness_poroelast_pressure_based(
@@ -462,7 +462,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
     case Core::Elements::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      auto iocouplstress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      auto iocouplstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iocouplstress", Inpar::Solid::stress_none);
 
       // check for output of coupling stress
@@ -2393,7 +2393,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::extract_values_from_global_vector(
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+  Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
   if (numdofpernode == numdim_ + 1)
   {

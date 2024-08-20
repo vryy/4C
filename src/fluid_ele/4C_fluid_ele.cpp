@@ -67,7 +67,7 @@ void Discret::ELEMENTS::FluidType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 void Discret::ELEMENTS::FluidType::setup_element_definition(
@@ -258,7 +258,7 @@ void Discret::ELEMENTS::Fluid::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -306,7 +306,7 @@ void Discret::ELEMENTS::Fluid::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::lines()
 {
-  return Core::Communication::GetElementLines<FluidBoundary, Fluid>(*this);
+  return Core::Communication::get_element_lines<FluidBoundary, Fluid>(*this);
 }
 
 
@@ -315,7 +315,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::lin
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<FluidBoundary, Fluid>(*this);
+  return Core::Communication::get_element_surfaces<FluidBoundary, Fluid>(*this);
 }
 
 
@@ -337,7 +337,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::create_face_elem
 
 
   // insert both parent elements
-  return Core::Communication::ElementIntFaceFactory<FluidIntFace, Fluid>(
+  return Core::Communication::element_int_face_factory<FluidIntFace, Fluid>(
       -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes

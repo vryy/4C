@@ -147,7 +147,8 @@ void NOX::Nln::GlobalData::check_input() const
     if (iter->second.is_null())
     {
       std::ostringstream msg;
-      const std::string act_msg("        WARNING: The entry \"" + SolutionType2String(iter->first) +
+      const std::string act_msg("        WARNING: The entry \"" +
+                                solution_type_to_string(iter->first) +
                                 "\" of the linear solver vector is not (yet) initialized!");
       msg << std::setw(109) << std::setfill('!') << "\n" << std::setfill(' ');
       msg << "!!! " << std::left << std::setw(100) << act_msg << " !!!";
@@ -208,7 +209,7 @@ void NOX::Nln::GlobalData::set_solver_option_parameters()
       (ls_method_name != "Full Step"))
   {
     // Pure reading access to the unfinished nox_nln_globaldata class
-    mrt_fct_ptr_ = NOX::Nln::MeritFunction::BuildMeritFunction(*this);
+    mrt_fct_ptr_ = NOX::Nln::MeritFunction::build_merit_function(*this);
   }
 
   // If the mrtFctPtr is Teuchos::null the default "Sum of Squares" NOX internal
@@ -320,7 +321,7 @@ void NOX::Nln::GlobalData::set_status_test_parameters()
   }
 
   // make all Yes/No integral values to Boolean
-  Input::BoolifyValidInputParameters(statusTestParams);
+  Input::boolify_valid_input_parameters(statusTestParams);
 
   return;
 }

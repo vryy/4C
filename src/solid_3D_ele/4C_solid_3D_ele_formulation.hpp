@@ -152,7 +152,7 @@ namespace Discret::ELEMENTS
   };
 
   template <typename SolidFormulation>
-  void ResizeGPHistory(SolidFormulationHistory<SolidFormulation>& history_data,
+  void resize_gp_history(SolidFormulationHistory<SolidFormulation>& history_data,
       [[maybe_unused]] const std::size_t num_gps)
   {
     if constexpr (has_gauss_point_history<SolidFormulation>)
@@ -164,7 +164,7 @@ namespace Discret::ELEMENTS
   namespace Details
   {
     template <typename SolidFormulation>
-    auto GetAdditionalPreparationTuple(const PreparationData<SolidFormulation>& preparation_data)
+    auto get_additional_preparation_tuple(const PreparationData<SolidFormulation>& preparation_data)
     {
       if constexpr (has_preparation_data<SolidFormulation>)
         return std::tie(preparation_data);
@@ -173,7 +173,8 @@ namespace Discret::ELEMENTS
     }
 
     template <typename SolidFormulation>
-    auto GetAdditionalGlobalHistoryTuple(SolidFormulationHistory<SolidFormulation>& history_data)
+    auto get_additional_global_history_tuple(
+        SolidFormulationHistory<SolidFormulation>& history_data)
     {
       if constexpr (has_global_history<SolidFormulation>)
         return std::tie(history_data.global_history);
@@ -182,7 +183,7 @@ namespace Discret::ELEMENTS
     }
 
     template <typename SolidFormulation>
-    auto GetAdditionalGaussPointHistoryTuple(
+    auto get_additional_gauss_point_history_tuple(
         SolidFormulationHistory<SolidFormulation>& history_data, [[maybe_unused]] const int gp)
     {
       if constexpr (has_gauss_point_history<SolidFormulation>)
@@ -192,7 +193,7 @@ namespace Discret::ELEMENTS
     }
 
     template <typename SolidFormulation>
-    auto GetAdditionalGaussPointHistoryTuple(
+    auto get_additional_gauss_point_history_tuple(
         SolidFormulationHistory<SolidFormulation>& history_data)
     {
       static_assert(!has_gauss_point_history<SolidFormulation>,
@@ -204,21 +205,21 @@ namespace Discret::ELEMENTS
 
 
     template <typename SolidFormulation>
-    auto GetAdditionalTuple(const PreparationData<SolidFormulation>& preparation_data,
+    auto get_additional_tuple(const PreparationData<SolidFormulation>& preparation_data,
         SolidFormulationHistory<SolidFormulation>& history_data, const int gp)
     {
-      return std::tuple_cat(GetAdditionalPreparationTuple<SolidFormulation>(preparation_data),
-          GetAdditionalGlobalHistoryTuple<SolidFormulation>(history_data),
-          GetAdditionalGaussPointHistoryTuple<SolidFormulation>(history_data, gp));
+      return std::tuple_cat(get_additional_preparation_tuple<SolidFormulation>(preparation_data),
+          get_additional_global_history_tuple<SolidFormulation>(history_data),
+          get_additional_gauss_point_history_tuple<SolidFormulation>(history_data, gp));
     }
 
     template <typename SolidFormulation>
-    auto GetAdditionalTuple(const PreparationData<SolidFormulation>& preparation_data,
+    auto get_additional_tuple(const PreparationData<SolidFormulation>& preparation_data,
         SolidFormulationHistory<SolidFormulation>& history_data)
     {
-      return std::tuple_cat(GetAdditionalPreparationTuple<SolidFormulation>(preparation_data),
-          GetAdditionalGlobalHistoryTuple<SolidFormulation>(history_data),
-          GetAdditionalGaussPointHistoryTuple<SolidFormulation>(history_data));
+      return std::tuple_cat(get_additional_preparation_tuple<SolidFormulation>(preparation_data),
+          get_additional_global_history_tuple<SolidFormulation>(history_data),
+          get_additional_gauss_point_history_tuple<SolidFormulation>(history_data));
     }
   }  // namespace Details
 
@@ -295,7 +296,7 @@ namespace Discret::ELEMENTS
    * @return PreparationData<SolidFormulation>
    */
   template <typename SolidFormulation, Core::FE::CellType celltype>
-  PreparationData<SolidFormulation> Prepare(const Core::Elements::Element& ele,
+  PreparationData<SolidFormulation> prepare(const Core::Elements::Element& ele,
       const ElementNodes<celltype>& nodal_coordinates,
       SolidFormulationHistory<SolidFormulation>& history_data)
   {
@@ -336,7 +337,7 @@ namespace Discret::ELEMENTS
         { return SolidFormulation::evaluate(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(
             std::forward_as_tuple(ele, element_nodes, xi, shape_functions, jacobian_mapping),
-            Details::GetAdditionalTuple<SolidFormulation>(preparation_data, history_data),
+            Details::get_additional_tuple<SolidFormulation>(preparation_data, history_data),
             std::forward_as_tuple(evaluator)));
   }
 
@@ -361,7 +362,7 @@ namespace Discret::ELEMENTS
         { return SolidFormulation::evaluate(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(
             std::forward_as_tuple(ele, element_nodes, xi, shape_functions, jacobian_mapping),
-            Details::GetAdditionalTuple(preparation_data, history_data, gp),
+            Details::get_additional_tuple(preparation_data, history_data, gp),
             std::forward_as_tuple(evaluator)));
   }
 
@@ -394,7 +395,7 @@ namespace Discret::ELEMENTS
           },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
                              jacobian_mapping, deformation_gradient),
-              Details::GetAdditionalTuple(preparation_data, history_data)));
+              Details::get_additional_tuple(preparation_data, history_data)));
     }
   }
 
@@ -426,7 +427,7 @@ namespace Discret::ELEMENTS
           },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
                              jacobian_mapping, deformation_gradient),
-              Details::GetAdditionalTuple(preparation_data, history_data)));
+              Details::get_additional_tuple(preparation_data, history_data)));
     }
   }
 
@@ -461,7 +462,7 @@ namespace Discret::ELEMENTS
           },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
                              jacobian_mapping, deformation_gradient),
-              Details::GetAdditionalTuple(preparation_data, history_data)));
+              Details::get_additional_tuple(preparation_data, history_data)));
     }
   }
 
@@ -491,7 +492,7 @@ namespace Discret::ELEMENTS
     std::apply([](auto&&... args)
         { SolidFormulation::add_internal_force_vector(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(std::forward_as_tuple(linearization, stress, integration_factor),
-            Details::GetAdditionalTuple(preparation_data, history_data, gp),
+            Details::get_additional_tuple(preparation_data, history_data, gp),
             std::forward_as_tuple(force_vector)));
   }
 
@@ -511,7 +512,7 @@ namespace Discret::ELEMENTS
         { SolidFormulation::add_stiffness_matrix(std::forward<decltype(args)>(args)...); },
         std::tuple_cat(
             std::forward_as_tuple(linearization, jacobian_mapping, stress, integration_factor),
-            Details::GetAdditionalTuple(preparation_data, history_data, gp),
+            Details::get_additional_tuple(preparation_data, history_data, gp),
             std::forward_as_tuple(stiffness_matrix)));
   }
 
@@ -528,8 +529,8 @@ namespace Discret::ELEMENTS
         std::apply([](auto&&... args)
             { SolidFormulation::update_prestress(std::forward<decltype(args)>(args)...); },
             std::tuple_cat(std::forward_as_tuple(ele, element_nodes),
-                Details::GetAdditionalPreparationTuple<SolidFormulation>(preparation_data),
-                Details::GetAdditionalGlobalHistoryTuple<SolidFormulation>(history_data)));
+                Details::get_additional_preparation_tuple<SolidFormulation>(preparation_data),
+                Details::get_additional_global_history_tuple<SolidFormulation>(history_data)));
       }
     }
     else
@@ -555,7 +556,7 @@ namespace Discret::ELEMENTS
           { SolidFormulation::update_prestress(std::forward<decltype(args)>(args)...); },
           std::tuple_cat(std::forward_as_tuple(ele, element_nodes, xi, shape_functions,
                              jacobian_mapping, deformation_gradient),
-              Details::GetAdditionalTuple(preparation_data, history_data, gp)));
+              Details::get_additional_tuple(preparation_data, history_data, gp)));
     }
     else
     {

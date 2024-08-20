@@ -109,7 +109,7 @@ Discret::ELEMENTS::SoSh18Plast::SoSh18Plast(int id, int owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::SoSh18Plast::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);

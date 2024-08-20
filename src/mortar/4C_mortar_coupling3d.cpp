@@ -28,9 +28,9 @@ Mortar::Coupling3d::Coupling3d(Core::FE::Discretization& idiscret, int dim, bool
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : idiscret_(idiscret),
       dim_(dim),
-      shapefcn_(Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
+      shapefcn_(Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
       quad_(quad),
-      lmquadtype_(Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params, "LM_QUAD")),
+      lmquadtype_(Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params, "LM_QUAD")),
       sele_(sele),
       mele_(mele),
       imortar_(params),
@@ -2476,7 +2476,7 @@ bool Mortar::Coupling3d::polygon_clipping_convex_hull(std::vector<Vertex>& poly1
     // - this yields the final clip polygon
     // - sanity of the generated output is checked
     //**********************************************************************
-    Mortar::SortConvexHullPoints(out, transformed, collconvexhull, respoly, tol);
+    Mortar::sort_convex_hull_points(out, transformed, collconvexhull, respoly, tol);
   }
 
   // **********************************************************************
@@ -2702,7 +2702,7 @@ bool Mortar::Coupling3d::triangulation(std::map<int, double>& projpar, double to
 
   // get integration type
   Inpar::Mortar::Triangulation tri_type =
-      Core::UTILS::IntegralValue<Inpar::Mortar::Triangulation>(imortar_, "TRIANGULATION");
+      Core::UTILS::integral_value<Inpar::Mortar::Triangulation>(imortar_, "TRIANGULATION");
 
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates (only for contact)
@@ -3901,9 +3901,9 @@ Mortar::Coupling3dManager::Coupling3dManager(Core::FE::Discretization& idiscret,
     Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
-      integrationtype_(Core::UTILS::IntegralValue<Inpar::Mortar::IntType>(params, "INTTYPE")),
-      shapefcn_(Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
-      lmdualconsistent_(Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(
+      integrationtype_(Core::UTILS::integral_value<Inpar::Mortar::IntType>(params, "INTTYPE")),
+      shapefcn_(Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
+      lmdualconsistent_(Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
           params, "LM_DUAL_CONSISTENT")),
       quad_(quad),
       imortar_(params),
@@ -3936,7 +3936,7 @@ bool Mortar::Coupling3dManager::evaluate_coupling(Teuchos::RCP<Mortar::ParamsInt
 
   // decide which type of coupling should be evaluated
   Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -4362,7 +4362,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
   // in case of no overlap just return, as there is no integration area
   // and therefore the consistent dual shape functions are not defined.
   // This doesn't matter, as there is no associated integration domain anyway
-  if (Core::LinAlg::Det_long(me) == 0) return;
+  if (Core::LinAlg::det_long(me) == 0) return;
 
   // declare dual shape functions coefficient matrix
   Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
@@ -4381,7 +4381,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
         for (int k = 0; k < 3; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      Core::LinAlg::Inverse(melin);
+      Core::LinAlg::inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 3; ++j)
@@ -4396,7 +4396,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
         for (int k = 0; k < 4; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      Core::LinAlg::Inverse(melin);
+      Core::LinAlg::inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 4; ++j)
@@ -4410,7 +4410,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
   }
   // compute matrix A_e for all other cases
   else
-    Core::LinAlg::InvertAndMultiplyByCholesky(me, de, ae);
+    Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // store ae matrix in slave element data container
   slave_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));

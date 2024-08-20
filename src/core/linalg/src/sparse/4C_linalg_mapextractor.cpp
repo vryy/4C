@@ -98,7 +98,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::merge_maps(
     std::copy(map.MyGlobalElements(), map.MyGlobalElements() + map.NumMyElements(),
         std::inserter(mapentries, mapentries.begin()));
   }
-  return Core::LinAlg::CreateMap(mapentries, maps[0]->Comm());
+  return Core::LinAlg::create_map(mapentries, maps[0]->Comm());
 }
 
 
@@ -159,7 +159,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::intersect_maps(
     }
     std::swap(mapentries, newset);
   }
-  return Core::LinAlg::CreateMap(mapentries, maps[0]->Comm());
+  return Core::LinAlg::create_map(mapentries, maps[0]->Comm());
 }
 
 
@@ -352,7 +352,7 @@ Core::LinAlg::MapExtractor::MapExtractor(
   }
 
   // create (non-overlapping) othermap for non-condmap DOFs
-  Teuchos::RCP<Epetra_Map> othermap = Core::LinAlg::CreateMap(othergids, fullmap.Comm());
+  Teuchos::RCP<Epetra_Map> othermap = Core::LinAlg::create_map(othergids, fullmap.Comm());
 
   // create the extractor based on choice 'iscondmap'
   if (iscondmap)
@@ -391,7 +391,7 @@ void Core::LinAlg::MapExtractor::setup(
   }
 
   // create (non-overlapping) othermap for non-condmap DOFs
-  Teuchos::RCP<Epetra_Map> othermap = Core::LinAlg::CreateMap(othergids, fullmap.Comm());
+  Teuchos::RCP<Epetra_Map> othermap = Core::LinAlg::create_map(othergids, fullmap.Comm());
 
   // create the extractor based on choice 'iscondmap'
   if (iscondmap)

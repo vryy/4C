@@ -75,10 +75,10 @@ bool Discret::ELEMENTS::Transport::read_element(const std::string& eletype,
 
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // set discretization type
-  set_dis_type(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::string_to_cell_type(distype));
 
   if (material()->material_type() == Core::Materials::m_myocard)
   {

@@ -120,9 +120,9 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
@@ -141,9 +141,9 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> myemat(true);  // set to zero
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -176,13 +176,13 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
       if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      Core::FE::ExtractMyValues(*acc, myacc, lm);
+      Core::FE::extract_my_values(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       sow6_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
@@ -205,14 +205,14 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "iostrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -257,7 +257,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // update element geometry
       Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
@@ -276,7 +276,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_WEG6 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_WEG6 + 2];
 
-        if (Prestress::IsMulf(pstype_))
+        if (Prestress::is_mulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_WEG6 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_WEG6 + 1];
@@ -304,7 +304,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
 
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-        if (Prestress::IsMulf(pstype_))
+        if (Prestress::is_mulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           Core::LinAlg::Matrix<3, 3> invJdef;
@@ -394,7 +394,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // build def gradient for every gauss point
       Core::LinAlg::SerialDenseMatrix gpdefgrd(NUMGPT_WEG6, 9);
@@ -453,14 +453,14 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
         if (gpstrainmap == Teuchos::null)
           FOUR_C_THROW("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::extract_my_values(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        Core::FE::ExtractMyValues(*res, myres, lm);
+        Core::FE::extract_my_values(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
@@ -583,13 +583,13 @@ void Discret::ELEMENTS::SoWeg6::init_jacobian_mapping()
     detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (Prestress::IsMulfActive(time_, pstype_, pstime_))
+    if (Prestress::is_mulf_active(time_, pstype_, pstime_))
       if (!(prestress_->is_init()))
         prestress_->matrixto_storage(gp, invJ_[gp], prestress_->j_history());
 
   }  // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
-  if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
+  if (Prestress::is_mulf_active(time_, pstype_, pstime_)) prestress_->is_init() = true;
 }
 
 /*----------------------------------------------------------------------*
@@ -637,7 +637,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_WEG6 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_WEG6 + 2];
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
       xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -663,7 +663,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
 
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       Core::LinAlg::Matrix<3, 3> invJdef;
@@ -1019,7 +1019,7 @@ std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> Discret::ELEMENTS::SoWeg6::sow
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    Core::FE::shape_function_3D(shapefcts[igp], r, s, t, Core::FE::CellType::wedge6);
+    Core::FE::shape_function_3d(shapefcts[igp], r, s, t, Core::FE::CellType::wedge6);
   }
   return shapefcts;
 }
@@ -1040,7 +1040,7 @@ std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> Discret::ELEMENTS::S
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    Core::FE::shape_function_3D_deriv1(derivs[igp], r, s, t, Core::FE::CellType::wedge6);
+    Core::FE::shape_function_3d_deriv1(derivs[igp], r, s, t, Core::FE::CellType::wedge6);
   }
   return derivs;
 }
@@ -1098,8 +1098,8 @@ void Discret::ELEMENTS::SoWeg6::sow6_shapederiv(
 
       Core::LinAlg::Matrix<NUMNOD_WEG6, 1> funct;
       Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
-      Core::FE::shape_function_3D(funct, r, s, t, Core::FE::CellType::wedge6);
-      Core::FE::shape_function_3D_deriv1(deriv, r, s, t, Core::FE::CellType::wedge6);
+      Core::FE::shape_function_3d(funct, r, s, t, Core::FE::CellType::wedge6);
+      Core::FE::shape_function_3d_deriv1(deriv, r, s, t, Core::FE::CellType::wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode)
       {
         f(inode, igp) = funct(inode);
@@ -1265,7 +1265,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       xcurr(i, 1) = x[1] + disp[i * NODDOF_WEG6 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_WEG6 + 2];
 
-      if (Prestress::IsMulf(pstype_))
+      if (Prestress::is_mulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
         xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -1293,7 +1293,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
-      if (Prestress::IsMulf(pstype_))
+      if (Prestress::is_mulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         Core::LinAlg::Matrix<3, 3> invJdef;
@@ -1366,7 +1366,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       // evaluate eigenproblem based on stress of previous step
       Core::LinAlg::Matrix<3, 3> lambda(true);
       Core::LinAlg::Matrix<3, 3> locsys(true);
-      Core::LinAlg::SYEV(cauchystress, lambda, locsys);
+      Core::LinAlg::syev(cauchystress, lambda, locsys);
 
       if (mat->material_type() == Core::Materials::m_constraintmixture)
       {
@@ -1389,7 +1389,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       // evaluate eigenproblem based on stress of previous step
       Core::LinAlg::Matrix<3, 3> lambda(true);
       Core::LinAlg::Matrix<3, 3> locsys(true);
-      Core::LinAlg::SYEV(avg_stress, lambda, locsys);
+      Core::LinAlg::syev(avg_stress, lambda, locsys);
 
       // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
       double newgamma = atan2(lambda(1, 1), lambda(2, 2));

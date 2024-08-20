@@ -198,7 +198,7 @@ void Mat::ViscoElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
@@ -342,7 +342,7 @@ void Mat::ViscoElastHyper::setup(int numgp, const Core::IO::InputParameterContai
   viscofract_ = false;
 
   summandProperties_.clear();
-  ElastHyperProperties(potsum_, summandProperties_);
+  elast_hyper_properties(potsum_, summandProperties_);
 
 
   if (summandProperties_.viscoGeneral)
@@ -512,7 +512,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<33, 1> xi(true);
   Core::LinAlg::Matrix<33, 1> modxi(true);
 
-  EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
+  evaluate_right_cauchy_green_strain_like_voigt(*glstrain, C_strain);
   Core::LinAlg::Voigt::Strains::inverse_tensor(C_strain, iC_strain);
   Core::LinAlg::Voigt::Strains::to_stress_like(iC_strain, iC_stress);
   Core::LinAlg::Voigt::Strains::to_stress_like(C_strain, C_stress);
@@ -527,7 +527,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Voigt::fourth_order_identity_matrix<VoigtNotation::stress, VoigtNotation::strain>(
       id4);
 
-  ElastHyperEvaluateInvariantDerivatives(
+  elast_hyper_evaluate_invariant_derivatives(
       prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
 
   if (isovisco_)
@@ -549,7 +549,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   cmat->clear();
 
   // add isotropic part
-  ElastHyperAddIsotropicStressCmat(*stress, *cmat, C_strain, iC_strain, prinv, dPI, ddPII);
+  elast_hyper_add_isotropic_stress_cmat(*stress, *cmat, C_strain, iC_strain, prinv, dPI, ddPII);
 
 
   // add viscous part
@@ -617,7 +617,7 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // coefficients in principal stretches
   if (summandProperties_.coeffStretchesPrinc || summandProperties_.coeffStretchesMod)
   {
-    ElastHyperAddResponseStretches(
+    elast_hyper_add_response_stretches(
         *cmat, *stress, C_strain, potsum_, summandProperties_, gp, eleGID);
   }
 
@@ -625,12 +625,12 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // Do all the anisotropic stuff!
   if (summandProperties_.anisoprinc)
   {
-    ElastHyperAddAnisotropicPrinc(*stress, *cmat, C_strain, params, gp, eleGID, potsum_);
+    elast_hyper_add_anisotropic_princ(*stress, *cmat, C_strain, params, gp, eleGID, potsum_);
   }
 
   if (summandProperties_.anisomod)
   {
-    ElastHyperAddAnisotropicMod(
+    elast_hyper_add_anisotropic_mod(
         *stress, *cmat, C_strain, iC_strain, prinv, gp, eleGID, params, potsum_);
   }
   return;
@@ -1003,7 +1003,7 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     branchpotsum = branchespotsum[i];
 
     branchProperties.clear();
-    ElastHyperProperties(branchpotsum, branchProperties);
+    elast_hyper_properties(branchpotsum, branchProperties);
 
     if (isovisco_)
       FOUR_C_THROW("case isovisco for branch in generalized Maxwell model not yet considered!");
@@ -1019,11 +1019,11 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     Core::LinAlg::Matrix<3, 1> dPI(true);
     Core::LinAlg::Matrix<6, 1> ddPII(true);
 
-    EvaluateRightCauchyGreenStrainLikeVoigt(*glstrain, C_strain);
+    evaluate_right_cauchy_green_strain_like_voigt(*glstrain, C_strain);
     Core::LinAlg::Voigt::Strains::inverse_tensor(C_strain, iC_strain);
 
     Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
-    ElastHyperEvaluateInvariantDerivatives(
+    elast_hyper_evaluate_invariant_derivatives(
         prinv, dPI, ddPII, branchpotsum, branchProperties, gp, eleGID);
 
     // blank resulting quantities
@@ -1034,7 +1034,8 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     // build stress response and elasticity tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressiso(true);
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatiso(true);
-    ElastHyperAddIsotropicStressCmat(stressiso, cmatiso, C_strain, iC_strain, prinv, dPI, ddPII);
+    elast_hyper_add_isotropic_stress_cmat(
+        stressiso, cmatiso, C_strain, iC_strain, prinv, dPI, ddPII);
     S.at(i).update(1.0, stressiso, 1.0);
     cmatqbranch.update(1.0, cmatiso, 1.0);
 

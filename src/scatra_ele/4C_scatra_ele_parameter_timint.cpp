@@ -27,7 +27,7 @@ Discret::ELEMENTS::ScaTraEleParameterTimInt* Discret::ELEMENTS::ScaTraEleParamet
     const std::string& disname)
 {
   static auto singleton_map =
-      Core::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+      Core::UTILS::make_singleton_map<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterTimInt>(new ScaTraEleParameterTimInt); });
 
   return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);

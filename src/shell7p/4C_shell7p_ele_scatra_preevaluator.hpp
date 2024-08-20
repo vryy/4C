@@ -35,7 +35,7 @@ namespace Discret::ELEMENTS::Shell
    * @param discretization (in) : Reference to the discretization
    * @param dof_index_array (in) : The location array of the owned dofs
    */
-  void PreEvaluateScatraByElement(Core::Elements::Element& ele, Teuchos::ParameterList& params,
+  void pre_evaluate_scatra_by_element(Core::Elements::Element& ele, Teuchos::ParameterList& params,
       Core::FE::Discretization& discretization,
       Core::Elements::Element::LocationArray& dof_index_array);
 
@@ -51,7 +51,7 @@ namespace Discret::ELEMENTS::Shell
    * @param dof_index_array (in) : The location array of the owned dofs
    */
   template <Core::FE::CellType distype>
-  void PreEvaluateScatra(Core::Elements::Element& ele, Teuchos::ParameterList& params,
+  void pre_evaluate_scatra(Core::Elements::Element& ele, Teuchos::ParameterList& params,
       Core::FE::Discretization& discretization,
       Core::Elements::Element::LocationArray& dof_index_array);
 

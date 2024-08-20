@@ -85,7 +85,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->params());
 

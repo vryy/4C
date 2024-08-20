@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   /// returns Weakly Compressible Fluid quick access parameters from given material id
-  const Mat::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
+  const Mat::PAR::WeaklyCompressibleFluid& get_weakly_compressible_fluid_mat_pars(int mat_id)
   {
     auto* params = Global::Problem::instance()->materials()->parameter_by_id(mat_id);
     if (params->type() != Core::Materials::m_fluid_weakly_compressible)
@@ -37,7 +37,7 @@ namespace
   }
 
   /// returns Newton Fluid quick access parameters from given material id
-  const Mat::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
+  const Mat::PAR::NewtonianFluid& get_newtonian_fluid_mat_pars(int mat_id)
   {
     auto* params = Global::Problem::instance()->materials()->parameter_by_id(mat_id);
     if (params->type() != Core::Materials::m_fluid)
@@ -48,7 +48,7 @@ namespace
   }
 
   /// returns St. Venant Kirchhof quick access parameters from given material id
-  const Mat::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
+  const Mat::PAR::StVenantKirchhoff& get_svk_mat_pars(int mat_id)
   {
     auto* params = Global::Problem::instance()->materials()->parameter_by_id(mat_id);
     if (params->type() != Core::Materials::m_stvenant)
@@ -59,7 +59,7 @@ namespace
   }
 
 
-  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateFluidFunction(
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> create_fluid_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -95,7 +95,7 @@ namespace
       if (U <= 0) FOUR_C_THROW("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
 
       // get materials
-      auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+      auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(fparams, L, R, U));
     }
@@ -117,7 +117,7 @@ namespace
         FOUR_C_THROW("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
 
       // get materials
-      auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+      auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(fparams, L, R, U));
     }
@@ -130,7 +130,7 @@ namespace
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
 
       // get materials
-      auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+      auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(fparams));
     }
@@ -145,7 +145,7 @@ namespace
             "Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
 
       // get materials
-      auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+      auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(fparams));
     }
@@ -158,7 +158,7 @@ namespace
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
 
       // get materials
-      auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+      auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(fparams));
     }
@@ -171,7 +171,7 @@ namespace
         FOUR_C_THROW("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
 
       // get materials
-      auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+      auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(fparams));
     }
@@ -185,7 +185,7 @@ namespace
             "Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
 
       // get materials
-      auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+      auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(fparams));
     }
@@ -203,8 +203,8 @@ namespace
             "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
 
       // get materials
-      auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
-      auto fparams_struc = GetSVKMatPars(mat_id_struc);
+      auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
+      auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
       return Teuchos::rcp(
           new FLD::WeaklyCompressibleEtienneFSIFluidFunction(fparams_fluid, fparams_struc));
@@ -230,8 +230,8 @@ namespace
       }
 
       // get materials
-      auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
-      auto fparams_struc = GetSVKMatPars(mat_id_struc);
+      auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
+      auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
       return Teuchos::rcp(
           new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(fparams_fluid, fparams_struc));
@@ -257,8 +257,8 @@ namespace
       }
 
       // get materials
-      auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
-      auto fparams_struc = GetSVKMatPars(mat_id_struc);
+      auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
+      auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
       return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
           fparams_fluid, fparams_struc));
@@ -271,7 +271,7 @@ namespace
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
       // get material
-      auto fparams = GetNewtonianFluidMatPars(mat_id);
+      auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::BeltramiUP(fparams));
     }
@@ -284,7 +284,7 @@ namespace
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
       // get material
-      auto fparams = GetNewtonianFluidMatPars(mat_id);
+      auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::BeltramiRHS(fparams, (bool)is_stokes));
     }
@@ -297,7 +297,7 @@ namespace
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
       // get material
-      auto fparams = GetNewtonianFluidMatPars(mat_id);
+      auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::KimMoinUP(fparams, (bool)is_stationary));
     }
@@ -311,7 +311,7 @@ namespace
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
       // get material
-      auto fparams = GetNewtonianFluidMatPars(mat_id);
+      auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::KimMoinRHS(fparams, (bool)is_stationary, (bool)is_stokes));
     }
@@ -325,7 +325,7 @@ namespace
       if (mat_id <= 0) FOUR_C_THROW("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 
       // get material
-      auto fparams = GetNewtonianFluidMatPars(mat_id);
+      auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
       return Teuchos::rcp(new FLD::KimMoinStress(fparams, (bool)is_stationary, amplitude));
     }
@@ -336,7 +336,7 @@ namespace
   }
 }  // namespace
 
-void FLD::AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager)
+void FLD::add_valid_fluid_functions(Core::UTILS::FunctionManager& function_manager)
 {
   auto beltrami =
       Input::LineDefinition::Builder().add_tag("BELTRAMI").add_named_double("c1").build();
@@ -477,7 +477,7 @@ void FLD::AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager)
   lines.emplace_back(std::move(kimmoinrhs));
   lines.emplace_back(std::move(kimmoinstress));
 
-  function_manager.add_function_definition(std::move(lines), CreateFluidFunction);
+  function_manager.add_function_definition(std::move(lines), create_fluid_function);
 }
 
 

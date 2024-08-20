@@ -193,12 +193,12 @@ namespace Cut
 {
   namespace ColoredGraph
   {
-    bool IsFree(Graph& used, plain_int_set& free, int i)
+    bool is_free(Graph& used, plain_int_set& free, int i)
     {
       return used.count(i) == 0 and free.count(i) > 0;
     }
 
-    int FindFirstFreeFacet(Graph& graph, Graph& used, plain_int_set& free)
+    int find_first_free_facet(Graph& graph, Graph& used, plain_int_set& free)
     {
       for (plain_int_set::iterator i = free.begin(); i != free.end(); ++i)
       {
@@ -213,7 +213,7 @@ namespace Cut
         {
           // if this facet is free, but the line connected to it is not free,
           // this means that lines connected to it leads outside, hence it is "first" free facet
-          if (not IsFree(used, free, line))
+          if (not is_free(used, free, line))
           {
             return facet;
           }
@@ -222,7 +222,7 @@ namespace Cut
       FOUR_C_THROW("empty free set");
     }
 
-    bool IsValidFacet(plain_int_set& row, const std::vector<int>& visited)
+    bool is_valid_facet(plain_int_set& row, const std::vector<int>& visited)
     {
       for (const int& line : row)
       {
@@ -237,7 +237,7 @@ namespace Cut
       return true;
     }
 
-    void MarkFacet(Graph& used, plain_int_set& free, int facet, plain_int_set& row,
+    void mark_facet(Graph& used, plain_int_set& free, int facet, plain_int_set& row,
         std::vector<int>& visited, int& num_split_lines)
     {
       // mark facet and lines
@@ -250,7 +250,7 @@ namespace Cut
       // iterate over lines connected to this facet
       for (const int& line : row)
       {
-        if (IsFree(used, free, line))
+        if (is_free(used, free, line))
         {
           if (visited[line] == 0) num_split_lines += 1;
           // was connected by another facet already
@@ -264,14 +264,14 @@ namespace Cut
       }
     }
 
-    void UnMarkFacet(Graph& used, plain_int_set& free, int facet, plain_int_set& row,
+    void un_mark_facet(Graph& used, plain_int_set& free, int facet, plain_int_set& row,
         std::vector<int>& visited, int& num_split_lines)
     {
       // unmark facet and lines
       for (plain_int_set::iterator i = row.begin(); i != row.end(); ++i)
       {
         int line = *i;
-        if (IsFree(used, free, line))
+        if (is_free(used, free, line))
         {
           if (visited[line] == 1)
             num_split_lines -= 1;
@@ -285,7 +285,7 @@ namespace Cut
       if (visited[facet] < 0) FOUR_C_THROW("facet left more than once");
     }
 
-    bool VisitFacetDFS(Graph& graph, Graph& used, plain_int_set& free, int facet,
+    bool visit_facet_dfs(Graph& graph, Graph& used, plain_int_set& free, int facet,
         const std::vector<std::pair<Point*, Point*>>& all_lines, std::vector<int>& visited,
         std::vector<int>& split_trace)
     {
@@ -307,9 +307,9 @@ namespace Cut
           {
             plain_int_set& row = graph[facet];
 
-            if (IsValidFacet(row, visited))
+            if (is_valid_facet(row, visited))
             {
-              MarkFacet(used, free, facet, row, visited, num_split_lines);
+              mark_facet(used, free, facet, row, visited, num_split_lines);
 
               facet_color[facet] = 1;
               facet_stack.push_back(facet);
@@ -331,7 +331,7 @@ namespace Cut
                     // getting its id
                     int line = i - visited.begin();
                     // if lies not inside
-                    if (not IsFree(used, free, line))
+                    if (not is_free(used, free, line))
                     {
                       split_trace.push_back(line);
                     }
@@ -350,13 +350,13 @@ namespace Cut
               for (const int& line : row)
               {
                 // facet not visited and does not lead us outside
-                if (visited[line] < 2 and IsFree(used, free, line))
+                if (visited[line] < 2 and is_free(used, free, line))
                 {
                   plain_int_set& row = graph[line];
                   // get all the facets connected to that line and push it for traversal
                   for (const int& f : row)
                   {
-                    if (facet_color[f] == 0 and IsFree(used, free, f))
+                    if (facet_color[f] == 0 and is_free(used, free, f))
                     {
                       facet_stack.push_back(f);
                     }
@@ -373,7 +373,7 @@ namespace Cut
             for (; pos >= 0; --pos)
             {
               int f = facet_stack[pos];
-              if (facet_color[f] == 0 and IsValidFacet(graph[f], visited))
+              if (facet_color[f] == 0 and is_valid_facet(graph[f], visited))
               {
                 facet_stack.push_back(facet);
                 facet_stack.push_back(f);
@@ -385,7 +385,7 @@ namespace Cut
             if (pos < 0)
             {
               plain_int_set& row = graph[facet];
-              UnMarkFacet(used, free, facet, row, visited, num_split_lines);
+              un_mark_facet(used, free, facet, row, visited, num_split_lines);
 
               if (std::find(facet_stack.begin(), facet_stack.end(), facet) == facet_stack.end())
                 facet_color[facet] = 0;
@@ -413,18 +413,18 @@ namespace Cut
         {
           std::stringstream section_name;
           section_name << "Facet" << facet_id;
-          Cut::Output::GmshNewSection(file, section_name.str());
-          Cut::Output::GmshFacetDump(file, static_cast<Cut::Facet*>(graph.get_pointer(facet_id)),
+          Cut::Output::gmsh_new_section(file, section_name.str());
+          Cut::Output::gmsh_facet_dump(file, static_cast<Cut::Facet*>(graph.get_pointer(facet_id)),
               "lines", true, false, nullptr);
-          Cut::Output::GmshEndSection(file, false);
+          Cut::Output::gmsh_end_section(file, false);
         }
         file.close();
 
         std::ofstream filenext("facetgraph_failed_last_facet.pos");
-        Cut::Output::GmshNewSection(filenext, "Facets");
-        Cut::Output::GmshFacetDump(filenext, static_cast<Cut::Facet*>(graph.get_pointer(facet)),
+        Cut::Output::gmsh_new_section(filenext, "Facets");
+        Cut::Output::gmsh_facet_dump(filenext, static_cast<Cut::Facet*>(graph.get_pointer(facet)),
             "lines", true, false, nullptr);
-        Cut::Output::GmshEndSection(filenext, true);
+        Cut::Output::gmsh_end_section(filenext, true);
 
 
         std::cout << "Point IDs of failed facet are " << std::endl;
@@ -437,10 +437,10 @@ namespace Cut
           if (*i == 1)
           {
             int facet = i - visited.begin();
-            Cut::Output::GmshNewSection(filevisited, "Facets");
-            Cut::Output::GmshFacetDump(filevisited,
+            Cut::Output::gmsh_new_section(filevisited, "Facets");
+            Cut::Output::gmsh_facet_dump(filevisited,
                 static_cast<Cut::Facet*>(graph.get_pointer(facet)), "lines", true, false, nullptr);
-            Cut::Output::GmshEndSection(filevisited, false);
+            Cut::Output::gmsh_end_section(filevisited, false);
           }
         }
         filevisited.close();
@@ -456,11 +456,11 @@ namespace Cut
 void Cut::ColoredGraph::Graph::find_free_facets(Graph& graph, Graph& used, plain_int_set& free,
     const std::vector<std::pair<Point*, Point*>>& all_lines, std::vector<int>& split_trace)
 {
-  int free_facet = FindFirstFreeFacet(graph, used, free);
+  int free_facet = find_first_free_facet(graph, used, free);
 
   std::vector<int> visited(graph.size(), 0);
 
-  if (not VisitFacetDFS(graph, used, free, free_facet, all_lines, visited, split_trace))
+  if (not visit_facet_dfs(graph, used, free, free_facet, all_lines, visited, split_trace))
   {
     FOUR_C_THROW("Failed to find volume split. DFS search failed");
   }

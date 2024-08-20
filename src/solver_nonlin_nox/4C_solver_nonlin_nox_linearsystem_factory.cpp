@@ -125,7 +125,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
       FOUR_C_THROW(
           "ERROR - NOX::Nln::LinSystem::Factory::BuildLinearSystem - "
           "No capable LinearSystem constructor was found (enum = %s|%i)!",
-          NOX::Nln::LinSystem::LinearSystemType2String(linsystype).c_str(), linsystype);
+          NOX::Nln::LinSystem::linear_system_type_to_string(linsystype).c_str(), linsystype);
       break;
     }
   }  // end switch
@@ -136,7 +136,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::BuildLinearSystem(
+Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::build_linear_system(
     const NOX::Nln::LinSystem::LinearSystemType& linsystype, NOX::Nln::GlobalData& noxNlnGlobalData,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
     const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,

@@ -36,7 +36,7 @@ namespace Core::Communication
   };
 
   //! create a local and a global communicator for the problem
-  Teuchos::RCP<Communicators> CreateComm(std::vector<std::string> argv);
+  Teuchos::RCP<Communicators> create_comm(std::vector<std::string> argv);
 
   /*! \brief debug routine to compare vectors from different parallel 4C runs
    *
@@ -58,7 +58,7 @@ namespace Core::Communication
    * \param tol           (in): comparison tolerance for infinity norm
    * \return boolean to indicate if compared vectors are identical
    */
-  bool AreDistributedVectorsIdentical(const Communicators& communicators,
+  bool are_distributed_vectors_identical(const Communicators& communicators,
       Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
 
   /*! \brief debug routine to compare sparse matrices from different parallel 4C runs
@@ -84,12 +84,12 @@ namespace Core::Communication
    * \param tol           (in): comparison tolerance for infinity norm
    * \return boolean to indicate if compared vectors are identical
    */
-  bool AreDistributedSparseMatricesIdentical(const Communicators& communicators,
+  bool are_distributed_sparse_matrices_identical(const Communicators& communicators,
       Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
   template <class Datatype>
-  Teuchos::RCP<const Teuchos::Comm<Datatype>> toTeuchosComm(const Epetra_Comm& comm)
+  Teuchos::RCP<const Teuchos::Comm<Datatype>> to_teuchos_comm(const Epetra_Comm& comm)
   {
     try
     {

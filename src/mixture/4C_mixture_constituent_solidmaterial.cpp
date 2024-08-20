@@ -42,7 +42,7 @@ MIXTURE::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
 {
   // take the matid (i.e. here the id of the solid material), read the type and
   // create the corresponding material
-  auto mat = Mat::Factory(params_->matid_);
+  auto mat = Mat::factory(params_->matid_);
 
   // cast to an So3Material
   material_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat);
@@ -117,7 +117,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
   // unpack the data of the solid material
   if (params_ != nullptr)
   {
-    auto so3mat = Mat::Factory(params_->matid_);
+    auto so3mat = Mat::factory(params_->matid_);
     material_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(so3mat);
     if (Teuchos::is_null(so3mat)) FOUR_C_THROW("Failed to allocate");
 

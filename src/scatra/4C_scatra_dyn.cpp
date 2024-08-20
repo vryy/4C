@@ -68,12 +68,12 @@ void scatra_dyn(int restart)
   scatradis->fill_complete(true, true, true);
 
   // determine coupling type
-  const auto fieldcoupling = Core::UTILS::IntegralValue<Inpar::ScaTra::FieldCoupling>(
+  const auto fieldcoupling = Core::UTILS::integral_value<Inpar::ScaTra::FieldCoupling>(
       Global::Problem::instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
 
   // determine velocity type
   const auto veltype =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+      Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   if (scatradis->num_global_nodes() == 0)
   {
@@ -154,10 +154,10 @@ void scatra_dyn(int restart)
 
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
-        Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
             Global::Problem::instance()->output_control_file(), dis, nullptr, nullptr, false);
       }
 
@@ -196,7 +196,7 @@ void scatra_dyn(int restart)
       if (fieldcoupling == Inpar::ScaTra::coupling_match)
       {
         // fill scatra discretization by cloning fluid discretization
-        Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
+        Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
             fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
 
         // set implementation type of cloned scatra elements
@@ -291,10 +291,10 @@ void scatra_dyn(int restart)
 
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
-        Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
             Global::Problem::instance()->output_control_file(), dis, nullptr, nullptr, false);
       }
 
@@ -312,13 +312,15 @@ void scatra_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if (Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") and
+        if (Core::UTILS::integral_value<int>(
+                fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") and
             restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
           algo->read_inflow_restart(restart);
         else
           algo->read_restart(restart);
       }
-      else if (Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW"))
+      else if (Core::UTILS::integral_value<int>(
+                   fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW"))
       {
         FOUR_C_THROW(
             "Turbulent inflow generation for passive scalar transport should be performed as fluid "

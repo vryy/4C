@@ -535,7 +535,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
       mv2->Map().NumMyElements(), mv2->Map().MyGlobalElements(), 0, mv2->Map().Comm()));
 
   // fully redundant/overlapping map
-  Teuchos::RCP<Epetra_Map> redundant_map = Core::LinAlg::AllreduceEMap(*mv2map);
+  Teuchos::RCP<Epetra_Map> redundant_map = Core::LinAlg::allreduce_e_map(*mv2map);
   // initialize global mv2 without setting to 0
   Epetra_MultiVector mv2glob(*redundant_map, nsdim_);
   // create importer with redundant target map and distributed source map

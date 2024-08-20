@@ -28,21 +28,21 @@ void Solid::TimeInt::ParamsRuntimeVtpOutput::init(
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
   output_every_iteration_ =
-      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
+      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
   if (output_every_iteration_)
     FOUR_C_THROW("Every iteration output not implemented for structure vtp output!");
 
-  output_owner_ = (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
+  output_owner_ = (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "OWNER");
 
   output_orientationandlength_ =
-      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
+      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
 
   output_numberofbonds_ =
-      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
+      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
 
   output_linkingforce_ =
-      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
+      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
 
 
   isinit_ = true;

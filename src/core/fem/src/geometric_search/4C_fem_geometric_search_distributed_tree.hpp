@@ -56,7 +56,7 @@ namespace Core::GeometricSearch
    * @param verbosity Enabeling printout of the geometric search information
    * @return Collision pairs found with their global and local IDs
    */
-  std::vector<GlobalCollisionSearchResult> GlobalCollisionSearch(
+  std::vector<GlobalCollisionSearchResult> global_collision_search(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const Core::IO::Verbositylevel verbosity);

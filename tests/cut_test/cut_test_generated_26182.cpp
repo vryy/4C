@@ -206,7 +206,7 @@ void test_generated_26182()
        i != maincycletriangles.end(); ++i)
   {
     std::vector<Cut::Point*> maincycletriangle = *i;
-    if (Cut::Kernel::IsOnLine(maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
+    if (Cut::Kernel::is_on_line(maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
     {
       FOUR_C_THROW("maincycletriangle is on lines!");
     }

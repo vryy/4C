@@ -52,7 +52,7 @@ void FSI::DirichletNeumannVolCoupl::setup()
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
   set_kinematic_coupling(
-      Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
+      Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
 
   if (!get_kinematic_coupling()) FOUR_C_THROW("Currently only displacement coupling is supported!");
 
@@ -210,7 +210,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
 
   // std::cout<<*finterface->FullMap()<<std::endl;
   // std::cout<<*disp_fluid<<std::endl;
-  deltadisp_ = Core::LinAlg::CreateVector(*finterface->fsi_cond_map(), true);
+  deltadisp_ = Core::LinAlg::create_vector(*finterface->fsi_cond_map(), true);
 
   Core::LinAlg::export_to(*disp_fluid, *deltadisp_);
   // deltadisp_ = finterface->extract_fsi_cond_vector(disp_fluid);
@@ -292,9 +292,9 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       double gpos[3] = {fluidnode->x()[0], fluidnode->x()[1], fluidnode->x()[2]};
       double lpos[3] = {0.0, 0.0, 0.0};
       if (aleele->shape() == Core::FE::CellType::quad4)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
       else if (aleele->shape() == Core::FE::CellType::hex8)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
       else
         FOUR_C_THROW("ERROR: element type not implemented!");
 
@@ -312,9 +312,9 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
         double gposFSI[3] = {fluidnodeFSI->x()[0], fluidnodeFSI->x()[1], fluidnodeFSI->x()[2]};
         double lposFSI[3] = {0.0, 0.0, 0.0};
         if (aleele->shape() == Core::FE::CellType::quad4)
-          Mortar::UTILS::GlobalToLocal<Core::FE::CellType::quad4>(*aleele, gposFSI, lposFSI);
+          Mortar::UTILS::global_to_local<Core::FE::CellType::quad4>(*aleele, gposFSI, lposFSI);
         else if (aleele->shape() == Core::FE::CellType::hex8)
-          Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(*aleele, gposFSI, lposFSI);
+          Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(*aleele, gposFSI, lposFSI);
         else
           FOUR_C_THROW("ERROR: element type not implemented!");
 
@@ -357,7 +357,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 
       // extract local values of the global vectors
       std::vector<double> FSIdisp(dofsFSI.size());
-      Core::FE::ExtractMyValues(*DofColMapDummy, FSIdisp, dofsFSI);
+      Core::FE::extract_my_values(*DofColMapDummy, FSIdisp, dofsFSI);
 
       std::vector<int> temp2 = fluidale->fluid_field()->discretization()->dof(fluidnode);
       std::vector<int> dofs;
@@ -371,7 +371,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
         lmowner[idof] = fluidnode->owner();
       }
 
-      Core::LinAlg::Assemble(*correction, gnode, dofs, lmowner);
+      Core::LinAlg::assemble(*correction, gnode, dofs, lmowner);
     }  // end fluid volume node loop
   }    // end ale fsi element loop
 
@@ -469,7 +469,7 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
 
   // find the bounding box of the elements and initialize the search tree
   const Core::LinAlg::Matrix<3, 2> rootBox =
-      Core::Geo::getXAABBofDis(*fluidale->fluid_field()->discretization(), currentpositions);
+      Core::Geo::get_xaab_bof_dis(*fluidale->fluid_field()->discretization(), currentpositions);
   search_tree_->initialize_tree(
       rootBox, *fluidale->fluid_field()->discretization(), Core::Geo::TreeType(Core::Geo::OCTTREE));
 
@@ -493,7 +493,7 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
     fluidaleelemap_[gid] = search(*aleele, CurrentDOPs);
   }  // end node loop
 
-  Teuchos::RCP<Epetra_Map> FSIfluidnodes = Core::Conditions::ConditionNodeColMap(
+  Teuchos::RCP<Epetra_Map> FSIfluidnodes = Core::Conditions::condition_node_col_map(
       *fluidale->fluid_field()->discretization(), "FSICoupling");
 
   std::set<int> globalnodeids;
@@ -520,9 +520,9 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
         double gpos[3] = {fluidnode->x()[0], fluidnode->x()[1], fluidnode->x()[2]};
         double lpos[3] = {0.0, 0.0, 0.0};
         if (aleele->shape() == Core::FE::CellType::quad4)
-          Mortar::UTILS::GlobalToLocal<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
+          Mortar::UTILS::global_to_local<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
         else if (aleele->shape() == Core::FE::CellType::hex8)
-          Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
+          Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
         else
           FOUR_C_THROW("ERROR: element type not implemented!");
 

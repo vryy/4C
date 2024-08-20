@@ -21,7 +21,7 @@ bool Discret::ELEMENTS::Nurbs::SoNurbs27::read_element(const std::string& eletyp
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   const int numgp = 27;
   solid_material()->setup(numgp, container);

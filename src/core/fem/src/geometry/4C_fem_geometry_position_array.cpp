@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Core::LinAlg::SerialDenseMatrix Core::Geo::InitialPositionArray(
+Core::LinAlg::SerialDenseMatrix Core::Geo::initial_position_array(
     const Core::Elements::Element* const ele)
 {
   const int numnode = ele->num_node();
@@ -34,7 +34,7 @@ Core::LinAlg::SerialDenseMatrix Core::Geo::InitialPositionArray(
 }
 
 
-void Core::Geo::InitialPositionArray(
+void Core::Geo::initial_position_array(
     Core::LinAlg::SerialDenseMatrix& xyze, const Core::Elements::Element* const ele)
 {
   const int numnode = ele->num_node();
@@ -52,7 +52,7 @@ void Core::Geo::InitialPositionArray(
 }
 
 
-Core::LinAlg::SerialDenseMatrix Core::Geo::getCurrentNodalPositions(
+Core::LinAlg::SerialDenseMatrix Core::Geo::get_current_nodal_positions(
     const Core::Elements::Element* const ele,  ///< element with nodal pointers
     const std::map<int, Core::LinAlg::Matrix<3, 1>>&
         currentcutterpositions  ///< current positions of all cutter nodes
@@ -72,7 +72,7 @@ Core::LinAlg::SerialDenseMatrix Core::Geo::getCurrentNodalPositions(
 }
 
 
-Core::LinAlg::SerialDenseMatrix Core::Geo::getCurrentNodalPositions(
+Core::LinAlg::SerialDenseMatrix Core::Geo::get_current_nodal_positions(
     const Teuchos::RCP<const Core::Elements::Element> ele,  ///< pointer on element
     const std::map<int, Core::LinAlg::Matrix<3, 1>>&
         currentpositions  ///< current positions of all cutter nodes

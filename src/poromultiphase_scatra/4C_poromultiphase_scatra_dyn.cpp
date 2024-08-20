@@ -35,7 +35,7 @@ void poromultiphasescatra_dyn(int restart)
   // print problem type
   if (comm.MyPID() == 0)
   {
-    PoroMultiPhaseScaTra::PrintLogo();
+    PoroMultiPhaseScaTra::print_logo();
     std::cout << "###################################################" << std::endl;
     std::cout << "# YOUR PROBLEM TYPE: " << problem->problem_name() << std::endl;
     std::cout << "###################################################" << std::endl;
@@ -55,7 +55,7 @@ void poromultiphasescatra_dyn(int restart)
   const Teuchos::ParameterList& scatraparams = problem->scalar_transport_dynamic_params();
 
   // do we perform coupling with 1D artery
-  const bool artery_coupl = Core::UTILS::IntegralValue<int>(poroscatraparams, "ARTERY_COUPLING");
+  const bool artery_coupl = Core::UTILS::integral_value<int>(poroscatraparams, "ARTERY_COUPLING");
 
   // initialize variables for dof set numbers
   int ndsporo_disp(-1);
@@ -65,7 +65,7 @@ void poromultiphasescatra_dyn(int restart)
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
   std::map<int, std::set<int>> nearbyelepairs =
-      PoroMultiPhaseScaTra::UTILS::SetupDiscretizationsAndFieldCoupling(comm, struct_disname,
+      PoroMultiPhaseScaTra::UTILS::setup_discretizations_and_field_coupling(comm, struct_disname,
           fluid_disname, scatra_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure,
           ndsporofluid_scatra, artery_coupl);
 
@@ -74,11 +74,11 @@ void poromultiphasescatra_dyn(int restart)
   // coupling scheme
   // -------------------------------------------------------------------
   Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solscheme =
-      Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
+      Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
           poroscatraparams, "COUPALGO");
 
   Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo =
-      PoroMultiPhaseScaTra::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
+      PoroMultiPhaseScaTra::UTILS::create_poro_multi_phase_scatra_algorithm(
           solscheme, poroscatraparams, comm);
 
   algo->init(poroscatraparams, poroscatraparams, poroparams, structparams, fluidparams,

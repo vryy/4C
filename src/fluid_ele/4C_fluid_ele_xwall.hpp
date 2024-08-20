@@ -102,7 +102,7 @@ namespace Discret
       int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         // number of Dof's is fluid-specific.
-        const int nsd = Core::FE::getDimension(distype_);
+        const int nsd = Core::FE::get_dimension(distype_);
         if (nsd > 1)
           return 2 * nsd + 2;  // The enrichment dofs have to be a multiple of the usual dofs for
                                // the nullspace

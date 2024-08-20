@@ -159,15 +159,15 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   double wm = 0.;
   double my_pen = pen_n;
   double my_pen_t = 0.0;
-  CONTACT::UTILS::NitscheWeightsAndScaling(
+  CONTACT::UTILS::nitsche_weights_and_scaling(
       *cele, *other_cele, weighting, 1., ws, wm, my_pen, my_pen_t);
 
   Core::LinAlg::Matrix<3, 1> ele_n;
   cele->compute_unit_normal_at_xi(xsi.data(), ele_n.data());
 
   double stress_plus_penalty =
-      ws * CONTACT::UTILS::SolidCauchyAtXi(cele, xsi, ele_n, ele_n) +
-      wm * CONTACT::UTILS::SolidCauchyAtXi(other_cele, mxi_m, ele_n, ele_n) + my_pen * gap;
+      ws * CONTACT::UTILS::solid_cauchy_at_xi(cele, xsi, ele_n, ele_n) +
+      wm * CONTACT::UTILS::solid_cauchy_at_xi(other_cele, mxi_m, ele_n, ele_n) + my_pen * gap;
 
   if (stress_plus_penalty >= full_fsi_traction)
     return true;  // aka evaluate FSI

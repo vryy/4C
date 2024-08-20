@@ -624,7 +624,7 @@ void XFEM::MultiFieldMapExtractor::build_master_node_map_extractor()
 
   // merge non-interface nodes into the full map
   for (unsigned i = num_sl_dis(); i < partial_maps.size(); ++i)
-    fullmap = Core::LinAlg::MergeMap(*fullmap, *partial_maps[i], false);
+    fullmap = Core::LinAlg::merge_map(*fullmap, *partial_maps[i], false);
 
   // setup map extractor
   master_map_extractor_[map_nodes]->setup(*fullmap, partial_maps);
@@ -683,7 +683,7 @@ void XFEM::MultiFieldMapExtractor::build_master_dof_map_extractor()
   // merge non-interface DoF's into the full map
   for (unsigned i = num_sl_dis(); i < partial_maps.size(); ++i)
   {
-    fullmap = Core::LinAlg::MergeMap(*fullmap, *partial_maps[i], false);
+    fullmap = Core::LinAlg::merge_map(*fullmap, *partial_maps[i], false);
   }
 
   // setup map extractor
@@ -731,7 +731,7 @@ void XFEM::MultiFieldMapExtractor::build_element_map_extractor()
     partial_maps[d] = Teuchos::rcp((*cit)->element_row_map(), false);
 
     // merge the partial maps to the full map
-    fullmap = Core::LinAlg::MergeMap(fullmap, partial_maps[d], false);
+    fullmap = Core::LinAlg::merge_map(fullmap, partial_maps[d], false);
 
     // increase discretization counter
     ++d;
@@ -752,7 +752,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::extract_vector(
   const Teuchos::RCP<const Epetra_Map>& sl_full_map = sl_map_extractor(dis_id, map_type).full_map();
 
   if (sl_full_map.is_null())
-    FOUR_C_THROW("null full map for field %s", FieldName2String(field).c_str());
+    FOUR_C_THROW("null full map for field %s", field_name_to_string(field).c_str());
 
   // create a new vector
   Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*sl_full_map));
@@ -775,7 +775,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::MultiFieldMapExtractor::extract_vector(
   const Teuchos::RCP<const Epetra_Map>& sl_full_map = sl_map_extractor(dis_id, map_type).full_map();
 
   if (sl_full_map.is_null())
-    FOUR_C_THROW("null full map for field %s", FieldName2String(field).c_str());
+    FOUR_C_THROW("null full map for field %s", field_name_to_string(field).c_str());
 
   // create a new multi vector
   Teuchos::RCP<Epetra_MultiVector> vec =
@@ -950,7 +950,7 @@ int XFEM::MultiFieldMapExtractor::slave_id(enum FieldName field) const
 {
   std::map<enum FieldName, int>::const_iterator cit = slave_discret_id_map_.find(field);
   if (cit == slave_discret_id_map_.end())
-    FOUR_C_THROW("The slave field \"%s\" could not be found!", FieldName2String(field).c_str());
+    FOUR_C_THROW("The slave field \"%s\" could not be found!", field_name_to_string(field).c_str());
 
   return cit->second;
 }

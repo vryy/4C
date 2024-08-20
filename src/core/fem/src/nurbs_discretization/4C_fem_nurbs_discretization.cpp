@@ -258,23 +258,23 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // -------------------------------------------------------------------
   // create empty right hand side vector
   // -------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*dofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> dbcvector = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> dbcvector = Core::LinAlg::create_vector(*dofrowmap, true);
 
   Teuchos::RCP<Epetra_Vector> rhsd = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> dbcvectord = Teuchos::null;
   if (systemvectors[1] != Teuchos::null)
   {
-    rhsd = Core::LinAlg::CreateVector(*dofrowmap, true);
-    dbcvectord = Core::LinAlg::CreateVector(*dofrowmap, true);
+    rhsd = Core::LinAlg::create_vector(*dofrowmap, true);
+    dbcvectord = Core::LinAlg::create_vector(*dofrowmap, true);
   }
 
   Teuchos::RCP<Epetra_Vector> rhsdd = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> dbcvectordd = Teuchos::null;
   if (systemvectors[2] != Teuchos::null)
   {
-    rhsdd = Core::LinAlg::CreateVector(*dofrowmap, true);
-    dbcvectordd = Core::LinAlg::CreateVector(*dofrowmap, true);
+    rhsdd = Core::LinAlg::create_vector(*dofrowmap, true);
+    dbcvectordd = Core::LinAlg::create_vector(*dofrowmap, true);
   }
 
   const bool assemblevecd = rhsd != Teuchos::null;
@@ -311,9 +311,9 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
 
       static const int probdim = discret.n_dim();
       const Core::FE::CellType distype = actele->shape();
-      const int dim = Core::FE::getDimension(distype);
+      const int dim = Core::FE::get_dimension(distype);
       const bool isboundary = (dim != probdim);
-      const int nen = Core::FE::getNumberOfElementNodes(distype);
+      const int nen = Core::FE::get_number_of_element_nodes(distype);
 
       // access elements knot span
       std::vector<Core::LinAlg::SerialDenseVector> eleknots(dim);
@@ -326,13 +326,13 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
             Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(actele, true);
         double normalfac = 0.0;
         std::vector<Core::LinAlg::SerialDenseVector> pknots(probdim);
-        zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
+        zero_size = Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(actele.get(),
             faceele->face_master_number(), faceele->parent_element()->id(), discret, pknots,
             eleknots, weights, normalfac);
       }
       else
-        zero_size =
-            Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discret, actele.get(), eleknots, weights);
+        zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
+            discret, actele.get(), eleknots, weights);
 
       // nothing to be done for a zero sized element
       if (zero_size)
@@ -417,7 +417,7 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
             break;
           default:
             FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
-                Core::FE::CellTypeToString(distype).c_str());
+                Core::FE::cell_type_to_string(distype).c_str());
             break;
         }
       else
@@ -455,15 +455,15 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
             break;
           default:
             FOUR_C_THROW("invalid element shape for least squares dirichlet evaluation: %s",
-                Core::FE::CellTypeToString(distype).c_str());
+                Core::FE::cell_type_to_string(distype).c_str());
             break;
         }
 
       int eid = actele->id();
       if (assemblemat) massmatrix->assemble(eid, elemass, lm, lmowner);
-      if (assemblevec) Core::LinAlg::Assemble(*rhs, elerhs[0], lm, lmowner);
-      if (assemblevecd) Core::LinAlg::Assemble(*rhsd, elerhs[1], lm, lmowner);
-      if (assemblevecdd) Core::LinAlg::Assemble(*rhsdd, elerhs[2], lm, lmowner);
+      if (assemblevec) Core::LinAlg::assemble(*rhs, elerhs[0], lm, lmowner);
+      if (assemblevecd) Core::LinAlg::assemble(*rhsd, elerhs[1], lm, lmowner);
+      if (assemblevecdd) Core::LinAlg::assemble(*rhsdd, elerhs[2], lm, lmowner);
     }
   }
   // -------------------------------------------------------------------
@@ -582,7 +582,7 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
     double fac = 0.0;
     double drs = 0.0;
 
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(
         shpfunct, deriv, fac, unitnormal, drs, xsi, xyze, intpoints, iquad, knots, &weights, true);
 
     // get real physical coordinates of integration point

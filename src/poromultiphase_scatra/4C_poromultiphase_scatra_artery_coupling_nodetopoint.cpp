@@ -52,7 +52,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup()
 
   // print out summary of pairs
   if (contdis_->name() == "porofluid" &&
-      (Core::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+      (Core::UTILS::integral_value<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
     output_coupling_pairs();
 
   // error-checks

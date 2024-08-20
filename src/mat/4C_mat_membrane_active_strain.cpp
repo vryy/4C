@@ -143,7 +143,7 @@ void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid = -1;
@@ -170,7 +170,7 @@ void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
   if (matpassive_data.size() > 0)
   {
     Core::Communication::ParObject* o =
-        Core::Communication::Factory(matpassive_data);  // Unpack is done here
+        Core::Communication::factory(matpassive_data);  // Unpack is done here
     Mat::So3Material* matpassive = dynamic_cast<Mat::So3Material*>(o);
     if (matpassive == nullptr) FOUR_C_THROW("failed to unpack passive material");
 
@@ -216,7 +216,7 @@ void Mat::MembraneActiveStrain::setup(int numgp, const Core::IO::InputParameterC
 
   // setup of passive material
   matpassive_ =
-      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->matid_passive_), true);
+      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->matid_passive_), true);
   matpassive_->setup(numgp, container);
 
   // setup internal variables

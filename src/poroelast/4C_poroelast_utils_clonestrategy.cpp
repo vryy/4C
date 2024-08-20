@@ -59,7 +59,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::set_element_data(
       Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::FluidPoro>(newele);
   if (fluid != Teuchos::null)
   {
-    fluid->set_material(0, Mat::Factory(matid));
+    fluid->set_material(0, Mat::factory(matid));
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
     static_cast<Mat::PAR::FluidPoro*>(fluid->material()->parameter())
         ->set_initial_porosity(
@@ -198,7 +198,7 @@ bool PoroElast::UTILS::PoroelastCloneStrategy::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro element (we support submeshes here)
-  if (IsPoroElement(actele))
+  if (is_poro_element(actele))
   {
     // we only support fluid elements here
     eletype.emplace_back("FLUIDPORO");

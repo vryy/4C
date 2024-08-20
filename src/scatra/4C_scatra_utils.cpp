@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTra::ScaTraUtils::CheckConsistencyOfS2IConditions(
+void ScaTra::ScaTraUtils::check_consistency_of_s2_i_conditions(
     Teuchos::RCP<Core::FE::Discretization> discretization)
 {
   // check if the number of s2i condition definition is correct
@@ -50,9 +50,10 @@ void ScaTra::ScaTraUtils::CheckConsistencyOfS2IConditions(
       s2isclcoupling_condition.end());
 
   std::vector<int> s2ievaluation_nodes, s2iphysics_nodes;
-  Core::Conditions::FindConditionedNodes(
+  Core::Conditions::find_conditioned_nodes(
       *discretization, s2ievaluation_conditions, s2ievaluation_nodes);
-  Core::Conditions::FindConditionedNodes(*discretization, s2iphysics_conditions, s2iphysics_nodes);
+  Core::Conditions::find_conditioned_nodes(
+      *discretization, s2iphysics_conditions, s2iphysics_nodes);
 
   if (s2iphysics_nodes != s2ievaluation_nodes)
   {
@@ -62,13 +63,13 @@ void ScaTra::ScaTraUtils::CheckConsistencyOfS2IConditions(
         "are defined on do not match!");
   }
 
-  ScaTraUtils::CheckConsistencyWithS2IKineticsCondition("S2IMeshtying", discretization);
-  ScaTraUtils::CheckConsistencyWithS2IKineticsCondition("S2INoEvaluation", discretization);
+  ScaTraUtils::check_consistency_with_s2_i_kinetics_condition("S2IMeshtying", discretization);
+  ScaTraUtils::check_consistency_with_s2_i_kinetics_condition("S2INoEvaluation", discretization);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
+void ScaTra::ScaTraUtils::check_consistency_with_s2_i_kinetics_condition(
     const std::string& condition_to_be_tested,
     Teuchos::RCP<Core::FE::Discretization> discretization)
 {
@@ -118,14 +119,15 @@ void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
       {
         case Inpar::S2I::side_slave:
         {
-          if (isslave) Core::Conditions::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
+          if (isslave)
+            Core::Conditions::have_same_nodes(conditionToBeTested, s2ikinetics_cond, true);
 
           break;
         }
         case Inpar::S2I::side_master:
         {
           if (!isslave)
-            Core::Conditions::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
+            Core::Conditions::have_same_nodes(conditionToBeTested, s2ikinetics_cond, true);
 
           break;
         }
@@ -143,7 +145,7 @@ void ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <const int dim>
-Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMeanAverage(
+Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(
     Teuchos::RCP<Core::FE::Discretization> discret, const Teuchos::RCP<const Epetra_Vector> state,
     const int scatra_dofid)
 {
@@ -299,13 +301,13 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
     if (DISTYPE == Core::FE::CellType::hex8)
     {
       node_gradphi_smoothed =
-          DoMeanValueAveragingOfElementGradientNode<nsd, Core::FE::CellType::hex8>(
+          do_mean_value_averaging_of_element_gradient_node<nsd, Core::FE::CellType::hex8>(
               discret, elements, phinp_col, nodegid, scatra_dofid);
     }
     else if (DISTYPE == Core::FE::CellType::hex27)
     {
       node_gradphi_smoothed =
-          DoMeanValueAveragingOfElementGradientNode<nsd, Core::FE::CellType::hex27>(
+          do_mean_value_averaging_of_element_gradient_node<nsd, Core::FE::CellType::hex27>(
               discret, elements, phinp_col, nodegid, scatra_dofid);
     }
     else
@@ -344,14 +346,15 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMean
   return gradphirow;
 }
 
-template Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAtNodesMeanAverage<3>(
+template Teuchos::RCP<Epetra_MultiVector>
+ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average<3>(
     Teuchos::RCP<Core::FE::Discretization> discret, const Teuchos::RCP<const Epetra_Vector> state,
     const int scatra_dofid);
 
 
 
 template <const int dim, Core::FE::CellType distype>
-Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementGradientNode(
+Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::do_mean_value_averaging_of_element_gradient_node(
     Teuchos::RCP<Core::FE::Discretization> discret,
     std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
     const int nodegid, const int scatra_dofid)
@@ -382,7 +385,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // which node in param space of element ele_adj has actnode
       int ID_param_space = -1;
 
-      // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
+      // get vector of node GIDs of this adjacent element -> needed for extract_my_values
       std::vector<int> nodeID_adj(numnode);
       std::vector<int> nodeDOFID_adj(numnode);
       for (int inode = 0; inode < numnode; inode++)
@@ -400,7 +403,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
 
       // extract the phi-values of adjacent element with local ids from global vector *phinp
       // get pointer to vector holding G-function values at the fluid nodes
-      Core::FE::ExtractMyValues(*phinp_node, ephinp, nodeDOFID_adj);
+      Core::FE::extract_my_values(*phinp_node, ephinp, nodeDOFID_adj);
       Core::LinAlg::Matrix<numnode, 1> ephi_adj(ephinp);
 
       //-------------------------------------
@@ -426,19 +429,19 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       {
         case 3:
         {
-          Core::FE::shape_function_3D_deriv1(deriv3Dele, node_Xicoordinates(0),
+          Core::FE::shape_function_3d_deriv1(deriv3Dele, node_Xicoordinates(0),
               node_Xicoordinates(1), node_Xicoordinates(2), distype);
           break;
         }
         case 2:
         {
-          Core::FE::shape_function_2D_deriv1(
+          Core::FE::shape_function_2d_deriv1(
               deriv3Dele, node_Xicoordinates(0), node_Xicoordinates(1), distype);
           break;
         }
         case 1:
         {
-          Core::FE::shape_function_1D_deriv1(deriv3Dele, node_Xicoordinates(0), distype);
+          Core::FE::shape_function_1d_deriv1(deriv3Dele, node_Xicoordinates(0), distype);
           break;
         }
         default:
@@ -448,7 +451,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // reconstruct XYZ-gradient
       // get node coordinates of this element
       static Core::LinAlg::Matrix<dim, numnode> xyze_adj;
-      Core::Geo::fillInitialPositionArray<distype>(ele_adj, xyze_adj);
+      Core::Geo::fill_initial_position_array<distype>(ele_adj, xyze_adj);
 
       // get Jacobi-Matrix for transformation
       static Core::LinAlg::Matrix<dim, dim> xjm_ele_XiToXYZ;
@@ -485,13 +488,13 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
 
 // Templates for Mean value averaging -- For now only HEX-type elements allowed!
 template Core::LinAlg::Matrix<3, 1>
-ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementGradientNode<3, Core::FE::CellType::hex8>(
+ScaTra::ScaTraUtils::do_mean_value_averaging_of_element_gradient_node<3, Core::FE::CellType::hex8>(
     Teuchos::RCP<Core::FE::Discretization> discret,
     std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
     const int nodegid, const int scatra_dofid);
 
 template Core::LinAlg::Matrix<3, 1>
-ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementGradientNode<3, Core::FE::CellType::hex27>(
+ScaTra::ScaTraUtils::do_mean_value_averaging_of_element_gradient_node<3, Core::FE::CellType::hex27>(
     Teuchos::RCP<Core::FE::Discretization> discret,
     std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
     const int nodegid, const int scatra_dofid);

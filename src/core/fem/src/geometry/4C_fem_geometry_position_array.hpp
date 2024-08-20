@@ -32,7 +32,7 @@ namespace Core::Geo
    * nodes
    */
   template <class M>
-  void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
+  void fill_initial_position_array(const Core::Elements::Element* const ele, M& xyze)
   {
     const int numnode = ele->num_node();
 
@@ -61,7 +61,7 @@ namespace Core::Geo
    * nodes
    */
   template <Core::FE::CellType distype, class M>
-  void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
+  void fill_initial_position_array(const Core::Elements::Element* const ele, M& xyze)
   {
     FOUR_C_ASSERT(distype == ele->shape(), "mismatch in distype");
     const int numnode = Core::FE::num_nodes<distype>;
@@ -92,7 +92,7 @@ namespace Core::Geo
    * of the nodes
    */
   template <Core::FE::CellType distype, int dim, class M>
-  void fillInitialPositionArray(const Core::Elements::Element* const ele, M& xyze)
+  void fill_initial_position_array(const Core::Elements::Element* const ele, M& xyze)
   {
     FOUR_C_ASSERT(distype == ele->shape(), "mismatch in distype");
     const int numnode = Core::FE::num_nodes<distype>;
@@ -123,7 +123,7 @@ namespace Core::Geo
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  void InitialPositionArray(
+  void initial_position_array(
       Core::LinAlg::SerialDenseMatrix& xyze, const Core::Elements::Element* const ele);
 
 
@@ -135,7 +135,7 @@ namespace Core::Geo
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  Core::LinAlg::SerialDenseMatrix InitialPositionArray(const Core::Elements::Element* const
+  Core::LinAlg::SerialDenseMatrix initial_position_array(const Core::Elements::Element* const
           ele  ///< pointer to element, whose nodes we evaluate for their position
   );
 
@@ -148,7 +148,7 @@ namespace Core::Geo
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  Core::LinAlg::SerialDenseMatrix getCurrentNodalPositions(
+  Core::LinAlg::SerialDenseMatrix get_current_nodal_positions(
       const Core::Elements::Element* const ele,  ///< element with nodal pointers
       const std::map<int, Core::LinAlg::Matrix<3, 1>>&
           currentcutterpositions  ///< current positions of all cutter nodes
@@ -163,7 +163,7 @@ namespace Core::Geo
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
    */
-  Core::LinAlg::SerialDenseMatrix getCurrentNodalPositions(
+  Core::LinAlg::SerialDenseMatrix get_current_nodal_positions(
       const Teuchos::RCP<const Core::Elements::Element> ele,  ///< pointer on element
       const std::map<int, Core::LinAlg::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes

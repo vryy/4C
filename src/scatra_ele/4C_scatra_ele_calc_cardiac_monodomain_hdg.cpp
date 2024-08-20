@@ -123,7 +123,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     }
 
     Core::Nodes::NodalFiberHolder gpFiberHolder;
-    Core::Nodes::ProjectFibersToGaussPoints<distype>(ele->nodes(), shapefcns, gpFiberHolder);
+    Core::Nodes::project_fibers_to_gauss_points<distype>(ele->nodes(), shapefcns, gpFiberHolder);
 
     std::vector<Core::LinAlg::Matrix<probdim, 1>> fibergp(shapes->nqpoints_);
     setup_cardiac_fibers<probdim>(gpFiberHolder, fibergp);
@@ -210,7 +210,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     }
 
     Core::Nodes::NodalFiberHolder gpFiberHolder;
-    Core::Nodes::ProjectFibersToGaussPoints<distype>(ele->nodes(), shapefcns, gpFiberHolder);
+    Core::Nodes::project_fibers_to_gauss_points<distype>(ele->nodes(), shapefcns, gpFiberHolder);
 
     std::vector<Core::LinAlg::Matrix<probdim, 1>> fibergp(numgp);
     setup_cardiac_fibers<probdim>(gpFiberHolder, fibergp);

@@ -47,7 +47,7 @@ ScaTra::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<Core::FE::Discretization
 void ScaTra::ScaTraTimIntLoma::init()
 {
   // safety check
-  if (Core::UTILS::IntegralValue<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
+  if (Core::UTILS::integral_value<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
     FOUR_C_THROW(
         "Material update using subgrid-scale temperature currently not supported for loMa "
         "problems. Read remark in file 'scatra_ele_calc_loma.H'!");
@@ -74,7 +74,7 @@ void ScaTra::ScaTraTimIntLoma::setup_splitter()
   if (num_scal() > 1)
   {
     splitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor);
-    Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, num_scal() - 1, *splitter_);
+    Core::LinAlg::create_map_extractor_from_discretization(*discret_, num_scal() - 1, *splitter_);
   }
 
   return;
@@ -131,7 +131,7 @@ void ScaTra::ScaTraTimIntLoma::compute_initial_mass()
   discret_->set_state("phinp", phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
@@ -173,7 +173,7 @@ void ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
   discret_->set_state("phinp", phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);

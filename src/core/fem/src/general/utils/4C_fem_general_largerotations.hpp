@@ -80,7 +80,7 @@ namespace Core::LargeRotations
       const Core::LinAlg::Matrix<3, 1, T>& theta, Core::LinAlg::Matrix<4, 1, T>& q)
   {
     // absolute value of rotation angle theta
-    const T abs_theta = Core::FADUtils::VectorNorm(theta);
+    const T abs_theta = Core::FADUtils::vector_norm(theta);
 
     // computing quaterion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
     if (abs_theta > 1e-12)
@@ -152,7 +152,7 @@ namespace Core::LargeRotations
       {
         omega(i) = q(i) * 2 / q(3);
       }
-      const T abs_omega = Core::FADUtils::VectorNorm(omega);
+      const T abs_omega = Core::FADUtils::vector_norm(omega);
       const T tanhalf = abs_omega / 2;
       const T thetaabs = atan(tanhalf) * 2;
 
@@ -277,7 +277,7 @@ namespace Core::LargeRotations
   Core::LinAlg::Matrix<4, 1, T> inversequaternion(const Core::LinAlg::Matrix<4, 1, T>& q)
   {
     // square norm ||q||^2 of quaternion q
-    const T qnormsq = Core::FADUtils::VectorNorm(q);
+    const T qnormsq = Core::FADUtils::vector_norm(q);
 
     // declaration of variable for inverse quaternion
     Core::LinAlg::Matrix<4, 1, T> qinv;
@@ -297,10 +297,10 @@ namespace Core::LargeRotations
    * @return transformation matrix
    */
   template <typename T>
-  Core::LinAlg::Matrix<3, 3, T> Tmatrix(Core::LinAlg::Matrix<3, 1, T> theta)
+  Core::LinAlg::Matrix<3, 3, T> tmatrix(Core::LinAlg::Matrix<3, 1, T> theta)
   {
     Core::LinAlg::Matrix<3, 3, T> result(true);
-    const T theta_abs = Core::FADUtils::VectorNorm(theta);
+    const T theta_abs = Core::FADUtils::vector_norm(theta);
 
     // in case of theta_abs == 0 the following computation has problems with singularities
     if (theta_abs > 1e-8)
@@ -334,7 +334,7 @@ namespace Core::LargeRotations
    * @return inverse of transformation matrix
    */
   template <typename T>
-  Core::LinAlg::Matrix<3, 3, T> Tinvmatrix(Core::LinAlg::Matrix<3, 1, T> theta)
+  Core::LinAlg::Matrix<3, 3, T> tinvmatrix(Core::LinAlg::Matrix<3, 1, T> theta)
   {
     Core::LinAlg::Matrix<3, 3, T> result(true);
     T theta_abs =
@@ -375,7 +375,7 @@ namespace Core::LargeRotations
    * page 152 of Jelenic 1999
    */
   template <typename T>
-  void computedTinvdx(const Core::LinAlg::Matrix<3, 1, T>& Psil,
+  void computed_tinvdx(const Core::LinAlg::Matrix<3, 1, T>& Psil,
       const Core::LinAlg::Matrix<3, 1, T>& Psilprime, Core::LinAlg::Matrix<3, 3, T>& dTinvdx)
   {
     // auxiliary matrix for storing intermediate results
@@ -435,11 +435,11 @@ namespace Core::LargeRotations
   }
 
   //! Transformation from node number according to Crisfield 1999 to storage position applied in 4C
-  unsigned int NumberingTrafo(const unsigned int j, const unsigned int numnode);
+  unsigned int numbering_trafo(const unsigned int j, const unsigned int numnode);
 
   //! Rotate an arbitrary triad around its first base vector (tangent)
   template <typename T>
-  void RotateTriad(const Core::LinAlg::Matrix<3, 3, T>& triad, const T& alpha,
+  void rotate_triad(const Core::LinAlg::Matrix<3, 3, T>& triad, const T& alpha,
       Core::LinAlg::Matrix<3, 3, T>& triad_rot)
   {
     for (int i = 0; i < 3; i++)
@@ -455,7 +455,7 @@ namespace Core::LargeRotations
   //! Calculate the SR mapping for a given reference system triad_ref and a given tangent vector
   //! r_s
   template <typename T>
-  void CalculateSRTriads(const Core::LinAlg::Matrix<3, 1, T>& r_s,
+  void calculate_sr_triads(const Core::LinAlg::Matrix<3, 1, T>& r_s,
       const Core::LinAlg::Matrix<3, 3, T>& triad_ref, Core::LinAlg::Matrix<3, 3, T>& triad)
   {
     // In this calculation, r_s does not necessarily have to be a unit vector.
@@ -464,7 +464,7 @@ namespace Core::LargeRotations
     T temp_scalar3 = 0.0;
     T fac_n0 = 0.0;
     T fac_b0 = 0.0;
-    T abs_r_s = Core::FADUtils::Norm<T>(r_s);
+    T abs_r_s = Core::FADUtils::norm<T>(r_s);
 
     for (int i = 0; i < 3; i++)
     {

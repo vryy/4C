@@ -212,7 +212,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
 {
   const Teuchos::ParameterList& sdynparams =
       Global::Problem::instance()->structural_dynamic_params();
-  solveradapttol_ = (Core::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (Core::UTILS::integral_value<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   // hydraulic conductivity (needed for coupling in case of probtype fps3i)
@@ -521,7 +521,7 @@ void FPSI::Monolithic::setup_solver()
   if (directsolve_)
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
   else
     // create a linear solver
@@ -531,11 +531,11 @@ void FPSI::Monolithic::setup_solver()
   maximumiterations_ = fpsidynamicparams.get<int>("ITEMAX");
   minimumiterations_ = fpsidynamicparams.get<int>("ITEMIN");
   normtypeinc_ =
-      Core::UTILS::IntegralValue<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
+      Core::UTILS::integral_value<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
   normtypefres_ =
-      Core::UTILS::IntegralValue<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
+      Core::UTILS::integral_value<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
   combinedconvergence_ =
-      Core::UTILS::IntegralValue<Inpar::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
+      Core::UTILS::integral_value<Inpar::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
 
   {
     std::istringstream tolresstream(
@@ -558,7 +558,7 @@ void FPSI::Monolithic::setup_solver()
 
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
-  linesearch_ = Core::UTILS::IntegralValue<int>(fpsidynparams, "LineSearch");
+  linesearch_ = Core::UTILS::integral_value<int>(fpsidynparams, "LineSearch");
   if (linesearch_ == 1)
     FOUR_C_THROW(
         "Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"
@@ -656,7 +656,7 @@ void FPSI::Monolithic::create_linear_solver()
 
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(fpsisolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // use solver blocks for structure and fluid
@@ -672,22 +672,22 @@ void FPSI::Monolithic::create_linear_solver()
   // poro/structure
   solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // poro fluid
   solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // fluid
   solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // ale
   solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   // prescribe rigid body modes
@@ -886,7 +886,7 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
   // copy the old iterinc_ before new solve
   if (linesearch_ and islinesearch_ == false)
   {
-    rhsold_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    rhsold_ = Core::LinAlg::create_vector(*dof_row_map(), true);
     rhsold_->Update(1.0, *rhs_, 0.0);
     rhsold_->Norm2(&normofrhsold_);
     if (abs(normofrhs_ - normofrhsold_) > 1.e-12 and iter_ > 1)
@@ -906,7 +906,7 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
   if (islinesearch_ == false)
   {
     // check whether iterinc_ points in right direction
-    Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::create_vector(*dof_row_map(), true);
     sparse->multiply(true, *rhs_, *tempvec);
     double climb = 0.0;
     tempvec->Dot(*iterinc_, &climb);
@@ -934,7 +934,7 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
 
   if (linesearch_ and islinesearch_ == false)
   {
-    iterincold_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    iterincold_ = Core::LinAlg::create_vector(*dof_row_map(), true);
     iterincold_->Update(1.0, *iterinc_, 0.0);
     iterincold_->Norm2(&normofiterincold_);
   }
@@ -951,9 +951,9 @@ Teuchos::RCP<Epetra_Map> FPSI::Monolithic::combined_dbc_map()
   const Teuchos::RCP<const Epetra_Map> fcondmap =
       fluid_field()->get_dbc_map_extractor()->cond_map();
   const Teuchos::RCP<const Epetra_Map> acondmap = ale_field()->get_dbc_map_extractor()->cond_map();
-  Teuchos::RCP<Epetra_Map> tempmap = Core::LinAlg::MergeMap(scondmap, pfcondmap, false);
-  Teuchos::RCP<Epetra_Map> condmap_0 = Core::LinAlg::MergeMap(tempmap, fcondmap, false);
-  Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(condmap_0, acondmap, false);
+  Teuchos::RCP<Epetra_Map> tempmap = Core::LinAlg::merge_map(scondmap, pfcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap_0 = Core::LinAlg::merge_map(tempmap, fcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::merge_map(condmap_0, acondmap, false);
 
   return condmap;
 }  // combined_dbc_map()
@@ -1487,11 +1487,11 @@ void FPSI::Monolithic::setup_newton()
 
 
   // incremental solution vector with length of all dofs
-  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   zeros_->PutScalar(0.0);
 }
 
@@ -1539,13 +1539,13 @@ void FPSI::Monolithic::fpsifd_check()
   // matrices and vectors
   //////////////////////////////////////////////////////////////
   // build artificial iteration increment
-  Teuchos::RCP<Epetra_Vector> iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
   const int dofs = iterinc->GlobalLength();
   iterinc->PutScalar(0.0);
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
   // build approximated FD stiffness matrix
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Core::LinAlg::CreateMatrix(*dof_row_map(), 81);
+  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   // store old rhs
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));

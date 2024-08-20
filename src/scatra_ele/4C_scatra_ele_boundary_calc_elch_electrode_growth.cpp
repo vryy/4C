@@ -29,7 +29,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](int numdofpernode, int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>>(
@@ -123,8 +123,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         const double j0 = kr * std::pow(emasterphiint, alphaa);
 
         // compute mass flux density of growth kinetics via Newton-Raphson iteration
-        const double j = CalculateGrowthMassFluxDensity(j0, frt, eslavepotint, emasterpotint, epd,
-            eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
+        const double j = calculate_growth_mass_flux_density(j0, frt, eslavepotint, emasterpotint,
+            epd, eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
             my::scatraparamsboundary_);
 
         // calculate electrode-electrolyte overpotential at integration point
@@ -236,11 +236,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
             eslavephiint, faraday, frt, detF);
 
         // compute exchange mass flux density
-        const double j0 = CalculateButlerVolmerExchangeMassFluxDensity(
+        const double j0 = calculate_butler_volmer_exchange_mass_flux_density(
             kr, alphaa, alphac, cmax, eslavephiint, emasterphiint, kineticmodel, s2iconditiontype);
 
         // compute Butler-Volmer mass flux density via Newton-Raphson iteration
-        const double j = CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa, alphac, frt,
+        const double j = calculate_modified_butler_volmer_mass_flux_density(j0, alphaa, alphac, frt,
             eslavepotint, emasterpotint, epd, eslaveresistanceint,
             my::scatraparams_->int_layer_growth_ite_max(),
             my::scatraparams_->int_layer_growth_conv_tol(), faraday);
@@ -258,9 +258,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
           const double expterm2 = std::exp(-alphac * frt * eta);
 
           double dj_dc_slave(0.0), dj_dc_master(0.0), dj_dpot_slave(0.0), dj_dpot_master(0.0);
-          CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv, alphaa, alphac,
-              eslaveresistanceint, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint,
-              cmax, eta, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+          calculate_butler_volmer_elch_linearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+              alphac, eslaveresistanceint, expterm1, expterm2, kr, faraday, emasterphiint,
+              eslavephiint, cmax, eta, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
           calculate_rhs_and_linearization(numelectrons, timefacfac, timefacrhsfac, j, dj_dc_slave,
               dj_dc_master, dj_dpot_slave, dj_dpot_master, eslavematrix, emastermatrix,
@@ -278,12 +278,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
             eslavephiint, faraday, frt, detF);
 
         // compute exchange mass flux density of growth kinetics
-        const double j0 = CalculateGrowthExchangeMassFluxDensity(
+        const double j0 = calculate_growth_exchange_mass_flux_density(
             kr, alphaa, emasterphiint, kineticmodel, s2iconditiontype);
 
         // compute mass flux density of growth kinetics via Newton-Raphson iteration
-        const double j = CalculateGrowthMassFluxDensity(j0, frt, eslavepotint, emasterpotint, epd,
-            eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
+        const double j = calculate_growth_mass_flux_density(j0, frt, eslavepotint, emasterpotint,
+            epd, eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
             my::scatraparamsboundary_);
 
         // continue with evaluation of linearizations and residual contributions only in case of
@@ -295,11 +295,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
           // factor
           const double eta = eslavepotint - emasterpotint - epd - j * faraday * eslaveresistanceint;
           const double regfac =
-              GetRegularizationFactor(eslavegrowthint, eta, my::scatraparamsboundary_);
+              get_regularization_factor(eslavegrowthint, eta, my::scatraparamsboundary_);
 
           double dj_dc_slave(0.0), dj_dc_master(0.0), dj_dpot_slave(0.0), dj_dpot_master(0.0);
-          CalculateS2IGrowthElchLinearizations(j0, frt, epdderiv, eta, eslaveresistanceint, regfac,
-              emasterphiint, eslavephiint, cmax, my::scatraparamsboundary_, dj_dc_slave,
+          calculate_s2_i_growth_elch_linearizations(j0, frt, epdderiv, eta, eslaveresistanceint,
+              regfac, emasterphiint, eslavephiint, cmax, my::scatraparamsboundary_, dj_dc_slave,
               dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
           calculate_rhs_and_linearization(numelectrons, timefacfac, timefacrhsfac, j, dj_dc_slave,
@@ -485,11 +485,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
             matelectrode->compute_open_circuit_potential(eslavephiint, faraday, frt, detF);
 
         // compute exchange mass flux density
-        const double j0 = CalculateButlerVolmerExchangeMassFluxDensity(
+        const double j0 = calculate_butler_volmer_exchange_mass_flux_density(
             kr, alphaa, alphac, cmax, eslavephiint, emasterphiint, kineticmodel, s2iconditiontype);
 
         // compute Butler-Volmer mass flux density via Newton-Raphson iteration
-        const double j = CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa, alphac, frt,
+        const double j = calculate_modified_butler_volmer_mass_flux_density(j0, alphaa, alphac, frt,
             eslavepotint, emasterpotint, epd, eslaveresistanceint,
             my::scatraparams_->int_layer_growth_ite_max(),
             my::scatraparams_->int_layer_growth_conv_tol(), faraday);
@@ -509,9 +509,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
           const double expterm1 = std::exp(alphaa * frt * eta);
           const double expterm2 = std::exp(-alphac * frt * eta);
 
-          const double dj_dgrowth =
-              CalculateS2IElchGrowthLinearizations(j0, j, frt, eslaveresistanceint, resistivity,
-                  regfac_dummy, regfac_dummy, expterm1, expterm2, my::scatraparamsboundary_);
+          const double dj_dgrowth = calculate_s2_i_elch_growth_linearizations(j0, j, frt,
+              eslaveresistanceint, resistivity, regfac_dummy, regfac_dummy, expterm1, expterm2,
+              my::scatraparamsboundary_);
 
           // compute linearizations
           for (int irow = 0; irow < nen_; ++irow)
@@ -537,12 +537,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         const double epd = 0.0;
 
         // compute exchange mass flux density
-        const double j0 = CalculateGrowthExchangeMassFluxDensity(
+        const double j0 = calculate_growth_exchange_mass_flux_density(
             kr, alphaa, emasterphiint, kineticmodel, s2iconditiontype);
 
         // compute Butler-Volmer mass flux density via Newton-Raphson iteration
-        const double j = CalculateGrowthMassFluxDensity(j0, frt, eslavepotint, emasterpotint, epd,
-            eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
+        const double j = calculate_growth_mass_flux_density(j0, frt, eslavepotint, emasterpotint,
+            epd, eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
             my::scatraparamsboundary_);
 
         // continue with evaluation of linearizations only in case of non-zero Butler-Volmer mass
@@ -554,17 +554,17 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
           // factor and derivative of regularization factor
           const double eta = eslavepotint - emasterpotint - epd - j * faraday * eslaveresistanceint;
           const double regfac =
-              GetRegularizationFactor(eslavegrowthint, eta, my::scatraparamsboundary_);
+              get_regularization_factor(eslavegrowthint, eta, my::scatraparamsboundary_);
           const double regfacderiv =
-              GetRegularizationFactorDerivative(eslavegrowthint, eta, my::scatraparamsboundary_);
+              get_regularization_factor_derivative(eslavegrowthint, eta, my::scatraparamsboundary_);
 
           // exponential Butler-Volmer terms
           const double expterm1 = std::exp(alphaa * frt * eta);
           const double expterm2 = std::exp(-alphac * frt * eta);
 
           const double dj_dgrowth =
-              CalculateS2IElchGrowthLinearizations(j0, j, frt, eslaveresistanceint, resistivity,
-                  regfac, regfacderiv, expterm1, expterm2, my::scatraparamsboundary_);
+              calculate_s2_i_elch_growth_linearizations(j0, j, frt, eslaveresistanceint,
+                  resistivity, regfac, regfacderiv, expterm1, expterm2, my::scatraparamsboundary_);
 
           // compute linearizations
           for (int irow = 0; irow < nen_; ++irow)
@@ -662,7 +662,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     const double j0 = kr * std::pow(emasterphiint, alphaa);
 
     // compute mass flux density of growth kinetics via Newton-Raphson iteration
-    const double j = CalculateGrowthMassFluxDensity(j0, frt, eslavepotint, emasterpotint, 0.0,
+    const double j = calculate_growth_mass_flux_density(j0, frt, eslavepotint, emasterpotint, 0.0,
         eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
         my::scatraparamsboundary_);
 
@@ -674,10 +674,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       // factor
       const double eta = eslavepotint - emasterpotint - j * faraday * eslaveresistanceint;
       const double regfac =
-          GetRegularizationFactor(eslavegrowthint, eta, my::scatraparamsboundary_);
+          get_regularization_factor(eslavegrowthint, eta, my::scatraparamsboundary_);
 
       double dummy(0.0), dj_dc_master(0.0), dj_dpot_slave(0.0), dj_dpot_master(0.0);
-      CalculateS2IGrowthElchLinearizations(j0, frt, dummy, eta, eslaveresistanceint, regfac,
+      calculate_s2_i_growth_elch_linearizations(j0, frt, dummy, eta, eslaveresistanceint, regfac,
           emasterphiint, dummy, dummy, my::scatraparamsboundary_, dummy, dj_dc_master,
           dj_dpot_slave, dj_dpot_master);
 
@@ -784,7 +784,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     const double j0 = kr * std::pow(emasterphiint, alphaa);
 
     // compute mass flux density of growth kinetics via Newton-Raphson iteration
-    const double j = CalculateGrowthMassFluxDensity(j0, frt, eslavepotint, emasterpotint, 0.0,
+    const double j = calculate_growth_mass_flux_density(j0, frt, eslavepotint, emasterpotint, 0.0,
         eslaveresistanceint, eslavegrowthint, faraday, my::scatraparams_,
         my::scatraparamsboundary_);
 
@@ -799,17 +799,17 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       // and derivative of regularization factor
       const double eta = eslavepotint - emasterpotint - j * faraday * eslaveresistanceint;
       const double regfac =
-          GetRegularizationFactor(eslavegrowthint, eta, my::scatraparamsboundary_);
+          get_regularization_factor(eslavegrowthint, eta, my::scatraparamsboundary_);
       const double regfacderiv =
-          GetRegularizationFactorDerivative(eslavegrowthint, eta, my::scatraparamsboundary_);
+          get_regularization_factor_derivative(eslavegrowthint, eta, my::scatraparamsboundary_);
 
       // exponential Butler-Volmer terms
       const double expterm1 = std::exp(alphaa * frt * eta);
       const double expterm2 = std::exp(-alphac * frt * eta);
 
       const double dj_dgrowth =
-          CalculateS2IElchGrowthLinearizations(j0, j, frt, eslaveresistanceint, resistivity, regfac,
-              regfacderiv, expterm1, expterm2, my::scatraparamsboundary_);
+          calculate_s2_i_elch_growth_linearizations(j0, j, frt, eslaveresistanceint, resistivity,
+              regfac, regfacderiv, expterm1, expterm2, my::scatraparamsboundary_);
 
       // compute linearizations and residual contributions associated with equation for
       // scatra-scatra interface layer growth

@@ -43,7 +43,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::Ale3SurfaceImpl<distype>* Discret::ELEMENTS::Ale3SurfaceImpl<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::Ale3SurfaceImpl<distype>>(
@@ -61,7 +61,7 @@ int Discret::ELEMENTS::Ale3Surface::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  const Ale3::ActionType act = Core::UTILS::GetAsEnum<Ale3::ActionType>(params, "action");
+  const Ale3::ActionType act = Core::UTILS::get_as_enum<Ale3::ActionType>(params, "action");
 
   switch (act)
   {
@@ -75,7 +75,7 @@ int Discret::ELEMENTS::Ale3Surface::evaluate(Teuchos::ParameterList& params,
       if (dispnp != Teuchos::null)
       {
         mydispnp.resize(lm.size());
-        Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+        Core::FE::extract_my_values(*dispnp, mydispnp, lm);
       }
 
       Ale3SurfaceImplInterface::impl(this)->element_node_normal(
@@ -108,7 +108,7 @@ inline void Discret::ELEMENTS::Ale3SurfaceImpl<distype>::element_node_normal(Ale
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp)
 {
-  Core::FE::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_, ele,
+  Core::FE::element_node_normal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_, ele,
       discretization, elevec1, mydispnp, false, true);
 }
 

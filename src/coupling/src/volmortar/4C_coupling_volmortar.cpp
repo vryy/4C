@@ -199,7 +199,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_volmortar()
    ***********************************************************/
   // check_initial_residuum();
   // mesh initialization procedure
-  if (Core::UTILS::IntegralValue<int>(params(), "MESH_INIT")) mesh_init();
+  if (Core::UTILS::integral_value<int>(params(), "MESH_INIT")) mesh_init();
 
   /***********************************************************
    * initialize global matrices                              *
@@ -209,13 +209,13 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_volmortar()
   /***********************************************************
    * Segment-based integration                               *
    ***********************************************************/
-  if (Core::UTILS::IntegralValue<IntType>(params(), "INTTYPE") == inttype_segments)
+  if (Core::UTILS::integral_value<IntType>(params(), "INTTYPE") == inttype_segments)
     evaluate_segments();
 
   /***********************************************************
    * Element-based Integration                               *
    ***********************************************************/
-  else if (Core::UTILS::IntegralValue<IntType>(params(), "INTTYPE") == inttype_elements)
+  else if (Core::UTILS::integral_value<IntType>(params(), "INTTYPE") == inttype_elements)
     evaluate_elements();
 
   // no other possibility
@@ -332,7 +332,8 @@ Teuchos::RCP<Core::Geo::SearchTree> Coupling::VolMortar::VolMortarCoupl::init_se
   Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::rcp(new Core::Geo::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
-  const Core::LinAlg::Matrix<3, 2> rootBox = Core::Geo::getXAABBofDis(*searchdis, currentpositions);
+  const Core::LinAlg::Matrix<3, 2> rootBox =
+      Core::Geo::get_xaab_bof_dis(*searchdis, currentpositions);
   searchTree->initialize_tree(rootBox, *searchdis, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   return searchTree;
@@ -1026,7 +1027,7 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
     const Teuchos::ParameterList& volmortar_parameters)
 {
   // check validity
-  if (Core::UTILS::IntegralValue<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
+  if (Core::UTILS::integral_value<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
   {
     if (myrank_ == 0)
     {
@@ -1039,13 +1040,13 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
     }
   }
 
-  if (Core::UTILS::IntegralValue<int>(volmortar_parameters, "MESH_INIT") and
-      Core::UTILS::IntegralValue<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
+  if (Core::UTILS::integral_value<int>(volmortar_parameters, "MESH_INIT") and
+      Core::UTILS::integral_value<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
   {
     FOUR_C_THROW("ERROR: mesh_init only for ele-based integration!!!");
   }
 
-  if (Core::UTILS::IntegralValue<int>(volmortar_parameters, "SHAPEFCN") == shape_std)
+  if (Core::UTILS::integral_value<int>(volmortar_parameters, "SHAPEFCN") == shape_std)
   {
     std::cout << "WARNING: Standard shape functions are employed! D is lumped!" << std::endl;
   }
@@ -1054,7 +1055,7 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
   params_.setParameters(volmortar_parameters);
 
   // get specific and frequently reused parameters
-  dualquad_ = Core::UTILS::IntegralValue<DualQuad>(params_, "DUALQUAD");
+  dualquad_ = Core::UTILS::integral_value<DualQuad>(params_, "DUALQUAD");
 }
 
 /*----------------------------------------------------------------------*
@@ -1063,14 +1064,16 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
 void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
 {
   // create vectors of initial primary variables
-  Teuchos::RCP<Epetra_Vector> var_A = Core::LinAlg::CreateVector(*discret1()->dof_row_map(0), true);
-  Teuchos::RCP<Epetra_Vector> var_B = Core::LinAlg::CreateVector(*discret2()->dof_row_map(1), true);
+  Teuchos::RCP<Epetra_Vector> var_A =
+      Core::LinAlg::create_vector(*discret1()->dof_row_map(0), true);
+  Teuchos::RCP<Epetra_Vector> var_B =
+      Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
 
   // solution
   Teuchos::RCP<Epetra_Vector> result_A =
-      Core::LinAlg::CreateVector(*discret2()->dof_row_map(1), true);
+      Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
   Teuchos::RCP<Epetra_Vector> result_B =
-      Core::LinAlg::CreateVector(*discret2()->dof_row_map(1), true);
+      Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
 
   // node positions for Discr A
   for (int i = 0; i < discret1()->num_my_row_elements(); ++i)
@@ -1152,9 +1155,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
 
   // init zero residuum vector for old iteration
   Teuchos::RCP<Epetra_Vector> ResoldA =
-      Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta), true);
+      Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta), true);
   Teuchos::RCP<Epetra_Vector> ResoldB =
-      Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb), true);
+      Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb), true);
 
   // output
   if (myrank_ == 0)
@@ -1219,14 +1222,14 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     dmatrix_xb_->complete();
     mmatrix_xb_->complete(*discret1()->dof_row_map(dofseta), *discret2()->dof_row_map(dofsetb));
 
-    mergedmap_ = Core::LinAlg::MergeMap(
+    mergedmap_ = Core::LinAlg::merge_map(
         *discret1()->dof_row_map(dofseta), *discret2()->dof_row_map(dofsetb), false);
-    Teuchos::RCP<Epetra_Vector> mergedsol = Core::LinAlg::CreateVector(*mergedmap_);
-    Teuchos::RCP<Epetra_Vector> mergedX = Core::LinAlg::CreateVector(*mergedmap_);
+    Teuchos::RCP<Epetra_Vector> mergedsol = Core::LinAlg::create_vector(*mergedmap_);
+    Teuchos::RCP<Epetra_Vector> mergedX = Core::LinAlg::create_vector(*mergedmap_);
     Teuchos::RCP<Epetra_Vector> mergedXa =
-        Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta));
+        Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> mergedXb =
-        Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb));
+        Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->node_row_map()->NumMyElements(); ++n)
     {
@@ -1248,8 +1251,8 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
       owner[1] = node->owner();
       owner[2] = node->owner();
 
-      Core::LinAlg::Assemble(*mergedX, pos, id, owner);
-      Core::LinAlg::Assemble(*mergedXa, pos, id, owner);
+      Core::LinAlg::assemble(*mergedX, pos, id, owner);
+      Core::LinAlg::assemble(*mergedXa, pos, id, owner);
     }
 
     for (int n = 0; n < dis2_->node_row_map()->NumMyElements(); ++n)
@@ -1272,17 +1275,17 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
       owner[1] = node->owner();
       owner[2] = node->owner();
 
-      Core::LinAlg::Assemble(*mergedX, pos, id, owner);
-      Core::LinAlg::Assemble(*mergedXb, pos, id, owner);
+      Core::LinAlg::assemble(*mergedX, pos, id, owner);
+      Core::LinAlg::assemble(*mergedXb, pos, id, owner);
     }
 
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
     Teuchos::RCP<Epetra_Vector> solDA =
-        Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta));
+        Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> solMA =
-        Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta));
+        Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
 
     int err = 0;
     err = dmatrix_xa_->multiply(false, *mergedXa, *solDA);
@@ -1292,9 +1295,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     if (err != 0) FOUR_C_THROW("stop");
 
     Teuchos::RCP<Epetra_Vector> solDB =
-        Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb));
+        Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
     Teuchos::RCP<Epetra_Vector> solMB =
-        Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb));
+        Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->multiply(false, *mergedXb, *solDB);
     if (err != 0) FOUR_C_THROW("stop");
@@ -1327,9 +1330,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     {
       double fac = 0.0;
       Teuchos::RCP<Epetra_Vector> DiffA =
-          Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta), true);
+          Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta), true);
       Teuchos::RCP<Epetra_Vector> DiffB =
-          Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb), true);
+          Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb), true);
       err = DiffA->Update(1.0, *solDA, 0.0);
       if (err != 0) FOUR_C_THROW("stop");
       err = DiffA->Update(-1.0, *ResoldA, 1.0);
@@ -1389,7 +1392,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     // solve with default solver
 
     Teuchos::ParameterList solvparams;
-    Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
     Core::LinAlg::Solver solver(solvparams, *comm_, nullptr, Core::IO::Verbositylevel::standard);
 
@@ -1398,9 +1401,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     solver.solve(k->epetra_operator(), mergedsol, mergedX, solver_params);
 
     Teuchos::RCP<Epetra_Vector> sola =
-        Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta));
+        Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> solb =
-        Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb));
+        Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     Core::LinAlg::MapExtractor mapext(*mergedmap_,
         Teuchos::rcp(new Epetra_Map(*(discret1()->dof_row_map(dofseta)))),
@@ -1454,9 +1457,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
 
     // last check:
     Teuchos::RCP<Epetra_Vector> checka =
-        Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta));
+        Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> checkb =
-        Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb));
+        Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->node_row_map()->NumMyElements(); ++n)
     {
@@ -1478,7 +1481,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
       owner[1] = node->owner();
       owner[2] = node->owner();
 
-      Core::LinAlg::Assemble(*checka, pos, id, owner);
+      Core::LinAlg::assemble(*checka, pos, id, owner);
     }
 
     for (int n = 0; n < dis2_->node_row_map()->NumMyElements(); ++n)
@@ -1501,16 +1504,16 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
       owner[1] = node->owner();
       owner[2] = node->owner();
 
-      Core::LinAlg::Assemble(*checkb, pos, id, owner);
+      Core::LinAlg::assemble(*checkb, pos, id, owner);
     }
 
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
     Teuchos::RCP<Epetra_Vector> finalDA =
-        Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta));
+        Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
     Teuchos::RCP<Epetra_Vector> finalMA =
-        Core::LinAlg::CreateVector(*discret1()->dof_row_map(dofseta));
+        Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
 
     err = dmatrix_xa_->multiply(false, *checka, *finalDA);
     if (err != 0) FOUR_C_THROW("stop");
@@ -1519,9 +1522,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     if (err != 0) FOUR_C_THROW("stop");
 
     Teuchos::RCP<Epetra_Vector> finalDB =
-        Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb));
+        Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
     Teuchos::RCP<Epetra_Vector> finalMB =
-        Core::LinAlg::CreateVector(*discret2()->dof_row_map(dofsetb));
+        Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->multiply(false, *checkb, *finalDB);
     if (err != 0) FOUR_C_THROW("stop");
@@ -1632,7 +1635,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
   // *************************************
   // TESSELATION *************************
-  if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
+  if (Core::UTILS::integral_value<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
   {
     // Set options for the cut wizard
     wizard->set_options(cut_params_, Cut::NDS_Strategy_full,
@@ -1694,7 +1697,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
   // *******************************************
   // DIRECT DIVERGENCE *************************
-  else if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
+  else if (Core::UTILS::integral_value<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
   {
     // Set options for the cut wizard
     wizard->set_options(cut_params_, Cut::NDS_Strategy_full,
@@ -1763,17 +1766,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_ele_integration(
 
     // global to local:
     if (mele.shape() == Core::FE::CellType::hex8)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex20)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex27)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet4)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet10)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::pyramid5)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
     else
       FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -1845,17 +1848,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
       // global to local:
       if (sele.shape() == Core::FE::CellType::hex8)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::hex20)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::hex27)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::tet4)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::tet10)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::pyramid5)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
       else
         FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -1919,17 +1922,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
       // global to local:
       if (mele.shape() == Core::FE::CellType::hex8)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::hex20)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::hex27)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::tet4)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::tet10)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::pyramid5)
-        Mortar::UTILS::GlobalToLocal<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
+        Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
       else
         FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -1983,17 +1986,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
     // global to local:
     if (sele.shape() == Core::FE::CellType::hex8)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::hex20)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::hex27)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::tet4)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::tet10)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::pyramid5)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
     else
       FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -2030,17 +2033,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
     // global to local:
     if (mele.shape() == Core::FE::CellType::hex8)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex20)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex27)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet4)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet10)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::pyramid5)
-      Mortar::UTILS::GlobalToLocal<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
+      Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
     else
       FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -3676,7 +3679,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   /********************************************************************/
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd1 =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*d1_));
-  Teuchos::RCP<Epetra_Vector> diag1 = Core::LinAlg::CreateVector(*p12_dofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag1 = Core::LinAlg::create_vector(*p12_dofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -3695,14 +3698,14 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 
   // do the multiplication P = inv(D) * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux12 =
-      Core::LinAlg::MLMultiply(*invd1, false, *m12_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*invd1, false, *m12_, false, false, false, true);
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         B               */
   /********************************************************************/
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd2 =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*d2_));
-  Teuchos::RCP<Epetra_Vector> diag2 = Core::LinAlg::CreateVector(*p21_dofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag2 = Core::LinAlg::create_vector(*p21_dofrowmap_, true);
 
   // extract diagonal of invd into diag
   invd2->extract_diagonal_copy(*diag2);
@@ -3720,13 +3723,13 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 
   // do the multiplication P = inv(D) * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux21 =
-      Core::LinAlg::MLMultiply(*invd2, false, *m21_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*invd2, false, *m21_, false, false, false, true);
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != dualquad_no_mod)
   {
-    p12_ = Core::LinAlg::MLMultiply(*t1_, false, *aux12, false, false, false, true);
-    p21_ = Core::LinAlg::MLMultiply(*t2_, false, *aux21, false, false, false, true);
+    p12_ = Core::LinAlg::ml_multiply(*t1_, false, *aux12, false, false, false, true);
+    p21_ = Core::LinAlg::ml_multiply(*t2_, false, *aux21, false, false, false, true);
   }
   else
   {
@@ -4520,7 +4523,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
     // - this yields the final clip polygon
     // - sanity of the generated output is checked
     //**********************************************************************
-    Mortar::SortConvexHullPoints(false, transformed, collconvexhull, respoly, tol);
+    Mortar::sort_convex_hull_points(false, transformed, collconvexhull, respoly, tol);
   }
 
   return true;

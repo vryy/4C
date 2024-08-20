@@ -281,18 +281,18 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
 
   // add velafgrad
   Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-  if (Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
+  if (Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der"))
   {
     // add velafgrad
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-    if (Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
+    if (Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der"))
     {
       for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
            state != statevecs.end(); ++state)
       {
         if (state->first == "velaf")
         {
-          FLD::UTILS::ProjectGradientAndSetParam(
+          FLD::UTILS::project_gradient_and_set_param(
               discret_, eleparams_, state->second, "velafgrad", false);
           break;
         }

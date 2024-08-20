@@ -47,7 +47,7 @@ void Adapter::StructureConstrMerged::setup()
     FOUR_C_THROW("Failed to create the underlying structural adapter");
 
   // build merged dof row map
-  dofrowmap_ = Core::LinAlg::MergeMap(*(structure_->dof_row_map()),
+  dofrowmap_ = Core::LinAlg::merge_map(*(structure_->dof_row_map()),
       *(structure_->get_constraint_manager()->get_constraint_map()), false);
 
   // set up interface between merged and single maps
@@ -236,7 +236,7 @@ void Adapter::StructureConstrMerged::evaluate(Teuchos::RCP<const Epetra_Vector> 
 /* domain map */
 const Epetra_Map& Adapter::StructureConstrMerged::domain_map() const
 {
-  return *(Core::LinAlg::MergeMap(structure_->domain_map(),
+  return *(Core::LinAlg::merge_map(structure_->domain_map(),
       *(structure_->get_constraint_manager()->get_constraint_map()), false));
 }
 
@@ -246,13 +246,13 @@ void Adapter::StructureConstrMerged::apply_interface_forces_temporary_deprecated
     Teuchos::RCP<Epetra_Vector> iforce)
 {
   // create vector with displacement and constraint DOFs
-  Teuchos::RCP<Epetra_Vector> fifc = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> fifc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   // insert interface forces
   interface_->add_fsi_cond_vector(iforce, fifc);
 
   // extract the force values from the displacement DOFs only
-  Teuchos::RCP<Epetra_Vector> fifcdisp = Core::LinAlg::CreateVector(*conmerger_->cond_map(), true);
+  Teuchos::RCP<Epetra_Vector> fifcdisp = Core::LinAlg::create_vector(*conmerger_->cond_map(), true);
   conmerger_->extract_cond_vector(fifc, fifcdisp);
 
   // set interface forces within the structural time integrator

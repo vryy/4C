@@ -100,7 +100,7 @@ Core::ProblemType Global::Problem::get_problem_type() const { return probtype_; 
 /*----------------------------------------------------------------------*/
 std::string Global::Problem::problem_name() const
 {
-  std::map<std::string, Core::ProblemType> map = Inpar::PROBLEMTYPE::StringToProblemTypeMap();
+  std::map<std::string, Core::ProblemType> map = Inpar::PROBLEMTYPE::string_to_problem_type_map();
   std::map<std::string, Core::ProblemType>::const_iterator i;
 
   for (i = map.begin(); i != map.end(); ++i)
@@ -177,9 +177,9 @@ void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::stri
   outputcontrol_ = Teuchos::rcp(
       new Core::IO::OutputControl(comm, problem_name(), spatial_approximation_type(), inputfile,
           restartkenner, std::move(prefix), n_dim(), restart(), io_params().get<int>("FILESTEPS"),
-          Core::UTILS::IntegralValue<bool>(io_params(), "OUTPUT_BIN"), true));
+          Core::UTILS::integral_value<bool>(io_params(), "OUTPUT_BIN"), true));
 
-  if (!Core::UTILS::IntegralValue<int>(io_params(), "OUTPUT_BIN") && comm.MyPID() == 0)
+  if (!Core::UTILS::integral_value<int>(io_params(), "OUTPUT_BIN") && comm.MyPID() == 0)
   {
     Core::IO::cout << "==================================================\n"
                    << "=== WARNING: No binary output will be written. ===\n"
@@ -196,7 +196,7 @@ void Global::Problem::write_input_parameters()
   std::string s = output_control_file()->file_name();
   s.append(".parameter");
   std::ofstream stream(s.c_str());
-  Input::PrintDatHeader(stream, *parameters_, "", false);
+  Input::print_dat_header(stream, *parameters_, "", false);
 }
 
 
@@ -228,7 +228,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::get_valid_parameters
 {
   // call the external method to get the valid parameters
   // this way the parameter configuration is separate from the source
-  return Input::ValidParameters();
+  return Input::valid_parameters();
 }
 
 

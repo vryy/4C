@@ -133,7 +133,7 @@ void FLD::FluidImplicitTimeInt::init()
   theta_ = params_->get<double>("theta");
 
   // cfl computation type and cfl number for adaptive time stepping
-  cfl_estimator_ = Core::UTILS::IntegralValue<Inpar::FLUID::AdaptiveTimeStepEstimator>(
+  cfl_estimator_ = Core::UTILS::integral_value<Inpar::FLUID::AdaptiveTimeStepEstimator>(
       (params_->sublist("TIMEADAPTIVITY")), "ADAPTIVE_TIME_STEP_ESTIMATOR");
   cfl_ = params_->sublist("TIMEADAPTIVITY").get<double>("CFL_NUMBER", -1.0);
   if (cfl_estimator_ == Inpar::FLUID::cfl_number && cfl_ < 0.0)
@@ -143,7 +143,7 @@ void FLD::FluidImplicitTimeInt::init()
   numstasteps_ = params_->get<int>("number of start steps");
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = Core::UTILS::GetAsEnum<Inpar::FLUID::LinearisationAction>(*params_, "Linearisation");
+  newton_ = Core::UTILS::get_as_enum<Inpar::FLUID::LinearisationAction>(*params_, "Linearisation");
 
   predictor_ = params_->get<std::string>("predictor", "steady_state_predictor");
 
@@ -188,7 +188,7 @@ void FLD::FluidImplicitTimeInt::init()
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
   if (velpressplitter_->num_maps() == 0)
-    Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, numdim_, *velpressplitter_);
+    Core::LinAlg::create_map_extractor_from_discretization(*discret_, numdim_, *velpressplitter_);
   // if the pressure map is empty, the user obviously specified a wrong
   // number of space dimensions in the input file
   if (velpressplitter_->cond_map()->NumGlobalElements() < 1)
@@ -230,7 +230,7 @@ void FLD::FluidImplicitTimeInt::init()
   // -----------------------------------------
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
@@ -249,7 +249,7 @@ void FLD::FluidImplicitTimeInt::init()
 
   // a vector containing the integrated traction in boundary normal direction for slip boundary
   // conditions (Unit: Newton [N])
-  slip_bc_normal_tractions_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  slip_bc_normal_tractions_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // manager for wall stress related things
   stressmanager_ =
@@ -268,7 +268,7 @@ void FLD::FluidImplicitTimeInt::init()
 
   {
     // XWall: enrichment with spaldings law
-    if (Core::UTILS::IntegralValue<int>(params_->sublist("WALL MODEL"), "X_WALL"))
+    if (Core::UTILS::integral_value<int>(params_->sublist("WALL MODEL"), "X_WALL"))
     {
       if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fsi ||
           Global::Problem::instance()->get_problem_type() == Core::ProblemType::fluid_ale)
@@ -316,16 +316,16 @@ void FLD::FluidImplicitTimeInt::init()
   }
 
   // the vector containing body and surface forces
-  neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  neumann_loads_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // Vectors used for solution process
   // ---------------------------------
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  trueresidual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  residual_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  trueresidual_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // Nonlinear iteration increment vector
-  incvel_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  incvel_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // initialize vectors and flags for turbulence approach
@@ -375,12 +375,12 @@ void FLD::FluidImplicitTimeInt::init()
 
   // for the case of edge-oriented stabilization
   Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  if (Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
+  if (Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
       Inpar::FLUID::stabtype_edgebased)
   {
     create_faces_extension();
   }
-  reconstructder_ = Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
+  reconstructder_ = Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der");
 
 }  // FluidImplicitTimeInt::init()
 
@@ -460,7 +460,7 @@ void FLD::FluidImplicitTimeInt::init_nonlinear_bc()
     isimpedancebc_ = true;  // Set bool to true since there is an impedance BC
 
     // Test if also AVM3 is used
-    fssgv_ = Core::UTILS::IntegralValue<Inpar::FLUID::FineSubgridVisc>(
+    fssgv_ = Core::UTILS::integral_value<Inpar::FLUID::FineSubgridVisc>(
         params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC");
     if (fssgv_ != Inpar::FLUID::no_fssgv)
     {
@@ -563,7 +563,7 @@ void FLD::FluidImplicitTimeInt::integrate()
 
   // print the results of time measurements
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      Core::Communication::toTeuchosComm<int>(discret_->get_comm());
+      Core::Communication::to_teuchos_comm<int>(discret_->get_comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 
 }  // FluidImplicitTimeInt::Integrate
@@ -643,7 +643,7 @@ void FLD::FluidImplicitTimeInt::setup_locsys_dirichlet_bc(double time)
 
     for (int i = 0; i < numlocsys; ++i)
     {
-      loc_sys_node_normals[i] = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+      loc_sys_node_normals[i] = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
       Teuchos::ParameterList nodeNormalParams;
 
@@ -1019,7 +1019,7 @@ void FLD::FluidImplicitTimeInt::assemble_mat_and_rhs()
   }
 
   // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
-  if (Core::UTILS::IntegralValue<Inpar::FLUID::ForcingType>(
+  if (Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(
           params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE") == Inpar::FLUID::fixed_power_input)
   {
     // calculate required forcing
@@ -1147,7 +1147,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
     if (shapederivatives_ != Teuchos::null)
       FOUR_C_THROW("The shape derivative cannot be assembled off-proc currently");
     const Epetra_Map* dofcolmap = discret_->dof_col_map();
-    Teuchos::RCP<Epetra_Vector> residual_col = Core::LinAlg::CreateVector(*dofcolmap, true);
+    Teuchos::RCP<Epetra_Vector> residual_col = Core::LinAlg::create_vector(*dofcolmap, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat =
         Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
     if (sysmat == Teuchos::null) FOUR_C_THROW("expected Sparse Matrix");
@@ -1201,10 +1201,10 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
       // assembled do not exclude non-row nodes (modify the real owner to myowner) after assembly
       // the col vector it has to be exported to the row residual_ vector using the 'Add' flag to
       // get the right value for shared nodes
-      Core::LinAlg::Assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
+      Core::LinAlg::assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
     }
     //-------------------------------------------------------------------------------
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
     Epetra_Export exporter(residual_col->Map(), tmp->Map());
     int err = tmp->Export(*residual_col, exporter, Add);
@@ -1454,7 +1454,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       flowdeppressureparams.set<int>("action", FLD::calc_flowrate);
 
       // create vector and initialize with zeros
-      Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::CreateVector(*dofrowmap, true);
+      Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
 
       // set required state vectors
       discret_->clear_state();
@@ -1715,7 +1715,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
     // initialize global slip bc normal traction variable
-    slip_bc_normal_tractions_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    slip_bc_normal_tractions_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // decide on whether it is a line or a surface condition and set condition
     // name accordingly. Both types simultaneously is not supported
@@ -1773,7 +1773,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 
       // temporary variable holding the scaled residual contribution
       Teuchos::RCP<Epetra_Vector> slip_bc_normal_tractions_scaled;
-      slip_bc_normal_tractions_scaled = Core::LinAlg::CreateVector(*dofrowmap, true);
+      slip_bc_normal_tractions_scaled = Core::LinAlg::create_vector(*dofrowmap, true);
 
       // evaluate all slip supplemental curved boundary conditions
       discret_->evaluate_condition(slipsuppparams, sysmat_, Teuchos::null,
@@ -1907,7 +1907,7 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
 
 
   Teuchos::RCP<Epetra_Vector> residual_col =
-      Core::LinAlg::CreateVector(*(facediscret_->dof_col_map()), true);
+      Core::LinAlg::create_vector(*(facediscret_->dof_col_map()), true);
 
   const Epetra_Map* rmap = nullptr;
 
@@ -2006,7 +2006,7 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
         Teuchos::rcp(new Epetra_Map(block_sysmat->domain_map(1)));
 
     // Split sparse system matrix into blocks according to the given maps
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         sysmat_linalg, domainmap_00, domainmap_11, domainmap_00, domainmap_11, f00, f01, f10, f11);
     // add the blocks subsequently
     block_sysmat->matrix(0, 0).add(*f00, false, 1.0, 1.0);
@@ -2074,7 +2074,7 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_to_system()
     locsysman_->rotate_global_to_local(system_matrix(), residual_);
 
     Core::LinAlg::apply_dirichlet_to_system(
-        *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(sysmat_), *incvel_, *residual_,
+        *Core::LinAlg::cast_to_sparse_matrix_and_check_success(sysmat_), *incvel_, *residual_,
         *locsysman_->trafo(), *zeros_, *(dbcmaps_->cond_map()));
   }
   else
@@ -2243,7 +2243,7 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
 
   // construct c by setting all pressure values to 1.0 and export to c
   presmode->PutScalar(1.0);
-  Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
   Core::LinAlg::export_to(*presmode, *tmpc);
   Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
   Core::LinAlg::export_to(*tmpkspc, *c0);
@@ -2558,7 +2558,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
     // Obtain the global IDs of the condition's nodes for the current processor
     std::vector<int> gIdNodes;
-    Core::Conditions::FindConditionedNodes(*discret_, selectedCond, gIdNodes);
+    Core::Conditions::find_conditioned_nodes(*discret_, selectedCond, gIdNodes);
 
     // Obtain fluid and ale state variables for nodes in the condition
     // **************************************************************************
@@ -2624,7 +2624,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
         // Initialize global node normals vector
         Teuchos::RCP<Epetra_Vector> globalNodeNormals =
-            Core::LinAlg::CreateVector(*dofrowmap, true);
+            Core::LinAlg::create_vector(*dofrowmap, true);
 
         // Evaluate condition to calculate the node normals
         // Note: the normal vectors do not yet have length 1.0
@@ -3043,7 +3043,7 @@ void FLD::FluidImplicitTimeInt::evaluate(Teuchos::RCP<const Epetra_Vector> stepi
   if (stepinc != Teuchos::null)
   {
     // Add stepinc to veln_ for non-Dirichlet values.
-    Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+    Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
     aux->Update(1.0, *veln_, 1.0, *stepinc, 0.0);
 
     // Set Dirichlet values
@@ -3302,7 +3302,7 @@ void FLD::FluidImplicitTimeInt::calc_intermediate_solution()
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
-      Core::UTILS::IntegralValue<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
+      Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
   {
     bool activate = true;
@@ -3326,7 +3326,7 @@ void FLD::FluidImplicitTimeInt::calc_intermediate_solution()
 
       // temporary store velnp_ since it will be modified in Solve()
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
-      Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*dofrowmap, true);
+      Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*dofrowmap, true);
       tmp->Update(1.0, *velnp_, 0.0);
 
       // compute intermediate solution without forcing
@@ -3729,14 +3729,14 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
   std::string filename = "dummy";
   if (inflow)
   {
-    filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_velpres_inflow",
+    filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("solution_velpres_inflow",
         discret_->writer()->output()->file_name(), step, 20, screen_out,
         discret_->get_comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
   }
   else
   {
-    filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("solution_velpres",
+    filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files("solution_velpres",
         discret_->writer()->output()->file_name(), step, 20, screen_out,
         discret_->get_comm().MyPID());
     // std::ofstream gmshfilecontent(filename.c_str());
@@ -3747,7 +3747,7 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "velocity solution \" {" << std::endl;
-    Core::IO::Gmsh::VelocityPressureFieldDofBasedToGmsh(
+    Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
         discret_, velnp_, "velocity", gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
@@ -3755,7 +3755,7 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "pressure solution\" {" << std::endl;
-    Core::IO::Gmsh::VelocityPressureFieldDofBasedToGmsh(
+    Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
         discret_, velnp_, "pressure", gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
@@ -3877,7 +3877,7 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
   const int have_fexternal = reader.read_int("have_fexternal");
   if (have_fexternal != -1)
   {
-    external_loads_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     reader.read_vector(external_loads_, "fexternal");
     if (have_fexternal != external_loads_->GlobalLength())
       FOUR_C_THROW("reading of external loads failed");
@@ -3936,7 +3936,7 @@ void FLD::FluidImplicitTimeInt::update_gridv()
   // from input file data
   const Teuchos::ParameterList& fluiddynparams =
       Global::Problem::instance()->fluid_dynamic_params();
-  const int gridvel = Core::UTILS::IntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+  const int gridvel = Core::UTILS::integral_value<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   switch (gridvel)
   {
@@ -4123,7 +4123,7 @@ void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
     Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
         new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(scale_sep_solvernumber),
             discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                 Global::Problem::instance()->io_params(), "VERBOSITY")));
     // compute the null space,
     discret_->compute_null_space_if_necessary(solver->params(), true);
@@ -4153,14 +4153,14 @@ void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
 
   // get plain aggregation Ptent
   Core::LinAlg::SparseMatrix Ptent =
-      Core::LinAlg::CreateInterpolationMatrix(*system_matrix(), nullspace, mlparams);
+      Core::LinAlg::create_interpolation_matrix(*system_matrix(), nullspace, mlparams);
 
   // compute scale-separation matrix: S = I - Ptent*Ptent^T
-  Sep_ = Core::LinAlg::MatrixMultiply(Ptent, false, Ptent, true);
+  Sep_ = Core::LinAlg::matrix_multiply(Ptent, false, Ptent, true);
   Sep_->scale(-1.0);
-  Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(Sep_->row_map(), false);
+  Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(Sep_->row_map(), false);
   tmp->PutScalar(1.0);
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(Sep_->row_map(), false);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(Sep_->row_map(), false);
   Sep_->extract_diagonal_copy(*diag);
   diag->Update(1.0, *tmp, 1.0);
   // Hint: replace_diagonal_values doesn't do anything if nothing in graph before
@@ -4229,7 +4229,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
       const Teuchos::ParameterList& nurbs_params = Global::Problem::instance()->nurbs_params();
 
       const bool is_ls_dbc_needed =
-          Core::UTILS::IntegralValue<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
+          Core::UTILS::integral_value<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
 
       if (is_ls_dbc_needed)
       {
@@ -4793,7 +4793,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::extract_pressure_pa
 Teuchos::RCP<std::vector<double>>
 FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
 {
-  auto calcerr = Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  auto calcerr = Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -4859,7 +4859,8 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
         {
           std::cout << std::endl
                     << "Warning: H_1 velocity error norm for analytical solution Nr. "
-                    << Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error")
+                    << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
+                           *params_, "calculate error")
                     << " is not implemented yet!!" << std::endl;
         }
       }
@@ -4870,7 +4871,8 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
           std::cout.precision(8);
           std::cout << std::endl
                     << "---- error norm for analytical solution Nr. "
-                    << Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error")
+                    << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
+                           *params_, "calculate error")
                     << " ----------" << std::endl;
           std::cout << "| relative L_2 velocity error norm:     " << (*relerror)[0] << std::endl;
           std::cout << "| relative L_2 pressure error norm:     " << (*relerror)[1] << std::endl;
@@ -5129,19 +5131,19 @@ void FLD::FluidImplicitTimeInt::lift_drag() const
       // acting on the node, i.e. taking into account the previously neglected
       // forces perpendicular to the boundary due to slip boundary condition(s)
       Teuchos::RCP<Epetra_Vector> forces;
-      forces = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+      forces = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
       forces->Update(1.0, *trueresidual_, 1.0, *slip_bc_normal_tractions_, 0.0);
 
-      FLD::UTILS::LiftDrag(discret_, forces, dispnp_, numdim_, liftdragvals, alefluid_);
+      FLD::UTILS::lift_drag(discret_, forces, dispnp_, numdim_, liftdragvals, alefluid_);
     }
     else
     {
-      FLD::UTILS::LiftDrag(discret_, trueresidual_, dispnp_, numdim_, liftdragvals, alefluid_);
+      FLD::UTILS::lift_drag(discret_, trueresidual_, dispnp_, numdim_, liftdragvals, alefluid_);
     }
 
     if (liftdragvals != Teuchos::null and discret_->get_comm().MyPID() == 0)
-      FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+      FLD::UTILS::write_lift_drag_to_file(time_, step_, *liftdragvals);
   }
 }
 
@@ -5173,26 +5175,26 @@ void FLD::FluidImplicitTimeInt::compute_flow_rates() const
 
   if (alefluid_)
   {
-    const std::map<int, double> flowrates =
-        FLD::UTILS::ComputeFlowRates(*discret_, velnp_, gridv_, dispnp_, condstring, physicaltype_);
+    const std::map<int, double> flowrates = FLD::UTILS::compute_flow_rates(
+        *discret_, velnp_, gridv_, dispnp_, condstring, physicaltype_);
     // const std::map<int,double> volume = FLD::UTILS::compute_volume(*discret_,
     // velnp_,gridv_,dispnp_,physicaltype_);
 
     // write to file
     if (discret_->get_comm().MyPID() == 0)
     {
-      FLD::UTILS::WriteDoublesToFile(time_, step_, flowrates, "flowrate");
+      FLD::UTILS::write_doubles_to_file(time_, step_, flowrates, "flowrate");
       // FLD::UTILS::WriteDoublesToFile(time_, step_, volume,"volume" );
     }
   }
   else
   {
     const std::map<int, double> flowrates =
-        FLD::UTILS::ComputeFlowRates(*discret_, velnp_, condstring, physicaltype_);
+        FLD::UTILS::compute_flow_rates(*discret_, velnp_, condstring, physicaltype_);
 
     // write to file
     if (discret_->get_comm().MyPID() == 0)
-      FLD::UTILS::WriteDoublesToFile(time_, step_, flowrates, "flowrate");
+      FLD::UTILS::write_doubles_to_file(time_, step_, flowrates, "flowrate");
   }
 }
 
@@ -5211,7 +5213,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::integrate_interface_shape
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // call loop over elements
   discret_->clear_state();
@@ -5326,7 +5328,7 @@ void FLD::FluidImplicitTimeInt::linear_relaxation_solve(Teuchos::RCP<Epetra_Vect
     // solves of the FSI interface equations.
 
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> griddisp = Core::LinAlg::CreateVector(*dofrowmap, false);
+    Teuchos::RCP<Epetra_Vector> griddisp = Core::LinAlg::create_vector(*dofrowmap, false);
 
     // set the grid displacement independent of the trial value at the
     // interface
@@ -5471,10 +5473,10 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::dirichlet()
 {
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichones =
-      Core::LinAlg::CreateVector(*(dbcmaps_->cond_map()), false);
+      Core::LinAlg::create_vector(*(dbcmaps_->cond_map()), false);
   dirichones->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> dirichtoggle =
-      Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+      Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
   dbcmaps_->insert_cond_vector(dirichones, dirichtoggle);
   return dirichtoggle;
 }
@@ -5485,9 +5487,9 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::inv_dirichlet()
 {
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
   Teuchos::RCP<Epetra_Vector> dirichzeros =
-      Core::LinAlg::CreateVector(*(dbcmaps_->cond_map()), true);
+      Core::LinAlg::create_vector(*(dbcmaps_->cond_map()), true);
   Teuchos::RCP<Epetra_Vector> invtoggle =
-      Core::LinAlg::CreateVector(*(discret_->dof_row_map()), false);
+      Core::LinAlg::create_vector(*(discret_->dof_row_map()), false);
   invtoggle->PutScalar(1.0);
   dbcmaps_->insert_cond_vector(dirichzeros, invtoggle);
   return invtoggle;
@@ -5572,7 +5574,7 @@ void FLD::FluidImplicitTimeInt::set_face_general_fluid_parameter()
   faceparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
   faceparams.set<int>(
-      "STABTYPE", Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(
+      "STABTYPE", Core::UTILS::integral_value<Inpar::FLUID::StabType>(
                       params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
   faceparams.set<int>("Physical Type", physicaltype_);
@@ -5606,7 +5608,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
   scale_sep_ = Inpar::FLUID::no_scale_sep;
 
   // fine-scale subgrid viscosity?
-  fssgv_ = Core::UTILS::IntegralValue<Inpar::FLUID::FineSubgridVisc>(
+  fssgv_ = Core::UTILS::integral_value<Inpar::FLUID::FineSubgridVisc>(
       params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC");
 
   // warning if classical (all-scale) turbulence model and fine-scale
@@ -5638,7 +5640,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
     {
       turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
 
-      fsvelaf_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+      fsvelaf_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
       Teuchos::ParameterList* modelparams = &(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
 
@@ -5664,7 +5666,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
 
       // fine-scale scalar at time n+alpha_F/n+1 and n+alpha_M/n
       // (only required for low-Mach-number case)
-      fsscaaf_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+      fsscaaf_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     }
     else if (physmodel == "Vreman")
     {
@@ -5694,7 +5696,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
   // -------------------------------------------------------------------
   if (fssgv_ != Inpar::FLUID::no_fssgv)
   {
-    fsvelaf_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    fsvelaf_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
     if (myrank_ == 0)
     {
@@ -5761,7 +5763,8 @@ void FLD::FluidImplicitTimeInt::update_iter_incrementally(Teuchos::RCP<const Epe
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::CreateVector(*(discret_->dof_row_map(0)), true);
+    Teuchos::RCP<Epetra_Vector> aux =
+        Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
     aux->Update(1.0, *velnp_, 1.0, *vel, 0.0);
     //    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), velnp_);
     dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(velnp_), aux);
@@ -5786,7 +5789,7 @@ void FLD::FluidImplicitTimeInt::print_stabilization_details() const
               << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") << "\n";
     std::cout << "\n";
 
-    if (Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
+    if (Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
         Inpar::FLUID::stabtype_residualbased)
     {
       std::cout << "                             " << stabparams->get<std::string>("TDS") << "\n";
@@ -5823,7 +5826,7 @@ void FLD::FluidImplicitTimeInt::print_stabilization_details() const
       std::cout << "\n";
       std::cout << std::endl;
     }
-    else if (Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
+    else if (Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
              Inpar::FLUID::stabtype_edgebased)
     {
       Teuchos::ParameterList* stabparams_edgebased =
@@ -5916,7 +5919,7 @@ void FLD::FluidImplicitTimeInt::print_turbulence_model()
       std::cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
       std::cout << "- Scale separation:  " << modelparams->get<std::string>("SCALE_SEPARATION")
                 << "\n";
-      if ((Core::UTILS::IntegralValue<int>(*modelparams, "CALC_N")))
+      if ((Core::UTILS::integral_value<int>(*modelparams, "CALC_N")))
       {
         std::cout << "- Re_length:         " << modelparams->get<std::string>("REF_LENGTH") << "\n";
         std::cout << "- Re_vel:            " << modelparams->get<std::string>("REF_VELOCITY")
@@ -5926,11 +5929,11 @@ void FLD::FluidImplicitTimeInt::print_turbulence_model()
       else
         std::cout << "- N:                 " << modelparams->get<double>("N") << "\n";
       std::cout << "- near-wall limit:   "
-                << Core::UTILS::IntegralValue<int>(*modelparams, "NEAR_WALL_LIMIT") << "\n";
+                << Core::UTILS::integral_value<int>(*modelparams, "NEAR_WALL_LIMIT") << "\n";
       std::cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
       std::cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
       std::cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
-      if ((Core::UTILS::IntegralValue<int>(*modelparams, "SET_FINE_SCALE_VEL")))
+      if ((Core::UTILS::integral_value<int>(*modelparams, "SET_FINE_SCALE_VEL")))
         std::cout << "WARNING: fine-scale velocity is set for nightly tests!"
                   << "\n";
       std::cout << &std::endl;
@@ -5997,7 +6000,7 @@ void FLD::FluidImplicitTimeInt::apply_scale_separation_for_les()
         // set fine-scale velocity for parallel nigthly tests
         // separation matrix depends on the number of proc here
         if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
-            (Core::UTILS::IntegralValue<int>(
+            (Core::UTILS::integral_value<int>(
                 params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
           fsvelaf_->PutScalar(0.01);
 
@@ -6040,7 +6043,7 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
   // is seen by the scalar field. However, note that vel_n ~ vel_np ~ vel_af for statistically
   // stationary flow. Hence, the expected error is marginal, but another computation is avoided.
 
-  if (Core::UTILS::IntegralValue<int>(
+  if (Core::UTILS::integral_value<int>(
           params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "ADAPT_CSGS_PHI"))
   {
     // mean Cai
@@ -6161,7 +6164,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::extrapolate_end_point(
 void FLD::FluidImplicitTimeInt::apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext)
 {
   if (external_loads_ == Teuchos::null)
-    external_loads_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   external_loads_->Update(1.0, *fext, 0.0);
 }
@@ -6258,41 +6261,41 @@ void FLD::FluidImplicitTimeInt::reset(bool completeReset, int numsteps, int iter
     // Vectors passed to the element
     // -----------------------------
     // velocity/pressure at time n+1, n and n-1
-    velnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    veln_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    velnm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    velnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    veln_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    velnm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // acceleration/(scalar time derivative) at time n+1 and n
-    accnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    accn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    accnm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    accnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    accn_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    accnm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // velocity/pressure at time n+alpha_F
-    velaf_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    velaf_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // velocity/pressure at time n+alpha_M
-    velam_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    velam_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
-    accam_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    accam_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // scalar at time n+alpha_F/n+1 and n+alpha_M/n
     // (only required for low-Mach-number case)
-    scaaf_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    scaam_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    scaaf_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    scaam_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // history vector
-    hist_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    hist_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     if (alefluid_)
     {
       const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
 
-      if (dispnp_.is_null()) dispnp_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
-      if (dispn_.is_null()) dispn_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
-      dispnm_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
-      gridv_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
-      gridvn_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
+      if (dispnp_.is_null()) dispnp_ = Core::LinAlg::create_vector(*aledofrowmap, true);
+      if (dispn_.is_null()) dispn_ = Core::LinAlg::create_vector(*aledofrowmap, true);
+      dispnm_ = Core::LinAlg::create_vector(*aledofrowmap, true);
+      gridv_ = Core::LinAlg::create_vector(*aledofrowmap, true);
+      gridvn_ = Core::LinAlg::create_vector(*aledofrowmap, true);
     }
   }
 }
@@ -6319,7 +6322,8 @@ void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
   incvel_->PutScalar(0.0);
 
   // for solution increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc =
+      Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   // copy last converged solution
   dbcinc->Update(1.0, *veln_, 0.0);
@@ -6344,7 +6348,8 @@ void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
 
   // add linear reaction forces to residual
   // linear reactions
-  Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> freact =
+      Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
   sysmat_->multiply(false, *dbcinc, *freact);
 
   // add linear reaction forces due to prescribed Dirichlet BCs
@@ -6394,7 +6399,7 @@ void FLD::FluidImplicitTimeInt::set_fld_gr_disp(Teuchos::RCP<Epetra_Vector> flui
 // overloaded in TimIntRedModels bk 12/13
 void FLD::FluidImplicitTimeInt::setup_meshtying()
 {
-  msht_ = Core::UTILS::GetAsEnum<Inpar::FLUID::MeshTying>(*params_, "MESHTYING");
+  msht_ = Core::UTILS::get_as_enum<Inpar::FLUID::MeshTying>(*params_, "MESHTYING");
   bool alldofcoupled = params_->get<bool>("ALLDOFCOUPLED");
 
   // meshtying: all dofs (velocity + pressure) are coupled
@@ -6713,7 +6718,7 @@ void FLD::FluidImplicitTimeInt::add_contribution_to_external_loads(
   /// will be scaled with 1.0/residual_scaling() when applied in
   /// void FLD::FluidImplicitTimeInt::assemble_mat_and_rhs()
   if (external_loads_ == Teuchos::null)
-    external_loads_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   int err = external_loads_->Update(1.0, *contributing_vector, 1.0);
 
@@ -6768,7 +6773,7 @@ void FLD::FluidImplicitTimeInt::assemble_coupling_contributions()
     sysmat_->add(*couplingcontributions_, false, 1.0 / residual_scaling(), 1.0);
 
     // Add the matrix multiplied with the solution of the last time step to the rhs
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     int err = couplingcontributions_->multiply(false, *velnp_, *tmp);
 
     if (err != 0) FOUR_C_THROW(" Linalg Sparse Matrix Multiply threw error code %i ", err);
@@ -6791,7 +6796,7 @@ void FLD::FluidImplicitTimeInt::init_forcing()
       special_flow_ == "decaying_homogeneous_isotropic_turbulence" or
       special_flow_ == "periodic_hill")
   {
-    forcing_ = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+    forcing_ = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
     if (special_flow_ == "forced_homogeneous_isotropic_turbulence" or
         special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
@@ -6822,7 +6827,7 @@ void FLD::FluidImplicitTimeInt::update_slave_dof(Teuchos::RCP<Epetra_Vector>& f)
 void FLD::FluidImplicitTimeInt::reset_external_forces()
 {
   if (external_loads_ == Teuchos::null)
-    external_loads_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   external_loads_->PutScalar(0);
 }
 

@@ -62,7 +62,7 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
   {
     // initialize velocity vectors
     Teuchos::RCP<Epetra_Vector> phaseflux =
-        Core::LinAlg::CreateVector(*discret_->dof_row_map(nds_vel()), true);
+        Core::LinAlg::create_vector(*discret_->dof_row_map(nds_vel()), true);
 
     std::stringstream statename;
     statename << stateprefix << curphase;
@@ -206,7 +206,7 @@ void ScaTra::ScaTraTimIntPoroMulti::collect_runtime_output_data()
           // compute CaO2
           const double CaO2 = (*phinp_)[lidoxydof] * rho_bl / rho_oxy;
           // compute Pb
-          PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
+          PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<double>(
               Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
           // replace value
           oxypartpress.ReplaceGlobalValue(node->id(), 0, Pb);

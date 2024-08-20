@@ -86,7 +86,7 @@ Discret::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
         \param dt               (i) timestep
         */
 template <Core::FE::CellType distype>
-void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& epnp,
+void sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& epnp,
     Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
     Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
@@ -157,19 +157,19 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::extract_my_values(*pn, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::extract_my_values(*pnm, mypnm, lm);
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
-  Core::FE::ExtractMyValues(*ial, myial, lm);
+  Core::FE::extract_my_values(*ial, myial, lm);
 
   // Create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(elemVecdim);
@@ -207,7 +207,7 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
   elem_params.lungVolume_nm = evaluation_data.lungVolume_nm;
 
   // Call routine for calculating element matrix and right hand side
-  Sysmat<distype>(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt);
+  sysmat<distype>(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt);
 
   // Put zeros on second line of matrix and rhs in case of interacinar linker
   if (myial[1] > 0.0)
@@ -303,7 +303,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // Create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(numnode);
@@ -722,15 +722,15 @@ void Discret::ELEMENTS::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::extract_my_values(*pn, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::extract_my_values(*pnm, mypnm, lm);
 
   // Create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(elemVecdim);
@@ -766,14 +766,14 @@ void Discret::ELEMENTS::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
   elem_params.acin_vnp = e_acin_vnp;
   elem_params.acin_vn = e_acin_vn;
 
-  Core::LinAlg::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
+  Core::LinAlg::SerialDenseMatrix system_matrix(elemVecdim, elemVecdim, true);
   Core::LinAlg::SerialDenseVector rhs(elemVecdim);
 
   // Call routine for calculating element matrix and right hand side
-  Sysmat<distype>(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt);
+  sysmat<distype>(ele, epnp, epn, epnm, system_matrix, rhs, material, elem_params, time, dt);
 
   double qn = (*evaluation_data.qin_n)[ele->lid()];
-  double qnp = -1.0 * (sysmat(0, 0) * epnp(0) + sysmat(0, 1) * epnp(1) - rhs(0));
+  double qnp = -1.0 * (system_matrix(0, 0) * epnp(0) + system_matrix(0, 1) * epnp(1) - rhs(0));
 
   int gid = ele->id();
 
@@ -841,7 +841,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(numnode);
@@ -1011,7 +1011,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> mydscatra(lm.size());
-  Core::FE::ExtractMyValues(*dscatranp, mydscatra, lm);
+  Core::FE::extract_my_values(*dscatranp, mydscatra, lm);
 
   //--------------------------------------------------------------------
   // if vel>=0 then node(2) is analytically evaluated;
@@ -1045,15 +1045,15 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_elem12_scatra(RedAcinus* ele
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::extract_my_values(*scatranp, myscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
-  Core::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
+  Core::FE::extract_my_values(*dscatranp, mydscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  Core::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
+  Core::FE::extract_my_values(*volumeMix, myvolmix, lm);
 
   // get flowrate
   double qin = (*evaluation_data.qin_np)[ele->lid()];
@@ -1095,7 +1095,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcin
   // Extract scatra values
   // Extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::extract_my_values(*scatranp, myscatranp, lm);
 
   // Find the volume of an acinus
   // Get the current acinar volume

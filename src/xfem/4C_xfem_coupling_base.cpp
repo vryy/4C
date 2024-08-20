@@ -23,7 +23,7 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 FOUR_C_NAMESPACE_OPEN
 
-Inpar::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& condname)
+Inpar::XFEM::EleCouplingCondType XFEM::cond_type_string_to_enum(const std::string& condname)
 {
   if (condname == "XFEMSurfFSIPart")
     return Inpar::XFEM::CouplingCond_SURF_FSI_PART;
@@ -277,14 +277,15 @@ void XFEM::CouplingBase::set_element_conditions()
     // loop all possible XFEM-coupling conditions
     for (size_t cond = 0; cond < conditions_to_copy_.size(); cond++)
     {
-      Inpar::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(conditions_to_copy_[cond]);
+      Inpar::XFEM::EleCouplingCondType cond_type =
+          cond_type_string_to_enum(conditions_to_copy_[cond]);
 
       // non-coupling condition found (e.g. FSI coupling)
       if (cond_type == Inpar::XFEM::CouplingCond_NONE) continue;
 
       // get all conditions with given condition name
       std::vector<Core::Conditions::Condition*> mycond;
-      Core::Conditions::FindElementConditions(cutele, conditions_to_copy_[cond], mycond);
+      Core::Conditions::find_element_conditions(cutele, conditions_to_copy_[cond], mycond);
 
       std::vector<Core::Conditions::Condition*> mynewcond;
       get_condition_by_coupling_id(mycond, coupling_id_, mynewcond);
@@ -361,7 +362,7 @@ void XFEM::CouplingBase::status(const int coupling_idx, const int side_start_gid
         "---+-----------------------------+-----------------------------+--------------------------"
         "---+\n");
     printf("   | %8i | %9i | %27s | %7i | %27s | %27s | %27s | %27s |\n", coupling_idx,
-        side_start_gid, type_to_string_for_print(CondType_stringToEnum(cond_name_)).c_str(),
+        side_start_gid, type_to_string_for_print(cond_type_string_to_enum(cond_name_)).c_str(),
         coupling_id_, dis_name_to_string(cutter_dis_).c_str(),
         dis_name_to_string(cond_dis_).c_str(), dis_name_to_string(coupl_dis_).c_str(),
         averaging_to_string_for_print(averaging_strategy_).c_str());
@@ -372,7 +373,7 @@ void XFEM::CouplingBase::status(const int coupling_idx, const int side_start_gid
 
 void XFEM::CouplingBase::set_averaging_strategy()
 {
-  const Inpar::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
+  const Inpar::XFEM::EleCouplingCondType cond_type = cond_type_string_to_enum(cond_name_);
 
   switch (cond_type)
   {
@@ -436,7 +437,7 @@ void XFEM::CouplingBase::set_averaging_strategy()
 
 void XFEM::CouplingBase::set_coupling_discretization()
 {
-  const Inpar::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
+  const Inpar::XFEM::EleCouplingCondType cond_type = cond_type_string_to_enum(cond_name_);
 
   switch (cond_type)
   {
@@ -702,7 +703,7 @@ void XFEM::CouplingBase::get_average_weights(Core::Elements::Element* xfele,  //
   non_xfluid_coupling = (get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided);
 
   if (get_averaging_strategy() != Inpar::XFEM::Harmonic)
-    XFEM::UTILS::GetStdAverageWeights(get_averaging_strategy(), kappa_m);
+    XFEM::UTILS::get_std_average_weights(get_averaging_strategy(), kappa_m);
   else
     get_coupling_specific_average_weights(xfele, coup_ele, kappa_m);
 

@@ -105,8 +105,8 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // extract local values of (convective) velocity field from global state vector
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, evelnp_, lmvel);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, evelnp_, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
@@ -116,7 +116,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       // -> extract local values from global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // access control parameter for flux calculation
       Inpar::ScaTra::FluxType fluxtype = scatrapara_->calc_flux_domain();
@@ -155,7 +155,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       // -> extract local values from the global vectors
       auto phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // calculate scalars and domain integral
       calculate_scalars(ele, elevec1_epetra, inverting, calc_grad_phi);
@@ -334,7 +334,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // extract local values of convective velocity field from global state vector
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
@@ -342,7 +342,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       // get phi for material parameters
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (turbparams_->turb_model() != Inpar::FLUID::multifractal_subgrid_scales)
         FOUR_C_THROW("Multifractal_Subgrid_Scales expected");
@@ -459,7 +459,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         // -> extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
         if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-        Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+        Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
         // calculate momentum vector and volume for element.
         calculate_momentum_and_volume(ele, elevec1_epetra, interface_thickness);
@@ -475,7 +475,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
 
@@ -522,7 +522,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (ele->material()->material_type() == Core::Materials::m_scatra_multiscale)
       {
         // extract state variables at element nodes
-        Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
+        Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(
             *discretization.get_state("phinp"), ephinp_, lm);
 
         const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -724,7 +724,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (params.get<int>("NUMSCAL") > numscal_)
         FOUR_C_THROW(
@@ -786,7 +786,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_service(
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     update_node_coordinates();
@@ -812,7 +812,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
   // extract scalar values from global vector
   Teuchos::RCP<const Epetra_Vector> scalar = discretization.get_state("scalar");
   if (scalar == Teuchos::null) FOUR_C_THROW("Cannot get scalar!");
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
 
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatrapara_->nds_vel();
@@ -832,7 +832,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // extract local values of convective velocity field from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, evelnp_, lmvel);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, evelnp_, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->rotate_my_values_if_necessary(evelnp_);
@@ -1298,7 +1298,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_d
   const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.get_state("phidtnp");
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
   static std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(numscal_);
-  Core::FE::ExtractMyValues(*phidtnp, ephidtnp, lm);
+  Core::FE::extract_my_values(*phidtnp, ephidtnp, lm);
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -1617,7 +1617,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const auto errortype = Core::UTILS::GetAsEnum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
+  const auto errortype =
+      Core::UTILS::get_as_enum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::ScaTra::calcerror_byfunction:
@@ -1958,7 +1959,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_det_f_at_int_poi
 
   // reference coordinates of element nodes
   Core::LinAlg::Matrix<nsd_, nen_> XYZ;
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, XYZ);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, XYZ);
 
   // reference coordinates of elemental nodes in space dimension of element
   Core::LinAlg::Matrix<nsd_ele_, nen_> XYZe;

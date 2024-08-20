@@ -326,9 +326,9 @@ namespace EXODUS
   };
   // *********** end of classes
 
-  Mesh QuadtoTri(EXODUS::Mesh& basemesh);
+  Mesh quadto_tri(EXODUS::Mesh& basemesh);
 
-  inline ElementBlock::Shape StringToShape(const std::string shape)
+  inline ElementBlock::Shape string_to_shape(const std::string shape)
   {
     if (shape.compare("SPHERE") == 0)
       return ElementBlock::point1;
@@ -386,7 +386,7 @@ namespace EXODUS
     }
   }
 
-  inline std::string ShapeToString(const ElementBlock::Shape shape)
+  inline std::string shape_to_string(const ElementBlock::Shape shape)
   {
     switch (shape)
     {
@@ -453,7 +453,7 @@ namespace EXODUS
     return "xxx";
   }
 
-  inline Core::FE::CellType PreShapeToDrt(const ElementBlock::Shape shape)
+  inline Core::FE::CellType pre_shape_to_drt(const ElementBlock::Shape shape)
   {
     switch (shape)
     {
@@ -520,21 +520,21 @@ namespace EXODUS
     return Core::FE::CellType::max_distype;
   }
 
-  void PrintMap(std::ostream& os, const std::map<int, std::vector<int>> mymap);
-  void PrintMap(std::ostream& os, const std::map<int, std::vector<double>> mymap);
-  void PrintMap(std::ostream& os, const std::map<int, std::set<int>> mymap);
-  void PrintMap(std::ostream& os, const std::map<int, std::map<int, int>> mymap);
-  void PrintMap(std::ostream& os, const std::map<int, std::pair<int, int>> mymap);
-  void PrintMap(std::ostream& os, const std::map<int, int> mymap);
-  void PrintMap(std::ostream& os, const std::map<int, double> mymap);
-  void PrintMap(std::ostream& os, const std::map<double, int> mymap);
-  void PrintVec(std::ostream& os, const std::vector<int> actvec);
-  void PrintVec(std::ostream& os, const std::vector<double> actvec);
-  void PrintSet(std::ostream& os, const std::set<int> actset);
+  void print_map(std::ostream& os, const std::map<int, std::vector<int>> mymap);
+  void print_map(std::ostream& os, const std::map<int, std::vector<double>> mymap);
+  void print_map(std::ostream& os, const std::map<int, std::set<int>> mymap);
+  void print_map(std::ostream& os, const std::map<int, std::map<int, int>> mymap);
+  void print_map(std::ostream& os, const std::map<int, std::pair<int, int>> mymap);
+  void print_map(std::ostream& os, const std::map<int, int> mymap);
+  void print_map(std::ostream& os, const std::map<int, double> mymap);
+  void print_map(std::ostream& os, const std::map<double, int> mymap);
+  void print_vec(std::ostream& os, const std::vector<int> actvec);
+  void print_vec(std::ostream& os, const std::vector<double> actvec);
+  void print_set(std::ostream& os, const std::set<int> actset);
 
 
-  int HexSideNumberExoToFourC(const int exoface);
-  int PyrSideNumberExoToFourC(const int exoface);
+  int hex_side_number_exo_to_four_c(const int exoface);
+  int pyr_side_number_exo_to_four_c(const int exoface);
 
 }  // namespace EXODUS
 

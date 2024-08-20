@@ -94,7 +94,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   {
     geometric_search_visualization_ptr_ =
         Teuchos::rcp(new Core::GeometricSearch::GeometricSearchVisualization(
-            Core::IO::VisualizationParametersFactory(
+            Core::IO::visualization_parameters_factory(
                 Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                 *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
             discret_ptr()->get_comm(), "beam-interaction-geometric-search"));
@@ -104,7 +104,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
   // build runtime visualization writer if desired
-  if ((bool)Core::UTILS::IntegralValue<int>(
+  if ((bool)Core::UTILS::integral_value<int>(
           Global::Problem::instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
@@ -116,7 +116,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
 
   contactelementtypes_.clear();
 
-  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
@@ -133,7 +133,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
     contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Beam);
   }
 
-  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
@@ -162,7 +162,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
               new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
-                  Core::IO::VisualizationParametersFactory(
+                  Core::IO::visualization_parameters_factory(
                       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::instance()->output_control_file(),
                       g_state().get_time_n())));
@@ -194,7 +194,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
       beam_to_solid_surface_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
               new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter(
-                  Core::IO::VisualizationParametersFactory(
+                  Core::IO::visualization_parameters_factory(
                       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::instance()->output_control_file(),
                       g_state().get_time_n())));
@@ -273,7 +273,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
     for (unsigned int ielement = 0; ielement < 2; ++ielement)
     {
       // extract the Dof values of this element from displacement vector
-      BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(discret(), element_ptr[ielement],
+      BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
           beam_interaction_data_state_ptr()->get_dis_col_np(),
           element_posdofvec_absolutevalues[ielement]);
     }
@@ -476,7 +476,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_run
 {
   check_init_setup();
 
-  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->get_visualization_parameters(),
@@ -491,7 +491,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_run
 {
   check_init_setup();
 
-  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->get_visualization_parameters(),
@@ -875,7 +875,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // Check if the current element is relevant for beam-to-xxx contact.
       Core::Elements::Element* currele = discret().l_col_element(colele_i);
       const Core::Binstrategy::Utils::BinContentType contact_type =
-          BEAMINTERACTION::UTILS::ConvertElementToBinContentType(currele);
+          BEAMINTERACTION::UTILS::convert_element_to_bin_content_type(currele);
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
           contactelementtypes_.end())
       {
@@ -887,7 +887,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     }
 
     // Get colliding pairs.
-    const auto& [indices, offsets] = CollisionSearch(other_bounding_boxes, beam_bounding_boxes,
+    const auto& [indices, offsets] = collision_search(other_bounding_boxes, beam_bounding_boxes,
         discret().get_comm(), geometric_search_params_ptr_->verbosity_);
 
     // Create the beam-to-xxx pair pointers according to the search.
@@ -1057,7 +1057,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_i
       for (unsigned int i_element = 0; i_element < 2; ++i_element)
       {
         // Extract the Dof values of this element from the restart vector
-        BEAMINTERACTION::UTILS::ExtractPosDofVecValues(discret(), pair->get_element(i_element),
+        BEAMINTERACTION::UTILS::extract_pos_dof_vec_values(discret(), pair->get_element(i_element),
             beam_interaction_data_state_ptr()->get_dis_restart_col(),
             element_restart_dispalcement_[i_element]);
       }

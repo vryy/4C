@@ -126,7 +126,7 @@ void CONSTRAINTS::ConstrManager::setup(
     constrmap_ = Teuchos::rcp(new Epetra_Map(*(constrdofset_->dof_row_map())));
     // build an all reduced version of the constraintmap, since sometimes all processors
     // have to know all values of the constraints and Lagrange multipliers
-    redconstrmap_ = Core::LinAlg::AllreduceEMap(*constrmap_);
+    redconstrmap_ = Core::LinAlg::allreduce_e_map(*constrmap_);
     // importer
     conimpo_ = Teuchos::rcp(new Epetra_Export(*redconstrmap_, *constrmap_));
     // sum up initial values
@@ -192,7 +192,7 @@ void CONSTRAINTS::ConstrManager::setup(
     }
     // initialize maps and importer
     monitormap_ = Teuchos::rcp(new Epetra_Map(num_monitor_id_, nummyele, 0, actdisc_->get_comm()));
-    redmonmap_ = Core::LinAlg::AllreduceEMap(*monitormap_);
+    redmonmap_ = Core::LinAlg::allreduce_e_map(*monitormap_);
     monimpo_ = Teuchos::rcp(new Epetra_Export(*redmonmap_, *monitormap_));
     monitorvalues_ = Teuchos::rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_ = Teuchos::rcp(new Epetra_Vector(*monitormap_));
@@ -343,7 +343,7 @@ void CONSTRAINTS::ConstrManager::read_restart(
   //  double uzawatemp = reader.ReadDouble("uzawaparameter");
   //  consolv_->SetUzawaParameter(uzawatemp);
   Teuchos::RCP<Epetra_Map> constrmap = get_constraint_map();
-  Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::CreateVector(*constrmap, true);
+  Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::create_vector(*constrmap, true);
   reader.read_vector(tempvec, "lagrmultiplier");
   set_lagr_mult_vector(tempvec);
   reader.read_vector(tempvec, "refconval");
@@ -429,7 +429,7 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(Teuchos::RCP<const Epetr
   {
     // build merged dof row map
     Teuchos::RCP<Epetra_Map> largemap =
-        Core::LinAlg::MergeMap(*actdisc_->dof_row_map(), *constrmap_, false);
+        Core::LinAlg::merge_map(*actdisc_->dof_row_map(), *constrmap_, false);
 
     Core::LinAlg::MapExtractor conmerger;
     conmerger.setup(*largemap, Teuchos::rcp(actdisc_->dof_row_map(), false), constrmap_);

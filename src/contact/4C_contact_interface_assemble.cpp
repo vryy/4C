@@ -46,7 +46,7 @@ void CONTACT::Interface::assemble_slave_coord(Teuchos::RCP<Epetra_Vector>& xsmod
     }
 
     // do assembly
-    Core::LinAlg::Assemble(*xsmod, xspatial, dof, owner);
+    Core::LinAlg::assemble(*xsmod, xspatial, dof, owner);
   }
   return;
 }
@@ -198,7 +198,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
   double frcoeff = interface_params().get<double>("FRCOEFF");
 
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < slave_row_nodes()->NumMyElements(); ++i)
@@ -554,7 +554,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
   double frcoeff = interface_params().get<double>("FRCOEFF");
 
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < slave_row_nodes()->NumMyElements(); ++i)
@@ -1558,7 +1558,7 @@ void CONTACT::Interface::assemble_g(Epetra_Vector& gglobal)
           lm[i] = cnode->dofs()[i];
           lmowner[i] = cnode->owner();
         }
-        Core::LinAlg::Assemble(gglobal, gnode, lm, lmowner);
+        Core::LinAlg::assemble(gglobal, gnode, lm, lmowner);
       }
       else
       {
@@ -1569,7 +1569,7 @@ void CONTACT::Interface::assemble_g(Epetra_Vector& gglobal)
         gnode(0) = gap;
         lm[0] = cnode->id();
         lmowner[0] = cnode->owner();
-        Core::LinAlg::Assemble(gglobal, gnode, lm, lmowner);
+        Core::LinAlg::assemble(gglobal, gnode, lm, lmowner);
       }
     }
   }
@@ -1586,8 +1586,8 @@ void CONTACT::Interface::assemble_inactiverhs(Epetra_Vector& inactiverhs)
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
 
-  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *activenodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::SplitMap(*sdofrowmap_, *activedofs_);
+  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::split_map(*sdofrowmap_, *activedofs_);
 
   static std::vector<int> lm_gid(Interface::n_dim());
   static std::vector<int> lm_owner(Interface::n_dim());
@@ -1613,7 +1613,7 @@ void CONTACT::Interface::assemble_inactiverhs(Epetra_Vector& inactiverhs)
       lm_gid[0] = inactivedofs->GID(2 * i);
       lm_gid[1] = inactivedofs->GID(2 * i + 1);
 
-      Core::LinAlg::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
+      Core::LinAlg::assemble(inactiverhs, lm_i, lm_gid, lm_owner);
     }
     else if (Interface::n_dim() == 3)
     {
@@ -1627,7 +1627,7 @@ void CONTACT::Interface::assemble_inactiverhs(Epetra_Vector& inactiverhs)
       lm_gid[1] = inactivedofs->GID(3 * i + 1);
       lm_gid[2] = inactivedofs->GID(3 * i + 2);
 
-      Core::LinAlg::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
+      Core::LinAlg::assemble(inactiverhs, lm_i, lm_gid, lm_owner);
     }
   }
 }
@@ -1667,7 +1667,7 @@ void CONTACT::Interface::assemble_tangrhs(Epetra_Vector& tangrhs)
             lm_t[i] -= cnode->data().txi()[i] * cnode->data().txi()[j] * cnode->mo_data().lm()[j];
           }
         }
-        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
       else if (Interface::n_dim() == 3)
       {
@@ -1686,7 +1686,7 @@ void CONTACT::Interface::assemble_tangrhs(Epetra_Vector& tangrhs)
             lm_t[i] -= cnode->data().teta()[i] * cnode->data().teta()[j] * cnode->mo_data().lm()[j];
           }
         }
-        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
     }
     else
@@ -1700,7 +1700,7 @@ void CONTACT::Interface::assemble_tangrhs(Epetra_Vector& tangrhs)
         for (int j = 0; j < Interface::n_dim(); ++j)
           lm_t[0] -= cnode->data().txi()[j] * cnode->mo_data().lm()[j];  // already negative rhs!!!
 
-        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
       else if (Interface::n_dim() == 3)
       {
@@ -1717,7 +1717,7 @@ void CONTACT::Interface::assemble_tangrhs(Epetra_Vector& tangrhs)
           lm_t[0] -= cnode->data().txi()[j] * cnode->mo_data().lm()[j];   // already negative rhs!!!
           lm_t[1] -= cnode->data().teta()[j] * cnode->mo_data().lm()[j];  // already negative rhs!!!
         }
-        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
     }
   }
@@ -1735,19 +1735,19 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
   // code is commented after the algorithm.
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool gp_slip = Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = Core::UTILS::integral_value<int>(interface_params(), "FRLESS_FIRST");
 
   double frcoeff = 0.;  // the friction coefficient actually used
   bool consistent = false;
@@ -1762,7 +1762,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
 #endif
 
   if (consistent &&
-      Core::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT"))
+      Core::UTILS::integral_value<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT"))
     FOUR_C_THROW("no consistent stick for regularized contact");
 
   // loop over all stick nodes of the interface
@@ -1897,7 +1897,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
           rhsnode[j] -= ztxi * txi[j];
           if (Interface::n_dim() == 3) rhsnode[j] -= zteta * teta[j];
         }
-        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
@@ -1917,7 +1917,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
           lm[1] = cnode->dofs()[2];
           lmowner[1] = cnode->owner();
         }
-        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
       // 3) Entries from differentiation with respect to displacements
@@ -2071,7 +2071,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
           if (Interface::n_dim() == 3)
             rhsnode(j) += frcoeff * (znor - cn * wgap) * ct * jumpteta * teta[j];
         }
-        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
@@ -2088,7 +2088,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
           lm[1] = cnode->dofs()[2];
           lmowner[1] = cnode->owner();
         }
-        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
 
@@ -2382,7 +2382,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
           rhsnode(j) -= jumptxi * txi[j];
           if (Interface::n_dim() == 3) rhsnode(j) -= jumpteta * teta[j];
         }
-        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
@@ -2412,7 +2412,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
           lm[1] = cnode->dofs()[2];
           lmowner[1] = cnode->owner();
         }
-        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
 
@@ -2567,12 +2567,12 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frbound = interface_params().get<double>("FRBOUND");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool gp_slip = Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = Core::UTILS::integral_value<int>(interface_params(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -2769,7 +2769,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
             rhsnode[j] -= ztxi * txi[j];
             if (Interface::n_dim() == 3) rhsnode[j] -= zteta * teta[j];
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -2789,7 +2789,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
             lm[1] = cnode->dofs()[2];
             lmowner[1] = cnode->owner();
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -2951,7 +2951,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
 
             for (int j = 0; j < Interface::n_dim(); j++) rhsnode(j) += valueteta1 * teta[j];
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -2983,7 +2983,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
             lm[1] = cnode->dofs()[2];
             lmowner[1] = cnode->owner();
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -3732,7 +3732,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
         lm[0] = cnode->dofs()[1];
         lmowner[0] = cnode->owner();
 
-        Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
@@ -3800,7 +3800,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
             rhsnode(j) = value1 * txi[j];
           }
 
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -3813,7 +3813,7 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
           lm[0] = cnode->dofs()[1];
           lmowner[0] = cnode->owner();
 
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -4249,13 +4249,13 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
     Core::LinAlg::SparseMatrix& d_disp, Core::LinAlg::SparseMatrix& d_lm, Epetra_Vector& f)
 {
   const bool regularization =
-      Core::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+      Core::UTILS::integral_value<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
   if (!regularization) FOUR_C_THROW("you should not be here");
   const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
   const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
   const int dim = Interface::n_dim();
   static const Inpar::CONTACT::ConstraintDirection constr_direction =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::ConstraintDirection>(
+      Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
           interface_params(), "CONSTRAINT_DIRECTIONS");
 
   for (int i = 0; i < active_nodes()->NumMyElements(); ++i)
@@ -4328,12 +4328,12 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool gp_slip = Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR");
   if (gp_slip) FOUR_C_THROW("not implemented");
-  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool frilessfirst = Core::UTILS::integral_value<int>(interface_params(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -4431,7 +4431,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
       // setup regularization
       static const bool regularization =
-          Core::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+          Core::UTILS::integral_value<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
       if (!regularization) FOUR_C_THROW("you should not be here");
       static const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
       static const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
@@ -4529,7 +4529,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             rhsnode[j] -= ztxi * txi[j];
             if (Interface::n_dim() == 3) rhsnode[j] -= zteta * teta[j];
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -4549,7 +4549,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             lm[1] = cnode->dofs()[2];
             lmowner[1] = cnode->owner();
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -4678,7 +4678,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
             for (int j = 0; j < Interface::n_dim(); j++) rhsnode(j) += valueteta1 * teta[j];
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -4698,7 +4698,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             lm[1] = cnode->dofs()[2];
             lmowner[1] = cnode->owner();
           }
-          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -5159,7 +5159,7 @@ void CONTACT::Interface::assemble_normal_coupling(Epetra_Vector& gglobal)
 
       lmowner[0] = mrtnode->owner();
 
-      Core::LinAlg::Assemble(gglobal, gnode, lm, lmowner);
+      Core::LinAlg::assemble(gglobal, gnode, lm, lmowner);
     }
   }
 
@@ -5182,8 +5182,8 @@ void CONTACT::Interface::assemble_normal_coupling_linearisation(Core::LinAlg::Sp
   if (AssembleVelocityLin)
   {
     // store map on all processors, simple but expensive
-    MasterDofMap_full = Core::LinAlg::AllreduceEMap(*coupfs.master_dof_map());
-    PermSlaveDofMap_full = Core::LinAlg::AllreduceEMap(*coupfs.perm_slave_dof_map());
+    MasterDofMap_full = Core::LinAlg::allreduce_e_map(*coupfs.master_dof_map());
+    PermSlaveDofMap_full = Core::LinAlg::allreduce_e_map(*coupfs.perm_slave_dof_map());
   }
 
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)

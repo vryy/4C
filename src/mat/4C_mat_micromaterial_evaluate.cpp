@@ -66,7 +66,7 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<3, 3> Q;
     Core::LinAlg::Matrix<3, 3> S;
     Core::LinAlg::Matrix<3, 3> VT;
-    Core::LinAlg::SVD<3, 3>(C_enh, Q, S, VT);  // Singular Value Decomposition
+    Core::LinAlg::svd<3, 3>(C_enh, Q, S, VT);  // Singular Value Decomposition
     Core::LinAlg::Matrix<3, 3> U_enh;
     Core::LinAlg::Matrix<3, 3> temp;
     for (int i = 0; i < 3; ++i) S(i, i) = sqrt(S(i, i));
@@ -75,7 +75,7 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // Second step: determine rotation tensor R from F (F=R*U)
     // -> polar decomposition of displacement based F
-    Core::LinAlg::SVD<3, 3>(*(defgrd_enh), Q, S, VT);  // Singular Value Decomposition
+    Core::LinAlg::svd<3, 3>(*(defgrd_enh), Q, S, VT);  // Singular Value Decomposition
     Core::LinAlg::Matrix<3, 3> R;
     R.multiply_nn(Q, VT);
 

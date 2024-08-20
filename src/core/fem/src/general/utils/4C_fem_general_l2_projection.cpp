@@ -101,7 +101,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
       // copy results into Serial_DenseVector for assembling
       for (int inode = 0; inode < numnode; ++inode) elevector1(inode) = elematrix2(inode, n);
       // assemble into nth vector of MultiVector
-      Core::LinAlg::Assemble(*rhs, n, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(*rhs, n, elevector1, lm, lmowner);
     }
   }  // end element loop
 

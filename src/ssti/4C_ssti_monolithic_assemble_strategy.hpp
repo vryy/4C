@@ -378,7 +378,7 @@ namespace SSTI
   };
 
   //! build specific assemble strategy
-  Teuchos::RCP<SSTI::AssembleStrategyBase> BuildAssembleStrategy(
+  Teuchos::RCP<SSTI::AssembleStrategyBase> build_assemble_strategy(
       Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, Core::LinAlg::MatrixType matrixtype_ssti,
       Core::LinAlg::MatrixType matrixtype_scatra);
 

@@ -44,7 +44,7 @@ namespace Core::UTILS
     /*!
      * @brief Constructor.
      *
-     * Construction is preferably done via MakeSingletonOwner() which comes with powerful template
+     * Construction is preferably done via make_singleton_owner() which comes with powerful template
      * argument deduction.
      *
      * @param [in] creator  Function (object) that can create the singleton instance and return a
@@ -106,7 +106,7 @@ namespace Core::UTILS
     /*!
      * @brief Constructor
      *
-     * Construction is preferably done via MakeSingletonMap() which comes with powerful template
+     * Construction is preferably done via make_singleton_map() which comes with powerful template
      * argument deduction.
      *
      * @param [in] creator  Function (object) that can create the singleton instance and return a
@@ -143,7 +143,7 @@ namespace Core::UTILS
    *
    * @code
    *   // static initialization upon first call
-   *   static auto singleton_owner = MakeSingletonOwner(
+   *   static auto singleton_owner = make_singleton_owner(
    *     [](double a, int b) { return std::make_unique<MyClass>(a,b); });
    *
    *   // access an instance constructed from given parameters (if it does not exist already)
@@ -155,10 +155,10 @@ namespace Core::UTILS
    * @return A SingletonOwner object that should probably be stored as a static variable.
    */
   template <typename Fn>
-  auto MakeSingletonOwner(Fn&& creator);
+  auto make_singleton_owner(Fn&& creator);
 
   /**
-   * Similar to MakeSingletonOwner(), this function helps to deduce the template arguments for a
+   * Similar to make_singleton_owner(), this function helps to deduce the template arguments for a
    * SingletonMap. Note that you need to specify the first template argument, which defines the type
    * of the key that is used to access the map entries.
    *
@@ -183,7 +183,7 @@ namespace Core::UTILS
    * @return A SingletonMap object that should probably be stored as a static variable.
    */
   template <typename KeyType, typename Fn>
-  auto MakeSingletonMap(Fn&& creator);
+  auto make_singleton_map(Fn&& creator);
 
 
 
@@ -281,7 +281,7 @@ namespace Core::UTILS
   }  // namespace detail
 
   template <typename Fn>
-  auto MakeSingletonOwner(Fn&& creator)
+  auto make_singleton_owner(Fn&& creator)
   {
     using T = typename detail::DeduceSingletonOwner<decltype(&Fn::operator())>::type;
     return T(std::forward<Fn>(creator));
@@ -289,7 +289,7 @@ namespace Core::UTILS
 
 
   template <typename KeyType, typename Fn>
-  auto MakeSingletonMap(Fn&& creator)
+  auto make_singleton_map(Fn&& creator)
   {
     using T = typename detail::DeduceSingletonMap<KeyType, decltype(&Fn::operator())>::type;
     return T(std::forward<Fn>(creator));

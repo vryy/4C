@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 PoroElastScaTra::PoroScatraBase::PoroScatraBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : AlgorithmBase(comm, timeparams),
-      matchinggrid_(Core::UTILS::IntegralValue<bool>(
+      matchinggrid_(Core::UTILS::integral_value<bool>(
           Global::Problem::instance()->poro_scatra_control_params(), "MATCHINGGRID")),
       volcoupl_structurescatra_(Teuchos::null),
       volcoupl_fluidscatra_(Teuchos::null)
@@ -44,7 +44,7 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   // do some checks
   {
     Inpar::ScaTra::TimeIntegrationScheme timealgo =
-        Core::UTILS::IntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+        Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
     if (timealgo != Inpar::ScaTra::timeint_one_step_theta and
         timealgo != Inpar::ScaTra::timeint_stationary)
       FOUR_C_THROW(
@@ -59,7 +59,7 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
     //          "Set 'CONVFORM' to 'convective' in the SCALAR TRANSPORT DYNAMIC section! ");
 
     Inpar::ScaTra::VelocityField velfield =
-        Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+        Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
     if (velfield != Inpar::ScaTra::velocity_Navier_Stokes)
       FOUR_C_THROW(
           "scalar transport is coupled with the porous medium. Set 'VELOCITYFIELD' to "
@@ -80,8 +80,8 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   setup_coupling(structdis, fluiddis, scatradis);
   // Create the two uncoupled subproblems.
   // 1. poro problem
-  poro_ = PoroElast::UTILS::CreatePoroAlgorithm(
-      timeparams, comm, false, PoroElastScaTra::UTILS::BuildPoroScatraSplitter(structdis));
+  poro_ = PoroElast::UTILS::create_poro_algorithm(
+      timeparams, comm, false, PoroElastScaTra::UTILS::build_poro_scatra_splitter(structdis));
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");

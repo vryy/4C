@@ -112,7 +112,7 @@ namespace FLD
       /*!
       \brief all single coupling conditions
       */
-      std::map<const int, Teuchos::RCP<FluidCouplingBc>> coup_map3_d_;
+      std::map<const int, Teuchos::RCP<FluidCouplingBc>> coup_map_3d_;
 
       //! map of coupling variables returned by the reduced-D model at time step n+1
       Teuchos::RCP<std::map<std::string, double>> map_red_dnp_;

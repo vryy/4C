@@ -32,7 +32,7 @@ Discret::ELEMENTS::ScaTraEleParameterStd* Discret::ELEMENTS::ScaTraEleParameterS
 )
 {
   static auto singleton_map =
-      Core::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+      Core::UTILS::make_singleton_map<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterStd>(new ScaTraEleParameterStd(disname)); });
 
   return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
@@ -108,13 +108,14 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
 
   // set flag for conservative form
   const Inpar::ScaTra::ConvForm convform =
-      Core::UTILS::GetAsEnum<Inpar::ScaTra::ConvForm>(parameters, "convform");
+      Core::UTILS::get_as_enum<Inpar::ScaTra::ConvForm>(parameters, "convform");
 
   is_conservative_ = false;
   if (convform == Inpar::ScaTra::convform_conservative) is_conservative_ = true;
 
   // flag for writing the flux vector fields
-  calcflux_domain_ = Core::UTILS::GetAsEnum<Inpar::ScaTra::FluxType>(parameters, "calcflux_domain");
+  calcflux_domain_ =
+      Core::UTILS::get_as_enum<Inpar::ScaTra::FluxType>(parameters, "calcflux_domain");
 
   //! vector containing ids of scalars for which flux vectors are calculated
   if (calcflux_domain_ != Inpar::ScaTra::flux_none)
@@ -124,7 +125,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
   Teuchos::ParameterList& stablist = parameters.sublist("stabilization");
 
   // get definition for stabilization parameter tau
-  whichtau_ = Core::UTILS::IntegralValue<Inpar::ScaTra::TauType>(stablist, "DEFINITION_TAU");
+  whichtau_ = Core::UTILS::integral_value<Inpar::ScaTra::TauType>(stablist, "DEFINITION_TAU");
 
   // set correct stationary definition for stabilization parameter automatically
   // and ensure that exact stabilization parameter is only used in stationary case
@@ -152,12 +153,12 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
 
   // get characteristic element length for stabilization parameter definition
   charelelength_ =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::CharEleLength>(stablist, "CHARELELENGTH");
+      Core::UTILS::integral_value<Inpar::ScaTra::CharEleLength>(stablist, "CHARELELENGTH");
 
   // set (sign) factor for diffusive and reactive stabilization terms
   // (factor is zero for SUPG) and overwrite tau definition when there
   // is no stabilization
-  stabtype_ = Core::UTILS::IntegralValue<Inpar::ScaTra::StabType>(stablist, "STABTYPE");
+  stabtype_ = Core::UTILS::integral_value<Inpar::ScaTra::StabType>(stablist, "STABTYPE");
   switch (stabtype_)
   {
     case Inpar::ScaTra::stabtype_no_stabilization:
@@ -185,19 +186,19 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
 
   // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
   // (default: "false" for both flags)
-  sgvel_ = Core::UTILS::IntegralValue<int>(stablist, "SUGRVEL");
-  assgd_ = Core::UTILS::IntegralValue<int>(stablist, "ASSUGRDIFF");
+  sgvel_ = Core::UTILS::integral_value<int>(stablist, "SUGRVEL");
+  assgd_ = Core::UTILS::integral_value<int>(stablist, "ASSUGRDIFF");
 
   // select type of all-scale subgrid diffusivity if included
-  whichassgd_ = Core::UTILS::IntegralValue<Inpar::ScaTra::AssgdType>(stablist, "DEFINITION_ASSGD");
+  whichassgd_ = Core::UTILS::integral_value<Inpar::ScaTra::AssgdType>(stablist, "DEFINITION_ASSGD");
 
   // set flags for potential evaluation of tau and material law at int. point
   const Inpar::ScaTra::EvalTau tauloc =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::EvalTau>(stablist, "EVALUATION_TAU");
+      Core::UTILS::integral_value<Inpar::ScaTra::EvalTau>(stablist, "EVALUATION_TAU");
   tau_gp_ = (tauloc == Inpar::ScaTra::evaltau_integration_point);  // set true/false
 
   const Inpar::ScaTra::EvalMat matloc =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::EvalMat>(stablist, "EVALUATION_MAT");
+      Core::UTILS::integral_value<Inpar::ScaTra::EvalMat>(stablist, "EVALUATION_MAT");
   mat_gp_ = (matloc == Inpar::ScaTra::evalmat_integration_point);  // set true/false
 
   // check for illegal combinations
@@ -211,7 +212,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
   }
 
   // get quantities for finite difference check
-  fdcheck_ = Core::UTILS::GetAsEnum<Inpar::ScaTra::FdCheck>(parameters, "fdcheck");
+  fdcheck_ = Core::UTILS::get_as_enum<Inpar::ScaTra::FdCheck>(parameters, "fdcheck");
   fdcheckeps_ = parameters.get<double>("fdcheckeps");
   fdchecktol_ = parameters.get<double>("fdchecktol");
 

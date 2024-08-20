@@ -122,7 +122,7 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
 
       if (act == Core::Elements::struct_calc_nlnstiffmass)
@@ -167,13 +167,13 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
 
       if (act == Core::Elements::struct_calc_brownianforce)
         calc_brownian_forces_and_stiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
@@ -265,7 +265,7 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
 
     default:
     {
-      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      std::cout << "\ncalled element with action type " << action_type_to_string(act);
       FOUR_C_THROW("This action type is not implemented for Beam3k");
       break;
     }
@@ -675,13 +675,13 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
 
     // get value of interpolating function of theta (lagrange polynomials) at xi
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     // Determine storage position for the node node
-    ind = Core::LargeRotations::NumberingTrafo(inode + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(inode + 1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -691,7 +691,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
     r_s.multiply(N_s, disp_totlag_centerline);
 
     // calculate epsilon at collocation point
-    abs_r_s = Core::FADUtils::Norm<T>(r_s);
+    abs_r_s = Core::FADUtils::norm<T>(r_s);
     epsilon_cp[ind] = abs_r_s - 1.0;
 
     assemble_shapefunctions_l(L_i, L);
@@ -741,8 +741,8 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
     L_i.clear();
     L_i_xi.clear();
     L_i_s.clear();
-    Core::FE::shape_function_1D(L_i, xi_gp, shape());
-    Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, shape());
+    Core::FE::shape_function_1d(L_i, xi_gp, shape());
+    Core::FE::shape_function_1d_deriv1(L_i_xi, xi_gp, shape());
     L_i_s.update(1.0 / jacobi_[numgp], L_i_xi);
 
 
@@ -842,25 +842,25 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
     }
 
     // Calculate internal energy and store it in class variable
-    eint_ += 0.5 * Core::FADUtils::CastToDouble(epsilon_bar) * Core::FADUtils::CastToDouble(f_par) *
-             wgt * jacobi_[numgp];
+    eint_ += 0.5 * Core::FADUtils::cast_to_double(epsilon_bar) *
+             Core::FADUtils::cast_to_double(f_par) * wgt * jacobi_[numgp];
 
     for (unsigned int idim = 0; idim < 3; ++idim)
     {
-      eint_ += 0.5 * Core::FADUtils::CastToDouble(Omega(idim)) *
-               Core::FADUtils::CastToDouble(M(idim)) * wgt * jacobi_[numgp];
+      eint_ += 0.5 * Core::FADUtils::cast_to_double(Omega(idim)) *
+               Core::FADUtils::cast_to_double(M(idim)) * wgt * jacobi_[numgp];
     }
 
     // store material strain and stress resultant values in class variables
-    axial_strain_gp_[numgp] = Core::FADUtils::CastToDouble(epsilon_bar);
-    twist_gp_[numgp] = Core::FADUtils::CastToDouble(Omega(0));
-    curvature_2_gp_[numgp] = Core::FADUtils::CastToDouble(Omega(1));
-    curvature_3_gp_[numgp] = Core::FADUtils::CastToDouble(Omega(2));
+    axial_strain_gp_[numgp] = Core::FADUtils::cast_to_double(epsilon_bar);
+    twist_gp_[numgp] = Core::FADUtils::cast_to_double(Omega(0));
+    curvature_2_gp_[numgp] = Core::FADUtils::cast_to_double(Omega(1));
+    curvature_3_gp_[numgp] = Core::FADUtils::cast_to_double(Omega(2));
 
-    axial_force_gp_[numgp] = Core::FADUtils::CastToDouble(f_par);
-    torque_gp_[numgp] = Core::FADUtils::CastToDouble(M(0));
-    bending_moment_2_gp_[numgp] = Core::FADUtils::CastToDouble(M(1));
-    bending_moment_3_gp_[numgp] = Core::FADUtils::CastToDouble(M(2));
+    axial_force_gp_[numgp] = Core::FADUtils::cast_to_double(f_par);
+    torque_gp_[numgp] = Core::FADUtils::cast_to_double(M(0));
+    bending_moment_2_gp_[numgp] = Core::FADUtils::cast_to_double(M(1));
+    bending_moment_3_gp_[numgp] = Core::FADUtils::cast_to_double(M(2));
   }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 }
@@ -963,7 +963,7 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = Core::LargeRotations::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -972,13 +972,13 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
 
     // get all required shape function values
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1007,10 +1007,10 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
   // re-interpolation of quantities at xi based on CP values
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_gp, shape());
+  Core::FE::shape_function_1d(L_i, xi_gp, shape());
 
   L_i_xi.clear();
-  Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, shape());
+  Core::FE::shape_function_1d_deriv1(L_i_xi, xi_gp, shape());
 
   L_i_s.clear();
   L_i_s.update(std::pow(jacobifac_gp, -1.0), L_i_xi, 0.0);
@@ -1254,10 +1254,10 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
 
     // get value of interpolating function of theta (lagrange polynomials) at xi
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
 
     // Determine storage position for the node node
-    ind = Core::LargeRotations::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1266,7 +1266,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     r_s.multiply(N_s, disp_totlag_centerline);
 
     // calculate epsilon at collocation point
-    abs_r_s = Core::FADUtils::Norm<FAD>(r_s);
+    abs_r_s = Core::FADUtils::norm<FAD>(r_s);
     epsilon_cp[ind] = abs_r_s - 1.0;
 
     v_epsilon_cp[ind].clear();
@@ -1291,7 +1291,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     {
       tangentref(i) = triad_mat_cp[node](i, 0);
     }
-    Core::LargeRotations::CalculateSRTriads<FAD>(
+    Core::LargeRotations::calculate_sr_triads<FAD>(
         tangentref, triad_mat_cp[REFERENCE_NODE], Lambdabarref);
     Core::LargeRotations::triadtoangleleft(phivec, Lambdabarref, triad_mat_cp[node]);
     phi_cp[node] = 0.0;
@@ -1348,15 +1348,15 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     N_i_xixi.clear();
     N_s.clear();
     N_ss.clear();
-    Core::FE::shape_function_1D(L_i, xi, shape());
-    Core::FE::shape_function_1D_deriv1(L_i_xi, xi, shape());
+    Core::FE::shape_function_1d(L_i, xi, shape());
+    Core::FE::shape_function_1d_deriv1(L_i_xi, xi, shape());
     L_i_s.update(1.0 / jacobi_[numgp], L_i_xi, 0.0);
     assemble_shapefunctions_l(L_i, L);
     // The assemble routine is identical for L and L_s
     assemble_shapefunctions_l(L_i_s, L_s);
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi, length_, Core::FE::CellType::line2);
     assemble_shapefunctions_ns(N_i_xi, jacobi_[numgp], N_s);
-    Core::FE::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv2(N_i_xixi, xi, length_, Core::FE::CellType::line2);
     assemble_shapefunctions_nss(N_i_xi, N_i_xixi, jacobi_[numgp], jacobi2_[numgp], N_ss);
 
     // Calculate collocation piont interpolations
@@ -1387,7 +1387,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     // Auxilliary quantities
     abs_r_s = 0.0;
     rsTrss = 0.0;
-    abs_r_s = Core::FADUtils::Norm<FAD>(r_s);
+    abs_r_s = Core::FADUtils::norm<FAD>(r_s);
     for (unsigned int i = 0; i < 3; i++)
     {
       rsTrss += r_s(i) * r_ss(i);
@@ -1585,15 +1585,15 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
 
 
     // store material strain and stress resultant values in class variables
-    axial_strain_gp_[numgp] = Core::FADUtils::CastToDouble(epsilon);
-    twist_gp_[numgp] = Core::FADUtils::CastToDouble(Omega(0));
-    curvature_2_gp_[numgp] = Core::FADUtils::CastToDouble(Omega(1));
-    curvature_3_gp_[numgp] = Core::FADUtils::CastToDouble(Omega(2));
+    axial_strain_gp_[numgp] = Core::FADUtils::cast_to_double(epsilon);
+    twist_gp_[numgp] = Core::FADUtils::cast_to_double(Omega(0));
+    curvature_2_gp_[numgp] = Core::FADUtils::cast_to_double(Omega(1));
+    curvature_3_gp_[numgp] = Core::FADUtils::cast_to_double(Omega(2));
 
-    axial_force_gp_[numgp] = Core::FADUtils::CastToDouble(f_par);
-    torque_gp_[numgp] = Core::FADUtils::CastToDouble(M(0));
-    bending_moment_2_gp_[numgp] = Core::FADUtils::CastToDouble(M(1));
-    bending_moment_3_gp_[numgp] = Core::FADUtils::CastToDouble(M(2));
+    axial_force_gp_[numgp] = Core::FADUtils::cast_to_double(f_par);
+    torque_gp_[numgp] = Core::FADUtils::cast_to_double(M(0));
+    bending_moment_2_gp_[numgp] = Core::FADUtils::cast_to_double(M(1));
+    bending_moment_3_gp_[numgp] = Core::FADUtils::cast_to_double(M(2));
   }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 }
@@ -1699,7 +1699,7 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
 
     // get shape function values and assemble them
     N_i.clear();
-    Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d(N_i, xi, length_, Core::FE::CellType::line2);
 
     N.clear();
     assemble_shapefunctions_n(N_i, N);
@@ -1858,8 +1858,8 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
     ekinrot.multiply_tn(Wnewmass, Jp_Wnewmass);
     ekintrans.multiply_tn(rtnewmass, rtnewmass);
     ekin_ += 0.5 *
-             (Core::FADUtils::CastToDouble(ekinrot(0, 0)) +
-                 mass_inertia_translational * Core::FADUtils::CastToDouble(ekintrans(0, 0))) *
+             (Core::FADUtils::cast_to_double(ekinrot(0, 0)) +
+                 mass_inertia_translational * Core::FADUtils::cast_to_double(ekintrans(0, 0))) *
              wgt * jacobi_[numgp];
 
     //**********begin: update class variables needed for storage**************
@@ -1878,19 +1878,19 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
 
     for (unsigned int i = 0; i < 4; ++i)
     {
-      (qnewmass_[numgp])(i) = Core::FADUtils::CastToDouble(Qnewmass(i));
+      (qnewmass_[numgp])(i) = Core::FADUtils::cast_to_double(Qnewmass(i));
     }
 
     for (unsigned int i = 0; i < 3; ++i)
     {
-      (wnewmass_[numgp])(i) = Core::FADUtils::CastToDouble(wnewmass(i));
-      (anewmass_[numgp])(i) = Core::FADUtils::CastToDouble(anewmass(i));
-      (amodnewmass_[numgp])(i) = Core::FADUtils::CastToDouble(amodnewmass(i));
+      (wnewmass_[numgp])(i) = Core::FADUtils::cast_to_double(wnewmass(i));
+      (anewmass_[numgp])(i) = Core::FADUtils::cast_to_double(anewmass(i));
+      (amodnewmass_[numgp])(i) = Core::FADUtils::cast_to_double(amodnewmass(i));
 
-      (rnewmass_[numgp])(i) = Core::FADUtils::CastToDouble(rnewmass(i));
-      (rtnewmass_[numgp])(i) = Core::FADUtils::CastToDouble(rtnewmass(i));
-      (rttnewmass_[numgp])(i) = Core::FADUtils::CastToDouble(rttnewmass(i));
-      (rttmodnewmass_[numgp])(i) = Core::FADUtils::CastToDouble(rttmodnewmass(i));
+      (rnewmass_[numgp])(i) = Core::FADUtils::cast_to_double(rnewmass(i));
+      (rtnewmass_[numgp])(i) = Core::FADUtils::cast_to_double(rtnewmass(i));
+      (rttnewmass_[numgp])(i) = Core::FADUtils::cast_to_double(rttnewmass(i));
+      (rttmodnewmass_[numgp])(i) = Core::FADUtils::cast_to_double(rttmodnewmass(i));
     }
     //**********end: update class variables needed for storage**************
   }
@@ -1973,7 +1973,7 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = Core::LargeRotations::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -1982,13 +1982,13 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
 
     // get all required shape function values
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -2016,7 +2016,7 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
   // re-interpolation of quantities at xi based on CP values
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_gp, shape());
+  Core::FE::shape_function_1d(L_i, xi_gp, shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -2081,7 +2081,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
-  Core::FE::ExtractMyValues(*disp, mydisp, lm);
+  Core::FE::extract_my_values(*disp, mydisp, lm);
 
   Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, double> disp_totlag(true);
 
@@ -2244,7 +2244,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_point_neumann_eb(Core::LinAlg::SerialDe
 
       for (unsigned int i = 0; i < 3; ++i) r_s(i) = disp_totlag_centerline(node * 7 + 3 + i);
 
-      abs_r_s = Core::FADUtils::Norm(r_s);
+      abs_r_s = Core::FADUtils::norm(r_s);
 
       // matrix for moment at node
       Core::LinAlg::Matrix<3, 1, double> moment(true);
@@ -2295,7 +2295,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_point_neumann_eb(Core::LinAlg::SerialDe
       for (unsigned int i = 0; i < 3; ++i)
         r_s_FAD(i) = disp_totlag_centerline_FAD(node * 7 + 3 + i);
 
-      abs_r_s_FAD = Core::FADUtils::Norm(r_s_FAD);
+      abs_r_s_FAD = Core::FADUtils::norm(r_s_FAD);
 
 
       // matrix for moment at node
@@ -2398,13 +2398,13 @@ void Discret::ELEMENTS::Beam3k::evaluate_stiff_matrix_analytic_from_point_neuman
 
   // get all required shape function values
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_node, shape());
+  Core::FE::shape_function_1d(L_i, xi_node, shape());
 
   L.clear();
   assemble_shapefunctions_l(L_i, L);
 
   N_i_xi.clear();
-  Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_node, length_, Core::FE::CellType::line2);
+  Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_node, length_, Core::FE::CellType::line2);
 
   N_s.clear();
   assemble_shapefunctions_ns(N_i_xi, jacobi_node, N_s);
@@ -2563,7 +2563,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_line_neumann_forces(
     // Clear matrix for shape functions
     N_i.clear();
     N.clear();
-    Core::FE::shape_function_hermite_1D(N_i, xi, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d(N_i, xi, length_, Core::FE::CellType::line2);
     assemble_shapefunctions_n(N_i, N);
 
     // position vector at the gauss point at reference configuration needed for function evaluation
@@ -2818,7 +2818,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_translational_damping(Teuchos::Paramete
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute position vector r of point in physical space corresponding to Gauss point
@@ -3003,7 +3003,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_stochastic_forces(
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
@@ -3174,17 +3174,17 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // Determine storage position for the node node
     const unsigned int ind =
-        Core::LargeRotations::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
+        Core::LargeRotations::numbering_trafo(node + 1, BEAM3K_COLLOCATION_POINTS);
 
     // get value of interpolating function of theta (Lagrange polynomials) at xi
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -3193,7 +3193,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
     r_s.clear();
     r_s.multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = Core::FADUtils::Norm<T>(r_s);
+    abs_r_s = Core::FADUtils::norm<T>(r_s);
 
     calc_v_thetapartheta<2, T>(v_thetapar_cp[ind], L, r_s, abs_r_s);
 
@@ -3211,7 +3211,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // evaluate shape functions
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_gp, this->shape());
+    Core::FE::shape_function_1d(L_i, xi_gp, this->shape());
 
     v_thetapar_bar.clear();
     for (unsigned int node = 0; node < BEAM3K_COLLOCATION_POINTS; ++node)
@@ -3233,7 +3233,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // store in class variable in order to get QconvGPmass_ in subsequent time step
     for (unsigned int i = 0; i < 4; ++i)
-      (qnewmass_[gp])(i) = Core::FADUtils::CastToDouble(Qnewmass(i));
+      (qnewmass_[gp])(i) = Core::FADUtils::cast_to_double(Qnewmass(i));
 
     Core::LinAlg::Matrix<4, 1, T> Qconv(true);
     for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (qconvmass_[gp])(i);
@@ -3361,7 +3361,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
     // Determine storage position for this cp
-    ind = Core::LargeRotations::NumberingTrafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
+    ind = Core::LargeRotations::numbering_trafo(icp + 1, BEAM3K_COLLOCATION_POINTS);
 
     // calculate xi of cp
     // node=0->xi=-1  node=1->xi=0  node=2->xi=1
@@ -3370,13 +3370,13 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
 
     // get all required shape function values
     L_i.clear();
-    Core::FE::shape_function_1D(L_i, xi_cp, shape());
+    Core::FE::shape_function_1d(L_i, xi_cp, shape());
 
     L.clear();
     assemble_shapefunctions_l(L_i, L);
 
     N_i_xi.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_xi, xi_cp, length_, Core::FE::CellType::line2);
 
     N_s.clear();
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
@@ -3400,7 +3400,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
   // re-interpolation of quantities at xi based on CP values
 
   L_i.clear();
-  Core::FE::shape_function_1D(L_i, xi_gp, shape());
+  Core::FE::shape_function_1d(L_i, xi_gp, shape());
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
@@ -3646,7 +3646,7 @@ void Discret::ELEMENTS::Beam3k::apply_rot_vec_trafo(
       g_1(i) = disp_totlag_centerline(7 * node + 3 + i);
     }
 
-    t = Core::FADUtils::Norm<T>(g_1);
+    t = Core::FADUtils::norm<T>(g_1);
     g_1.scale(1.0 / t);
     Core::LargeRotations::computespin(auxmatrix, g_1);
     auxmatrix.scale(-1.0 * t);
@@ -3702,14 +3702,14 @@ void Discret::ELEMENTS::Beam3k::transform_stiff_matrix_multipl(
   for (unsigned int node = 0; node < 2; node++)
   {
     for (unsigned int i = 0; i < 3; ++i)
-      theta[node](i) = Core::FADUtils::CastToDouble(disp_totlag(7 * node + 3 + i));
+      theta[node](i) = Core::FADUtils::cast_to_double(disp_totlag(7 * node + 3 + i));
   }
 
   // Loop over the two boundary nodes
   for (unsigned int node = 0; node < 2; ++node)
   {
     Tmat.clear();
-    Tmat = Core::LargeRotations::Tmatrix(theta[node]);
+    Tmat = Core::LargeRotations::tmatrix(theta[node]);
 
     tempmat.clear();
     for (unsigned int i = 0; i < 2 * 6 + BEAM3K_COLLOCATION_POINTS; ++i)

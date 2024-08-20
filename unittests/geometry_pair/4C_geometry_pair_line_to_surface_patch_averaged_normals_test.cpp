@@ -79,15 +79,16 @@ namespace
 
     // Fill the discretization object with the geometry.
     std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_map;
-    XtestSurfacePatchQuad4<face_element_type>(discret_, face_elements_map);
+    xtest_surface_patch_quad4<face_element_type>(discret_, face_elements_map);
 
     // Load the result vectors.
     std::vector<double> reference_normals, current_normals, position;
     std::vector<std::vector<double>> current_normals_derivative, position_derivative;
     std::vector<std::vector<std::vector<double>>> current_normals_derivative_2,
         position_derivative_2;
-    XtestSurfacePatchQuad4Results(reference_normals, current_normals, current_normals_derivative,
-        current_normals_derivative_2, position, position_derivative, position_derivative_2);
+    xtest_surface_patch_quad4_results(reference_normals, current_normals,
+        current_normals_derivative, current_normals_derivative_2, position, position_derivative,
+        position_derivative_2);
 
     // Face element that will be analyzed.
     const unsigned int investigated_face_element_volume_id = 14;
@@ -158,21 +159,21 @@ namespace
       // Check the values of the averaged normals.
       for (unsigned int i_dof = 0; i_dof < 3 * surface::n_nodes_; i_dof++)
       {
-        EXPECT_NEAR(Core::FADUtils::CastToDouble(
+        EXPECT_NEAR(Core::FADUtils::cast_to_double(
                         face_element->get_face_element_data().nodal_normals_(i_dof)),
             current_normals[i_dof], eps);
         for (unsigned int i_der = 0; i_der < face_element->get_patch_gid().size(); i_der++)
         {
-          EXPECT_NEAR(Core::FADUtils::CastToDouble(
+          EXPECT_NEAR(Core::FADUtils::cast_to_double(
                           face_element->get_face_element_data().nodal_normals_(i_dof).dx(
                               dof_offset + i_der)),
               current_normals_derivative[i_dof][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->get_patch_gid().size(); i_der_2++)
           {
-            EXPECT_NEAR(Core::FADUtils::CastToDouble(face_element->get_face_element_data()
-                                                         .nodal_normals_(i_dof)
-                                                         .dx(dof_offset + i_der)
-                                                         .dx(dof_offset + i_der_2)),
+            EXPECT_NEAR(Core::FADUtils::cast_to_double(face_element->get_face_element_data()
+                                                           .nodal_normals_(i_dof)
+                                                           .dx(dof_offset + i_der)
+                                                           .dx(dof_offset + i_der_2)),
                 current_normals_derivative_2[i_dof][i_der][i_der_2], eps);
           }
         }
@@ -184,16 +185,17 @@ namespace
       xi(1) = -0.8;
       xi(2) = 0.69;
       Core::LinAlg::Matrix<3, 1, scalar_type> r;
-      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->get_face_element_data(), r);
+      GEOMETRYPAIR::evaluate_surface_position<surface>(
+          xi, face_element->get_face_element_data(), r);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       {
-        EXPECT_NEAR(Core::FADUtils::CastToDouble(r(i_dim)), position[i_dim], eps);
+        EXPECT_NEAR(Core::FADUtils::cast_to_double(r(i_dim)), position[i_dim], eps);
         for (unsigned int i_der = 0; i_der < face_element->get_patch_gid().size(); i_der++)
         {
-          EXPECT_NEAR(Core::FADUtils::CastToDouble(r(i_dim).dx(dof_offset + i_der)),
+          EXPECT_NEAR(Core::FADUtils::cast_to_double(r(i_dim).dx(dof_offset + i_der)),
               position_derivative[i_dim][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->get_patch_gid().size(); i_der_2++)
-            EXPECT_NEAR(Core::FADUtils::CastToDouble(
+            EXPECT_NEAR(Core::FADUtils::cast_to_double(
                             r(i_dim).dx(dof_offset + i_der).dx(dof_offset + i_der_2)),
                 position_derivative_2[i_dim][i_der][i_der_2], eps);
         }

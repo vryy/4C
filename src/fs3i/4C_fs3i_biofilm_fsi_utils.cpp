@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BioFilm::UTILS::ScatraChangeConfig(Teuchos::RCP<Core::FE::Discretization> scatradis,
+void FS3I::BioFilm::UTILS::scatra_change_config(Teuchos::RCP<Core::FE::Discretization> scatradis,
     Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
 {
   const int numnode = (scatradis->node_col_map())->NumMyElements();

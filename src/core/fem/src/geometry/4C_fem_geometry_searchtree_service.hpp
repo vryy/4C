@@ -52,7 +52,7 @@ namespace Core::Geo
    \param currentpositions     current nodal positions in discretization
    \return  XAxisAlignedBoundingBox
    */
-  Core::LinAlg::Matrix<3, 2> getXAABBofDis(const Core::FE::Discretization& dis,
+  Core::LinAlg::Matrix<3, 2> get_xaab_bof_dis(const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
   /*!
@@ -61,14 +61,14 @@ namespace Core::Geo
    \param dis                  discretization
    \return  XAxisAlignedBoundingBox
    */
-  Core::LinAlg::Matrix<3, 2> getXAABBofDis(const Core::FE::Discretization& dis);
+  Core::LinAlg::Matrix<3, 2> get_xaab_bof_dis(const Core::FE::Discretization& dis);
 
   /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of coords
    \param currentpositions     current nodal positions
    \return  XAxisAlignedBoundingBox
    */
-  Core::LinAlg::Matrix<3, 2> getXAABBofPositions(
+  Core::LinAlg::Matrix<3, 2> get_xaab_bof_positions(
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
   /*!
@@ -77,7 +77,7 @@ namespace Core::Geo
    slave nodes \param currentpositions     current nodal positions of elements \return
    XAxisAlignedBoundingBox
    */
-  Core::LinAlg::Matrix<3, 2> getXAABBofEles(
+  Core::LinAlg::Matrix<3, 2> get_xaab_bof_eles(
       std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
@@ -88,7 +88,7 @@ namespace Core::Geo
    \param elementList          map of int = label and set of element ids
    \return  AxisAlignedBoundingBox as Core::LinAlg::Matrix<3,2>
    */
-  std::vector<Core::LinAlg::Matrix<3, 2>> computeXAABBForLabeledStructures(
+  std::vector<Core::LinAlg::Matrix<3, 2>> compute_xaabb_for_labeled_structures(
       const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList);
@@ -103,7 +103,7 @@ namespace Core::Geo
    \param elementList          map of elements label gid
    \return                     label
    */
-  std::map<int, std::set<int>> getElementsInRadius(const Core::FE::Discretization& dis,
+  std::map<int, std::set<int>> get_elements_in_radius(const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& querypoint, const double radius, const int label,
       std::map<int, std::set<int>>& elementList);
@@ -115,7 +115,7 @@ namespace Core::Geo
    the query element \param label              ??? \param elementList        map of elements label
    gid \param collisions         set of gids of elements
    */
-  void searchCollisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
+  void search_collisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
       const Core::LinAlg::Matrix<3, 2>& queryBV, const int label,
       const std::map<int, std::set<int>>& elementList, std::set<int>& collisions);
 
@@ -126,7 +126,7 @@ namespace Core::Geo
    of the query element \param label              ??? \param elementList        map of elements
    label gid \param collisions         set of gids of elements
    */
-  void searchCollisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs,
+  void search_collisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs,
       const Core::LinAlg::Matrix<9, 2>& queryKDOP, const int label,
       const std::map<int, std::set<int>>& elementList, std::set<int>& contactEleIds);
 
@@ -140,18 +140,18 @@ namespace Core::Geo
    \param minDistCoords        Coords of the nearest point
    \return surface id of nearest object (node or line: a random adjacent surface is chosen)
    */
-  int nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization> dis,
+  int nearest_3d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
       std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
       Core::LinAlg::Matrix<3, 1>& minDistCoords);
 
   /// returns the nearest coordinates on element and the corresponding object type
-  Core::Geo::ObjectType nearest3DObjectOnElement(Core::Elements::Element* surfaceelement,
+  Core::Geo::ObjectType nearest_3d_object_on_element(Core::Elements::Element* surfaceelement,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& minDistCoords);
 
-  void nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretization> dis,
+  void nearest_2d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
       std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -166,7 +166,7 @@ namespace Core::Geo
    \param distance             distance to nearest element
    \return true if nearest surface element found
    */
-  bool getDistanceToSurface(const Core::Elements::Element* surfaceElement,
+  bool get_distance_to_surface(const Core::Elements::Element* surfaceElement,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& x_surface_phys,
       double& distance);
@@ -180,7 +180,7 @@ namespace Core::Geo
    \param distance             distance to nearest point
    \return true if nearest line element found
    */
-  bool getDistanceToLine(const Core::Elements::Element* lineElement,
+  bool get_distance_to_line(const Core::Elements::Element* lineElement,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& x_line_phys,
       double& distance);
@@ -192,7 +192,7 @@ namespace Core::Geo
    \param point                point to be examined
    \param distance             distance to nearest point
    */
-  void getDistanceToPoint(const Core::Nodes::Node* node,
+  void get_distance_to_point(const Core::Nodes::Node* node,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& point, double& distance);
 
@@ -202,7 +202,7 @@ namespace Core::Geo
    \param nodeBox       box of tree node
    \return true, if a point lies with in a node box, false otherwise
    */
-  bool pointInTreeNode(
+  bool point_in_tree_node(
       const Core::LinAlg::Matrix<3, 1>& point, const Core::LinAlg::Matrix<3, 2>& nodeBox);
 
   /*!
@@ -211,7 +211,7 @@ namespace Core::Geo
    \param AABB2          axis - aligned bounding box 2
    \return merged axis-aligned bounding box
    */
-  Core::LinAlg::Matrix<3, 2> mergeAABB(
+  Core::LinAlg::Matrix<3, 2> merge_aabb(
       const Core::LinAlg::Matrix<3, 2>& AABB1, const Core::LinAlg::Matrix<3, 2>& AABB2);
 
   /*!
@@ -221,7 +221,7 @@ namespace Core::Geo
    \param xyze_element         nodal coordinates
    \param eleGeoType           geometry type
    */
-  void checkRoughGeoType(const Core::Elements::Element* element,
+  void check_rough_geo_type(const Core::Elements::Element* element,
       const Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType);
 
   /*!
@@ -231,7 +231,7 @@ namespace Core::Geo
    \param xyze_element         nodal coordinates
    \param eleGeoType           geometry type
    */
-  void checkRoughGeoType(Teuchos::RCP<Core::Elements::Element> element,
+  void check_rough_geo_type(Teuchos::RCP<Core::Elements::Element> element,
       Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType);
 
 }  // namespace Core::Geo

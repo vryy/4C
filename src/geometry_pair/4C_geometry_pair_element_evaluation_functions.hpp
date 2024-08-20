@@ -26,7 +26,7 @@ namespace GEOMETRYPAIR
    * \brief Evaluate the field function in the element
    */
   template <typename ElementType, typename T, typename V, typename ScalarType>
-  inline void EvaluatePosition(const T& xi, const ElementData<ElementType, V>& element_data,
+  inline void evaluate_position(const T& xi, const ElementData<ElementType, V>& element_data,
       Core::LinAlg::Matrix<ElementType::spatial_dim_, 1, ScalarType>& r)
   {
     // Matrix for shape function values
@@ -50,7 +50,7 @@ namespace GEOMETRYPAIR
    * \brief Evaluate the derivative of the field function w.r.t xi in the element
    */
   template <typename ElementType, typename T, typename V, typename ScalarType>
-  inline void EvaluatePositionDerivative1(const T& xi,
+  inline void evaluate_position_derivative1(const T& xi,
       const ElementData<ElementType, V>& element_data,
       Core::LinAlg::Matrix<ElementType::spatial_dim_, ElementType::element_dim_, ScalarType>& dr)
   {
@@ -79,7 +79,7 @@ namespace GEOMETRYPAIR
    * face element
    */
   template <typename Surface, typename T, typename ScalarTypeDof, typename ScalarTypeResult>
-  void EvaluateFaceNormal(const T& xi,
+  void evaluate_face_normal(const T& xi,
       const ElementData<Surface, ScalarTypeDof>& element_data_surface,
       Core::LinAlg::Matrix<3, 1, ScalarTypeResult>& normal)
   {
@@ -90,14 +90,14 @@ namespace GEOMETRYPAIR
     Core::LinAlg::Matrix<3, 2, ScalarTypeResult> dr;
     Core::LinAlg::Matrix<3, 1, ScalarTypeResult> dr_0;
     Core::LinAlg::Matrix<3, 1, ScalarTypeResult> dr_1;
-    GEOMETRYPAIR::EvaluatePositionDerivative1<Surface>(xi, element_data_surface, dr);
+    GEOMETRYPAIR::evaluate_position_derivative1<Surface>(xi, element_data_surface, dr);
     for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
     {
       dr_0(i_dir) = dr(i_dir, 0);
       dr_1(i_dir) = dr(i_dir, 1);
     }
     normal.cross_product(dr_0, dr_1);
-    normal.scale(1.0 / Core::FADUtils::VectorNorm(normal));
+    normal.scale(1.0 / Core::FADUtils::vector_norm(normal));
     if constexpr (std::is_same<Surface, t_nurbs9>::value)
     {
       // In the NURBS case some normals have to be flipped to point outward of the volume element
@@ -110,7 +110,7 @@ namespace GEOMETRYPAIR
    * the averaged nodal normal field or the kinematic normal field
    */
   template <typename Surface, typename T, typename ScalarTypeDof, typename ScalarTypeResult>
-  void EvaluateSurfaceNormal(const T& xi,
+  void evaluate_surface_normal(const T& xi,
       const ElementData<Surface, ScalarTypeDof>& element_data_surface,
       Core::LinAlg::Matrix<3, 1, ScalarTypeResult>& normal)
   {
@@ -132,12 +132,12 @@ namespace GEOMETRYPAIR
         for (unsigned int dim = 0; dim < Surface::spatial_dim_; dim++)
           normal(dim) +=
               element_data_surface.nodal_normals_(Surface::spatial_dim_ * node + dim) * N(node);
-      normal.scale(1.0 / Core::FADUtils::VectorNorm(normal));
+      normal.scale(1.0 / Core::FADUtils::vector_norm(normal));
     }
     else
     {
       // No averaged normals, so evaluate the kinematic normals on the face element
-      EvaluateFaceNormal(xi, element_data_surface, normal);
+      evaluate_face_normal(xi, element_data_surface, normal);
     }
   }
 
@@ -147,7 +147,7 @@ namespace GEOMETRYPAIR
    */
   template <typename Surface, typename ScalarTypeXi, typename ScalarTypeDof,
       typename ScalarTypeResult>
-  void EvaluateSurfacePosition(const Core::LinAlg::Matrix<3, 1, ScalarTypeXi>& xi,
+  void evaluate_surface_position(const Core::LinAlg::Matrix<3, 1, ScalarTypeXi>& xi,
       const ElementData<Surface, ScalarTypeDof>& element_data_surface,
       Core::LinAlg::Matrix<3, 1, ScalarTypeResult>& r)
   {
@@ -157,10 +157,10 @@ namespace GEOMETRYPAIR
 
     // Evaluate the normal
     Core::LinAlg::Matrix<3, 1, ScalarTypeResult> normal;
-    EvaluateSurfaceNormal<Surface>(xi, element_data_surface, normal);
+    evaluate_surface_normal<Surface>(xi, element_data_surface, normal);
 
     // Evaluate the position on the surface
-    GEOMETRYPAIR::EvaluatePosition<Surface>(xi, element_data_surface, r);
+    GEOMETRYPAIR::evaluate_position<Surface>(xi, element_data_surface, r);
 
     // Add the normal part to the position
     normal.scale(xi(2));
@@ -175,24 +175,24 @@ namespace GEOMETRYPAIR
    * The third basis vector is the Cartesian e_z basis vector.
    */
   template <typename Line, typename ScalarTypeXi, typename ScalarTypeDof, typename ScalarTypeResult>
-  void EvaluateTriadAtPlaneCurve(const ScalarTypeXi xi,
+  void evaluate_triad_at_plane_curve(const ScalarTypeXi xi,
       const ElementData<Line, ScalarTypeDof>& element_data_line,
       Core::LinAlg::Matrix<3, 3, ScalarTypeResult>& triad)
   {
     Core::LinAlg::Matrix<3, 1, ScalarTypeResult> tangent, cross_section_director_2,
         cross_section_director_3;
-    EvaluatePositionDerivative1<Line>(xi, element_data_line, tangent);
+    evaluate_position_derivative1<Line>(xi, element_data_line, tangent);
 
     if (std::abs(tangent(2)) > Constants::pos_tol)
       FOUR_C_THROW(
           "EvaluateTriadAtPlaneCurve: The tangent vector can not have a component in z direction! "
           "The component is %f!",
-          Core::FADUtils::CastToDouble(tangent(2)));
+          Core::FADUtils::cast_to_double(tangent(2)));
 
     // Create the director vectors in the cross-section
     // Director 2 is the one in the y-axis (reference configuration)
     // Director 3 is the one in the z-axis (reference configuration)
-    tangent.scale(1. / Core::FADUtils::VectorNorm(tangent));
+    tangent.scale(1. / Core::FADUtils::vector_norm(tangent));
     cross_section_director_2.clear();
     cross_section_director_2(0) = -tangent(1);
     cross_section_director_2(1) = tangent(0);
@@ -212,7 +212,7 @@ namespace GEOMETRYPAIR
    * \brief Evaluate the Jacobi matrix for a volume element
    */
   template <typename Volume, typename ScalarType>
-  void EvaluateJacobian(const Core::LinAlg::Matrix<3, 1, ScalarType>& xi,
+  void evaluate_jacobian(const Core::LinAlg::Matrix<3, 1, ScalarType>& xi,
       const GEOMETRYPAIR::ElementData<Volume, double>& X_volume,
       Core::LinAlg::Matrix<3, 3, ScalarType>& J)
   {
@@ -223,7 +223,7 @@ namespace GEOMETRYPAIR
     // Get the derivatives of the reference position w.r.t the parameter coordinates. This is the
     // transposed Jacobi matrix.
     Core::LinAlg::Matrix<3, 3, ScalarType> dXdxi(true);
-    EvaluatePositionDerivative1<Volume>(xi, X_volume, dXdxi);
+    evaluate_position_derivative1<Volume>(xi, X_volume, dXdxi);
     J.clear();
     J.update_t(dXdxi);
   }
@@ -233,7 +233,7 @@ namespace GEOMETRYPAIR
    */
   template <typename Volume, typename ScalarTypeXi, typename ScalarTypeDof,
       typename ScalarTypeResult>
-  void EvaluateDeformationGradient(const Core::LinAlg::Matrix<3, 1, ScalarTypeXi>& xi,
+  void evaluate_deformation_gradient(const Core::LinAlg::Matrix<3, 1, ScalarTypeXi>& xi,
       const GEOMETRYPAIR::ElementData<Volume, double>& X_volume,
       const GEOMETRYPAIR::ElementData<Volume, ScalarTypeDof>& q_volume,
       Core::LinAlg::Matrix<3, 3, ScalarTypeResult>& F)
@@ -244,8 +244,8 @@ namespace GEOMETRYPAIR
 
     // Get the inverse of the Jacobian
     Core::LinAlg::Matrix<3, 3, ScalarTypeXi> inv_J(true);
-    EvaluateJacobian<Volume>(xi, X_volume, inv_J);
-    Core::LinAlg::Inverse(inv_J);
+    evaluate_jacobian<Volume>(xi, X_volume, inv_J);
+    Core::LinAlg::inverse(inv_J);
 
     // Get the derivatives of the shape functions w.r.t to the parameter coordinates
     Core::LinAlg::Matrix<Volume::element_dim_, Volume::n_nodes_ * Volume::n_val_, ScalarTypeXi>
@@ -278,7 +278,7 @@ namespace GEOMETRYPAIR
    * @param dr (out) Derivative of the position on the surface, w.r.t xi.
    */
   template <typename ScalarType, typename Surface>
-  void EvaluateSurfacePositionAndDerivative(
+  void evaluate_surface_position_and_derivative(
       const ElementData<Surface, ScalarType>& element_data_surface,
       const Core::LinAlg::Matrix<3, 1, ScalarType>& xi, Core::LinAlg::Matrix<3, 1, ScalarType>& r,
       Core::LinAlg::Matrix<3, 3, ScalarType>& dr)
@@ -292,7 +292,7 @@ namespace GEOMETRYPAIR
     Core::LinAlg::Matrix<3, 1, FAD_outer> r_AD;
 
     // Evaluate the position.
-    EvaluateSurfacePosition<Surface>(xi_AD, element_data_surface, r_AD);
+    evaluate_surface_position<Surface>(xi_AD, element_data_surface, r_AD);
 
     // Extract the return values from the AD types.
     for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
@@ -306,7 +306,7 @@ namespace GEOMETRYPAIR
    * \brief Check if the parameter coordinate xi is in the valid range for a 1D element
    */
   template <typename T>
-  bool ValidParameter1D(const T& xi)
+  bool valid_parameter1_d(const T& xi)
   {
     const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (fabs(xi) < xi_limit)
@@ -319,7 +319,7 @@ namespace GEOMETRYPAIR
    * \brief Check if the parameter coordinate xi is in the valid range for a 2D element
    */
   template <typename ElementType, typename T>
-  bool ValidParameter2D(const T& xi)
+  bool valid_parameter2_d(const T& xi)
   {
     const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (ElementType::geometry_type_ == DiscretizationTypeGeometry::quad)
@@ -345,7 +345,7 @@ namespace GEOMETRYPAIR
    * \brief Check if the parameter coordinate xi is in the valid range for a 3D element
    */
   template <typename ElementType, typename T>
-  bool ValidParameter3D(const T& xi)
+  bool valid_parameter3_d(const T& xi)
   {
     const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (ElementType::geometry_type_ == DiscretizationTypeGeometry::hexahedron)
@@ -389,7 +389,7 @@ namespace GEOMETRYPAIR
           "This is the default implementation of StartValues::Set and should never be called, "
           "since we only want to call the templated versions. You are calling it with the "
           "DiscretizationTypeGeometry ";
-      error_string += DiscretizationTypeGeometryToString(geometry_type);
+      error_string += discretization_type_geometry_to_string(geometry_type);
       FOUR_C_THROW(error_string.c_str());
     }
   };

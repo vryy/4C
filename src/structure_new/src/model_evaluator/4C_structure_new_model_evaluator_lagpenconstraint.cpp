@@ -153,7 +153,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::assemble_force(
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
-  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
 
   if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
@@ -171,7 +171,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::assemble_force(
     // only call when f is the rhs of the full problem (not for structural
     // equilibriate initial state call)
     if (elements_f == max_gid + 1)
-      Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+      Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
   }
 
   return true;

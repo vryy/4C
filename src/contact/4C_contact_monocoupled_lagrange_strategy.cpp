@@ -98,11 +98,11 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
 
   // system type
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // shape function
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -151,12 +151,12 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     else
     {
       // only split, no need to transform
-      Core::LinAlg::SplitMatrix2x2(
+      Core::LinAlg::split_matrix2x2(
           kteffmatrix, gsmdofrowmap_, gndofrowmap_, domainmap, tempmap0, ksm, ksm0, kn, kn0);
     }
 
     // further splits into slave part + master part
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         ksm, gsdofrowmap_, gmdofrowmap_, domainmap, tempmap0, ks, ks0, km, km0);
 
     // store some stuff for static condensation of LM
@@ -178,7 +178,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     Teuchos::RCP<Epetra_Map> fgidofs;
 
     // do the splitting
-    Core::LinAlg::SplitMatrix2x2(ks, gactivedofs_, gidofs, domainmap, tempmap1, ka, ka0, ki, ki0);
+    Core::LinAlg::split_matrix2x2(ks, gactivedofs_, gidofs, domainmap, tempmap1, ka, ka0, ki, ki0);
 
     // abbreviations for master, active and inactive set
     int aset = gactivedofs_->NumGlobalElements();
@@ -199,7 +199,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmadd =
-          Core::LinAlg::MLMultiply(*mhataam_, true, *ka, false, false, false, true);
+          Core::LinAlg::ml_multiply(*mhataam_, true, *ka, false, false, false, true);
       kmmod->add(*kmadd, false, 1.0, 1.0);
     }
     kmmod->complete(kteff->domain_map(), km->row_map());
@@ -217,7 +217,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiadd =
-          Core::LinAlg::MLMultiply(*dhat_, true, *ka, false, false, false, true);
+          Core::LinAlg::ml_multiply(*dhat_, true, *ka, false, false, false, true);
       kimod->add(*kiadd, false, -1.0, 1.0);
     }
     kimod->complete(kteff->domain_map(), ki->row_map());
@@ -230,8 +230,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kamod;
     if (aset)
     {
-      kamod = Core::LinAlg::MLMultiply(*tmatrix_, false, *invda_, true, false, false, true);
-      kamod = Core::LinAlg::MLMultiply(*kamod, false, *ka, false, false, false, true);
+      kamod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda_, true, false, false, true);
+      kamod = Core::LinAlg::ml_multiply(*kamod, false, *ka, false, false, false, true);
     }
 
     /********************************************************************/
@@ -333,9 +333,9 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
 
   // shape function and system types
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   //**********************************************************************
   //**********************************************************************
@@ -361,7 +361,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invda;
     Teuchos::RCP<Epetra_Map> tempmap;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));

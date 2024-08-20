@@ -118,7 +118,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::unpack(const std::vector<char>
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // detJ_
   So3Ele::extract_from_pack(position, data, detJ_);
@@ -167,7 +167,7 @@ template <class So3Ele, Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>>
 Discret::ELEMENTS::So3Poro<So3Ele, distype>::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
 }
 
@@ -175,7 +175,7 @@ template <class So3Ele, Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>>
 Discret::ELEMENTS::So3Poro<So3Ele, distype>::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
 }
 
@@ -183,7 +183,7 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Poro<So3Ele, distype>::print(std::ostream& os) const
 {
   os << "So3_poro ";
-  os << Core::FE::CellTypeToString(distype).c_str() << " ";
+  os << Core::FE::cell_type_to_string(distype).c_str() << " ";
   Core::Elements::Element::print(os);
 }
 

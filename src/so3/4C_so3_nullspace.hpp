@@ -25,7 +25,7 @@ namespace Discret::ELEMENTS
   \param node (in):    node to calculate the nullspace on
      \param x0 (in):      center of discretization
                       */
-  Core::LinAlg::SerialDenseMatrix ComputeSolid3DNullSpace(
+  Core::LinAlg::SerialDenseMatrix compute_solid_3d_null_space(
       const Core::Nodes::Node& node, const double* x0);
 
   /*!
@@ -34,7 +34,7 @@ namespace Discret::ELEMENTS
     \param node (in):    node to calculate the nullspace on
     \param x0 (in):      center of discretization
   */
-  Core::LinAlg::SerialDenseMatrix ComputeSolid2DNullSpace(
+  Core::LinAlg::SerialDenseMatrix compute_solid_2d_null_space(
       const Core::Nodes::Node& node, const double* x0);
 }  // namespace Discret::ELEMENTS
 

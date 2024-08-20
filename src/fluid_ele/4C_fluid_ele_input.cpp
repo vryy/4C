@@ -24,11 +24,11 @@ bool Discret::ELEMENTS::Fluid::read_element(const std::string& eletype, const st
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  set_dis_type(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::string_to_cell_type(distype));
 
   std::string na = container.get<std::string>("NA");
   if (na == "ale" or na == "ALE" or na == "Ale")

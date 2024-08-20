@@ -23,7 +23,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcLoma<distype>*
 Discret::ELEMENTS::FluidEleCalcLoma<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcLoma<distype>>(
@@ -165,7 +165,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   }
 
   // get node coordinates and number of elements per node
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
   //----------------------------------------------------------------
@@ -174,8 +174,8 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   if (my::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size =
-        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, my::myknots_, my::weights_);
+    bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
+        discretization, ele, my::myknots_, my::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);

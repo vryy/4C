@@ -983,7 +983,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
         {
           // std::cout << "Boundary segmentation for element: " << SlaveElement().Id() << "\n" ;
           // switch, if consistent boundary modification chosen
-          if (Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(
+          if (Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
                   imortar_, "LM_DUAL_CONSISTENT") != Inpar::Mortar::consistent_none &&
               shape_fcn() != Inpar::Mortar::shape_standard  // so for petrov-Galerkin and dual
           )
@@ -1062,7 +1062,7 @@ bool Mortar::Coupling2dManager::evaluate_coupling(
   if (master_elements().size() == 0) return false;
 
   // decide which type of coupling should be evaluated
-  auto algo = Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1088,8 +1088,8 @@ void Mortar::Coupling2dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  auto consistent =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
+  auto consistent = Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
+      imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
     return;
 
@@ -1202,7 +1202,7 @@ void Mortar::Coupling2dManager::consist_dual_shape()
       for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
     // invert bi-ortho matrix melin
-    Core::LinAlg::Inverse(melin);
+    Core::LinAlg::inverse(melin);
 
     // re-inflate inverse of melin to full size
     Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1214,7 +1214,7 @@ void Mortar::Coupling2dManager::consist_dual_shape()
   }
   // compute matrix A_e for all other cases
   else
-    Core::LinAlg::InvertAndMultiplyByCholesky(me, de, ae);
+    Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // store ae matrix in slave element data container
   slave_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));

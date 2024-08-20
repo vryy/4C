@@ -85,7 +85,7 @@ void Discret::ELEMENTS::Bele3Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Bele3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::Bele3Type::setup_element_definition(
@@ -225,7 +225,7 @@ void Discret::ELEMENTS::Bele3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::Bele3::unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Bele3::print(std::ostream& os) const
 {
-  os << "Bele3_" << numdofpernode_ << " " << Core::FE::CellTypeToString(shape());
+  os << "Bele3_" << numdofpernode_ << " " << Core::FE::cell_type_to_string(shape());
   Element::print(os);
   return;
 }
@@ -254,7 +254,7 @@ void Discret::ELEMENTS::Bele3::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Bele3::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Bele3Line, Bele3>(
+  return Core::Communication::element_boundary_factory<Bele3Line, Bele3>(
       Core::Communication::buildLines, *this);
 }
 
@@ -302,7 +302,7 @@ bool Discret::ELEMENTS::Bele3::read_element(const std::string& eletype, const st
   int material = container.get_or("MAT", -1);
   if (material != -1)
   {
-    set_material(0, Mat::Factory(material));
+    set_material(0, Mat::factory(material));
   }
   return true;
 }

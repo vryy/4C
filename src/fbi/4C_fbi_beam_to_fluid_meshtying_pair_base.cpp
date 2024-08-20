@@ -100,7 +100,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::create_geometry
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Set up the geometry pair
-  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, Beam, Fluid>(
+  this->geometry_pair_ = GEOMETRYPAIR::geometry_pair_line_to_volume_factory<double, Beam, Fluid>(
       element1, element2, geometry_evaluation_data_ptr);
 }
 
@@ -210,8 +210,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
-          displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
+          point_coordinates.push_back(Core::FADUtils::cast_to_double(X(dim)));
+          displacement.push_back(Core::FADUtils::cast_to_double(u(dim)));
         }
       }
     }
@@ -238,14 +238,14 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
       // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.get_etadata(), segment.get_eta_b()})
       {
-        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1posref_, X);
-        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1pos_, r);
+        GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1posref_, X);
+        GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1pos_, r);
         u = r;
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
-          displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
+          point_coordinates.push_back(Core::FADUtils::cast_to_double(X(dim)));
+          displacement.push_back(Core::FADUtils::cast_to_double(u(dim)));
         }
       }
     }
@@ -258,9 +258,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::evaluate_beam_p
     Core::LinAlg::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(), this->ele1posref_, r_beam);
+    GEOMETRYPAIR::evaluate_position<Beam>(integration_point.get_eta(), this->ele1posref_, r_beam);
   else
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(), this->ele1pos_, r_beam);
+    GEOMETRYPAIR::evaluate_position<Beam>(integration_point.get_eta(), this->ele1pos_, r_beam);
 }
 
 /**

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  inline bool DetermineWriteOutput(int step, int offset, int write_every)
+  inline bool determine_write_output(int step, int offset, int write_every)
   {
     return (step + offset) % write_every == 0;
   }
@@ -86,32 +86,32 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
     printlogo_ = printscreen_ > 0;
-    gmsh_out_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
+    gmsh_out_ = (bool)Core::UTILS::integral_value<int>(ioparams, "OUTPUT_GMSH");
     printiter_ = true;
     p_io_every_iteration_ =
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
     outputeveryiter_ =
-        Core::UTILS::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
+        Core::UTILS::integral_value<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
-    writestate_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_DISP");
-    writevelacc_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
-    writejac2matlab_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
+    writestate_ = (bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_DISP");
+    writevelacc_ = (bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_VEL_ACC");
+    writejac2matlab_ = (bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
     conditionnumbertype_ = Teuchos::getIntegralValue<Inpar::Solid::ConditionNumber>(
         ioparams, "STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
     writecurrentelevolume_ =
-        (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
-    writestress_ = Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS");
+        (bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_CURRENT_VOLUME");
+    writestress_ = Core::UTILS::integral_value<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS");
     writecouplstress_ =
-        Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
-    writestrain_ = Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN");
+        Core::UTILS::integral_value<Inpar::Solid::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
+    writestrain_ = Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN");
     writeplstrain_ =
-        Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
+        Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
-    writesurfactant_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
-    writeoptquantity_ = Core::UTILS::IntegralValue<Inpar::Solid::OptQuantityType>(
+    writesurfactant_ = (bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_SURFACTANT");
+    writeoptquantity_ = Core::UTILS::integral_value<Inpar::Solid::OptQuantityType>(
         ioparams, "STRUCT_OPTIONAL_QUANTITY");
 
     // build params container for monitoring reaction forces
@@ -209,8 +209,8 @@ void Solid::TimeInt::BaseDataIO::setup_energy_output_file()
 bool Solid::TimeInt::BaseDataIO::write_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
-  return is_write_results_enabled() and
-         DetermineWriteOutput(step, get_write_timestep_offset(), get_write_results_every_n_step());
+  return is_write_results_enabled() and determine_write_output(step, get_write_timestep_offset(),
+                                            get_write_results_every_n_step());
 }
 
 bool Solid::TimeInt::BaseDataIO::is_write_results_enabled() const
@@ -224,7 +224,7 @@ bool Solid::TimeInt::BaseDataIO::write_runtime_vtk_results_for_this_step(const i
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (is_runtime_output_enabled() &&
-          DetermineWriteOutput(step, get_runtime_output_params()->output_step_offset(),
+          determine_write_output(step, get_runtime_output_params()->output_step_offset(),
               get_runtime_output_params()->output_interval_in_steps()));
 }
 
@@ -239,7 +239,7 @@ bool Solid::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const i
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (get_runtime_vtp_output_params() != Teuchos::null &&
-          DetermineWriteOutput(step, get_runtime_output_params()->output_step_offset(),
+          determine_write_output(step, get_runtime_output_params()->output_step_offset(),
               get_runtime_output_params()->output_interval_in_steps()));
 }
 
@@ -247,7 +247,7 @@ bool Solid::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const i
 bool Solid::TimeInt::BaseDataIO::should_write_restart_for_step(const int step) const
 {
   return get_write_restart_every_n_step() &&
-         DetermineWriteOutput(
+         determine_write_output(
              step, get_write_timestep_offset(), get_write_restart_every_n_step()) &&
          step != 0;
 }
@@ -256,7 +256,7 @@ bool Solid::TimeInt::BaseDataIO::should_write_restart_for_step(const int step) c
 bool Solid::TimeInt::BaseDataIO::should_write_reaction_forces_for_this_step(const int step) const
 {
   return get_monitor_dbc_params()->output_interval_in_steps() > 0 &&
-         DetermineWriteOutput(step, get_write_timestep_offset(),
+         determine_write_output(step, get_write_timestep_offset(),
              get_monitor_dbc_params()->output_interval_in_steps());
 }
 
@@ -273,7 +273,7 @@ bool Solid::TimeInt::BaseDataIO::should_write_stress_strain_for_this_step(const 
 bool Solid::TimeInt::BaseDataIO::should_write_energy_for_this_step(const int step) const
 {
   return get_write_energy_every_n_step() > 0 &&
-         DetermineWriteOutput(step, get_write_timestep_offset(), get_write_energy_every_n_step());
+         determine_write_output(step, get_write_timestep_offset(), get_write_energy_every_n_step());
 }
 
 int Solid::TimeInt::BaseDataIO::get_last_written_results() const { return lastwrittenresultsstep_; }

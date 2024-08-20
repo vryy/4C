@@ -55,7 +55,7 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::co
 Inpar::ScaTra::ImplType SSI::ScatraStructureCloneStrategy::get_impl_type(
     Core::Elements::Element* ele)
 {
-  return Adapter::GetScaTraImplType(ele);
+  return Adapter::get_sca_tra_impl_type(ele);
 }
 
 

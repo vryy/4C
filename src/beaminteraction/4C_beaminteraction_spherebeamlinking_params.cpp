@@ -92,7 +92,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
 
       // store materials
       mat_.push_back(
-          Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::Factory(matlinkerpertype_[i])));
+          Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::factory(matlinkerpertype_[i])));
       if (mat_.back() == Teuchos::null)
         FOUR_C_THROW("Invalid material given for beam sphere link. \n");
     }
@@ -109,7 +109,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
     if (not(std::find(linkertypes_.begin(), linkertypes_.end(), matlinkerpertype_[type_i]) !=
             linkertypes_.end()))
       linkertypes_.push_back(
-          Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::Factory(matlinkerpertype_[type_i]))
+          Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::factory(matlinkerpertype_[type_i]))
               ->linker_type());
   }
 

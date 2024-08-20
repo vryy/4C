@@ -31,7 +31,7 @@ namespace
    *               + matrix_A_im * tensor_B_mjkn * matrix_C_nl
    *               + matrix_A_im * matrix_B_mn * tensor_C_njkl)
    */
-  Core::LinAlg::FourTensor<3> SumMultiplyTmmMtmMmt(const Core::LinAlg::Matrix<3, 3>& matrix_A,
+  Core::LinAlg::FourTensor<3> sum_multiply_tmm_mtm_mmt(const Core::LinAlg::Matrix<3, 3>& matrix_A,
       const Core::LinAlg::Matrix<3, 3>& matrix_B, const Core::LinAlg::Matrix<3, 3>& matrix_C,
       const Core::LinAlg::FourTensor<3>& tensor_A, const Core::LinAlg::FourTensor<3>& tensor_B,
       const Core::LinAlg::FourTensor<3>& tensor_C, const double& scalar)
@@ -72,7 +72,7 @@ namespace
    * @brief Adds the triple multiplication to the result matrix
    *        NNN_ij += scalar * left_ij middle_jk right_kl
    */
-  void MultiplyNNN(Core::LinAlg::Matrix<3, 3>& NNN, const double& scalar,
+  void multiply_nnn(Core::LinAlg::Matrix<3, 3>& NNN, const double& scalar,
       const Core::LinAlg::Matrix<3, 3>& left, const Core::LinAlg::Matrix<3, 3>& middle,
       const Core::LinAlg::Matrix<3, 3>& right)
   {
@@ -84,7 +84,7 @@ namespace
   /*!
    * @brief Compute the derivative of the Cauchy Green tensor C w.r.t. C
    */
-  Core::LinAlg::FourTensor<3> ComputeDCDC()
+  Core::LinAlg::FourTensor<3> compute_dcdc()
   {
     Core::LinAlg::Matrix<6, 6> dCdCv(true);
     for (int i = 0; i < 3; i++) dCdCv(i, i) = 1.0;
@@ -99,7 +99,7 @@ namespace
   /*!
    * @brief Compute the structural tensor L
    */
-  Core::LinAlg::Matrix<3, 3> ComputeStructuralTensorL(
+  Core::LinAlg::Matrix<3, 3> compute_structural_tensor_l(
       const Core::LinAlg::Matrix<3, 3>& M, const double& omega0)
   {
     Core::LinAlg::Matrix<3, 3> L(M);
@@ -119,26 +119,26 @@ namespace
    * @brief Compute the elastic second Piola Kirchhoff stress tensor Se and its derivative dSedC
    * w.r.t. the right Cauchy Green tensor C
    */
-  StressAndDeriv ComputeSeAndDSedC(const double& alpha, const double& beta, const double& gamma,
-      const double& omega0, const Core::LinAlg::Matrix<3, 3>& M,
+  StressAndDeriv compute_se_and_d_sed_c(const double& alpha, const double& beta,
+      const double& gamma, const double& omega0, const Core::LinAlg::Matrix<3, 3>& M,
       const Core::LinAlg::Matrix<3, 3>& invFa, const Core::LinAlg::FourTensor<3>& dinvFadC,
       const Core::LinAlg::Matrix<3, 3>& C, const Core::LinAlg::FourTensor<3>& dCdC)
   {
     // structural tensor L = omega0/3*Identity + omegap*M
-    Core::LinAlg::Matrix<3, 3> L = ComputeStructuralTensorL(M, omega0);
+    Core::LinAlg::Matrix<3, 3> L = compute_structural_tensor_l(M, omega0);
     Core::LinAlg::Matrix<6, 1> Lv(false);  // Voigt notation
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(L, Lv);
 
     // elastic right Cauchy Green tensor Ce = Fe^T Fe
     // = Fa^-T C Fa^-1 = Fa^-1 C Fa^-1 (with Fa^-1 sym.)
     Core::LinAlg::Matrix<3, 3> Ce(true);
-    MultiplyNNN(Ce, 1.0, invFa, C, invFa);
+    multiply_nnn(Ce, 1.0, invFa, C, invFa);
 
     // derivative of Ce w.r.t C
     // dCedC_ijkl = dinvFadC_iakl (C invFa)_aj + invFa_ia dCdC_abkl invFa_bj + (invFa C)_ab
     // dinvFadC_bjkl
     Core::LinAlg::FourTensor<3> dCedC(true);
-    dCedC = SumMultiplyTmmMtmMmt(invFa, C, invFa, dinvFadC, dCdC, dinvFadC, 1.0);
+    dCedC = sum_multiply_tmm_mtm_mmt(invFa, C, invFa, dinvFadC, dCdC, dinvFadC, 1.0);
     Core::LinAlg::Matrix<6, 6> dCedCv(true);
     Mat::setup_6x6_voigt_matrix_from_four_tensor(dCedCv, dCedC);
 
@@ -355,7 +355,7 @@ void Mat::MuscleGiantesio::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -407,7 +407,7 @@ void Mat::MuscleGiantesio::update(Core::LinAlg::Matrix<3, 3> const& defgrd, int 
   const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.get_structural_tensor(gp, 0);
 
   // save the current fibre stretch in lambdaMOld_
-  lambda_m_old_ = Mat::UTILS::Muscle::FiberStretch(C, M);
+  lambda_m_old_ = Mat::UTILS::Muscle::fiber_stretch(C, M);
 }
 
 void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
@@ -444,7 +444,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   double detC = C.determinant();
 
   // derivative of C w.r.t C
-  Core::LinAlg::FourTensor<3> dCdC = ComputeDCDC();
+  Core::LinAlg::FourTensor<3> dCdC = compute_dcdc();
 
   // inverse right Cauchy Green tensor C^-1
   Core::LinAlg::Matrix<3, 3> invC(true);                         // matrix notation
@@ -454,15 +454,15 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // structural tensor M, i.e. dyadic product of fibre directions
   Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.get_structural_tensor(gp, 0);
-  double lambdaM = Mat::UTILS::Muscle::FiberStretch(C, M);
+  double lambdaM = Mat::UTILS::Muscle::fiber_stretch(C, M);
   // derivative of lambdaM w.r.t. C
-  Core::LinAlg::Matrix<3, 3> dlambdaMdC = Mat::UTILS::Muscle::DFiberStretch_DC(lambdaM, C, M);
+  Core::LinAlg::Matrix<3, 3> dlambdaMdC = Mat::UTILS::Muscle::d_fiber_stretch_dc(lambdaM, C, M);
   Core::LinAlg::Matrix<6, 1> dlambdaMdCv(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(dlambdaMdC, dlambdaMdCv);
 
   // contraction velocity dotLambdaM
   double dotLambdaM =
-      Mat::UTILS::Muscle::ContractionVelocityBWEuler(lambdaM, lambda_m_old_, timeStepSize);
+      Mat::UTILS::Muscle::contraction_velocity_bw_euler(lambdaM, lambda_m_old_, timeStepSize);
 
   // compute activation level omegaa and derivative w.r.t. fiber stretch if material is active
   Core::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs = {
@@ -522,7 +522,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // --------------------------------------------------------------
   // elastic second Piola Kirchhoff stress tensor Se and its derivative w.r.t C
   StressAndDeriv Se_dSedC =
-      ComputeSeAndDSedC(alpha, beta, gamma, omega0, M, invFa, dinvFadC, C, dCdC);
+      compute_se_and_d_sed_c(alpha, beta, gamma, omega0, M, invFa, dinvFadC, C, dCdC);
 
   // --------------------------------------------------------------
   // compute second Piola Kirchhoff stress components S1, S2, Svol
@@ -531,7 +531,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // S1 = detFa * invFa * Se * invFa^T
   // in index notation: S1_sl = detFa * invFa_sr * Se_rq * invFa_rl (with invFa sym.)
   Core::LinAlg::Matrix<3, 3> S1(true);
-  MultiplyNNN(S1, detFa, invFa, Se_dSedC.Se, invFa);
+  multiply_nnn(S1, detFa, invFa, Se_dSedC.Se, invFa);
   Core::LinAlg::Matrix<6, 1> S1v(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(S1, S1v);
 
@@ -539,7 +539,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // or: S2 = -2 S1 : (C Fa^-1 dFadomegaa) domegaadC
   // in index notation: S2_sl = -2 S1_ij (C Fa^-1 dFadomegaa)_ij domegaadC_sl
   Core::LinAlg::Matrix<3, 3> CinvFadFadomegaa(true);
-  MultiplyNNN(CinvFadFadomegaa, 1.0, C, invFa, dFadomegaa);
+  multiply_nnn(CinvFadFadomegaa, 1.0, C, invFa, dFadomegaa);
 
   Core::LinAlg::Matrix<6, 1> S2v(domegaadCv);
   double scalar_contraction = -2.0 * Mat::contract_matrix_matrix(CinvFadFadomegaa, S1);
@@ -558,8 +558,8 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // derivative of S1 = detFa * invFa * Se * invFa^T  w.r.t. C
   // = detFa * (dinvFadC * (Se * dinvFa^T) + invFa * dSedC * invFa^T + (invFa * Se) * dinvFadC)
   Core::LinAlg::FourTensor<3> dS1dC(true);
-  dS1dC =
-      SumMultiplyTmmMtmMmt(invFa, Se_dSedC.Se, invFa, dinvFadC, Se_dSedC.dSedC, dinvFadC, detFa);
+  dS1dC = sum_multiply_tmm_mtm_mmt(
+      invFa, Se_dSedC.Se, invFa, dinvFadC, Se_dSedC.dSedC, dinvFadC, detFa);
   Mat::setup_6x6_voigt_matrix_from_four_tensor(cmat1v, dS1dC);
   cmat1v.scale(2.0);
 
@@ -583,7 +583,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   Core::LinAlg::Matrix<3, 3> dscalardC(domegaadC);
   dscalardC.scale(helper);
-  MultiplyNNN(dscalardC, 1.0, S1, dFadomegaa, invFa);
+  multiply_nnn(dscalardC, 1.0, S1, dFadomegaa, invFa);
   Mat::add_contraction_matrix_four_tensor(dscalardC, CinvFadFadomegaa, dS1dC);
   Core::LinAlg::Matrix<6, 1> dscalardCv(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(
@@ -751,15 +751,15 @@ double Mat::MuscleGiantesio::evaluate_active_nominal_stress_integral(
   const auto& actValues = params_->actValues_;
 
   // compute force-time/stimulation frequency dependency Poptft
-  double Poptft = Mat::UTILS::Muscle::EvaluateTimeDependentActiveStressEhret(
+  double Poptft = Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_ehret(
       Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, currentTime);
 
   // compute integral of the force-stretch dependency fxi in the boundaries lambdaMin to lambdaM
-  double intFxi = Mat::UTILS::Muscle::EvaluateIntegralForceStretchDependencyEhret(
+  double intFxi = Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(
       lambdaM, lambdaMin, lambdaOpt);
 
   // compute force-velocity dependency fv
-  double fv = Mat::UTILS::Muscle::EvaluateForceVelocityDependencyBoel(
+  double fv = Mat::UTILS::Muscle::evaluate_force_velocity_dependency_boel(
       dotLambdaM, dotLambdaMMin, de, dc, ke, kc);
 
   // compute integral of the active nominal stress Pa
@@ -829,7 +829,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::d_inv_act_def_grad_d_act_level(
   // first derivative of Fa^{-1} w.r.t. omegaa
   // dinvFadomegaa_ij = - invFa_ik dFadomegaa_kl invFa_lj
   Core::LinAlg::Matrix<3, 3> dinvFadomegaa(true);
-  MultiplyNNN(dinvFadomegaa, -1.0, invFa, dFadomegaa, invFa);
+  multiply_nnn(dinvFadomegaa, -1.0, invFa, dFadomegaa, invFa);
 
   return dinvFadomegaa;
 }

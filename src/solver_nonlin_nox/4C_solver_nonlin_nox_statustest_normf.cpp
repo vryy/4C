@@ -214,7 +214,7 @@ std::ostream& NOX::Nln::StatusTest::NormF::print(std::ostream& stream, int inden
   {
     stream << indent_string;
     stream << status_[i];
-    stream << QuantityType2String(checkList_[i]) << "-";
+    stream << quantity_type_to_string(checkList_[i]) << "-";
     stream << "F-Norm = " << ::NOX::Utils::sciformat((*normF_)[i], 3);
     stream << " < " << ::NOX::Utils::sciformat(trueTolerance_[i], 3);
     stream << std::endl;

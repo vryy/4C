@@ -36,9 +36,9 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
       ndsporofluid_scatra_(-1),
       timertimestep_("PoroMultiPhaseScaTraBase", true),
       dttimestep_(0.0),
-      divcontype_(Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::DivContAct>(
+      divcontype_(Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::DivContAct>(
           globaltimeparams, "DIVERCONT")),
-      artery_coupl_(Core::UTILS::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
+      artery_coupl_(Core::UTILS::integral_value<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
 }
 
@@ -67,10 +67,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
   // -------------------------------------------------------------------
   // first of all check for possible couplings
   Inpar::POROMULTIPHASE::SolutionSchemeOverFields solschemeporo =
-      Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
+      Core::UTILS::integral_value<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
           poroparams, "COUPALGO");
   Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solschemescatraporo =
-      Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
+      Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
           algoparams, "COUPALGO");
 
   // partitioned -- monolithic not possible --> error
@@ -98,7 +98,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
         "YOUR CHOICE                       : monolithic  -- partitioned_sequential");
 
   fluxreconmethod_ =
-      Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+      Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
           fluidparams, "FLUX_PROJ_METHOD");
 
   if (solschemescatraporo ==
@@ -111,7 +111,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
         "approach instead.");
   }
 
-  poromulti_ = POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
+  poromulti_ = POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
       solschemeporo, globaltimeparams, get_comm());
 
   // initialize

@@ -977,7 +977,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         }
 
         // calcute coefficient matrix
-        Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
         mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
@@ -1056,7 +1056,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         }
 
         // calcute coefficient matrix
-        Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
         mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
@@ -1146,7 +1146,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        Core::LinAlg::Inverse(melin);
+        Core::LinAlg::inverse(melin);
 
         // re-inflate inverse of melin to full size
         Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1233,7 +1233,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         }
 
         // calcute coefficient matrix
-        Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
         mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
@@ -1309,7 +1309,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         }
 
         // calcute coefficient matrix
-        Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
         mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
@@ -1384,7 +1384,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         }
 
         // calcute coefficient matrix
-        Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
         mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
@@ -1467,7 +1467,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        Core::LinAlg::Inverse(melin);
+        Core::LinAlg::inverse(melin);
 
         // re-inflate inverse of melin to full size
         Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1559,7 +1559,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        Core::LinAlg::Inverse(melin);
+        Core::LinAlg::inverse(melin);
 
         // re-inflate inverse of melin to full size
         Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1650,7 +1650,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        Core::LinAlg::Inverse(melin);
+        Core::LinAlg::inverse(melin);
 
         // re-inflate inverse of melin to full size
         Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1978,7 +1978,7 @@ bool Mortar::Element::evaluate_shape(const double* xi, Core::LinAlg::SerialDense
         weights(inode) = dynamic_cast<Mortar::Node*>(nodes()[inode])->nurbs_w();
 
       Core::LinAlg::SerialDenseMatrix auxderiv(1, num_node());
-      Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_1d_funct_deriv(
           val, auxderiv, xi[0], knots()[0], weights, Core::FE::CellType::nurbs2);
 
       // copy entries for to be conform with the mortar code!
@@ -1997,7 +1997,7 @@ bool Mortar::Element::evaluate_shape(const double* xi, Core::LinAlg::SerialDense
         weights(inode) = dynamic_cast<Mortar::Node*>(nodes()[inode])->nurbs_w();
 
       Core::LinAlg::SerialDenseMatrix auxderiv(1, num_node());
-      Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_1d_funct_deriv(
           val, auxderiv, xi[0], knots()[0], weights, Core::FE::CellType::nurbs3);
 
       // copy entries for to be conform with the mortar code!
@@ -2021,7 +2021,7 @@ bool Mortar::Element::evaluate_shape(const double* xi, Core::LinAlg::SerialDense
       uv(1) = xi[1];
 
       Core::LinAlg::SerialDenseMatrix auxderiv(2, num_node());
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(
           val, auxderiv, uv, knots(), weights, Core::FE::CellType::nurbs4);
 
       // copy entries for to be conform with the mortar code!
@@ -2046,7 +2046,7 @@ bool Mortar::Element::evaluate_shape(const double* xi, Core::LinAlg::SerialDense
 
 
       Core::LinAlg::SerialDenseMatrix auxderiv(2, num_node());
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(
           val, auxderiv, uv, knots(), weights, Core::FE::CellType::nurbs9);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -2208,7 +2208,7 @@ bool Mortar::Element::evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmt
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // store coefficient matrix
           mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
@@ -2301,7 +2301,7 @@ bool Mortar::Element::evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmt
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // store coefficient matrix
           mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
@@ -2441,7 +2441,7 @@ bool Mortar::Element::evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmt
       if ((nnodes - numbound) < 1e-12)
       {
         std::cout << "numnode= " << nnodes
-                  << "shape= " << Core::FE::CellTypeToString(Element::shape()) << std::endl;
+                  << "shape= " << Core::FE::cell_type_to_string(Element::shape()) << std::endl;
         FOUR_C_THROW("all nodes are bound");
       }
 
@@ -2511,7 +2511,7 @@ bool Mortar::Element::evaluate_shape_lag_mult_const(const Inpar::Mortar::ShapeFc
     const double* xi, Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv,
     const int valdim)
 {
-  Mortar::UTILS::EvaluateShape_LM_Const(lmtype, xi, val, *this, valdim);
+  Mortar::UTILS::evaluate_shape_lm_const(lmtype, xi, val, *this, valdim);
   deriv.putScalar(0.0);
 
   return true;
@@ -2678,7 +2678,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         for (int i = 0; i < integrator.n_gp(); ++i)
         {
           double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
-          UTILS::mortar_shape_function_2D(val, gpc[0], gpc[1], Mortar::Element::bilin2D);
+          UTILS::mortar_shape_function_2d(val, gpc[0], gpc[1], Mortar::Element::bilin2D);
           detg = jacobian(gpc);
 
           // directional derivative of Jacobian
@@ -2713,7 +2713,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         }
 
         // invert me
-        Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (mo_data().dual_shape() == Teuchos::null)
@@ -2830,7 +2830,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         }
 
         // invert me
-        Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (mo_data().dual_shape() == Teuchos::null)
@@ -3036,7 +3036,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          Core::LinAlg::Inverse(melin);
+          Core::LinAlg::inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -3058,7 +3058,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         else
         {
           // invert matrix M_e
-          Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+          Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
           // get coefficient matrix A_e
           ae = *(mo_data().dual_shape());
@@ -3166,7 +3166,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         }
 
         // invert me
-        Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (mo_data().dual_shape() == Teuchos::null)
@@ -3366,7 +3366,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         }
 
         // invert me
-        Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (mo_data().dual_shape() == Teuchos::null)
@@ -3563,7 +3563,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         }
 
         // invert me
-        Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (mo_data().dual_shape() == Teuchos::null)
@@ -4143,7 +4143,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          Core::LinAlg::Inverse(melin);
+          Core::LinAlg::inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -4165,7 +4165,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         else
         {
           // invert matrix M_e
-          Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+          Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
           // get coefficient matrix A_e
           ae = *(mo_data().dual_shape());
@@ -4285,7 +4285,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          Core::LinAlg::Inverse(melin);
+          Core::LinAlg::inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -4307,7 +4307,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         else
         {
           // invert matrix M_e
-          Core::LinAlg::SymmetricPositiveDefiniteInverse<nnodes>(me);
+          Core::LinAlg::symmetric_positive_definite_inverse<nnodes>(me);
 
           // get coefficient matrix A_e
           ae = *(mo_data().dual_shape());
@@ -4543,7 +4543,7 @@ bool Mortar::Element::evaluate2nd_deriv_shape(
       Core::LinAlg::SerialDenseMatrix auxderiv(1, num_node());
       Core::LinAlg::SerialDenseMatrix auxderiv2(1, num_node());
 
-      Core::FE::Nurbs::nurbs_get_1D_funct_deriv_deriv2(
+      Core::FE::Nurbs::nurbs_get_1d_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, xi[0], knots()[0], weights, Core::FE::CellType::nurbs2);
 
       // copy entries for to be conform with the mortar code!
@@ -4565,7 +4565,7 @@ bool Mortar::Element::evaluate2nd_deriv_shape(
       Core::LinAlg::SerialDenseMatrix auxderiv(1, 3);
       Core::LinAlg::SerialDenseMatrix auxderiv2(1, 3);
 
-      Core::FE::Nurbs::nurbs_get_1D_funct_deriv_deriv2(
+      Core::FE::Nurbs::nurbs_get_1d_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, xi[0], knots()[0], weights, Core::FE::CellType::nurbs3);
 
       // copy entries for to be conform with the mortar code!
@@ -4592,7 +4592,7 @@ bool Mortar::Element::evaluate2nd_deriv_shape(
       Core::LinAlg::SerialDenseMatrix auxderiv(2, num_node());
       Core::LinAlg::SerialDenseMatrix auxderiv2(3, num_node());
 
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv_deriv2(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, knots(), weights, Core::FE::CellType::nurbs4);
 
       // copy entries for to be conform with the mortar code!
@@ -4619,7 +4619,7 @@ bool Mortar::Element::evaluate2nd_deriv_shape(
       Core::LinAlg::SerialDenseMatrix auxderiv(2, num_node());
       Core::LinAlg::SerialDenseMatrix auxderiv2(3, num_node());
 
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv_deriv2(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, knots(), weights, Core::FE::CellType::nurbs8);
 
       // copy entries for to be conform with the mortar code!
@@ -4646,7 +4646,7 @@ bool Mortar::Element::evaluate2nd_deriv_shape(
       Core::LinAlg::SerialDenseMatrix auxderiv(2, num_node());
       Core::LinAlg::SerialDenseMatrix auxderiv2(3, num_node());
 
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv_deriv2(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, knots(), weights, Core::FE::CellType::nurbs9);
 
       // copy entries for to be conform with the mortar code!

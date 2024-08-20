@@ -39,7 +39,7 @@ namespace Core::Communication
           already unpacked in the instance. The calling method is responsible for
           freeing this instance!
   */
-  ParObject* Factory(const std::vector<char>& data);
+  ParObject* factory(const std::vector<char>& data);
 
   /*!
   \brief Create an instance of a finite element depending on the type of element
@@ -53,7 +53,7 @@ namespace Core::Communication
   \param owner   (in): owner of the new element
 
   */
-  Teuchos::RCP<Core::Elements::Element> Factory(
+  Teuchos::RCP<Core::Elements::Element> factory(
       const std::string eletype, const std::string distype, const int id, const int owner);
 
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
@@ -84,7 +84,7 @@ namespace Core::Communication
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<Core::Elements::Element>> ElementBoundaryFactory(
+  std::vector<Teuchos::RCP<Core::Elements::Element>> element_boundary_factory(
       const BoundaryBuildType
           buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle& ele  ///< pointer on the parent element
@@ -100,13 +100,13 @@ namespace Core::Communication
       case buildSurfaces:
       {
         nele = ele.num_surface();
-        connectivity = Core::FE::getEleNodeNumberingSurfaces(distype);
+        connectivity = Core::FE::get_ele_node_numbering_surfaces(distype);
         break;
       }
       case buildLines:
       {
         nele = ele.num_line();
-        connectivity = Core::FE::getEleNodeNumberingLines(distype);
+        connectivity = Core::FE::get_ele_node_numbering_lines(distype);
         break;
       }
       default:
@@ -161,7 +161,7 @@ namespace Core::Communication
    * \date 03/12
    */
   template <class IntFaceEle, class ParentEle>
-  Teuchos::RCP<Core::Elements::Element> ElementIntFaceFactory(int id,  ///< element id
+  Teuchos::RCP<Core::Elements::Element> element_int_face_factory(int id,  ///< element id
       int owner,                  ///< owner (= owner of parent element with smallest gid)
       int nnode,                  ///< number of nodes
       const int* nodeids,         ///< node ids
@@ -179,14 +179,14 @@ namespace Core::Communication
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<Core::Elements::Element>> GetElementLines(ParentEle& ele)
+  std::vector<Teuchos::RCP<Core::Elements::Element>> get_element_lines(ParentEle& ele)
   {
     // 1D boundary element and 2D/3D parent element
-    if (Core::FE::getDimension(ele.shape()) > 1)
+    if (Core::FE::get_dimension(ele.shape()) > 1)
     {
-      return ElementBoundaryFactory<BoundaryEle, ParentEle>(buildLines, ele);
+      return element_boundary_factory<BoundaryEle, ParentEle>(buildLines, ele);
     }
-    else if (Core::FE::getDimension(ele.shape()) == 1)
+    else if (Core::FE::get_dimension(ele.shape()) == 1)
     {
       // 1D boundary element and 1D parent element
       //  -> we return the element itself
@@ -196,14 +196,14 @@ namespace Core::Communication
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<Core::Elements::Element>> GetElementSurfaces(ParentEle& ele)
+  std::vector<Teuchos::RCP<Core::Elements::Element>> get_element_surfaces(ParentEle& ele)
   {
-    if (Core::FE::getDimension(ele.shape()) > 2)
+    if (Core::FE::get_dimension(ele.shape()) > 2)
     {
       // 2D boundary element and 3D parent element
-      return ElementBoundaryFactory<BoundaryEle, ParentEle>(buildSurfaces, ele);
+      return element_boundary_factory<BoundaryEle, ParentEle>(buildSurfaces, ele);
     }
-    else if (Core::FE::getDimension(ele.shape()) == 2)
+    else if (Core::FE::get_dimension(ele.shape()) == 2)
     {
       // 2D boundary element and 2D parent element
       // -> we return the element itself

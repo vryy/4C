@@ -192,7 +192,7 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
       }
       default:
         FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-            Core::FE::CellTypeToString(ic->shape()).c_str());
+            Core::FE::cell_type_to_string(ic->shape()).c_str());
         exit(EXIT_FAILURE);
     }
   }
@@ -325,7 +325,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_co
           }
           default:
             FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-                Core::FE::CellTypeToString(ic->shape()).c_str());
+                Core::FE::cell_type_to_string(ic->shape()).c_str());
             exit(EXIT_FAILURE);
         }
       }
@@ -940,7 +940,7 @@ Cut::Hex20ElementHandle::Hex20ElementHandle(Mesh& mesh, int eid, const std::vect
       side_lsvs(i) = n->lsv();
     }
 
-    Core::FE::shape_function_2D(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
+    Core::FE::shape_function_2d(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
     xyz.multiply(side_xyze, side_funct);
     lsv.multiply(side_lsvs, side_funct);
 
@@ -982,7 +982,7 @@ Cut::Hex20ElementHandle::Hex20ElementHandle(Mesh& mesh, int eid, const std::vect
   // node is the set of all 20 nodes of the hex20 element in contrast to the shadow nodes of sides,
   // for that the key are the eight nodes of the quad7 side
   Core::LinAlg::Matrix<20, 1> funct;
-  Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, Core::FE::CellType::hex20);
+  Core::FE::shape_function_3d(funct, 0.0, 0.0, 0.0, Core::FE::CellType::hex20);
 
   xyz.multiply(xyze, funct);
   lsv.multiply(lsvs, funct);
@@ -1415,7 +1415,7 @@ Cut::Wedge15ElementHandle::Wedge15ElementHandle(
       side_lsvs(i) = n->lsv();
     }
 
-    Core::FE::shape_function_2D(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
+    Core::FE::shape_function_2d(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
     xyz.multiply(side_xyze, side_funct);
     lsv.multiply(side_lsvs, side_funct);
 

@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-std::string GEOMETRYPAIR::DiscretizationTypeGeometryToString(
+std::string GEOMETRYPAIR::discretization_type_geometry_to_string(
     const DiscretizationTypeGeometry discretization_type)
 {
   switch (discretization_type)

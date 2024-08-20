@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
+void Mat::elast_hyper_evaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp, int eleGID,
     const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
@@ -42,7 +42,7 @@ void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
   Core::LinAlg::Voigt::identity_matrix(id2);
 
   // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
-  EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
+  evaluate_right_cauchy_green_strain_like_voigt(glstrain, C_strain);
 
   // invert Right Cauchy Green Strain tensor
   Core::LinAlg::Voigt::Strains::inverse_tensor(C_strain, iC_strain);
@@ -51,11 +51,11 @@ void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
   Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
 
   // Evaluate derivatives of potsum w.r.t the principal invariants
-  ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, gp, eleGID);
+  elast_hyper_evaluate_invariant_derivatives(prinv, dPI, ddPII, potsum, properties, gp, eleGID);
 
   // check if system is polyconvex (set "POLYCONVEX 1" in material input-line)
   if (checkpolyconvexity)
-    ElastHyperCheckPolyconvexity(defgrd, prinv, dPI, ddPII, params, gp, eleGID, properties);
+    elast_hyper_check_polyconvexity(defgrd, prinv, dPI, ddPII, params, gp, eleGID, properties);
 
 
   // clear stress and cmat (for safety reasons)
@@ -63,24 +63,24 @@ void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
   cmat.clear();
 
   // Evaluate isotropic stress response
-  ElastHyperAddIsotropicStressCmat(stress, cmat, C_strain, iC_strain, prinv, dPI, ddPII);
+  elast_hyper_add_isotropic_stress_cmat(stress, cmat, C_strain, iC_strain, prinv, dPI, ddPII);
 
   if (properties.coeffStretchesPrinc || properties.coeffStretchesMod)
   {
-    ElastHyperAddResponseStretches(cmat, stress, C_strain, potsum, properties, gp, eleGID);
+    elast_hyper_add_response_stretches(cmat, stress, C_strain, potsum, properties, gp, eleGID);
   }
 
   // Evaluate anisotropic stress response from summands with principle invariants formulation
   if (properties.anisoprinc)
-    ElastHyperAddAnisotropicPrinc(stress, cmat, C_strain, params, gp, eleGID, potsum);
+    elast_hyper_add_anisotropic_princ(stress, cmat, C_strain, params, gp, eleGID, potsum);
 
   // Evaluate anisotropic stress response from summands with modified invariants formulation
   if (properties.anisomod)
-    ElastHyperAddAnisotropicMod(
+    elast_hyper_add_anisotropic_mod(
         stress, cmat, C_strain, iC_strain, prinv, gp, eleGID, params, potsum);
 }
 
-void Mat::EvaluateRightCauchyGreenStrainLikeVoigt(
+void Mat::evaluate_right_cauchy_green_strain_like_voigt(
     const Core::LinAlg::Matrix<6, 1>& E_strain, Core::LinAlg::Matrix<6, 1>& C_strain)
 {
   // C = 2*E+I
@@ -90,7 +90,7 @@ void Mat::EvaluateRightCauchyGreenStrainLikeVoigt(
   for (unsigned i = 0; i < 3; ++i) C_strain(i) += 1.0;
 }
 
-void Mat::ElastHyperEvaluateInvariantDerivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
+void Mat::elast_hyper_evaluate_invariant_derivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
     Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
     const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, const int gp, int eleGID)
@@ -162,7 +162,7 @@ void Mat::convert_mod_to_princ(const Core::LinAlg::Matrix<3, 1>& prinv,
   ddPII(5) += std::pow(prinv(2), -1.) * ddPmodII(5);
 }
 
-void Mat::ElastHyperAddIsotropicStressCmat(Core::LinAlg::Matrix<6, 1>& S_stress,
+void Mat::elast_hyper_add_isotropic_stress_cmat(Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
     const Core::LinAlg::Matrix<6, 1>& iC_strain, const Core::LinAlg::Matrix<3, 1>& prinv,
     const Core::LinAlg::Matrix<3, 1>& dPI, const Core::LinAlg::Matrix<6, 1>& ddPII)
@@ -188,7 +188,7 @@ void Mat::ElastHyperAddIsotropicStressCmat(Core::LinAlg::Matrix<6, 1>& S_stress,
   Core::LinAlg::Voigt::Strains::to_stress_like(iC_strain, iC_stress);
 
   // compose coefficients
-  CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
+  calculate_gamma_delta(gamma, delta, prinv, dPI, ddPII);
 
   // 2nd Piola Kirchhoff stress
   S_stress.update(gamma(0), id2, 1.0);
@@ -217,7 +217,7 @@ void Mat::ElastHyperAddIsotropicStressCmat(Core::LinAlg::Matrix<6, 1>& S_stress,
   cmat.update(delta(7), id4sharp, 1.0);
 }
 
-void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
+void Mat::elast_hyper_add_response_stretches(Core::LinAlg::Matrix<6, 6>& cmat,
     Core::LinAlg::Matrix<6, 1>& S_stress, const Core::LinAlg::Matrix<6, 1>& C_strain,
     const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, const int gp, int eleGID)
@@ -386,7 +386,7 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
   }
 }
 
-void Mat::ElastHyperAddAnisotropicPrinc(Core::LinAlg::Matrix<6, 1>& S_stress,
+void Mat::elast_hyper_add_anisotropic_princ(Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
     Teuchos::ParameterList& params, const int gp, int eleGID,
     const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum)
@@ -398,7 +398,7 @@ void Mat::ElastHyperAddAnisotropicPrinc(Core::LinAlg::Matrix<6, 1>& S_stress,
     p->add_stress_aniso_principal(C_strain, cmat, S_stress, params, gp, eleGID);
 }
 
-void Mat::ElastHyperAddAnisotropicMod(Core::LinAlg::Matrix<6, 1>& S_stress,
+void Mat::elast_hyper_add_anisotropic_mod(Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
     const Core::LinAlg::Matrix<6, 1>& iC_strain, const Core::LinAlg::Matrix<3, 1>& prinv,
     const int gp, int eleGID, Teuchos::ParameterList& params,
@@ -413,9 +413,9 @@ void Mat::ElastHyperAddAnisotropicMod(Core::LinAlg::Matrix<6, 1>& S_stress,
     p->add_stress_aniso_modified(C_strain, iC_stress, cmat, S_stress, prinv(2), gp, eleGID, params);
 }
 
-void Mat::CalculateGammaDelta(Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::Matrix<8, 1>& delta,
-    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& dPI,
-    const Core::LinAlg::Matrix<6, 1>& ddPII)
+void Mat::calculate_gamma_delta(Core::LinAlg::Matrix<3, 1>& gamma,
+    Core::LinAlg::Matrix<8, 1>& delta, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& dPI, const Core::LinAlg::Matrix<6, 1>& ddPII)
 {
   // according to Holzapfel-Nonlinear Solid Mechanics p. 216
   gamma(0) = 2. * (dPI(0) + prinv(0) * dPI(1));
@@ -433,7 +433,7 @@ void Mat::CalculateGammaDelta(Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::M
   delta(7) = -4. * dPI(1);
 }
 
-void Mat::ElastHyperProperties(
+void Mat::elast_hyper_properties(
     const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum, SummandProperties& properties)
 {
   for (auto& p : potsum)
@@ -446,7 +446,7 @@ void Mat::ElastHyperProperties(
   }
 }
 
-void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
+void Mat::elast_hyper_check_polyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
     const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& dPI,
     const Core::LinAlg::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int gp,
     const int eleGID, const SummandProperties& properties)
@@ -555,7 +555,7 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // EigenValues of Frechet Derivative
   static Core::LinAlg::Matrix<19, 19> EWFreD(true);  // EW on diagonal
   static Core::LinAlg::Matrix<19, 19> EVFreD(true);
-  Core::LinAlg::SYEV(FreD, EWFreD, EVFreD);
+  Core::LinAlg::syev(FreD, EWFreD, EVFreD);
 
   // Just positive EigenValues --> System is polyconvex
   for (int i = 0; i < 19; i++)

@@ -44,12 +44,12 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  squaredvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  squaredvelnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  toggleu_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglev_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   //----------------------------------------------------------------------
   // create sets of coordinates

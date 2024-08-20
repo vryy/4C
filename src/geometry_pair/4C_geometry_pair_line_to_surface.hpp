@@ -290,11 +290,11 @@ namespace GEOMETRYPAIR
    * @return True if normal distance is in a reasonable range, false otherwise.
    */
   template <typename ScalarType, typename Surface>
-  bool ValidParameterSurface(
+  bool valid_parameter_surface(
       Core::LinAlg::Matrix<3, 1, ScalarType>& xi, const double normal_influence_direction)
   {
     // We only need to check the normal distance if the coordinates are within the surface.
-    if (!ValidParameter2D<Surface>(xi)) return false;
+    if (!valid_parameter2_d<Surface>(xi)) return false;
 
     if (normal_influence_direction < 0)
     {
@@ -320,7 +320,7 @@ namespace GEOMETRYPAIR
    * the initial residual satisfies the convergence check.
    */
   template <typename ScalarType, typename Surface>
-  void ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+  void project_point_to_surface(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
       const ElementData<Surface, ScalarType>& element_data_surface,
       Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
       const double normal_influence_direction = -1.0, const bool min_one_iteration = false);

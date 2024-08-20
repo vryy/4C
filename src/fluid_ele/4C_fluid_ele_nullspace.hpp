@@ -26,7 +26,7 @@ namespace FLD
     \param numdof (in):  number of degrees of freedom
     \param dimnsp (in):  dimension of the nullspace
                          */
-  Core::LinAlg::SerialDenseMatrix ComputeFluidNullSpace(
+  Core::LinAlg::SerialDenseMatrix compute_fluid_null_space(
       const Core::Nodes::Node& node, const int numdof, const int dimnsp);
 }  // namespace FLD
 

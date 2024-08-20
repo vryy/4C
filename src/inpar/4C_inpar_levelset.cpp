@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::LevelSet::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::LevelSet::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -28,22 +28,22 @@ void Inpar::LevelSet::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& levelsetcontrol =
       list->sublist("LEVEL-SET CONTROL", false, "control parameters for level-set problems\n");
 
-  Core::UTILS::IntParameter("NUMSTEP", 24, "Total number of time steps", &levelsetcontrol);
-  Core::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &levelsetcontrol);
-  Core::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &levelsetcontrol);
-  Core::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &levelsetcontrol);
-  Core::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &levelsetcontrol);
+  Core::UTILS::int_parameter("NUMSTEP", 24, "Total number of time steps", &levelsetcontrol);
+  Core::UTILS::double_parameter("TIMESTEP", 0.1, "Time increment dt", &levelsetcontrol);
+  Core::UTILS::double_parameter("MAXTIME", 1000.0, "Total simulation time", &levelsetcontrol);
+  Core::UTILS::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &levelsetcontrol);
+  Core::UTILS::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &levelsetcontrol);
 
   setStringToIntegralParameter<int>("CALCERROR", "No",
       "compute error compared to analytical solution", tuple<std::string>("No", "InitialField"),
       tuple<int>(Inpar::ScaTra::calcerror_no_ls, Inpar::ScaTra::calcerror_initial_field),
       &levelsetcontrol);
 
-  Core::UTILS::BoolParameter("EXTRACT_INTERFACE_VEL", "No",
+  Core::UTILS::bool_parameter("EXTRACT_INTERFACE_VEL", "No",
       "replace computed velocity at nodes of given distance of interface by approximated interface "
       "velocity",
       &levelsetcontrol);
-  Core::UTILS::IntParameter("NUM_CONVEL_LAYERS", -1,
+  Core::UTILS::int_parameter("NUM_CONVEL_LAYERS", -1,
       "number of layers around the interface which keep their computed convective velocity",
       &levelsetcontrol);
 
@@ -59,28 +59,28 @@ void Inpar::LevelSet::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           Inpar::ScaTra::reinitaction_ellipticeq),
       &ls_reinit);
 
-  Core::UTILS::BoolParameter("REINIT_INITIAL", "No",
+  Core::UTILS::bool_parameter("REINIT_INITIAL", "No",
       "Has level set field to be reinitialized before first time step?", &ls_reinit);
-  Core::UTILS::IntParameter("REINITINTERVAL", 1, "reinitialization interval", &ls_reinit);
+  Core::UTILS::int_parameter("REINITINTERVAL", 1, "reinitialization interval", &ls_reinit);
 
   // parameters for signed distance reinitialization
-  Core::UTILS::BoolParameter("REINITBAND", "No",
+  Core::UTILS::bool_parameter("REINITBAND", "No",
       "reinitialization only within a band around the interface, or entire domain?", &ls_reinit);
-  Core::UTILS::DoubleParameter("REINITBANDWIDTH", 1.0,
+  Core::UTILS::double_parameter("REINITBANDWIDTH", 1.0,
       "level-set value defining band width for reinitialization", &ls_reinit);
 
   // parameters for reinitialization equation
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "NUMSTEPSREINIT", 1, "(maximal) number of pseudo-time steps", &ls_reinit);
   // this parameter selects the tau definition applied
   setStringToIntegralParameter<int>("LINEARIZATIONREINIT", "fixed_point",
       "linearization of reinitialization equation", tuple<std::string>("newton", "fixed_point"),
       tuple<int>(Inpar::ScaTra::newton, Inpar::ScaTra::fixed_point), &ls_reinit);
-  Core::UTILS::DoubleParameter("TIMESTEPREINIT", 1.0,
+  Core::UTILS::double_parameter("TIMESTEPREINIT", 1.0,
       "pseudo-time step length (usually a * characteristic element length of discretization with "
       "a>0)",
       &ls_reinit);
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "THETAREINIT", 1.0, "theta for time discretization of reinitialization equation", &ls_reinit);
   setStringToIntegralParameter<int>("STABTYPEREINIT", "SUPG", "type of stabilization (if any)",
       tuple<std::string>("no_stabilization", "SUPG", "GLS", "USFEM"),
@@ -147,7 +147,7 @@ void Inpar::LevelSet::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<std::string>("root_of_volume", "streamlength"),
       tuple<int>(Inpar::ScaTra::root_of_volume_reinit, Inpar::ScaTra::streamlength_reinit),
       &ls_reinit);
-  Core::UTILS::DoubleParameter("INTERFACE_THICKNESS", 1.0,
+  Core::UTILS::double_parameter("INTERFACE_THICKNESS", 1.0,
       "factor for interface thickness (multiplied by element length)", &ls_reinit);
   setStringToIntegralParameter<int>("VELREINIT", "integration_point_based",
       "evaluate velocity at integration point or compute node-based velocity",
@@ -159,17 +159,17 @@ void Inpar::LevelSet::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "linearization scheme for nonlinear convective term of reinitialization equation",
       tuple<std::string>("newton", "fixed_point"),
       tuple<int>(Inpar::ScaTra::newton, Inpar::ScaTra::fixed_point), &ls_reinit);
-  Core::UTILS::BoolParameter("CORRECTOR_STEP", "yes",
+  Core::UTILS::bool_parameter("CORRECTOR_STEP", "yes",
       "correction of interface position via volume constraint according to Sussman & Fatemi",
       &ls_reinit);
-  Core::UTILS::DoubleParameter("CONVTOL_REINIT", -1.0,
+  Core::UTILS::double_parameter("CONVTOL_REINIT", -1.0,
       "tolerance for convergence check according to Sussman et al. 1994 (turned off negative)",
       &ls_reinit);
 
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "REINITVOLCORRECTION", "No", "volume correction after reinitialization", &ls_reinit);
 
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "PENALTY_PARA", -1.0, "penalty parameter for elliptic reinitialization", &ls_reinit);
 
   setStringToIntegralParameter<int>("DIMENSION", "3D",
@@ -179,11 +179,11 @@ void Inpar::LevelSet::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
           Inpar::ScaTra::ls_2Dz),
       &ls_reinit);
 
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "PROJECTION", "yes", "use L2-projection for grad phi and related quantities", &ls_reinit);
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "PROJECTION_DIFF", 0.0, "use diffusive term for L2-projection", &ls_reinit);
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "LUMPING", "no", "use lumped mass matrix for L2-projection", &ls_reinit);
 
   setStringToIntegralParameter<int>("DIFF_FUNC", "hyperbolic", "function for diffusivity",
@@ -196,7 +196,7 @@ void Inpar::LevelSet::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
 
 
-void Inpar::LevelSet::SetValidConditions(
+void Inpar::LevelSet::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

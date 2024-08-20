@@ -121,7 +121,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
   std::vector<int> lambda_row;
   get_mortar_gid(mortar_manager, this, Mortar::n_dof_, &lambda_row);
   std::vector<double> lambda_pair;
-  Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
+  Core::FE::extract_my_values(*lambda, lambda_pair, lambda_row);
   for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
     q_lambda(i_dof) = lambda_pair[i_dof];
 
@@ -142,7 +142,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
       Core::LinAlg::Matrix<3, 1, double> lambda_discret;
 
       // Get the local coordinate of this node.
-      auto node_coordinates = Core::FE::GetNodeCoordinates(i_node, Mortar::discretization_);
+      auto node_coordinates = Core::FE::get_node_coordinates(i_node, Mortar::discretization_);
       xi_mortar_node(0) = node_coordinates(0);
       xi_mortar_node(1) = node_coordinates(1);
 
@@ -195,7 +195,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
 }
 
 template <typename Surface, Core::FE::CellType boundarycell_distype>
-Teuchos::RCP<Core::FE::GaussPoints> ProjectBoundaryCellGaussRuleOnInterface(
+Teuchos::RCP<Core::FE::GaussPoints> project_boundary_cell_gauss_rule_on_interface(
     Cut::BoundaryCell* boundary_cell, GEOMETRYPAIR::ElementData<Surface, double>& ele1pos)
 {
   // Get the coordinates of the vertices of the boundary cell
@@ -212,7 +212,7 @@ Teuchos::RCP<Core::FE::GaussPoints> ProjectBoundaryCellGaussRuleOnInterface(
       vertex_to_project(i_dim) = vertices_boundary_cell(i_dim, i_vertex);
 
     GEOMETRYPAIR::ProjectionResult temp_projection_result;
-    GEOMETRYPAIR::ProjectPointToSurface(
+    GEOMETRYPAIR::project_point_to_surface(
         vertex_to_project, ele1pos, xi_interface, temp_projection_result);
 
     if (temp_projection_result == GEOMETRYPAIR::ProjectionResult::projection_not_found)
@@ -275,7 +275,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
   {
     // Project the gauss points of the boundary cell segment to the interface
     const Teuchos::RCP<Core::FE::GaussPoints> gps_boundarycell =
-        ProjectBoundaryCellGaussRuleOnInterface<Interface, Core::FE::CellType::tri3>(
+        project_boundary_cell_gauss_rule_on_interface<Interface, Core::FE::CellType::tri3>(
             it_boundarycell->get(), ele1pos_);
 
     // Add the gauss points of the boundary cell to interface_integration_points
@@ -291,10 +291,10 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
       xi_interface(1) = gps_boundarycell->point(it_gp)[1];
 
       // Project gauss points on the background element and write them
-      GEOMETRYPAIR::EvaluatePosition(xi_interface, ele1pos_, interface_position);
+      GEOMETRYPAIR::evaluate_position(xi_interface, ele1pos_, interface_position);
 
       GEOMETRYPAIR::ProjectionResult temp_projection_result;
-      GEOMETRYPAIR::ProjectPointToVolume(
+      GEOMETRYPAIR::project_point_to_volume(
           interface_position, ele2pos_, xi_background, temp_projection_result);
 
       // Write the weight
@@ -455,7 +455,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
   }
 }
 
-void GetNurbsInformation(const Core::Elements::Element& interface_element,
+void get_nurbs_information(const Core::Elements::Element& interface_element,
     Core::LinAlg::Matrix<9, 1, double>& cp_weights,
     std::vector<Core::LinAlg::SerialDenseVector>& myknots,
     std::vector<Core::LinAlg::SerialDenseVector>& mypknots)
@@ -467,7 +467,7 @@ void GetNurbsInformation(const Core::Elements::Element& interface_element,
   double normalfac = 1.0;
 
   // Get the knots and weights for this element.
-  const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(
+  const bool zero_size = Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(
       &interface_element, face_element->face_master_number(), face_element->parent_element_id(),
       *(Global::Problem::instance()->get_dis("structure")), mypknots, myknots, cp_weights,
       normalfac);
@@ -478,7 +478,7 @@ void GetNurbsInformation(const Core::Elements::Element& interface_element,
 }
 
 template <Core::FE::CellType celldistype>
-double CalculateDeterminantInterfaceElement(
+double calculate_determinant_interface_element(
     const Core::LinAlg::Matrix<2, 1>& eta, const Core::Elements::Element& interface_element)
 {
   const int numnodes = Core::FE::num_nodes<celldistype>;
@@ -501,14 +501,14 @@ double CalculateDeterminantInterfaceElement(
     std::vector<Core::LinAlg::SerialDenseVector> myknots(2);
     std::vector<Core::LinAlg::SerialDenseVector> mypknots(3);
 
-    GetNurbsInformation(interface_element, cp_weights, myknots, mypknots);
+    get_nurbs_information(interface_element, cp_weights, myknots, mypknots);
 
-    Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct, deriv, eta, myknots, cp_weights, celldistype);
+    Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct, deriv, eta, myknots, cp_weights, celldistype);
   }
   else
   {
-    Core::FE::shape_function_2D(funct, eta(0), eta(1), celldistype);
-    Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
+    Core::FE::shape_function_2d(funct, eta(0), eta(1), celldistype);
+    Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), celldistype);
   }
 
   // Calculate the metric tensor and obtain its determinant
@@ -522,7 +522,7 @@ double CalculateDeterminantInterfaceElement(
   return determinant;
 }
 
-double GetDeterminantInterfaceElement(
+double get_determinant_interface_element(
     Core::LinAlg::Matrix<2, 1> eta, const Core::Elements::Element& element)
 {
   double determinant_interface;
@@ -532,13 +532,13 @@ double GetDeterminantInterfaceElement(
     case Core::FE::CellType::nurbs9:
     {
       determinant_interface =
-          CalculateDeterminantInterfaceElement<Core::FE::CellType::nurbs9>(eta, element);
+          calculate_determinant_interface_element<Core::FE::CellType::nurbs9>(eta, element);
       break;
     }
     case Core::FE::CellType::quad4:
     {
       determinant_interface =
-          CalculateDeterminantInterfaceElement<Core::FE::CellType::quad4>(eta, element);
+          calculate_determinant_interface_element<Core::FE::CellType::quad4>(eta, element);
       break;
     }
     default:
@@ -576,7 +576,8 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
   {
     auto& [xi_interface, xi_background, weight] = interface_integration_points_[it_gp];
 
-    double determinant_interface = GetDeterminantInterfaceElement(xi_interface, this->element_1());
+    double determinant_interface =
+        get_determinant_interface_element(xi_interface, this->element_1());
 
     // Get the shape function matrices
     N_mortar.clear();

@@ -23,7 +23,7 @@ namespace Inpar
   namespace ModelOrderRed
   {
     /// Defines all valid parameters for model order reduction
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace ModelOrderRed
 }  // namespace Inpar

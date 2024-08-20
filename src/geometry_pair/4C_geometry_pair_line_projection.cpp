@@ -34,7 +34,7 @@ void GEOMETRYPAIR::LineTo3DBase<PairType>::project_point_on_line_to_other(const 
 {
   // Get the point on the line.
   Core::LinAlg::Matrix<3, 1, scalar_type> r_line;
-  GEOMETRYPAIR::EvaluatePosition<line>(eta, element_data_line, r_line);
+  GEOMETRYPAIR::evaluate_position<line>(eta, element_data_line, r_line);
 
   // Project the point to the solid.
   pair->project_point_to_other(r_line, element_data_other, xi, projection_result);
@@ -138,15 +138,15 @@ void GEOMETRYPAIR::LineTo3DBase<PairType>::project_gauss_points_on_segment_to_ot
     std::stringstream error_message;
 
     // Get the geometry information of the line and other geometry
-    PrintPairInformation(error_message, pair, element_data_line, element_data_other);
+    print_pair_information(error_message, pair, element_data_line, element_data_other);
 
     // Print a projection point
     auto print_projection_point = [&error_message](const auto& projection_point)
     {
       error_message << "\n  line parameter coordinate: "
-                    << Core::FADUtils::CastToDouble(projection_point.get_eta());
+                    << Core::FADUtils::cast_to_double(projection_point.get_eta());
       error_message << "\n  other parameter coordinate: ";
-      Core::FADUtils::CastToDouble(projection_point.get_xi()).print(error_message);
+      Core::FADUtils::cast_to_double(projection_point.get_xi()).print(error_message);
       error_message << "  projection result: " << (int)projection_point.get_projection_result();
     };
 
@@ -484,8 +484,8 @@ void GEOMETRYPAIR::LineTo3DSegmentation<PairType>::evaluate(const PairType* pair
           {
             // Create a segment with double as the scalar type.
             LineSegment<double> new_segment_double(
-                Core::FADUtils::CastToDouble(segment_start.get_eta()),
-                Core::FADUtils::CastToDouble(start_point.get_eta()));
+                Core::FADUtils::cast_to_double(segment_start.get_eta()),
+                Core::FADUtils::cast_to_double(start_point.get_eta()));
 
             // Check if the segment already exists for this line.
             if (segment_tracker.find(new_segment_double) == segment_tracker.end())

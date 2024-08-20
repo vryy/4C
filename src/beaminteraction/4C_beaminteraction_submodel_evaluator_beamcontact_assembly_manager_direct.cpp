@@ -78,7 +78,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evalu
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(*discret,
+      BEAMINTERACTION::UTILS::assemble_centerline_dof_force_stiff_into_element_force_stiff(*discret,
           elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce, &elestiff);
 
 

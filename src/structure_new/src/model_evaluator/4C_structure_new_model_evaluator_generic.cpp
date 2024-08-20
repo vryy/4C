@@ -247,7 +247,8 @@ bool Solid::ModelEvaluator::Generic::eval_error_check() const
                  "#"
               << gstate_ptr_->get_comm().MyPID() << ".\n"
               << "(Error: "
-              << Solid::ELEMENTS::EvalErrorFlag2String(eval_data_ptr_->get_ele_eval_error_flag())
+              << Solid::ELEMENTS::eval_error_flag_to_string(
+                     eval_data_ptr_->get_ele_eval_error_flag())
               << ")\n";
 
   // reset the flag

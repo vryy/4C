@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Geo::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Geo::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;

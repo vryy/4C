@@ -184,7 +184,7 @@ namespace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::Factory(int matnum)
+Teuchos::RCP<Core::Mat::Material> Mat::factory(int matnum)
 {
   // retrieve problem instance to read from
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

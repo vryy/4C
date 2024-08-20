@@ -109,7 +109,7 @@ void Mat::Maxwell0dAcinusDoubleExponential::unpack(const std::vector<char>& data
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // Extract e1_01_, e1_lin1_, e1_exp1_, tau1_
   extract_from_pack(position, data, e1_01_);

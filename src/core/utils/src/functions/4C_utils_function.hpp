@@ -259,11 +259,11 @@ namespace Core::UTILS
   };
 
   /// try to create SymbolicFunctionOfAnything from a given line definition
-  Teuchos::RCP<FunctionOfAnything> TryCreateSymbolicFunctionOfAnything(
+  Teuchos::RCP<FunctionOfAnything> try_create_symbolic_function_of_anything(
       const std::vector<Input::LineDefinition>& function_line_defs);
 
   /// create a vector function from multiple expressions
-  Teuchos::RCP<FunctionOfSpaceTime> TryCreateSymbolicFunctionOfSpaceTime(
+  Teuchos::RCP<FunctionOfSpaceTime> try_create_symbolic_function_of_space_time(
       const std::vector<Input::LineDefinition>& function_line_defs);
 }  // namespace Core::UTILS
 

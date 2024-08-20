@@ -51,14 +51,14 @@ namespace XFEM
     \brief A Safety check is done for XFEM-type problems. Is utilized in the edgebased framework.
 
      */
-    void SafetyCheckMaterials(
+    void safety_check_materials(
         Teuchos::RCP<Core::Mat::Material>& pmat, Teuchos::RCP<Core::Mat::Material>& nmat);
 
     //! @name Extract quantities on a element
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+    void extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
         const Core::Elements::Element* element,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
         Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const int nsd);
@@ -67,7 +67,7 @@ namespace XFEM
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+    void extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
         const Core::Nodes::Node* node,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
         Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const unsigned int nsd);

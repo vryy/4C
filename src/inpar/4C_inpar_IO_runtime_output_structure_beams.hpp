@@ -30,7 +30,7 @@ namespace Inpar
     namespace BEAMS
     {
       /// set the valid parameters related to writing of output at runtime
-      void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+      void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     }  // namespace BEAMS
   }    // namespace IORuntimeOutput

@@ -30,7 +30,7 @@ ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   // check if model order reduction is given in input file
   {
     std::vector<std::string> components_of_absolute_path =
-        Core::UTILS::SplitStringList(pod_matrix_file_name, "/");
+        Core::UTILS::split_string_list(pod_matrix_file_name, "/");
     if (components_of_absolute_path.back() != std::string("none")) havemor_ = true;
   }
 

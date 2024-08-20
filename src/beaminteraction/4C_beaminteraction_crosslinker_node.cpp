@@ -162,7 +162,7 @@ void CrossLinking::CrosslinkerNode::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
@@ -175,7 +175,7 @@ void CrossLinking::CrosslinkerNode::unpack(const std::vector<char>& data)
   {
     std::vector<char> tmp;
     extract_from_pack(position, data, tmp);
-    Core::Communication::ParObject* o = Core::Communication::Factory(tmp);
+    Core::Communication::ParObject* o = Core::Communication::factory(tmp);
     Mat::CrosslinkerMat* mat = dynamic_cast<Mat::CrosslinkerMat*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack material
@@ -209,7 +209,7 @@ void CrossLinking::CrosslinkerNode::unpack(const std::vector<char>& data)
 void CrossLinking::CrosslinkerNode::set_material(int const matnum)
 {
   Teuchos::RCP<Mat::CrosslinkerMat> mat =
-      Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::Factory(matnum));
+      Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::factory(matnum));
   if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }

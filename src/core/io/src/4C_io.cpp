@@ -1308,7 +1308,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
 
     // By applying GatherAll we get the combined map including all elemental values
     // which where found by vis_names
-    Core::LinAlg::GatherAll(names, get_comm());
+    Core::LinAlg::gather_all(names, get_comm());
 
     FOUR_C_THROW_UNLESS(
         std::all_of(names.begin(), names.end(), [](const auto& pair) { return pair.second >= 1; }),
@@ -1371,7 +1371,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
     /* By applying GatherAll we get the combined map including all nodal values
      * which where found by vis_names
      */
-    Core::LinAlg::GatherAll(names, get_comm());
+    Core::LinAlg::gather_all(names, get_comm());
 
     // make sure there's no name with a dimension of less than 1
     for (fool = names.begin(); fool != names.end(); ++fool)

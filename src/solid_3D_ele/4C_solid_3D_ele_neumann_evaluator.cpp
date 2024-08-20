@@ -104,7 +104,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(element, discretization, dof_index_array);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, gauss_integration,
+  for_each_gauss_point<celltype>(nodal_coordinates, gauss_integration,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)

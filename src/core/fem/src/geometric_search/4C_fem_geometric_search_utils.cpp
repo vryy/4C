@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::GeometricSearch
 {
-  void PrintGeometricSearchDetails(const Epetra_Comm& comm, const GeometricSearchInfo info)
+  void print_geometric_search_details(const Epetra_Comm& comm, const GeometricSearchInfo info)
   {
     const int numproc = comm.NumProc();
     const int myrank = comm.MyPID();
@@ -61,7 +61,7 @@ namespace Core::GeometricSearch
   }
 
   std::pair<std::vector<Core::LinAlg::Matrix<3, 1>>, std::vector<std::vector<int>>>
-  GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume)
+  get_k_dop_polyhedron_representation(const BoundingVolume boundingVolume)
   {
 #ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
@@ -199,7 +199,7 @@ namespace Core::GeometricSearch
           // Check if there is a solution
           LinAlg::Matrix<3, 1> intersection_point;
           const auto found_solution =
-              LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              LinAlg::solve_linear_system_do_not_throw_error_on_zero_determinant_scaled(
                   coefficient_matrix, right_hand_side, intersection_point, 1e-12);
           if (!found_solution)
             return std::make_pair(false, intersection_point);

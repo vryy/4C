@@ -107,7 +107,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
   // similar to Weak Dirichlet conditions!
 
   // evaluate standard Neumann conditions
-  EvaluateNeumannStandard(
+  evaluate_neumann_standard(
       condition, time, assemblemat, params, discret, systemvector, systemmatrix);
 }
 
@@ -116,7 +116,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Neumann for standard conditions (public)       schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumannStandard(
+void XFEM::evaluate_neumann_standard(
     std::multimap<std::string, Core::Conditions::Condition*>& condition, const double time,
     bool assemblemat, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::FE::Discretization> discret, Epetra_Vector& systemvector,
@@ -196,7 +196,7 @@ void XFEM::EvaluateNeumannStandard(
         if (!assemblemat)
         {
           curr->second->evaluate_neumann(params, *discret, cond, lm, elevector);
-          Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
+          Core::LinAlg::assemble(systemvector, elevector, lm, lmowner);
         }
         else
         {
@@ -206,7 +206,7 @@ void XFEM::EvaluateNeumannStandard(
           else
             elematrix.putScalar(0.0);
           curr->second->evaluate_neumann(params, *discret, cond, lm, elevector, &elematrix);
-          Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
+          Core::LinAlg::assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->assemble(curr->second->id(), lmstride, elematrix, lm, lmowner);
         }
       }

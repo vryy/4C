@@ -80,19 +80,19 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
       Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   discret_->compute_null_space_if_necessary(solver_->params());
 
   Inpar::Solid::PredEnum pred =
-      Core::UTILS::IntegralValue<Inpar::Solid::PredEnum>(sdyn_micro, "PREDICT");
+      Core::UTILS::integral_value<Inpar::Solid::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
   combdisifres_ =
-      Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
-  normtypedisi_ = Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_DISP");
-  normtypefres_ = Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_RESF");
+      Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
+  normtypedisi_ = Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_DISP");
+  normtypefres_ = Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_RESF");
   Inpar::Solid::VectorNorm iternorm =
-      Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(sdyn_micro, "ITERNORM");
+      Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(sdyn_micro, "ITERNORM");
   iternorm_ = iternorm;
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
@@ -114,21 +114,21 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   restart_ = Global::Problem::instance()->restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
-  iodisp_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
+  iodisp_ = Core::UTILS::integral_value<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
   Inpar::Solid::StressType iostress =
-      Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioflags, "STRUCT_STRESS");
+      Core::UTILS::integral_value<Inpar::Solid::StressType>(ioflags, "STRUCT_STRESS");
   iostress_ = iostress;
   resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
   Inpar::Solid::StrainType iostrain =
-      Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_STRAIN");
+      Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioflags, "STRUCT_STRAIN");
   iostrain_ = iostrain;
   Inpar::Solid::StrainType ioplstrain =
-      Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
+      Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
   ioplstrain_ = ioplstrain;
-  iosurfactant_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_SURFACTANT");
+  iosurfactant_ = Core::UTILS::integral_value<int>(ioflags, "STRUCT_SURFACTANT");
 
-  isadapttol_ = (Core::UTILS::IntegralValue<int>(sdyn_micro, "ADAPTCONV") == 1);
+  isadapttol_ = (Core::UTILS::integral_value<int>(sdyn_micro, "ADAPTCONV") == 1);
   adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");
 
   // broadcast important data that must be consistent on macro and micro scale (master and
@@ -154,34 +154,34 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // create empty vectors
   // -------------------------------------------------------------------
   // a zero vector of full length
-  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
   // vector of full length; for each component
   //                /  1   i-th DOF is supported, ie Dirichlet BC
   //    vector_i =  <
   //                \  0   i-th DOF is free
-  dirichtoggle_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  dirichtoggle_ = Core::LinAlg::create_vector(*dofrowmap, true);
   // opposite of dirichtoggle vector, ie for each component
   //                /  0   i-th DOF is supported, ie Dirichlet BC
   //    vector_i =  <
   //                \  1   i-th DOF is free
-  invtoggle_ = Core::LinAlg::CreateVector(*dofrowmap, false);
+  invtoggle_ = Core::LinAlg::create_vector(*dofrowmap, false);
 
   // displacements D_{n+1} at new time
-  disn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  disn_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // displacements D_{n+1} at old time
-  dis_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  dis_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  disi_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // internal force vector F_int
-  fintn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  fintn_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // dynamic force residual
   // also known as out-of-balance-force
-  fresn_ = Core::LinAlg::CreateVector(*dofrowmap, false);
+  fresn_ = Core::LinAlg::create_vector(*dofrowmap, false);
 
   // -------------------------------------------------------------------
   // create "empty" EAS history map
@@ -223,7 +223,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   MultiScale::MicroStatic::set_up_homogenization();
 
   // reaction force vector at different times
-  freactn_ = Core::LinAlg::CreateVector(*pdof_, true);
+  freactn_ = Core::LinAlg::create_vector(*pdof_, true);
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -363,7 +363,8 @@ void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defg
 void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc =
+      Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *disn_, 0.0);
@@ -421,7 +422,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
   {
     // linear reactions
     Teuchos::RCP<Epetra_Vector> freact =
-        Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+        Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
     stiff_->multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -1025,7 +1026,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     // create solver
     Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
         discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     // prescribe rigid body modes
@@ -1150,7 +1151,7 @@ void MultiScale::MicroStaticParObject::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   MultiScale::MicroStaticParObject::MicroStaticData micro_data{};
   extract_from_pack(position, data, micro_data.gp_);

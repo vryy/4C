@@ -51,18 +51,18 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
     {
       // initialize increment vectors
       scatra_field()->phinp_inc() =
-          Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(), true);
+          Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(), true);
       thermo_field()->phinp_inc() =
-          Core::LinAlg::CreateVector(*thermo_field()->discretization()->dof_row_map(), true);
+          Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true);
 
       // initialize old increment vectors
       if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken or
           couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
         scatra_field()->phinp_inc_old() =
-            Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(), true);
+            Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(), true);
       else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
         thermo_field()->phinp_inc_old() =
-            Core::LinAlg::CreateVector(*thermo_field()->discretization()->dof_row_map(), true);
+            Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true);
 
       // initialize relaxation parameter
       if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo)

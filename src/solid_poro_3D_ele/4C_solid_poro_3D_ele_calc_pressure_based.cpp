@@ -51,7 +51,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].size());
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
-  Core::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
+  Core::FE::extract_my_values(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
   const int nummultifluiddofpernode = porofluidmat.num_mat();
@@ -67,7 +67,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
   ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
 
   // Loop over all Gauss points
-  ForEachGaussPoint(nodal_coordinates, gauss_integration_,
+  for_each_gauss_point(nodal_coordinates, gauss_integration_,
       [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].size());
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
-  Core::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
+  Core::FE::extract_my_values(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
   const int nummultifluiddofpernode = porofluidmat.num_mat();
@@ -186,7 +186,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<
       evaluate_element_nodes<celltype>(ele, discretization, la[0].lm_);
 
   // Loop over all Gauss points
-  ForEachGaussPoint(nodal_coordinates, gauss_integration_,
+  for_each_gauss_point(nodal_coordinates, gauss_integration_,
       [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp
@@ -249,7 +249,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  auto iocouplingstress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+  auto iocouplingstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
       params, "iocouplstress", Inpar::Solid::stress_none);
 
   // check for output of coupling stress

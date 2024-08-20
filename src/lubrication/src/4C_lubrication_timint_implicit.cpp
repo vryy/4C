@@ -47,12 +47,12 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
       myrank_(actdis->get_comm().MyPID()),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
-      modified_reynolds_(Core::UTILS::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
-      addsqz_(Core::UTILS::IntegralValue<int>(*params, "ADD_SQUEEZE_TERM")),
-      purelub_(Core::UTILS::IntegralValue<int>(*params, "PURE_LUB")),
-      outmean_(Core::UTILS::IntegralValue<int>(*params, "OUTMEAN")),
-      outputgmsh_(Core::UTILS::IntegralValue<int>(*params, "OUTPUT_GMSH")),
-      output_state_matlab_(Core::UTILS::IntegralValue<int>(*params, "MATLAB_STATE_OUTPUT")),
+      modified_reynolds_(Core::UTILS::integral_value<int>(*params, "MODIFIED_REYNOLDS_EQU")),
+      addsqz_(Core::UTILS::integral_value<int>(*params, "ADD_SQUEEZE_TERM")),
+      purelub_(Core::UTILS::integral_value<int>(*params, "PURE_LUB")),
+      outmean_(Core::UTILS::integral_value<int>(*params, "OUTMEAN")),
+      outputgmsh_(Core::UTILS::integral_value<int>(*params, "OUTPUT_GMSH")),
+      output_state_matlab_(Core::UTILS::integral_value<int>(*params, "MATLAB_STATE_OUTPUT")),
       time_(0.0),
       maxtime_(params->get<double>("MAXTIME")),
       step_(0),
@@ -120,13 +120,13 @@ void LUBRICATION::TimIntImpl::init()
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1 and n
-  prenp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  prenp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
@@ -145,20 +145,20 @@ void LUBRICATION::TimIntImpl::init()
   // create vectors associated to solution process
   // -------------------------------------------------------------------
   // the vector containing body and surface forces
-  neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  neumann_loads_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // the residual vector --- more or less the rhs
-  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  residual_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // residual vector containing the normal boundary fluxes
-  trueresidual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  trueresidual_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // incremental solution vector
-  increment_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  increment_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // iterative pressure increments Incp_{n+1}
   // also known as residual pressures
-  prei_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  prei_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   return;
 }  // TimIntImpl::init()
@@ -280,7 +280,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
 
   // initialize height vectors
   Teuchos::RCP<Epetra_Vector> height =
-      Core::LinAlg::CreateVector(*discret_->dof_row_map(nds), true);
+      Core::LinAlg::create_vector(*discret_->dof_row_map(nds), true);
 
   int err(0);
   const int heightfuncno = params_->get<int>("HFUNCNO");
@@ -324,7 +324,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> vel = Core::LinAlg::CreateVector(*discret_->dof_row_map(nds), true);
+  Teuchos::RCP<Epetra_Vector> vel = Core::LinAlg::create_vector(*discret_->dof_row_map(nds), true);
 
   int err(0);
   const int velfuncno = params_->get<int>("VELFUNCNO");
@@ -496,7 +496,7 @@ void LUBRICATION::TimIntImpl::output(const int num)
   {
     std::ostringstream filename;
     filename << "Result_Step" << step_ << ".m";
-    Core::LinAlg::PrintVectorInMatlabFormat(filename.str(), *prenp_);
+    Core::LinAlg::print_vector_in_matlab_format(filename.str(), *prenp_);
   }
   // NOTE:
   // statistics output for normal fluxes at boundaries was already done during update()
@@ -686,7 +686,7 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
   const double ittol = params_->get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool isadapttol = (Core::UTILS::IntegralValue<int>(*params_, "ADAPTCONV"));
+  const bool isadapttol = (Core::UTILS::integral_value<int>(*params_, "ADAPTCONV"));
   const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER");
   const double abstolres = params_->get<double>("ABSTOLRES");
   double actresidual(0.0);
@@ -1041,7 +1041,7 @@ inline void LUBRICATION::TimIntImpl::increment_time_and_step()
 void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 {
   const Inpar::LUBRICATION::CalcError calcerr =
-      Core::UTILS::IntegralValue<Inpar::LUBRICATION::CalcError>(*params_, "CALCERROR");
+      Core::UTILS::integral_value<Inpar::LUBRICATION::CalcError>(*params_, "CALCERROR");
 
   if (calcerr == Inpar::LUBRICATION::calcerror_no)  // do nothing (the usual case))
     return;
@@ -1138,7 +1138,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
   const bool screen_out = true;
 
   // create Gmsh postprocessing file
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       "solution_field_pressure", discret_->writer()->output()->file_name(), step, 500, screen_out,
       discret_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1147,7 +1147,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
     gmshfilecontent << "View \" "
                     << "Prenp \" {" << std::endl;
     // draw pressure field 'Prenp' for every element
-    Core::IO::Gmsh::ScalarFieldToGmsh(discret_, prenp_, gmshfilecontent);
+    Core::IO::Gmsh::scalar_field_to_gmsh(discret_, prenp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 

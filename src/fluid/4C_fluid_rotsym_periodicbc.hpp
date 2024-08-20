@@ -80,7 +80,7 @@ namespace FLD
 
       for (int inode = 0; inode < elenumnodereal; inode++)
       {
-        if (FLD::IsSlaveNodeOfRotSymPBC(nodes[inode], rotangle_))
+        if (FLD::is_slave_node_of_rot_sym_pbc(nodes[inode], rotangle_))
         {
           // store the lid of this node
           slavenodelids_.push_back(inode);

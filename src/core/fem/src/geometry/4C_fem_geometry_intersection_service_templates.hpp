@@ -27,7 +27,7 @@ namespace Core::Geo
 {
   //! template of extended aligned bounding boxes
   template <int ndim, Core::FE::CellType distype, class M>
-  static inline Core::LinAlg::Matrix<3, 2> computeFastXAABBT(
+  static inline Core::LinAlg::Matrix<3, 2> compute_fast_xaabbt(
       const M& xyze, const Core::Geo::EleGeoType eleGeoType)
   {
     Core::LinAlg::Matrix<3, 2> XAABB;
@@ -59,39 +59,39 @@ namespace Core::Geo
   \return extended axis-aligned bounding box  (XAABB) for an element
    */
   template <class M>
-  Core::LinAlg::Matrix<3, 2> computeFastXAABB(
+  Core::LinAlg::Matrix<3, 2> compute_fast_xaabb(
       Core::FE::CellType distype, const M& xyze, const Core::Geo::EleGeoType eleGeoType)
   {
     switch (distype)
     {
       case Core::FE::CellType::hex8:
-        return computeFastXAABBT<3, Core::FE::CellType::hex8>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::hex8>(xyze, eleGeoType);
       case Core::FE::CellType::quad4:
-        return computeFastXAABBT<3, Core::FE::CellType::quad4>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::quad4>(xyze, eleGeoType);
       case Core::FE::CellType::hex20:
-        return computeFastXAABBT<3, Core::FE::CellType::hex20>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::hex20>(xyze, eleGeoType);
       case Core::FE::CellType::hex27:
-        return computeFastXAABBT<3, Core::FE::CellType::hex27>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::hex27>(xyze, eleGeoType);
       case Core::FE::CellType::tet4:
-        return computeFastXAABBT<3, Core::FE::CellType::tet4>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::tet4>(xyze, eleGeoType);
       case Core::FE::CellType::tet10:
-        return computeFastXAABBT<3, Core::FE::CellType::tet10>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::tet10>(xyze, eleGeoType);
       case Core::FE::CellType::line2:
-        return computeFastXAABBT<3, Core::FE::CellType::line2>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::line2>(xyze, eleGeoType);
       case Core::FE::CellType::line3:
-        return computeFastXAABBT<3, Core::FE::CellType::line3>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::line3>(xyze, eleGeoType);
       case Core::FE::CellType::tri3:
-        return computeFastXAABBT<3, Core::FE::CellType::tri3>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::tri3>(xyze, eleGeoType);
       case Core::FE::CellType::tri6:
-        return computeFastXAABBT<3, Core::FE::CellType::tri6>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::tri6>(xyze, eleGeoType);
       case Core::FE::CellType::quad8:
-        return computeFastXAABBT<3, Core::FE::CellType::quad8>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::quad8>(xyze, eleGeoType);
       case Core::FE::CellType::quad9:
-        return computeFastXAABBT<3, Core::FE::CellType::quad9>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::quad9>(xyze, eleGeoType);
       case Core::FE::CellType::pyramid5:
-        return computeFastXAABBT<3, Core::FE::CellType::pyramid5>(xyze, eleGeoType);
+        return compute_fast_xaabbt<3, Core::FE::CellType::pyramid5>(xyze, eleGeoType);
       default:
-        std::cout << Core::FE::CellTypeToString(distype) << std::endl;
+        std::cout << Core::FE::cell_type_to_string(distype) << std::endl;
         FOUR_C_THROW("add your distype to this switch!");
     }
     return Core::LinAlg::Matrix<3, 2>(true);

@@ -104,7 +104,7 @@ void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
   linkele_ = Teuchos::rcp(new Discret::ELEMENTS::Truss3(-1, 0));
 
   // set material
-  linkele_->set_material(0, Mat::Factory(matnum));
+  linkele_->set_material(0, Mat::factory(matnum));
 
   // set cross-section area Fixme hard-coded dummy value for now
   linkele_->set_cross_sec(1.0);
@@ -153,7 +153,7 @@ void BEAMINTERACTION::BeamLinkTruss::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
@@ -166,7 +166,7 @@ void BEAMINTERACTION::BeamLinkTruss::unpack(const std::vector<char>& data)
   if (dataele.size() > 0)
   {
     Core::Communication::ParObject* object =
-        Core::Communication::Factory(dataele);  // Unpack is done here
+        Core::Communication::factory(dataele);  // Unpack is done here
     Discret::ELEMENTS::Truss3* linkele = dynamic_cast<Discret::ELEMENTS::Truss3*>(object);
     if (linkele == nullptr) FOUR_C_THROW("failed to unpack Truss3 object within BeamLinkTruss");
     linkele_ = Teuchos::rcp(linkele);

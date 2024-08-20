@@ -246,7 +246,7 @@ namespace CONTACT
     /*!
     \brief Get gap of this contact pair
     */
-    double get_gap() override { return Core::FADUtils::CastToDouble(gap_); };
+    double get_gap() override { return Core::FADUtils::cast_to_double(gap_); };
 
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -260,7 +260,7 @@ namespace CONTACT
     {
       Core::LinAlg::SerialDenseVector r1;
       r1.resize(3);
-      for (int i = 0; i < 3; i++) r1(i) = Core::FADUtils::CastToDouble(r1_(i));
+      for (int i = 0; i < 3; i++) r1(i) = Core::FADUtils::cast_to_double(r1_(i));
 
       return r1;
     };
@@ -269,7 +269,7 @@ namespace CONTACT
     {
       Core::LinAlg::SerialDenseVector r2;
       r2.resize(3);
-      for (int i = 0; i < 3; i++) r2(i) = Core::FADUtils::CastToDouble(r2_(i));
+      for (int i = 0; i < 3; i++) r2(i) = Core::FADUtils::cast_to_double(r2_(i));
 
       return r2;
     };
@@ -723,9 +723,9 @@ namespace CONTACT
         const Core::LinAlg::Matrix<3, 1, TYPEBTS>& x2_xi1,
         const Core::LinAlg::Matrix<3, 1, TYPEBTS>& x2_xi2,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
-            xi1_d_FAD,
+            xi_1d_FAD,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
-            xi2_d_FAD,
+            xi_2d_FAD,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
             eta_d_FAD,
         const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
@@ -766,7 +766,7 @@ namespace CONTACT
         const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues + 3 * numnodessol, 1, TYPEBTS>&
             eta_d,
         Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& nD_d_FAD,
-        Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& n2_d_FAD,
+        Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>& n_2d_FAD,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&
             nD_d,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>&

@@ -27,15 +27,15 @@ namespace
   template <int coeff0, int coeff1>
   constexpr auto LINEAR_FUNCTION = [](auto x) { return std::make_tuple(x, coeff1 * x + coeff0); };
 
-  TEST(CoreUtilsLocalIntegrationTest, IntegrateSimpsonStep)
+  TEST(CoreUtilsLocalIntegrationTest, integrate_simpson_step)
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;
-    auto value1 = Core::UTILS::IntegrateSimpsonStep(
+    auto value1 = Core::UTILS::integrate_simpson_step(
         0.5, std::get<1>(f1(0.0)), std::get<1>(f1(0.5)), std::get<1>(f1(1.0)));
     EXPECT_NEAR(value1, 7.0 / 3.0, 1e-8);
 
     constexpr auto f2 = QUADRATIC_FUNCTION<2, -2, 5>;
-    auto value2 = Core::UTILS::IntegrateSimpsonStep(
+    auto value2 = Core::UTILS::integrate_simpson_step(
         0.5, std::get<1>(f2(0.0)), std::get<1>(f2(0.5)), std::get<1>(f2(1.0)));
     EXPECT_NEAR(value2, 8.0 / 3.0, 1e-8);
   }
@@ -43,44 +43,44 @@ namespace
   TEST(CoreUtilsLocalIntegrationTest, IntegrateSimpsonEquidistant)
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;
-    auto value1 = Core::UTILS::IntegrateSimpsonStep(f1(0.0), f1(0.5), f1(1.0));
+    auto value1 = Core::UTILS::integrate_simpson_step(f1(0.0), f1(0.5), f1(1.0));
     EXPECT_NEAR(value1, 7.0 / 3.0, 1e-8);
 
     constexpr auto f2 = QUADRATIC_FUNCTION<2, -2, 5>;
-    auto value2 = Core::UTILS::IntegrateSimpsonStep(f2(0.0), f2(0.5), f2(1.0));
+    auto value2 = Core::UTILS::integrate_simpson_step(f2(0.0), f2(0.5), f2(1.0));
     EXPECT_NEAR(value2, 8.0 / 3.0, 1e-8);
   }
 
   TEST(CoreUtilsLocalIntegrationTest, IntegrateSimpsonNonEquidistant)
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;
-    auto value1 = Core::UTILS::IntegrateSimpsonStep(f1(0.0), f1(0.9), f1(1.0));
+    auto value1 = Core::UTILS::integrate_simpson_step(f1(0.0), f1(0.9), f1(1.0));
     EXPECT_NEAR(value1, 7.0 / 3.0, 1e-8);
 
     constexpr auto f2 = QUADRATIC_FUNCTION<2, -2, 5>;
-    auto value2 = Core::UTILS::IntegrateSimpsonStep(f2(0.0), f2(0.9), f2(1.0));
+    auto value2 = Core::UTILS::integrate_simpson_step(f2(0.0), f2(0.9), f2(1.0));
     EXPECT_NEAR(value2, 8.0 / 3.0, 1e-8);
   }
 
   TEST(CoreUtilsLocalIntegrationTest, IntegrateSimpsonBCEquidistant)
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;
-    auto value1 = Core::UTILS::IntegrateSimpsonStepBC(f1(0.0), f1(0.5), f1(1.0));
+    auto value1 = Core::UTILS::integrate_simpson_step_bc(f1(0.0), f1(0.5), f1(1.0));
     EXPECT_NEAR(value1, 37.0 / 24.0, 1e-8);
 
     constexpr auto f2 = QUADRATIC_FUNCTION<2, -2, 5>;
-    auto value2 = Core::UTILS::IntegrateSimpsonStepBC(f2(0.0), f2(0.5), f2(1.0));
+    auto value2 = Core::UTILS::integrate_simpson_step_bc(f2(0.0), f2(0.5), f2(1.0));
     EXPECT_NEAR(value2, 41.0 / 24.0, 1e-8);
   }
 
   TEST(CoreUtilsLocalIntegrationTest, IntegrateSimpsonBCNonEquidistant)
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;
-    auto value1 = Core::UTILS::IntegrateSimpsonStepBC(f1(0.0), f1(0.9), f1(1.0));
+    auto value1 = Core::UTILS::integrate_simpson_step_bc(f1(0.0), f1(0.9), f1(1.0));
     EXPECT_NEAR(value1, 1141.0 / 3000.0, 1e-8);
 
     constexpr auto f2 = QUADRATIC_FUNCTION<2, -2, 5>;
-    auto value2 = Core::UTILS::IntegrateSimpsonStepBC(f2(0.0), f2(0.9), f2(1.0));
+    auto value2 = Core::UTILS::integrate_simpson_step_bc(f2(0.0), f2(0.9), f2(1.0));
     EXPECT_NEAR(value2, 277.0 / 600.0, 1e-8);
   }
 
@@ -88,7 +88,7 @@ namespace
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<2, -2, 5>;
     auto [value, derivative] =
-        Core::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC(f1(0.0), f1(0.5), f1(1.0));
+        Core::UTILS::integrate_simpson_step_bc_and_return_derivative_c(f1(0.0), f1(0.5), f1(1.0));
     EXPECT_NEAR(0.20833333333333333, derivative, 1e-8);
   }
 
@@ -96,7 +96,7 @@ namespace
   {
     constexpr auto f1 = QUADRATIC_FUNCTION<2, -2, 5>;
     auto [value, derivative] =
-        Core::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC(f1(0.0), f1(0.9), f1(1.0));
+        Core::UTILS::integrate_simpson_step_bc_and_return_derivative_c(f1(0.0), f1(0.9), f1(1.0));
     EXPECT_NEAR(0.048333333333333318, derivative, 1e-8);
   }
 
@@ -112,14 +112,14 @@ namespace
       return {x, x};
     };
     FADdouble fad_derivative =
-        Core::UTILS::IntegrateSimpsonStepBC(function_compute_derivative(-0.1),
+        Core::UTILS::integrate_simpson_step_bc(function_compute_derivative(-0.1),
             function_compute_derivative(0.2), function_compute_derivative(1.2));
 
 
     constexpr auto f1 = QUADRATIC_FUNCTION<1, 2, 1>;
 
     auto [value, derivative] =
-        Core::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC(f1(-0.1), f1(0.2), f1(1.2));
+        Core::UTILS::integrate_simpson_step_bc_and_return_derivative_c(f1(-0.1), f1(0.2), f1(1.2));
 
     EXPECT_NEAR(value, 223.0 / 75.0, 1e-8);
     EXPECT_NEAR(fad_derivative.dx(0), derivative, 1e-8);
@@ -128,7 +128,7 @@ namespace
   TEST(CoreUtilsLocalIntegrationTest, IntegrateTrapezoidal)
   {
     constexpr auto f = LINEAR_FUNCTION<1, 2>;
-    auto value = Core::UTILS::IntegrateTrapezoidalStep(f(0.0), f(1.0));
+    auto value = Core::UTILS::integrate_trapezoidal_step(f(0.0), f(1.0));
     EXPECT_NEAR(2, value, 1e-8);
   }
 
@@ -136,7 +136,7 @@ namespace
   {
     constexpr auto f = LINEAR_FUNCTION<1, 2>;
     auto [value, derivative] =
-        Core::UTILS::IntegrateTrapezoidalStepAndReturnDerivativeB(f(0.0), f(1.0));
+        Core::UTILS::integrate_trapezoidal_step_and_return_derivative_b(f(0.0), f(1.0));
     EXPECT_NEAR(2, value, 1e-8);
     EXPECT_NEAR(0.5, derivative, 1e-8);
   }
@@ -152,11 +152,11 @@ namespace
 
       return {x, x};
     };
-    FADdouble fad_derivative = Core::UTILS::IntegrateTrapezoidalStep(
+    FADdouble fad_derivative = Core::UTILS::integrate_trapezoidal_step(
         function_compute_derivative(-0.1), function_compute_derivative(1.2));
     constexpr auto f = LINEAR_FUNCTION<1, 2>;
     auto [value, derivative] =
-        Core::UTILS::IntegrateTrapezoidalStepAndReturnDerivativeB(f(-0.1), f(1.2));
+        Core::UTILS::integrate_trapezoidal_step_and_return_derivative_b(f(-0.1), f(1.2));
 
     EXPECT_NEAR(value, 2.73, 1e-8);
     EXPECT_NEAR(fad_derivative.dx(0), derivative, 1e-8);
@@ -165,28 +165,28 @@ namespace
   TEST(CoreUtilsLocalIntegrationTest, IntegrateIntegrateSimpsonTrapezoidal2Items)
   {
     std::array<double, 2> times = {0.0, 1.0};
-    auto value = Core::UTILS::IntegrateSimpsonTrapezoidal(times, LINEAR_FUNCTION<1, 2>);
+    auto value = Core::UTILS::integrate_simpson_trapezoidal(times, LINEAR_FUNCTION<1, 2>);
     EXPECT_NEAR(2, value, 1e-8);
   }
 
   TEST(CoreUtilsLocalIntegrationTest, IntegrateIntegrateSimpsonTrapezoidalEvenItems)
   {
     std::array times = {0.0, 0.1, 0.3, 0.5, 0.88, 1.0};
-    auto value = Core::UTILS::IntegrateSimpsonTrapezoidal(times, QUADRATIC_FUNCTION<1, 2, 1>);
+    auto value = Core::UTILS::integrate_simpson_trapezoidal(times, QUADRATIC_FUNCTION<1, 2, 1>);
     EXPECT_NEAR(7.0 / 3.0, value, 1e-8);
   }
 
   TEST(CoreUtilsLocalIntegrationTest, IntegrateIntegrateSimpsonTrapezoidalOddItems)
   {
     std::array times = {0.0, 0.1, 0.3, 0.5, 0.88, 0.89, 1.0};
-    auto value = Core::UTILS::IntegrateSimpsonTrapezoidal(times, QUADRATIC_FUNCTION<1, 2, 1>);
+    auto value = Core::UTILS::integrate_simpson_trapezoidal(times, QUADRATIC_FUNCTION<1, 2, 1>);
     EXPECT_NEAR(7.0 / 3.0, value, 1e-8);
   }
 
   TEST(CoreUtilsLocalIntegrationTest, IntegrateIntegrateSimpsonTrapezoidalOneItem)
   {
     std::array times = {0.0};
-    auto value = Core::UTILS::IntegrateSimpsonTrapezoidal(times, QUADRATIC_FUNCTION<1, 2, 1>);
+    auto value = Core::UTILS::integrate_simpson_trapezoidal(times, QUADRATIC_FUNCTION<1, 2, 1>);
     EXPECT_NEAR(0, value, 1e-8);
   }
 
@@ -196,7 +196,7 @@ namespace
       return {x, std::pow(x, 2) + 2 * x + 1};
     };
     std::array<double, 0> times = {};
-    auto value = Core::UTILS::IntegrateSimpsonTrapezoidal(times, function);
+    auto value = Core::UTILS::integrate_simpson_trapezoidal(times, function);
     EXPECT_NEAR(0, value, 1e-8);
   }
 
@@ -208,7 +208,7 @@ namespace
       return QUADRATIC_FUNCTION<1, -2, 5>(x);
     };
     std::array times = {0.0, 0.1, 0.3, 0.5, 1.0, 1.5, 2.0};
-    auto value = Core::UTILS::IntegrateSimpsonTrapezoidal(times, function);
+    auto value = Core::UTILS::integrate_simpson_trapezoidal(times, function);
     EXPECT_NEAR((7.0 + 29.0) / 3.0, value, 1e-8);
   }
 }  // namespace

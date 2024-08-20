@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>& eledefs,
+void EXODUS::read_bc_file(const std::string& bcfile, std::vector<EXODUS::ElemDef>& eledefs,
     std::vector<EXODUS::CondDef>& condefs)
 {
   using namespace FourC;
@@ -130,14 +130,14 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
       // in case of eb we differntiate between 'element' or 'condition'
       if (type.compare("ELEMENT") == 0)
       {
-        EXODUS::ElemDef edef = EXODUS::ReadEdef(mesh_entity, id, actcond);
+        EXODUS::ElemDef edef = EXODUS::read_edef(mesh_entity, id, actcond);
         eledefs.push_back(edef);
       }
       else if (type.compare("CONDITION") == 0)
       {
         // the geometry type is figured out by finding the identifier e.g. "SURF"
         // within the condition name (sectionname) which therefore should carry it!
-        EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
+        EXODUS::CondDef cdef = EXODUS::read_cdef(mesh_entity, id, actcond);
         switch (cdef.gtype)
         {
           case Core::Conditions::geometry_type_point:
@@ -206,7 +206,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
     }
     else if (mesh_entity.compare(nsmarker) == 0)
     {
-      EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
+      EXODUS::CondDef cdef = EXODUS::read_cdef(mesh_entity, id, actcond);
       switch (cdef.gtype)
       {
         case Core::Conditions::geometry_type_point:
@@ -269,7 +269,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
     }
     else if (mesh_entity.compare(ssmarker) == 0)
     {
-      EXODUS::CondDef cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
+      EXODUS::CondDef cdef = EXODUS::read_cdef(mesh_entity, id, actcond);
       condefs.push_back(cdef);
     }
     else
@@ -283,7 +283,7 @@ void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::ElemDef>&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::ElemDef EXODUS::ReadEdef(
+EXODUS::ElemDef EXODUS::read_edef(
     const std::string& mesh_entity, const int id, const std::string& actcond)
 {
   EXODUS::ElemDef edef;
@@ -310,7 +310,7 @@ EXODUS::ElemDef EXODUS::ReadEdef(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::CondDef EXODUS::ReadCdef(
+EXODUS::CondDef EXODUS::read_cdef(
     const std::string& mesh_entity, const int id, const std::string& actcond)
 {
   using namespace FourC;
@@ -366,7 +366,7 @@ EXODUS::CondDef EXODUS::ReadCdef(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::ElemDef& def)
+void EXODUS::print_bc_def(std::ostream& os, const EXODUS::ElemDef& def)
 {
   std::string mesh_entity;
   if (def.me == EXODUS::bceb)
@@ -383,7 +383,7 @@ void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::ElemDef& def)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::CondDef& def)
+void EXODUS::print_bc_def(std::ostream& os, const EXODUS::CondDef& def)
 {
   std::string mesh_entity;
   if (def.me == EXODUS::bceb)
@@ -402,7 +402,7 @@ void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::CondDef& def)
 /*----------------------------------------------------------------------*
  * check if periodic boundary conditions are defined        u.may 02/10 *
  *----------------------------------------------------------------------*/
-bool EXODUS::PeriodicBoundaryConditionsFound(std::vector<EXODUS::CondDef> condefs)
+bool EXODUS::periodic_boundary_conditions_found(std::vector<EXODUS::CondDef> condefs)
 {
   bool pbc_defined = false;
   for (unsigned int i = 0; i < condefs.size(); i++)
@@ -425,12 +425,12 @@ bool EXODUS::PeriodicBoundaryConditionsFound(std::vector<EXODUS::CondDef> condef
  * correct nodal coordinates for                                        *
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
-void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
+void EXODUS::correct_nodal_coordinates_for_periodic_boundary_conditions(
     EXODUS::Mesh& mesh, std::vector<EXODUS::CondDef> condefs)
 {
-  CorrectYZPlaneForPeriodicBoundaryConditions(mesh, condefs);
-  CorrectXZPlaneForPeriodicBoundaryConditions(mesh, condefs);
-  CorrectXYPlaneForPeriodicBoundaryConditions(mesh, condefs);
+  correct_yz_plane_for_periodic_boundary_conditions(mesh, condefs);
+  correct_xz_plane_for_periodic_boundary_conditions(mesh, condefs);
+  correct_xy_plane_for_periodic_boundary_conditions(mesh, condefs);
   return;
 }
 
@@ -440,7 +440,7 @@ void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
  * correct nodal coordinates in yz plane for                            *
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
-void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
+void EXODUS::correct_yz_plane_for_periodic_boundary_conditions(
     EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs)
 {
   // loop over all conditions
@@ -577,7 +577,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
  * correct nodal coordinates in xz plane for                            *
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
-void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
+void EXODUS::correct_xz_plane_for_periodic_boundary_conditions(
     EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs)
 {
   // loop over all conditions
@@ -715,7 +715,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
  * correct nodal coordinates in yz plane for                            *
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
-void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
+void EXODUS::correct_xy_plane_for_periodic_boundary_conditions(
     EXODUS::Mesh& mesh, const std::vector<EXODUS::CondDef>& condefs)
 {
   // loop over all conditions

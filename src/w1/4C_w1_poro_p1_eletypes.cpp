@@ -80,7 +80,7 @@ void Discret::ELEMENTS::WallQuad4PoroP1Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallQuad4PoroP1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 int Discret::ELEMENTS::WallQuad4PoroP1Type::initialize(Core::FE::Discretization& dis)
@@ -161,7 +161,7 @@ void Discret::ELEMENTS::WallQuad9PoroP1Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallQuad9PoroP1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 int Discret::ELEMENTS::WallQuad9PoroP1Type::initialize(Core::FE::Discretization& dis)
@@ -243,7 +243,7 @@ void Discret::ELEMENTS::WallTri3PoroP1Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::WallTri3PoroP1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 int Discret::ELEMENTS::WallTri3PoroP1Type::initialize(Core::FE::Discretization& dis)

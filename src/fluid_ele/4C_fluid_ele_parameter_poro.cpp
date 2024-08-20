@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::FluidEleParameterPoro* Discret::ELEMENTS::FluidEleParameterPoro::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterPoro>(
@@ -54,7 +54,7 @@ void Discret::ELEMENTS::FluidEleParameterPoro::set_element_poro_parameter(
   set_fluid_parameter_poro_ = true;
   poro_conti_partint_ = params.get<bool>("conti partial integration", false);
   reaction_ = true;
-  transient_terms_ = Core::UTILS::GetAsEnum<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
+  transient_terms_ = Core::UTILS::get_as_enum<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
       params, "Transient Terms Poro Fluid");
   poro_convective_term_ = params.get<bool>("convective term", false);
   if (poro_convective_term_ and not FluidEleParameter::is_newton_)
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::FluidEleParameterPoro::set_element_poro_parameter(
   if (stabtype_ == Inpar::FLUID::stabtype_residualbased)
   {
     Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
-    stab_biot_ = Core::UTILS::IntegralValue<int>(stablist, "STAB_BIOT");
+    stab_biot_ = Core::UTILS::integral_value<int>(stablist, "STAB_BIOT");
     stab_biot_scaling_ = stablist.get<double>("STAB_BIOT_SCALING");
   }
   else if (stabtype_ == Inpar::FLUID::stabtype_nostab)

@@ -21,7 +21,7 @@ BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
     BeamContactRuntimeVisualizationOutputParams(const double restart_time)
     : isinit_(false),
       issetup_(false),
-      visualization_parameters_(Core::IO::VisualizationParametersFactory(
+      visualization_parameters_(Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), restart_time)),
       output_interval_steps_(-1),
@@ -57,17 +57,17 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::setup()
   /****************************************************************************/
   output_interval_steps_ = beam_contact_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_every_iteration_ = (bool)Core::UTILS::IntegralValue<int>(
+  output_every_iteration_ = (bool)Core::UTILS::integral_value<int>(
       beam_contact_visualization_output_paramslist, "EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   /****************************************************************************/
-  output_forces_ = (bool)Core::UTILS::IntegralValue<int>(
+  output_forces_ = (bool)Core::UTILS::integral_value<int>(
       beam_contact_visualization_output_paramslist, "CONTACT_FORCES");
 
   /****************************************************************************/
   output_gaps_ =
-      (bool)Core::UTILS::IntegralValue<int>(beam_contact_visualization_output_paramslist, "GAPS");
+      (bool)Core::UTILS::integral_value<int>(beam_contact_visualization_output_paramslist, "GAPS");
 
 
   issetup_ = true;

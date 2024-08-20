@@ -154,7 +154,7 @@ void PostVtuWriterNode::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LibB64::writeCompressedBlock(coordinates, currentout_);
+    LibB64::write_compressed_block(coordinates, currentout_);
   }
   else
   {
@@ -193,7 +193,7 @@ void PostVtuWriterNode::write_geo()
 
 
   if (write_binary_output_)
-    LibB64::writeCompressedBlock(connectivity, currentout_);
+    LibB64::write_compressed_block(connectivity, currentout_);
   else
   {
     for (std::vector<int32_t>::const_iterator it = connectivity.begin(); it != connectivity.end();
@@ -210,7 +210,7 @@ void PostVtuWriterNode::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LibB64::writeCompressedBlock(celloffset, currentout_);
+    LibB64::write_compressed_block(celloffset, currentout_);
   }
   else
   {
@@ -225,7 +225,7 @@ void PostVtuWriterNode::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LibB64::writeCompressedBlock(celltypes, currentout_);
+    LibB64::write_compressed_block(celltypes, currentout_);
   }
   else
   {
@@ -282,10 +282,10 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
-    Teuchos::RCP<Epetra_Vector> dofvec = Core::LinAlg::CreateVector(*rowmap, false);
+    Teuchos::RCP<Epetra_Vector> dofvec = Core::LinAlg::create_vector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
-    ghostedData = Core::LinAlg::CreateVector(*colmap, true);
+    ghostedData = Core::LinAlg::create_vector(*colmap, true);
     Core::LinAlg::export_to(*dofvec, *ghostedData);
   }
 

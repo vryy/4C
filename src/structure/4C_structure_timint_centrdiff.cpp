@@ -78,11 +78,11 @@ void Solid::TimIntCentrDiff::setup()
   resize_m_step();
 
   // allocate force vectors
-  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fviscn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fcmtn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  frimpn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fextn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fintn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fviscn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fcmtn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  frimpn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
 
   return;
@@ -221,7 +221,7 @@ int Solid::TimIntCentrDiff::integrate_step()
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
-      Teuchos::RCP<Epetra_Vector> diagonal = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+      Teuchos::RCP<Epetra_Vector> diagonal = Core::LinAlg::create_vector(*dof_row_map_view(), true);
       int error = massmatrix->extract_diagonal_copy(*diagonal);
       if (error != 0) FOUR_C_THROW("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0, *diagonal, *frimpn_, 0.0);

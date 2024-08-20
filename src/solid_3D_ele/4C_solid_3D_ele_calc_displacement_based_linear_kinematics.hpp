@@ -63,7 +63,7 @@ namespace Discret::ELEMENTS
           evaluate_linear_gl_strain(nodal_coordinates, linearization.linear_b_operator_);
 
       return evaluator(
-          Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>(), gl_strain, linearization);
+          Core::LinAlg::identity_matrix<Core::FE::dim<celltype>>(), gl_strain, linearization);
     }
 
     static inline Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>

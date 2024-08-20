@@ -71,7 +71,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
@@ -109,7 +109,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
@@ -243,9 +243,9 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // cast master and slave matrix
       auto blockslavematrix =
-          Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+          Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(slavematrix);
       auto blockmastermatrix =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(mastermatrix);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(mastermatrix);
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
@@ -288,8 +288,9 @@ void SSI::ScatraStructureOffDiagCoupling::
     case Core::LinAlg::MatrixType::sparse:
     {
       // cast master and slave matrix
-      auto sparseslavematrix = Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(slavematrix);
-      auto sparsemastermatrix = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(mastermatrix);
+      auto sparseslavematrix =
+          Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(slavematrix);
+      auto sparsemastermatrix = Core::LinAlg::cast_to_sparse_matrix_and_check_success(mastermatrix);
 
       // copy slave side values to master side and scale with minus 1. Insert into
       // scatrastructureinterface_sparse
@@ -330,11 +331,11 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_capacitance_od, condparams);
 
   // linearization of boundary flux w.r.t. displacement
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::DifferentiationType>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
@@ -411,17 +412,18 @@ void SSI::ScatraStructureOffDiagCoupling::
           *full_map_structure_, *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map());
 
       auto scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_sparse =
-          Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(
+          Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix);
-      auto slavematrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(slavematrix);
+      auto slavematrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(slavematrix);
 
       auto scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix_sparse =
-          Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(
+          Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(
               scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix);
       auto scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_sparse =
-          Core::LinAlg::CastToSparseMatrixAndCheckSuccess(
+          Core::LinAlg::cast_to_sparse_matrix_and_check_success(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix);
-      auto mastermatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(mastermatrix);
+      auto mastermatrix_sparse =
+          Core::LinAlg::cast_to_sparse_matrix_and_check_success(mastermatrix);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -479,18 +481,18 @@ void SSI::ScatraStructureOffDiagCoupling::
       mastermatrix->un_complete();
 
       auto scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_block =
-          Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+          Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix);
       auto slavematrix_block =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(slavematrix);
 
       auto scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix_block =
-          Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+          Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
               scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix);
       auto mastermatrix_block =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(mastermatrix);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(mastermatrix);
       auto scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_block =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix);
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
@@ -526,7 +528,7 @@ void SSI::ScatraStructureOffDiagCoupling::
                   iblock, 0);
 
           auto scatra_block_mapi =
-              Core::LinAlg::IntersectMap(*scatra_field()->block_maps()->Map(iblock),
+              Core::LinAlg::intersect_map(*scatra_field()->block_maps()->Map(iblock),
                   *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map());
 
           Coupling::Adapter::MatrixLogicalSplitAndTransform()(
@@ -584,11 +586,11 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // linearization of boundary flux w.r.t. displacement
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::DifferentiationType>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
@@ -642,9 +644,9 @@ void SSI::ScatraStructureOffDiagCoupling::
       evaluate_matrix->complete();
 
       auto evaluate_matrix_block =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(evaluate_matrix);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(evaluate_matrix);
       auto slavematrix_block =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(slavematrix);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -665,7 +667,7 @@ void SSI::ScatraStructureOffDiagCoupling::
           auto slave_iblock = slavematrix_block->matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              Core::LinAlg::IntersectMap(*scatra_field()->block_maps()->Map(iblock),
+              Core::LinAlg::intersect_map(*scatra_field()->block_maps()->Map(iblock),
                   *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map());
 
           Coupling::Adapter::MatrixLogicalSplitAndTransform()(evaluate_iblock,
@@ -683,8 +685,8 @@ void SSI::ScatraStructureOffDiagCoupling::
           *full_map_structure_, *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map());
 
       auto evaluate_matrix_sparse =
-          Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(evaluate_matrix);
-      auto slavematrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(slavematrix);
+          Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(evaluate_matrix);
+      auto slavematrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(slavematrix);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed

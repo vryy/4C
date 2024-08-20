@@ -347,7 +347,7 @@ void FSI::MonolithicMainFS::set_default_parameters(
   lsParams.set<double>(
       "adaptive distance", fsimono.get<double>("ADAPTIVEDIST"));  // adaptive distance
   lsParams.set<Inpar::FSI::Verbosity>(
-      "verbosity", Core::UTILS::IntegralValue<Inpar::FSI::Verbosity>(
+      "verbosity", Core::UTILS::integral_value<Inpar::FSI::Verbosity>(
                        fsidyn, "VERBOSITY"));  // verbosity level of FSI algorithm
 }
 
@@ -466,7 +466,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -547,7 +547,7 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   {
     case Inpar::FSI::PreconditionedKrylov:
       systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFS(extractor(), *fluid_field(),
-          *ale_field(), true, Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
+          *ale_field(), true, Core::UTILS::integral_value<int>(fsimono, "SYMMETRICPRECOND"),
           pcomega[0], pciter[0], fpcomega[0], fpciter[0]));
       break;
     default:
@@ -710,7 +710,7 @@ void FSI::MonolithicFS::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, E
   // should we scale the system?
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -743,7 +743,7 @@ void FSI::MonolithicFS::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {

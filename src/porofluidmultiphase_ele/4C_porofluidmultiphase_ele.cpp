@@ -90,7 +90,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::PoroFluidMultiPhaseType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 /*----------------------------------------------------------------------*
@@ -274,7 +274,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::unpack(const std::vector<char>& dat
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -296,7 +296,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::unpack(const std::vector<char>& dat
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhase::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(distype_);
+  return Core::FE::get_number_of_element_lines(distype_);
 }
 
 
@@ -305,7 +305,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::num_line() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhase::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(distype_);
+  return Core::FE::get_number_of_element_surfaces(distype_);
 }
 
 
@@ -314,7 +314,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::num_surface() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhase::num_volume() const
 {
-  return Core::FE::getNumberOfElementVolumes(distype_);
+  return Core::FE::get_number_of_element_volumes(distype_);
 }
 
 
@@ -327,7 +327,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::print(std::ostream& os) const
   os << "PoroFluidMultiPhase element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::cell_type_to_string(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
 
@@ -340,7 +340,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhase::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::PoroFluidMultiPhase::lines()
 {
-  return Core::Communication::GetElementLines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
+  return Core::Communication::get_element_lines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
       *this);
 }
 
@@ -351,8 +351,8 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::PoroFluidM
 std::vector<Teuchos::RCP<Core::Elements::Element>>
 Discret::ELEMENTS::PoroFluidMultiPhase::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
-      *this);
+  return Core::Communication::get_element_surfaces<PoroFluidMultiPhaseBoundary,
+      PoroFluidMultiPhase>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -363,10 +363,10 @@ bool Discret::ELEMENTS::PoroFluidMultiPhase::read_element(const std::string& ele
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // set discretization type
-  set_dis_type(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::string_to_cell_type(distype));
 
   return true;
 }
@@ -443,7 +443,7 @@ Core::Elements::Element* Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::clone()
  *----------------------------------------------------------------------*/
 Core::FE::CellType Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::shape() const
 {
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_element()->shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -481,7 +481,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::print(std::ostream& os) con
   os << "PoroFluidMultiPhaseBoundary element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::cell_type_to_string(shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -491,7 +491,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::print(std::ostream& os) con
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(shape());
+  return Core::FE::get_number_of_element_lines(shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -499,7 +499,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::num_line() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(shape());
+  return Core::FE::get_number_of_element_surfaces(shape());
 }
 
 /*----------------------------------------------------------------------*

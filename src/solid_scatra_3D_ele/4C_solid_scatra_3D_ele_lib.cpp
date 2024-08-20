@@ -10,7 +10,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Inpar::ScaTra::ImplType Discret::ELEMENTS::ReadScatraImplType(
+Inpar::ScaTra::ImplType Discret::ELEMENTS::read_scatra_impl_type(
     const Core::IO::InputParameterContainer& container)
 {
   auto impltype = container.get<std::string>("TYPE");

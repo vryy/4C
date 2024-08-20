@@ -65,19 +65,19 @@ Solid::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      pred_(Core::UTILS::IntegralValue<Inpar::Solid::PredEnum>(sdynparams, "PREDICT")),
-      itertype_(Core::UTILS::IntegralValue<Inpar::Solid::NonlinSolTech>(sdynparams, "NLNSOL")),
-      normtypedisi_(Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_DISP")),
-      normtypefres_(Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_RESF")),
-      normtypepres_(Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_PRES")),
-      normtypepfres_(Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_INCO")),
+      pred_(Core::UTILS::integral_value<Inpar::Solid::PredEnum>(sdynparams, "PREDICT")),
+      itertype_(Core::UTILS::integral_value<Inpar::Solid::NonlinSolTech>(sdynparams, "NLNSOL")),
+      normtypedisi_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_DISP")),
+      normtypefres_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_RESF")),
+      normtypepres_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_PRES")),
+      normtypepfres_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_INCO")),
       combdispre_(
-          Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
+          Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
       combfrespfres_(
-          Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
+          Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
       combdisifres_(
-          Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
-      iternorm_(Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(sdynparams, "ITERNORM")),
+          Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
+      iternorm_(Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(sdynparams, "ITERNORM")),
       itermax_(sdynparams.get<int>("MAXITER")),
       itermin_(sdynparams.get<int>("MINITER")),
       toldisi_(sdynparams.get<double>("TOLDISP")),
@@ -118,7 +118,7 @@ Solid::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       fres_(Teuchos::null),
       freact_(Teuchos::null),
       updateprojection_(false),
-      stcscale_(Core::UTILS::IntegralValue<Inpar::Solid::StcScale>(sdynparams, "STC_SCALING")),
+      stcscale_(Core::UTILS::integral_value<Inpar::Solid::StcScale>(sdynparams, "STC_SCALING")),
       stclayer_(sdynparams.get<int>("STC_LAYER")),
       ptcdt_(sdynparams.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_)
@@ -208,21 +208,21 @@ void Solid::TimIntImpl::setup()
     if ((itertype_ != Inpar::Solid::soltech_newtonuzawalin) and
         (itertype_ != Inpar::Solid::soltech_newtonuzawanonlin))
       FOUR_C_THROW("Chosen solution technique %s does not work constrained.",
-          Inpar::Solid::NonlinSolTechString(itertype_).c_str());
+          Inpar::Solid::nonlin_sol_tech_string(itertype_).c_str());
   }
   else if (cardvasc0dman_->have_cardiovascular0_d())
   {
     if (itertype_ != Inpar::Solid::soltech_newtonuzawalin)
       if (myrank_ == 0)
         FOUR_C_THROW("Chosen solution technique %s does not work with Cardiovascular0D bc.",
-            Inpar::Solid::NonlinSolTechString(itertype_).c_str());
+            Inpar::Solid::nonlin_sol_tech_string(itertype_).c_str());
   }
   else if ((itertype_ == Inpar::Solid::soltech_newtonuzawalin) or
            (itertype_ == Inpar::Solid::soltech_newtonuzawanonlin))
   {
     FOUR_C_THROW(
         "Chosen solution technique %s does only work constrained or with Cardiovascular0D bc.",
-        Inpar::Solid::NonlinSolTechString(itertype_).c_str());
+        Inpar::Solid::nonlin_sol_tech_string(itertype_).c_str());
   }
 
   // setup tolerances and binary operators for convergence check of contact/meshtying problems
@@ -241,9 +241,9 @@ void Solid::TimIntImpl::setup()
     // extract information from parameter lists
     tolcontconstr_ = cmtbridge_->get_strategy().params().get<double>("TOLCONTCONSTR");
     tollagr_ = cmtbridge_->get_strategy().params().get<double>("TOLLAGR");
-    combfrescontconstr_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
+    combfrescontconstr_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
         cmtbridge_->get_strategy().params(), "NORMCOMBI_RESFCONTCONSTR");
-    combdisilagr_ = Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(
+    combdisilagr_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
         cmtbridge_->get_strategy().params(), "NORMCOMBI_DISPLAGR");
   }
 
@@ -295,14 +295,14 @@ void Solid::TimIntImpl::setup()
   if (itertype_ == Inpar::Solid::soltech_newtonls) prepare_line_search();
 
   // create empty residual force vector
-  fres_ = Core::LinAlg::CreateVector(*dof_row_map_view(), false);
+  fres_ = Core::LinAlg::create_vector(*dof_row_map_view(), false);
 
   // create empty reaction force vector of full length
-  freact_ = Core::LinAlg::CreateVector(*dof_row_map_view(), false);
+  freact_ = Core::LinAlg::create_vector(*dof_row_map_view(), false);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  disi_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // prepare matrix for scaled thickness business of thin shell structures
   stcmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
@@ -569,8 +569,8 @@ void Solid::TimIntImpl::prepare_line_search()
   discret_->get_comm().MaxAll(&haveCondensationLocal, &haveCondensationGlobal, 1);
   if (haveCondensationGlobal)
   {
-    fresn_str_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-    fintn_str_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    fresn_str_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+    fintn_str_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   }
   return;
 }
@@ -599,7 +599,7 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   disi_->PutScalar(0.0);
 
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *(*dis_)(0), 0.0);
@@ -623,7 +623,7 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::create_vector(*dof_row_map_view(), true);
     stiff_->multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -656,7 +656,7 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   if (get_loc_sys_trafo() != Teuchos::null)
   {
     Core::LinAlg::apply_dirichlet_to_system(
-        *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+        *Core::LinAlg::cast_to_sparse_matrix_and_check_success(stiff_), *disi_, *fres_,
         *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->cond_map()));
   }
   else
@@ -684,12 +684,12 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   bool bPressure = pressure_ != Teuchos::null;
   bool bContactSP =
       (have_contact_meshtying() &&
-          Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+          Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
               cmtbridge_->get_strategy().params(), "STRATEGY") ==
               Inpar::CONTACT::solution_lagmult &&
-          (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+          (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
                cmtbridge_->get_strategy().params(), "SYSTEM") != Inpar::CONTACT::system_condensed ||
-              Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+              Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
                   cmtbridge_->get_strategy().params(), "SYSTEM") !=
                   Inpar::CONTACT::system_condensed_lagmult));
 
@@ -809,7 +809,7 @@ void Solid::TimIntImpl::update_krylov_space_projection()
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::rcp(new Epetra_Map(*discret_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> nullspace =
-      Core::FE::ComputeNullSpace(*discret_, 3, 6, nullspaceMap);
+      Core::FE::compute_null_space(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
@@ -851,7 +851,7 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
   if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  bool loadlin = (Core::UTILS::IntegralValue<int>(sdyn, "LOADLIN") == 1);
+  bool loadlin = (Core::UTILS::integral_value<int>(sdyn, "LOADLIN") == 1);
 
   if (!loadlin)
     discret_->evaluate_neumann(p, *fext);
@@ -1249,10 +1249,10 @@ bool Solid::TimIntImpl::converged()
   {
     // check which case (application, strategy) we are in
     Inpar::CONTACT::SolvingStrategy stype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->get_strategy().params(), "STRATEGY");
     bool semismooth =
-        Core::UTILS::IntegralValue<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
+        Core::UTILS::integral_value<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (cmtbridge_->have_contact() && (stype == Inpar::CONTACT::solution_lagmult) && semismooth)
@@ -1435,7 +1435,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimIntImpl::solve()
       // catch problems
       default:
         FOUR_C_THROW("Solution technique \"%s\" is not implemented.",
-            Inpar::Solid::NonlinSolTechString(itertype_).c_str());
+            Inpar::Solid::nonlin_sol_tech_string(itertype_).c_str());
         break;
     }
   }
@@ -1506,7 +1506,7 @@ int Solid::TimIntImpl::newton_full()
     if (get_loc_sys_trafo() != Teuchos::null)
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+          *Core::LinAlg::cast_to_sparse_matrix_and_check_success(stiff_), *disi_, *fres_,
           *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->cond_map()));
     }
     else
@@ -1606,16 +1606,16 @@ int Solid::TimIntImpl::newton_full()
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
-    bool bContactSP =
-        (have_contact_meshtying() && ((Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
-                                           cmtbridge_->get_strategy().params(), "STRATEGY") ==
-                                             Inpar::CONTACT::solution_lagmult &&
-                                         (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
-                                              cmtbridge_->get_strategy().params(), "SYSTEM") !=
-                                                 Inpar::CONTACT::system_condensed ||
-                                             Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
-                                                 cmtbridge_->get_strategy().params(), "SYSTEM") !=
-                                                 Inpar::CONTACT::system_condensed_lagmult))));
+    bool bContactSP = (have_contact_meshtying() &&
+                       ((Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
+                             cmtbridge_->get_strategy().params(), "STRATEGY") ==
+                               Inpar::CONTACT::solution_lagmult &&
+                           (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+                                cmtbridge_->get_strategy().params(), "SYSTEM") !=
+                                   Inpar::CONTACT::system_condensed ||
+                               Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+                                   cmtbridge_->get_strategy().params(), "SYSTEM") !=
+                                   Inpar::CONTACT::system_condensed_lagmult))));
 
     if (bPressure && bContactSP)
       FOUR_C_THROW(
@@ -1664,9 +1664,9 @@ int Solid::TimIntImpl::newton_full()
         normlagr_ = -1.0;
 
       // for wear discretization
-      Inpar::Wear::WearType wtype = Core::UTILS::IntegralValue<Inpar::Wear::WearType>(
+      Inpar::Wear::WearType wtype = Core::UTILS::integral_value<Inpar::Wear::WearType>(
           cmtbridge_->get_strategy().params(), "WEARTYPE");
-      Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
+      Inpar::Wear::WearSide wside = Core::UTILS::integral_value<Inpar::Wear::WearSide>(
           cmtbridge_->get_strategy().params(), "WEAR_SIDE");
 
       if (wtype == Inpar::Wear::wear_primvar)
@@ -2094,7 +2094,7 @@ int Solid::TimIntImpl::ls_solve_newton_step()
   if (get_loc_sys_trafo() != Teuchos::null)
   {
     Core::LinAlg::apply_dirichlet_to_system(
-        *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+        *Core::LinAlg::cast_to_sparse_matrix_and_check_success(stiff_), *disi_, *fres_,
         *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->cond_map()));
   }
   else
@@ -2516,7 +2516,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       if (get_loc_sys_trafo() != Teuchos::null)
       {
         Core::LinAlg::apply_dirichlet_to_system(
-            *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+            *Core::LinAlg::cast_to_sparse_matrix_and_check_success(stiff_), *disi_, *fres_,
             *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->cond_map()));
       }
       else
@@ -2547,10 +2547,10 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       if (stcscale_ != Inpar::Solid::stc_none)
       {
         // std::cout<<"scaling constraint matrices"<<std::endl;
-        constrT = Core::LinAlg::MLMultiply(*stcmat_, true, *constrT, false, false, false, true);
+        constrT = Core::LinAlg::ml_multiply(*stcmat_, true, *constrT, false, false, false, true);
         if (stcscale_ == Inpar::Solid::stc_currsym)
         {
-          constr = Core::LinAlg::MLMultiply(*stcmat_, true, *constr, false, false, false, true);
+          constr = Core::LinAlg::ml_multiply(*stcmat_, true, *constr, false, false, false, true);
         }
       }
       // Call constraint solver to solve system with zeros on diagonal
@@ -2677,7 +2677,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
     double dti = cardvasc0dman_->get_k_ptc();
 
-    const bool ptc_3D0D = Core::UTILS::IntegralValue<int>(
+    const bool ptc_3D0D = Core::UTILS::integral_value<int>(
         Global::Problem::instance()->cardiovascular0_d_structural_params(), "PTC_3D0D");
 
     // equilibrium iteration loop
@@ -2705,7 +2705,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       if (get_loc_sys_trafo() != Teuchos::null)
       {
         Core::LinAlg::apply_dirichlet_to_system(
-            *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+            *Core::LinAlg::cast_to_sparse_matrix_and_check_success(stiff_), *disi_, *fres_,
             *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->cond_map()));
       }
       else
@@ -2943,12 +2943,12 @@ int Solid::TimIntImpl::cmt_nonlinear_solve()
   //********************************************************************
   // strategy type
   Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->get_strategy().params(), "STRATEGY");
 
   // semi-smooth Newton type
   bool semismooth =
-      Core::UTILS::IntegralValue<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
+      Core::UTILS::integral_value<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != Inpar::Solid::soltech_newtonfull)
@@ -3101,9 +3101,9 @@ void Solid::TimIntImpl::cmt_linear_solve()
   }
 
   Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->get_strategy().params(), "STRATEGY");
-  Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+  Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
       cmtbridge_->get_strategy().params(), "SYSTEM");
 
   // update information about active slave dofs
@@ -3222,7 +3222,7 @@ int Solid::TimIntImpl::beam_contact_nonlinear_solve()
   // get some parameters
   //********************************************************************
   // strategy type
-  Inpar::BEAMCONTACT::Strategy strategy = Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(
+  Inpar::BEAMCONTACT::Strategy strategy = Core::UTILS::integral_value<Inpar::BEAMCONTACT::Strategy>(
       beamcman_->beam_contact_parameters(), "BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
@@ -3316,10 +3316,10 @@ int Solid::TimIntImpl::ptc()
     // modify stiffness matrix with dti
     {
       Teuchos::RCP<Epetra_Vector> tmp =
-          Core::LinAlg::CreateVector(system_matrix()->row_map(), false);
+          Core::LinAlg::create_vector(system_matrix()->row_map(), false);
       tmp->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag =
-          Core::LinAlg::CreateVector(system_matrix()->row_map(), false);
+          Core::LinAlg::create_vector(system_matrix()->row_map(), false);
       system_matrix()->extract_diagonal_copy(*diag);
       diag->Update(1.0, *tmp, 1.0);
       system_matrix()->replace_diagonal_values(*diag);
@@ -3330,7 +3330,7 @@ int Solid::TimIntImpl::ptc()
     if (get_loc_sys_trafo() != Teuchos::null)
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+          *Core::LinAlg::cast_to_sparse_matrix_and_check_success(stiff_), *disi_, *fres_,
           *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->cond_map()));
     }
     else
@@ -3425,13 +3425,13 @@ int Solid::TimIntImpl::ptc()
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (have_contact_meshtying() &&
-                       Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+                       Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
                            cmtbridge_->get_strategy().params(), "STRATEGY") ==
                            Inpar::CONTACT::solution_lagmult &&
-                       (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+                       (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
                             cmtbridge_->get_strategy().params(), "SYSTEM") !=
                                Inpar::CONTACT::system_condensed ||
-                           Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+                           Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
                                cmtbridge_->get_strategy().params(), "SYSTEM") !=
                                Inpar::CONTACT::system_condensed));
 
@@ -3571,7 +3571,7 @@ void Solid::TimIntImpl::print_predictor()
   if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
   {
     Core::IO::cout << "Structural predictor for field '" << discret_->name() << "' "
-                   << Inpar::Solid::PredEnumString(pred_) << " yields ";
+                   << Inpar::Solid::pred_enum_string(pred_) << " yields ";
 
     // relative check of force residual
     if (normtypefres_ == Inpar::Solid::convnorm_rel)
@@ -3690,13 +3690,13 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
   {
     // strategy and system setup types
     Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->get_strategy().params(), "STRATEGY");
-    Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+    Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
         cmtbridge_->get_strategy().params(), "SYSTEM");
-    Inpar::Wear::WearType wtype = Core::UTILS::IntegralValue<Inpar::Wear::WearType>(
+    Inpar::Wear::WearType wtype = Core::UTILS::integral_value<Inpar::Wear::WearType>(
         cmtbridge_->get_strategy().params(), "WEARTYPE");
-    Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
+    Inpar::Wear::WearSide wside = Core::UTILS::integral_value<Inpar::Wear::WearSide>(
         cmtbridge_->get_strategy().params(), "WEAR_SIDE");
 
     if (soltype == Inpar::CONTACT::solution_lagmult &&
@@ -3872,13 +3872,13 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
   {
     // strategy and system setup types
     Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->get_strategy().params(), "STRATEGY");
-    Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+    Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
         cmtbridge_->get_strategy().params(), "SYSTEM");
-    Inpar::Wear::WearType wtype = Core::UTILS::IntegralValue<Inpar::Wear::WearType>(
+    Inpar::Wear::WearType wtype = Core::UTILS::integral_value<Inpar::Wear::WearType>(
         cmtbridge_->get_strategy().params(), "WEARTYPE");
-    Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
+    Inpar::Wear::WearSide wside = Core::UTILS::integral_value<Inpar::Wear::WearSide>(
         cmtbridge_->get_strategy().params(), "WEAR_SIDE");
 
     if (soltype == Inpar::CONTACT::solution_lagmult &&
@@ -4126,7 +4126,7 @@ void Solid::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobi
     if (get_loc_sys_trafo() != Teuchos::null)
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+          *Core::LinAlg::cast_to_sparse_matrix_and_check_success(stiff_), *disi_, *fres_,
           *get_loc_sys_trafo(), *zeros_, *(dbcmaps_->cond_map()));
     }
     else
@@ -4159,7 +4159,7 @@ void Solid::TimIntImpl::use_block_matrix(
   // recalculate mass and damping matrices
 
   Teuchos::RCP<Epetra_Vector> fint =
-      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // internal force
+      Core::LinAlg::create_vector(*dof_row_map_view(), true);  // internal force
 
   stiff_->zero();
   mass_->zero();
@@ -4176,7 +4176,7 @@ void Solid::TimIntImpl::use_block_matrix(
     Teuchos::RCP<Epetra_Vector> finert = Teuchos::null;
     if (have_nonlinear_mass())
     {
-      finert = Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // intertial force
+      finert = Core::LinAlg::create_vector(*dof_row_map_view(), true);  // intertial force
       // Note: the following parameters are just dummies, since they are only needed to calculate
       // finert which we will not use anyway
       p.set("timintfac_dis", 0.0);  // dummy!
@@ -4235,14 +4235,14 @@ void Solid::TimIntImpl::stc_preconditioning()
       stccompl_ = true;
     }
 
-    stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), *stcmat_,
+    stiff_ = ml_multiply(*(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), *stcmat_,
         true, false, true);
     if (stcscale_ == Inpar::Solid::stc_currsym)
     {
-      stiff_ = MLMultiply(*stcmat_, true,
+      stiff_ = ml_multiply(*stcmat_, true,
           *(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), false, true, false,
           true);
-      Teuchos::RCP<Epetra_Vector> fressdc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+      Teuchos::RCP<Epetra_Vector> fressdc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
       stcmat_->multiply(true, *fres_, *fressdc);
       fres_->Update(1.0, *fressdc, 0.0);
     }
@@ -4274,7 +4274,7 @@ void Solid::TimIntImpl::compute_stc_matrix()
     std::string fname = Global::Problem::instance()->output_control_file()->file_name_only_prefix();
     fname += ".stcmatrix1.mtl";
     if (myrank_ == 0) std::cout << "Printing stcmatrix1 to file" << std::endl;
-    Core::LinAlg::PrintMatrixInMatlabFormat(fname,
+    Core::LinAlg::print_matrix_in_matlab_format(fname,
         *((Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stcmat_))->epetra_matrix()));
   }
 #endif
@@ -4301,12 +4301,12 @@ void Solid::TimIntImpl::compute_stc_matrix()
           Global::Problem::instance()->output_control_file()->file_name_only_prefix();
       fname += ".stcmatrix2.mtl";
       if (myrank_ == 0) std::cout << "Printing stcmatrix2 to file" << std::endl;
-      Core::LinAlg::PrintMatrixInMatlabFormat(fname,
+      Core::LinAlg::print_matrix_in_matlab_format(fname,
           *((Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tmpstcmat))->epetra_matrix()));
     }
 #endif
 
-    stcmat_ = MLMultiply(*tmpstcmat, *stcmat_, false, false, true);
+    stcmat_ = ml_multiply(*tmpstcmat, *stcmat_, false, false, true);
   }
 
   discret_->clear_state();
@@ -4318,7 +4318,7 @@ void Solid::TimIntImpl::recover_stc_solution()
 {
   if (stcscale_ != Inpar::Solid::stc_none)
   {
-    Teuchos::RCP<Epetra_Vector> disisdc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    Teuchos::RCP<Epetra_Vector> disisdc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
     stcmat_->multiply(false, *disi_, *disisdc);
     disi_->Update(1.0, *disisdc, 0.0);
@@ -4337,12 +4337,12 @@ int Solid::TimIntImpl::cmt_windk_constr_nonlinear_solve()
   //********************************************************************
   // strategy type
   Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->get_strategy().params(), "STRATEGY");
 
   // semi-smooth Newton type
   bool semismooth =
-      Core::UTILS::IntegralValue<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
+      Core::UTILS::integral_value<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != Inpar::Solid::soltech_newtonuzawalin)
@@ -4479,9 +4479,9 @@ int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
 {
   // strategy and system setup types
   Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
           cmtbridge_->get_strategy().params(), "STRATEGY");
-  Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+  Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
       cmtbridge_->get_strategy().params(), "SYSTEM");
 
   int linsolve_error = 0;

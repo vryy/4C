@@ -361,7 +361,7 @@ namespace Immersed
 
   */
   template <Core::FE::CellType sourcedistype, Core::FE::CellType targetdistype>
-  int InterpolateToImmersedIntPoint(const Teuchos::RCP<Core::FE::Discretization> sourcedis,
+  int interpolate_to_immersed_int_point(const Teuchos::RCP<Core::FE::Discretization> sourcedis,
       const Teuchos::RCP<Core::FE::Discretization> targetdis, Core::Elements::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp, int action,
       std::vector<double>& targetdata)
@@ -424,7 +424,7 @@ namespace Immersed
     Core::Communication::Exporter exporter(comm);
 
     // get current global coordinates of the given point xi of the target dis
-    Mortar::UTILS::LocalToCurrentGlobal<targetdistype>(
+    Mortar::UTILS::local_to_current_global<targetdistype>(
         targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
@@ -460,7 +460,7 @@ namespace Immersed
 
     targetele.evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
         *targetxi_dense, dummy3);
-    normal_at_targetpoint->scale(1.0 / (Core::LinAlg::Norm2(*normal_at_targetpoint)));
+    normal_at_targetpoint->scale(1.0 / (Core::LinAlg::norm2(*normal_at_targetpoint)));
     normal_vec[0] = (*normal_at_targetpoint)(0);
     normal_vec[1] = (*normal_at_targetpoint)(1);
     normal_vec[2] = (*normal_at_targetpoint)(2);
@@ -533,7 +533,7 @@ namespace Immersed
               curr->second->location_vector(*sourcedis, la, false);
               // extract local values of the global vectors
               myvalues.resize(la[0].lm_.size());
-              Core::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
+              Core::FE::extract_my_values(*state, myvalues, la[0].lm_);
               double sourceeledisp[24];
               for (int node = 0; node < 8; ++node)
                 for (int dof = 0; dof < 3; ++dof)
@@ -562,7 +562,7 @@ namespace Immersed
               // fac*characteristic element length
               if (distance < 1.5 * diagonal)
               {
-                Mortar::UTILS::GlobalToCurrentLocal<sourcedistype>(
+                Mortar::UTILS::global_to_current_local<sourcedistype>(
                     *(curr->second), sourceeledisp, xvec.data(), &xi(0), converged, residual);
                 if (converged == false)
                 {
@@ -602,7 +602,7 @@ namespace Immersed
               {
                 // get parameter space coords xi in source element of global point xvec of target
                 // element
-                Mortar::UTILS::GlobalToLocal<sourcedistype>(
+                Mortar::UTILS::global_to_local<sourcedistype>(
                     *(curr->second), xvec.data(), &xi(0), converged);
                 if (converged == false)
                 {
@@ -704,7 +704,7 @@ namespace Immersed
               (*vector)(0) = x[0] - xvec[0];
               (*vector)(1) = x[1] - xvec[1];
               (*vector)(2) = x[2] - xvec[2];
-              vector->scale(Core::LinAlg::Norm2(*vector));
+              vector->scale(Core::LinAlg::norm2(*vector));
 
               // build scalar product between normal and vector
               scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] +
@@ -899,7 +899,7 @@ namespace Immersed
 
   */
   template <Core::FE::CellType sourcedistype, Core::FE::CellType targetdistype>
-  int InterpolateToBackgrdPoint(std::map<int, std::set<int>>& curr_subset_of_structdis,
+  int interpolate_to_backgrd_point(std::map<int, std::set<int>>& curr_subset_of_structdis,
       const Teuchos::RCP<Core::FE::Discretization> sourcedis,
       const Teuchos::RCP<Core::FE::Discretization> targetdis, Core::Elements::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp,
@@ -942,7 +942,7 @@ namespace Immersed
     Core::Elements::Element::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
-    Mortar::UTILS::LocalToCurrentGlobal<targetdistype>(
+    Mortar::UTILS::local_to_current_global<targetdistype>(
         targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
@@ -1024,7 +1024,7 @@ namespace Immersed
             // get parameter space coords xi in source element
             sourceele->location_vector(*sourcedis, la, false);
             std::vector<double> mysourcedispnp(la[0].lm_.size());
-            Core::FE::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
+            Core::FE::extract_my_values(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
             Teuchos::RCP<Cut::BoundingBox> bbside = Teuchos::rcp(Cut::BoundingBox::create());
@@ -1043,7 +1043,7 @@ namespace Immersed
             // only try to match given target point and sourceele if within bounding box
             if (within)
             {
-              Mortar::UTILS::GlobalToCurrentLocal<sourcedistype>(
+              Mortar::UTILS::global_to_current_local<sourcedistype>(
                   *sourceele, mysourcedispnp.data(), xvec.data(), &xi(0), converged, residual);
 
               if (converged == false)
@@ -1217,7 +1217,7 @@ namespace Immersed
 
    */
   template <Core::FE::CellType structdistype, Core::FE::CellType fluiddistype>
-  int FindClosestStructureSurfacePoint(
+  int find_closest_structure_surface_point(
       std::map<int, std::set<int>>& curr_subset_of_structdis,  //!< Input
       const Teuchos::RCP<Core::FE::Discretization> structdis,  //!< Input
       const Teuchos::RCP<Core::FE::Discretization> fluiddis,   //!< Input
@@ -1281,7 +1281,7 @@ namespace Immersed
     Core::Elements::Element::LocationArray la(structdis->num_dof_sets());
 
     // get current global coordinates of the given fluid node fluid_xi
-    Mortar::UTILS::LocalToCurrentGlobal<fluiddistype>(
+    Mortar::UTILS::local_to_current_global<fluiddistype>(
         fluidele, globdim, fluidxi.data(), fluideledisp, x_fluid_node.data());
     // get as vector
     std::vector<double> fluid_node_glob_coord(globdim);
@@ -1390,9 +1390,9 @@ namespace Immersed
                 // get displacements and velocities of structure dis
                 structele->location_vector(*structdis, la, false);
                 std::vector<double> mydispnp(la[0].lm_.size());
-                Core::FE::ExtractMyValues(*dispnp, mydispnp, la[0].lm_);
+                Core::FE::extract_my_values(*dispnp, mydispnp, la[0].lm_);
                 std::vector<double> myvelnp(la[0].lm_.size());
-                Core::FE::ExtractMyValues(*velnp, myvelnp, la[0].lm_);
+                Core::FE::extract_my_values(*velnp, myvelnp, la[0].lm_);
 
                 // 1.) check if closest point is a node
                 // loop over all nodes of structural surface element
@@ -1439,7 +1439,7 @@ namespace Immersed
                   std::vector<double> structsurf_gp_glob_coord(globdim);
 
                   // get current global position of the given int point xi on the structural surface
-                  Mortar::UTILS::LocalToCurrentGlobal<structdistype>(*(structele), globdim,
+                  Mortar::UTILS::local_to_current_global<structdistype>(*(structele), globdim,
                       struct_xsi.data(), mydispnp, structsurf_gp_glob_coord.data());
 
                   // distance between fluid node and given structure gp
@@ -1490,10 +1490,10 @@ namespace Immersed
           // get local coordinates of closest structural surface point in fluid element parameter
           // space
           if (isALE)
-            Mortar::UTILS::GlobalToCurrentLocal<fluiddistype>(
+            Mortar::UTILS::global_to_current_local<fluiddistype>(
                 fluidele, fluideledisp.data(), xvec.data(), &fluid_xi(0), converged, residual);
           else
-            Mortar::UTILS::GlobalToLocal<fluiddistype>(
+            Mortar::UTILS::global_to_local<fluiddistype>(
                 fluidele, xvec.data(), &fluid_xi(0), converged);
 
           if (converged == false)

@@ -158,7 +158,7 @@ void Adapter::XFluidFSI::set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const i
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
 
   meshmap_->setup(*xfluid_->discretisation_xfem()->initial_dof_row_map(), mm,
-      Core::LinAlg::SplitMap(*xfluid_->discretisation_xfem()->initial_dof_row_map(), *mm));
+      Core::LinAlg::split_map(*xfluid_->discretisation_xfem()->initial_dof_row_map(), *mm));
 }
 
 /*----------------------------------------------------------------------*/

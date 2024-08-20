@@ -55,7 +55,7 @@ namespace Cut
     };
 
     /// translate PointPosition enumerator to string
-    static inline std::string point_position2_string(const enum PointPosition& pos)
+    static inline std::string point_position_to_string(const enum PointPosition& pos)
     {
       switch (pos)
       {
@@ -209,7 +209,7 @@ namespace Cut
     {
       f << std::setprecision(25) << x_[0] << " " << std::setprecision(25) << x_[1] << " "
         << std::setprecision(25) << x_[2] << " # " << pid_ << " " << nid;
-      DumpDoubles(f, x(), 3);
+      dump_doubles(f, x(), 3);
       f << "\n";
     }
 
@@ -515,7 +515,7 @@ namespace Cut
   Teuchos::RCP<Cut::Point> create_point(
       unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
-  inline int EntityId(const Point& p) { return p.pid(); }
+  inline int entity_id(const Point& p) { return p.pid(); }
 
   /// id based comparison for sorting and searching
   template <class T>
@@ -524,11 +524,11 @@ namespace Cut
    public:
     bool operator()(const T& p1, const T& p2) const { return EntityId(p1) < EntityId(p2); }
 
-    bool operator()(const T* p1, const T* p2) const { return EntityId(*p1) < EntityId(*p2); }
+    bool operator()(const T* p1, const T* p2) const { return entity_id(*p1) < entity_id(*p2); }
 
     bool operator()(const Teuchos::RCP<T> p1, const Teuchos::RCP<T> p2) const
     {
-      return EntityId(*p1) < EntityId(*p2);
+      return entity_id(*p1) < entity_id(*p2);
     }
   };
 
@@ -629,12 +629,12 @@ namespace Cut
    *  A point knows which cut_elements it is associated to.
    *
    *  \author hiermeier \date 11/16 */
-  void FindCommonElements(const std::vector<Point*>& element, plain_element_set& elements);
+  void find_common_elements(const std::vector<Point*>& element, plain_element_set& elements);
 
   /// Find if the points in side (which is actually a tet...) share a common side,
   ///   (i.e. do all points lie on the same surface?)
   /// A point knows which cut_sides it is associated to.
-  inline void FindCommonSides(const std::vector<Point*>& side, plain_side_set& sides)
+  inline void find_common_sides(const std::vector<Point*>& side, plain_side_set& sides)
   {
     std::vector<Point*>::const_iterator is = side.begin();
     // Get the sides this point cuts
@@ -651,14 +651,14 @@ namespace Cut
     }
   }
 
-  inline void FindCommonSides(Point* p1, Point* p2, Point* p3, plain_side_set& sides)
+  inline void find_common_sides(Point* p1, Point* p2, Point* p3, plain_side_set& sides)
   {
     sides = p1->cut_sides();
     p2->intersection(sides);
     p3->intersection(sides);
   }
 
-  inline void FindCommonSides(Point* p1, Point* p2, Point* p3, Point* p4, plain_side_set& sides)
+  inline void find_common_sides(Point* p1, Point* p2, Point* p3, Point* p4, plain_side_set& sides)
   {
     sides = p1->cut_sides();
     p2->intersection(sides);
@@ -668,7 +668,7 @@ namespace Cut
 
   /// Find distance between points
   template <unsigned int prob_dim>
-  double DistanceBetweenPoints(const Core::LinAlg::Matrix<prob_dim, 1>& coord_a,
+  double distance_between_points(const Core::LinAlg::Matrix<prob_dim, 1>& coord_a,
       const Core::LinAlg::Matrix<prob_dim, 1>& coord_b)
   {
     Core::LinAlg::Matrix<prob_dim, 1> diff;
@@ -677,12 +677,12 @@ namespace Cut
   }
 
   /// Find distance between points
-  double DistanceBetweenPoints(Point* p1, Point* p2);
+  double distance_between_points(Point* p1, Point* p2);
 
   /// Find distance between points
-  double DistanceBetweenPoints(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b);
+  double distance_between_points(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b);
 
-  bool IsCutPositionUnchanged(Point::PointPosition position, Point::PointPosition pos);
+  bool is_cut_position_unchanged(Point::PointPosition position, Point::PointPosition pos);
 
 }  // namespace Cut
 

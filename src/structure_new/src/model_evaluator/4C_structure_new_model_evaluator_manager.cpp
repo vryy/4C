@@ -674,7 +674,7 @@ Solid::ModelEvaluator::Generic& Solid::ModelEvaluatorManager::evaluator(
   Solid::ModelEvaluatorManager::Map::const_iterator me_iter = me_map_ptr_->find(mt);
   if (me_iter == me_map_ptr_->end())
     FOUR_C_THROW("There is no model evaluator for the model type %s",
-        Inpar::Solid::ModelTypeString(mt).c_str());
+        Inpar::Solid::model_type_string(mt).c_str());
 
   return *(me_iter->second);
 }
@@ -689,7 +689,7 @@ const Solid::ModelEvaluator::Generic& Solid::ModelEvaluatorManager::evaluator(
   Solid::ModelEvaluatorManager::Map::const_iterator me_iter = me_map_ptr_->find(mt);
   if (me_iter == me_map_ptr_->end())
     FOUR_C_THROW("There is no model evaluator for the model type %s",
-        Inpar::Solid::ModelTypeString(mt).c_str());
+        Inpar::Solid::model_type_string(mt).c_str());
 
   return *(me_iter->second);
 }

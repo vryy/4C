@@ -45,7 +45,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
       Teuchos::RCP<std::vector<double>> myscalar =
           Teuchos::rcp(new std::vector<double>(la[1].lm_.size(), 0.0));
 
-      Core::FE::ExtractMyValues(*scalarnp, *myscalar, la[1].lm_);
+      Core::FE::extract_my_values(*scalarnp, *myscalar, la[1].lm_);
 
       // element vector for k-th scalar
       std::vector<Core::LinAlg::Matrix<Membrane<distype>::numnod_, 1>> elescalar(numscal);
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
         double eta_gp = (Membrane<distype>::intpoints_).qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
-        Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, shape());
+        Core::FE::shape_function_2d(shapefcts, xi_gp, eta_gp, shape());
 
         // scalar at current gp
         std::vector<double> scalar_curr_gp(numscal, 0.0);

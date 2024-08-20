@@ -59,10 +59,10 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // get the parameters for the convergence_check
   itmax_ = tsidyn.get<int>("ITEMAX");          // default: =1
   ittol_ = tsidynpart.get<double>("CONVTOL");  // default: =1e-6
-  normtypeinc_ = Core::UTILS::IntegralValue<Inpar::TSI::ConvNorm>(tsidyn, "NORM_INC");
+  normtypeinc_ = Core::UTILS::integral_value<Inpar::TSI::ConvNorm>(tsidyn, "NORM_INC");
 
   // decide which coupling scheme is applied (e.g. one-way or full coupling)
-  coupling_ = Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+  coupling_ = Core::UTILS::integral_value<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // coupling variable
   displacementcoupling_ = tsidynpart.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -74,7 +74,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // if structure field is quasi-static --> calc_velocity
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
-  quasistatic_ = (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") ==
+  quasistatic_ = (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") ==
                   Inpar::Solid::dyna_statics);
 
   // initialise internal variables with values
@@ -116,7 +116,7 @@ void TSI::Partitioned::read_restart(int step)
 
   // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
-  TSI::UTILS::SetMaterialPointersMatchingGrid(
+  TSI::UTILS::set_material_pointers_matching_grid(
       structure_field()->discretization(), thermo_field()->discretization());
 
   // structural and thermal contact
@@ -448,7 +448,7 @@ void TSI::Partitioned::outer_iteration_loop()
 
   // decide if one-way coupling or full coupling
   Inpar::TSI::SolutionSchemeOverFields coupling =
-      Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+      Core::UTILS::integral_value<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // Pure iterative staggered algorithms
   // iterative staggered TSI withOUT Aitken relaxation
@@ -462,7 +462,7 @@ void TSI::Partitioned::outer_iteration_loop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
+          Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
       if (step() == 1)
       {
         dispnp->Update(1.0, *(structure_field()->dispn()), 0.0);
@@ -632,7 +632,7 @@ void TSI::Partitioned::outer_iteration_loop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
+          Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
       if (step() == 1)
       {
         dispnp->Update(1.0, *(structure_field()->dispn()), 0.0);
@@ -758,8 +758,8 @@ void TSI::Partitioned::outer_iteration_loop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = Core::LinAlg::CreateVector(*(thermo_field()->dof_row_map(0)), true);
-            delhist_ = Core::LinAlg::CreateVector(*(thermo_field()->dof_row_map(0)), true);
+            del_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
+            delhist_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }
@@ -985,8 +985,8 @@ void TSI::Partitioned::outer_iteration_loop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = Core::LinAlg::CreateVector(*(thermo_field()->dof_row_map(0)), true);
-            delhist_ = Core::LinAlg::CreateVector(*(thermo_field()->dof_row_map(0)), true);
+            del_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
+            delhist_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }

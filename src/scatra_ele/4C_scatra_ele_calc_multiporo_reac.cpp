@@ -52,7 +52,7 @@ Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>*
 Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcMultiPoroReac<distype>>(
@@ -389,7 +389,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, my::edispnp_, lmdisp);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, my::edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     my::update_node_coordinates();
@@ -411,15 +411,15 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   if (my::scatraparatimint_->is_gen_alpha() and not my::scatraparatimint_->is_incremental())
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
     if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
   if (my::scatrapara_->has_external_force())
@@ -437,7 +437,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
             la[ndsvel].lm_[inode * number_dof_per_node + idim];
     }
 
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<my::nsd_, my::nen_>>(
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<my::nsd_, my::nen_>>(
         *force_velocity, my::eforcevelocity_, location_vector);
   }
 
@@ -510,7 +510,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
       FOUR_C_THROW("Cannot get state vector %s", statename.str().c_str());
 
     // extract local values of convective velocity field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(
         *convel, efluxnp_[curphase], la[ndsvel].lm_);
   }
 

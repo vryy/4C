@@ -168,7 +168,7 @@ void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
     default:
     {
       FOUR_C_THROW("Unsupported matrix type! Type = %s",
-          NOX::Nln::LinSystem::OperatorType2String(jacType_).c_str());
+          NOX::Nln::LinSystem::operator_type_to_string(jacType_).c_str());
 
       exit(EXIT_FAILURE);
     }
@@ -269,7 +269,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::insert_into_global_lhs(
 {
   if (p_lhs_.is_null() or p_lhs_.get() == &glhs) return;
 
-  Core::LinAlg::AssembleMyVector(0.0, glhs, 1.0, *p_lhs_);
+  Core::LinAlg::assemble_my_vector(0.0, glhs, 1.0, *p_lhs_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -386,8 +386,8 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> active_sparse_mat =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(p_jac_, true);
 
-      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_sparse_mat->range_map());
-      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_sparse_mat->domain_map());
+      p_rhs_ = Core::LinAlg::extract_my_vector(rhs, active_sparse_mat->range_map());
+      p_lhs_ = Core::LinAlg::extract_my_vector(lhs, active_sparse_mat->domain_map());
 
       break;
     }
@@ -399,8 +399,8 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> active_block_mat =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(p_jac_, true);
 
-      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_block_mat->full_range_map());
-      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_block_mat->full_domain_map());
+      p_rhs_ = Core::LinAlg::extract_my_vector(rhs, active_block_mat->full_range_map());
+      p_lhs_ = Core::LinAlg::extract_my_vector(lhs, active_block_mat->full_domain_map());
 
       break;
     }
@@ -416,10 +416,10 @@ void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(
     FOUR_C_THROW("The given matrix seems to be no diagonal matrix!");
 
   Epetra_Vector lhs_block(mat.domain_map(), true);
-  Core::LinAlg::ExtractMyVector(lhs, lhs_block);
+  Core::LinAlg::extract_my_vector(lhs, lhs_block);
 
   Epetra_Vector rhs_block(mat.range_map(), true);
-  Core::LinAlg::ExtractMyVector(rhs, rhs_block);
+  Core::LinAlg::extract_my_vector(rhs, rhs_block);
 
   Epetra_Vector diag_mat(mat.range_map(), true);
   int err = mat.extract_diagonal_copy(diag_mat);
@@ -428,7 +428,7 @@ void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(
   err = lhs_block.ReciprocalMultiply(1.0, diag_mat, rhs_block, 0.0);
   if (err) FOUR_C_THROW("ReciprocalMultiply failed! (err=%d)", err);
 
-  Core::LinAlg::AssembleMyVector(0.0, lhs, 1.0, lhs_block);
+  Core::LinAlg::assemble_my_vector(0.0, lhs, 1.0, lhs_block);
 }
 
 /*----------------------------------------------------------------------*

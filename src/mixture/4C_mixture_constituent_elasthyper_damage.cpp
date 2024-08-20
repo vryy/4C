@@ -118,7 +118,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::evaluate_elastic_part(
   iFin.multiply_nn(iFextin, prestretch_tensor(gp));
 
   // Evaluate 3D elastic part
-  Mat::ElastHyperEvaluateElasticPart(
+  Mat::elast_hyper_evaluate_elastic_part(
       F, iFin, S_stress, cmat, summands(), summand_properties(), gp, eleGID);
 }
 FOUR_C_NAMESPACE_CLOSE

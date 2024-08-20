@@ -408,7 +408,7 @@ void VtkWriterBase::write_field_data_array(
 
   // Set the header for the current field data array.
   currentout_ << "      <DataArray type=\"";
-  currentout_ << ScalarTypeToVtkType<T>();
+  currentout_ << scalar_type_to_vtk_type<T>();
   currentout_ << "\" Name=\"";
   currentout_ << name;
   currentout_ << "\" NumberOfTuples=\"1\"";
@@ -433,12 +433,12 @@ void VtkWriterBase::write_data_array(const Core::IO::visualization_vector_type_v
   if (std::holds_alternative<std::vector<double>>(data))
   {
     write_data_array_this_processor(std::get<std::vector<double>>(data), num_components, name);
-    vtk_type_name = ScalarTypeToVtkType<double>();
+    vtk_type_name = scalar_type_to_vtk_type<double>();
   }
   else if (std::holds_alternative<std::vector<int>>(data))
   {
     write_data_array_this_processor(std::get<std::vector<int>>(data), num_components, name);
-    vtk_type_name = ScalarTypeToVtkType<int>();
+    vtk_type_name = scalar_type_to_vtk_type<int>();
   }
   else
     FOUR_C_THROW("Got unexpected vector type");
@@ -490,7 +490,7 @@ void VtkWriterBase::write_data_array_this_processor(
   throw_error_if_invalid_file_stream(filestream);
 
 
-  filestream << "        <DataArray type=\"" << ScalarTypeToVtkType<T>() << "\" Name=\"" << name
+  filestream << "        <DataArray type=\"" << scalar_type_to_vtk_type<T>() << "\" Name=\"" << name
              << "\"";
 
   if (num_components > 1) filestream << " NumberOfComponents=\"" << num_components << "\"";
@@ -499,7 +499,7 @@ void VtkWriterBase::write_data_array_this_processor(
   {
     filestream << " format=\"binary\">\n";
 
-    LibB64::writeCompressedBlock(data, filestream);
+    LibB64::write_compressed_block(data, filestream);
   }
   else
   {

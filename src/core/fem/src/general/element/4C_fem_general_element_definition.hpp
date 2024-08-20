@@ -60,7 +60,7 @@ namespace Core::Elements
 }  // namespace Core::Elements
 
 
-void PrintElementDatHeader();
+void print_element_dat_header();
 
 
 FOUR_C_NAMESPACE_CLOSE

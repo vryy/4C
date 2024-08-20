@@ -48,13 +48,13 @@ namespace Core::CLN
    public:
     ClnWrapper(const cln::cl_F& a) : value_(a) {}
     /// Default constructor
-    ClnWrapper() : value_(CachedConvert(0.0, precision_)) {}
+    ClnWrapper() : value_(cached_convert(0.0, precision_)) {}
     /// initialization from the string.
     /// E.g 0.271828182845904523536028747135266249775724709369996e+1_40
     /// to construct 'e' with precision fo 40 decimal points
     ClnWrapper(const char* istring) : value_(istring) {}
     /// Initialization from the constant double
-    ClnWrapper(double a) : value_(CachedConvert(a, precision_)){};
+    ClnWrapper(double a) : value_(cached_convert(a, precision_)){};
     ClnWrapper(double& a)
     {
       FOUR_C_THROW("Constructor for not compile time double to cln::cl_F is not allowed");
@@ -83,27 +83,27 @@ namespace Core::CLN
     }
     inline ClnWrapper& operator=(double other)
     {
-      value_ = CachedConvert(other, precision_);
+      value_ = cached_convert(other, precision_);
       return *this;
     }
     inline ClnWrapper& operator+=(double other)
     {
-      value_ += CachedConvert(other, value_);
+      value_ += cached_convert(other, value_);
       return *this;
     }
     inline ClnWrapper& operator-=(double other)
     {
-      value_ -= CachedConvert(other, value_);
+      value_ -= cached_convert(other, value_);
       return *this;
     }
     inline ClnWrapper& operator/=(double other)
     {
-      value_ /= CachedConvert(other, value_);
+      value_ /= cached_convert(other, value_);
       return *this;
     }
     inline ClnWrapper& operator*=(double other)
     {
-      value_ *= CachedConvert(other, value_);
+      value_ *= cached_convert(other, value_);
       return *this;
     }
     inline ClnWrapper& operator=(double& other)
@@ -146,7 +146,7 @@ namespace Core::CLN
     static unsigned int get_precision() { return precision_; }
 
     template <class ReferenceVal>
-    static cln::cl_F& CachedConvert(double a, ReferenceVal ref)
+    static cln::cl_F& cached_convert(double a, ReferenceVal ref)
     {
       // If this is true, floating point underflow returns zero instead of throwing an exception.
       cln::cl_inhibit_floating_point_underflow = true;
@@ -227,20 +227,20 @@ namespace Core::CLN
   inline _ret_type operator _operator(const ClnWrapper& first, double& second)           \
   {                                                                                      \
     FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");     \
-    return first.Value() _operator ClnWrapper::CachedConvert(second, first.Value());     \
+    return first.Value() _operator ClnWrapper::cached_convert(second, first.Value());    \
   }                                                                                      \
   inline _ret_type operator _operator(const ClnWrapper& first, double second)            \
   {                                                                                      \
-    return first.Value() _operator ClnWrapper::CachedConvert(second, first.Value());     \
+    return first.Value() _operator ClnWrapper::cached_convert(second, first.Value());    \
   }                                                                                      \
   inline _ret_type operator _operator(double first, const ClnWrapper& second)            \
   {                                                                                      \
-    return ClnWrapper::CachedConvert(first, second.Value()) _operator second.Value();    \
+    return ClnWrapper::cached_convert(first, second.Value()) _operator second.Value();   \
   }                                                                                      \
   inline _ret_type operator _operator(double& first, const ClnWrapper& second)           \
   {                                                                                      \
     FOUR_C_THROW("Unexpected convertion between not-constant double and cln::cl_F");     \
-    return ClnWrapper::CachedConvert(first, second.Value()) _operator second.Value();    \
+    return ClnWrapper::cached_convert(first, second.Value()) _operator second.Value();   \
   }
 
   // Generating all the necessary operators

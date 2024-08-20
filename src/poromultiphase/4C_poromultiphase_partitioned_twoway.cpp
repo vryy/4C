@@ -58,22 +58,22 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::init(
       fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
       ndsporofluid_scatra, nearbyelepairs);
 
-  artery_coupling_active_ = Core::UTILS::IntegralValue<int>(fluidparams, "ARTERY_COUPLING");
+  artery_coupling_active_ = Core::UTILS::integral_value<int>(fluidparams, "ARTERY_COUPLING");
 
   // initialize increment vectors
-  phiincnp_ = Core::LinAlg::CreateVector(*fluid_field()->dof_row_map(0), true);
+  phiincnp_ = Core::LinAlg::create_vector(*fluid_field()->dof_row_map(0), true);
   if (artery_coupling_active_)
-    arterypressincnp_ = Core::LinAlg::CreateVector(*fluid_field()->artery_dof_row_map(), true);
-  dispincnp_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
+    arterypressincnp_ = Core::LinAlg::create_vector(*fluid_field()->artery_dof_row_map(), true);
+  dispincnp_ = Core::LinAlg::create_vector(*structure_field()->dof_row_map(0), true);
 
   // initialize fluid vectors
-  fluidphinp_ = Core::LinAlg::CreateVector(*fluid_field()->discretization()->dof_row_map(), true);
+  fluidphinp_ = Core::LinAlg::create_vector(*fluid_field()->discretization()->dof_row_map(), true);
   fluidphioldnp_ =
-      Core::LinAlg::CreateVector(*fluid_field()->discretization()->dof_row_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->discretization()->dof_row_map(), true);
   fluidphiincnp_ =
-      Core::LinAlg::CreateVector(*fluid_field()->discretization()->dof_row_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->discretization()->dof_row_map(), true);
   fluidphiincnpold_ =
-      Core::LinAlg::CreateVector(*fluid_field()->discretization()->dof_row_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->discretization()->dof_row_map(), true);
 
   // Get the parameters for the convergence_check
   itmax_ = algoparams.get<int>("ITEMAX");
@@ -87,7 +87,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::init(
   omegamin_ = algoparams.sublist("PARTITIONED").get<double>("MINOMEGA");
   omegamax_ = algoparams.sublist("PARTITIONED").get<double>("MAXOMEGA");
 
-  relaxationmethod_ = Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::RelaxationMethods>(
+  relaxationmethod_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::RelaxationMethods>(
       algoparams.sublist("PARTITIONED"), "RELAXATION");
 }
 
@@ -383,7 +383,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::aitken_relaxation(
 {
   // fluidphiincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> fluidphiincnpdiff =
-      Core::LinAlg::CreateVector(*fluid_field()->discretization()->dof_row_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->discretization()->dof_row_map(), true);
   fluidphiincnpdiff->Update(1.0, *fluidphiincnp_, (-1.0), *fluidphiincnpold_, 0.0);
 
   double fluidphiincnpdiffnorm = 0.0;

@@ -21,19 +21,19 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   std::map<PARTICLEENGINE::StateEnum, std::map<PARTICLEENGINE::TypeEnum, int>>
-  ExtractParticleTypesToFunctionIds(const Teuchos::ParameterList& params);
+  extract_particle_types_to_function_ids(const Teuchos::ParameterList& params);
 
-  std::vector<std::vector<double>>& GetRigidBodyState(PARTICLEENGINE::StateEnum particleState,
+  std::vector<std::vector<double>>& get_rigid_body_state(PARTICLEENGINE::StateEnum particleState,
       ParticleRigidBody::RigidBodyDataState& rigidbodydatastates);
 }  // namespace
 
-void ParticleRigidBody::SetInitialFields(const Teuchos::ParameterList& params,
+void ParticleRigidBody::set_initial_fields(const Teuchos::ParameterList& params,
     const std::vector<int>& ownedrigidbodies,
     ParticleRigidBody::RigidBodyDataState& rigidbodydatastates)
 {
   // relating particle types to function ids
   std::map<PARTICLEENGINE::StateEnum, std::map<PARTICLEENGINE::TypeEnum, int>>
-      statetotypetofunctidmap = ExtractParticleTypesToFunctionIds(params);
+      statetotypetofunctidmap = extract_particle_types_to_function_ids(params);
 
   for (auto& stateIt : statetotypetofunctidmap)
   {
@@ -43,7 +43,8 @@ void ParticleRigidBody::SetInitialFields(const Teuchos::ParameterList& params,
     PARTICLEENGINE::StateEnum particleState = stateIt.first;
 
     // get pointer to rigid body state
-    std::vector<std::vector<double>>& state = GetRigidBodyState(particleState, rigidbodydatastates);
+    std::vector<std::vector<double>>& state =
+        get_rigid_body_state(particleState, rigidbodydatastates);
 
     // get id of function
     const int functid = stateIt.second[PARTICLEENGINE::RigidPhase];
@@ -61,7 +62,7 @@ void ParticleRigidBody::SetInitialFields(const Teuchos::ParameterList& params,
       FOUR_C_ASSERT(
           "dimensions of function defining initial field and of state of rigid bodies '%s' not "
           "matching!",
-          PARTICLEENGINE::EnumToStateName(particleState).c_str());
+          PARTICLEENGINE::enum_to_state_name(particleState).c_str());
     }
 
     // iterate over owned rigid bodies
@@ -82,7 +83,7 @@ void ParticleRigidBody::SetInitialFields(const Teuchos::ParameterList& params,
 namespace
 {
   std::map<PARTICLEENGINE::StateEnum, std::map<PARTICLEENGINE::TypeEnum, int>>
-  ExtractParticleTypesToFunctionIds(const Teuchos::ParameterList& params)
+  extract_particle_types_to_function_ids(const Teuchos::ParameterList& params)
   {
     std::map<PARTICLEENGINE::StateEnum, std::map<PARTICLEENGINE::TypeEnum, int>>
         statetotypetofunctidmap;
@@ -106,7 +107,7 @@ namespace
           statetotypetofunctidmap[stateIt.second];
 
       // read parameters relating particle types to values
-      PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+      PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
           params_conditions, stateIt.first, currentstatetypetofunctidmap);
     }
 
@@ -116,14 +117,14 @@ namespace
     {
       if (iter.first == PARTICLEENGINE::Temperature and not iter.second.empty())
         FOUR_C_THROW("initial temperature cannot be specified for rigid bodies '%s' !",
-            PARTICLEENGINE::EnumToStateName(iter.first).c_str());
+            PARTICLEENGINE::enum_to_state_name(iter.first).c_str());
     }
 #endif
 
     return statetotypetofunctidmap;
   }
 
-  std::vector<std::vector<double>>& GetRigidBodyState(PARTICLEENGINE::StateEnum particleState,
+  std::vector<std::vector<double>>& get_rigid_body_state(PARTICLEENGINE::StateEnum particleState,
       ParticleRigidBody::RigidBodyDataState& rigidbodydatastates)
   {
     switch (particleState)
@@ -139,7 +140,7 @@ namespace
 
       default:
         FOUR_C_THROW("unsupported state vector '%s' for initialization of rigid body!",
-            PARTICLEENGINE::EnumToStateName(particleState).c_str());
+            PARTICLEENGINE::enum_to_state_name(particleState).c_str());
     }
   }
 }  // namespace

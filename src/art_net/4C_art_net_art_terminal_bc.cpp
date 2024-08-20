@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Core::FE::Discretization> actdis,
+void Arteries::UTILS::solve_prescribed_terminal_bc(Teuchos::RCP<Core::FE::Discretization> actdis,
     const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC name std::string (e.g: BC   = "flow")
@@ -537,7 +537,7 @@ void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Core::FE::Discretiz
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Core::FE::Discretization> actdis,
+void Arteries::UTILS::solve_reflective_terminal(Teuchos::RCP<Core::FE::Discretization> actdis,
     const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // Define the reflection cooficient
@@ -614,7 +614,7 @@ void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Core::FE::Discretizat
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Core::FE::Discretization> actdis,
+void Arteries::UTILS::solve_expl_windkessel_bc(Teuchos::RCP<Core::FE::Discretization> actdis,
     const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")

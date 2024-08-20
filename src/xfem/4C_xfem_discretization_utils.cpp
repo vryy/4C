@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretization> dis,
+void XFEM::UTILS::print_discretization_to_stream(Teuchos::RCP<Core::FE::Discretization> dis,
     const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol, bool faces,
     bool facecol, std::ostream& s, std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos)
 {
@@ -39,9 +39,9 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretizat
       {
         const Core::Elements::Element* actele = dis->l_col_element(i);
         if (curr_pos == nullptr)
-          Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->id()), actele, s);
+          Core::IO::Gmsh::element_at_initial_position_to_stream(double(actele->id()), actele, s);
         else
-          Core::IO::Gmsh::elementAtCurrentPositionToStream(
+          Core::IO::Gmsh::element_at_current_position_to_stream(
               double(actele->id()), actele, *curr_pos, s);
       };
     }
@@ -52,9 +52,9 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretizat
       {
         const Core::Elements::Element* actele = dis->l_row_element(i);
         if (curr_pos == nullptr)
-          Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->id()), actele, s);
+          Core::IO::Gmsh::element_at_initial_position_to_stream(double(actele->id()), actele, s);
         else
-          Core::IO::Gmsh::elementAtCurrentPositionToStream(
+          Core::IO::Gmsh::element_at_current_position_to_stream(
               double(actele->id()), actele, *curr_pos, s);
       };
     }
@@ -86,7 +86,8 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretizat
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        Core::IO::Gmsh::cellWithScalarToStream(Core::FE::CellType::point1, actnode->id(), pos, s);
+        Core::IO::Gmsh::cell_with_scalar_to_stream(
+            Core::FE::CellType::point1, actnode->id(), pos, s);
       }
     }
     else
@@ -111,7 +112,8 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretizat
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        Core::IO::Gmsh::cellWithScalarToStream(Core::FE::CellType::point1, actnode->id(), pos, s);
+        Core::IO::Gmsh::cell_with_scalar_to_stream(
+            Core::FE::CellType::point1, actnode->id(), pos, s);
       }
     }
     s << "};\n";
@@ -138,9 +140,9 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretizat
         {
           const Core::Elements::Element* actele = xdis->l_col_face(i);
           if (curr_pos == nullptr)
-            Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->id()), actele, s);
+            Core::IO::Gmsh::element_at_initial_position_to_stream(double(actele->id()), actele, s);
           else
-            Core::IO::Gmsh::elementAtCurrentPositionToStream(
+            Core::IO::Gmsh::element_at_current_position_to_stream(
                 double(actele->id()), actele, *curr_pos, s);
         };
       }
@@ -151,9 +153,9 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretizat
         {
           const Core::Elements::Element* actele = xdis->l_row_face(i);
           if (curr_pos == nullptr)
-            Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->id()), actele, s);
+            Core::IO::Gmsh::element_at_initial_position_to_stream(double(actele->id()), actele, s);
           else
-            Core::IO::Gmsh::elementAtCurrentPositionToStream(
+            Core::IO::Gmsh::element_at_current_position_to_stream(
                 double(actele->id()), actele, *curr_pos, s);
         };
       }
@@ -289,7 +291,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
   std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
 
   // find conditioned nodes (owned and ghosted) and elements
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *sourcedis, sourcenodes, sourcegnodes, sourceelements, conditions);
 
   split_discretization(
@@ -462,11 +464,12 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(
   if (!dis->filled()) dis->redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->element_row_map()));
-  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::BuildGraph(dis, elerowmap);
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(dis, elerowmap);
 
   Teuchos::ParameterList rebalanceParams;
   rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
-  std::tie(noderowmap, nodecolmap) = Core::Rebalance::RebalanceNodeMaps(nodegraph, rebalanceParams);
+  std::tie(noderowmap, nodecolmap) =
+      Core::Rebalance::rebalance_node_maps(nodegraph, rebalanceParams);
 
   auto const& [roweles, coleles] = dis->build_element_row_column(*noderowmap, *nodecolmap);
 
@@ -494,7 +497,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
   std::map<int, Teuchos::RCP<Core::Elements::Element>> src_cond_elements;
 
   // find conditioned nodes (owned and ghosted) and elements
-  Core::Conditions::FindConditionObjects(src_cond_elements, boundary_conds);
+  Core::Conditions::find_condition_objects(src_cond_elements, boundary_conds);
 
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator cit;
   std::map<int, Teuchos::RCP<Core::Elements::Element>> src_elements;

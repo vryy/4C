@@ -88,7 +88,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::unpack(const std::vector<cha
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // detJ_
   So3Ele::extract_from_pack(position, data, detJ_);

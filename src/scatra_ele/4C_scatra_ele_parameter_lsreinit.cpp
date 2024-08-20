@@ -29,7 +29,7 @@ Discret::ELEMENTS::ScaTraEleParameterLsReinit::instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const std::string& disname) {
         return std::unique_ptr<ScaTraEleParameterLsReinit>(new ScaTraEleParameterLsReinit(disname));
       });
@@ -71,14 +71,14 @@ void Discret::ELEMENTS::ScaTraEleParameterLsReinit::set_parameters(
 
   // reinitialization strategy
   reinittype_ =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::ReInitialAction>(reinitlist, "REINITIALIZATION");
+      Core::UTILS::integral_value<Inpar::ScaTra::ReInitialAction>(reinitlist, "REINITIALIZATION");
 
   // get signum function
-  signtype_ =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
+  signtype_ = Core::UTILS::integral_value<Inpar::ScaTra::SmoothedSignType>(
+      reinitlist, "SMOOTHED_SIGN_TYPE");
 
   // characteristic element length for signum function
-  charelelengthreinit_ = Core::UTILS::IntegralValue<Inpar::ScaTra::CharEleLengthReinit>(
+  charelelengthreinit_ = Core::UTILS::integral_value<Inpar::ScaTra::CharEleLengthReinit>(
       reinitlist, "CHARELELENGTHREINIT");
 
   // interface thickness for signum function
@@ -86,31 +86,31 @@ void Discret::ELEMENTS::ScaTraEleParameterLsReinit::set_parameters(
 
   // form of linearization for nonlinear terms
   linform_ =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
+      Core::UTILS::integral_value<Inpar::ScaTra::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
 
   // set form of velocity evaluation
   Inpar::ScaTra::VelReinit velreinit =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::VelReinit>(reinitlist, "VELREINIT");
+      Core::UTILS::integral_value<Inpar::ScaTra::VelReinit>(reinitlist, "VELREINIT");
   if (velreinit == Inpar::ScaTra::vel_reinit_node_based) useprojectedreinitvel_ = true;
 
   // set flag for artificial diffusion term
-  artdiff_ = Core::UTILS::IntegralValue<Inpar::ScaTra::ArtDiff>(reinitlist, "ARTDIFFREINIT");
+  artdiff_ = Core::UTILS::integral_value<Inpar::ScaTra::ArtDiff>(reinitlist, "ARTDIFFREINIT");
 
   // set penalty parameter for elliptic reinitialization
   alphapen_ = reinitlist.get<double>("PENALTY_PARA");
 
   // get diffusivity function
-  difffct_ = Core::UTILS::IntegralValue<Inpar::ScaTra::DiffFunc>(reinitlist, "DIFF_FUNC");
+  difffct_ = Core::UTILS::integral_value<Inpar::ScaTra::DiffFunc>(reinitlist, "DIFF_FUNC");
 
   // L2-projection
-  project_ = Core::UTILS::IntegralValue<bool>(reinitlist, "PROJECTION");
+  project_ = Core::UTILS::integral_value<bool>(reinitlist, "PROJECTION");
 
   // diffusion for L2-projection
   projectdiff_ = reinitlist.get<double>("PROJECTION_DIFF");
   if (projectdiff_ < 0.0) FOUR_C_THROW("Diffusivity has to be positive!");
 
   // lumping for L2-projection
-  lumping_ = Core::UTILS::IntegralValue<bool>(reinitlist, "LUMPING");
+  lumping_ = Core::UTILS::integral_value<bool>(reinitlist, "LUMPING");
 
   // check for illegal combination
   if (projectdiff_ > 0.0 and lumping_ == true) FOUR_C_THROW("Illegal combination!");

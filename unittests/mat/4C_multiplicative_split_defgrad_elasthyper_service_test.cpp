@@ -60,7 +60,7 @@ namespace
     CeM_target(1, 2) = CeM_target(2, 1) = 0.0564151401;
 
     Core::LinAlg::Matrix<3, 3> CeM(false);
-    Mat::EvaluateCe(FM_, iFinM_, CeM);
+    Mat::evaluate_ce(FM_, iFinM_, CeM);
 
     FOUR_C_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
   }
@@ -76,7 +76,7 @@ namespace
     iCinCiCinM_target(1, 2) = iCinCiCinM_target(2, 1) = 0.0631150197598975;
 
     Core::LinAlg::Matrix<3, 3> iCinCiCinM(false);
-    Mat::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
+    Mat::evaluatei_cin_ci_cin(CM_, iCinM_, iCinCiCinM);
 
     FOUR_C_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
   }
@@ -101,10 +101,10 @@ namespace
 
     // Read summand properties
     Mat::SummandProperties properties;
-    Mat::ElastHyperProperties(potsum, properties);
+    Mat::elast_hyper_properties(potsum, properties);
 
     // Evaluate method to test
-    Mat::ElastHyperEvaluateElasticPart(FM_, iFinM_, S_stress, cmat, potsum, properties, 0, 0);
+    Mat::elast_hyper_evaluate_elastic_part(FM_, iFinM_, S_stress, cmat, potsum, properties, 0, 0);
 
     // Build matrices with the correct solution
     Core::LinAlg::Matrix<6, 1> S_stress_target;

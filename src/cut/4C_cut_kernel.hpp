@@ -41,9 +41,9 @@ FOUR_C_NAMESPACE_OPEN
 namespace Cut::Kernel
 {
   // functions to compare determinant ot zero, e.g when computing the condition_number
-  bool closeToZero(const double a);
+  bool close_to_zero(const double a);
 
-  bool closeToZero(const Core::CLN::ClnWrapper& a);
+  bool close_to_zero(const Core::CLN::ClnWrapper& a);
 
   // Class to collects statistics about runs on double and cln in the cut intersection
   class CutKernelStatistics
@@ -95,25 +95,25 @@ namespace Cut::Kernel
     bool on_side_;
   };
 
-  unsigned FindNextCornerPoint(const std::vector<Point*>& points, Core::LinAlg::Matrix<3, 1>& x1,
+  unsigned find_next_corner_point(const std::vector<Point*>& points, Core::LinAlg::Matrix<3, 1>& x1,
       Core::LinAlg::Matrix<3, 1>& x2, Core::LinAlg::Matrix<3, 1>& x3,
       Core::LinAlg::Matrix<3, 1>& b1, Core::LinAlg::Matrix<3, 1>& b2,
       Core::LinAlg::Matrix<3, 1>& b3, unsigned i);
 
   /// check if the given corner points can belong to a point1 "element"
-  bool IsValidPoint1(const std::vector<Point*>& corner_points);
+  bool is_valid_point1(const std::vector<Point*>& corner_points);
 
   /// check if the given corner points can belong to a line2 element
-  bool IsValidLine2(const std::vector<Point*>& corner_points);
+  bool is_valid_line2(const std::vector<Point*>& corner_points);
 
   /// check if the given corner points can belong to a tri3 element
-  inline bool IsValidTri3(const std::vector<Point*>& points) { return points.size() == 3; }
+  inline bool is_valid_tri3(const std::vector<Point*>& points) { return points.size() == 3; }
 
   /// check if the given corner points can belong to a quad4 element
-  bool IsValidQuad4(const std::vector<Point*>& points);
+  bool is_valid_quad4(const std::vector<Point*>& points);
 
   template <int points>
-  double FindL2Scaling(Core::LinAlg::Matrix<3, points>& xyze)
+  double find_l2_scaling(Core::LinAlg::Matrix<3, points>& xyze)
   {
     double scale = 0;
     Core::LinAlg::Matrix<3, 1> d;
@@ -130,7 +130,7 @@ namespace Cut::Kernel
 
   /// get all edges adjacent to given local coordinates
   template <Core::FE::CellType side_type, class T, class FloatType>
-  void GetEdgesAt(const T& xsi, std::vector<int>& edges_id, const FloatType& tol)
+  void get_edges_at(const T& xsi, std::vector<int>& edges_id, const FloatType& tol)
   {
     switch (side_type)
     {
@@ -186,7 +186,7 @@ namespace Cut::Kernel
 
   /// get all nodes adjacent to given local coordinates
   template <Core::FE::CellType side_type, class T, class FloatType>
-  void GetNodesAt(const T& xsi, std::vector<int>& nodes_id, const FloatType& tol)
+  void get_nodes_at(const T& xsi, std::vector<int>& nodes_id, const FloatType& tol)
   {
     switch (side_type)
     {
@@ -259,7 +259,7 @@ namespace Cut::Kernel
    *  \param xsi (in) : local parameter space coordinates
    *  \param tol (in) : tolerance for the check (default: \c tol=REFERENCETOL) */
   template <Core::FE::CellType element_type, class T>
-  bool AtEdge(const T& xsi, const double& tol)
+  bool at_edge(const T& xsi, const double& tol)
   {
     // sanity check
     if (xsi.Rows() < Core::FE::dim<element_type>)
@@ -297,20 +297,20 @@ namespace Cut::Kernel
       }
       default:
         FOUR_C_THROW("unsupported element type: %i | %s", element_type,
-            Core::FE::CellTypeToString(element_type).c_str());
+            Core::FE::cell_type_to_string(element_type).c_str());
         break;
     }
   }
   template <Core::FE::CellType element_type, class T>
-  bool AtEdge(const T& xsi)
+  bool at_edge(const T& xsi)
   {
-    return AtEdge<element_type>(xsi, REFERENCETOL);
+    return at_edge<element_type>(xsi, REFERENCETOL);
   }
 
 
   /// withinlimits with 3 manually specified (independent from each other) tolerances
   template <Core::FE::CellType element_type, class T, class FloatType, unsigned int dim>
-  bool WithinLimitsSplittedQuad(const T& xsi, const Core::LinAlg::Matrix<dim, 1, FloatType>& tol)
+  bool within_limits_splitted_quad(const T& xsi, const Core::LinAlg::Matrix<dim, 1, FloatType>& tol)
   {
     if (element_type == Core::FE::CellType::tri3)
     {
@@ -438,7 +438,7 @@ namespace Cut::Kernel
       }
       default:
         FOUR_C_THROW("unsupported element type: %i | %s", element_type,
-            Core::FE::CellTypeToString(element_type).c_str());
+            Core::FE::cell_type_to_string(element_type).c_str());
         break;
     }  // switch ( elementType )
     return false;
@@ -531,7 +531,7 @@ namespace Cut::Kernel
       }
       default:
         FOUR_C_THROW("unsupported element type: %i | %s", element_type,
-            Core::FE::CellTypeToString(element_type).c_str());
+            Core::FE::cell_type_to_string(element_type).c_str());
         break;
     }  // switch ( elementType )
     return false;
@@ -549,7 +549,7 @@ namespace Cut::Kernel
    *  \author hiermeier */
   template <unsigned prob_dim, Core::FE::CellType side_type,
       unsigned dim_side = Core::FE::dim<side_type>, class T>
-  bool WithinLimitsEmbeddedManifold(const T& xsi_aug, double tol, bool allow_dist, double tol2)
+  bool within_limits_embedded_manifold(const T& xsi_aug, double tol, bool allow_dist, double tol2)
   {
     if (prob_dim == 1) FOUR_C_THROW("probDim is not allowed to be equal 1!");
     if (xsi_aug.m() != prob_dim)
@@ -570,9 +570,9 @@ namespace Cut::Kernel
     return (check and within_limits<side_type>(xsi_aug, tol));
   }
   template <unsigned prob_dim, Core::FE::CellType side_type, class T>
-  bool WithinLimitsEmbeddedManifold(const T& xsi_aug, const bool& allow_dist, const double& tol2)
+  bool within_limits_embedded_manifold(const T& xsi_aug, const bool& allow_dist, const double& tol2)
   {
-    return Kernel::WithinLimitsEmbeddedManifold<prob_dim, side_type>(
+    return Kernel::within_limits_embedded_manifold<prob_dim, side_type>(
         xsi_aug, REFERENCETOL, allow_dist, tol2);
   }
 
@@ -581,10 +581,10 @@ namespace Cut::Kernel
    *
    *  \author Sudhakar
    *  \date 04/12 */
-  bool IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts = false);
+  bool is_on_line(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts = false);
 
   /*! \brief Check whether the polygon defined by the set of points is convex */
-  std::vector<int> CheckConvexity(const std::vector<Point*>& ptlist, Cut::FacetShape& geomType,
+  std::vector<int> check_convexity(const std::vector<Point*>& ptlist, Cut::FacetShape& geomType,
       bool InSplit = true, bool DeleteInlinePts = false);
 
   // std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist, bool
@@ -592,23 +592,23 @@ namespace Cut::Kernel
 
 
   /*! \brief Compute the equation of plane of this polygon using Newell's method */
-  std::vector<double> EqnPlaneOfPolygon(const std::vector<Point*>& ptlist);
+  std::vector<double> eqn_plane_of_polygon(const std::vector<Point*>& ptlist);
 
   /*! \brief Compute the equation of plane of this polygon using Newell's method */
-  std::vector<double> EqnPlaneOfPolygon(const std::vector<std::vector<double>>& vertices);
+  std::vector<double> eqn_plane_of_polygon(const std::vector<std::vector<double>>& vertices);
 
   /*! \brief Find the equation of plane that contains these non-collinear points
    *
    *  It must be noted while using this function to find equation of facets,
    *  none of these 3 points must be a reflex (concave) point */
-  std::vector<double> EqnPlane(Point*& pt1, Point*& pt2, Point*& pt3);
+  std::vector<double> eqn_plane(Point*& pt1, Point*& pt2, Point*& pt3);
 
   /*! \brief Check whether the point named \c check is inside the triangle
    *  formed by tri */
-  bool PtInsideTriangle(std::vector<Point*> tri, Point* check, bool DeleteInlinePts = false);
+  bool pt_inside_triangle(std::vector<Point*> tri, Point* check, bool DeleteInlinePts = false);
 
   /*! \brief Check whether the point \c check is inside the Quad */
-  bool PtInsideQuad(std::vector<Point*> quad, Point* check);
+  bool pt_inside_quad(std::vector<Point*> quad, Point* check);
 
   /*! \brief Return \TRUE if the points of the polygon are ordered clockwise
    *
@@ -617,7 +617,7 @@ namespace Cut::Kernel
    *
    *  \author sudhakar
    *  \date 05/12 */
-  bool IsClockwiseOrderedPolygon(std::vector<Point*> polyPoints, std::string& projPlane);
+  bool is_clockwise_ordered_polygon(std::vector<Point*> polyPoints, std::string& projPlane);
 
   /*! \brief Delete unnecessary in-line points.
    *
@@ -627,19 +627,19 @@ namespace Cut::Kernel
    *
    *  \author sudhakar
    *  \date 06/12 */
-  void DeleteInlinePts(std::vector<Point*>& poly);
+  void delete_inline_pts(std::vector<Point*>& poly);
 
   /*! \brief Returns true if at least 3 points are collinear
    *
    * \author wirtz
    * \date 05/13 */
-  bool HaveInlinePts(std::vector<Point*>& poly);
+  bool have_inline_pts(std::vector<Point*>& poly);
 
   /*! \brief Finds tree points of the polygon which are not collinear
    *
    *  \author wirtz
    *  \date 05/13 */
-  std::vector<Point*> Get3NoncollinearPts(std::vector<Point*>& polyPoints);
+  std::vector<Point*> get3_noncollinear_pts(std::vector<Point*>& polyPoints);
 
   /*! \brief Find appropriate projection plane
    *
@@ -649,7 +649,7 @@ namespace Cut::Kernel
    *
    *  \author sudhakar
    *  \date 06/12 */
-  void FindProjectionPlane(std::string& projPlane, const std::vector<double>& eqn);
+  void find_projection_plane(std::string& projPlane, const std::vector<double>& eqn);
 
   /*! \brief Split a QUAD4 element into two TRI3 elements
    *
@@ -666,7 +666,7 @@ namespace Cut::Kernel
    *
    *  \author hiermeier \date 11/16 */
   template <class T1, class T2>
-  void SplitQuad4IntoTri3(const T1& xyze_quad4, const unsigned& tri3_id, T2& xyze_tri3)
+  void split_quad4_into_tri3(const T1& xyze_quad4, const unsigned& tri3_id, T2& xyze_tri3)
   {
     if (tri3_id > 1)
       FOUR_C_THROW(
@@ -684,12 +684,12 @@ namespace Cut::Kernel
    *
    *  \author sudhakar
    *  \date 11/14 */
-  double getAreaTri(
+  double get_area_tri(
       const std::vector<Point*>& poly, Core::LinAlg::Matrix<3, 1>* normalvec = nullptr);
-  double getAreaTri(const double* p0_ptr, const double* p1_ptr, const double* p2_ptr,
+  double get_area_tri(const double* p0_ptr, const double* p1_ptr, const double* p2_ptr,
       Core::LinAlg::Matrix<3, 1>* normalvec = nullptr);
   template <class T>
-  double getAreaTri(const T& xyze, Core::LinAlg::Matrix<3, 1>* normalvec = nullptr)
+  double get_area_tri(const T& xyze, Core::LinAlg::Matrix<3, 1>* normalvec = nullptr)
   {
     if (xyze.m() != 3) FOUR_C_THROW("Currently unsupported element dimension!");
     if (xyze.n() != 3) FOUR_C_THROW("Wrong node number!");
@@ -705,7 +705,7 @@ namespace Cut::Kernel
    *
    *  \author sudhakar
    *  \date 11/14 */
-  double getAreaConvexQuad(std::vector<Point*>& poly);
+  double get_area_convex_quad(std::vector<Point*>& poly);
 
   enum NewtonStatus
   {
@@ -727,7 +727,7 @@ namespace Cut::Kernel
    *
    *  \author hiermeier \date 02/17 */
   template <class T1, class T2, class T3>
-  double AdaptiveCombinedNewtonTolerance(
+  double adaptive_combined_newton_tolerance(
 
       const T1& xyze, const T2& px, const T3& initial_rhs)
   {
@@ -744,18 +744,19 @@ namespace Cut::Kernel
   }
 
   template <class T1, class T2, class T3>
-  double AdaptiveCombinedNewtonTolerance(
+  double adaptive_combined_newton_tolerance(
 
       const T1& xyze, const T2& px, const T3& initial_rhs, double)
   {
-    return AdaptiveCombinedNewtonTolerance(xyze, px, initial_rhs);  // forwarding to normal function
+    return adaptive_combined_newton_tolerance(
+        xyze, px, initial_rhs);  // forwarding to normal function
   }
 
 #ifdef CUT_CLN_CALC
 
   /// computes adaptive precision for AdaptivePrecision strategies
   template <class T1, class T2, class T3>
-  Core::CLN::ClnWrapper AdaptiveCombinedNewtonTolerance(
+  Core::CLN::ClnWrapper adaptive_combined_newton_tolerance(
       const T1& xyze, const T2& px, const T3& initial_rhs, Core::CLN::ClnWrapper&)
   {
     /* --- Build the absolute tolerance */
@@ -798,7 +799,7 @@ namespace Cut::Kernel
 #endif
 
   /// Convert Newton Status enumerator to string
-  static inline std::string NewtonStatus2String(const enum NewtonStatus& status)
+  static inline std::string newton_status_to_string(const enum NewtonStatus& status)
   {
     switch (status)
     {
@@ -929,7 +930,7 @@ namespace Cut::Kernel
     {
       enum NewtonStatus status = Strategy::test_converged(iter);
       std::cout << "TestConverged( iter = " << std::setw(2) << iter
-                << " ) = " << NewtonStatus2String(status) << "\n"
+                << " ) = " << newton_status_to_string(status) << "\n"
                 << std::flush;
       return status;
     }
@@ -1053,7 +1054,7 @@ namespace Cut::Kernel
       if (debug)
       {
         std::cout << "\n=== ComputePosition ===\n";
-        std::cout << "Element    = " << Core::FE::CellTypeToString(element_type) << "\n";
+        std::cout << "Element    = " << Core::FE::cell_type_to_string(element_type) << "\n";
         std::cout << "xyze_      = " << *xyze_;
         std::cout << "px_        = " << *px_;
         std::cout << "\n";
@@ -1069,7 +1070,7 @@ namespace Cut::Kernel
       xsi_ = 0.0;
       b_ = 0.0;
       position_rhs(*xyze_, *px_, b_);
-      tol_ = AdaptiveCombinedNewtonTolerance(*xyze_, *px_, b_, xsi_(0, 0));
+      tol_ = adaptive_combined_newton_tolerance(*xyze_, *px_, b_, xsi_(0, 0));
     }
 
     /** \brief evaluate the current right hand side
@@ -1148,7 +1149,7 @@ namespace Cut::Kernel
       Core::FE::shape_function_deriv1<element_type>(xsi_, deriv1_);
       A_.multiply_nt(*xyze_, deriv1_);
       dx_ = 0.0;
-      det = Core::LinAlg::gaussElimination<true, prob_dim, FloatType>(A_, b_, dx_);
+      det = Core::LinAlg::gauss_elimination<true, prob_dim, FloatType>(A_, b_, dx_);
 
       if (debug)
       {
@@ -1175,7 +1176,7 @@ namespace Cut::Kernel
     {
       Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType> A_inv;
       FloatType det = A_.determinant();
-      if (Kernel::closeToZero(det))
+      if (Kernel::close_to_zero(det))
       {
 #ifdef DEBUG_CUTKERNEL_OUTPUT
         std::cout << " WARNING: Condition number is equal to infinity in the problem. Stopping "
@@ -1413,7 +1414,7 @@ namespace Cut::Kernel
         FOUR_C_THROW(
             "This type of element %s  is not yet implemented for the CLN calculation. You are "
             "welcome to edit fem_shapefunctions.H file to fix it",
-            Core::FE::CellTypeToString(element_type).c_str());
+            Core::FE::cell_type_to_string(element_type).c_str());
       }
 
       bool conv;
@@ -1463,8 +1464,8 @@ namespace Cut::Kernel
         }
 #endif
         // convertion to correspondent precison
-        Core::CLN::ConvDoubleCLN(xyze, clnxyze_, prec);
-        Core::CLN::ConvDoubleCLN(px, clnpx_, prec);
+        Core::CLN::conv_double_cln(xyze, clnxyze_, prec);
+        Core::CLN::conv_double_cln(px, clnpx_, prec);
 
         this->setup(clnxyze_, clnpx_);
         conv = this->solve();
@@ -1511,7 +1512,7 @@ namespace Cut::Kernel
 
 
       // safely convert the values back
-      Core::CLN::ConvClnDouble(clnxsi_, xsi_);
+      Core::CLN::conv_cln_double(clnxsi_, xsi_);
       if ((not conv) && (err < CLN_LIMIT_ERROR) && (err > 0.0)) conv = true;
 
 #ifdef CUSTOM_MEMORY_ALLOCATOR
@@ -1560,9 +1561,9 @@ namespace Cut::Kernel
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> cln_glob_init;
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> cln_loc_calc;
 
-      Core::CLN::UpdatePresicion(loc_calc, cln_loc_calc, prec);
-      Core::CLN::ConvDoubleCLN(ref_shape_xyz, cln_ref_shape_xyz, prec);
-      Core::CLN::ConvDoubleCLN(glob_init, cln_glob_init, prec);
+      Core::CLN::update_presicion(loc_calc, cln_loc_calc, prec);
+      Core::CLN::conv_double_cln(ref_shape_xyz, cln_ref_shape_xyz, prec);
+      Core::CLN::conv_double_cln(glob_init, cln_glob_init, prec);
 
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> cln_glob_calc;
       Core::LinAlg::Matrix<Core::FE::num_nodes<element_type>, 1, Core::CLN::ClnWrapper> shapeFunct;
@@ -1895,7 +1896,7 @@ namespace Cut::Kernel
       if (debug)
       {
         std::cout << "\n=== compute_distance ===\n";
-        std::cout << "Side       = " << Core::FE::CellTypeToString(side_type) << "\n";
+        std::cout << "Side       = " << Core::FE::cell_type_to_string(side_type) << "\n";
         std::cout << "xyze_side_ = " << *xyze_side_;
         std::cout << "px_        = " << *px_;
         std::cout << "\n";
@@ -1946,7 +1947,7 @@ namespace Cut::Kernel
 
       // we will not be able to find inverse
       FloatType det = TN_inv.determinant();
-      if (Kernel::closeToZero(det)) return false;
+      if (Kernel::close_to_zero(det)) return false;
 
 
       TN_inv.invert();
@@ -1961,7 +1962,7 @@ namespace Cut::Kernel
     {
       Core::LinAlg::Matrix<prob_dim, prob_dim, FloatType> A_inv;
       FloatType det = A_.determinant();
-      if (Kernel::closeToZero(det))
+      if (Kernel::close_to_zero(det))
       {
 #ifdef DEBUG_CUTKERNEL_OUTPUT
         std::cout << " WARNING: Condition number is equal to infinity in the problem. Stopping "
@@ -1982,7 +1983,7 @@ namespace Cut::Kernel
       distance_ = xsi_.data() + dim_side;
       // evaluate initial rhs value (w/o distance contribution)
       distance_rhs(*xyze_side_, *px_, b_);
-      tol_ = AdaptiveCombinedNewtonTolerance(*xyze_side_, *px_, b_, xsi_(0, 0));
+      tol_ = adaptive_combined_newton_tolerance(*xyze_side_, *px_, b_, xsi_(0, 0));
     }
 
     /** \brief Setup routine for a new Newton step
@@ -2061,7 +2062,7 @@ namespace Cut::Kernel
         std::cout << "Matrix b  is  " << b_ << std::endl;
       }
 
-      FloatType det = Core::LinAlg::gaussElimination<true, prob_dim, FloatType>(A_, b_, dx_);
+      FloatType det = Core::LinAlg::gauss_elimination<true, prob_dim, FloatType>(A_, b_, dx_);
 
       if (debug)
       {
@@ -2140,7 +2141,7 @@ namespace Cut::Kernel
       // calculate the points
       Core::LinAlg::Matrix<num_nodes_side, 1, FloatType> surface;
 
-      Core::FE::shape_function_2D(surface, xsi_(0), xsi_(1), side_type);
+      Core::FE::shape_function_2d(surface, xsi_(0), xsi_(1), side_type);
 
       Core::LinAlg::Matrix<prob_dim, 1, FloatType> x1;
 
@@ -2235,7 +2236,7 @@ namespace Cut::Kernel
       // pre-evaluate some important variables
       B = 0.0;
 
-      FloatType det = EvalDerivsInParameterSpace<prob_dim, side_type, FloatType>(
+      FloatType det = eval_derivs_in_parameter_space<prob_dim, side_type, FloatType>(
           xyze_side, xsi_side, sideDeriv1_, B, nullptr, &n1, &n2, false);
 
       A.update_t(B);
@@ -2490,7 +2491,7 @@ namespace Cut::Kernel
             "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
             "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
             "change all the integers occuring there double for CLN to work.",
-            Core::FE::CellTypeToString(side_type).c_str());
+            Core::FE::cell_type_to_string(side_type).c_str());
       }
 
       int prec = CLN_START_PRECISION;  // standart initial precision
@@ -2546,8 +2547,8 @@ namespace Cut::Kernel
         }
 
 #endif
-        Core::CLN::ConvDoubleCLN(xyze_side, clnxyze_side_, prec);
-        Core::CLN::ConvDoubleCLN(px, clnpx_, prec);
+        Core::CLN::conv_double_cln(xyze_side, clnxyze_side_, prec);
+        Core::CLN::conv_double_cln(px, clnpx_, prec);
         //  no need to convert, we don't actually compute anything
         // clndistance_ = cln::cl_float(distance, cln::float_format(prec));
         this->setup(clnxyze_side_, clnpx_, false);
@@ -2621,7 +2622,7 @@ namespace Cut::Kernel
       // NOTE: Might be not needed later
       fix_corner_case();
       // converting all the values back
-      Core::CLN::ConvClnDouble(clnxsi_, xsi_);
+      Core::CLN::conv_cln_double(clnxsi_, xsi_);
 
       distance = cln::double_approx(clndistance_.Value());
 
@@ -2697,9 +2698,9 @@ namespace Cut::Kernel
       Core::LinAlg::Matrix<prob_dim, 1, Core::CLN::ClnWrapper> n1;
 
       clndistance = cln::cl_float(distance[0].Value(), cln::float_format(prec));
-      Core::CLN::ConvDoubleCLN(refshape_xyze, xyze_side, prec);
-      Core::CLN::ConvDoubleCLN(p, clnpx, prec);
-      Core::CLN::UpdatePresicion(loc_calc, clnxi, prec);
+      Core::CLN::conv_double_cln(refshape_xyze, xyze_side, prec);
+      Core::CLN::conv_double_cln(p, clnpx, prec);
+      Core::CLN::update_presicion(loc_calc, clnxi, prec);
 
       for (unsigned int i = 0; i < prob_dim; ++i)
       {
@@ -2757,8 +2758,8 @@ namespace Cut::Kernel
       // remove edges, that are too far away
       if (location_.on_side())
       {
-        GetEdgesAt<side_type>(clnxsi_, touched_edges_ids_, scaled_tolerance_side_touched_edges);
-        GetNodesAt<side_type>(clnxsi_, touched_nodes_ids_, scaled_tolerance_side_touched_edges);
+        get_edges_at<side_type>(clnxsi_, touched_edges_ids_, scaled_tolerance_side_touched_edges);
+        get_nodes_at<side_type>(clnxsi_, touched_nodes_ids_, scaled_tolerance_side_touched_edges);
       }
     }
 
@@ -3083,7 +3084,7 @@ namespace Cut::Kernel
     {
       if (side_type != Core::FE::CellType::tri3)
         FOUR_C_THROW("This method only works for tri3 side. Current side is %s",
-            Core::FE::CellTypeToString(side_type).c_str());
+            Core::FE::cell_type_to_string(side_type).c_str());
 
       Core::LinAlg::Matrix<dim_side, 1> scaled_tolerance;
       double distance_tolerance = TOPOLOGICAL_TOLERANCE;
@@ -3094,7 +3095,7 @@ namespace Cut::Kernel
       real_tolerance(0) = 0.0;
       real_tolerance(1) = scaled_tolerance(1);
       real_tolerance(2) = 0.0;
-      if (WithinLimitsSplittedQuad<side_type>(xsi_ref_, real_tolerance))
+      if (within_limits_splitted_quad<side_type>(xsi_ref_, real_tolerance))
         side_location_triangle_split_ = PointOnSurfaceLoc(true, true);
       else
         side_location_triangle_split_ = PointOnSurfaceLoc(false, true);
@@ -3126,8 +3127,8 @@ namespace Cut::Kernel
       // if on side, get neigboring edges
       if (location_.on_side())
       {
-        GetEdgesAt<side_type>(xsi, touched_edges_ids_, scaled_tolerance);
-        GetNodesAt<side_type>(xsi, touched_nodes_ids_, scaled_tolerance);
+        get_edges_at<side_type>(xsi, touched_edges_ids_, scaled_tolerance);
+        get_nodes_at<side_type>(xsi, touched_nodes_ids_, scaled_tolerance);
       }
       return true;
     }
@@ -3385,8 +3386,8 @@ namespace Cut::Kernel
       {
         std::cout << "\n\n === ComputeIntersection ===\n";
         std::cout << "--- setup()\n";
-        std::cout << "  Edge = " << Core::FE::CellTypeToString(edge_type) << "\n";
-        std::cout << "  Side = " << Core::FE::CellTypeToString(side_type) << "\n";
+        std::cout << "  Edge = " << Core::FE::cell_type_to_string(edge_type) << "\n";
+        std::cout << "  Side = " << Core::FE::cell_type_to_string(side_type) << "\n";
         std::cout << "  xyze_side = " << std::setprecision(15) << xyze_side;
         std::cout << "  xyze_edge = " << std::setprecision(15) << xyze_edge;
       }
@@ -3396,7 +3397,7 @@ namespace Cut::Kernel
     {
       Core::LinAlg::Matrix<dim_edge + dim_side, dim_edge + dim_side, FloatType> A_inv;
       FloatType det = A_.determinant();
-      if (Kernel::closeToZero(det))
+      if (Kernel::close_to_zero(det))
       {
 #ifdef DEBUG_CUTKERNEL_OUTPUT
         std::cout << " WARNING: Condition number is equal to infinity in the problem. "
@@ -3439,7 +3440,7 @@ namespace Cut::Kernel
 
       FloatType det = TN_inv.determinant();
       // we will not be able to find inverse
-      if (Kernel::closeToZero(det)) return false;
+      if (Kernel::close_to_zero(det)) return false;
 
       TN_inv.invert();
       aux.multiply_nt(TN_inv, A);
@@ -3500,7 +3501,7 @@ namespace Cut::Kernel
       const Core::LinAlg::Matrix<dim_side, 1, FloatType> xsi_side(xsi_.data(), true);
       const Core::LinAlg::Matrix<dim_edge, 1, FloatType> xsi_edge(xsi_.data() + dim_side, true);
       intersection_rhs(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
-      tol_ = AdaptiveCombinedNewtonTolerance(*xyze_side_, *xyze_edge_, c_, xsi_(0, 0));
+      tol_ = adaptive_combined_newton_tolerance(*xyze_side_, *xyze_edge_, c_, xsi_(0, 0));
     }
 
     void setup_step(int iter)
@@ -3563,7 +3564,7 @@ namespace Cut::Kernel
     {
       dx_ = 0.0;
       FloatType det =
-          Core::LinAlg::gaussElimination<true, dim_side + dim_edge, FloatType>(A_, b_, dx_);
+          Core::LinAlg::gauss_elimination<true, dim_side + dim_edge, FloatType>(A_, b_, dx_);
 
       if (debug)
       {
@@ -3681,7 +3682,7 @@ namespace Cut::Kernel
           FOUR_C_THROW(
               "unsupported element type ( % s ) in write_to_gmsh."
               " Please feel free to extend the functionality if necessary.",
-              Core::FE::CellTypeToString(side_type).c_str());
+              Core::FE::cell_type_to_string(side_type).c_str());
       }
 
       file << "View \""
@@ -3726,8 +3727,8 @@ namespace Cut::Kernel
       Core::LinAlg::Matrix<num_nodes_side, 1, FloatType> surface;
       Core::LinAlg::Matrix<num_nodes_edge, 1, FloatType> line;
 
-      Core::FE::shape_function_2D(surface, xsi_(0), xsi_(1), side_type);
-      Core::FE::shape_function_1D(line, xsi_(2), edge_type);
+      Core::FE::shape_function_2d(surface, xsi_(0), xsi_(1), side_type);
+      Core::FE::shape_function_1d(line, xsi_(2), edge_type);
 
       Core::LinAlg::Matrix<prob_dim, 1, FloatType> x1;
       Core::LinAlg::Matrix<prob_dim, 1, FloatType> x2;
@@ -3933,7 +3934,7 @@ namespace Cut::Kernel
             "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
             "to edit ../fem_general/utils_fem_shapefunctions.H file to fix it. Just "
             "change all the integers occuring there double for CLN to work.",
-            Core::FE::CellTypeToString(side_type).c_str());
+            Core::FE::cell_type_to_string(side_type).c_str());
       }
 
       // Converting values for the calculation on the CLN
@@ -3988,8 +3989,8 @@ namespace Cut::Kernel
         }
 
 #endif
-        Core::CLN::ConvDoubleCLN(xyze_side, clnxyze_side_, prec);
-        Core::CLN::ConvDoubleCLN(xyze_edge, clnxyze_edge_, prec);
+        Core::CLN::conv_double_cln(xyze_side, clnxyze_side_, prec);
+        Core::CLN::conv_double_cln(xyze_edge, clnxyze_edge_, prec);
         this->setup(clnxyze_side_, clnxyze_edge_);
 
         conv = this->solve();
@@ -4068,7 +4069,7 @@ namespace Cut::Kernel
         first_run_ = false;
       }
 #endif
-      Core::CLN::ConvClnDouble(clnxsi_, xsi_);
+      Core::CLN::conv_cln_double(clnxsi_, xsi_);
       clnxsi_ = 0.0;  // resetting clnxsi_
       return conv;
     }
@@ -4139,7 +4140,7 @@ namespace Cut::Kernel
       touched_edges_ids_.clear();
       if (side_location_.within_side())
       {
-        GetEdgesAt<side_type>(clnxsi_, touched_edges_ids_, scaled_tolerance_side_touched_edges);
+        get_edges_at<side_type>(clnxsi_, touched_edges_ids_, scaled_tolerance_side_touched_edges);
       }
     }
 
@@ -4161,9 +4162,9 @@ namespace Cut::Kernel
           cln_refedge_xyz;
       Core::LinAlg::Matrix<dim_edge + dim_side, 1, Core::CLN::ClnWrapper> cln_loc_calc;
 
-      Core::CLN::ConvDoubleCLN(refside_xyz, cln_refside_xyz, prec);
-      Core::CLN::ConvDoubleCLN(refedge_xyz, cln_refedge_xyz, prec);
-      Core::CLN::UpdatePresicion(loc_calc, cln_loc_calc, prec);
+      Core::CLN::conv_double_cln(refside_xyz, cln_refside_xyz, prec);
+      Core::CLN::conv_double_cln(refedge_xyz, cln_refedge_xyz, prec);
+      Core::CLN::update_presicion(loc_calc, cln_loc_calc, prec);
 
       // Calculating interpolation from the shapefunction of the side
       Core::LinAlg::Matrix<Core::FE::num_nodes<side_type>, 1, Core::CLN::ClnWrapper> sideFunct;
@@ -4468,7 +4469,7 @@ namespace Cut::Kernel
     {
       if (side_type != Core::FE::CellType::tri3)
         FOUR_C_THROW("This method only works for tri3 side. Current side is %s",
-            Core::FE::CellTypeToString(side_type).c_str());
+            Core::FE::cell_type_to_string(side_type).c_str());
 
       double distance_tolerance = TOPOLOGICAL_TOLERANCE;
       // get tolerance with 1e-14 around the triangle, but in local coordinates
@@ -4480,7 +4481,7 @@ namespace Cut::Kernel
       real_tolerance(0) = scaled_tolerance(0);
       real_tolerance(1) = 0.0;
       real_tolerance(2) = 0.0;
-      if (WithinLimitsSplittedQuad<side_type>(xsi_, real_tolerance))
+      if (within_limits_splitted_quad<side_type>(xsi_, real_tolerance))
         side_location_triangle_split_ = PointOnSurfaceLoc(true, true);
       else
         side_location_triangle_split_ = PointOnSurfaceLoc(false, true);
@@ -4530,7 +4531,7 @@ namespace Cut::Kernel
       touched_edges_ids_.clear();
       if (side_location_.within_side())
       {
-        GetEdgesAt<side_type>(xsi, touched_edges_ids_, scaled_tolerance_side_touched_edges);
+        get_edges_at<side_type>(xsi, touched_edges_ids_, scaled_tolerance_side_touched_edges);
       }
       return true;
     }

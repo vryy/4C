@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  inline std::vector<char>& GetMutableStressData(
+  inline std::vector<char>& get_mutable_stress_data(
       const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
@@ -34,7 +34,7 @@ namespace
     }
   }
 
-  inline std::vector<char>& GetMutableStrainData(
+  inline std::vector<char>& get_mutable_strain_data(
       const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
@@ -56,7 +56,7 @@ namespace
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(params, "iostress");
+      return Core::UTILS::get_as_enum<Inpar::Solid::StressType>(params, "iostress");
     }
   }
 
@@ -69,7 +69,7 @@ namespace
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(params, "iostrain");
+      return Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(params, "iostrain");
     }
   }
 }  // namespace
@@ -89,7 +89,7 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
         if (is_params_interface())
           return str_params_interface().get_action_type();
         else
-          return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
+          return Core::Elements::string_to_action_type(params.get<std::string>("action", "none"));
       });
 
   // what should the element do
@@ -124,7 +124,7 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
       shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *solid_material(),
           discretization, nodal_directors_, dof_index_array, params, &elevec1, &elemat1, &elemat2);
       if (action == Core::Elements::struct_calc_nlnstifflmass)
-        Solid::UTILS::Shell::LumpMassMatrix(elemat2);
+        Solid::UTILS::Shell::lump_mass_matrix(elemat2);
     }
     break;
     case Core::Elements::struct_calc_recover:
@@ -136,8 +136,8 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_stress:
     {
       shell_interface_->calculate_stresses_strains(*this, *solid_material(),
-          ShellStressIO{get_io_stress_type(*this, params), GetMutableStressData(*this, params)},
-          ShellStrainIO{get_io_strain_type(*this, params), GetMutableStrainData(*this, params)},
+          ShellStressIO{get_io_stress_type(*this, params), get_mutable_stress_data(*this, params)},
+          ShellStrainIO{get_io_strain_type(*this, params), get_mutable_strain_data(*this, params)},
           discretization, nodal_directors_, dof_index_array, params);
     }
     break;
@@ -181,7 +181,7 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
     break;
     default:
       FOUR_C_THROW("The element action %s is not yet implemented for the Shell element yet",
-          ActionType2String(action).c_str());
+          action_type_to_string(action).c_str());
   }
   return 0;
 }
@@ -203,7 +203,7 @@ int Discret::ELEMENTS::Shell7p::evaluate_neumann(Teuchos::ParameterList& params,
           return params.get("total time", -1.0);
       });
 
-  Discret::ELEMENTS::Shell::EvaluateNeumannByElement(
+  Discret::ELEMENTS::Shell::evaluate_neumann_by_element(
       *this, discretization, condition, dof_index_array, elevec1, elemat1, time);
   return 0;
 }

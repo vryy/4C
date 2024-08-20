@@ -99,18 +99,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
       const auto& eta = projected_gauss_point.get_eta();
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = Core::FADUtils::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
+      segment_jacobian = Core::FADUtils::vector_norm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
-      GEOMETRYPAIR::EvaluateSurfaceNormal<Surface>(
+      GEOMETRYPAIR::evaluate_surface_normal<Surface>(
           xi, this->face_element_->get_face_element_data(), surface_normal);
 
       // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<Beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<Surface>(
+      GEOMETRYPAIR::evaluate_position<Beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::evaluate_position<Surface>(
           xi, this->face_element_->get_face_element_data(), r_surface);
 
       // Evaluate the gap function.
@@ -142,7 +142,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
       }
 
       // Get the contact force.
-      ScalarType force = PenaltyForce(gap, this->params()->beam_to_solid_surface_contact_params());
+      ScalarType force = penalty_force(gap, this->params()->beam_to_solid_surface_contact_params());
 
       // Add the Gauss point contributions to the pair force vector.
       gap_variation_times_normal.scale(
@@ -156,7 +156,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_force_vector.num_rows(); j_dof++)
-      force_pair_double[j_dof] = Core::FADUtils::CastToDouble(pair_force_vector(j_dof));
+      force_pair_double[j_dof] = Core::FADUtils::cast_to_double(pair_force_vector(j_dof));
     force_vector->SumIntoGlobalValues(pair_gid.size(), pair_gid.data(), force_pair_double.data());
   }
 
@@ -165,7 +165,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
     for (unsigned int i_dof = 0; i_dof < pair_force_vector.num_rows(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
         stiffness_matrix->fe_assemble(
-            Core::FADUtils::CastToDouble(pair_force_vector(i_dof).dx(j_dof)), pair_gid[i_dof],
+            Core::FADUtils::cast_to_double(pair_force_vector(i_dof).dx(j_dof)), pair_gid[i_dof],
             pair_gid[j_dof]);
 }
 
@@ -237,18 +237,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
       const auto& eta = projected_gauss_point.get_eta();
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = Core::FADUtils::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
+      segment_jacobian = Core::FADUtils::vector_norm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
-      GEOMETRYPAIR::EvaluateSurfaceNormal<Surface>(
+      GEOMETRYPAIR::evaluate_surface_normal<Surface>(
           xi, this->face_element_->get_face_element_data(), surface_normal);
 
       // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<Beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<Surface>(
+      GEOMETRYPAIR::evaluate_position<Beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::evaluate_position<Surface>(
           xi, this->face_element_->get_face_element_data(), r_surface);
 
       // Evaluate the gap function.
@@ -258,7 +258,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
 
       // Get the contact force.
       potential += projected_gauss_point.get_gauss_weight() * segment_jacobian *
-                   PenaltyPotential(gap, this->params()->beam_to_solid_surface_contact_params());
+                   penalty_potential(gap, this->params()->beam_to_solid_surface_contact_params());
     }
   }
 
@@ -267,7 +267,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-      force_pair_double[j_dof] = Core::FADUtils::CastToDouble(potential.dx(j_dof));
+      force_pair_double[j_dof] = Core::FADUtils::cast_to_double(potential.dx(j_dof));
     force_vector->SumIntoGlobalValues(pair_gid.size(), pair_gid.data(), force_pair_double.data());
   }
 
@@ -275,7 +275,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-        stiffness_matrix->fe_assemble(Core::FADUtils::CastToDouble(potential.dx(i_dof).dx(j_dof)),
+        stiffness_matrix->fe_assemble(Core::FADUtils::cast_to_double(potential.dx(i_dof).dx(j_dof)),
             pair_gid[i_dof], pair_gid[j_dof]);
 }
 

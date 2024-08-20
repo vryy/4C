@@ -30,7 +30,7 @@ namespace Core::LinAlg
    \param SIGMA (in/out):M-by-N matrix which is zero except for its min(m,n) diagonal elements
    \param Vt (in/out):   V is a N-by-N orthogonal matrix, actually returned is V^T
    */
-  void SVD(const Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix& Q,
+  void svd(const Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix& Q,
       Core::LinAlg::SerialDenseMatrix& SIGMA, Core::LinAlg::SerialDenseMatrix& Vt);
 
   /*!
@@ -48,7 +48,7 @@ namespace Core::LinAlg
    \param VT (out):      N-by-N orthogonal matrix (transpose of V)
    */
   template <unsigned int rows, unsigned int cols>
-  void SVD(const Core::LinAlg::Matrix<rows, cols>& A, Core::LinAlg::Matrix<rows, rows>& Q,
+  void svd(const Core::LinAlg::Matrix<rows, cols>& A, Core::LinAlg::Matrix<rows, rows>& Q,
       Core::LinAlg::Matrix<rows, cols>& S, Core::LinAlg::Matrix<cols, cols>& VT)
   {
     Matrix<rows, cols> tmp(A.data(), false);  // copy, because content of matrix is destroyed

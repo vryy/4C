@@ -70,7 +70,7 @@ namespace RTD
   void write_read_the_docs_various(const std::string& variousdocumentationfilename);
 
 
-  void PrintHelpMessage();
+  void print_help_message();
 
 }  // namespace RTD
 

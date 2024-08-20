@@ -101,7 +101,7 @@ void FLD::TimIntStationaryHDG::reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
+  intvelnp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
   if (discret_->get_comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
@@ -143,7 +143,7 @@ void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 void FLD::TimIntStationaryHDG::set_state_tim_int()
 {
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  Teuchos::RCP<Epetra_Vector> zerovec = Core::LinAlg::CreateVector(*intdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> zerovec = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   discret_->set_state(0, "velaf", velnp_);
   discret_->set_state(1, "intvelaf", intvelnp_);  // TODO als fill in intvelnp_!

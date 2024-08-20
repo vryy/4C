@@ -130,7 +130,7 @@ void Input::ParticleReader::read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
             if (poslabel != "POS") FOUR_C_THROW("expected particle position label 'POS'!");
 
             // get enum of particle type
-            particletype = PARTICLEENGINE::EnumFromTypeName(type);
+            particletype = PARTICLEENGINE::enum_from_type_name(type);
 
             // allocate memory to hold particle position state
             particlestates.resize(PARTICLEENGINE::Position + 1);
@@ -166,7 +166,8 @@ void Input::ParticleReader::read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
 
                 if (not linestream)
                   FOUR_C_THROW("expecting values of state '%s' if label '%s' is set!",
-                      PARTICLEENGINE::EnumToStateName(particlestate).c_str(), statelabel.c_str());
+                      PARTICLEENGINE::enum_to_state_name(particlestate).c_str(),
+                      statelabel.c_str());
 
                 // allocate memory to hold optional particle state
                 if (static_cast<int>(particlestates.size()) < (particlestate + 1))

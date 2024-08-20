@@ -209,7 +209,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
     case ScaTra::Action::micro_scale_solve:
     {
       // extract state variables at element nodes
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(
           *discretization.get_state("phinp"), my::ephinp_, la[0].lm_);
 
       const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(

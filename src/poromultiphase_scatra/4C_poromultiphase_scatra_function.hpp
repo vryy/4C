@@ -71,7 +71,7 @@ namespace PoroMultiPhaseScaTra
   };
 
   /// Attach poro-specific functions to the @p function_manager.
-  void AddValidPoroFunctions(Core::UTILS::FunctionManager& function_manager);
+  void add_valid_poro_functions(Core::UTILS::FunctionManager& function_manager);
 
   /*!
    * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:

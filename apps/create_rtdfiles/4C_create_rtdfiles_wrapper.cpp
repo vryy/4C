@@ -59,7 +59,7 @@ namespace RTD
     headerdocumentationfile << ".. _headerparameters:\n\n";
     headerdocumentationfile << "Header parameters\n";
     headerdocumentationfile << "=================\n\n";
-    WriteHeaderReference(headerdocumentationfile, *Input::ValidParameters(), "");
+    write_header_reference(headerdocumentationfile, *Input::valid_parameters(), "");
   }
 
   /*----------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ namespace RTD
     celltypeocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
     celltypeocumentationfile << "   " << VersionControl::git_hash << "\n\n";
 
-    WriteCelltypeReference(celltypeocumentationfile);
+    write_celltype_reference(celltypeocumentationfile);
   }
 
   /*----------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ namespace RTD
       FOUR_C_THROW("failed to open file: %s", materialdocumentationfilename.c_str());
     materialdocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
     materialdocumentationfile << "   " << VersionControl::git_hash << "\n\n";
-    WriteMaterialReference(materialdocumentationfile, *Input::ValidMaterials());
+    write_material_reference(materialdocumentationfile, *Input::valid_materials());
   }
 
   /*----------------------------------------------------------------------*/
@@ -101,9 +101,10 @@ namespace RTD
       FOUR_C_THROW("failed to open file: %s", conditiondocumentationfilename.c_str());
     conditiondocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
     conditiondocumentationfile << "   " << VersionControl::git_hash << "\n\n";
-    WriteConditionsReference(conditiondocumentationfile, *Input::ValidConditions());
+    write_conditions_reference(conditiondocumentationfile, *Input::valid_conditions());
 
-    WriteContactLawReference(conditiondocumentationfile, *Input::ValidContactConstitutiveLaws());
+    write_contact_law_reference(
+        conditiondocumentationfile, *Input::valid_contact_constitutive_laws());
   }
 
   /*----------------------------------------------------------------------*/
@@ -117,10 +118,10 @@ namespace RTD
       FOUR_C_THROW("failed to open file: %s", variousdocumentationfilename.c_str());
     variousdocumentationfile << "..\n   Created using 4C version (git SHA1):\n";
     variousdocumentationfile << "   " << VersionControl::git_hash << "\n\n";
-    WriteVariousReference(variousdocumentationfile);
+    write_various_reference(variousdocumentationfile);
   }
 
-  void PrintHelpMessage()
+  void print_help_message()
   {
     std::cout << "This program writes all necessary reference files for readthedocs\n";
     std::cout << "Usage:\n    create_rtd [pathanem]\n";

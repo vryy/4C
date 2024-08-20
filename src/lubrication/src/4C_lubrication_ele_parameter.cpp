@@ -29,7 +29,7 @@ Discret::ELEMENTS::LubricationEleParameter* Discret::ELEMENTS::LubricationElePar
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const std::string& disname)
       { return std::unique_ptr<LubricationEleParameter>(new LubricationEleParameter(disname)); });
 

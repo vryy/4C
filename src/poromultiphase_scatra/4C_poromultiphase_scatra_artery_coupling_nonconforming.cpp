@@ -44,7 +44,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
       issetup_(false),
       porofluidprob_(false),
       has_varying_diam_(false),
-      delete_free_hanging_eles_(Core::UTILS::IntegralValue<int>(
+      delete_free_hanging_eles_(Core::UTILS::integral_value<int>(
           Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "DELETE_FREE_HANGING_ELES")),
@@ -52,7 +52,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
                                               ->poro_fluid_multi_phase_dynamic_params()
                                               .sublist("ARTERY COUPLING")
                                               .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
-      coupling_method_(Core::UTILS::IntegralValue<
+      coupling_method_(Core::UTILS::integral_value<
           Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
           couplingparams, "ARTERY_COUPLING_METHOD")),
       timefacrhs_art_(0.0),
@@ -121,7 +121,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup()
 {
   // get the coupling method
   auto arterycoupl =
-      Core::UTILS::IntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+      Core::UTILS::integral_value<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
           Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "ARTERY_COUPLING_METHOD");
@@ -593,20 +593,20 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
 
   // kappa^{-1}*M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> km =
-      Core::LinAlg::MLMultiply(*kappaInvMat, false, *m_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*kappaInvMat, false, *m_, false, false, false, true);
   // kappa^{-1}*D
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kd =
-      Core::LinAlg::MLMultiply(*kappaInvMat, false, *d_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*kappaInvMat, false, *d_, false, false, false, true);
 
   // D^T*kappa^{-1}*D
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtkd =
-      Core::LinAlg::MLMultiply(*d_, true, *kd, false, false, false, true);
+      Core::LinAlg::ml_multiply(*d_, true, *kd, false, false, false, true);
   // D^T*kappa^{-1}*M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtkm =
-      Core::LinAlg::MLMultiply(*d_, true, *km, false, false, false, true);
+      Core::LinAlg::ml_multiply(*d_, true, *km, false, false, false, true);
   // M^T*kappa^{-1}*M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtkm =
-      Core::LinAlg::MLMultiply(*m_, true, *km, false, false, false, true);
+      Core::LinAlg::ml_multiply(*m_, true, *km, false, false, false, true);
 
   // add matrices
   sysmat->matrix(0, 0).add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);

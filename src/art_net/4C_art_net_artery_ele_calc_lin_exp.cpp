@@ -52,7 +52,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<Key>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcLinExp<distype>>(
@@ -109,7 +109,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
 
   // extract local values from the global vectors
   std::vector<double> myqanp(la[0].lm_.size());
-  Core::FE::ExtractMyValues(*qanp, myqanp, la[0].lm_);
+  Core::FE::extract_my_values(*qanp, myqanp, la[0].lm_);
 
   // create objects for element arrays
   Core::LinAlg::Matrix<numnode, 1> eareanp;
@@ -243,8 +243,8 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele
   std::vector<double> myqanp(lm.size());
   std::vector<double> myqan(lm.size());
   std::vector<double> myescatran(lm.size());
-  Core::FE::ExtractMyValues(*scatran, myescatran, lm);
-  //  Core::FE::ExtractMyValues(*qan ,myqan ,lm);
+  Core::FE::extract_my_values(*scatran, myescatran, lm);
+  //  Core::FE::extract_my_values(*qan ,myqan ,lm);
 
   // create objects for element arrays
   Core::LinAlg::Matrix<numnode, 1> eareanp;
@@ -594,8 +594,8 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
     const double wgt = intpoints.qwgt[iquad];
 
     // shape functions and their derivatives
-    Core::FE::shape_function_1D(my::funct_, xi, distype);
-    Core::FE::shape_function_1D_deriv1(my::deriv_, xi, distype);
+    Core::FE::shape_function_1d(my::funct_, xi, distype);
+    Core::FE::shape_function_1d_deriv1(my::deriv_, xi, distype);
 
     // get Jacobian matrix and determinant
     // actually compute its transpose....
@@ -988,7 +988,7 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  Core::FE::ExtractMyValues(*qanp, myqanp, lm);
+  Core::FE::extract_my_values(*qanp, myqanp, lm);
 
   // create objects for element arrays
   Core::LinAlg::Matrix<numnode, 1> earean;
@@ -1229,7 +1229,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  Core::FE::ExtractMyValues(*qanp, myqanp, lm);
+  Core::FE::extract_my_values(*qanp, myqanp, lm);
 
   // create objects for element arrays
   Core::LinAlg::Matrix<numnode, 1> eareanp;
@@ -1320,7 +1320,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         const Core::Conditions::Condition* condition =
             ele->nodes()[i]->get_condition("ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
-        Arteries::UTILS::SolvePrescribedTerminalBC(
+        Arteries::UTILS::solve_prescribed_terminal_bc(
             Teuchos::rcp(&discretization, false), condition, Cparams);
       }
 
@@ -1337,7 +1337,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
             "coupling with 3D fluid params", CoupledTo3DParams);
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
 
-        Arteries::UTILS::SolvePrescribedTerminalBC(
+        Arteries::UTILS::solve_prescribed_terminal_bc(
             Teuchos::rcp(&discretization, false), condition, Cparams);
       }
 
@@ -1347,7 +1347,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       if (ele->nodes()[i]->get_condition("ArtRfCond"))
       {
         const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtRfCond");
-        Arteries::UTILS::SolveReflectiveTerminal(
+        Arteries::UTILS::solve_reflective_terminal(
             Teuchos::rcp(&discretization, false), condition, Cparams);
       }
 
@@ -1361,7 +1361,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         Cparams.set<double>("external pressure", pext_(i));
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
         Cparams.set<double>("terminal cross-sectional area", an_(i));
-        Arteries::UTILS::SolveExplWindkesselBC(
+        Arteries::UTILS::solve_expl_windkessel_bc(
             Teuchos::rcp(&discretization, false), condition, Cparams);
       }
 
@@ -1616,7 +1616,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  Core::FE::ExtractMyValues(*qanp, myqanp, lm);
+  Core::FE::extract_my_values(*qanp, myqanp, lm);
 
   // create objects for element arrays
   Core::LinAlg::Matrix<numnode, 1> eareanp;
@@ -1695,7 +1695,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw
 
   // extract local values from the global vectors
   std::vector<double> myscatra_fb(lm.size());
-  Core::FE::ExtractMyValues(*scatra_fb, myscatra_fb, lm);
+  Core::FE::extract_my_values(*scatra_fb, myscatra_fb, lm);
 
   // get all values at the last computed time step
   double val = 0.0;
@@ -1786,7 +1786,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
 
   // extract local values from the global vectors
   std::vector<double> myqanp(lm.size());
-  Core::FE::ExtractMyValues(*qanp, myqanp, lm);
+  Core::FE::extract_my_values(*qanp, myqanp, lm);
 
   // create objects for element arrays
   Core::LinAlg::Matrix<numnode, 1> earean;
@@ -1884,8 +1884,8 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(
 
   // extract local values from the global vectors
   std::vector<double> myescatran(lm.size());
-  Core::FE::ExtractMyValues(*scatran, myescatran, lm);
-  //  Core::FE::ExtractMyValues(*qan ,myqan ,lm);
+  Core::FE::extract_my_values(*scatran, myescatran, lm);
+  //  Core::FE::extract_my_values(*qan ,myqan ,lm);
 
   // create objects for element arrays
   Core::LinAlg::Matrix<2 * numnode, 1> escatran;

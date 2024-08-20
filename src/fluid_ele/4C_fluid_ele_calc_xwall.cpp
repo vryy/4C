@@ -85,7 +85,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service(
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   calcoldandnewpsi_ = false;
-  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
   if (act == FLD::xwall_l2_projection) calcoldandnewpsi_ = true;
   get_ele_properties(ele, discretization, lm, params, mat);
 
@@ -153,7 +153,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_w
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -299,7 +299,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
         params.get<Teuchos::RCP<Epetra_Vector>>("xwalltoggle");
 
     std::vector<double> mylocal(ele->num_node());
-    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *xwalltoggle);
+    Core::FE::extract_my_node_based_values(ele, mylocal, *xwalltoggle);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -328,7 +328,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
         params.get<Teuchos::RCP<Epetra_Vector>>("walldist");
     //      std::cout << *walldist << std::endl;
     std::vector<double> mylocal(ele->num_node());
-    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *walldist);
+    Core::FE::extract_my_node_based_values(ele, mylocal, *walldist);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -341,7 +341,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     const Teuchos::RCP<Epetra_Vector> tauw = params.get<Teuchos::RCP<Epetra_Vector>>("tauw");
 
     std::vector<double> mylocal(ele->num_node());
-    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *tauw);
+    Core::FE::extract_my_node_based_values(ele, mylocal, *tauw);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -354,7 +354,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     const Teuchos::RCP<Epetra_Vector> inctauw = params.get<Teuchos::RCP<Epetra_Vector>>("inctauw");
 
     std::vector<double> mylocal(ele->num_node());
-    Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *inctauw);
+    Core::FE::extract_my_node_based_values(ele, mylocal, *inctauw);
 
     for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
     {
@@ -391,7 +391,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
           params.get<Teuchos::RCP<Epetra_Vector>>("incwalldist");
 
       std::vector<double> mylocal(ele->num_node());
-      Core::FE::ExtractMyNodeBasedValues(ele, mylocal, *incwdist);
+      Core::FE::extract_my_node_based_values(ele, mylocal, *incwdist);
 
       for (unsigned inode = 0; inode < (unsigned)enren_; ++inode)  // number of nodes
       {
@@ -418,7 +418,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
   numgpnormow_ = params.get<int>("gpnormow");
   numgpplane_ = params.get<int>("gppar");
   // get node coordinates and number of elements per node
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
   if (ele->is_ale()) get_grid_disp_ale(discretization, lm, edispnp);
@@ -836,7 +836,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
   if (ele->is_ale())
@@ -859,7 +859,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
     // calculate only for the wall nodes
     if (ewdist_(inode) < 1e-4)
     {
-      Core::LinAlg::Matrix<3, 1> test = Core::FE::GetNodeCoordinates(inode, distype);
+      Core::LinAlg::Matrix<3, 1> test = Core::FE::get_node_coordinates(inode, distype);
       const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
       const double* gpc = gp.data();
       // evaluate shape functions and derivatives at integration point
@@ -1009,7 +1009,7 @@ double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk()
     vol += my::fac_;
   }  // gauss loop
 
-  const double maxeigenvalue = Core::LinAlg::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
+  const double maxeigenvalue = Core::LinAlg::generalized_eigen(elemat_epetra1, elemat_epetra2);
 
   double h_u = 0.0;
   if (my::fldpara_->which_tau() == Inpar::FLUID::tau_franca_barrenechea_valentin_frey_wall ||
@@ -1059,7 +1059,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::calc_mk(Discret::ELE
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);
@@ -1105,7 +1105,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, my::xyze_);
 
   Core::LinAlg::Matrix<nsd_, nen_> edispnp(true);

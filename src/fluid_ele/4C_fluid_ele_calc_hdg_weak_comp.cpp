@@ -153,18 +153,18 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
 
   // read the trace values
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(0, "velaf");
-  Core::FE::ExtractMyValues(*matrix_state, trace_val_, lm);
+  Core::FE::extract_my_values(*matrix_state, trace_val_, lm);
 
   // get local dofs
   std::vector<int> localDofs = discretization.dof(1, &ele);
 
   // read the interior values
   matrix_state = discretization.get_state(1, "intvelaf");
-  Core::FE::ExtractMyValues(*matrix_state, interior_val_, localDofs);
+  Core::FE::extract_my_values(*matrix_state, interior_val_, localDofs);
 
   // read the interior time derivatives
   matrix_state = discretization.get_state(1, "intaccam");
-  Core::FE::ExtractMyValues(*matrix_state, interior_acc_, localDofs);
+  Core::FE::extract_my_values(*matrix_state, interior_acc_, localDofs);
 
   // read ale vectors
   read_ale_vectors(ele, discretization);
@@ -201,11 +201,11 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
 
       // read the ale displacement
       matrix_state = discretization.get_state(2, "dispnp");
-      Core::FE::ExtractMyValues(*matrix_state, ale_dis_, aleDofs);
+      Core::FE::extract_my_values(*matrix_state, ale_dis_, aleDofs);
 
       // read the ale velocity
       matrix_state = discretization.get_state(2, "gridv");
-      Core::FE::ExtractMyValues(*matrix_state, ale_vel_, aleDofs);
+      Core::FE::extract_my_values(*matrix_state, ale_vel_, aleDofs);
     }
   }
 }
@@ -221,7 +221,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_service(
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -297,7 +297,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
   std::vector<double> localtraceinc_vec;
   localtraceinc_vec.resize(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(0, "globaltraceinc");
-  Core::FE::ExtractMyValues(*matrix_state, localtraceinc_vec, lm);
+  Core::FE::extract_my_values(*matrix_state, localtraceinc_vec, lm);
 
   // convert local trace increments to Core::LinAlg::SerialDenseVector
   Core::LinAlg::SerialDenseVector localtraceinc(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
@@ -360,7 +360,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
 
   // get function number
   const int calcerrfunctno =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "error function number");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "error function number");
 
   // initialize errors
   double err_L = 0.0;
@@ -666,7 +666,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
   Core::LinAlg::SerialDenseMatrix locations =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(distype);
+      Core::FE::get_ele_node_numbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -731,14 +731,14 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = Core::FE::getEleNodeNumbering_nodes_paramspace(
+  locations = Core::FE::get_ele_node_numbering_nodes_paramspace(
       Core::FE::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = Core::FE::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = Core::FE::get_number_of_face_element_corner_nodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = Core::FE::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = Core::FE::get_number_of_face_element_internal_nodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
@@ -879,7 +879,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
 Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>>(

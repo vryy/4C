@@ -355,22 +355,25 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
     case Core::FE::CellType::tri3:
     {
       xicele1.put_scalar(1.0 / 3.0);
-      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(ele1, xicele1, ele1coords);
-      ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(ele1, xicele1, ele1normal);
+      local_to_global_position_at_xi_ref_config<3, Core::FE::CellType::tri3>(
+          ele1, xicele1, ele1coords);
+      compute_unit_normal_at_xi_ref_config<Core::FE::CellType::tri3>(ele1, xicele1, ele1normal);
     }
     break;
     case Core::FE::CellType::tri6:
     {
       xicele1.put_scalar(1.0 / 3.0);
-      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(ele1, xicele1, ele1coords);
-      ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri6>(ele1, xicele1, ele1normal);
+      local_to_global_position_at_xi_ref_config<3, Core::FE::CellType::tri6>(
+          ele1, xicele1, ele1coords);
+      compute_unit_normal_at_xi_ref_config<Core::FE::CellType::tri6>(ele1, xicele1, ele1normal);
     }
     break;
     case Core::FE::CellType::quad4:
     {
       xicele1.put_scalar(0.0);
-      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(ele1, xicele1, ele1coords);
-      ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::quad4>(ele1, xicele1, ele1normal);
+      local_to_global_position_at_xi_ref_config<3, Core::FE::CellType::quad4>(
+          ele1, xicele1, ele1coords);
+      compute_unit_normal_at_xi_ref_config<Core::FE::CellType::quad4>(ele1, xicele1, ele1normal);
     }
     break;
     default:
@@ -385,19 +388,22 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
     case Core::FE::CellType::tri3:
     {
       xicele2.put_scalar(1.0 / 3.0);
-      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(ele2, xicele2, ele2coords);
+      local_to_global_position_at_xi_ref_config<3, Core::FE::CellType::tri3>(
+          ele2, xicele2, ele2coords);
     }
     break;
     case Core::FE::CellType::tri6:
     {
       xicele2.put_scalar(1.0 / 3.0);
-      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(ele2, xicele2, ele2coords);
+      local_to_global_position_at_xi_ref_config<3, Core::FE::CellType::tri6>(
+          ele2, xicele2, ele2coords);
     }
     break;
     case Core::FE::CellType::quad4:
     {
       xicele2.put_scalar(0.0);
-      LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(ele2, xicele2, ele2coords);
+      local_to_global_position_at_xi_ref_config<3, Core::FE::CellType::quad4>(
+          ele2, xicele2, ele2coords);
     }
     break;
     default:
@@ -529,7 +535,7 @@ void CONTACT::UnbiasedSelfBinaryTree::communicate_search_elements_all_procs()
     if (contact_pairs().find(elegid) != contact_pairs().end())
       searchelements = contact_pairs()[elegid];
 
-    Core::LinAlg::AllreduceVector(searchelements, searchelements_all, discret().get_comm());
+    Core::LinAlg::allreduce_vector(searchelements, searchelements_all, discret().get_comm());
 
     if (searchelements_all.size()) set_contact_pairs()[elegid] = searchelements_all;
   }

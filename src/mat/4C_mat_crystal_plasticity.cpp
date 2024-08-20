@@ -241,7 +241,7 @@ void Mat::CrystalPlasticity::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // recover matid and params_
   int matid;
@@ -414,7 +414,7 @@ void Mat::CrystalPlasticity::setup(int numgp, const Core::IO::InputParameterCont
   }
 
   // set up 3x3 identity matrix
-  const Core::LinAlg::Matrix<3, 3> identity3 = Core::LinAlg::IdentityMatrix<3>();
+  const Core::LinAlg::Matrix<3, 3> identity3 = Core::LinAlg::identity_matrix<3>();
 
   // initialize history variables
   deform_grad_last_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
@@ -1509,7 +1509,7 @@ void Mat::CrystalPlasticity::setup_flow_rule(Core::LinAlg::Matrix<3, 3> deform_g
   Core::LinAlg::Matrix<3, 3> unimod_identity_plus_plastic_velocity_grad_trial(true);
 
   unimod_identity_plus_plastic_velocity_grad_trial.update(
-      Core::LinAlg::IdentityMatrix<3>(), plastic_velocity_grad_trial);
+      Core::LinAlg::identity_matrix<3>(), plastic_velocity_grad_trial);
   unimod_identity_plus_plastic_velocity_grad_trial.scale(
       std::pow(unimod_identity_plus_plastic_velocity_grad_trial.determinant(), -1.0 / 3.0));
 
@@ -1541,7 +1541,7 @@ void Mat::CrystalPlasticity::setup_flow_rule(Core::LinAlg::Matrix<3, 3> deform_g
   // - inv_elastic_right_cauchy_green)
 
   second_pk_stress_trial.update(lambda_ * ln_jacobi_det_trial, inv_elastic_right_cauchy_green, 1.0);
-  second_pk_stress_trial.update(mue_, Core::LinAlg::IdentityMatrix<3>(), 1.0);
+  second_pk_stress_trial.update(mue_, Core::LinAlg::identity_matrix<3>(), 1.0);
   second_pk_stress_trial.update(-mue_, inv_elastic_right_cauchy_green, 1.0);
 
   // Mandel stress

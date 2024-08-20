@@ -14,7 +14,7 @@ namespace Discret::ELEMENTS
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  Core::LinAlg::SerialDenseMatrix ComputeSolid3DNullSpace(
+  Core::LinAlg::SerialDenseMatrix compute_solid_3d_null_space(
       const Core::Nodes::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:
@@ -60,7 +60,7 @@ namespace Discret::ELEMENTS
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  Core::LinAlg::SerialDenseMatrix ComputeSolid2DNullSpace(
+  Core::LinAlg::SerialDenseMatrix compute_solid_2d_null_space(
       const Core::Nodes::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:

@@ -152,7 +152,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
             Teuchos::rcp(new Epetra_MultiVector(A->matrix(0, 0).row_map(), nv, true));
-        Core::LinAlg::StdVectorToEpetraMultiVector(*vnewns, nullspace, nv);
+        Core::LinAlg::std_vector_to_epetra_multi_vector(*vnewns, nullspace, nv);
 
         inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv1.sublist("ML Parameters").remove("nullspace", false);  // necessary??

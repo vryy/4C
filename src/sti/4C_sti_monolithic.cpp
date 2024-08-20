@@ -38,7 +38,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     : Algorithm(comm, stidyn, scatradyn, solverparams_scatra, solverparams_thermo),
       restol_(fieldparameters_->sublist("NONLINEAR").get<double>("ABSTOLRES")),
       maps_(Teuchos::null),
-      condensationthermo_(Core::UTILS::IntegralValue<bool>(stidyn, "THERMO_CONDENSATION")),
+      condensationthermo_(Core::UTILS::integral_value<bool>(stidyn, "THERMO_CONDENSATION")),
       systemmatrix_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(
           stidyn.sublist("MONOLITHIC"), "MATRIXTYPE")),
@@ -54,7 +54,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       dtsolve_(0.),
       solver_(Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")))),
       invrowsums_(Teuchos::null),
       icoupscatra_(Teuchos::null),
@@ -87,7 +87,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   Teuchos::RCP<const Epetra_Map> mapthermo(Teuchos::null);
   if (condensationthermo_)
   {
-    mapthermo = Core::LinAlg::MergeMap(
+    mapthermo = Core::LinAlg::merge_map(
         *strategythermo_->interface_maps()->Map(0), *strategythermo_->interface_maps()->Map(2));
   }
   else
@@ -95,17 +95,17 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   // initialize global map extractor
   maps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-      *Core::LinAlg::MergeMap(*scatra_field()->discretization()->dof_row_map(), *mapthermo, false),
+      *Core::LinAlg::merge_map(*scatra_field()->discretization()->dof_row_map(), *mapthermo, false),
       mapthermo, scatra_field()->dof_row_map()));
 
   // check global map extractor
   maps_->check_for_valid_map_extractor();
 
   // initialize global increment vector for Newton-Raphson iteration
-  increment_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  increment_ = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   // initialize global residual vector
-  residual_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  residual_ = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   // initialize transformation operators
   islavetomasterrowtransformscatraod_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
@@ -304,7 +304,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   static constexpr bool isAle = false;
 
   // initialize OD evaluation strategy
-  scatrathermooffdiagcoupling_ = STI::BuildScatraThermoOffDiagCoupling(
+  scatrathermooffdiagcoupling_ = STI::build_scatra_thermo_off_diag_coupling(
       strategyscatra_->coupling_type(), blockmapthermo_, blockmapthermointerface,
       blockmapthermointerfaceslave, maps_->Map(0), maps_->Map(1), interface_map_scatra,
       interface_map_thermo, isAle, strategyscatra_, strategythermo_, scatra_, thermo_);
@@ -313,7 +313,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   auto equilibration_method =
       std::vector<Core::LinAlg::EquilibrationMethod>(1, scatra_field()->equilibration_method());
   equilibration_ =
-      Core::LinAlg::BuildEquilibration(matrixtype_, equilibration_method, maps_->full_map());
+      Core::LinAlg::build_equilibration(matrixtype_, equilibration_method, maps_->full_map());
 }
 
 /*--------------------------------------------------------------------------------*
@@ -325,7 +325,7 @@ void STI::Monolithic::fd_check()
     std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR STI SYSTEM MATRIX" << std::endl;
 
   // create global state vector
-  Teuchos::RCP<Epetra_Vector> statenp(Core::LinAlg::CreateVector(*dof_row_map(), true));
+  Teuchos::RCP<Epetra_Vector> statenp(Core::LinAlg::create_vector(*dof_row_map(), true));
   maps_->insert_vector(scatra_field()->phinp(), 0, statenp);
   maps_->insert_vector(thermo_field()->phinp(), 1, statenp);
 
@@ -553,7 +553,7 @@ void STI::Monolithic::output_matrix_to_file(
 
   // communicate global IDs
   std::vector<int> rowgids(0, 0);
-  Core::LinAlg::AllreduceVector(myrowgids, rowgids, comm);
+  Core::LinAlg::allreduce_vector(myrowgids, rowgids, comm);
 
   // retain communicated global IDs only on processor with ID 0
   if (comm.MyPID()) rowgids.clear();
@@ -661,7 +661,7 @@ void STI::Monolithic::output_vector_to_file(
 
   // communicate global IDs
   std::vector<int> gids(0, 0);
-  Core::LinAlg::AllreduceVector(mygids, gids, comm);
+  Core::LinAlg::allreduce_vector(mygids, gids, comm);
 
   // retain communicated global IDs only on processor with ID 0
   if (comm.MyPID()) gids.clear();
@@ -832,7 +832,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
                   // transform and assemble temporary matrix for slave-side columns of current
                   // matrix block
                   blocksystemmatrix->matrix(iblock, nblockmapsscatra)
-                      .add(*Core::LinAlg::MLMultiply(
+                      .add(*Core::LinAlg::ml_multiply(
                                scatrathermocolsslave, *strategythermo_->p(), true),
                           false, 1.0, 1.0);
 
@@ -905,7 +905,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
                 // transform and assemble temporary matrix for slave-side columns of thermo-thermo
                 // matrix block
                 blocksystemmatrix->matrix(nblockmapsscatra, nblockmapsscatra)
-                    .add(*Core::LinAlg::MLMultiply(
+                    .add(*Core::LinAlg::ml_multiply(
                              thermothermocolsslave, *strategythermo_->p(), true),
                         false, 1.0, 1.0);
 
@@ -987,7 +987,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
                 // transform and assemble temporary matrix for slave-side columns of scatra-thermo
                 // matrix block
                 blocksystemmatrix->matrix(0, 1).add(
-                    *Core::LinAlg::MLMultiply(scatrathermocolsslave, *strategythermo_->p(), true),
+                    *Core::LinAlg::ml_multiply(scatrathermocolsslave, *strategythermo_->p(), true),
                     false, 1.0, 1.0);
 
                 // initialize temporary matrix for slave-side columns of thermo-thermo matrix block
@@ -1006,7 +1006,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
                 // transform and assemble temporary matrix for slave-side columns of thermo-thermo
                 // matrix block
                 blocksystemmatrix->matrix(1, 1).add(
-                    *Core::LinAlg::MLMultiply(thermothermocolsslave, *strategythermo_->p(), true),
+                    *Core::LinAlg::ml_multiply(thermothermocolsslave, *strategythermo_->p(), true),
                     false, 1.0, 1.0);
 
                 break;
@@ -1114,7 +1114,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
             // transform and assemble temporary matrix for slave-side columns of global system
             // matrix
             systemmatrix->add(
-                *Core::LinAlg::MLMultiply(systemmatrixcolsslave, *strategythermo_->p(), true),
+                *Core::LinAlg::ml_multiply(systemmatrixcolsslave, *strategythermo_->p(), true),
                 false, 1.0, 1.0);
 
             break;
@@ -1270,7 +1270,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
         Teuchos::rcp(new Epetra_MultiVector(dof_row_map().operator*(), dimns, true));
-    Core::LinAlg::StdVectorToEpetraMultiVector(*ns, nullspace, dimns);
+    Core::LinAlg::std_vector_to_epetra_multi_vector(*ns, nullspace, dimns);
 
     mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     mllist.set("null space: vectors", nullspace->Values());
@@ -1558,7 +1558,7 @@ void STI::Monolithic::solve()
     get_comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
     // output performance statistics associated with linear solver into text file if applicable
-    if (Core::UTILS::IntegralValue<int>(*fieldparameters_, "OUTPUTLINSOLVERSTATS"))
+    if (Core::UTILS::integral_value<int>(*fieldparameters_, "OUTPUTLINSOLVERSTATS"))
       scatra_field()->output_lin_solver_stats(*solver_, dtsolve_, step(), static_cast<int>(iter_),
           residual_->Map().NumGlobalElements());
 
@@ -1576,7 +1576,7 @@ void STI::Monolithic::solve()
       const Teuchos::RCP<const Epetra_Vector> masterincrement =
           strategythermo_->interface_maps()->extract_vector(*thermoincrement, 2);
       const Teuchos::RCP<Epetra_Vector> slaveincrement =
-          Core::LinAlg::CreateVector(*strategythermo_->interface_maps()->Map(1));
+          Core::LinAlg::create_vector(*strategythermo_->interface_maps()->Map(1));
       switch (strategyscatra_->coupling_type())
       {
         case Inpar::S2I::coupling_matching_nodes:
@@ -1773,7 +1773,7 @@ void STI::Monolithic::assemble_domain_interface_off_diag(
 
       // add projected slave-side rows of thermo-scatra matrix block to corresponding
       // master-side rows
-      thermoscatrablock.add(*Core::LinAlg::MLMultiply(*strategythermo_->p(), true,
+      thermoscatrablock.add(*Core::LinAlg::ml_multiply(*strategythermo_->p(), true,
                                 thermoscatrarowsslave, false, false, false, true),
           false, 1.0, 1.0);
     }

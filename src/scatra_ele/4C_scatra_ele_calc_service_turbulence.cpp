@@ -229,14 +229,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
   Core::LinAlg::Matrix<1, nen_> edens_hat;
   Core::LinAlg::Matrix<1, nen_> edenstemp_hat;
   // extract required (node-based) filtered quantities
-  Core::FE::ExtractMyNodeBasedValues(ele, evel_hat, col_filtered_vel, nsd_);
-  Core::FE::ExtractMyNodeBasedValues(ele, edensvel_hat, col_filtered_dens_vel, nsd_);
-  Core::FE::ExtractMyNodeBasedValues(ele, edensveltemp_hat, col_filtered_dens_vel_temp, nsd_);
-  Core::FE::ExtractMyNodeBasedValues(
+  Core::FE::extract_my_node_based_values(ele, evel_hat, col_filtered_vel, nsd_);
+  Core::FE::extract_my_node_based_values(ele, edensvel_hat, col_filtered_dens_vel, nsd_);
+  Core::FE::extract_my_node_based_values(ele, edensveltemp_hat, col_filtered_dens_vel_temp, nsd_);
+  Core::FE::extract_my_node_based_values(
       ele, edensstraintemp_hat, col_filtered_dens_rateofstrain_temp, nsd_);
-  Core::FE::ExtractMyNodeBasedValues(ele, etemp_hat, col_filtered_temp, 1);
-  Core::FE::ExtractMyNodeBasedValues(ele, edens_hat, col_filtered_dens, 1);
-  Core::FE::ExtractMyNodeBasedValues(ele, edenstemp_hat, col_filtered_dens_temp, 1);
+  Core::FE::extract_my_node_based_values(ele, etemp_hat, col_filtered_temp, 1);
+  Core::FE::extract_my_node_based_values(ele, edens_hat, col_filtered_dens, 1);
+  Core::FE::extract_my_node_based_values(ele, edenstemp_hat, col_filtered_dens_temp, 1);
 
   // get center coordinates of element
   xcenter = 0.0;
@@ -379,10 +379,10 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
   Core::LinAlg::Matrix<1, 1> phi2_hat(true);
   Core::LinAlg::Matrix<1, 1> phiexpression_hat(true);
 
-  Core::FE::ExtractMyNodeBasedValues(ele, ephi_hat, col_filtered_phi, nsd_);
-  Core::FE::ExtractMyNodeBasedValues(ele, ephi2_hat, col_filtered_phi2, 1);
-  Core::FE::ExtractMyNodeBasedValues(ele, ephiexpression_hat, col_filtered_phiexpression, 1);
-  Core::FE::ExtractMyNodeBasedValues(ele, ealphaijsc_hat, col_filtered_alphaijsc, nsd_ * nsd_);
+  Core::FE::extract_my_node_based_values(ele, ephi_hat, col_filtered_phi, nsd_);
+  Core::FE::extract_my_node_based_values(ele, ephi2_hat, col_filtered_phi2, 1);
+  Core::FE::extract_my_node_based_values(ele, ephiexpression_hat, col_filtered_phiexpression, 1);
+  Core::FE::extract_my_node_based_values(ele, ealphaijsc_hat, col_filtered_alphaijsc, nsd_ * nsd_);
   // use one-point Gauss rule to do calculations at the element center
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToStabGaussRule<distype>::rule);
   double volume = eval_shape_func_and_derivs_at_int_point(intpoints, 0);
@@ -796,7 +796,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_fine_scale_subgr_d
   if (not scatraparatimint_->is_incremental())
   {
     // get element-type constant
-    const double mk = ScaTra::MK<distype>();
+    const double mk = ScaTra::mk<distype>();
 
     // velocity norm
     const double vel_norm = convelint.norm2();
@@ -1472,7 +1472,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // extract local values of convective velocity field from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
@@ -1489,7 +1489,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vector acceleration field");
 
     // extract local values of acceleration field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     rotsymmpbc_->rotate_my_values_if_necessary(eaccnp_);
@@ -1500,7 +1500,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
       lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_];
 
     // extract local values of pressure field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
   }
 
   // extract local values from the global vectors
@@ -1508,8 +1508,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist_, la[0].lm_);
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, la[0].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist_, la[0].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, la[0].lm_);
 
   // reset to zero; used in get_material_params if not incremental -> used to calculate densn which
   // is not required here
@@ -1523,7 +1523,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.get_state("fsphinp");
     if (gfsphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
 
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
 
     // get fine-scale velocity at nodes
     const Teuchos::RCP<const Epetra_Vector> fsvelocity =
@@ -1532,7 +1532,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
       FOUR_C_THROW("Cannot get fine-scale velocity field from scatra discretization!");
 
     // extract local values of fine-scale velocity field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*fsvelocity, efsvel_, lmvel);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*fsvelocity, efsvel_, lmvel);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     rotsymmpbc_->rotate_my_values_if_necessary(efsvel_);

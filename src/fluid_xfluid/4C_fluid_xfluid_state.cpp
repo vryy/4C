@@ -52,8 +52,8 @@ FLD::XFluidState::CouplingState::CouplingState(
   C_ss_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *slavediscret_mat->dof_row_map(), 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
-  rhC_s_ = Core::LinAlg::CreateVector(*slavediscret_rhs->dof_row_map(), true);
-  rhC_s_col_ = Core::LinAlg::CreateVector(*slavediscret_rhs->dof_col_map(), true);
+  rhC_s_ = Core::LinAlg::create_vector(*slavediscret_rhs->dof_row_map(), true);
+  rhC_s_col_ = Core::LinAlg::create_vector(*slavediscret_rhs->dof_col_map(), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -64,9 +64,9 @@ void FLD::XFluidState::CouplingState::zero_coupling_matrices_and_rhs()
   if (!is_active_) return;
 
   // zero all coupling matrices and rhs vectors
-  XFEM::ZeroMatrix(C_xs_);
-  XFEM::ZeroMatrix(C_sx_);
-  XFEM::ZeroMatrix(C_ss_);
+  XFEM::zero_matrix(C_xs_);
+  XFEM::zero_matrix(C_sx_);
+  XFEM::zero_matrix(C_ss_);
 
   rhC_s_->PutScalar(0.0);
   rhC_s_col_->PutScalar(0.0);
@@ -108,12 +108,12 @@ void FLD::XFluidState::CouplingState::destroy(bool throw_exception)
 {
   if (!is_active_) return;
 
-  XFEM::DestroyMatrix(C_xs_, throw_exception);
-  XFEM::DestroyMatrix(C_sx_, throw_exception);
-  XFEM::DestroyMatrix(C_ss_, throw_exception);
+  XFEM::destroy_matrix(C_xs_, throw_exception);
+  XFEM::destroy_matrix(C_sx_, throw_exception);
+  XFEM::destroy_matrix(C_ss_, throw_exception);
 
-  XFEM::DestroyRCPObject(rhC_s_, throw_exception);
-  XFEM::DestroyRCPObject(rhC_s_col_, throw_exception);
+  XFEM::destroy_rcp_object(rhC_s_, throw_exception);
+  XFEM::destroy_rcp_object(rhC_s_col_, throw_exception);
 
   is_active_ = false;
 }
@@ -182,43 +182,43 @@ void FLD::XFluidState::init_state_vectors()
   // Vectors passed to the element
   // -----------------------------
   // velocity/pressure at time n+1, n and n-1
-  velnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
-  veln_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
-  velnm_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  velnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
+  veln_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
+  velnm_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // velocity/pressure at time n+alpha_F
-  velaf_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  velaf_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
 
   // acceleration/(scalar time derivative) at time n+1 and n
-  accnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
-  accn_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  accnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
+  accn_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
-  accam_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  accam_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // scalar at time n+alpha_F/n+1 and n+alpha_M/n
   // (only required for low-Mach-number case)
   // ... this is a dummy to avoid errors
-  scaaf_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
-  scaam_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  scaaf_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
+  scaam_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // history vector
-  hist_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  hist_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // the vector containing body and surface forces
-  neumann_loads_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  neumann_loads_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  residual_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
-  residual_col_ = Core::LinAlg::CreateVector(*xfluiddofcolmap_, true);
-  trueresidual_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  residual_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
+  residual_col_ = Core::LinAlg::create_vector(*xfluiddofcolmap_, true);
+  trueresidual_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // nonlinear iteration increment vector
-  incvel_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  incvel_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  zeros_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -286,11 +286,11 @@ void FLD::XFluidState::init_ale_state_vectors(
     Teuchos::RCP<const Epetra_Vector> gridvnp_initmap)
 {
   //! @name Ale Displacement at time n+1
-  dispnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  dispnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
   xdiscret->export_initialto_active_vector(dispnp_initmap, dispnp_);
 
   //! @name Grid Velocity at time n+1
-  gridvnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  gridvnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
   xdiscret->export_initialto_active_vector(gridvnp_initmap, gridvnp_);
 }
 
@@ -346,7 +346,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs(
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::zero_system_matrix_and_rhs()
 {
-  XFEM::ZeroMatrix(sysmat_);
+  XFEM::zero_matrix(sysmat_);
 
   // zero residual vectors
   residual_col_->PutScalar(0.0);
@@ -377,7 +377,8 @@ void FLD::XFluidState::setup_map_extractors(
   // create vel-pres splitter
   const int numdim = Global::Problem::instance()->n_dim();
   velpressplitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
-  Core::LinAlg::CreateMapExtractorFromDiscretization(*xfluiddiscret, numdim, 1, *velpressplitter_);
+  Core::LinAlg::create_map_extractor_from_discretization(
+      *xfluiddiscret, numdim, 1, *velpressplitter_);
 }
 
 
@@ -385,7 +386,7 @@ bool FLD::XFluidState::destroy()
 {
   // destroy system matrix (destroy after coupling matrices, as for twophase problems the coupling
   // matrices are identical to the system matrix)
-  XFEM::DestroyMatrix(sysmat_);
+  XFEM::destroy_matrix(sysmat_);
 
   // destroy all coupling system matrices and rhs vectors (except for levelset coupling objects
   for (std::map<int, Teuchos::RCP<CouplingState>>::iterator i = coup_state_.begin();
@@ -401,37 +402,37 @@ bool FLD::XFluidState::destroy()
   }
 
   // destroy dofrowmap and dofcolmap
-  XFEM::DestroyRCPObject(xfluiddofrowmap_);
-  XFEM::DestroyRCPObject(xfluiddofcolmap_);
+  XFEM::destroy_rcp_object(xfluiddofrowmap_);
+  XFEM::destroy_rcp_object(xfluiddofcolmap_);
 
   // destroy state vectors
-  XFEM::DestroyRCPObject(velnp_);
-  XFEM::DestroyRCPObject(veln_);
-  XFEM::DestroyRCPObject(velnm_);
-  XFEM::DestroyRCPObject(velaf_);
+  XFEM::destroy_rcp_object(velnp_);
+  XFEM::destroy_rcp_object(veln_);
+  XFEM::destroy_rcp_object(velnm_);
+  XFEM::destroy_rcp_object(velaf_);
 
-  XFEM::DestroyRCPObject(accnp_);
-  XFEM::DestroyRCPObject(accn_);
-  XFEM::DestroyRCPObject(accam_);
+  XFEM::destroy_rcp_object(accnp_);
+  XFEM::destroy_rcp_object(accn_);
+  XFEM::destroy_rcp_object(accam_);
 
-  XFEM::DestroyRCPObject(scaaf_);
-  XFEM::DestroyRCPObject(scaam_);
+  XFEM::destroy_rcp_object(scaaf_);
+  XFEM::destroy_rcp_object(scaam_);
 
-  XFEM::DestroyRCPObject(hist_);
-  XFEM::DestroyRCPObject(neumann_loads_);
+  XFEM::destroy_rcp_object(hist_);
+  XFEM::destroy_rcp_object(neumann_loads_);
 
-  XFEM::DestroyRCPObject(residual_);
-  XFEM::DestroyRCPObject(trueresidual_);
+  XFEM::destroy_rcp_object(residual_);
+  XFEM::destroy_rcp_object(trueresidual_);
 
-  XFEM::DestroyRCPObject(zeros_);
-  XFEM::DestroyRCPObject(incvel_);
+  XFEM::destroy_rcp_object(zeros_);
+  XFEM::destroy_rcp_object(incvel_);
 
-  XFEM::DestroyRCPObject(dispnp_);
-  XFEM::DestroyRCPObject(gridvnp_);
+  XFEM::destroy_rcp_object(dispnp_);
+  XFEM::destroy_rcp_object(gridvnp_);
 
 
   // destroy velpressplitter_
-  XFEM::DestroyRCPObject(velpressplitter_);
+  XFEM::destroy_rcp_object(velpressplitter_);
 
   // wizard, dofset and conditionmanager keep RCPs pointing to them and cannot be destroyed as they
   // are further used in xfluid-class decrease at least the strong reference counter

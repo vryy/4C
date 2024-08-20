@@ -128,7 +128,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
   }
 
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
-    coupl_elepairs_[i]->delete_unnecessary_g_ps(gp_vector);
+    coupl_elepairs_[i]->delete_unnecessary_gps(gp_vector);
 
   int total_num_gp = 0;
   int numgp = 0;
@@ -154,7 +154,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
 
   // print out summary of pairs
   if (contdis_->name() == "porofluid" &&
-      (Core::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+      (Core::UTILS::integral_value<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
   {
     if (myrank_ == 0)
       std::cout << "In total " << numgp_desired << " GPs (" << numgp_per_artele

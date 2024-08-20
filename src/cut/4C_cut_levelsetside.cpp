@@ -150,7 +150,7 @@ bool Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           // find levelset value at side center
           Core::LinAlg::Matrix<4, 1> lsv;
           Core::LinAlg::Matrix<4, 1> funct;
-          Core::FE::shape_function_2D(funct, 0., 0., Core::FE::CellType::quad4);
+          Core::FE::shape_function_2d(funct, 0., 0., Core::FE::CellType::quad4);
           const std::vector<Node*>& nodes = side.nodes();
           std::vector<int> zero_positions;
           for (unsigned i = 0; i < 4; ++i)
@@ -275,7 +275,7 @@ bool Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
     }  // case Core::FE::CellType::quad4:
     default:
       FOUR_C_THROW("Unsupported side shape! (shape = %d | %s )", side.shape(),
-          Core::FE::CellTypeToString(side.shape()).c_str());
+          Core::FE::cell_type_to_string(side.shape()).c_str());
       break;
   }
   return false;

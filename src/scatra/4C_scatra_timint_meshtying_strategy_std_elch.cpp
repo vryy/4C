@@ -32,7 +32,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::ini
 {
   Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix;
 
-  if (Core::UTILS::IntegralValue<int>(*(elch_tim_int()->elch_parameter_list()), "BLOCKPRECOND"))
+  if (Core::UTILS::integral_value<int>(*(elch_tim_int()->elch_parameter_list()), "BLOCKPRECOND"))
   {
     // safety checks
     if (elch_tim_int()->equ_pot() == Inpar::ElCh::equpot_undefined)
@@ -48,7 +48,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::ini
     // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal due to electroneutrality, A_11: EMPTY matrix !!!!!
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     Core::LinAlg::MapExtractor splitter;
-    Core::LinAlg::CreateMapExtractorFromDiscretization(
+    Core::LinAlg::create_map_extractor_from_discretization(
         *(scatratimint_->discretization()), scatratimint_->num_scal(), splitter);
     systemmatrix = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>(
         splitter, splitter, 27, false, true));

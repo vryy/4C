@@ -40,7 +40,7 @@ namespace
   const std::array<std::string, 6> reserved_words = {"pi", "e", "E", "\t", "\n", " "};
 
   template <std::size_t n>
-  [[nodiscard]] bool Contains(const std::array<std::string, n>& array, const std::string& element)
+  [[nodiscard]] bool contains(const std::array<std::string, n>& array, const std::string& element)
   {
     return std::find(array.begin(), array.end(), element) != array.end();
   }

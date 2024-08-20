@@ -38,7 +38,7 @@ Mat::PAR::MatList::MatList(const Core::Mat::PAR::Parameter::Data& matdata)
     for (m = matids_.begin(); m != matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(matid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(matid);
       mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
     }
   }
@@ -113,7 +113,7 @@ void Mat::MatList::setup_mat_map()
   for (m = params_->mat_ids()->begin(); m != params_->mat_ids()->end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(matid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(matid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(matid, mat));
   }
@@ -170,7 +170,7 @@ void Mat::MatList::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid(-1);
@@ -196,7 +196,7 @@ void Mat::MatList::unpack(const std::vector<char>& data)
     for (m = params_->mat_ids()->begin(); m != params_->mat_ids()->end(); m++)
     {
       const int actmatid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(actmatid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(actmatid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actmatid, mat));
     }

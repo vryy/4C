@@ -74,13 +74,13 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra
   {
     // type of LM interpolation for quadratic elements
     Inpar::Mortar::LagMultQuad lagmultquad =
-        Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
     if (lagmultquad != Inpar::Mortar::lagmult_lin)
     {
       // modify dmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       dmatrix_ = temp1;
     }
     else
@@ -90,19 +90,19 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra
   }
 
   // build mortar matrix products
-  mtm_ = Core::LinAlg::MLMultiply(*mmatrix_, true, *mmatrix_, false, false, false, true);
-  mtd_ = Core::LinAlg::MLMultiply(*mmatrix_, true, *dmatrix_, false, false, false, true);
-  dtm_ = Core::LinAlg::MLMultiply(*dmatrix_, true, *mmatrix_, false, false, false, true);
-  dtd_ = Core::LinAlg::MLMultiply(*dmatrix_, true, *dmatrix_, false, false, false, true);
+  mtm_ = Core::LinAlg::ml_multiply(*mmatrix_, true, *mmatrix_, false, false, false, true);
+  mtd_ = Core::LinAlg::ml_multiply(*mmatrix_, true, *dmatrix_, false, false, false, true);
+  dtm_ = Core::LinAlg::ml_multiply(*dmatrix_, true, *mmatrix_, false, false, false, true);
+  dtd_ = Core::LinAlg::ml_multiply(*dmatrix_, true, *dmatrix_, false, false, false, true);
 
   // transform rows of mortar matrix products to parallel distribution
   // of the global problem (stored in the "p"-version of dof maps)
   if (par_redist())
   {
-    mtm_ = Mortar::MatrixRowTransform(mtm_, pgmdofrowmap_);
-    mtd_ = Mortar::MatrixRowTransform(mtd_, pgmdofrowmap_);
-    dtm_ = Mortar::MatrixRowTransform(dtm_, pgsdofrowmap_);
-    dtd_ = Mortar::MatrixRowTransform(dtd_, pgsdofrowmap_);
+    mtm_ = Mortar::matrix_row_transform(mtm_, pgmdofrowmap_);
+    mtd_ = Mortar::matrix_row_transform(mtd_, pgmdofrowmap_);
+    dtm_ = Mortar::matrix_row_transform(dtm_, pgsdofrowmap_);
+    dtd_ = Mortar::matrix_row_transform(dtd_, pgsdofrowmap_);
   }
 
   // full stiffness matrix
@@ -134,7 +134,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::mesh_initializatio
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::mesh_initialization");
 
   // get out of here is NTS algorithm is activated
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
+  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
       Inpar::Mortar::algorithm_nts)
     return Teuchos::null;
 
@@ -152,20 +152,20 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::mesh_initializatio
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Epetra_Vector> Xmaster = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> Xmaster = Core::LinAlg::create_vector(*gmdofrowmap_, true);
   assemble_coords("master", true, Xmaster);
 
   //**********************************************************************
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // create linear problem
-  Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::create_vector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   mmatrix_->multiply(false, *Xmaster, *rhs);
 
   // solve with default solver
   Teuchos::ParameterList solvparams;
-  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
   Core::LinAlg::Solver solver(solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
 
@@ -370,7 +370,7 @@ void CONTACT::MtPenaltyStrategy::update_constraint_norm(int uzawaiter)
   // (only for Uzawa Augmented Lagrange strategy)
   //********************************************************************
   Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
   if (soltype == Inpar::CONTACT::solution_uzawa)
   {

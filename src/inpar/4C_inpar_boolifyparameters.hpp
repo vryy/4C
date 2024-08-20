@@ -24,7 +24,8 @@ namespace Input
   /// Parameters consisting integral values for Yes/No tuples
   /// are removed and replaced by a bool parameter holding true/false
   /// respectively.
-  void BoolifyValidInputParameters(Teuchos::ParameterList& list  ///< the valid input parameter list
+  void boolify_valid_input_parameters(
+      Teuchos::ParameterList& list  ///< the valid input parameter list
   );
 
 }  // namespace Input

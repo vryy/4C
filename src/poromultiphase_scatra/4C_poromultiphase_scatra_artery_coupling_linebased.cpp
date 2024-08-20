@@ -71,12 +71,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::setup()
 
   // calculate blood vessel volume fraction (only porofluid needs to do this)
   if (contdis_->name() == "porofluid" &&
-      (Core::UTILS::IntegralValue<int>(couplingparams_, "OUTPUT_BLOODVESSELVOLFRAC")))
+      (Core::UTILS::integral_value<int>(couplingparams_, "OUTPUT_BLOODVESSELVOLFRAC")))
     calculate_blood_vessel_volume_fraction();
 
   // print out summary of pairs
   if (contdis_->name() == "porofluid" &&
-      (Core::UTILS::IntegralValue<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+      (Core::UTILS::integral_value<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
     output_summary();
 
   issetup_ = true;
@@ -236,7 +236,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::pre_evaluate_c
   // communicate the dummy map to all procs.
   std::vector<int> allproc(get_comm().NumProc());
   for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
-  Core::LinAlg::Gather<double>(
+  Core::LinAlg::gather<double>(
       duplicates, duplicates, (int)allproc.size(), allproc.data(), get_comm());
 
   // loop over duplicates and delete one duplicate (the one where the 2D/3D element has the larger
@@ -307,7 +307,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
       Core::Elements::Element* artele = arterydis_->g_element(artelegid);
 
       // TODO: this will not work for higher order artery eles
-      const double initlength = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
+      const double initlength =
+          POROFLUIDMULTIPHASE::UTILS::get_max_nodal_distance(artele, arterydis_);
       const int numseg = (int)(gid_to_segment_[artelegid].size() / 2);
       gid_to_seglength_[artelegid].resize(numseg);
       for (int iseg = 0; iseg < numseg; iseg++)
@@ -344,7 +345,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
     Core::Elements::Element* thisele = arterydis_->g_element(artelegid);
 
     // TODO: this will not work for higher order artery eles
-    const double initlength = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(thisele, arterydis_);
+    const double initlength =
+        POROFLUIDMULTIPHASE::UTILS::get_max_nodal_distance(thisele, arterydis_);
 
     std::vector<double> segmentboundaries = gid_to_segment_[artelegid];
     for (unsigned int iseg = 0; iseg < segmentboundaries.size() / 2; iseg++)
@@ -412,7 +414,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
     Core::Elements::Element* artele = arterydis_->g_element(artelegid);
 
     // TODO: this will not work for higher order artery eles
-    const double initlength = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
+    const double initlength =
+        POROFLUIDMULTIPHASE::UTILS::get_max_nodal_distance(artele, arterydis_);
 
     // first add all contributions int unaffected_diams_artery_row-vector
     Teuchos::RCP<Mat::Cnst1dArt> arterymat =
@@ -467,7 +470,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::
     // TODO: this will not work for higher order artery eles
     const double etaA = coupl_elepairs_[i]->etadata();
     const double etaB = coupl_elepairs_[i]->eta_b();
-    const double length = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
+    const double length = POROFLUIDMULTIPHASE::UTILS::get_max_nodal_distance(artele, arterydis_);
 
     const double vol_cont = coupl_elepairs_[i]->calculate_vol_2d_3d();
     const double vol_art =
@@ -615,7 +618,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_gid_to_se
   // communicate it to all procs.
   std::vector<int> allproc(get_comm().NumProc());
   for (int i = 0; i < get_comm().NumProc(); ++i) allproc[i] = i;
-  Core::LinAlg::Gather<double>(
+  Core::LinAlg::gather<double>(
       gid_to_seglength, gid_to_seglength, (int)allproc.size(), allproc.data(), get_comm());
 }
 
@@ -740,7 +743,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
   }
   // get fully-overlapping discretization
   Teuchos::RCP<Core::FE::Discretization> artconncompdis =
-      POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
+      POROFLUIDMULTIPHASE::UTILS::create_fully_overlapping_artery_discretization(
           arterydis_, "conn_comp_dis", true);
 
   // vector to mark visited nodes
@@ -955,7 +958,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::get_ele_segment_len
   Teuchos::RCP<const Epetra_Vector> curr_seg_lengths = arterydis_->get_state(1, "curr_seg_lengths");
 
   std::vector<double> seglengths(maxnumsegperartele_);
-  Core::FE::ExtractMyValues(*curr_seg_lengths, seglengths, seglengthdofs);
+  Core::FE::extract_my_values(*curr_seg_lengths, seglengths, seglengthdofs);
 
   return seglengths;
 }

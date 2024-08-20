@@ -111,7 +111,7 @@ void FS3I::PartFPS3I::init()
   fpsi_algo = FPSI_UTILS->setup_discretizations(comm_, fpsidynparams, poroelastdynparams);
 
   // only monolithic coupling of fpsi problem is supported!
-  int coupling = Core::UTILS::IntegralValue<int>(fpsidynparams, "COUPALGO");
+  int coupling = Core::UTILS::integral_value<int>(fpsidynparams, "COUPALGO");
   if (coupling == fpsi_monolithic_plain)
   {
     // Cast needed because functions such as poro_field() and fluid_field() are just a
@@ -142,7 +142,7 @@ void FS3I::PartFPS3I::init()
 
   // determine type of scalar transport
   const Inpar::ScaTra::ImplType impltype_fluid =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::ImplType>(
+      Core::UTILS::integral_value<Inpar::ScaTra::ImplType>(
           Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
@@ -161,7 +161,7 @@ void FS3I::PartFPS3I::init()
   if (fluidscatradis->num_global_nodes() == 0)
   {
     // fill fluid-based scatra discretization by cloning fluid discretization
-    Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
+    Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
         fluiddis, fluidscatradis, Global::Problem::instance()->cloning_material_map());
     fluidscatradis->fill_complete();
 
@@ -189,7 +189,7 @@ void FS3I::PartFPS3I::init()
   if (structscatradis->num_global_nodes() == 0)
   {
     // fill poro-based scatra discretization by cloning structure discretization
-    Core::FE::CloneDiscretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
+    Core::FE::clone_discretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
         structdis, structscatradis, Global::Problem::instance()->cloning_material_map());
 
     // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work
@@ -256,12 +256,12 @@ void FS3I::PartFPS3I::init()
   // and rule out unsupported versions of generalized-alpha time-integration
   // scheme (as well as other inappropriate schemes) for fluid subproblem
   Inpar::ScaTra::TimeIntegrationScheme scatratimealgo =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+      Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
   Inpar::FLUID::TimeIntegrationScheme fluidtimealgo =
-      Core::UTILS::IntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
+      Core::UTILS::integral_value<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
 
   Inpar::Solid::DynamicType structtimealgo =
-      Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYP");
+      Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYP");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {
@@ -407,7 +407,7 @@ void FS3I::PartFPS3I::redistribute_interface()
 
   // after redistributing the interface we have to fix the material pointers of the structure-scatra
   // discretisation
-  PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, structscatradis);
+  PoroElast::UTILS::set_material_pointers_matching_grid(structdis, structscatradis);
 }
 
 /*----------------------------------------------------------------------*
@@ -485,7 +485,7 @@ void FS3I::PartFPS3I::setup_system()
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->scatra_field()->discretization()->dof_row_map();
-      Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dofrowmap, true);
+      Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
   }
@@ -530,7 +530,7 @@ void FS3I::PartFPS3I::setup_system()
   // use coupled scatra solver object
   scatrasolver_ = Teuchos::rcp(new Core::LinAlg::Solver(coupledscatrasolvparams,
       firstscatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
@@ -549,12 +549,12 @@ void FS3I::PartFPS3I::setup_system()
   scatrasolver_->put_solver_params_to_sub_params("Inverse1",
       Global::Problem::instance()->solver_params(linsolver1number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   scatrasolver_->put_solver_params_to_sub_params("Inverse2",
       Global::Problem::instance()->solver_params(linsolver2number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   (scatravec_[0])
       ->scatra_field()
@@ -637,7 +637,7 @@ void FS3I::PartFPS3I::set_velocity_fields()
 {
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
-  int cdvel = Core::UTILS::IntegralValue<int>(scatradyn, "VELOCITYFIELD");
+  int cdvel = Core::UTILS::integral_value<int>(scatradyn, "VELOCITYFIELD");
   switch (cdvel)
   {
     case Inpar::ScaTra::velocity_zero:
@@ -781,7 +781,7 @@ void FS3I::PartFPS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>
 
   // insert porofluid interface entries into vector with full porofluid length
   Teuchos::RCP<Epetra_Vector> porofluid =
-      Core::LinAlg::CreateVector(*(fpsi_->poro_field()->fluid_field()->dof_row_map()), true);
+      Core::LinAlg::create_vector(*(fpsi_->poro_field()->fluid_field()->dof_row_map()), true);
 
   // Parameter int block of function InsertVector:
   fpsi_->fpsi_coupl()->poro_fluid_fpsi_vel_pres_extractor()->insert_vector(

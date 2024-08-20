@@ -25,7 +25,7 @@ namespace Core::Elements
 
 namespace Adapter
 {
-  Inpar::ScaTra::ImplType GetScaTraImplType(Core::Elements::Element* ele);
+  Inpar::ScaTra::ImplType get_sca_tra_impl_type(Core::Elements::Element* ele);
 }  // namespace Adapter
 
 

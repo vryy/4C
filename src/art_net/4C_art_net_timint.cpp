@@ -60,7 +60,7 @@ Arteries::TimInt::TimInt(Teuchos::RCP<Core::FE::Discretization> actdis, const in
   maxtime_ = dtp_ * double(stepmax_);
 
   // solve scatra flag
-  solvescatra_ = Core::UTILS::IntegralValue<int>(artparams, "SOLVESCATRA");
+  solvescatra_ = Core::UTILS::integral_value<int>(artparams, "SOLVESCATRA");
 
   if (linsolvernumber_ == -1) FOUR_C_THROW("Set a valid linear solver for arterial network");
 }
@@ -76,7 +76,7 @@ void Arteries::TimInt::init(const Teuchos::ParameterList& globaltimeparams,
   solver_ = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber_),
           discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   discret_->compute_null_space_if_necessary(solver_->params());

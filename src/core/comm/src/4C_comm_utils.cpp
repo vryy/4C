@@ -29,7 +29,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    | create communicator                                      ghamm 02/12 |
    *----------------------------------------------------------------------*/
-  Teuchos::RCP<Communicators> CreateComm(std::vector<std::string> argv)
+  Teuchos::RCP<Communicators> create_comm(std::vector<std::string> argv)
   {
     // for coupled simulations: color = 1 for 4C and color = 0 for other programs
     // so far: either nested parallelism within 4C or coupling with further
@@ -333,7 +333,7 @@ namespace Core::Communication
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  bool AreDistributedVectorsIdentical(const Communicators& communicators,
+  bool are_distributed_vectors_identical(const Communicators& communicators,
       Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol /*= 1.0e-14*/
   )
   {
@@ -359,9 +359,9 @@ namespace Core::Communication
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     Teuchos::RCP<Epetra_Map> proc0map;
     if (lcomm->MyPID() == gcomm->MyPID())
-      proc0map = Core::LinAlg::AllreduceOverlappingEMap(*vecmap, 0);
+      proc0map = Core::LinAlg::allreduce_overlapping_e_map(*vecmap, 0);
     else
-      proc0map = Core::LinAlg::AllreduceOverlappingEMap(*vecmap, lcomm->NumProc() - 1);
+      proc0map = Core::LinAlg::allreduce_overlapping_e_map(*vecmap, lcomm->NumProc() - 1);
 
     // export full vectors to the two desired processors
     Teuchos::RCP<Epetra_MultiVector> fullvec =
@@ -475,7 +475,7 @@ namespace Core::Communication
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  bool AreDistributedSparseMatricesIdentical(const Communicators& communicators,
+  bool are_distributed_sparse_matrices_identical(const Communicators& communicators,
       Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol /*= 1.0e-14*/
   )
   {
@@ -499,9 +499,9 @@ namespace Core::Communication
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     Teuchos::RCP<Epetra_Map> serialmap;
     if (lcomm->MyPID() == gcomm->MyPID())
-      serialmap = Core::LinAlg::AllreduceOverlappingEMap(originalmap, 0);
+      serialmap = Core::LinAlg::allreduce_overlapping_e_map(originalmap, 0);
     else
-      serialmap = Core::LinAlg::AllreduceOverlappingEMap(originalmap, lcomm->NumProc() - 1);
+      serialmap = Core::LinAlg::allreduce_overlapping_e_map(originalmap, lcomm->NumProc() - 1);
 
     // export full matrices to the two desired processors
     Teuchos::RCP<Epetra_Import> serialimporter =

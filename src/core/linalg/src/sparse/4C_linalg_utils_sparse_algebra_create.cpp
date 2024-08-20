@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::CreateMatrix(const Epetra_Map& rowmap, const int npr)
+Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::create_matrix(const Epetra_Map& rowmap, const int npr)
 {
   if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
   return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
@@ -28,7 +28,7 @@ Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::CreateMatrix(const Epetra_Map& rowm
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::CreateIdentityMatrix(const Epetra_Map& map)
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::create_identity_matrix(const Epetra_Map& map)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Teuchos::rcp(new SparseMatrix(map, 1));
   int numelements = map.NumMyElements();
@@ -46,7 +46,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::CreateIdentityMatrix(cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SparseMatrix Core::LinAlg::CreateInterpolationMatrix(
+Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(
     const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params)
 {
   Teuchos::RCP<Epetra_CrsMatrix> prolongation_operator;
@@ -63,7 +63,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::CreateInterpolationMatrix(
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::LinAlg::CreateVector(
+Teuchos::RCP<Epetra_Vector> Core::LinAlg::create_vector(
     const Epetra_BlockMap& rowmap, const bool init)
 {
   return Teuchos::rcp(new Epetra_Vector(rowmap, init));
@@ -71,7 +71,7 @@ Teuchos::RCP<Epetra_Vector> Core::LinAlg::CreateVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::CreateMultiVector(
+Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::create_multi_vector(
     const Epetra_BlockMap& rowmap, const int numrows, const bool init)
 {
   return Teuchos::rcp(new Epetra_MultiVector(rowmap, numrows, init));
@@ -79,7 +79,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::CreateMultiVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::CreateMap(const std::set<int>& gids, const Epetra_Comm& comm)
+Teuchos::RCP<Epetra_Map> Core::LinAlg::create_map(
+    const std::set<int>& gids, const Epetra_Comm& comm)
 {
   std::vector<int> mapvec;
   mapvec.reserve(gids.size());
@@ -93,7 +94,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::CreateMap(const std::set<int>& gids, cons
 /*----------------------------------------------------------------------*
  | create epetra_map with out-of-bound check                 farah 06/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::CreateMap(
+Teuchos::RCP<Epetra_Map> Core::LinAlg::create_map(
     const std::vector<int>& gids, const Epetra_Comm& comm)
 {
   Teuchos::RCP<Epetra_Map> map;
@@ -108,7 +109,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::CreateMap(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::CreateMapExtractorFromDiscretization(
+void Core::LinAlg::create_map_extractor_from_discretization(
     const Core::FE::Discretization& dis, int ndim, Core::LinAlg::MultiMapExtractor& extractor)
 {
   std::set<int> conddofset;
@@ -158,7 +159,7 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis,
+void Core::LinAlg::create_map_extractor_from_discretization(const Core::FE::Discretization& dis,
     const Core::DOFSets::DofSetInterface& dofset, int ndim, Core::LinAlg::MapExtractor& extractor)
 {
   std::set<int> conddofset;
@@ -205,7 +206,7 @@ void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discreti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis,
+void Core::LinAlg::create_map_extractor_from_discretization(const Core::FE::Discretization& dis,
     int ndim_field1, int ndim_field2, Core::LinAlg::MultiMapExtractor& extractor)
 {
   unsigned fp_dim = static_cast<unsigned>(ndim_field1 + ndim_field2);

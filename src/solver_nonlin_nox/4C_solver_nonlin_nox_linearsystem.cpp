@@ -214,7 +214,7 @@ bool NOX::Nln::LinearSystem::apply_jacobian_block(const ::NOX::Epetra::Vector& i
 
   if (not input_epetra.Map().SameAs(domainmap))
   {
-    input_apply = Core::LinAlg::ExtractMyVector(input_epetra, domainmap);
+    input_apply = Core::LinAlg::extract_my_vector(input_epetra, domainmap);
   }
   else
   {
@@ -443,7 +443,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   if (jac.is_null())
     throw_error("adjust_pseudo_time_step()", "Cast to Core::LinAlg::SparseMatrix failed!");
   // get the diagonal terms of the jacobian
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(jac->row_map(), false);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(jac->row_map(), false);
   jac->extract_diagonal_copy(*diag);
   diag->Update(-1.0, *v, 1.0);
   // Finally undo the changes
@@ -455,7 +455,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   /* evaluate the first vector:
    *    eta^{-1} F_{n-1} + (\nabla_{x} F_{n-1})^{T} d_{n-1}             */
   double stepSizeInv = 1.0 / stepSize;
-  Teuchos::RCP<Epetra_Vector> vec_1 = Core::LinAlg::CreateVector(jac->row_map(), true);
+  Teuchos::RCP<Epetra_Vector> vec_1 = Core::LinAlg::create_vector(jac->row_map(), true);
   Teuchos::RCP<Epetra_Vector> vec_2 = Teuchos::rcp(new Epetra_Vector(rhs.getEpetraVector()));
   jac->multiply(false, dir.getEpetraVector(), *vec_1);
   vec_2->Scale(stepSizeInv);
@@ -472,7 +472,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   // ---------------------------------------------------------------------
   // show the error (L2-norm)
   // ---------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> vec_err = Core::LinAlg::CreateVector(jac->row_map(), true);
+  Teuchos::RCP<Epetra_Vector> vec_err = Core::LinAlg::create_vector(jac->row_map(), true);
   vec_err->Update(delta, *vec_1, 1.0, *vec_2, 0.0);
   double error_start = 0.0;
   vec_err->Norm2(&error_start);
@@ -677,7 +677,7 @@ const Core::LinAlg::SparseMatrix& NOX::Nln::LinearSystem::get_jacobian_block(
     default:
     {
       FOUR_C_THROW("Unsupported LinSystem::OperatorType: %d | %s", jacType_,
-          NOX::Nln::LinSystem::OperatorType2String(jacType_).c_str());
+          NOX::Nln::LinSystem::operator_type_to_string(jacType_).c_str());
       exit(EXIT_FAILURE);
     }
   }

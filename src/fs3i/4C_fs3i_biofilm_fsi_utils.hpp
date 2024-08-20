@@ -29,7 +29,7 @@ namespace FS3I
   {
     namespace UTILS
     {
-      void ScatraChangeConfig(Teuchos::RCP<Core::FE::Discretization> scatradis,
+      void scatra_change_config(Teuchos::RCP<Core::FE::Discretization> scatradis,
           Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
 
     } /* namespace UTILS */

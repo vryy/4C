@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
         " must be a beam element!");
 
   // get radius and stress-free reference length of beam element
-  radius1_ = BEAMINTERACTION::CalcEleRadius(beam_element_);
+  radius1_ = BEAMINTERACTION::calc_ele_radius(beam_element_);
   beamele_reflength_ = beam_element_->ref_length();
 
   // cast second element to RigidSphere
@@ -163,7 +163,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
 
   bool validclosestpointprojection = true;
 
-  if (std::abs(Core::FADUtils::CastToDouble(xicontact_)) <
+  if (std::abs(Core::FADUtils::cast_to_double(xicontact_)) <
       (1.0 + XIETATOL))  // ToDo when to reset nodalcontactflag_?
   {
     nodalcontactflag_[0] = false;
@@ -359,7 +359,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
     // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
     // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
     // linearized!
-    double norm_delta_x = Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(delta_x));
+    double norm_delta_x = Core::FADUtils::cast_to_double(Core::FADUtils::vector_norm<3>(delta_x));
 
     // the closer the beams get, the smaller is norm
     // norm is not allowed to be too small, else numerical problems occur
@@ -372,7 +372,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::closest
     evaluate_orthogonality_condition(f, delta_x, norm_delta_x, dx1);
 
     // compute the scalar residuum
-    residual = abs(Core::FADUtils::CastToDouble(f));
+    residual = abs(Core::FADUtils::cast_to_double(f));
 
     // check if Newton iteration has converged
     if (residual < BEAMCONTACTTOL) break;
@@ -530,9 +530,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
   //**********************************************************************
   if (!DoNotAssemble)
   {
-    for (unsigned int i = 0; i < dim1; ++i) forcevec1(i) += Core::FADUtils::CastToDouble(fc1_(i));
+    for (unsigned int i = 0; i < dim1; ++i) forcevec1(i) += Core::FADUtils::cast_to_double(fc1_(i));
 
-    for (unsigned int i = 0; i < dim2; ++i) forcevec2(i) += Core::FADUtils::CastToDouble(fc2_(i));
+    for (unsigned int i = 0; i < dim2; ++i) forcevec2(i) += Core::FADUtils::cast_to_double(fc2_(i));
   }
 }
 
@@ -724,16 +724,16 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     for (unsigned int j = 0; j < dim1; j++)
     {
       for (unsigned int i = 0; i < dim1; i++)
-        stiffmat11(i, j) += -Core::FADUtils::CastToDouble(stiffc1(i, j));
+        stiffmat11(i, j) += -Core::FADUtils::cast_to_double(stiffc1(i, j));
       for (unsigned int i = 0; i < dim2; i++)
-        stiffmat21(i, j) += -Core::FADUtils::CastToDouble(stiffc2(i, j));
+        stiffmat21(i, j) += -Core::FADUtils::cast_to_double(stiffc2(i, j));
     }
     for (unsigned int j = 0; j < dim2; j++)
     {
       for (unsigned int i = 0; i < dim1; i++)
-        stiffmat12(i, j) += -Core::FADUtils::CastToDouble(stiffc1(i, dim1 + j));
+        stiffmat12(i, j) += -Core::FADUtils::cast_to_double(stiffc1(i, dim1 + j));
       for (unsigned int i = 0; i < dim2; i++)
-        stiffmat22(i, j) += -Core::FADUtils::CastToDouble(stiffc2(i, dim1 + j));
+        stiffmat22(i, j) += -Core::FADUtils::cast_to_double(stiffc2(i, dim1 + j));
     }
 #else
     FOUR_C_THROW(
@@ -743,10 +743,10 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::evaluat
     {
       for (unsigned int i = 0; i < dim1; i++)
         stiffc1_copy(i, j) =
-            -Core::FADUtils::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
+            -Core::FADUtils::cast_to_double(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
       for (unsigned int i = 0; i < dim2; i++)
         stiffc2_copy(i, j) =
-            -Core::FADUtils::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
+            -Core::FADUtils::cast_to_double(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
     }
 
 #ifdef FADCHECKS
@@ -814,7 +814,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::compute
   for (unsigned int i = 0; i < 3; i++) normal(i) = x1(i) - x2(i);
 
   // compute length of normal
-  norm = Core::FADUtils::VectorNorm<3>(normal);
+  norm = Core::FADUtils::vector_norm<3>(normal);
   if (norm < NORMTOL) FOUR_C_THROW("ERROR: Normal of length zero! --> change time step!");
 
   // compute unit normal and store it in class variable
@@ -907,9 +907,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_sha
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    Core::FE::shape_function_1D(N1_i, eta, distype1);
-    Core::FE::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
-    Core::FE::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
+    Core::FE::shape_function_1d(N1_i, eta, distype1);
+    Core::FE::shape_function_1d_deriv1(N1_i_xi, eta, distype1);
+    Core::FE::shape_function_1d_deriv2(N1_i_xixi, eta, distype1);
   }
   else if (numnodalvalues == 2)
   {
@@ -918,9 +918,9 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::get_sha
     const Core::FE::CellType distype1herm = Core::FE::CellType::line2;
 
     // get values and derivatives of shape functions
-    Core::FE::shape_function_hermite_1D(N1_i, eta, beamele_reflength_, distype1herm);
-    Core::FE::shape_function_hermite_1D_deriv1(N1_i_xi, eta, beamele_reflength_, distype1herm);
-    Core::FE::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1herm);
+    Core::FE::shape_function_hermite_1d(N1_i, eta, beamele_reflength_, distype1herm);
+    Core::FE::shape_function_hermite_1d_deriv1(N1_i_xi, eta, beamele_reflength_, distype1herm);
+    Core::FE::shape_function_hermite_1d_deriv2(N1_i_xixi, eta, beamele_reflength_, distype1herm);
   }
   else
     FOUR_C_THROW(
@@ -1169,7 +1169,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
         << std::left << std::setprecision(2) << -1 << std::setw(9) << std::left
         << std::setprecision(3) << -1 << std::setw(12) << std::left << std::scientific << gap_
         << std::setw(12) << std::left << std::scientific
-        << Core::FADUtils::CastToDouble<TYPE, 3, 1>(fc2_).norm2() << std::setprecision(6)
+        << Core::FADUtils::cast_to_double<TYPE, 3, 1>(fc2_).norm2() << std::setprecision(6)
         << std::resetiosflags(std::ios::scientific) << std::right;
 
     out << "\n";

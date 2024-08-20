@@ -59,7 +59,7 @@ int Discret::ELEMENTS::ConstraintElement2::evaluate(Teuchos::ParameterList& para
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
       Core::LinAlg::Matrix<numnode, numdim> xscurr;  // material coord. of element
@@ -79,7 +79,7 @@ int Discret::ELEMENTS::ConstraintElement2::evaluate(Teuchos::ParameterList& para
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
       Core::LinAlg::Matrix<numnode, numdim> xscurr;  // material coord. of element
@@ -193,8 +193,8 @@ void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_angle(
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 
-  const double vec1normsquare = pow(Core::LinAlg::Norm2(vec1), 2);
-  const double vec2normsquare = pow(Core::LinAlg::Norm2(vec2), 2);
+  const double vec1normsquare = pow(Core::LinAlg::norm2(vec1), 2);
+  const double vec2normsquare = pow(Core::LinAlg::norm2(vec2), 2);
 
   elevector[0] = -((vec2[1] / sqrt(vec1normsquare * vec2normsquare) -
                        (vec2normsquare * vec1[1] *
@@ -477,8 +477,8 @@ void Discret::ELEMENTS::ConstraintElement2::compute_second_deriv_angle(
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 
-  const double vec1sq = pow(Core::LinAlg::Norm2(vec1), 2);
-  const double vec2sq = pow(Core::LinAlg::Norm2(vec2), 2);
+  const double vec1sq = pow(Core::LinAlg::norm2(vec1), 2);
+  const double vec2sq = pow(Core::LinAlg::norm2(vec2), 2);
 
   elematrix(0, 0) =
       -(((-2 * vec2sq * vec1[1] * vec2[1]) / pow(vec1sq * vec2sq, 1.5) -

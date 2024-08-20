@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::UTILS
 {
-  std::string Trim(const std::string& line)
+  std::string trim(const std::string& line)
   {
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
     return boost::algorithm::trim_all_copy(boost::algorithm::replace_all_copy(line, "\t", " "));
@@ -33,13 +33,13 @@ namespace Core::UTILS
 #endif
   }
 
-  std::vector<std::string> Split(const std::string& input, const std::string& delimiter)
+  std::vector<std::string> split(const std::string& input, const std::string& delimiter)
   {
     std::vector<std::string> return_value{};
     return boost::split(return_value, input, boost::is_any_of(delimiter));
   }
 
-  std::string StripComment(const std::string& line)
+  std::string strip_comment(const std::string& line)
   {
     std::string newline = line;
 
@@ -52,14 +52,14 @@ namespace Core::UTILS
 
     // remove trailing and leading whitespaces
     // compact internal whitespaces
-    newline = Trim(newline);
+    newline = trim(newline);
 
     return newline;
   }
 
-  std::string ToLower(const std::string& line) { return boost::algorithm::to_lower_copy(line); }
+  std::string to_lower(const std::string& line) { return boost::algorithm::to_lower_copy(line); }
 
-  std::vector<std::string> SplitStringList(const std::string& str, const std::string& separator)
+  std::vector<std::string> split_string_list(const std::string& str, const std::string& separator)
   {
     // Keep the currently remaining part of the input string in 'tmp' and
     // keep chopping elements of the list off the front
@@ -96,9 +96,9 @@ namespace Core::UTILS
     return split_list;
   }
 
-  std::vector<std::string> SplitStringList(const std::string& str, const char separator)
+  std::vector<std::string> split_string_list(const std::string& str, const char separator)
   {
-    return SplitStringList(str, std::string(1, separator));
+    return split_string_list(str, std::string(1, separator));
   }
 }  // namespace Core::UTILS
 

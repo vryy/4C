@@ -126,7 +126,7 @@ Core::FE::CellType Discret::ELEMENTS::Membrane<distype>::shape() const
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Membrane<distype>::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(distype);
+  return Core::FE::get_number_of_element_lines(distype);
 }
 
 /*----------------------------------------------------------------------*
@@ -163,7 +163,7 @@ void Discret::ELEMENTS::Membrane<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -227,7 +227,7 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Membrane<distype>::print(std::ostream& os) const
 {
   os << "Membrane ";
-  os << " discretization type: " << Core::FE::CellTypeToString(distype).c_str();
+  os << " discretization type: " << Core::FE::cell_type_to_string(distype).c_str();
   Element::print(os);
   std::cout << std::endl;
   return;
@@ -239,7 +239,7 @@ void Discret::ELEMENTS::Membrane<distype>::print(std::ostream& os) const
 template <Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Membrane<distype>::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
+  return Core::Communication::element_boundary_factory<MembraneLine<distype>, Membrane<distype>>(
       Core::Communication::buildLines, *this);
 }
 

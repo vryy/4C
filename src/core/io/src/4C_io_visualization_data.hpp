@@ -45,17 +45,17 @@ namespace Core::IO
      * @return std::string representation of the type name
      */
     template <typename ScalarType>
-    std::string ScalarTypeToString()
+    std::string scalar_type_to_string()
     {
-      FOUR_C_THROW("The scalar type in ScalarTypeToString is unknown");
+      FOUR_C_THROW("The scalar type in scalar_type_to_string is unknown");
     }
     template <>
-    inline std::string ScalarTypeToString<int>()
+    inline std::string scalar_type_to_string<int>()
     {
       return "int";
     }
     template <>
-    inline std::string ScalarTypeToString<double>()
+    inline std::string scalar_type_to_string<double>()
     {
       return "double";
     }
@@ -636,7 +636,7 @@ namespace Core::IO
       catch (const std::bad_variant_access& ex)
       {
         const std::string requested_type =
-            "std::vector<" + INTERNAL::ScalarTypeToString<typename T::value_type>() + ">";
+            "std::vector<" + INTERNAL::scalar_type_to_string<typename T::value_type>() + ">";
         std::string allocated_type = "";
         if (std::holds_alternative<std::vector<double>>(data_vector))
           allocated_type = "std::vector<double>";

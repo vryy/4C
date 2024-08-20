@@ -195,7 +195,7 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& 
   double rhsnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -243,7 +243,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
   double rms = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -300,7 +300,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
   double updatenorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -361,7 +361,7 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
   double xoldnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::convert_quantity_type2_model_type(checkquantity);
 
   switch (checkquantity)
   {
@@ -451,7 +451,8 @@ double Solid::TimeInt::NoxInterface::get_model_value(const Epetra_Vector& x, con
     default:
     {
       FOUR_C_THROW("There is no objective model value for %s | %d.",
-          NOX::Nln::MeritFunction::MeritFuncName2String(merit_func_type).c_str(), merit_func_type);
+          NOX::Nln::MeritFunction::merit_func_name_to_string(merit_func_type).c_str(),
+          merit_func_type);
       exit(EXIT_FAILURE);
     }
   }
@@ -479,7 +480,7 @@ double Solid::TimeInt::NoxInterface::get_linearized_model_terms(const ::NOX::Abs
     default:
     {
       FOUR_C_THROW("There is no linearization for the objective model %s | %d.",
-          NOX::Nln::MeritFunction::MeritFuncName2String(mf_type).c_str(), mf_type);
+          NOX::Nln::MeritFunction::merit_func_name_to_string(mf_type).c_str(), mf_type);
       exit(EXIT_FAILURE);
     }
   }
@@ -555,7 +556,7 @@ void Solid::TimeInt::NoxInterface::find_constraint_models(const ::NOX::Abstract:
   for (auto cit = imap.begin(); cit != imap.end(); ++cit)
   {
     const enum NOX::Nln::SolutionType soltype = cit->first;
-    const enum Inpar::Solid::ModelType mtype = Solid::Nln::ConvertSolType2ModelType(soltype);
+    const enum Inpar::Solid::ModelType mtype = Solid::Nln::convert_sol_type2_model_type(soltype);
 
     constraint_models.push_back(mtype);
   }

@@ -256,7 +256,7 @@ Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inpa
 
   // set repartitioning parameters
   // En-/Disable ML repartitioning. Note: ML requires parameter to be set as integer.
-  bool doRepart = Core::UTILS::IntegralValue<bool>(inparams, "ML_REBALANCE");
+  bool doRepart = Core::UTILS::integral_value<bool>(inparams, "ML_REBALANCE");
   if (doRepart)
   {
     mllist.set("repartition: enable", 1);
@@ -289,7 +289,7 @@ Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inpa
   mllist.set("smoother: sweeps", 1);
   // save memory if this is an issue, make ML use single precision
   // mllist.set("low memory usage",true);
-  switch (Core::UTILS::IntegralValue<int>(inparams, "ML_COARSEN"))
+  switch (Core::UTILS::integral_value<int>(inparams, "ML_COARSEN"))
   {
     case 0:
       mllist.set("aggregation: type", "Uncoupled");
@@ -334,12 +334,12 @@ Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inpa
     double damp = 0.0;
     if (i == 0)
     {
-      type = Core::UTILS::IntegralValue<int>(inparams, "ML_SMOOTHERFINE");
+      type = Core::UTILS::integral_value<int>(inparams, "ML_SMOOTHERFINE");
       damp = inparams.get<double>("ML_DAMPFINE");
     }
     else if (i < mlmaxlevel - 1)
     {
-      type = Core::UTILS::IntegralValue<int>(inparams, "ML_SMOOTHERMED");
+      type = Core::UTILS::integral_value<int>(inparams, "ML_SMOOTHERMED");
       damp = inparams.get<double>("ML_DAMPMED");
     }
 
@@ -448,7 +448,7 @@ Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inpa
 
   // set coarse grid solver
   const int coarse = mlmaxlevel - 1;
-  switch (Core::UTILS::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE"))
+  switch (Core::UTILS::integral_value<int>(inparams, "ML_SMOOTHERCOARSE"))
   {
     case 0:
       mllist.set("coarse: type", "symmetric Gauss-Seidel");
@@ -505,7 +505,7 @@ Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inpa
     case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
     case 12:  // SIMPLEC smoother (only for MueLu with BlockedOperators)
     {
-      int type = Core::UTILS::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE");
+      int type = Core::UTILS::integral_value<int>(inparams, "ML_SMOOTHERCOARSE");
       if (type == 11)
         mllist.set("coarse: type", "SIMPLE");
       else if (type == 12)

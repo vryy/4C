@@ -27,7 +27,7 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> di
     std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
 {
   Teuchos::RCP<const Epetra_Vector> dispcol =
-      Core::Rebalance::GetColVersionOfRowVector(dis, idispnp);
+      Core::Rebalance::get_col_version_of_row_vector(dis, idispnp);
   nodevecmap.clear();
 
   for (int lid = 0; lid < dis->num_my_col_nodes(); ++lid)
@@ -36,7 +36,7 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> di
     std::vector<int> lm;
     dis->dof(node, lm);
     std::vector<double> mydisp;
-    Core::FE::ExtractMyValues(*dispcol, mydisp, lm);
+    Core::FE::extract_my_values(*dispcol, mydisp, lm);
     if (mydisp.size() < 3) FOUR_C_THROW("we need at least 3 dofs here");
 
     Core::LinAlg::Matrix<3, 1> currpos;
@@ -90,7 +90,7 @@ void XFEM::UTILS::get_volume_cell_material(Core::Elements::Element* actele,
  | Checks if Materials in parent and neighbor element are identical     |
  |                                                         winter 01/15 |
  *----------------------------------------------------------------------*/
-void XFEM::UTILS::SafetyCheckMaterials(
+void XFEM::UTILS::safety_check_materials(
     Teuchos::RCP<Core::Mat::Material>& pmat, Teuchos::RCP<Core::Mat::Material>& nmat)
 {
   //------------------------------ see whether materials in patch are equal
@@ -143,7 +143,7 @@ void XFEM::UTILS::SafetyCheckMaterials(
 }
 
 //! Extract a quantity for an element
-void XFEM::UTILS::ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+void XFEM::UTILS::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
     const Core::Elements::Element* element,
     const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const int nsd)
@@ -161,7 +161,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base
   }
 
   std::vector<double> local_vector(nsd * numnode);
-  Core::FE::ExtractMyValues(*global_col_vector, local_vector, la[nds_vector].lm_);
+  Core::FE::extract_my_values(*global_col_vector, local_vector, la[nds_vector].lm_);
 
   if (local_vector.size() != nsd * numnode)
     FOUR_C_THROW("wrong size of (potentially resized) local matrix!");
@@ -172,7 +172,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(Core::LinAlg::SerialDenseMatrix::Base
 
 
 //! Extract a quantity for a node
-void XFEM::UTILS::ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+void XFEM::UTILS::extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
     const Core::Nodes::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {
@@ -180,7 +180,7 @@ void XFEM::UTILS::ExtractQuantityAtNode(Core::LinAlg::SerialDenseMatrix::Base& e
   if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");
 
   std::vector<double> local_vector(nsd);
-  Core::FE::ExtractMyValues(*global_col_vector, local_vector, lm);
+  Core::FE::extract_my_values(*global_col_vector, local_vector, lm);
 
   if (local_vector.size() != nsd) FOUR_C_THROW("wrong size of (potentially resized) local matrix!");
 

@@ -20,7 +20,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
 Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>>(

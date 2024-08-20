@@ -1434,7 +1434,7 @@ int Core::LinAlg::SparseMatrix::replace_row_map(const Epetra_BlockMap& newmap)
 void Core::LinAlg::SparseMatrix::add(const Core::LinAlg::SparseMatrixBase& A, const bool transposeA,
     const double scalarA, const double scalarB)
 {
-  Core::LinAlg::Add(*A.epetra_matrix(), transposeA, scalarA, *this, scalarB);
+  Core::LinAlg::add(*A.epetra_matrix(), transposeA, scalarA, *this, scalarB);
 }
 
 /*----------------------------------------------------------------------*
@@ -1695,7 +1695,7 @@ void Core::LinAlg::SparseMatrix::split_mx_n(BlockSparseMatrixBase& ABlock) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::CastToSparseMatrixAndCheckSuccess(
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::cast_to_sparse_matrix_and_check_success(
     Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix)
 {
   auto sparse_matrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(input_matrix);
@@ -1706,7 +1706,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::CastToSparseMatrixAndChec
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix> Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(
+Teuchos::RCP<const Core::LinAlg::SparseMatrix>
+Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix)
 {
   auto sparse_matrix = Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseMatrix>(input_matrix);

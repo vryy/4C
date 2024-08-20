@@ -42,7 +42,7 @@ namespace XFEM
 {
   typedef std::pair<Inpar::XFEM::EleCouplingCondType, Core::Conditions::Condition*> EleCoupCond;
 
-  Inpar::XFEM::EleCouplingCondType CondType_stringToEnum(const std::string& condname);
+  Inpar::XFEM::EleCouplingCondType cond_type_string_to_enum(const std::string& condname);
 
   class CouplingBase
   {

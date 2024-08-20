@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*/
-std::vector<std::vector<double>> Core::IO::ReadCsvAsColumns(
+std::vector<std::vector<double>> Core::IO::read_csv_as_columns(
     const int number_of_columns, std::istream& csv_stream)
 {
   // prepare variables
@@ -61,13 +61,13 @@ std::vector<std::vector<double>> Core::IO::ReadCsvAsColumns(
 }
 
 /*-----------------------------------------------------------------------------------------------*/
-std::vector<std::vector<double>> Core::IO::ReadCsvAsColumns(
+std::vector<std::vector<double>> Core::IO::read_csv_as_columns(
     const int number_of_columns, const std::string& csv_file_path)
 {
   std::ifstream csv_file_stream(csv_file_path);
   if (csv_file_stream.fail()) FOUR_C_THROW("Invalid csv file!");
 
-  return ReadCsvAsColumns(number_of_columns, csv_file_stream);
+  return read_csv_as_columns(number_of_columns, csv_file_stream);
 }
 
 FOUR_C_NAMESPACE_CLOSE

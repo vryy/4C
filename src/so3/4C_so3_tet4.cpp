@@ -82,7 +82,7 @@ void Discret::ELEMENTS::SoTet4Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoTet4Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 //------------------------------------------------------------------------
@@ -121,13 +121,13 @@ Discret::ELEMENTS::SoTet4::SoTet4(int id, int owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    pstype_ = Prestress::GetType();
-    pstime_ = Prestress::GetPrestressTime();
+    pstype_ = Prestress::get_type();
+    pstime_ = Prestress::get_prestress_time();
 
-    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOTET4, NUMGPT_SOTET4, true));
 }
 
@@ -143,7 +143,7 @@ Discret::ELEMENTS::SoTet4::SoTet4(const Discret::ELEMENTS::SoTet4& old)
       pstime_(old.pstime_),
       time_(old.time_)
 {
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
 }
 
@@ -188,7 +188,7 @@ void Discret::ELEMENTS::SoTet4::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, static_cast<int>(pstype_));
   add_to_pack(data, pstime_);
   add_to_pack(data, time_);
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
   {
     Core::Communication::ParObject::add_to_pack(data, *prestress_);
   }
@@ -203,7 +203,7 @@ void Discret::ELEMENTS::SoTet4::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::SoTet4::unpack(const std::vector<char>& data)
   pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     extract_from_pack(position, data, tmpprestress);
@@ -281,7 +281,7 @@ void Discret::ELEMENTS::SoTet4::print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
 }
 
@@ -302,7 +302,7 @@ std::vector<double> Discret::ELEMENTS::SoTet4::element_center_refe_coords()
   const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_SOTET4, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
-  Core::FE::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
+  Core::FE::shape_function_3d(funct, 0.25, 0.25, 0.25, distype);
   Core::LinAlg::Matrix<1, NUMDIM_SOTET4> midpoint;
   // midpoint.multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.multiply_tn(funct, xrefe);
@@ -318,7 +318,7 @@ std::vector<double> Discret::ELEMENTS::SoTet4::element_center_refe_coords()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
 }
 
@@ -348,7 +348,7 @@ bool Discret::ELEMENTS::SoTet4::vis_data(const std::string& name, std::vector<do
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoTet4::material_post_setup(Teuchos::ParameterList& params)
 {
-  if (Core::Nodes::HaveNodalFibers<Core::FE::CellType::tet4>(nodes()))
+  if (Core::Nodes::have_nodal_fibers<Core::FE::CellType::tet4>(nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -363,7 +363,7 @@ void Discret::ELEMENTS::SoTet4::material_post_setup(Teuchos::ParameterList& para
     Core::Nodes::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    Core::Nodes::ProjectFibersToGaussPoints<Core::FE::CellType::tet4>(
+    Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::tet4>(
         nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);

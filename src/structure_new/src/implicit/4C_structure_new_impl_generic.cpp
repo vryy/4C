@@ -48,7 +48,7 @@ void Solid::IMPLICIT::Generic::setup()
 
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::Nln::GROUP::PrePostOperator::Map& prepostgroup_map =
-      NOX::Nln::GROUP::PrePostOp::GetMap(p_grp_opt);
+      NOX::Nln::GROUP::PrePostOp::get_map(p_grp_opt);
 
   // insert/replace the old pointer in the map
   prepostgroup_map[NOX::Nln::GROUP::prepost_impl_generic] = prepost_generic_ptr;
@@ -157,7 +157,7 @@ bool Solid::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Corr
       FOUR_C_THROW(
           "No action defined for the given second order correction type: "
           "\"%s\"",
-          NOX::Nln::CorrectionType2String(type).c_str());
+          NOX::Nln::correction_type_to_string(type).c_str());
       exit(EXIT_FAILURE);
     }
   }

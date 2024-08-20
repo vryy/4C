@@ -45,9 +45,9 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
   partial_maps[ssti_mono_algorithm.get_problem_position(Subproblem::thermo)] =
       Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.thermo_field()->dof_row_map()));
   Teuchos::RCP<const Epetra_Map> temp_map =
-      Core::LinAlg::MergeMap(partial_maps[0], partial_maps[1], false);
+      Core::LinAlg::merge_map(partial_maps[0], partial_maps[1], false);
   Teuchos::RCP<const Epetra_Map> merged_map =
-      Core::LinAlg::MergeMap(temp_map, partial_maps[2], false);
+      Core::LinAlg::merge_map(temp_map, partial_maps[2], false);
   // initialize global map extractor
   maps_subproblems_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*merged_map, partial_maps));
   // check global map extractor

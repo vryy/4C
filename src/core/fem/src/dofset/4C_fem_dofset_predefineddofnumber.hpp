@@ -54,7 +54,7 @@ namespace Core::DOFSets
           numdofperelementelewise_(Teuchos::null),
           numdofperface_(numdofperface),
           numdofperfacefacewise_(Teuchos::null),
-          unique_gi_ds_(uniqueGIDs)
+          unique_gids_(uniqueGIDs)
     {
       return;
     }
@@ -69,7 +69,7 @@ namespace Core::DOFSets
           numdofperelementelewise_(numdofperelement),
           numdofperface_(numdofperface),
           numdofperfacefacewise_(Teuchos::null),
-          unique_gi_ds_(uniqueGIDs)
+          unique_gids_(uniqueGIDs)
     {
       return;
     }
@@ -85,7 +85,7 @@ namespace Core::DOFSets
           numdofperelementelewise_(numdofperelement),
           numdofperface_(0),
           numdofperfacefacewise_(numdofperface),
-          unique_gi_ds_(uniqueGIDs)
+          unique_gids_(uniqueGIDs)
     {
       return;
     }
@@ -99,7 +99,7 @@ namespace Core::DOFSets
     /// Add Dof Set to list #static_dofsets_
     void add_dof_setto_list() override
     {
-      if (unique_gi_ds_)
+      if (unique_gids_)
         // add to static list -> the auxiliary dofs will get unique gids
         DofSet::add_dof_setto_list();
       else
@@ -187,7 +187,7 @@ namespace Core::DOFSets
 
     /// bool indicating if the dofs should get unique global IDs
     /// can be set to false, if the dofs never appear in a global map)
-    const bool unique_gi_ds_;
+    const bool unique_gids_;
 
   };  // DofSetPredefinedDoFNumber
 

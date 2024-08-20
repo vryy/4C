@@ -272,7 +272,7 @@ void Mat::FluidPoroMultiPhase::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover paramsporo_
   int matid(-1);
@@ -317,7 +317,7 @@ void Mat::FluidPoroMultiPhase::evaluate_gen_pressure(
   {
     // get the single phase material
     const Mat::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSinglePhaseMatFromMultiMaterial(*this, iphase);
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_multi_material(*this, iphase);
 
     // evaluate generalized pressure (i.e. some kind of linear combination of the true pressures)
     genpressure[iphase] = singlephasemat.evaluate_gen_pressure(iphase, phinp);
@@ -342,7 +342,8 @@ void Mat::FluidPoroMultiPhase::evaluate_saturation(std::vector<double>& saturati
     {
       // get the single phase material
       const Mat::FluidPoroSinglePhase& singlephasemat =
-          POROFLUIDMULTIPHASE::ElementUtils::GetSinglePhaseMatFromMultiMaterial(*this, iphase);
+          POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_multi_material(
+              *this, iphase);
 
       saturation[iphase] = singlephasemat.evaluate_saturation(iphase, phinp, pressure);
       // the saturation of the last phase is 1.0- (sum of all saturations)

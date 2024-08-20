@@ -331,7 +331,7 @@ void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Epetra_Vector>
   Core::LinAlg::SerialDenseVector elemintinc;
 
   // initialize increments of local variables
-  Teuchos::RCP<Epetra_Vector> intvelincnp = Core::LinAlg::CreateVector(*intdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> intvelincnp = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   // set state
   set_state_tim_int();
@@ -489,7 +489,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
   Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -631,14 +631,14 @@ void FLD::TimIntHDGWeakComp::reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intvelaf_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intvelnm_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intveln_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccam_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccnm_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccn_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
+  intvelnp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intvelaf_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intvelnm_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intveln_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccnp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccam_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccnm_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccn_ = Core::LinAlg::create_vector(*intdofrowmap, true);
   if (discret_->get_comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
@@ -649,7 +649,7 @@ void FLD::TimIntHDGWeakComp::reset(bool completeReset, int numsteps, int iter)
 namespace
 {
   // internal helper function for output
-  void getNodeVectorsHDGWeakComp(Core::FE::Discretization& dis,
+  void get_node_vectors_hdg_weak_comp(Core::FE::Discretization& dis,
       const Teuchos::RCP<Epetra_Vector>& interiorValues,
       const Teuchos::RCP<Epetra_Vector>& traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector>& mixedvar, Teuchos::RCP<Epetra_Vector>& density,
@@ -731,7 +731,7 @@ void FLD::TimIntHDGWeakComp::output()
     Teuchos::RCP<Epetra_MultiVector> traceMom;
 
     // get node vectors
-    getNodeVectorsHDGWeakComp(
+    get_node_vectors_hdg_weak_comp(
         *discret_, intvelnp_, velnp_, nsd, interpolatedMixedVar_, interpolatedDensity_, traceDen);
 
     // get weakly compressible material

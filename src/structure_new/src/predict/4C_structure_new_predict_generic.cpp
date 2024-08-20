@@ -112,7 +112,7 @@ void Solid::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
 std::string Solid::Predict::Generic::name() const
 {
   check_init();
-  return Inpar::Solid::PredEnumString(type_);
+  return Inpar::Solid::pred_enum_string(type_);
 }
 
 /*----------------------------------------------------------------------------*

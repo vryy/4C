@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::FE::CellType Core::Elements::ShardsKeyToDisType(const unsigned& key)
+Core::FE::CellType Core::Elements::shards_key_to_dis_type(const unsigned& key)
 {
   Core::FE::CellType distype = Core::FE::CellType::dis_none;
   switch (key)
@@ -286,7 +286,7 @@ void Core::Elements::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // id_
   extract_from_pack(position, data, id_);
@@ -299,7 +299,7 @@ void Core::Elements::Element::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, tmp);
   if (!tmp.empty())
   {
-    Core::Communication::ParObject* o = Core::Communication::Factory(tmp);
+    Core::Communication::ParObject* o = Core::Communication::factory(tmp);
     auto* mat = dynamic_cast<Core::Mat::Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack only first material
@@ -383,7 +383,7 @@ void Core::Elements::Element::nodal_connectivity(
   // put squared weight on edges
   weight *= weight;
 
-  std::vector<std::vector<int>> lines = Core::FE::getEleNodeNumberingLines(shape());
+  std::vector<std::vector<int>> lines = Core::FE::get_ele_node_numbering_lines(shape());
   size_t nodesperline = lines[0].size();
   if (nodesperline == 2)
   {
@@ -406,7 +406,7 @@ void Core::Elements::Element::nodal_connectivity(
   }
   else
     FOUR_C_THROW("implementation is missing for this distype (%s)",
-        Core::FE::CellTypeToString(shape()).c_str());
+        Core::FE::cell_type_to_string(shape()).c_str());
 }
 
 /*----------------------------------------------------------------------*
@@ -912,7 +912,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
  *----------------------------------------------------------------------*/
 int Core::Elements::Element::num_face() const
 {
-  switch (Core::FE::getDimension(this->shape()))
+  switch (Core::FE::get_dimension(this->shape()))
   {
     case 2:
       return num_line();
@@ -920,7 +920,7 @@ int Core::Elements::Element::num_face() const
       return num_surface();
     default:
       FOUR_C_THROW("faces for discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(shape())).c_str());
+          (Core::FE::cell_type_to_string(shape())).c_str());
       return 0;
   }
 }
@@ -992,7 +992,7 @@ int Core::Elements::Element::evaluate(Teuchos::ParameterList& params,
   return -1;
 }
 
-int Core::Elements::Element::degree() const { return Core::FE::getDegree(shape()); }
+int Core::Elements::Element::degree() const { return Core::FE::get_degree(shape()); }
 
 /*----------------------------------------------------------------------*
  |  check if the element has only ghost nodes (public)       vuong 09/14|
@@ -1024,11 +1024,12 @@ unsigned int Core::Elements::Element::append_visualization_geometry(
 {
   if (Core::FE::is_nurbs_celltype(shape()))
   {
-    return IO::AppendVisualizationGeometryNURBSEle(*this, discret, cell_types, point_coordinates);
+    return IO::append_visualization_geometry_nurbs_ele(
+        *this, discret, cell_types, point_coordinates);
   }
   else
   {
-    return IO::AppendVisualizationGeometryLagrangeEle(
+    return IO::append_visualization_geometry_lagrange_ele(
         *this, discret, cell_types, point_coordinates);
   }
 }
@@ -1162,7 +1163,7 @@ void Core::Elements::FaceElement::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

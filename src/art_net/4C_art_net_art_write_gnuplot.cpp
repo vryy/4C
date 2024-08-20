@@ -313,7 +313,7 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
     // get the degrees of freedom
     Teuchos::RCP<const Epetra_Vector> qanp = discret->get_state("qanp");
     std::vector<double> myqanp(lm.size());
-    Core::FE::ExtractMyValues(*qanp, myqanp, lm);
+    Core::FE::extract_my_values(*qanp, myqanp, lm);
 
     // get the current simulation time
     time = params.get<double>("total time");

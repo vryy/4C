@@ -90,9 +90,10 @@ void Cut::BoundaryCell::transform_local_coords(Element* elem1,
   Core::LinAlg::Matrix<2, numnodes> deriv;
   Core::LinAlg::Matrix<2, 2> metrictensor;
 
-  Core::FE::shape_function_2D(funct, eta(0), eta(1), celldistype);
-  Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
-  Core::FE::ComputeMetricTensorForBoundaryEle<celldistype>(xyze, deriv, metrictensor, drs, &normal);
+  Core::FE::shape_function_2d(funct, eta(0), eta(1), celldistype);
+  Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), celldistype);
+  Core::FE::compute_metric_tensor_for_boundary_ele<celldistype>(
+      xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.multiply(xyze, funct);
 
@@ -105,7 +106,7 @@ const std::vector<Cut::Point*>& Cut::BoundaryCell::points() const { return (*poi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Cut::Line2BoundaryCell::area() { return Core::Geo::ElementArea(shape(), xyz_); }
+double Cut::Line2BoundaryCell::area() { return Core::Geo::element_area(shape(), xyz_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -145,12 +146,12 @@ double Cut::Tri3BoundaryCell::area()
     {
       std::ofstream file("invalid_boundary_cell.pos");
       // Write BCs for outside VolumeCell:
-      Cut::Output::GmshNewSection(file, "BoundaryCells");
+      Cut::Output::gmsh_new_section(file, "BoundaryCells");
       dump_gmsh(file);
-      Cut::Output::GmshEndSection(file, false);
-      Cut::Output::GmshNewSection(file, "BoundaryCellsNormal");
+      Cut::Output::gmsh_end_section(file, false);
+      Cut::Output::gmsh_new_section(file, "BoundaryCellsNormal");
       dump_gmsh_normal(file);
-      Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_end_section(file);
       FOUR_C_THROW("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
     }
     else
@@ -179,7 +180,7 @@ void Cut::BoundaryCell::dump_gmsh(std::ofstream& file, int* value)
   int default_value = facet_->side_id();
   if (not value) value = &default_value;
 
-  Output::GmshCellDump(file, shape(), xyz_, nullptr, value);
+  Output::gmsh_cell_dump(file, shape(), xyz_, nullptr, value);
 }
 
 /*----------------------------------------------------------------------------*
@@ -317,10 +318,10 @@ void Cut::Line2BoundaryCell::normal(
   switch (probdim)
   {
     case 2:
-      EvalNormalVectors<2, Core::FE::CellType::line2>(xyz_, xsi, normal);
+      eval_normal_vectors<2, Core::FE::CellType::line2>(xyz_, xsi, normal);
       break;
     case 3:
-      EvalNormalVectors<3, Core::FE::CellType::line2>(xyz_, xsi, normal);
+      eval_normal_vectors<3, Core::FE::CellType::line2>(xyz_, xsi, normal);
       break;
   }
 }
@@ -336,7 +337,7 @@ void Cut::Tri3BoundaryCell::normal(
   Core::LinAlg::Matrix<2, 3> deriv;
   Core::LinAlg::Matrix<2, 3> A;
 
-  Core::FE::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), Core::FE::CellType::tri3);
+  Core::FE::shape_function_2d_deriv1(deriv, xsi(0), xsi(1), Core::FE::CellType::tri3);
   A.multiply_nt(deriv, side_xyze);
 
   // cross product to get the normal at the point
@@ -361,7 +362,7 @@ void Cut::Quad4BoundaryCell::normal(
   Core::LinAlg::Matrix<2, 4> deriv;
   Core::LinAlg::Matrix<2, 3> A;
 
-  Core::FE::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), Core::FE::CellType::quad4);
+  Core::FE::shape_function_2d_deriv1(deriv, xsi(0), xsi(1), Core::FE::CellType::quad4);
   A.multiply_nt(deriv, side_xyze);
 
   // cross product to get the normal at the point

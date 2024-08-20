@@ -104,7 +104,7 @@ void Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_residuum_auto_generate
       v[95] = intpointsEta.qwgt[i92 - 1] * v[644];
       uv(0) = v[93];
       uv(1) = intpointsEta.qxg[i92 - 1][0];
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv_deriv2(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv_deriv2(
           N, dN, ddN, uv, knots, weights, Core::FE::CellType::nurbs9);
       v[99] = ddN(0, 0);
       v[100] = ddN(0, 1);

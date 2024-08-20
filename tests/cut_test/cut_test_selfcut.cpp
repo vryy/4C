@@ -6610,7 +6610,7 @@ void test_hex8quad4selfcut92()
  * hex8 background element is cut by two quad cut surfaces. An edge of one cut surface
  * coincides with an edge of another cut surface
  *------------------------------------------------------------------------------------*/
-void test_hex8quad4alignedEdges()
+void test_hex8quad4aligned_edges()
 {
   Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln

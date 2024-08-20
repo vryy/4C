@@ -83,7 +83,7 @@ void Core::Communication::ParObject::extract_from_pack(
   extract_from_pack(position, data, stuff.data(), size);
 }
 
-int Core::Communication::ExtractAndAssertId(std::vector<char>::size_type& position,
+int Core::Communication::extract_and_assert_id(std::vector<char>::size_type& position,
     const std::vector<char>& data, const int desired_type_id)
 {
   int type_id = 0;

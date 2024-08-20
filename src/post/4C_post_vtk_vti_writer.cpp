@@ -155,7 +155,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
     ghostedData = data;
   else
   {
-    ghostedData = Core::LinAlg::CreateVector(*colmap, false);
+    ghostedData = Core::LinAlg::create_vector(*colmap, false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 

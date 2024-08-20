@@ -94,7 +94,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
       nullspaceMap = Teuchos::rcp(new Epetra_Map(*dis.dof_row_map()));
     }
 
-    auto nullspace = Core::FE::ComputeNullSpace(dis, numdf, dimns, nullspaceMap);
+    auto nullspace = Core::FE::compute_null_space(dis, numdf, dimns, nullspaceMap);
 
     solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     solverlist.set("null space: vectors", nullspace->Values());

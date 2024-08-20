@@ -29,7 +29,7 @@ namespace MIXTURE::PAR
    * @param matid material id given in the input file
    * @return const MIXTURE::PAR::RemodelFiberMaterial<double>*
    */
-  [[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* FiberMaterialFactory(int matid);
+  [[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* fiber_material_factory(int matid);
 
   struct ExponentialFiberParameters
   {

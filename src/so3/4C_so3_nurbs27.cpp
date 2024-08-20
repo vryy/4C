@@ -71,7 +71,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Nurbs::SoNurbs27Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::Nurbs::SoNurbs27Type::setup_element_definition(
@@ -101,7 +101,7 @@ Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, o
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -211,7 +211,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::SoNurbs27::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralSurface, SoNurbs27>(
+  return Core::Communication::element_boundary_factory<StructuralSurface, SoNurbs27>(
       Core::Communication::buildSurfaces, *this);
 }
 
@@ -220,7 +220,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::SoN
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::SoNurbs27::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralLine, SoNurbs27>(
+  return Core::Communication::element_boundary_factory<StructuralLine, SoNurbs27>(
       Core::Communication::buildLines, *this);
 }
 

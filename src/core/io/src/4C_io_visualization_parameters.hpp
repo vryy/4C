@@ -76,7 +76,7 @@ namespace Core::IO
   /**
    * @brief Create a container containing all visualization output parameters
    */
-  [[nodiscard]] VisualizationParameters VisualizationParametersFactory(
+  [[nodiscard]] VisualizationParameters visualization_parameters_factory(
       const Teuchos::ParameterList& visualization_ouput_parameter_list,
       const Core::IO::OutputControl& output_control, double restart_time);
 
@@ -84,7 +84,7 @@ namespace Core::IO
    * @brief Return the total number of digits to reserve in the time step numbering
    * @param visualization_parameters (in) Reference to a parameters container
    */
-  [[nodiscard]] int GetTotalDigitsToReserveInTimeStep(
+  [[nodiscard]] int get_total_digits_to_reserve_in_time_step(
       const VisualizationParameters& visualization_parameters);
 
   /**
@@ -103,7 +103,7 @@ namespace Core::IO
    * @param step (in) 4C internal time step index of the last converged state
    * @param iteration_number (in) Number of nonlinear iteration
    */
-  [[nodiscard]] std::pair<double, int> GetTimeAndTimeStepIndexForOutput(
+  [[nodiscard]] std::pair<double, int> get_time_and_time_step_index_for_output(
       const VisualizationParameters& visualization_parameters, const double time, const int step,
       const int iteration_number = 0);
 }  // namespace Core::IO

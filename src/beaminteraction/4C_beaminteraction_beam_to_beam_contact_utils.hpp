@@ -32,13 +32,13 @@ namespace BEAMINTERACTION
   /*!
   \brief Calculate angle encompassed by two lines: returns an angle \in [0;pi/2]
   */
-  double CalcAngle(Core::LinAlg::Matrix<3, 1, double> a, Core::LinAlg::Matrix<3, 1, double> b);
+  double calc_angle(Core::LinAlg::Matrix<3, 1, double> a, Core::LinAlg::Matrix<3, 1, double> b);
 
   /*!
   \brief Get closest distance between the endpoints of two lines
   */
   template <typename Type>
-  Type GetClosestEndpointDist(Core::LinAlg::Matrix<3, 1, Type> r1_a,
+  Type get_closest_endpoint_dist(Core::LinAlg::Matrix<3, 1, Type> r1_a,
       Core::LinAlg::Matrix<3, 1, Type> r1_b, Core::LinAlg::Matrix<3, 1, Type> r2_a,
       Core::LinAlg::Matrix<3, 1, Type> r2_b);
 
@@ -46,7 +46,7 @@ namespace BEAMINTERACTION
   \brief Set primary displacement DoFs for automatic differentiation with Sacado
   */
   template <int numnodes, int numnodalvalues>
-  void SetFADDispDofs(Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos_,
+  void set_fad_disp_dofs(Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos_,
       Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele2pos_)
   {
     // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions /
@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
 \brief BTS-Contact: Set primary displacement DoFs for automatic differentiation with Sacado
 */
   template <int numnodessol, int numnodes, int numnodalvalues>
-  void SetFADDispDofs(Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos,
+  void set_fad_disp_dofs(Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, FAD>& ele1pos,
       Core::LinAlg::Matrix<3 * numnodessol, 1, FAD>& ele2pos, const int& numvar)
   {
     for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
   \brief Set primary parameter coordinate DoFs for automatic differentiation with Sacado
   */
   template <int numnodes, int numnodalvalues>
-  void SetFADParCoordDofs(FAD& xi, FAD& eta)
+  void set_fad_par_coord_dofs(FAD& xi, FAD& eta)
   {
     // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions /
     // tangents. The two (+2) additional degrees of freedom represent the dependency on the
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
   Sacado
   */
   template <int numnodessol, int numnodes, int numnodalvalues>
-  void SetFADParCoordDofs(FAD& xi1, FAD& xi2, FAD& eta)
+  void set_fad_par_coord_dofs(FAD& xi1, FAD& xi2, FAD& eta)
   {
     xi1.diff(3 * numnodes * numnodalvalues + 3 * numnodessol,
         3 * numnodes * numnodalvalues + 3 * numnodessol + 3);
@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
   Sacado
   */
   template <int numnodessol, int numnodes, int numnodalvalues>
-  void SetFADParCoordDofs(FAD& xi1, FAD& xi2, FAD& eta_a, FAD& eta_b)
+  void set_fad_par_coord_dofs(FAD& xi1, FAD& xi2, FAD& eta_a, FAD& eta_b)
   {
     xi1.diff(3 * numnodes * numnodalvalues + 3 * numnodessol,
         3 * numnodes * numnodalvalues + 3 * numnodessol + 4);
@@ -132,30 +132,30 @@ namespace BEAMINTERACTION
   /*!
   \brief Check, if current node is a solid contact element
   */
-  bool SolidContactElement(const Core::Elements::Element& element);
+  bool solid_contact_element(const Core::Elements::Element& element);
 
   /*
   \brief Check, if two elements share a node -> neighbor elements
   */
-  bool ElementsShareNode(
+  bool elements_share_node(
       const Core::Elements::Element& element1, const Core::Elements::Element& element2);
 
   /*
   \brief Calculate beam radius
   */
-  double CalcEleRadius(const Core::Elements::Element* ele);
+  double calc_ele_radius(const Core::Elements::Element* ele);
 
   /*
   \brief Intersect two parallel cylinders
   */
-  bool IntersectParallelCylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+  bool intersect_parallel_cylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
       Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
       Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit);
 
   /*
   \brief Intersect two non-parallel, arbitrary oriented cylinders
   */
-  bool IntersectArbitraryCylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
+  bool intersect_arbitrary_cylinders(Core::LinAlg::Matrix<3, 1, double>& r1_a,
       Core::LinAlg::Matrix<3, 1, double>& r1_b, Core::LinAlg::Matrix<3, 1, double>& r2_a,
       Core::LinAlg::Matrix<3, 1, double>& r2_b, double& distancelimit,
       std::pair<double, double>&
@@ -166,20 +166,20 @@ namespace BEAMINTERACTION
   /*
   \brief Calculate closest distance of a point and a line
   */
-  double CalcPointLineDist(Core::LinAlg::Matrix<3, 1, double>& rline_a,
+  double calc_point_line_dist(Core::LinAlg::Matrix<3, 1, double>& rline_a,
       Core::LinAlg::Matrix<3, 1, double>& rline_b, Core::LinAlg::Matrix<3, 1, double>& rp,
       double& eta);
 
   /*
   \brief Determine inpute parameter representing the additive searchbox increment
   */
-  double DetermineSearchboxInc(Teuchos::ParameterList& beamcontactparams);
+  double determine_searchbox_inc(Teuchos::ParameterList& beamcontactparams);
 
   /*
   \brief Check if a given double lies within a prescribed interval (enlarged by the tolerance
   XIETATOL)
   */
-  inline bool WithinInterval(double& testpoint, double& leftbound, double& rightbound)
+  inline bool within_interval(double& testpoint, double& leftbound, double& rightbound)
   {
     // The tolerance XIETATOL makes the test more conservative, i.e. the testpoint
     // is assumed to be within the interval even if it actually is slightly outside
@@ -192,7 +192,7 @@ namespace BEAMINTERACTION
   /*
   \brief Get interval-id out of numberofintervals intervals, in which the given point lies
   */
-  inline int GetIntervalId(double& point, int numberofintervals, bool leftbound)
+  inline int get_interval_id(double& point, int numberofintervals, bool leftbound)
   {
     int interval_id = 0;
     double unrounded_id = 0.0;
@@ -230,7 +230,7 @@ namespace BEAMINTERACTION
   /*
   \brief Get segment-id out of numberofsegments segmenets, in which the given point lies
   */
-  inline int GetSegmentId(double& point, int numberofsegments)
+  inline int get_segment_id(double& point, int numberofsegments)
   {
     int segment_id = 0;
     double unrounded_id = 0.0;

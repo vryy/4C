@@ -38,7 +38,7 @@ namespace
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
-      Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+      Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
           Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
     }
@@ -135,7 +135,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestLineAlongElementSurfaceGeometry(
+    xtest_line_along_element_surface_geometry(
         line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -176,7 +176,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestLineInSmallElementsGeometry(
+    xtest_line_in_small_elements_geometry(
         line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -217,7 +217,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestMultipleIntersectionsHex27Geometry(
+    xtest_multiple_intersections_hex27_geometry(
         line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -258,7 +258,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestMultipleIntersectionsTet10Geometry(
+    xtest_multiple_intersections_tet10_geometry(
         line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -307,7 +307,7 @@ namespace
     Global::Problem::instance()->add_dis("structure", structdis);
 
     // Get the geometry.
-    XtestMultipleIntersectionsNurbs27Geometry(line_elements_, volume_elements_, q_line_elements,
+    xtest_multiple_intersections_nurbs27_geometry(line_elements_, volume_elements_, q_line_elements,
         line_ref_lengths, q_volume_elements, structdis);
 
     // Create and evaluate the geometry pairs.
@@ -341,7 +341,7 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestCreateGeometrySingleHex8WithPreCurvedLine(
+    xtest_create_geometry_single_hex8_with_pre_curved_line(
         line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -382,13 +382,13 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestCreateGeometrySingleHex8WithPreCurvedLine(
+    xtest_create_geometry_single_hex8_with_pre_curved_line(
         line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // We change the default settings here, to run into the case where the obtained segment has
     // Gauss points that do not project valid
     Teuchos::ParameterList line_to_volume_params_list;
-    Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
     line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
     line_to_volume_params_list.set(
         "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "warning");
@@ -426,13 +426,13 @@ namespace
         geometry_pairs;
 
     // Get the geometry.
-    XtestCreateGeometrySingleHex8WithPreCurvedLine(
+    xtest_create_geometry_single_hex8_with_pre_curved_line(
         line_elements_, volume_elements_, q_line_elements, line_ref_lengths, q_volume_elements);
 
     // We change the default settings here, to run into the case where the obtained segment has
     // Gauss points that do not project valid
     Teuchos::ParameterList line_to_volume_params_list;
-    Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
     line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
     evaluation_data_ =
         Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));

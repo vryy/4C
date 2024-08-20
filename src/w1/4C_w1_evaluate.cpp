@@ -162,15 +162,15 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       // special case: geometrically linear
@@ -199,15 +199,15 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       // special case: geometrically linear
@@ -233,9 +233,9 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix (initialised to zero)
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
@@ -245,7 +245,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       // special case: geometrically linear
@@ -273,9 +273,9 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
             "Cannot get state vectors \"displacement\" "
             "and/or \"residual displacement\"");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       w1_recover(lm, mydisp, myres);
       /* ToDo Probably we have to recover the history information of some special
        * materials as well.                                 hiermeier 04/2016  */
@@ -333,24 +333,24 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
       const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
       Core::LinAlg::SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
@@ -389,7 +389,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // determine energies
       energy(params, lm, mydisp, &elevec1, actmat);
@@ -433,14 +433,14 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       // reference and current geometry (nodal positions)
@@ -495,8 +495,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
         if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
         {
           // shape functions and their derivatives for polynomials
-          Core::FE::shape_function_2D(funct, e1, e2, distype);
-          Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+          Core::FE::shape_function_2d(funct, e1, e2, distype);
+          Core::FE::shape_function_2d_deriv1(deriv, e1, e2, distype);
         }
         else
         {
@@ -505,7 +505,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
           gp(0) = e1;
           gp(1) = e2;
 
-          Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+          Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct, deriv, gp, myknots, weights, distype);
         }
 
         // REF ------------------------
@@ -582,7 +582,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       // reference and current geometry (nodal positions)
@@ -595,7 +595,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       }
 
       const double min_detj =
-          Core::Elements::GetMinimalJacDeterminantAtNodes<Core::FE::CellType::quad4>(xcurr);
+          Core::Elements::get_minimal_jac_determinant_at_nodes<Core::FE::CellType::quad4>(xcurr);
 
       if (min_detj < 0.0)
         error_handling(min_detj, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_analysis);
@@ -628,7 +628,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     default:
     {
-      FOUR_C_THROW("Unknown type of action for Wall1 element: %s", ActionType2String(act).c_str());
+      FOUR_C_THROW(
+          "Unknown type of action for Wall1 element: %s", action_type_to_string(act).c_str());
       break;
     }
   }
@@ -727,8 +728,8 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
     if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      Core::FE::shape_function_2D(shapefcts, e1, e2, distype);
-      Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      Core::FE::shape_function_2d(shapefcts, e1, e2, distype);
+      Core::FE::shape_function_2d_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -737,7 +738,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
       gp(0) = e1;
       gp(1) = e2;
 
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(shapefcts, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(shapefcts, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1057,8 +1058,8 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      Core::FE::shape_function_2D(funct, e1, e2, distype);
-      Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      Core::FE::shape_function_2d(funct, e1, e2, distype);
+      Core::FE::shape_function_2d_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1067,7 +1068,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       gp(0) = e1;
       gp(1) = e2;
 
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1375,8 +1376,8 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     if (distype != Core::FE::CellType::nurbs4 && distype != Core::FE::CellType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      Core::FE::shape_function_2D(funct, e1, e2, distype);
-      Core::FE::shape_function_2D_deriv1(deriv, e1, e2, distype);
+      Core::FE::shape_function_2d(funct, e1, e2, distype);
+      Core::FE::shape_function_2d_deriv1(deriv, e1, e2, distype);
     }
     else
     {
@@ -1385,7 +1386,7 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
       gp(0) = e1;
       gp(1) = e2;
 
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     /*--------------------------------------- compute jacobian Matrix */
@@ -1911,7 +1912,7 @@ void Discret::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std:
     alphao = &easdata_.alphao;
 
     // derivatives at origin
-    Core::FE::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
+    Core::FE::shape_function_2d_deriv1(shpdrv, 0.0, 0.0, distype);
     // material-to-parameter space Jacobian at origin
     w1_jacobianmatrix(Xe, shpdrv, Xjm0, &Xjdet0, numnode);
     // calculate linear B-operator at origin
@@ -1929,8 +1930,8 @@ void Discret::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std:
     const double wgt = intpoints.qwgt[ip];
 
     // shape functions and their derivatives
-    Core::FE::shape_function_2D(shpfct, xi1, xi2, distype);
-    Core::FE::shape_function_2D_deriv1(shpdrv, xi1, xi2, distype);
+    Core::FE::shape_function_2d(shpfct, xi1, xi2, distype);
+    Core::FE::shape_function_2d_deriv1(shpdrv, xi1, xi2, distype);
 
     // compute Jacobian matrix
     w1_jacobianmatrix(Xe, shpdrv, Xjm, &Xjdet, numnode);

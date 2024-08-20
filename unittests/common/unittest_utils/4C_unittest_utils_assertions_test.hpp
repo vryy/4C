@@ -23,7 +23,7 @@ namespace TESTING::INTERNAL
 
     //! Determine a number of decimal digits for printing to a given tolerance.
     template <typename T>
-    inline int PrecisionForPrinting(T tolerance)
+    inline int precision_for_printing(T tolerance)
     {
       FOUR_C_ASSERT(tolerance > 0, "Tolerance must be positive.");
       return tolerance > 1 ? 0 : static_cast<int>(std::ceil(-1.0 * std::log10(tolerance) + 1));
@@ -32,7 +32,7 @@ namespace TESTING::INTERNAL
     //! If the @p nonMatchingEntries string is empty return success, otherwise return failure with a
     //! descriptive message.
     template <typename T>
-    inline ::testing::AssertionResult ResultBasedOnNonMatchingEntries(
+    inline ::testing::AssertionResult result_based_on_non_matching_entries(
         const std::string& nonMatchingEntries, T tolerance, const char* expr1, const char* expr2)
     {
       if (nonMatchingEntries.empty())
@@ -56,7 +56,7 @@ namespace TESTING::INTERNAL
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_ITERABLE_NEAR.
    */
   template <typename Iterator1, typename Iterator2>
-  inline ::testing::AssertionResult AssertNear(const char* vec1Expr, const char* vec2Expr,
+  inline ::testing::AssertionResult assert_near(const char* vec1Expr, const char* vec2Expr,
       const char* /*lengthExpr*/, const char* /*toleranceExpr*/, const Iterator1 iter1,
       const Iterator2 iter2, std::size_t length,
       std::decay_t<decltype(*std::declval<Iterator1>())> tolerance)
@@ -68,7 +68,7 @@ namespace TESTING::INTERNAL
         [&]()
         {
           std::stringstream ss;
-          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          ss << std::fixed << std::setprecision(precision_for_printing(tolerance));
           for (std::size_t i = 0; i < length; ++i)
           {
             const auto value1 = *(iter1 + i);
@@ -81,7 +81,7 @@ namespace TESTING::INTERNAL
           return ss.str();
         });
 
-    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, vec1Expr, vec2Expr);
+    return result_based_on_non_matching_entries(nonMatchingEntries, tolerance, vec1Expr, vec2Expr);
   }
 
   /**
@@ -91,7 +91,7 @@ namespace TESTING::INTERNAL
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <typename T>
-  inline ::testing::AssertionResult AssertNear(const char* vec1Expr,
+  inline ::testing::AssertionResult assert_near(const char* vec1Expr,
       const char* vec2Expr,  // NOLINT
       const char* toleranceExpr, const std::vector<T>& vec1, const std::vector<T>& vec2,
       T tolerance)
@@ -117,7 +117,7 @@ namespace TESTING::INTERNAL
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <unsigned int m, unsigned int n, typename T>
-  inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
+  inline ::testing::AssertionResult assert_near(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
       const char* toleranceExpr, const Core::LinAlg::Matrix<m, n, T>& mat1,
       const Core::LinAlg::Matrix<m, n, T>& mat2, T tolerance)
@@ -129,7 +129,7 @@ namespace TESTING::INTERNAL
         [&]()
         {
           std::stringstream ss;
-          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          ss << std::fixed << std::setprecision(precision_for_printing(tolerance));
           for (unsigned i = 0; i < m; ++i)
           {
             for (unsigned j = 0; j < n; ++j)
@@ -144,7 +144,7 @@ namespace TESTING::INTERNAL
           return ss.str();
         });
 
-    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
+    return result_based_on_non_matching_entries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
   }
 
   /**
@@ -155,7 +155,7 @@ namespace TESTING::INTERNAL
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <unsigned int m, unsigned int n, typename T>
-  inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
+  inline ::testing::AssertionResult assert_near(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
       const char* toleranceExpr, const Core::LinAlg::Matrix<m, n, T>& mat,
       const std::array<T, static_cast<std::size_t>(m) * n>& array, T tolerance)
@@ -167,7 +167,7 @@ namespace TESTING::INTERNAL
         [&]()
         {
           std::stringstream ss;
-          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          ss << std::fixed << std::setprecision(precision_for_printing(tolerance));
           for (unsigned i = 0; i < m; ++i)
           {
             for (unsigned j = 0; j < n; ++j)
@@ -183,7 +183,7 @@ namespace TESTING::INTERNAL
           return ss.str();
         });
 
-    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
+    return result_based_on_non_matching_entries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
   }
 
   /**
@@ -192,7 +192,7 @@ namespace TESTING::INTERNAL
    *
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
-  inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
+  inline ::testing::AssertionResult assert_near(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
       const char* toleranceExpr, const Core::LinAlg::SerialDenseMatrix& mat1,
       const Core::LinAlg::SerialDenseMatrix& mat2, double tolerance)
@@ -214,7 +214,7 @@ namespace TESTING::INTERNAL
         [&]()
         {
           std::stringstream ss;
-          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          ss << std::fixed << std::setprecision(precision_for_printing(tolerance));
           for (int i = 0; i < mat1.numRows(); ++i)
           {
             for (int j = 0; j < mat1.numCols(); ++j)
@@ -229,7 +229,7 @@ namespace TESTING::INTERNAL
           return ss.str();
         });
 
-    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
+    return result_based_on_non_matching_entries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
   }
 
   /**
@@ -239,7 +239,7 @@ namespace TESTING::INTERNAL
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
   template <typename T>
-  inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
+  inline ::testing::AssertionResult assert_near(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
       const char* toleranceExpr, const Teuchos::SerialDenseMatrix<int, T>& mat1,
       const Teuchos::SerialDenseMatrix<int, T>& mat2, double tolerance)
@@ -261,7 +261,7 @@ namespace TESTING::INTERNAL
         [&]()
         {
           std::stringstream ss;
-          ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
+          ss << std::fixed << std::setprecision(precision_for_printing(tolerance));
           for (int i = 0; i < mat1.numRows(); ++i)
           {
             for (int j = 0; j < mat1.numCols(); ++j)
@@ -276,7 +276,7 @@ namespace TESTING::INTERNAL
           return ss.str();
         });
 
-    return ResultBasedOnNonMatchingEntries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
+    return result_based_on_non_matching_entries(nonMatchingEntries, tolerance, mat1Expr, mat2Expr);
   }
 
 }  // namespace TESTING::INTERNAL
@@ -295,7 +295,7 @@ namespace TESTING::INTERNAL
  * distinguish them from gtest asserts.
  */
 #define FOUR_C_EXPECT_NEAR(actual, expected, tolerance) \
-  EXPECT_PRED_FORMAT3(TESTING::INTERNAL::AssertNear, actual, expected, tolerance)
+  EXPECT_PRED_FORMAT3(TESTING::INTERNAL::assert_near, actual, expected, tolerance)
 
 /**
  * @brief Custom assertion to test for equality up to a tolerance.
@@ -311,7 +311,7 @@ namespace TESTING::INTERNAL
  * distinguish them from gtest asserts.
  */
 #define FOUR_C_EXPECT_ITERABLE_NEAR(actual, expected, length, tolerance) \
-  EXPECT_PRED_FORMAT4(TESTING::INTERNAL::AssertNear, actual, expected, length, tolerance)
+  EXPECT_PRED_FORMAT4(TESTING::INTERNAL::assert_near, actual, expected, length, tolerance)
 
 /*!
  * Extension of EXPECT_THROW which also checks for a substring in the what() expression.

@@ -181,7 +181,7 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   if (ftype != Inpar::CONTACT::friction_coulomb) FOUR_C_THROW("only coulomb friction for CTSI");
 
   if (n_dim() != 3) FOUR_C_THROW("CTSI only for 3D");
@@ -192,8 +192,8 @@ void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linsli
   double cn_input = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   // some things that are not implemented
-  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool gp_slip = Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = Core::UTILS::integral_value<int>(interface_params(), "FRLESS_FIRST");
   if (gp_slip || frilessfirst)
     FOUR_C_THROW("this fancy option for the contact algorithm is not implemented for TSI");
 
@@ -329,7 +329,7 @@ void CONTACT::TSIInterface::assemble_dual_mass_lumped(
     double thermo_lm = conode->tsi_data().thermo_lm();
     std::map<int, std::map<int, double>>& derivDualMass = conode->data().get_deriv_d();
 
-    if (Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(interface_params(), "LM_QUAD") !=
+    if (Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(interface_params(), "LM_QUAD") !=
         Inpar::Mortar::lagmult_const)
     {
       /**********************************************dual mass matrix ******/
@@ -807,7 +807,7 @@ void CONTACT::TSIInterface::assemble_inactive(Core::LinAlg::SparseMatrix* linCon
     FOUR_C_THROW("called to assemble something but didn't provide a matrix");
 
   // inactive nodes
-  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < inactivenodes->NumMyElements(); ++j)

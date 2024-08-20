@@ -36,7 +36,7 @@ namespace Core::FE
     \date 12/10
     */
     template <class WG>
-    bool GetMyNurbsKnotsAndWeights(const Core::FE::Discretization& dis,
+    bool get_my_nurbs_knots_and_weights(const Core::FE::Discretization& dis,
         const Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseVector>& myknots,
         WG& weights)
     {
@@ -85,7 +85,7 @@ namespace Core::FE
     \date 12/10
     */
     template <class WG>
-    bool GetKnotVectorAndWeightsForNurbsBoundary(const Core::Elements::Element* boundaryele,
+    bool get_knot_vector_and_weights_for_nurbs_boundary(const Core::Elements::Element* boundaryele,
         const int localsurfaceid, const int parenteleid,
         const Core::FE::Discretization& discretization,
         std::vector<Core::LinAlg::SerialDenseVector>& mypknots,
@@ -138,9 +138,9 @@ namespace Core::FE
     \date 01/14
     */
     template <class WG>
-    bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(Core::Elements::Element* parentele,
-        Core::Elements::Element* boundaryele, const int localsurfaceid,
-        const Core::FE::Discretization& discretization,
+    bool get_knot_vector_and_weights_for_nurbs_boundary_and_parent(
+        Core::Elements::Element* parentele, Core::Elements::Element* boundaryele,
+        const int localsurfaceid, const Core::FE::Discretization& discretization,
         std::vector<Core::LinAlg::SerialDenseVector>& mypknots,
         std::vector<Core::LinAlg::SerialDenseVector>& myknots, WG& pweights, WG& weights,
         double& normalfac)
@@ -193,7 +193,7 @@ namespace Core::FE
      \param distype             (in) discretization type of NURBS element
      */
     template <unsigned int n_points, unsigned int n_dim_nurbs, unsigned int n_dim = n_dim_nurbs>
-    Core::LinAlg::Matrix<n_dim, 1, double> EvalNurbsInterpolation(
+    Core::LinAlg::Matrix<n_dim, 1, double> eval_nurbs_interpolation(
         const Core::LinAlg::Matrix<n_points * n_dim, 1, double>& controlpoint_data,
         const Core::LinAlg::Matrix<n_dim_nurbs, 1, double>& xi,
         const Core::LinAlg::Matrix<n_points, 1, double>& weights,
@@ -206,9 +206,9 @@ namespace Core::FE
       Core::LinAlg::Matrix<n_points, 1, double> N;
 
       if (n_dim_nurbs == 3)
-        nurbs_get_3D_funct(N, xi, knots, weights, distype);
+        nurbs_get_3d_funct(N, xi, knots, weights, distype);
       else if (n_dim_nurbs == 2)
-        nurbs_get_2D_funct(N, xi, knots, weights, distype);
+        nurbs_get_2d_funct(N, xi, knots, weights, distype);
       else
         FOUR_C_THROW("Unable to compute the shape functions for this nurbs element case");
 

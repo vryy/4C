@@ -92,7 +92,7 @@ Discret::ELEMENTS::TemperImplInterface* Discret::ELEMENTS::TemperImplInterface::
     }
     default:
       FOUR_C_THROW("Element shape %s (%d nodes) not activated. Just do it.",
-          Core::FE::CellTypeToString(ele->shape()).c_str(), ele->num_node());
+          Core::FE::cell_type_to_string(ele->shape()).c_str(), ele->num_node());
       break;
   }
   return nullptr;
@@ -103,7 +103,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::TemperImpl<distype>* Discret::ELEMENTS::TemperImpl<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::TemperImpl<distype>>(
@@ -149,7 +149,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 {
   prepare_nurbs_eval(ele, discretization);
 
-  const auto action = Core::UTILS::GetAsEnum<Thermo::Action>(params, "action");
+  const auto action = Core::UTILS::get_as_enum<Thermo::Action>(params, "action");
 
   // check length
   if (la[0].size() != nen_ * numdofpernode_) FOUR_C_THROW("Location vector length does not match!");
@@ -160,7 +160,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     std::vector<double> mytempnp((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(0, "temperature");
     if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
-    Core::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
+    Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
     etempn_.update(etempn);                                                        // copy
@@ -171,7 +171,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     std::vector<double> mytempn((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempn = discretization.get_state(0, "last temperature");
     if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
-    Core::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
+    Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
     // build the element temperature
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
     etemp_.update(etemp);                                                        // copy
@@ -251,7 +251,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     // lumping
     if (params.get<bool>("lump capa matrix", false))
     {
-      const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+      const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
           params, "time integrator", Inpar::Thermo::dyna_undefined);
       switch (timint)
       {
@@ -329,7 +329,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
     // K_T = fac_capa . C + fac_cond . K
-    const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+    const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
         params, "time integrator", Inpar::Thermo::dyna_undefined);
     switch (timint)
     {
@@ -386,7 +386,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
           if (ratem == Teuchos::null) FOUR_C_THROW("Cannot get mid-temprate state vector for fcap");
           std::vector<double> myratem((la[0].lm_).size());
           // fill the vector myratem with the global values of ratem
-          Core::FE::ExtractMyValues(*ratem, myratem, la[0].lm_);
+          Core::FE::extract_my_values(*ratem, myratem, la[0].lm_);
           // build the element mid-temperature rates
           Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> eratem(
               myratem.data(), true);  // view only!
@@ -561,7 +561,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     if (elevec1_epetra.length() < 1) FOUR_C_THROW("The given result vector is too short.");
 
     // get node coordinates
-    Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+    Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
         ele, xyze_);
 
     // declaration of internal variables
@@ -617,7 +617,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
   else
   {
     FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
-        Thermo::ActionToString(action).c_str());
+        Thermo::action_to_string(action).c_str());
   }
 
 #ifdef THRASOUTPUT
@@ -646,12 +646,12 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
     std::vector<double> mytempnp(lm.size());
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state("temperature");
     if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
-    Core::FE::ExtractMyValues(*tempnp, mytempnp, lm);
+    Core::FE::extract_my_values(*tempnp, mytempnp, lm);
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
     etempn_.update(etemp);                                                        // copy
   }
   // check for the action parameter
-  const auto action = Core::UTILS::GetAsEnum<Thermo::Action>(params, "action");
+  const auto action = Core::UTILS::get_as_enum<Thermo::Action>(params, "action");
   // extract time
   const double time = params.get<double>("total time");
 
@@ -667,7 +667,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
   else
   {
     FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
-        Thermo::ActionToString(action).c_str());
+        Thermo::action_to_string(action).c_str());
   }
 
   return 0;
@@ -783,7 +783,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_fext(
 )
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
@@ -824,7 +825,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_thermo_contribution(
 )
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
@@ -925,7 +927,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint, const Teuchos::ParameterList& params)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // now get current element displacements
   Core::LinAlg::Matrix<nen_ * nsd_, 1> edisp(false);
@@ -1137,7 +1140,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
     const Teuchos::ParameterList& params)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // now get current element displacements and velocities
   Core::LinAlg::Matrix<nen_ * nsd_, 1> edisp(false);
@@ -1164,7 +1168,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
       params, "time integrator", Inpar::Thermo::dyna_undefined);
 
   // get step size dt
@@ -1626,7 +1630,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   double timefac_d = 0.0;
   double timefac = 0.0;
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
       params, "time integrator", Inpar::Thermo::dyna_undefined);
   switch (timint)
   {
@@ -1659,7 +1663,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   }  // end of switch(timint)
 
   const auto s_timint =
-      Core::UTILS::GetAsEnum<Inpar::Solid::DynamicType>(params, "structural time integrator");
+      Core::UTILS::get_as_enum<Inpar::Solid::DynamicType>(params, "structural time integrator");
   switch (s_timint)
   {
     case Inpar::Solid::dyna_statics:
@@ -1998,7 +2002,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_dissipation_fint(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // --------------------------------------------------------- initialise
   // thermal material tangent
@@ -2093,7 +2098,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
 #ifdef THRASOUTPUT
   std::cout << "linear_dissipation_coupled_tang evel\n" << evel << std::endl;
@@ -2115,7 +2121,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
       params, "time integrator", Inpar::Thermo::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
@@ -2250,7 +2256,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // update element geometry
   Core::LinAlg::Matrix<nen_, nsd_> xrefe;  // material coord. of element
@@ -2394,7 +2401,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
       params, "time integrator", Inpar::Thermo::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
@@ -2480,7 +2487,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_heatflux_tempgrad(
     Core::LinAlg::Matrix<nquad_, nsd_>* etempgrad   // temperature gradients at Gauss points
 )
 {
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // integrations points and weights
   Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
@@ -2522,9 +2530,9 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
     Teuchos::ParameterList& params)
 {
   // specific choice of heat flux / temperature gradient
-  const auto ioheatflux = Core::UTILS::GetAsEnum<Inpar::Thermo::HeatFluxType>(
+  const auto ioheatflux = Core::UTILS::get_as_enum<Inpar::Thermo::HeatFluxType>(
       params, "ioheatflux", Inpar::Thermo::heatflux_none);
-  const auto iotempgrad = Core::UTILS::GetAsEnum<Inpar::Thermo::TempGradType>(
+  const auto iotempgrad = Core::UTILS::get_as_enum<Inpar::Thermo::TempGradType>(
       params, "iotempgrad", Inpar::Thermo::tempgrad_none);
 
   // update element geometry
@@ -2646,13 +2654,13 @@ void Discret::ELEMENTS::TemperImpl<distype>::extract_disp_vel(
     Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(1, "displacement");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
     // extract the displacements
-    Core::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
+    Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
 
     // get the velocities
     Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(1, "velocity");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     // extract the displacements
-    Core::FE::ExtractMyValues(*vel, myvel, la[1].lm_);
+    Core::FE::extract_my_values(*vel, myvel, la[1].lm_);
   }
 }
 
@@ -2687,13 +2695,13 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
   switch (nsd_)
   {
     case 3:
-      Core::Conditions::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+      Core::Conditions::find_element_conditions(ele, "VolumeNeumann", myneumcond);
       break;
     case 2:
-      Core::Conditions::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+      Core::Conditions::find_element_conditions(ele, "SurfaceNeumann", myneumcond);
       break;
     case 1:
-      Core::Conditions::FindElementConditions(ele, "LineNeumann", myneumcond);
+      Core::Conditions::find_element_conditions(ele, "LineNeumann", myneumcond);
       break;
     default:
       FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);
@@ -2705,7 +2713,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
   if (myneumcond.size() == 1)
   {
     // get node coordinates
-    Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+    Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
         ele, xyze_);
 
     // update element geometry
@@ -2821,7 +2829,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::eval_shape_func_and_derivs_at_int_p
     Core::FE::shape_function_deriv1<distype>(xsi_, deriv_);
   }
   else
-    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
+    Core::FE::Nurbs::nurbs_get_3d_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
 
   // compute Jacobian matrix and determinant (as presented in FE lecture notes)
   // actually compute its transpose (compared to J in NiliFEM lecture notes)
@@ -2866,7 +2874,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::initial_and_current_nodal_position_
     const std::vector<double>& vel, Core::LinAlg::Matrix<nen_, nsd_>& xcurr,
     Core::LinAlg::Matrix<nen_, nsd_>& xcurrrate)
 {
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   for (int i = 0; i < nen_; ++i)
   {
     xcurr(i, 0) = xyze_(0, i) + disp[i * nsd_ + 0];
@@ -2912,7 +2921,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::integrate_shape_functions(
     const Core::LinAlg::IntSerialDenseVector& dofids)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // integrations points and weights
   Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
@@ -3239,7 +3249,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::compute_error(
 )
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T
@@ -3255,7 +3266,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::compute_error(
   //  if (intpoints.ip().nquad != nquad_)
   //    FOUR_C_THROW("Trouble with number of Gauss points");
 
-  const auto calcerr = Core::UTILS::GetAsEnum<Inpar::Thermo::CalcError>(params, "calculate error");
+  const auto calcerr =
+      Core::UTILS::get_as_enum<Inpar::Thermo::CalcError>(params, "calculate error");
   const int errorfunctno = params.get<int>("error function number");
   const double t = params.get<double>("total time");
 

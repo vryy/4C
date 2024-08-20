@@ -34,7 +34,7 @@ namespace Inpar
     };
 
     /// set the valid parameters related to writing of VTP output at runtime
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace IORuntimeVTPStructure
 }  // namespace Inpar

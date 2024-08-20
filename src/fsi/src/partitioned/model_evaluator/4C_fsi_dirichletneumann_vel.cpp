@@ -52,10 +52,10 @@ void FSI::DirichletNeumannVel::setup()
   FSI::DirichletNeumann::setup();
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  if (Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp)
+  if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp)
     FOUR_C_THROW("Please set the fsi coupling variable to Velocity or Force!\n");
   set_kinematic_coupling(
-      Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::vel);
+      Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::vel);
   if (Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true) ==
       Teuchos::null)
   {
@@ -153,7 +153,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::initial_guess()
   {
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-    if (Core::UTILS::IntegralValue<int>(fsipart, "PREDICTOR") != 1)
+    if (Core::UTILS::integral_value<int>(fsipart, "PREDICTOR") != 1)
     {
       FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());
@@ -205,7 +205,7 @@ void FSI::DirichletNeumannVel::timeloop(
       Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
   visualization_output_writer_->init();
   visualization_output_writer_->setup(
-      Core::IO::VisualizationParametersFactory(
+      Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), time()),
       Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true)

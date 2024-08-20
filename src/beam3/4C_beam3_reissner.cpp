@@ -480,7 +480,7 @@ void Discret::ELEMENTS::Beam3r::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -905,7 +905,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_function_derivs_all_gps<nnodecl, vpernode>(
         gausspoints_elast_force, H_i_xi, distype, this->ref_length());
 
 
@@ -971,9 +971,9 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad, 1>(
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodetriad, 1>(
         gausspoints_elast_moment, I_i, I_i_xi, distype);
-    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_function_derivs_all_gps<nnodecl, vpernode>(
         gausspoints_elast_moment, H_i_xi, distype, this->ref_length());
 
     // assure correct size of strain and stress resultant class variables and fill them
@@ -1059,7 +1059,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodecl, vpernode>(
         gausspoints_inertia, H_i, H_i_xi, distype, this->ref_length());
 
     // Loop through all GPs for exact integration and compute initial jacobi determinant
@@ -1117,7 +1117,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_function_derivs_all_gps<nnodecl, vpernode>(
         gausspoints_damp_stoch, H_i_xi, distype, this->ref_length());
 
     // Loop through all GPs
@@ -1152,7 +1152,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // evaluate all shape functions and derivatives with respect to element parameter xi at all
     // specified Gauss points
-    Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_function_derivs_all_gps<nnodecl, vpernode>(
         gausspoints_neumann, H_i_xi, distype, this->ref_length());
 
     // Loop through all GPs
@@ -1432,8 +1432,8 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_variations_
   // (either cubic Hermite or Lagrange polynomials of order 1...5)
   Core::LinAlg::Matrix<1, vpernode * nnodecl, double> H_i;
 
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodetriad, 1>(xi, I_i, this->shape());
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
+  Discret::UTILS::Beam::evaluate_shape_functions_at_xi<nnodetriad, 1>(xi, I_i, this->shape());
+  Discret::UTILS::Beam::evaluate_shape_functions_at_xi<nnodecl, vpernode>(
       xi, H_i, this->shape(), this->ref_length());
 
   Ivar.clear();
@@ -1547,7 +1547,7 @@ void Discret::ELEMENTS::Beam3r::get_generalized_interpolation_matrix_increments_
   // (either cubic Hermite or Lagrange polynomials of order 1...5)
   Core::LinAlg::Matrix<1, vpernode * nnodecl, double> H_i;
 
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnodecl, vpernode>(
+  Discret::UTILS::Beam::evaluate_shape_functions_at_xi<nnodecl, vpernode>(
       xi, H_i, this->shape(), this->ref_length());
 
   // nodal triads in form of quaternions
@@ -1619,7 +1619,7 @@ void Discret::ELEMENTS::Beam3r::update_disp_tot_lag_and_nodal_triads(
   {
     // copy quaternions of nodal triads to class variable
     for (unsigned int i = 0; i < 4; ++i)
-      qnewnode_[node](i) = Core::FADUtils::CastToDouble(Q_i[node](i));
+      qnewnode_[node](i) = Core::FADUtils::cast_to_double(Q_i[node](i));
   }
 }
 
@@ -1895,7 +1895,7 @@ void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta(
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations
-    Qnode[node].scale(1.0 / Core::FADUtils::VectorNorm(Qnode[node]));
+    Qnode[node].scale(1.0 / Core::FADUtils::vector_norm(Qnode[node]));
   }
 }
 

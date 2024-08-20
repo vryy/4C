@@ -60,7 +60,7 @@ void Solid::ModelEvaluator::BaseSSI::determine_stress_strain()
   discret().evaluate(
       [&](Core::Elements::Element& ele)
       {
-        Core::FE::ExtrapolateGaussPointQuantityToNodes(
+        Core::FE::extrapolate_gauss_point_quantity_to_nodes(
             ele, *stresses->at(ele.id()), discret(), nodal_stresses_source);
       });
 

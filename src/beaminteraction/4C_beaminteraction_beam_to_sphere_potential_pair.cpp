@@ -76,7 +76,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::setup
         " must be a beam element!");
 
   // get radius and stress-free reference length of beam element
-  radius1_ = BEAMINTERACTION::CalcEleRadius(beam_element_);
+  radius1_ = BEAMINTERACTION::calc_ele_radius(beam_element_);
   beamele_reflength_ = beam_element_->ref_length();
 
   // cast second element to RigidSphere
@@ -169,13 +169,13 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
   {
     forcevec1->size(dim1);
     for (unsigned int i = 0; i < dim1; ++i)
-      (*forcevec1)(i) = Core::FADUtils::CastToDouble(fpot1_(i));
+      (*forcevec1)(i) = Core::FADUtils::cast_to_double(fpot1_(i));
   }
   if (forcevec2 != nullptr)
   {
     forcevec2->size(dim2);
     for (unsigned int i = 0; i < dim2; ++i)
-      (*forcevec2)(i) = Core::FADUtils::CastToDouble(fpot2_(i));
+      (*forcevec2)(i) = Core::FADUtils::cast_to_double(fpot2_(i));
   }
 
   if (stiffmat11 != nullptr)
@@ -183,28 +183,28 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::evalu
     stiffmat11->shape(dim1, dim1);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
-        (*stiffmat11)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot1_(irow, icol));
+        (*stiffmat11)(irow, icol) = Core::FADUtils::cast_to_double(stiffpot1_(irow, icol));
   }
   if (stiffmat12 != nullptr)
   {
     stiffmat12->shape(dim1, dim2);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
-        (*stiffmat12)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot1_(irow, dim1 + icol));
+        (*stiffmat12)(irow, icol) = Core::FADUtils::cast_to_double(stiffpot1_(irow, dim1 + icol));
   }
   if (stiffmat21 != nullptr)
   {
     stiffmat21->shape(dim2, dim1);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
-        (*stiffmat21)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot2_(irow, icol));
+        (*stiffmat21)(irow, icol) = Core::FADUtils::cast_to_double(stiffpot2_(irow, icol));
   }
   if (stiffmat22 != nullptr)
   {
     stiffmat22->shape(dim2, dim2);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
-        (*stiffmat22)(irow, icol) = Core::FADUtils::CastToDouble(stiffpot2_(irow, dim1 + icol));
+        (*stiffmat22)(irow, icol) = Core::FADUtils::cast_to_double(stiffpot2_(irow, dim1 + icol));
   }
 
   return (true);
@@ -296,12 +296,13 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   {
     compute_coords(r1, N1_i[gp1], ele1pos_);
 
-    dist = Core::FADUtils::DiffVector(r1, r2);
+    dist = Core::FADUtils::diff_vector(r1, r2);
 
-    norm_dist = Core::FADUtils::VectorNorm<3>(dist);
+    norm_dist = Core::FADUtils::vector_norm<3>(dist);
 
     // check cutoff criterion: if specified, contributions are neglected at larger separation
-    if (cutoff_radius != -1.0 and Core::FADUtils::CastToDouble(norm_dist) > cutoff_radius) continue;
+    if (cutoff_radius != -1.0 and Core::FADUtils::cast_to_double(norm_dist) > cutoff_radius)
+      continue;
 
 
     // temporary hacks for cell-ecm interaction
@@ -328,12 +329,12 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     //    if( norm_dist < sphere_element_->Radius() )
     //    {
     //      dist.Scale( sphere_element_->Radius() / norm_dist );
-    //      norm_dist = Core::FADUtils::VectorNorm<3>(dist);
+    //      norm_dist = Core::FADUtils::vector_norm<3>(dist);
     //    }
     //
     //    if(norm_dist > 0.5)
     //      dist.Scale(10.0/norm_dist);
-    //    norm_dist = Core::FADUtils::VectorNorm<3>(dist);
+    //    norm_dist = Core::FADUtils::vector_norm<3>(dist);
 
     // auxiliary variables to store pre-calculated common terms
     TYPE norm_dist_exp1 = 0.0;
@@ -463,7 +464,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 
     // store for energy output
     interaction_potential_ += prefactor / m_ * q1q2_JacFac_GaussWeights *
-                              std::pow(Core::FADUtils::CastToDouble(norm_dist), -m_);
+                              std::pow(Core::FADUtils::cast_to_double(norm_dist), -m_);
   }
 
 
@@ -521,8 +522,8 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_s
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      Core::FE::shape_function_1D(N1_i[gp], gausspoints.qxg[gp][0], distype1);
-      Core::FE::shape_function_1D_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
+      Core::FE::shape_function_1d(N1_i[gp], gausspoints.qxg[gp][0], distype1);
+      Core::FE::shape_function_1d_deriv1(N1_i_xi[gp], gausspoints.qxg[gp][0], distype1);
     }
   }
   else if (numnodalvalues == 2)
@@ -534,9 +535,9 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::get_s
     for (int gp = 0; gp < gausspoints.nquad; ++gp)
     {
       // get values and derivatives of shape functions
-      Core::FE::shape_function_hermite_1D(
+      Core::FE::shape_function_hermite_1d(
           N1_i[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
-      Core::FE::shape_function_hermite_1D_deriv1(
+      Core::FE::shape_function_hermite_1d_deriv1(
           N1_i_xi[gp], gausspoints.qxg[gp][0], beamele_reflength_, distype1herm);
     }
   }

@@ -253,7 +253,7 @@ namespace Solid
    *  \return Extracted integer at the very last position of the name.
    *
    *  \author hiermeier \date 11/17 */
-  int GetIntegerNumberAtLastPositionOfName(const std::string& quantity);
+  int get_integer_number_at_last_position_of_name(const std::string& quantity);
 
 }  // namespace Solid
 

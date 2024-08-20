@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] static inline Core::LinAlg::Matrix<3, 3> EvaluateC(
+  [[nodiscard]] static inline Core::LinAlg::Matrix<3, 3> evaluate_c(
       const Core::LinAlg::Matrix<3, 3>& F)
   {
     Core::LinAlg::Matrix<3, 3> C(false);
@@ -34,19 +34,20 @@ namespace
     return C;
   }
 
-  [[nodiscard]] static inline double GetTotalTime(const Teuchos::ParameterList& params)
+  [[nodiscard]] static inline double get_total_time(const Teuchos::ParameterList& params)
   {
     double time = params.get<double>("total time");
     if (time < 0) return 0.0;  // Time has not been set by the time integrator during setup
     return time;
   }
 
-  [[nodiscard]] static inline double GetDeltaTime(const Teuchos::ParameterList& params)
+  [[nodiscard]] static inline double get_delta_time(const Teuchos::ParameterList& params)
   {
     return params.get<double>("delta time");
   }
 
-  MIXTURE::HistoryAdaptionStrategy GetHistoryAdaptionStrategyFromInput(const std::string& input)
+  MIXTURE::HistoryAdaptionStrategy get_history_adaption_strategy_from_input(
+      const std::string& input)
   {
     if (input == "none")
     {
@@ -77,7 +78,7 @@ MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::
       fiber_id_(matdata.parameters.get<int>("FIBER_ID") - 1),
       init_(matdata.parameters.get<int>("INIT")),
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
-      fiber_material_(FiberMaterialFactory(fiber_material_id_)),
+      fiber_material_(fiber_material_factory(fiber_material_id_)),
       enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
       enable_basal_mass_production_(matdata.parameters.get<bool>("ENABLE_BASAL_MASS_PRODUCTION")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
@@ -85,7 +86,7 @@ MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber::
       deposition_stretch_(matdata.parameters.get<double>("DEPOSITION_STRETCH")),
       initial_deposition_stretch_timefunc_num_(
           matdata.parameters.get<int>("INITIAL_DEPOSITION_STRETCH_TIMEFUNCT")),
-      adaptive_history_strategy_(GetHistoryAdaptionStrategyFromInput(
+      adaptive_history_strategy_(get_history_adaption_strategy_from_input(
           matdata.parameters.get<std::string>("ADAPTIVE_HISTORY_STRATEGY"))),
       adaptive_history_tolerance_(matdata.parameters.get<double>("ADAPTIVE_HISTORY_TOLERANCE"))
 {
@@ -207,10 +208,10 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::update(
 {
   MixtureConstituent::update(F, params, gp, eleGID);
 
-  const double time = GetTotalTime(params);
+  const double time = get_total_time(params);
   full_constrained_mixture_fiber_[gp].set_deposition_stretch(
       evaluate_initial_deposition_stretch(time));
-  last_lambda_f_[gp] = evaluate_lambdaf(EvaluateC(F), gp, eleGID);
+  last_lambda_f_[gp] = evaluate_lambdaf(evaluate_c(F), gp, eleGID);
 
   // Update state
   full_constrained_mixture_fiber_[gp].update();
@@ -307,10 +308,10 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate(
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
-  const double time = GetTotalTime(params);
-  const double delta_time = GetDeltaTime(params);
+  const double time = get_total_time(params);
+  const double delta_time = get_delta_time(params);
 
-  Core::LinAlg::Matrix<3, 3> C = EvaluateC(F);
+  Core::LinAlg::Matrix<3, 3> C = evaluate_c(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   full_constrained_mixture_fiber_[gp].recompute_state(lambda_f, time, delta_time);

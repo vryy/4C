@@ -83,16 +83,16 @@ void NOX::Nln::Solver::PseudoTransient::init()
 
   // get the time step control type
   const std::string& control_str = p_ptc.get<std::string>("Time Step Control");
-  tscType_ = string2_tsc_type(control_str);
+  tscType_ = string_to_tsc_type(control_str);
   const std::string& norm_str = p_ptc.get<std::string>("Norm Type for TSC");
   normType_ = NOX::Nln::Aux::string_to_norm_type(norm_str);
 
   // get the scaling operator type
   const std::string& scaleop_str = p_ptc.get<std::string>("Scaling Type");
-  scaleOpType_ = string2_scale_op_type(scaleop_str);
+  scaleOpType_ = string_to_scale_op_type(scaleop_str);
 
   const std::string& build_scaling_op = p_ptc.get<std::string>("Build scaling operator");
-  build_scaling_op_ = string2_build_op_type(build_scaling_op);
+  build_scaling_op_ = string_to_build_op_type(build_scaling_op);
 
   // create the scaling operator
   create_scaling_operator();
@@ -207,7 +207,7 @@ void NOX::Nln::Solver::PseudoTransient::create_lin_system_pre_post_operator()
         paramsPtr->sublist("Direction").sublist(dir_str).sublist("Linear Solver");
     // get the current map. If there is no map, return a new empty one. (reference)
     NOX::Nln::LinSystem::PrePostOperator::Map& prePostLinSystemMap =
-        NOX::Nln::LinSystem::PrePostOp::GetMap(p_linsolver);
+        NOX::Nln::LinSystem::PrePostOp::get_map(p_linsolver);
     // insert/replace the old pointer in the map
     prePostLinSystemMap[NOX::Nln::LinSystem::prepost_ptc] = prePostLinSysPtr_;
     /* Now the last thing to do is, that we have to reset the pre/post-operator in
@@ -241,7 +241,7 @@ void NOX::Nln::Solver::PseudoTransient::create_group_pre_post_operator()
   Teuchos::ParameterList& p_grpOpt = paramsPtr->sublist("Group Options");
   // get the current map. If there is no map, return a new empty one. (reference)
   NOX::Nln::GROUP::PrePostOperator::Map& prePostGroupMap =
-      NOX::Nln::GROUP::PrePostOp::GetMap(p_grpOpt);
+      NOX::Nln::GROUP::PrePostOp::get_map(p_grpOpt);
   // insert or replace the old pointer in the map
   prePostGroupPtr_ = Teuchos::rcp(new NOX::Nln::GROUP::PrePostOp::PseudoTransient(
       scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));
@@ -817,7 +817,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
     default:
     {
       FOUR_C_THROW("Unsupported jacobian operator type: %s",
-          NOX::Nln::LinSystem::OperatorType2String(jactype).c_str());
+          NOX::Nln::LinSystem::operator_type_to_string(jactype).c_str());
       break;
     }
   }
@@ -858,7 +858,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
       // Scale v with scaling factor
       v->Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
-      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(jac.row_map(), false);
+      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(jac.row_map(), false);
       jac.extract_diagonal_copy(*diag);
       diag->Update(1.0, *v, 1.0);
       // Finally modify the jacobian

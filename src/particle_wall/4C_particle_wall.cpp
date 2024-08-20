@@ -101,8 +101,8 @@ void PARTICLEWALL::WallHandlerBase::insert_particle_states_of_particle_types(
     const
 {
   // get flags defining considered states of particle wall
-  bool ismoving = Core::UTILS::IntegralValue<int>(params_, "PARTICLE_WALL_MOVING");
-  bool isloaded = Core::UTILS::IntegralValue<int>(params_, "PARTICLE_WALL_LOADED");
+  bool ismoving = Core::UTILS::integral_value<int>(params_, "PARTICLE_WALL_MOVING");
+  bool isloaded = Core::UTILS::integral_value<int>(params_, "PARTICLE_WALL_LOADED");
 
   if (not(ismoving and isloaded)) return;
 
@@ -350,7 +350,7 @@ void PARTICLEWALL::WallHandlerBase::build_particle_to_wall_neighbors(
 
         // get coordinates of closest point on current column wall element to particle
         Core::LinAlg::Matrix<3, 1> closestpos;
-        Core::Geo::nearest3DObjectOnElement(ele, colelenodalpos, currpos, closestpos);
+        Core::Geo::nearest_3d_object_on_element(ele, colelenodalpos, currpos, closestpos);
 
         // distance vector from particle to closest point on current column wall element
         double dist[3];
@@ -415,7 +415,7 @@ void PARTICLEWALL::WallHandlerBase::determine_col_wall_ele_nodal_pos(
         FOUR_C_THROW("dof gid=%d not in dof column map!", lm_wall[i]);
 #endif
 
-    Core::FE::ExtractMyValues(*walldatastate_->get_disp_col(), nodal_disp, lm_wall);
+    Core::FE::extract_my_values(*walldatastate_->get_disp_col(), nodal_disp, lm_wall);
   }
 
   // iterate over nodes of current column wall element
@@ -532,7 +532,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::extend_wall_element_ghosting(
   Teuchos::RCP<Epetra_Map> extendedelecolmap = binstrategy_->extend_element_col_map(
       bintorowelemap, bintorowelemap, colbintoelemap, bincolmap_);
 
-  Core::Binstrategy::Utils::ExtendDiscretizationGhosting(
+  Core::Binstrategy::Utils::extend_discretization_ghosting(
       walldiscretization_, extendedelecolmap, true, false, false);
 }
 
@@ -568,7 +568,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
     std::map<int, Teuchos::RCP<Core::Elements::Element>> colelements;
 
     // get structure objects in wall condition
-    Core::Conditions::FindConditionObjects(
+    Core::Conditions::find_condition_objects(
         *structurediscretization, nodes, colnodes, colelements, currcondition);
 
     // iterate over column wall nodes
@@ -590,13 +590,13 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
 
       // create wall element
       Teuchos::RCP<Core::Elements::Element> wallele =
-          Core::Communication::Factory("BELE3_3", "Polynomial", currele->id(), currele->owner());
+          Core::Communication::factory("BELE3_3", "Polynomial", currele->id(), currele->owner());
 
       // set node ids to element
       wallele->set_node_ids(currele->num_node(), currele->node_ids());
 
       // create material for current wall element
-      if (not(mat < 0)) wallele->set_material(0, Mat::Factory(mat));
+      if (not(mat < 0)) wallele->set_material(0, Mat::factory(mat));
 
       // add wall element to discretization
       walldiscretization_->add_element(wallele);
@@ -719,13 +719,13 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
       {
         // create wall element
         Teuchos::RCP<Core::Elements::Element> wallele =
-            Core::Communication::Factory("BELE3_3", "Polynomial", eleid, myrank_);
+            Core::Communication::factory("BELE3_3", "Polynomial", eleid, myrank_);
 
         // set node ids to element
         wallele->set_node_ids(4, nodeidsofelements[dim * 2 + sign].data());
 
         // create material for current wall element
-        if (not(mat < 0)) wallele->set_material(0, Mat::Factory(mat));
+        if (not(mat < 0)) wallele->set_material(0, Mat::factory(mat));
 
         // add wall element to discretization
         walldiscretization_->add_element(wallele);
@@ -744,14 +744,14 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
       -1, nodeids.size(), nodeids.data(), 0, walldiscretization_->get_comm());
 
   // fully overlapping node column map
-  Teuchos::RCP<Epetra_Map> nodecolmap = Core::LinAlg::AllreduceEMap(*noderowmap);
+  Teuchos::RCP<Epetra_Map> nodecolmap = Core::LinAlg::allreduce_e_map(*noderowmap);
 
   // element row map of wall elements
   std::shared_ptr<Epetra_Map> elerowmap = std::make_shared<Epetra_Map>(
       -1, eleids.size(), eleids.data(), 0, walldiscretization_->get_comm());
 
   // fully overlapping element column map
-  Teuchos::RCP<Epetra_Map> elecolmap = Core::LinAlg::AllreduceEMap(*elerowmap);
+  Teuchos::RCP<Epetra_Map> elecolmap = Core::LinAlg::allreduce_e_map(*elerowmap);
 
   // fully overlapping ghosting of the wall elements to have everything redundant
   walldiscretization_->export_column_nodes(*nodecolmap);

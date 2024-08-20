@@ -122,7 +122,7 @@ void Discret::ELEMENTS::Truss3Scatra::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -268,7 +268,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
       else
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
       }
 
@@ -356,7 +356,7 @@ void Discret::ELEMENTS::Truss3Scatra::extract_elemental_variables(LocationArray&
     phi_ele.clear();
     auto phi = discretization.get_state(2, "MicroCon");
     if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MicroCon'");
-    Core::FE::ExtractMyValues(*phi, phi_ele, la[2].lm_);
+    Core::FE::extract_my_values(*phi, phi_ele, la[2].lm_);
   }
   // get nodal phi from micro state
   else if (discretization.has_state(1, "scalarfield"))
@@ -365,7 +365,7 @@ void Discret::ELEMENTS::Truss3Scatra::extract_elemental_variables(LocationArray&
     phi_ele.clear();
     auto phi = discretization.get_state(1, "scalarfield");
     if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'scalar'");
-    Core::FE::ExtractMyValues(*phi, phi_ele, la[1].lm_);
+    Core::FE::extract_my_values(*phi, phi_ele, la[1].lm_);
   }
   else
     FOUR_C_THROW("Cannot find state vector");

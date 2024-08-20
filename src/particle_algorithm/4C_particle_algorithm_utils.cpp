@@ -18,8 +18,9 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 template <typename Valtype>
-void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::ParameterList& params,
-    const std::string& name, std::map<PARTICLEENGINE::TypeEnum, Valtype>& typetovalmap)
+void PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+    const Teuchos::ParameterList& params, const std::string& name,
+    std::map<PARTICLEENGINE::TypeEnum, Valtype>& typetovalmap)
 {
   // read from input file
   std::vector<std::string> typetoval;
@@ -43,7 +44,7 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
     valstring = typetoval[2 * i + 1];
 
     // get enum of particle types
-    PARTICLEENGINE::TypeEnum particleType = PARTICLEENGINE::EnumFromTypeName(typestring);
+    PARTICLEENGINE::TypeEnum particleType = PARTICLEENGINE::enum_from_type_name(typestring);
 
     // get numeric value
     Valtype val;
@@ -64,18 +65,18 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
     // safety check
     if (not iterator.second)
       FOUR_C_THROW("failed inserting numeric value into map since key '%s' is already existing!",
-          PARTICLEENGINE::EnumToTypeName(particleType).c_str());
+          PARTICLEENGINE::enum_to_type_name(particleType).c_str());
   }
 }
 
 /*---------------------------------------------------------------------------*
  | template instantiations                                                   |
  *---------------------------------------------------------------------------*/
-template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<int>(
+template void PARTICLEALGORITHM::UTILS::read_params_types_related_to_values<int>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, int>& typetovalmap);
 
-template void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues<double>(
+template void PARTICLEALGORITHM::UTILS::read_params_types_related_to_values<double>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, double>& typetovalmap);
 

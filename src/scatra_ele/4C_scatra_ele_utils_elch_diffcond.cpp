@@ -27,7 +27,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>*
 Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleUtilsElchDiffCond<distype>>(

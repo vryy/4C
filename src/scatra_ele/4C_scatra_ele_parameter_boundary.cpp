@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::ScaTraEleParameterBoundary*
 Discret::ELEMENTS::ScaTraEleParameterBoundary::instance(const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const std::string& disname) {
         return std::unique_ptr<ScaTraEleParameterBoundary>(new ScaTraEleParameterBoundary(disname));
       });

@@ -158,7 +158,7 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3::unpack(const std::vector<char>& 
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

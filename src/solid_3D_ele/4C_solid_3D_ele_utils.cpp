@@ -60,7 +60,7 @@ Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_log_strain(
 
   Core::LinAlg::Matrix<3, 3> pr_strain(true);  // squared principal strains
   Core::LinAlg::Matrix<3, 3> pr_dir(true);     // principal directions
-  Core::LinAlg::SYEV(E_matrix, pr_strain, pr_dir);
+  Core::LinAlg::syev(E_matrix, pr_strain, pr_dir);
 
   // compute principal logarithmic strains
   Core::LinAlg::Matrix<3, 3> pr_log_strain(true);

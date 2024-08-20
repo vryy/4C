@@ -33,7 +33,7 @@ namespace PoroElastScaTra
   {
     //! setup discretization, includes cloning the structure discretization
     template <class PoroCloneStrategy, class PoroScatraCloneStrategy>
-    void SetupPoroScatraDiscretizations()
+    void setup_poro_scatra_discretizations()
     {
       // Scheme    : the structure discretization is received from the input. Then, an ale-fluid
       // disc.is cloned from the struct. one.
@@ -48,7 +48,7 @@ namespace PoroElastScaTra
 
       // setup of the discretizations, including clone strategy (do not set material pointers, this
       // will be done here)
-      PoroElast::UTILS::SetupPoro<PoroCloneStrategy>(false);
+      PoroElast::UTILS::setup_poro<PoroCloneStrategy>(false);
 
       // 3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the
       // structural one.
@@ -59,14 +59,14 @@ namespace PoroElastScaTra
       if (scatradis->num_global_nodes() == 0)
       {
         // fill scatra discretization by cloning structure discretization
-        Core::FE::CloneDiscretization<PoroScatraCloneStrategy>(
+        Core::FE::clone_discretization<PoroScatraCloneStrategy>(
             structdis, scatradis, Global::Problem::instance()->cloning_material_map());
         scatradis->fill_complete();
 
         // assign materials. Order is important here!
-        PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
-        PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, scatradis);
-        PoroElast::UTILS::SetMaterialPointersMatchingGrid(fluiddis, scatradis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(structdis, scatradis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(fluiddis, scatradis);
 
         // the problem is two way coupled, thus each discretization must know the other
         // discretization
@@ -102,14 +102,14 @@ namespace PoroElastScaTra
 
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
-        Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+        Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
             Global::Problem::instance()->output_control_file(), dis, nullptr, nullptr, false);
 
         // set material pointers
-        PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
 
         // first call fill_complete for single discretizations.
         // This way the physical dofs are numbered successively

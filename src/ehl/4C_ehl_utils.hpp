@@ -25,10 +25,10 @@ namespace EHL
   {
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
-    int CheckTimeStepping(double dt1, double dt2);
+    int check_time_stepping(double dt1, double dt2);
 
     // Modification of time parameter list for problem with different time step size
-    void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
+    void change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
         Teuchos::ParameterList& lubricationdyn, Teuchos::ParameterList& sdyn);
 
   };  // namespace Utils

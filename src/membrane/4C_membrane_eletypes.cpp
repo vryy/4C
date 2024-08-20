@@ -66,7 +66,7 @@ void Discret::ELEMENTS::MembraneTri3Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneTri3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::MembraneTri3Type::setup_element_definition(
@@ -139,7 +139,7 @@ void Discret::ELEMENTS::MembraneTri6Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneTri6Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid2DNullSpace(node, x0);
+  return compute_solid_2d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::MembraneTri6Type::setup_element_definition(
@@ -212,7 +212,7 @@ void Discret::ELEMENTS::MembraneQuad4Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneQuad4Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid2DNullSpace(node, x0);
+  return compute_solid_2d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::MembraneQuad4Type::setup_element_definition(
@@ -285,7 +285,7 @@ void Discret::ELEMENTS::MembraneQuad9Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::MembraneQuad9Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid2DNullSpace(node, x0);
+  return compute_solid_2d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::MembraneQuad9Type::setup_element_definition(

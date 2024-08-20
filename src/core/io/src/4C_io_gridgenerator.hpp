@@ -35,7 +35,7 @@ namespace Core::IO::GridGenerator
     \param inputData              (i) class holding all input parameters
     \param outputFlag             (i) triggers output writing
   */
-  void CreateRectangularCuboidDiscretization(
+  void create_rectangular_cuboid_discretization(
       Core::FE::Discretization& dis, const RectangularCuboidInputs& inputData, bool outputFlag);
 
   /// storage for input parameters for CreateRectangularCuboidDiscretization

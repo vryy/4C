@@ -832,7 +832,7 @@ namespace
   */
   // pt(0,0) --> y
   // pt(1,0) --> z
-  double base_func_surfX(
+  double base_func_surf_x(
       const Core::LinAlg::Matrix<2, 1> &pt, int inte_num, std::vector<double> alfa)
   {
     double basef_surf = 0.0;
@@ -1400,7 +1400,7 @@ namespace
   */
   // pt(0,0) --> z
   // pt(1,0) --> x
-  double base_func_surfY(
+  double base_func_surf_y(
       const Core::LinAlg::Matrix<2, 1> &pt, int inte_num, std::vector<double> alfa)
   {
     double basef_surf = 0.0;
@@ -1973,7 +1973,7 @@ namespace
   */
   // pt(0,0) --> x
   // pt(1,0) --> y
-  double base_func_surfZ(
+  double base_func_surf_z(
       const Core::LinAlg::Matrix<2, 1> &pt, int inte_num, std::vector<double> alfa)
   {
     double basef_surf = 0.0;
@@ -2587,11 +2587,11 @@ double LineIntegration::integrate_line()
     {
       double linein = 0.0;
       if (int_type_ == Cut::proj_x)
-        linein = base_func_surfX(actCoord, inte_num_, alpha_);
+        linein = base_func_surf_x(actCoord, inte_num_, alpha_);
       else if (int_type_ == Cut::proj_y)
-        linein = base_func_surfY(actCoord, inte_num_, alpha_);
+        linein = base_func_surf_y(actCoord, inte_num_, alpha_);
       else if (int_type_ == Cut::proj_z)
-        linein = base_func_surfZ(actCoord, inte_num_, alpha_);
+        linein = base_func_surf_z(actCoord, inte_num_, alpha_);
       else
         FOUR_C_THROW("Integration type unspecified");
       inte = inte + weight * linein * drs;
@@ -2614,9 +2614,9 @@ void LineIntegration::transform(const Core::LinAlg::Matrix<2, 2> &xyze, const do
   Core::LinAlg::Matrix<1, numnodes> deriv;
   Core::LinAlg::Matrix<1, 1> metrictensor;
 
-  Core::FE::shape_function_1D(funct, eta, Core::FE::CellType::line2);
-  Core::FE::shape_function_1D_deriv1(deriv, eta, Core::FE::CellType::line2);
-  Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::line2>(
+  Core::FE::shape_function_1d(funct, eta, Core::FE::CellType::line2);
+  Core::FE::shape_function_1d_deriv1(deriv, eta, Core::FE::CellType::line2);
+  Core::FE::compute_metric_tensor_for_boundary_ele<Core::FE::CellType::line2>(
       xyze, deriv, metrictensor, drs, &normal);
 
   x_gp_lin.multiply(xyze, funct);

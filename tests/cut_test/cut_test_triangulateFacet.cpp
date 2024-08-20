@@ -13,80 +13,50 @@
 
 #include "cut_test_utils.hpp"
 
-void check4nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check4noded_inline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check4nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
-void check5nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check5noded_inline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check5nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check5nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
-void check5nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check5noded_adjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check6nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check6nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check7nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check7nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check8nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check8nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
-void check8nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8noded_adjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check9nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check9nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check10nodedconvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 void check10nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check5nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
-void check6nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
-void check8nodedTriConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
-void check8nodedTriConcaveGenPlane(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check5noded_twin_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check6noded_twin_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8noded_tri_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8noded_tri_concave_gen_plane(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check13nodedConvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check13noded_convex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
 void check7nodedconti3concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check10nodedShift1ptConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check10noded_shift1pt_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check8nodedEarClip(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8noded_ear_clip(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
 void check7noded2concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void ProblemSplitAnyFacet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void problem_split_any_facet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void InsideChcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void inside_chcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
 void check15node5concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void check8nodeQuadInsidePt(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check8node_quad_inside_pt(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void checkTemporary(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
+void check_temporary(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
-void checkTemporary2(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
-
-Cut::Side* Create_quad4(Cut::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
-{
-  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
-
-  xyze(0, 0) = x - dx;
-  xyze(1, 0) = -0.5;
-  xyze(2, 0) = -0.5 - dz;
-
-  xyze(0, 1) = x + dx;
-  xyze(1, 1) = -0.5;
-  xyze(2, 1) = 1.5 + dz;
-
-  xyze(0, 2) = x + dx;
-  xyze(1, 2) = 1.5;
-  xyze(2, 2) = 1.5 + dz;
-
-  xyze(0, 3) = x - dx;
-  xyze(1, 3) = 1.5;
-  xyze(2, 3) = -0.5 - dz;
-
-  if (reverse)
-  {
-    std::swap(xyze(0, 1), xyze(0, 3));
-    std::swap(xyze(1, 1), xyze(1, 3));
-    std::swap(xyze(2, 1), xyze(2, 3));
-  }
-
-  return create_quad4(mesh, xyze);
-}
+void check_temporary2(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s);
 
 void test_facet_split()
 {
@@ -95,41 +65,41 @@ void test_facet_split()
   options.init_for_cuttests();
   Cut::Mesh mesh(options);
   Cut::Element* e = create_hex8(mesh);
-  Cut::Side* s = Create_quad4(mesh, 0.5, 0.1, 0);
+  Cut::Side* s = create_quad4(mesh, 0.5, 0.1, 0);
 
-  check4nodedInline(mesh, e, s);
+  check4noded_inline(mesh, e, s);
   check4nodedconcave(mesh, e, s);
-  check5nodedInline(mesh, e, s);
+  check5noded_inline(mesh, e, s);
   check5nodedconvex(mesh, e, s);
   check5nodedconcave(mesh, e, s);
-  check5nodedAdjacentconcave(mesh, e, s);
+  check5noded_adjacentconcave(mesh, e, s);
   check6nodedconvex(mesh, e, s);
   check6nodedconcave(mesh, e, s);
   check7nodedconvex(mesh, e, s);
   check7nodedconcave(mesh, e, s);
   check8nodedconvex(mesh, e, s);
   check8nodedconcave(mesh, e, s);
-  check8nodedAdjacentconcave(mesh, e, s);
+  check8noded_adjacentconcave(mesh, e, s);
   check9nodedconvex(mesh, e, s);
   check9nodedconcave(mesh, e, s);
   check10nodedconvex(mesh, e, s);
   check10nodedconcave(mesh, e, s);
-  check13nodedConvex(mesh, e, s);
+  check13noded_convex(mesh, e, s);
 
-  check5nodedTwinConcave(mesh, e, s);
-  check6nodedTwinConcave(mesh, e, s);
-  check8nodedTriConcave(mesh, e, s);
-  check8nodedTriConcaveGenPlane(mesh, e, s);
+  check5noded_twin_concave(mesh, e, s);
+  check6noded_twin_concave(mesh, e, s);
+  check8noded_tri_concave(mesh, e, s);
+  check8noded_tri_concave_gen_plane(mesh, e, s);
 
   check7nodedconti3concave(mesh, e, s);
-  check10nodedShift1ptConcave(mesh, e, s);
-  check8nodedEarClip(mesh, e, s);
+  check10noded_shift1pt_concave(mesh, e, s);
+  check8noded_ear_clip(mesh, e, s);
   check7noded2concave(mesh, e, s);
-  ProblemSplitAnyFacet1(mesh, e, s);
+  problem_split_any_facet1(mesh, e, s);
 
-  InsideChcek1(mesh, e, s);
+  inside_chcek1(mesh, e, s);
   check15node5concave(mesh, e, s);
-  check8nodeQuadInsidePt(mesh, e, s);
+  check8node_quad_inside_pt(mesh, e, s);
 
   /*checkTemporary( mesh, e, s );*/
   // checkTemporary2( mesh, e, s );
@@ -138,7 +108,7 @@ void test_facet_split()
 /*---------------------------------------------------------------------------------------*
  *      out of 4 nodes one should be deleted because it falls on the same line           *
  *---------------------------------------------------------------------------------------*/
-void check4nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check4noded_inline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check4nodedInline...\n";
   std::vector<Cut::Point*> ptlist(4);
@@ -265,7 +235,7 @@ void check4nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 /*---------------------------------------------------------------------------------------*
  *        Out of 5 nodes, one inline node is deleted and a Quad cell is formed           *
  *---------------------------------------------------------------------------------------*/
-void check5nodedInline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check5noded_inline(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedInline...\n";
   std::vector<Cut::Point*> ptlist(5);
@@ -474,7 +444,7 @@ void check5nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
  *          A 5 noded facet with 2 adjacent concave points --> 3 Tri cells               *
  *          This is test for EarClipping                                                 *
  *---------------------------------------------------------------------------------------*/
-void check5nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check5noded_adjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedAdjacentconcave...\n";
   std::vector<Cut::Point*> ptlist(5);
@@ -1043,7 +1013,7 @@ void check8nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
  * First earclipping is called, and once adjacent concave pts are removed,               *
  * SplitAnyFacet is used to get Quad cells                                               *
  *---------------------------------------------------------------------------------------*/
-void check8nodedAdjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check8noded_adjacentconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedAdjacentconcave...\n";
   std::vector<Cut::Point*> ptlist(8);
@@ -1526,7 +1496,7 @@ void check10nodedconcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
  *     A 5 noded facet with 2 (non-adjacent) concave pt is split into 3 Tri cells        *
  *     Check for SplitAnyFacet                                                           *
  *---------------------------------------------------------------------------------------*/
-void check5nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check5noded_twin_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check5nodedTwinConcave...\n";
   std::vector<Cut::Point*> ptlist(5);
@@ -1600,7 +1570,7 @@ void check5nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
  *     A 6 noded special facet with 2 (non-adjacent) concave pt is split into            *
  *     2 Quad cells  -- Check for SplitAnyFacet                                          *
  *---------------------------------------------------------------------------------------*/
-void check6nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check6noded_twin_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check6nodedTwinConcave...\n";
   std::vector<Cut::Point*> ptlist(6);
@@ -1677,7 +1647,7 @@ void check6nodedTwinConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
  *     A 8 noded facet with 3 (no non-adjacent) concave pts is split into                *
  *     3 Quad cells  -- Check for SplitAnyFacet                                          *
  *---------------------------------------------------------------------------------------*/
-void check8nodedTriConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check8noded_tri_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedTriConcave...\n";
   std::vector<Cut::Point*> ptlist(8);
@@ -1769,7 +1739,7 @@ void check8nodedTriConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
  *     Except this all other tests contains facets that are in z=0 plane                 *
  *     facet in this example is in 2x+3y+4z=7 plane                                      *
  *---------------------------------------------------------------------------------------*/
-void check8nodedTriConcaveGenPlane(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check8noded_tri_concave_gen_plane(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedTriConcaveGenPlane...\n";
   std::vector<Cut::Point*> ptlist(8);
@@ -1865,7 +1835,7 @@ void check8nodedTriConcaveGenPlane(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* 
 /*---------------------------------------------------------------------------------------*
  *          13 noded convex facet is split into 5 Quad and a Tri cell                    *
  *---------------------------------------------------------------------------------------*/
-void check13nodedConvex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check13noded_convex(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check13nodedConvex...\n";
   std::vector<Cut::Point*> ptlist(13);
@@ -2024,7 +1994,7 @@ void check7nodedconti3concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 /*---------------------------------------------------------------------------------------*
  *    A 10 noded facet: first call SplitGeneralFafet, then move to 1ptconcave split      *
  *---------------------------------------------------------------------------------------*/
-void check10nodedShift1ptConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check10noded_shift1pt_concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check10nodedShiftEarClipToSplit...\n";
   std::vector<Cut::Point*> ptlist(10);
@@ -2126,7 +2096,7 @@ void check10nodedShift1ptConcave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 /*---------------------------------------------------------------------------------------*
  *        Check for EarClipping -- 8 noded facet is split to yield 6 triangles           *
  *---------------------------------------------------------------------------------------*/
-void check8nodedEarClip(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check8noded_ear_clip(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodedEarClip...\n";
   std::vector<Cut::Point*> ptlist(8);
@@ -2316,7 +2286,7 @@ void check7noded2concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 /*---------------------------------------------------------------------------------------*
  * 6 noded facet with 2 concave points --- old SplitAnyFacet produced intersecting cells *
  *---------------------------------------------------------------------------------------*/
-void ProblemSplitAnyFacet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void problem_split_any_facet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "ProblemSplitAnyFacet...\n";
   std::vector<Cut::Point*> ptlist(6);
@@ -2395,7 +2365,7 @@ void ProblemSplitAnyFacet1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 /*---------------------------------------------------------------------------------------*
  *     A 7 noded facet that make sure that inside checking of points is necessary        *
  *---------------------------------------------------------------------------------------*/
-void InsideChcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void inside_chcek1(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "InsideChcek1...\n";
   std::vector<Cut::Point*> ptlist(7);
@@ -2618,7 +2588,7 @@ void check15node5concave(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 /*---------------------------------------------------------------------------------------*
  *                 A 8 noded facet -- check for QuadInsidePt                             *
  *---------------------------------------------------------------------------------------*/
-void check8nodeQuadInsidePt(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check8node_quad_inside_pt(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "check8nodeQuadInsidePt...\n";
   std::vector<Cut::Point*> ptlist(8);
@@ -2707,7 +2677,7 @@ void check8nodeQuadInsidePt(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
     FOUR_C_THROW("triangulation failed for check8nodeQuadInsidePt");
 }
 
-void checkTemporary(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check_temporary(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "checkTemporary...\n";
   std::vector<Cut::Point*> ptlist(12);
@@ -2822,7 +2792,7 @@ void checkTemporary(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
     FOUR_C_THROW( "triangulation failed for check10nodedShiftEarClipToSplit" );*/
 }
 
-void checkTemporary2(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
+void check_temporary2(Cut::Mesh& mesh, Cut::Element* e, Cut::Side* s)
 {
   std::cout << "checkTemporary2...\n";
   std::vector<Cut::Point*> ptlist;

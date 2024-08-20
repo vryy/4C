@@ -32,7 +32,7 @@ namespace Core::GeometricSearch
 
   /*! \brief Prints details on the geometric search algorithm
    */
-  void PrintGeometricSearchDetails(const Epetra_Comm &comm, const GeometricSearchInfo info);
+  void print_geometric_search_details(const Epetra_Comm &comm, const GeometricSearchInfo info);
 
   /*! \brief Returns interaction pair indices based on the search output of ArborX
    *
@@ -44,7 +44,7 @@ namespace Core::GeometricSearch
    * element GIDs.
    */
   template <typename T>
-  std::vector<std::pair<int, int>> GetPairs(const T &indices, const T &offset)
+  std::vector<std::pair<int, int>> get_pairs(const T &indices, const T &offset)
   {
     std::vector<std::pair<int, int>> pairs;
     for (size_t i_offset = 0; i_offset < offset.size() - 1; i_offset++)
@@ -60,7 +60,7 @@ namespace Core::GeometricSearch
    * @return Points of the polyhedron and connecting polygons
    */
   std::pair<std::vector<LinAlg::Matrix<3, 1>>, std::vector<std::vector<int>>>
-  GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume);
+  get_k_dop_polyhedron_representation(const BoundingVolume boundingVolume);
 
 }  // namespace Core::GeometricSearch
 

@@ -40,7 +40,7 @@ namespace Discret::ELEMENTS
    * @param[in] s2i_condition_type  scatra-scatra interface condition type
    * @return exchange mass flux density of growth reaction
    */
-  double CalculateGrowthExchangeMassFluxDensity(double kr, double alpha_a, double c_el,
+  double calculate_growth_exchange_mass_flux_density(double kr, double alpha_a, double c_el,
       int kinetic_model, const Core::Conditions::ConditionType& s2i_condition_type);
 
   /*!
@@ -58,7 +58,7 @@ namespace Discret::ELEMENTS
    * @param[in] scatraeleparamsboundary  scatra ele boundary parameter class
    * @return Butler-Volmer mass flux density
    */
-  double CalculateGrowthMassFluxDensity(double j0, double frt, double pot_ed, double pot_el,
+  double calculate_growth_mass_flux_density(double j0, double frt, double pot_ed, double pot_el,
       double epd, double resistance, double thickness, double faraday,
       const Discret::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
       const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
@@ -88,7 +88,7 @@ namespace Discret::ELEMENTS
    * @param[out] dj_dpot_master  linearization of Butler-Volmer mass flux density w.r.t.
    *                             electric potential on master-side
    */
-  void CalculateS2IGrowthElchLinearizations(double j0, double frt, double epdderiv, double eta,
+  void calculate_s2_i_growth_elch_linearizations(double j0, double frt, double epdderiv, double eta,
       double resistance, double regfac, double emasterphiint, double eslavephiint, double cmax,
       const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
       double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master);
@@ -110,8 +110,9 @@ namespace Discret::ELEMENTS
    * @param[in] scatraeleparamsboundary   scatra ele boundary parameter class
    * @return  linearization of Butler-Volmer mass flux density w.r.t. interface film thickness
    */
-  double CalculateS2IElchGrowthLinearizations(double j0, double j, double frt, double resistivity,
-      double resistance, double regfac, double regfacderiv, double expterm1, double expterm2,
+  double calculate_s2_i_elch_growth_linearizations(double j0, double j, double frt,
+      double resistivity, double resistance, double regfac, double regfacderiv, double expterm1,
+      double expterm2,
       const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
   /*!
@@ -122,7 +123,7 @@ namespace Discret::ELEMENTS
    * @param[in] scatraeleparamsboundary   scatra ele boundary parameter class
    * @return  return the regularization factor if regularization is applied
    */
-  double GetRegularizationFactor(const double thickness, const double eta,
+  double get_regularization_factor(const double thickness, const double eta,
       const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 
@@ -136,7 +137,7 @@ namespace Discret::ELEMENTS
    * @return  return the derivative of the regularization factor w.r.t. thickness of deposited
    *          material if regularization is applied
    */
-  double GetRegularizationFactorDerivative(const double thickness, const double eta,
+  double get_regularization_factor_derivative(const double thickness, const double eta,
       const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 }  // namespace Discret::ELEMENTS

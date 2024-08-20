@@ -142,7 +142,7 @@ namespace Discret
        */
       int num_dof_per_node_auxiliary() const override
       {
-        return (Core::FE::getDimension(distype_) + 0);
+        return (Core::FE::get_dimension(distype_) + 0);
         // maybe + 1 to mimic the standard fluid dofset with velocity + pressure
         // this is maybe needed for the fluid-ALE coupling
       }
@@ -153,7 +153,7 @@ namespace Discret
       */
       int num_dof_per_face(const unsigned face) const override
       {
-        return (1 + Core::FE::getDimension(distype_)) * num_dof_per_component(face);
+        return (1 + Core::FE::get_dimension(distype_)) * num_dof_per_component(face);
       }
 
       /*!
@@ -161,8 +161,8 @@ namespace Discret
       */
       int num_dof_per_component(const unsigned face) const override
       {
-        return Core::FE::getBasisSize(
-            Core::FE::getEleFaceShapeType(distype_), this->degree(), completepol_);
+        return Core::FE::get_basis_size(
+            Core::FE::get_ele_face_shape_type(distype_), this->degree(), completepol_);
       }
 
       /*!
@@ -176,9 +176,9 @@ namespace Discret
        */
       int num_dof_per_element_auxiliary() const override
       {
-        const int nsd_ = Core::FE::getDimension(distype_);
+        const int nsd_ = Core::FE::get_dimension(distype_);
         const int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;
-        return (msd_ + nsd_ + 1.0) * Core::FE::getBasisSize(distype_, degree_, completepol_);
+        return (msd_ + nsd_ + 1.0) * Core::FE::get_basis_size(distype_, degree_, completepol_);
       }
 
       /*!

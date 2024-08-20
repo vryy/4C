@@ -39,7 +39,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       timer_(Teuchos::rcp(new Teuchos::Time("STI::ALG", true)))
 {
   // check input parameters for scatra and thermo fields
-  if (Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(
+  if (Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(
           *fieldparameters_, "VELOCITYFIELD") != Inpar::ScaTra::velocity_zero)
     FOUR_C_THROW("Scatra-thermo interaction with convection not yet implemented!");
 
@@ -278,7 +278,7 @@ void STI::Algorithm::time_loop()
     get_comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (Core::UTILS::IntegralValue<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
+    if (Core::UTILS::integral_value<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
       scatra_->scatra_field()->output_nonlin_solver_stats(
           static_cast<int>(iter_), dtnonlinsolve, step(), get_comm());
 
@@ -305,7 +305,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
       case Inpar::S2I::coupling_matching_nodes:
       {
         // pass master-side scatra degrees of freedom to thermo discretization
-        const Teuchos::RCP<Epetra_Vector> imasterphinp = Core::LinAlg::CreateVector(
+        const Teuchos::RCP<Epetra_Vector> imasterphinp = Core::LinAlg::create_vector(
             *scatra_->scatra_field()->discretization()->dof_row_map(), true);
         strategyscatra_->interface_maps()->insert_vector(
             strategyscatra_->coupling_adapter()->master_to_slave(

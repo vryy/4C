@@ -131,7 +131,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Epetra_Vector& phi
     // =========================================================
     else
     {
-      double elevol = Core::Geo::ElementVolume(distype, xyze);
+      double elevol = Core::Geo::element_volume(distype, xyze);
 
       // it is sufficient to check the first node, since the element entirely
       // lies within the plus or minus domain
@@ -203,7 +203,7 @@ void ScaTra::LevelSet::Intersection::add_to_boundary_int_cells_per_ele(
   Core::FE::CellType distype_bc = bcell.shape();
   check_boundary_cell_type(distype_bc);
 
-  const int numnodebc = Core::FE::getNumberOfElementNodes(distype_bc);
+  const int numnodebc = Core::FE::get_number_of_element_nodes(distype_bc);
 
   // get physical coordinates of this cell
   Core::LinAlg::SerialDenseMatrix coord = bcell.coordinates();
@@ -217,7 +217,7 @@ void ScaTra::LevelSet::Intersection::add_to_boundary_int_cells_per_ele(
     Core::LinAlg::Matrix<3, 1> pcoord;
     for (int ll = 0; ll < 3; ll++) pcoord(ll, 0) = coord(ll, ivert);
 
-    Core::Geo::currentToVolumeElementCoordinates(distype_ele, xyze, pcoord, lcoord);
+    Core::Geo::current_to_volume_element_coordinates(distype_ele, xyze, pcoord, lcoord);
 
     // write as 'physCoord'
     for (int ll = 0; ll < 3; ll++) localcoord(ll, ivert) = lcoord(ll, 0);
@@ -237,7 +237,7 @@ void ScaTra::LevelSet::Intersection::check_boundary_cell_type(Core::FE::CellType
   if (distype_bc != Core::FE::CellType::tri3 and distype_bc != Core::FE::CellType::quad4)
   {
     FOUR_C_THROW("unexpected type of boundary integration cell: %s",
-        Core::FE::CellTypeToString(distype_bc).c_str());
+        Core::FE::cell_type_to_string(distype_bc).c_str());
   }
 }
 
@@ -296,29 +296,29 @@ void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* 
     std::vector<int>& node_ids) const
 {
   const Core::FE::CellType distype = ele->shape();
-  unsigned numnode = Core::FE::getNumberOfElementNodes(distype);
+  unsigned numnode = Core::FE::get_number_of_element_nodes(distype);
   const unsigned probdim = Global::Problem::instance()->n_dim();
 
   xyze.shape(3, numnode);
   switch (distype)
   {
     case Core::FE::CellType::hex8:
-      Core::Geo::fillInitialPositionArray<Core::FE::CellType::hex8, 3>(ele, xyze);
+      Core::Geo::fill_initial_position_array<Core::FE::CellType::hex8, 3>(ele, xyze);
       break;
     case Core::FE::CellType::hex20:
-      Core::Geo::fillInitialPositionArray<Core::FE::CellType::hex20, 3>(ele, xyze);
+      Core::Geo::fill_initial_position_array<Core::FE::CellType::hex20, 3>(ele, xyze);
       break;
     case Core::FE::CellType::hex27:
-      Core::Geo::fillInitialPositionArray<Core::FE::CellType::hex27, 3>(ele, xyze);
+      Core::Geo::fill_initial_position_array<Core::FE::CellType::hex27, 3>(ele, xyze);
       break;
     case Core::FE::CellType::line2:
       switch (probdim)
       {
         case 2:
-          Core::Geo::fillInitialPositionArray<Core::FE::CellType::line2, 2>(ele, xyze);
+          Core::Geo::fill_initial_position_array<Core::FE::CellType::line2, 2>(ele, xyze);
           break;
         case 3:
-          Core::Geo::fillInitialPositionArray<Core::FE::CellType::line2, 3>(ele, xyze);
+          Core::Geo::fill_initial_position_array<Core::FE::CellType::line2, 3>(ele, xyze);
           break;
         default:
           FOUR_C_THROW("Unsupported problem dimension! (probdim = %d)", probdim);
@@ -327,7 +327,7 @@ void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* 
       break;
     default:
       FOUR_C_THROW(
-          "Unknown elmenet type ( type = %s )", Core::FE::CellTypeToString(distype).c_str());
+          "Unknown elmenet type ( type = %s )", Core::FE::cell_type_to_string(distype).c_str());
       break;
   }
 
@@ -342,7 +342,7 @@ void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* 
   lmowner.clear();
   lmstride.clear();
   ele->location_vector(scatradis, lm, lmowner, lmstride);
-  Core::FE::ExtractMyValues(phicol, phi_nodes, lm);
+  Core::FE::extract_my_values(phicol, phi_nodes, lm);
 
   // define nodal ID's
   node_ids.resize(numnode, 0.0);

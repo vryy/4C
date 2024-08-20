@@ -27,12 +27,12 @@ namespace Core::FE
   };
 
   /// Return shape function type enum for a given shape function name
-  Core::FE::ShapeFunctionType StringToShapeFunctionType(std::string name);
+  Core::FE::ShapeFunctionType string_to_shape_function_type(std::string name);
 
   /// Return shape function name for a given shape function type
-  std::string ShapeFunctionTypeToString(Core::FE::ShapeFunctionType shapefunctiontype);
+  std::string shape_function_type_to_string(Core::FE::ShapeFunctionType shapefunctiontype);
 
-  const std::map<std::string, ShapeFunctionType>& StringToShapeFunctionTypeMap();
+  const std::map<std::string, ShapeFunctionType>& string_to_shape_function_type_map();
 
 }  // namespace Core::FE
 

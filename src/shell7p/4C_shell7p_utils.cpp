@@ -92,7 +92,7 @@ namespace
   {
   };
 
-  void SetMembraneLockingSizeQuad4(int& num_eas, const std::string& type)
+  void set_membrane_locking_size_quad4(int& num_eas, const std::string& type)
   {
     if (type == "N_1")
     {
@@ -129,7 +129,7 @@ namespace
           type.c_str());
   }
 
-  void SetBendingLockingSizeQuad4(int& num_eas, const std::string& type)
+  void set_bending_locking_size_quad4(int& num_eas, const std::string& type)
   {
     if (type == "N_4")
     {
@@ -158,7 +158,7 @@ namespace
           type.c_str());
   }
 
-  void SetThicknessLockingSizeQuad4(int& num_eas, const std::string& type)
+  void set_thickness_locking_size_quad4(int& num_eas, const std::string& type)
   {
     if (type == "N_1")
     {
@@ -196,7 +196,7 @@ namespace
           type.c_str());
   }
 
-  void SetShearStrainLockingSizeQuad4(int& num_eas, const std::string& type)
+  void set_shear_strain_locking_size_quad4(int& num_eas, const std::string& type)
   {
     if (type == "N_2")
     {
@@ -217,7 +217,7 @@ namespace
           type.c_str());
   }
 
-  void SetMembraneLockingSizeQuad9(int& num_eas, const std::string& type)
+  void set_membrane_locking_size_quad9(int& num_eas, const std::string& type)
   {
     if (type == "N_7")
     {
@@ -238,7 +238,7 @@ namespace
           type.c_str());
   }
 
-  void SetBendingLockingSizeQuad9(int& num_eas, const std::string& type)
+  void set_bending_locking_size_quad9(int& num_eas, const std::string& type)
   {
     if (type == "N_9")
     {
@@ -259,7 +259,7 @@ namespace
           type.c_str());
   }
 
-  void SetThicknessLockingSizeQuad9(int& num_eas, const std::string& type)
+  void set_thickness_locking_size_quad9(int& num_eas, const std::string& type)
   {
     if (type == "N_1")
     {
@@ -296,7 +296,7 @@ namespace
           type.c_str());
   }
 
-  void SetShearStrainLockingSizeQuad9(int& num_eas, const std::string& type)
+  void set_shear_strain_locking_size_quad9(int& num_eas, const std::string& type)
   {
     if (type == "N_2")
     {
@@ -325,7 +325,7 @@ namespace
 
 }  // namespace
 
-Teuchos::SerialDenseMatrix<int, double> Solid::UTILS::Shell::ComputeShellNullSpace(
+Teuchos::SerialDenseMatrix<int, double> Solid::UTILS::Shell::compute_shell_null_space(
     Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
   const auto& x = node.x();
@@ -377,7 +377,7 @@ Teuchos::SerialDenseMatrix<int, double> Solid::UTILS::Shell::ComputeShellNullSpa
   return nullspace;
 }
 
-void Solid::UTILS::Shell::NodalBlockInformationShell(
+void Solid::UTILS::Shell::nodal_block_information_shell(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 6;
@@ -385,7 +385,7 @@ void Solid::UTILS::Shell::NodalBlockInformationShell(
   nv = 3;
 }
 
-void Solid::UTILS::Shell::Director::SetupDirectorForElement(
+void Solid::UTILS::Shell::Director::setup_director_for_element(
     const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors)
 {
   constexpr auto num_dim = Discret::ELEMENTS::Shell::DETAIL::num_dim;
@@ -401,9 +401,9 @@ void Solid::UTILS::Shell::Director::SetupDirectorForElement(
   {
     // get shape functions and derivatives at nodes
     Core::LinAlg::Matrix<num_dim, 1> nodal_coordinates =
-        Core::FE::GetNodeCoordinates(i, ele.shape());
+        Core::FE::get_node_coordinates(i, ele.shape());
     Core::LinAlg::SerialDenseMatrix derivatives(num_dim, num_node);
-    Core::FE::shape_function_2D_deriv1(
+    Core::FE::shape_function_2d_deriv1(
         derivatives, nodal_coordinates(0), nodal_coordinates(1), ele.shape());
 
     // get a1, a2 direction derivatives in r and s direction
@@ -426,7 +426,7 @@ void Solid::UTILS::Shell::Director::SetupDirectorForElement(
   }
 }
 
-void Solid::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3, 8>& dir_list,
+void Solid::UTILS::Shell::Director::average_director(const Core::LinAlg::Matrix<3, 8>& dir_list,
     const int num_directors, Core::LinAlg::Matrix<3, 1>& nodal_director)
 {
   Core::LinAlg::Matrix<3, 1> davn(true);
@@ -491,7 +491,7 @@ void Solid::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3
   }
 }
 
-void Solid::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
+void Solid::UTILS::Shell::Director::export_director_map_from_row_to_col_map(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
@@ -540,7 +540,7 @@ void Solid::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
 }
 
 
-void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
+void Solid::UTILS::Shell::Director::average_directors_at_nodes(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
@@ -600,7 +600,7 @@ void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
     else  // average director at node actnode
     {
       Core::LinAlg::Matrix<num_dim, 1> nodal_director(true);
-      AverageDirector(collaverdir, num_directors, nodal_director);
+      average_director(collaverdir, num_directors, nodal_director);
       director_map[act_node->id()].resize(num_dim);
       for (int dim = 0; dim < num_dim; ++dim)
         director_map[act_node->id()][dim] = nodal_director(dim);
@@ -608,7 +608,7 @@ void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
   }
 }
 
-void Solid::UTILS::Shell::Director::SetupShellElementDirectors(
+void Solid::UTILS::Shell::Director::setup_shell_element_directors(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis)
 {
   for (const auto& actele : dis.my_col_element_range())
@@ -621,7 +621,7 @@ void Solid::UTILS::Shell::Director::SetupShellElementDirectors(
       const int num_node = scatra_ele->num_node();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
           num_node, Discret::ELEMENTS::Shell::DETAIL::num_dim);
-      SetupDirectorForElement(*scatra_ele, nodal_directors);
+      setup_director_for_element(*scatra_ele, nodal_directors);
       scatra_ele->set_all_nodal_directors(nodal_directors);
     }
     else if (auto* shell_ele = dynamic_cast<Discret::ELEMENTS::Shell7p*>(actele))
@@ -631,7 +631,7 @@ void Solid::UTILS::Shell::Director::SetupShellElementDirectors(
       const int num_node = shell_ele->num_node();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
           num_node, Discret::ELEMENTS::Shell::DETAIL::num_dim);
-      SetupDirectorForElement(*shell_ele, nodal_directors);
+      setup_director_for_element(*shell_ele, nodal_directors);
       shell_ele->set_all_nodal_directors(nodal_directors);
     }
     else
@@ -639,14 +639,14 @@ void Solid::UTILS::Shell::Director::SetupShellElementDirectors(
   }
 
   std::map<int, std::vector<double>> director_map;
-  AverageDirectorsAtNodes(eletype, dis, director_map);
+  average_directors_at_nodes(eletype, dis, director_map);
 
-  ExportDirectorMapFromRowToColMap(eletype, dis, director_map);
+  export_director_map_from_row_to_col_map(eletype, dis, director_map);
 }
 
 
 
-void Solid::UTILS::Shell::LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_matrix)
+void Solid::UTILS::Shell::lump_mass_matrix(Core::LinAlg::SerialDenseMatrix& mass_matrix)
 {
   // lump mass matrix
   FOUR_C_ASSERT(mass_matrix.numRows() == mass_matrix.numCols(),
@@ -666,8 +666,8 @@ void Solid::UTILS::Shell::LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_m
 }
 
 
-void Solid::UTILS::Shell::read_element::ReadAndSetLockingTypes(const Core::FE::CellType& distype,
-    const Core::IO::InputParameterContainer& container,
+void Solid::UTILS::Shell::read_element::read_and_set_locking_types(
+    const Core::FE::CellType& distype, const Core::IO::InputParameterContainer& container,
     Solid::ELEMENTS::ShellLockingTypes& locking_types)
 {
   std::string type;
@@ -676,29 +676,29 @@ void Solid::UTILS::Shell::read_element::ReadAndSetLockingTypes(const Core::FE::C
     case Core::FE::CellType::quad4:
     {
       type = container.get<std::string>("EAS");
-      SetMembraneLockingSizeQuad4(locking_types.membrane, type);
+      set_membrane_locking_size_quad4(locking_types.membrane, type);
       type = container.get<std::string>("EAS2");
-      SetBendingLockingSizeQuad4(locking_types.bending, type);
+      set_bending_locking_size_quad4(locking_types.bending, type);
       type = container.get<std::string>("EAS3");
-      SetThicknessLockingSizeQuad4(locking_types.thickness, type);
+      set_thickness_locking_size_quad4(locking_types.thickness, type);
       type = container.get<std::string>("EAS4");
-      SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_const, type);
+      set_shear_strain_locking_size_quad4(locking_types.transverse_shear_strain_const, type);
       type = container.get<std::string>("EAS5");
-      SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_lin, type);
+      set_shear_strain_locking_size_quad4(locking_types.transverse_shear_strain_lin, type);
       break;
     }
     case Core::FE::CellType::quad9:
     {
       type = container.get<std::string>("EAS");
-      SetMembraneLockingSizeQuad9(locking_types.membrane, type);
+      set_membrane_locking_size_quad9(locking_types.membrane, type);
       type = container.get<std::string>("EAS2");
-      SetBendingLockingSizeQuad9(locking_types.bending, type);
+      set_bending_locking_size_quad9(locking_types.bending, type);
       type = container.get<std::string>("EAS3");
-      SetThicknessLockingSizeQuad9(locking_types.thickness, type);
+      set_thickness_locking_size_quad9(locking_types.thickness, type);
       type = container.get<std::string>("EAS4");
-      SetShearStrainLockingSizeQuad9(locking_types.transverse_shear_strain_const, type);
+      set_shear_strain_locking_size_quad9(locking_types.transverse_shear_strain_const, type);
       type = container.get<std::string>("EAS5");
-      SetShearStrainLockingSizeQuad9(locking_types.transverse_shear_strain_lin, type);
+      set_shear_strain_locking_size_quad9(locking_types.transverse_shear_strain_lin, type);
       break;
     }
     default:
@@ -709,14 +709,14 @@ void Solid::UTILS::Shell::read_element::ReadAndSetLockingTypes(const Core::FE::C
                         locking_types.transverse_shear_strain_lin;
 }
 
-int Solid::UTILS::Shell::read_element::ReadAndSetElementMaterial(
+int Solid::UTILS::Shell::read_element::read_and_set_element_material(
     const Core::IO::InputParameterContainer& container)
 {
   int material = container.get<int>("MAT");
   return material;
 }
 
-int Solid::UTILS::Shell::read_element::ReadAndSetNumANS(const Core::FE::CellType& distype)
+int Solid::UTILS::Shell::read_element::read_and_set_num_ans(const Core::FE::CellType& distype)
 {
   switch (distype)
   {

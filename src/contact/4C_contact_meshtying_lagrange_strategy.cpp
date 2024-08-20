@@ -68,7 +68,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   // Multiply Mortar matrices: m^ = inv(d) * m
   //----------------------------------------------------------------------
   invd_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dmatrix_));
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -87,7 +87,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
-  mhatmatrix_ = Core::LinAlg::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
+  mhatmatrix_ = Core::LinAlg::ml_multiply(*invd_, false, *mmatrix_, false, false, false, true);
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -103,7 +103,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   {
     // type of LM interpolation for quadratic elements
     Inpar::Mortar::LagMultQuad lagmultquad =
-        Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
     if (lagmultquad == Inpar::Mortar::lagmult_lin)
     {
@@ -113,11 +113,11 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
     {
       // modify dmatrix_, invd_ and mhatmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-          Core::LinAlg::MLMultiply(*trafo_, false, *invd_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-          Core::LinAlg::MLMultiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
       dmatrix_ = temp1;
       invd_ = temp2;
       mhatmatrix_ = temp3;
@@ -134,7 +134,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   //----------------------------------------------------------------------
   bool setup = true;
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
   if (systype == Inpar::CONTACT::system_condensed ||
       systype == Inpar::CONTACT::system_condensed_lagmult)
     setup = false;
@@ -153,12 +153,12 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
     // (only necessary in the parallel redistribution case)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp;
     if (par_redist())
-      temp = Mortar::MatrixRowTransform(constrmt, problem_dofs());
+      temp = Mortar::matrix_row_transform(constrmt, problem_dofs());
     else
       temp = constrmt;
 
     // always transform column GIDs of constraint matrix
-    conmatrix_ = Mortar::MatrixColTransformGIDs(temp, glmdofrowmap_);
+    conmatrix_ = Mortar::matrix_col_transform_gids(temp, glmdofrowmap_);
     conmatrix_->scale(1. - alphaf_);
   }
 
@@ -184,7 +184,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::mesh_initialization");
 
   // get out of here if NTS algorithm is activated
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
+  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
       Inpar::Mortar::algorithm_nts)
     return Teuchos::null;
 
@@ -203,20 +203,20 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Epetra_Vector> Xmaster = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> Xmaster = Core::LinAlg::create_vector(*gmdofrowmap_, true);
   assemble_coords("master", true, Xmaster);
 
   //**********************************************************************
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // initialize modified slave positions
-  Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   // shape function type and type of LM interpolation for quadratic elements
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   // quadratic FE with dual LM
   if (dualquadslavetrafo())
@@ -225,22 +225,22 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
     {
       // split T^-1
       Teuchos::RCP<Core::LinAlg::SparseMatrix> it_ss, it_sm, it_ms, it_mm;
-      Core::LinAlg::SplitMatrix2x2(invtrafo_, gsdofrowmap_, gmdofrowmap_, gsdofrowmap_,
+      Core::LinAlg::split_matrix2x2(invtrafo_, gsdofrowmap_, gmdofrowmap_, gsdofrowmap_,
           gmdofrowmap_, it_ss, it_sm, it_ms, it_mm);
 
       // build lhs
       Teuchos::RCP<Core::LinAlg::SparseMatrix> lhs =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> direct =
-          Core::LinAlg::MLMultiply(*dmatrix_, false, *it_ss, false, false, false, true);
+          Core::LinAlg::ml_multiply(*dmatrix_, false, *it_ss, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> mixed =
-          Core::LinAlg::MLMultiply(*mmatrix_, false, *it_ms, false, false, false, true);
+          Core::LinAlg::ml_multiply(*mmatrix_, false, *it_ms, false, false, false, true);
       lhs->add(*direct, false, 1.0, 1.0);
       lhs->add(*mixed, false, -1.0, 1.0);
       lhs->complete();
 
       // build rhs
-      Teuchos::RCP<Epetra_Vector> xm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
+      Teuchos::RCP<Epetra_Vector> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
       assemble_coords("master", true, xm);
       Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       mmatrix_->multiply(false, *xm, *rhs);
@@ -248,7 +248,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
       // solve with default solver
 
       Teuchos::ParameterList solvparams;
-      Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+      Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
       Core::LinAlg::Solver solver(
           solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
@@ -278,13 +278,13 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
     else if (shapefcn == Inpar::Mortar::shape_standard)
     {
       // create linear problem
-      Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+      Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
       mmatrix_->multiply(false, *Xmaster, *rhs);
 
       // solve with default solver
 
       Teuchos::ParameterList solvparams;
-      Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+      Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
       Core::LinAlg::Solver solver(
           solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
@@ -314,7 +314,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   // blank symmetry rows in dinv
   //**********************************************************************
   invd_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dmatrix_));
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -328,9 +328,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   err = diag->Reciprocal(*diag);
   if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
-  Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
-  Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   tmp->Multiply(1., *diag, *lmDBC, 0.);
   diag->Update(-1., *tmp, 1.);
 
@@ -339,7 +339,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
-  mhatmatrix_ = Core::LinAlg::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
+  mhatmatrix_ = Core::LinAlg::ml_multiply(*invd_, false, *mmatrix_, false, false, false, true);
 
   // return xslavemod for global problem
   return Xslavemod;
@@ -354,11 +354,11 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
 {
   // system type, shape function type and type of LM interpolation for quadratic elements
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   //**********************************************************************
   //**********************************************************************
@@ -405,7 +405,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
+          Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -414,34 +414,34 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
 
       // apply basis transformation to K and f
       kteffmatrix =
-          Core::LinAlg::MLMultiply(*kteffmatrix, false, *systrafo, false, false, false, true);
+          Core::LinAlg::ml_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
       kteffmatrix =
-          Core::LinAlg::MLMultiply(*systrafo, true, *kteffmatrix, false, false, false, true);
+          Core::LinAlg::ml_multiply(*systrafo, true, *kteffmatrix, false, false, false, true);
       systrafo->multiply(true, *feff, *feff);
     }
 
     if (par_redist())
     {
       // split and transform to redistributed maps
-      Core::LinAlg::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
+      Core::LinAlg::split_matrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
           gndofrowmap_, ksmsm, ksmn, knsm, knn);
       ksmsm = Mortar::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
-      ksmn = Mortar::MatrixRowTransform(ksmn, gsmdofrowmap_);
-      knsm = Mortar::MatrixColTransform(knsm, gsmdofrowmap_);
+      ksmn = Mortar::matrix_row_transform(ksmn, gsmdofrowmap_);
+      knsm = Mortar::matrix_col_transform(knsm, gsmdofrowmap_);
     }
     else
     {
       // only split, no need to transform
-      Core::LinAlg::SplitMatrix2x2(kteffmatrix, gsmdofrowmap_, gndofrowmap_, gsmdofrowmap_,
+      Core::LinAlg::split_matrix2x2(kteffmatrix, gsmdofrowmap_, gndofrowmap_, gsmdofrowmap_,
           gndofrowmap_, ksmsm, ksmn, knsm, knn);
     }
 
     // further splits into slave part + master part
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         ksmsm, gsdofrowmap_, gmdofrowmap_, gsdofrowmap_, gmdofrowmap_, kss, ksm, kms, kmm);
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         ksmn, gsdofrowmap_, gmdofrowmap_, gndofrowmap_, tempmap, ksn, tempmtx1, kmn, tempmtx2);
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         knsm, gndofrowmap_, tempmap, gsdofrowmap_, gmdofrowmap_, kns, knm, tempmtx1, tempmtx2);
 
     /**********************************************************************/
@@ -497,7 +497,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       knmmod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gndofrowmap_, 100));
       knmmod->add(*knm, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> knmadd =
-          Core::LinAlg::MLMultiply(*kns, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*kns, false, *mhatmatrix_, false, false, false, true);
       knmmod->add(*knmadd, false, 1.0, 1.0);
       knmmod->complete(knm->domain_map(), knm->row_map());
     }
@@ -507,7 +507,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmnmod->add(*kmn, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-        Core::LinAlg::MLMultiply(*mhatmatrix_, true, *ksn, false, false, false, true);
+        Core::LinAlg::ml_multiply(*mhatmatrix_, true, *ksn, false, false, false, true);
     kmnmod->add(*kmnadd, false, 1.0, 1.0);
     kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -516,18 +516,18 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmmmod->add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-        Core::LinAlg::MLMultiply(*mhatmatrix_, true, *ksm, false, false, false, true);
+        Core::LinAlg::ml_multiply(*mhatmatrix_, true, *ksm, false, false, false, true);
     kmmmod->add(*kmmadd, false, 1.0, 1.0);
     if (systype == Inpar::CONTACT::system_condensed)
     {
       // kmm: add kms*mbar + T(mbar)*kss*mbar - additionally
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd2 =
-          Core::LinAlg::MLMultiply(*kms, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*kms, false, *mhatmatrix_, false, false, false, true);
       kmmmod->add(*kmmadd2, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmtemp =
-          Core::LinAlg::MLMultiply(*kss, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*kss, false, *mhatmatrix_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd3 =
-          Core::LinAlg::MLMultiply(*mhatmatrix_, true, *kmmtemp, false, false, false, true);
+          Core::LinAlg::ml_multiply(*mhatmatrix_, true, *kmmtemp, false, false, false, true);
       kmmmod->add(*kmmadd3, false, 1.0, 1.0);
     }
     kmmmod->complete(kmm->domain_map(), kmm->row_map());
@@ -544,7 +544,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       kmsmod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
       kmsmod->add(*kms, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmsadd =
-          Core::LinAlg::MLMultiply(*mhatmatrix_, true, *kss, false, false, false, true);
+          Core::LinAlg::ml_multiply(*mhatmatrix_, true, *kss, false, false, false, true);
       kmsmod->add(*kmsadd, false, 1.0, 1.0);
       kmsmod->complete(kms->domain_map(), kms->row_map());
     }
@@ -608,9 +608,9 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     // independently of the underlying problem discretization.
     if (par_redist())
     {
-      kmnmod = Mortar::MatrixRowTransform(kmnmod, pgmdofrowmap_);
-      kmmmod = Mortar::MatrixRowTransform(kmmmod, pgmdofrowmap_);
-      onesdiag = Mortar::MatrixRowTransform(onesdiag, pgsdofrowmap_);
+      kmnmod = Mortar::matrix_row_transform(kmnmod, pgmdofrowmap_);
+      kmmmod = Mortar::matrix_row_transform(kmmmod, pgmdofrowmap_);
+      onesdiag = Mortar::matrix_row_transform(onesdiag, pgsdofrowmap_);
     }
 
     /**********************************************************************/
@@ -618,7 +618,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     /**********************************************************************/
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
         *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
-    Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::CreateVector(*problem_dofs());
+    Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::create_vector(*problem_dofs());
 
     // add n submatrices to kteffnew
     kteffnew->add(*knn, false, 1.0, 1.0);
@@ -687,7 +687,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
+          Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -702,8 +702,8 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(
               *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
       kteffnew =
-          Core::LinAlg::MLMultiply(*kteffmatrix, false, *systrafo, false, false, false, true);
-      kteffnew = Core::LinAlg::MLMultiply(*systrafo, true, *kteffnew, false, false, false, true);
+          Core::LinAlg::ml_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
+      kteffnew = Core::LinAlg::ml_multiply(*systrafo, true, *kteffnew, false, false, false, true);
       kteff = kteffnew;
       systrafo->multiply(true, *feff, *feff);
     }
@@ -760,17 +760,18 @@ void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
   //**********************************************************************
   // get system type
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // the standard stiffness matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiffmt =
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kdd);
 
   // initialize merged system (matrix, rhs, sol)
-  Teuchos::RCP<Epetra_Map> mergedmap = Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> mergedrhs = Core::LinAlg::CreateVector(*mergedmap);
-  Teuchos::RCP<Epetra_Vector> mergedsol = Core::LinAlg::CreateVector(*mergedmap);
-  Teuchos::RCP<Epetra_Vector> mergedzeros = Core::LinAlg::CreateVector(*mergedmap);
+  Teuchos::RCP<Epetra_Map> mergedmap =
+      Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> mergedrhs = Core::LinAlg::create_vector(*mergedmap);
+  Teuchos::RCP<Epetra_Vector> mergedsol = Core::LinAlg::create_vector(*mergedmap);
+  Teuchos::RCP<Epetra_Vector> mergedzeros = Core::LinAlg::create_vector(*mergedmap);
 
   //**********************************************************************
   // finalize matrix and vector blocks
@@ -854,7 +855,8 @@ void CONTACT::MtLagrangeStrategy::update_displacements_and_l_mincrements(
   // extract results for displacement and LM increments
   //**********************************************************************
   Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
-  Teuchos::RCP<Epetra_Map> mergedmap = Core::LinAlg::MergeMap(problem_dofs(), glmdofrowmap_, false);
+  Teuchos::RCP<Epetra_Map> mergedmap =
+      Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
   Core::LinAlg::MapExtractor mapext(*mergedmap, problem_dofs(), glmdofrowmap_);
   mapext.extract_cond_vector(blocksol, sold);
   mapext.extract_other_vector(blocksol, sollm);
@@ -876,11 +878,11 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // system type, shape function type and type of LM interpolation for quadratic elements
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   //**********************************************************************
   //**********************************************************************
@@ -927,7 +929,7 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
+          Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -977,7 +979,7 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-          Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
+          Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (par_redist())
         trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -1035,13 +1037,13 @@ bool CONTACT::MtLagrangeStrategy::evaluate_stiff(const Teuchos::RCP<const Epetra
   // (only necessary in the parallel redistribution case)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp;
   if (par_redist())
-    temp = Mortar::MatrixRowTransform(constrmt, problem_dofs());
+    temp = Mortar::matrix_row_transform(constrmt, problem_dofs());
   else
     temp = constrmt;
 
 
   // always transform column GIDs of constraint matrix
-  dm_matrix_ = Mortar::MatrixColTransformGIDs(temp, lm_do_f_row_map_ptr(true));
+  dm_matrix_ = Mortar::matrix_col_transform_gids(temp, lm_do_f_row_map_ptr(true));
   dm_matrix_t_ =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*lm_do_f_row_map_ptr(true), 100, false, true));
   dm_matrix_t_->add(*dm_matrix_, true, 1., 0.);
@@ -1056,12 +1058,12 @@ bool CONTACT::MtLagrangeStrategy::evaluate_stiff(const Teuchos::RCP<const Epetra
 
 
   Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
   {
     systrafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-        Core::LinAlg::CreateIdentityMatrix(*gndofrowmap_);
+        Core::LinAlg::create_identity_matrix(*gndofrowmap_);
     systrafo_->add(*eye, false, 1.0, 1.0);
     if (par_redist())
       trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
@@ -1145,7 +1147,7 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   if (systype == Inpar::CONTACT::system_condensed)
   {
@@ -1154,20 +1156,20 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
     Teuchos::RCP<Epetra_Vector> r = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
 
     Inpar::Mortar::LagMultQuad lagmultquad =
-        Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
     if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
     {
       // apply basis transformation to K and f
-      k = Core::LinAlg::MLMultiply(*k, false, *systrafo_, false, false, false, true);
-      k = Core::LinAlg::MLMultiply(*systrafo_, true, *k, false, false, false, true);
+      k = Core::LinAlg::ml_multiply(*k, false, *systrafo_, false, false, false, true);
+      k = Core::LinAlg::ml_multiply(*systrafo_, true, *k, false, false, false, true);
       systrafo_->multiply(true, *r, *r);
     }
 
-    Mortar::UTILS::MortarMatrixCondensation(k, mhatmatrix_, mhatmatrix_);
+    Mortar::UTILS::mortar_matrix_condensation(k, mhatmatrix_, mhatmatrix_);
     *kteff = *k;
 
-    Mortar::UTILS::MortarRhsCondensation(r, mhatmatrix_);
+    Mortar::UTILS::mortar_rhs_condensation(r, mhatmatrix_);
   }
 
   return;
@@ -1178,13 +1180,13 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
 void CONTACT::MtLagrangeStrategy::run_post_apply_jacobian_inverse(Epetra_Vector& result)
 {
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
   Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (systype == Inpar::CONTACT::system_condensed)
   {
     Teuchos::RCP<Epetra_Vector> inc = Teuchos::rcpFromRef<Epetra_Vector>(result);
-    Mortar::UTILS::MortarRecover(inc, mhatmatrix_);
+    Mortar::UTILS::mortar_recover(inc, mhatmatrix_);
 
     // undo basis transformation to solution
     if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
@@ -1213,9 +1215,9 @@ void CONTACT::MtLagrangeStrategy::run_post_compute_x(
 void CONTACT::MtLagrangeStrategy::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
   Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (systype == Inpar::CONTACT::system_condensed)
   {
     // undo basis transformation to solution
@@ -1223,7 +1225,7 @@ void CONTACT::MtLagrangeStrategy::remove_condensed_contributions_from_rhs(Epetra
       systrafo_->multiply(true, rhs, rhs);
 
     Teuchos::RCP<Epetra_Vector> r = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
-    Mortar::UTILS::MortarRhsCondensation(r, mhatmatrix_);
+    Mortar::UTILS::mortar_rhs_condensation(r, mhatmatrix_);
   }
 
   return;

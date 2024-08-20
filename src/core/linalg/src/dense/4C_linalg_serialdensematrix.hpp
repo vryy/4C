@@ -54,12 +54,12 @@ namespace Core::LinAlg
     \brief Update matrix components with scaled values of A,
            B = alpha*A + beta*B
     */
-  void Update(double alpha, const SerialDenseMatrix& A, double beta, SerialDenseMatrix& B);
+  void update(double alpha, const SerialDenseMatrix& A, double beta, SerialDenseMatrix& B);
 
   /*!
    * \brief Zero out first n elements of the matrix
    */
-  void Zero(SerialDenseMatrix& mat, int length);
+  void zero(SerialDenseMatrix& mat, int length);
 
   /*!
     \brief determinant Computation using the Sarrus rule.
@@ -67,7 +67,7 @@ namespace Core::LinAlg
     this allows for higher precision when used on a bigger matrix. Long double is also used for
     output, therefore it has to be expicitly casted to a double if used in a "double only" context.
     */
-  long double Det_long(const SerialDenseMatrix& matrix);
+  long double det_long(const SerialDenseMatrix& matrix);
 
   /*!
    * \brief Utility function to copy the data to SerialDenseMatrix

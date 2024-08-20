@@ -76,7 +76,7 @@ template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::LubricationEleCalc<distype, probdim>*
 Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::instance(const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<LubricationEleCalc<distype, probdim>>(
@@ -186,7 +186,8 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::read_element_coord
     const Core::Elements::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   return;
 }  // LubricationEleCalc::read_element_coordinates
@@ -217,7 +218,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // extract local vel from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
 
   if (lubricationpara_->modified_reynolds())
   {
@@ -235,7 +236,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
         lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
     // extract local vel from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
   }
 
   // 2. In case of ale, extract the displacements of the element nodes and update the nodal
@@ -259,7 +260,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -283,7 +284,8 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
       lmheight[inode * nsd_ + idim] = la[ndsheight].lm_[inode * numheightdofpernode + idim];
 
   // extract local height from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*height, eheinp_, la[ndsheight].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(
+      *height, eheinp_, la[ndsheight].lm_);
 
   // 3.1. Extract the film height time derivative at the element node
   if (lubricationpara_->add_sqz())
@@ -305,7 +307,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
             la[ndsheightdot].lm_[inode * numheightdotdofpernode + idim];
 
     // extract local height from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(
         *heightdot, eheidotnp_, la[ndsheightdot].lm_);
   }
   // 4. Extract the pressure field at the element nodes
@@ -318,7 +320,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
   const std::vector<int>& lm = la[0].lm_;
 
   // extract the local values at the element nodes
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
   return;
 }
@@ -1095,7 +1097,7 @@ double Discret::ELEMENTS::LubricationEleCalc<distype,
     // the metric tensor and the area of an infinitesimal surface/line element
     // optional: get unit normal at integration point as well
     const bool throw_error_if_negative_determinant(true);
-    Core::FE::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
+    Core::FE::compute_metric_tensor_for_boundary_ele<distype, nsd_>(
         xyze_, deriv_red, metrictensor, det, throw_error_if_negative_determinant, &normalvec);
 
     if (det < 1E-16)
@@ -1227,7 +1229,8 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_service(
   if (setup_calc(ele, discretization) == -1) return 0;
 
   // check for the action parameter
-  const LUBRICATION::Action action = Core::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action");
+  const LUBRICATION::Action action =
+      Core::UTILS::get_as_enum<LUBRICATION::Action>(params, "action");
 
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -1262,7 +1265,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
       // need current solution
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.get_state("prenp");
       if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
 
@@ -1278,7 +1281,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.get_state("prenp");
       if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       // calculate pressures and domain integral
       calculate_pressures(ele, elevec1_epetra, inverting);
@@ -1304,7 +1307,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
     const Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& errors)
 {
-  if (Core::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
+  if (Core::UTILS::get_as_enum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
     FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
@@ -1317,7 +1320,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
       LUBRICATION::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const Inpar::LUBRICATION::CalcError errortype =
-      Core::UTILS::GetAsEnum<Inpar::LUBRICATION::CalcError>(params, "calcerrorflag");
+      Core::UTILS::get_as_enum<Inpar::LUBRICATION::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::LUBRICATION::calcerror_byfunction:

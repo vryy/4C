@@ -337,7 +337,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
         if (assemblevec1)
         {
           elevector1.scale(lagraval);
-          Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
+          Core::LinAlg::assemble(*systemvector1, elevector1, lm, lmowner);
         }
         if (assemblevec3)
         {
@@ -345,7 +345,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
           std::vector<int> constrowner;
           constrlm.push_back(gindex);
           constrowner.push_back(curr->second->owner());
-          Core::LinAlg::Assemble(*systemvector3, elevector3, constrlm, constrowner);
+          Core::LinAlg::assemble(*systemvector3, elevector3, constrlm, constrowner);
         }
       }
     }
@@ -414,7 +414,7 @@ void CONSTRAINTS::Constraint::initialize_constraint(
         int offsetID = params.get<int>("OffsetID");
         constrlm.push_back(condID - offsetID);
         constrowner.push_back(curr->second->owner());
-        Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
+        Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
       }
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second = true;

@@ -122,7 +122,7 @@ namespace
               })),
           summand_(&parameters_)
     {
-      const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
+      const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::identity_matrix<3>();
 
       C1_(0, 0) = 1.484;
       C1_(1, 1) = 2.3;

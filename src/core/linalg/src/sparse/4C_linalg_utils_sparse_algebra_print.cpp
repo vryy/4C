@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::PrintMatrixInMatlabFormat(
+void Core::LinAlg::print_matrix_in_matlab_format(
     const std::string& filename, const Epetra_CrsMatrix& sparsematrix, const bool newfile)
 {
   const auto& comm = sparsematrix.Comm();
@@ -85,7 +85,7 @@ void Core::LinAlg::PrintMatrixInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::PrintBlockMatrixInMatlabFormat(
+void Core::LinAlg::print_block_matrix_in_matlab_format(
     const std::string& filename, const BlockSparseMatrixBase& blockmatrix)
 {
   for (int row = 0; row < blockmatrix.rows(); row++)
@@ -93,7 +93,7 @@ void Core::LinAlg::PrintBlockMatrixInMatlabFormat(
     for (int col = 0; col < blockmatrix.cols(); col++)
     {
       const auto& sparsematrix = blockmatrix.matrix(row, col);
-      Core::LinAlg::PrintMatrixInMatlabFormat(
+      Core::LinAlg::print_matrix_in_matlab_format(
           filename, *(sparsematrix.epetra_matrix()), ((row == 0) && (col == 0)));
     }
   }
@@ -101,7 +101,7 @@ void Core::LinAlg::PrintBlockMatrixInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::PrintVectorInMatlabFormat(
+void Core::LinAlg::print_vector_in_matlab_format(
     const std::string& filename, const Epetra_Vector& vector, const bool newfile)
 {
   const auto& comm = vector.Comm();
@@ -174,7 +174,7 @@ void Core::LinAlg::PrintVectorInMatlabFormat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::PrintMapInMatlabFormat(
+void Core::LinAlg::print_map_in_matlab_format(
     const std::string& filename, const Epetra_Map& map, const bool newfile)
 {
   const auto& comm = map.Comm();

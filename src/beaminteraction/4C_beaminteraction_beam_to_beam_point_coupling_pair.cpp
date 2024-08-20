@@ -110,7 +110,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
     std::vector<double> element_posdofvec_absolutevalues(Beam::n_dof_, 0.0);
     std::vector<int> lm(Beam::n_dof_);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
-    BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(
+    BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(
         *discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       beam_pos[i_beam].element_position_(i_dof) =
@@ -118,7 +118,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
               i_beam * Beam::n_dof_ + i_dof, element_posdofvec_absolutevalues[i_dof]);
 
     // Evaluate the position of the coupling point.
-    GEOMETRYPAIR::EvaluatePosition<Beam>(
+    GEOMETRYPAIR::evaluate_position<Beam>(
         position_in_parameterspace_[i_beam], beam_pos[i_beam], r[i_beam]);
   }
 
@@ -146,7 +146,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
     // Add the coupling force to the global force vector.
     if (force_vector != Teuchos::null)
       force_vector->SumIntoGlobalValues(gid_pos[i_beam].num_rows(), gid_pos[i_beam].data(),
-          Core::FADUtils::CastToDouble(force_element[i_beam]).data());
+          Core::FADUtils::cast_to_double(force_element[i_beam]).data());
   }
 
   // Evaluate and assemble the coupling stiffness terms.
@@ -203,7 +203,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>
         ref_triad_interpolation_scheme;
-    BEAMINTERACTION::GetBeamTriadInterpolationScheme(*discret, displacement_vector,
+    BEAMINTERACTION::get_beam_triad_interpolation_scheme(*discret, displacement_vector,
         beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
     // Calculate the rotation vector of the beam cross sections and its FAD representation.
@@ -222,12 +222,12 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
         quaternion_ref[i_beam], position_in_parameterspace_[i_beam]);
 
     // Transformation matrix.
-    Core::LinAlg::Matrix<3, 3, double> T = Core::LargeRotations::Tmatrix(psi_double);
+    Core::LinAlg::Matrix<3, 3, double> T = Core::LargeRotations::tmatrix(psi_double);
 
     // Interpolation matrices.
     std::vector<Core::LinAlg::Matrix<3, 3, double>> I_tilde;
     Core::LinAlg::Matrix<3, n_dof_rot_, double> I_tilde_full;
-    Core::FE::shape_function_1D(
+    Core::FE::shape_function_1d(
         L_i[i_beam], position_in_parameterspace_[i_beam], Core::FE::CellType::line3);
     triad_interpolation_scheme.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
         I_tilde, position_in_parameterspace_[i_beam]);
@@ -270,7 +270,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
 
     if (force_vector != Teuchos::null)
       force_vector->SumIntoGlobalValues(gid_rot[i_beam].num_rows(), gid_rot[i_beam].data(),
-          Core::FADUtils::CastToDouble(moment_nodal_load[i_beam]).data());
+          Core::FADUtils::cast_to_double(moment_nodal_load[i_beam]).data());
   }
 
   // Evaluate and assemble the coupling stiffness terms.

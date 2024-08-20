@@ -88,7 +88,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
   {
     // get the required action
     std::string action = params.get<std::string>("action", "none");
-    act = Core::Elements::String2ActionType(action);
+    act = Core::Elements::string_to_action_type(action);
   }
 
 
@@ -106,9 +106,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -117,7 +117,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
@@ -136,9 +136,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
 
@@ -147,7 +147,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
@@ -175,13 +175,13 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      Core::FE::ExtractMyValues(*acc, myacc, lm);
+      Core::FE::extract_my_values(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       // This matrix is used in the evaluation functions to store the mass matrix. If the action
       // type is Core::Elements::struct_calc_internalinertiaforce we do not want to actually
@@ -197,7 +197,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       if (act == Core::Elements::struct_calc_internalinertiaforce)
@@ -249,14 +249,14 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
       // reference and current geometry (nodal positions)
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xref;  // reference coord. of element
@@ -404,7 +404,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       // reference and current geometry (nodal positions)
@@ -439,7 +439,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
             "and/or \"residual displacement\"");
 
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       soh8_recover(lm, myres);
       /* ToDo Probably we have to recover the history information of some special
@@ -473,13 +473,13 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
         // in case of small strain materials calculate plastic strains for post processing
         plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-        ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "ioplstrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
@@ -487,9 +487,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
@@ -499,7 +499,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.get_state("material_displacement");
-        Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
       }
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
@@ -578,7 +578,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
                       .at(quantity_name);
-              Core::FE::AssembleAveragedElementValues(*global_data, gp_data, *this);
+              Core::FE::assemble_averaged_element_values(*global_data, gp_data, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::nodes:
@@ -594,10 +594,10 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
                        .at(quantity_name);
 
               static auto gauss_integration = Core::FE::IntegrationPoints3D(
-                  Core::FE::NumGaussPointsToGaussRule<Core::FE::CellType::hex8>(NUMGPT_SOH8));
-              Core::FE::ExtrapolateGPQuantityToNodesAndAssemble<Core::FE::CellType::hex8>(
+                  Core::FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::hex8>(NUMGPT_SOH8));
+              Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::hex8>(
                   *this, gp_data, *global_data, false, gauss_integration);
-              Discret::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
+              Discret::ELEMENTS::assemble_nodal_element_count(global_nodal_element_count, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::gauss_points:
@@ -607,7 +607,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
                       .gauss_point_data_output_manager_ptr()
                       ->get_gauss_point_data()
                       .at(quantity_name);
-              Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
+              Discret::ELEMENTS::assemble_gauss_point_values(global_data, gp_data, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::none:
@@ -635,7 +635,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       update_element(mydisp, params, material());
     }
     break;
@@ -700,16 +700,16 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // update element geometry
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
 
-      UTILS::EvaluateNodalCoordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<Core::FE::CellType::hex8, 3>(mydisp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+      UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+      UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(mydisp, xdisp);
+      UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
       // safety check before the actual evaluation starts
       const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -756,7 +756,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (Prestress::IsMulf(pstype_))
+        if (Prestress::is_mulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           Core::LinAlg::Matrix<3, 3> invJdef;
@@ -940,19 +940,19 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
 #endif
 
       std::vector<double> mydispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
 
       std::vector<double> myvelnp(lm.size());
-      Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+      Core::FE::extract_my_values(*velnp, myvelnp, lm);
 
       // update element geometry
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // reference coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>
           xdisp;  // current displacements of element nodes
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
-      UTILS::EvaluateNodalCoordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<Core::FE::CellType::hex8, 3>(mydispnp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+      UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+      UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(mydispnp, xdisp);
+      UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
       // shape functions and derivatives w.r.t. r,s,t
       Core::LinAlg::Matrix<NUMNOD_SOH8, 1> shapefcts;
@@ -1078,7 +1078,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       switch (pstype_)
       {
@@ -1151,26 +1151,26 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         if (gpstrainmap == Teuchos::null)
           FOUR_C_THROW("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::extract_my_values(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        Core::FE::ExtractMyValues(*res, myres, lm);
+        Core::FE::extract_my_values(*res, myres, lm);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.get_state("material_displacement");
-          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
         }
 
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
-        auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        auto ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "ioplstrain", Inpar::Solid::strain_none);
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
@@ -1247,7 +1247,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
 
       // extract the part for this element
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       soh8_create_eas_backup_state(myres);
 
@@ -1263,8 +1263,8 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       break;
     }
     default:
-      FOUR_C_THROW(
-          "Unknown type of action for So_hex8: %s", Core::Elements::ActionType2String(act).c_str());
+      FOUR_C_THROW("Unknown type of action for So_hex8: %s",
+          Core::Elements::action_type_to_string(act).c_str());
       break;
   }
   return 0;
@@ -1324,7 +1324,7 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+  UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
   /* ================================================= Loop over Gauss Points */
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -1424,14 +1424,14 @@ void Discret::ELEMENTS::SoHex8::init_jacobian_mapping()
     detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (Prestress::IsMulfActive(time_, pstype_, pstime_))
+    if (Prestress::is_mulf_active(time_, pstype_, pstime_))
     {
       if (!(prestress_->is_init()))
         prestress_->matrixto_storage(gp, invJ_[gp], prestress_->j_history());
     }
   }
 
-  if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
+  if (Prestress::is_mulf_active(time_, pstype_, pstime_)) prestress_->is_init() = true;
 }
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping with respect to the    farah 06/13|
@@ -1481,7 +1481,7 @@ double Discret::ELEMENTS::SoHex8::soh8_get_min_det_jac_at_corners(
 {
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> xcurr_t(false);
   xcurr_t.update_t(xcurr);
-  return Core::Elements::GetMinimalJacDeterminantAtNodes<Core::FE::CellType::hex8>(xcurr_t);
+  return Core::Elements::get_minimal_jac_determinant_at_nodes<Core::FE::CellType::hex8>(xcurr_t);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1630,7 +1630,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
   /* ============================================================================*/
 
   // check for prestressing
-  if (Prestress::IsAny(pstype_) && eastype_ != soh8_easnone)
+  if (Prestress::is_any(pstype_) && eastype_ != soh8_easnone)
     FOUR_C_THROW("No way you can do mulf or id prestressing with EAS turned on!");
 
   // update element geometry
@@ -1638,9 +1638,9 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);  // current  coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
 
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-  UTILS::EvaluateNodalDisplacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
-  UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+  UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+  UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+  UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
   // safety check before the actual evaluation starts
   const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -1806,7 +1806,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     double detJ = detJ_[gp];
     N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       Core::LinAlg::Matrix<3, 3> invJdef;
@@ -2053,7 +2053,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         Core::LinAlg::Matrix<3, 3> prstr2(true);  // squared principal stretches
         Core::LinAlg::Matrix<3, 1> prstr(true);   // principal stretch
         Core::LinAlg::Matrix<3, 3> prdir(true);   // principal directions
-        Core::LinAlg::SYEV(cauchygreen, prstr2, prdir);
+        Core::LinAlg::syev(cauchygreen, prstr2, prdir);
 
         // THE principal stretches
         for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
@@ -2478,7 +2478,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
   if (eastype_ != soh8_easnone && split_res && force != nullptr)
     // only add for row-map elements
     if (params.get<int>("MyPID") == owner())
-      params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::Norm2(feas), 2.);
+      params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
@@ -2729,7 +2729,7 @@ void Discret::ELEMENTS::SoHex8::def_gradient(const std::vector<double>& disp,
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;  // current  coord. of element
-  UTILS::EvaluateNodalDisplacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+  UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
 
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -2765,7 +2765,7 @@ void Discret::ELEMENTS::SoHex8::update_jacobian_mapping(
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
-  UTILS::EvaluateNodalDisplacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+  UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
 
   Core::LinAlg::Matrix<3, 3> invJhist;
   Core::LinAlg::Matrix<3, 3> invJ;
@@ -2813,9 +2813,9 @@ void Discret::ELEMENTS::SoHex8::update_element(std::vector<double>& disp,
     Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
     Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);
 
-    UTILS::EvaluateNodalCoordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-    UTILS::EvaluateNodalDisplacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
-    UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+    UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+    UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+    UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
@@ -2956,7 +2956,7 @@ void Discret::ELEMENTS::SoHex8::calc_consistent_defgrd(
   U_mod(0, 2) = glstrain_mod(5);
   U_mod(2, 0) = glstrain_mod(5);
 
-  Core::LinAlg::SYEV(U_mod, EW, U_mod);
+  Core::LinAlg::syev(U_mod, EW, U_mod);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.multiply(U_mod, EW);
   tmp2.multiply_nt(tmp, U_mod);
@@ -2967,7 +2967,7 @@ void Discret::ELEMENTS::SoHex8::calc_consistent_defgrd(
   // ******************************************************************
   U_disp.multiply_tn(defgrd_disp, defgrd_disp);
 
-  Core::LinAlg::SYEV(U_disp, EW, U_disp);
+  Core::LinAlg::syev(U_disp, EW, U_disp);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.multiply(U_disp, EW);
   tmp2.multiply_nt(tmp, U_disp);
@@ -3219,7 +3219,7 @@ void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
     double* d_cauchyndir_dc)
 {
-  FOUR_C_THROW_UNLESS(eastype_ == soh8_easnone && !Prestress::IsMulf(),
+  FOUR_C_THROW_UNLESS(eastype_ == soh8_easnone && !Prestress::is_mulf(),
       "Evaluation of the Cauchy stress is not possible for EAS-elements or MULF prestressing.");
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
     FOUR_C_THROW("Thermo-elastic Nitsche contact not yet implemented in so hex8");

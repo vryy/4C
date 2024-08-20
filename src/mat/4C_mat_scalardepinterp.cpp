@@ -85,12 +85,12 @@ void Mat::ScalarDepInterp::setup(int numgp, const Core::IO::InputParameterContai
 
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
-      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_zero_));
+      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_zero_));
   lambda_zero_mat_->setup(numgp, container);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
-      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_unit_));
+      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_unit_));
   lambda_unit_mat_->setup(numgp, container);
 
   // Some safety check
@@ -234,7 +234,7 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
@@ -273,7 +273,7 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
   if (dataelastic.size() > 0)
   {
     Core::Communication::ParObject* o =
-        Core::Communication::Factory(dataelastic);  // Unpack is done here
+        Core::Communication::factory(dataelastic);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_zero_mat_ = Teuchos::rcp(matel);
@@ -287,7 +287,7 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
   if (dataelastic2.size() > 0)
   {
     Core::Communication::ParObject* o =
-        Core::Communication::Factory(dataelastic2);  // Unpack is done here
+        Core::Communication::factory(dataelastic2);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_unit_mat_ = Teuchos::rcp(matel);

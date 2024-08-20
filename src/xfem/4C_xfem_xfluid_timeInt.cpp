@@ -1839,7 +1839,8 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips_space_time(
       break;
     }
     default:
-      FOUR_C_THROW("side-distype %s not handled", Core::FE::CellTypeToString(side_distype).c_str());
+      FOUR_C_THROW(
+          "side-distype %s not handled", Core::FE::cell_type_to_string(side_distype).c_str());
       break;
   }
 
@@ -1902,8 +1903,8 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 
     cutter_dis->dof(&node, lm);
 
-    Core::FE::ExtractMyValues(*idisp_old, mydisp_old, lm);
-    Core::FE::ExtractMyValues(*idisp_new, mydisp_new, lm);
+    Core::FE::extract_my_values(*idisp_old, mydisp_old, lm);
+    Core::FE::extract_my_values(*idisp_new, mydisp_new, lm);
 
     // add displacements
     x_old(0) += mydisp_old.at(0);
@@ -1971,7 +1972,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
     Core::LinAlg::Matrix<3, 1> dx_ds(true);
 
     // get current values
-    Core::FE::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
+    Core::FE::shape_function_2d_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
     Core::LinAlg::Matrix<3, numnode_side> xyz_side_new(xyze_new);
 
@@ -2243,8 +2244,9 @@ void XFEM::XFluidTimeInt::output()
   int step_diff = 500;
 
   // output for all dofsets of nodes
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("TIMINT_Method",
-      dis_->writer()->output()->file_name(), step_, step_diff, true, dis_->get_comm().MyPID());
+  const std::string filename =
+      Core::IO::Gmsh::get_new_file_name_and_delete_old_files("TIMINT_Method",
+          dis_->writer()->output()->file_name(), step_, step_diff, true, dis_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
@@ -2271,7 +2273,7 @@ void XFEM::XFluidTimeInt::output()
 
       for (size_t j = 0; j < nds_methods.size(); j++)
       {
-        Core::IO::Gmsh::cellWithScalarToStream(
+        Core::IO::Gmsh::cell_with_scalar_to_stream(
             Core::FE::CellType::point1, (int)nds_methods[j], pos, gmshfilecontent);
       }
     }

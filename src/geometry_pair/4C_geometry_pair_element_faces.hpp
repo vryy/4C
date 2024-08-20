@@ -503,7 +503,7 @@ namespace GEOMETRYPAIR
    * @param surface_normal_strategy (in) strategy to be used for surface normals.
    * @return RCP to the created GEOMETRYPAIR FaceElement.
    */
-  Teuchos::RCP<FaceElement> FaceElementFactory(
+  Teuchos::RCP<FaceElement> face_element_factory(
       const Teuchos::RCP<const Core::Elements::Element>& core_element, const int fad_order,
       const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 

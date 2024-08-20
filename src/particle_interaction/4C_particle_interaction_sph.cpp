@@ -294,7 +294,7 @@ void ParticleInteraction::ParticleInteractionSPH::set_initial_states()
         const double effectiveradius = std::sqrt(M_1_PI * initialparticlevolume);
 
         // inertia for disk shape
-        initinertia[0] = 0.5 * initmass[0] * UTILS::Pow<2>(effectiveradius);
+        initinertia[0] = 0.5 * initmass[0] * UTILS::pow<2>(effectiveradius);
       }
       else if (kernelspacedim == 3)
       {
@@ -302,7 +302,7 @@ void ParticleInteraction::ParticleInteractionSPH::set_initial_states()
         const double effectiveradius = std::pow(0.75 * M_1_PI * initialparticlevolume, 1.0 / 3.0);
 
         // inertia for spherical shape
-        initinertia[0] = 0.4 * initmass[0] * UTILS::Pow<2>(effectiveradius);
+        initinertia[0] = 0.4 * initmass[0] * UTILS::pow<2>(effectiveradius);
       }
       else
       {
@@ -448,7 +448,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_kernel_handler()
 {
   // get type of smoothed particle hydrodynamics kernel
   Inpar::PARTICLE::KernelType kerneltype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::KernelType>(params_sph_, "KERNEL");
+      Core::UTILS::integral_value<Inpar::PARTICLE::KernelType>(params_sph_, "KERNEL");
 
   // create kernel handler
   switch (kerneltype)
@@ -497,7 +497,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_density_handler()
 {
   // get type of smoothed particle hydrodynamics density evaluation scheme
   Inpar::PARTICLE::DensityEvaluationScheme densityevaluationscheme =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::DensityEvaluationScheme>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::DensityEvaluationScheme>(
           params_sph_, "DENSITYEVALUATION");
 
   // create density handler
@@ -533,7 +533,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_density_handler()
 
   // safety check
   if (densityevaluationscheme != Inpar::PARTICLE::DensityPredictCorrect and
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::DensityCorrectionScheme>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::DensityCorrectionScheme>(
           params_sph_, "DENSITYCORRECTION") != Inpar::PARTICLE::NoCorrection)
     FOUR_C_THROW(
         "the density correction scheme set is not valid with the current density evaluation "
@@ -554,7 +554,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_temperature_handler()
 {
   // get type of smoothed particle hydrodynamics temperature evaluation scheme
   Inpar::PARTICLE::TemperatureEvaluationScheme temperatureevaluationscheme =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::TemperatureEvaluationScheme>(
           params_sph_, "TEMPERATUREEVALUATION");
 
   // create temperature handler
@@ -596,7 +596,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_surface_tension_handler()
 {
   // get type of smoothed particle hydrodynamics surface tension formulation
   Inpar::PARTICLE::SurfaceTensionFormulation surfacetensionformulation =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::SurfaceTensionFormulation>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::SurfaceTensionFormulation>(
           params_sph_, "SURFACETENSIONFORMULATION");
 
   // create surface tension handler
@@ -628,7 +628,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_boundary_particle_handler
 {
   // get type of boundary particle formulation
   Inpar::PARTICLE::BoundaryParticleFormulationType boundaryparticleformulation =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::BoundaryParticleFormulationType>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::BoundaryParticleFormulationType>(
           params_sph_, "BOUNDARYPARTICLEFORMULATION");
 
   // create boundary particle handler
@@ -660,7 +660,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_dirichlet_open_boundary_h
 {
   // get type of dirichlet open boundary
   Inpar::PARTICLE::DirichletOpenBoundaryType dirichletopenboundarytype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::DirichletOpenBoundaryType>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::DirichletOpenBoundaryType>(
           params_sph_, "DIRICHLETBOUNDARYTYPE");
 
   // create open boundary handler
@@ -692,7 +692,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_neumann_open_boundary_han
 {
   // get type of neumann open boundary
   Inpar::PARTICLE::NeumannOpenBoundaryType neumannopenboundarytype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::NeumannOpenBoundaryType>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::NeumannOpenBoundaryType>(
           params_sph_, "NEUMANNBOUNDARYTYPE");
 
   // create open boundary handler
@@ -724,7 +724,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_virtual_wall_particle_han
 {
   // get type of wall formulation
   Inpar::PARTICLE::WallFormulationType wallformulation =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::WallFormulationType>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::WallFormulationType>(
           params_sph_, "WALLFORMULATION");
 
   // create virtual wall particle handler
@@ -756,7 +756,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_phase_change_handler()
 {
   // get type of phase change
   Inpar::PARTICLE::PhaseChangeType phasechangetype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
+      Core::UTILS::integral_value<Inpar::PARTICLE::PhaseChangeType>(params_sph_, "PHASECHANGETYPE");
 
   // create phase change handler
   switch (phasechangetype)
@@ -799,7 +799,7 @@ void ParticleInteraction::ParticleInteractionSPH::init_rigid_particle_contact_ha
 {
   // get type of rigid particle contact
   Inpar::PARTICLE::RigidParticleContactType rigidparticlecontacttype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::RigidParticleContactType>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::RigidParticleContactType>(
           params_sph_, "RIGIDPARTICLECONTACTTYPE");
 
   // create rigid particle contact handler

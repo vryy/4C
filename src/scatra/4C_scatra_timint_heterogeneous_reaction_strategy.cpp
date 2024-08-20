@@ -48,7 +48,7 @@ void ScaTra::HeterogeneousReactionStrategy::evaluate_meshtying()
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_heteroreac_mat_and_rhs, condparams);
 
   // set global state vectors according to time-integration scheme
@@ -109,7 +109,7 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
   // create scatra elements if the scatra discretization is empty
   {
     // fill scatra discretization by cloning fluid discretization
-    Core::FE::CloneDiscretizationFromCondition<ScaTra::ScatraReactionCloneStrategy>(*scatradis,
+    Core::FE::clone_discretization_from_condition<ScaTra::ScatraReactionCloneStrategy>(*scatradis,
         *discret_, "ScatraHeteroReactionSlave",
         Global::Problem::instance()->cloning_material_map());
 

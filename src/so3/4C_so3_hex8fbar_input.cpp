@@ -19,7 +19,7 @@ bool Discret::ELEMENTS::SoHex8fbar::read_element(const std::string& eletype,
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
   solid_material()->setup(NUMGPT_SOH8, container);

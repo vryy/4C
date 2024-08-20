@@ -55,7 +55,7 @@ void Core::IO::EveryIterationWriter::init(const Core::IO::DiscretizationWriter* 
   run_number_ = params.get<int>("RUN_NUMBER");
   write_only_this_step_ = params.get<int>("STEP_NP_NUMBER");
   write_owner_each_newton_iteration_ =
-      Core::UTILS::IntegralValue<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
+      Core::UTILS::integral_value<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
 
   isinit_ = true;
 }
@@ -68,12 +68,12 @@ void Core::IO::EveryIterationWriter::setup()
 
   /* Remove the restart counter from the folder name. Note that the restart
    * counter stays a part of the final file name of the corresponding step. */
-  const std::string filename_without_restart = RemoveRestartStepFromFileName(
+  const std::string filename_without_restart = remove_restart_step_from_file_name(
       parent_writer().output()->file_name_only_prefix(), parent_writer().output()->restart_step());
 
   const std::string dir_name(filename_without_restart + "_every_iter");
 
-  std::string file_dir_path = ExtractPath(parent_writer().output()->file_name());
+  std::string file_dir_path = extract_path(parent_writer().output()->file_name());
   file_dir_path += dir_name;
   create_directory(file_dir_path);
 
@@ -135,7 +135,7 @@ void Core::IO::create_directory(const std::string& dir_path, const int myrank)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string Core::IO::ExtractPath(const std::string& full_filename)
+std::string Core::IO::extract_path(const std::string& full_filename)
 {
   std::string filename_path;
   size_t pos = full_filename.rfind('/');
@@ -147,7 +147,7 @@ std::string Core::IO::ExtractPath(const std::string& full_filename)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string Core::IO::ExtractFileName(const std::string& full_filename)
+std::string Core::IO::extract_file_name(const std::string& full_filename)
 {
   std::string filenameonly = full_filename;
 
@@ -162,7 +162,7 @@ std::string Core::IO::ExtractFileName(const std::string& full_filename)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string Core::IO::RemoveRestartStepFromFileName(
+std::string Core::IO::remove_restart_step_from_file_name(
     const std::string& filename, const int restart_step)
 {
   if (restart_step == 0) return filename;
@@ -281,7 +281,7 @@ void Core::IO::EveryIterationWriter::add_line_search_iteration(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Core::IO::CountLinesInFile(const std::string& filepath)
+int Core::IO::count_lines_in_file(const std::string& filepath)
 {
   std::ifstream myfile(filepath);
 

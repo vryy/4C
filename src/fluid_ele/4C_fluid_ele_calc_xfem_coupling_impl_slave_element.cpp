@@ -56,7 +56,7 @@ namespace Discret
           FOUR_C_THROW("Cannot get state vector %s", disp_statename_.c_str());
 
         // extract local values of the global vector
-        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -96,7 +96,7 @@ namespace Discret
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -129,7 +129,7 @@ namespace Discret
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -247,7 +247,7 @@ namespace Discret
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -281,7 +281,7 @@ namespace Discret
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -346,7 +346,7 @@ namespace Discret
         if (slave_nsd_ == nsd_ - 1)
         {
           // evaluate shape function at solution
-          Core::FE::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
+          Core::FE::shape_function_2d(slave_funct_, xslave(0), xslave(1), slave_distype);
           rst_slave(0) = xslave(0);
           rst_slave(1) = xslave(1);
           //    FOUR_C_THROW("You called 3D evaluation routine when coupling with a 2D element.");
@@ -361,9 +361,9 @@ namespace Discret
         if (slave_nsd_ == nsd_)
         {
           pos->local_coordinates(rst_slave);
-          Core::FE::shape_function_3D(
+          Core::FE::shape_function_3d(
               slave_funct_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
-          Core::FE::shape_function_3D_deriv1(
+          Core::FE::shape_function_3d_deriv1(
               slave_deriv_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
         }
         else
@@ -473,10 +473,10 @@ namespace Discret
           ++iter;
 
           // get current values
-          Core::FE::shape_function_2D(proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
-          Core::FE::shape_function_2D_deriv1(
+          Core::FE::shape_function_2d(proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+          Core::FE::shape_function_2d_deriv1(
               proj_deriv_, proj_sol_(0), proj_sol_(1), slave_distype);
-          Core::FE::shape_function_2D_deriv2(
+          Core::FE::shape_function_2d_deriv2(
               proj_deriv2_, proj_sol_(0), proj_sol_(1), slave_distype);
 
           proj_x_.multiply(slave_xyze_, proj_funct_);
@@ -584,7 +584,7 @@ namespace Discret
         }
 
         // evaluate shape function at solution
-        Core::FE::shape_function_2D(slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+        Core::FE::shape_function_2d(slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
 
         // get projected gauss point
         x_side.multiply(slave_xyze_, slave_funct_);
@@ -605,7 +605,7 @@ namespace Discret
         {
           case 3:
           {
-            return XFEM::UTILS::EvalElementVolume<slave_distype>(slave_xyze_);
+            return XFEM::UTILS::eval_element_volume<slave_distype>(slave_xyze_);
             break;
           }
           default:

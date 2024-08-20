@@ -107,7 +107,7 @@ void SSI::SSIPart1WC::do_scatra_step()
       {
         // create vector with noderowmap from previously performed scatra calculation
         Teuchos::RCP<Epetra_Vector> phinptemp =
-            Core::LinAlg::CreateVector(*cardmono->discretization()->node_row_map());
+            Core::LinAlg::create_vector(*cardmono->discretization()->node_row_map());
 
         // read phinp from restart file
         reader->read_vector(phinptemp, "phinp");
@@ -201,7 +201,7 @@ void SSI::SSIPart1WCSolidToScatra::init(const Epetra_Comm& comm,
 
   // do some checks
   {
-    auto convform = Core::UTILS::IntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
+    auto convform = Core::UTILS::integral_value<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
     if (convform != Inpar::ScaTra::convform_conservative)
     {
       FOUR_C_THROW(
@@ -272,7 +272,7 @@ void SSI::SSIPart1WCScatraToSolid::init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
-  isscatrafromfile_ = Core::UTILS::IntegralValue<bool>(
+  isscatrafromfile_ = Core::UTILS::integral_value<bool>(
       Global::Problem::instance()->ssi_control_params(), "SCATRA_FROM_RESTART_FILE");
 }
 
@@ -288,7 +288,7 @@ void SSI::SSIPart1WCScatraToSolid::timeloop()
   }
 
   // set zero velocity and displacement field for scatra
-  auto zeros_structure = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(), true);
+  auto zeros_structure = Core::LinAlg::create_vector(*structure_field()->dof_row_map(), true);
   set_struct_solution(zeros_structure, zeros_structure, false);
 
   scatra_field()->prepare_time_loop();

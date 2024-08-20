@@ -191,7 +191,7 @@ void Discret::ELEMENTS::Rigidsphere::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -209,7 +209,7 @@ void Discret::ELEMENTS::Rigidsphere::unpack(const std::vector<char>& data)
     std::vector<char> tmp;
     extract_from_pack(position, data, tmp);
     Teuchos::RCP<Core::Communication::ParObject> object =
-        Teuchos::rcp(Core::Communication::Factory(tmp), true);
+        Teuchos::rcp(Core::Communication::factory(tmp), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
     if (link == Teuchos::null) FOUR_C_THROW("Received object is not a beam to beam linkage");

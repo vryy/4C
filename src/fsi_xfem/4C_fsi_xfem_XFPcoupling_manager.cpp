@@ -97,11 +97,11 @@ void XFEM::XfpCouplingManager::set_coupling_states()
 
   // As interfaces embedded into the background mesh are fully ghosted, we don't know which
   Teuchos::RCP<Epetra_Map> sfulldofmap =
-      Core::LinAlg::AllreduceEMap(*poro_->structure_field()->discretization()->dof_row_map());
+      Core::LinAlg::allreduce_e_map(*poro_->structure_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> dispnp_col = Teuchos::rcp(new Epetra_Vector(*sfulldofmap, true));
   Core::LinAlg::export_to(*poro_->structure_field()->dispnp(), *dispnp_col);
   Teuchos::RCP<Epetra_Map> ffulldofmap =
-      Core::LinAlg::AllreduceEMap(*poro_->fluid_field()->discretization()->dof_row_map());
+      Core::LinAlg::allreduce_e_map(*poro_->fluid_field()->discretization()->dof_row_map());
   Teuchos::RCP<Epetra_Vector> velnp_col = Teuchos::rcp(new Epetra_Vector(*ffulldofmap, true));
   Core::LinAlg::export_to(*poro_->fluid_field()->velnp(), *velnp_col);
 

@@ -28,7 +28,7 @@ namespace Core::Elements
    *
    *  \author hiermeier \date 09/18 */
   template <Core::FE::CellType type, unsigned numnode, unsigned numdim>
-  double GetMinimalJacDeterminantAtNodes(const Core::LinAlg::Matrix<numdim, numnode>& xcurr)
+  double get_minimal_jac_determinant_at_nodes(const Core::LinAlg::Matrix<numdim, numnode>& xcurr)
   {
     // check input
     static_assert(numnode == Core::FE::num_nodes<type>, "Wrong matrix dimension.");
@@ -39,7 +39,7 @@ namespace Core::Elements
 
     // parametric coordinates of the HEX8 corners
     static const Core::LinAlg::SerialDenseMatrix rst =
-        Core::FE::getEleNodeNumbering_nodes_paramspace(type);
+        Core::FE::get_ele_node_numbering_nodes_paramspace(type);
     double min_detJ = std::numeric_limits<double>::max();
 
     for (unsigned c = 0; c < numnode; ++c)

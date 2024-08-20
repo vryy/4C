@@ -38,7 +38,7 @@ namespace GEOMETRYPAIR
    * @return RCP to created geometry pair.
    */
   template <typename ScalarType, typename Line, typename Volume>
-  Teuchos::RCP<GeometryPair> GeometryPairLineToVolumeFactory(
+  Teuchos::RCP<GeometryPair> geometry_pair_line_to_volume_factory(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
@@ -47,20 +47,20 @@ namespace GEOMETRYPAIR
    * @return RCP to created geometry pair.
    */
   template <typename ScalarType, typename Line, typename Surface>
-  Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactory(
+  Teuchos::RCP<GeometryPair> geometry_pair_line_to_surface_factory(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 
   /**
    * \brief Create the correct geometry pair for line to surface coupling with FAD scalar types.
    *
-   * The default GeometryPairLineToSurfaceFactory would be sufficient for this, however, for
+   * The default geometry_pair_line_to_surface_factory would be sufficient for this, however, for
    * performance reasons it is better use the wrapped pairs, which are created in this function.
    *
    * @return RCP to created geometry pair.
    */
   template <typename ScalarType, typename Line, typename Surface>
-  Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactoryFAD(
+  Teuchos::RCP<GeometryPair> geometry_pair_line_to_surface_factory_fad(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
 }  // namespace GEOMETRYPAIR

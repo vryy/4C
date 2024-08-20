@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::ExtractMyValues(
+void Core::FE::extract_my_values(
     const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
@@ -43,7 +43,7 @@ void Core::FE::ExtractMyValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::ExtractMyValues(
+void Core::FE::extract_my_values(
     const Epetra_Vector& global, Core::LinAlg::SerialDenseVector& local, const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
@@ -61,7 +61,7 @@ void Core::FE::ExtractMyValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::ExtractMyValues(
+void Core::FE::extract_my_values(
     const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm)
 {
   const int numcol = global.NumVectors();
@@ -90,7 +90,7 @@ void Core::FE::ExtractMyValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
+void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
     std::vector<double>& local, const Epetra_MultiVector& global)
 {
   const int numnode = ele->num_node();
@@ -118,7 +118,7 @@ void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
+void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
     Core::LinAlg::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {
@@ -149,7 +149,7 @@ void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::ExtractMyNodeBasedValues(const Core::Nodes::Node* node,
+void Core::FE::extract_my_node_based_values(const Core::Nodes::Node* node,
     Core::LinAlg::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {

@@ -66,9 +66,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatradomain_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatradomain);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(scatradomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
@@ -90,8 +91,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-  auto scatradomain_sparse = Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatradomain);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
+  auto scatradomain_sparse =
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatradomain);
 
   auto& systemmatrix_block_scatra_scatra =
       systemmatrix_block->matrix(block_position_scatra().at(0), block_position_scatra().at(0));
@@ -105,8 +108,9 @@ void SSTI::AssembleStrategySparse::assemble_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatradomain)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-  auto scatradomain_sparse = Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatradomain);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
+  auto scatradomain_sparse =
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatradomain);
 
   // add scalar transport system matrix to global system matrix
   systemmatrix_sparse->add(*scatradomain_sparse, false, 1.0, 1.0);
@@ -118,7 +122,8 @@ void SSTI::AssembleStrategyBlockBlock::assemble_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -141,7 +146,8 @@ void SSTI::AssembleStrategyBlockSparse::assemble_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -164,7 +170,7 @@ void SSTI::AssembleStrategySparse::assemble_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> structuredomain)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -260,9 +266,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto thermodomain_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermodomain);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(thermodomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_thermo().size()); ++iblock)
@@ -284,8 +291,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_thermo(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-  auto thermodomain_sparse = Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermodomain);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
+  auto thermodomain_sparse =
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermodomain);
 
   auto& systemmatrix_block_thermo_thermo =
       systemmatrix_block->matrix(block_position_thermo().at(0), block_position_thermo().at(0));
@@ -299,8 +308,9 @@ void SSTI::AssembleStrategySparse::assemble_thermo(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermodomain)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-  auto thermodomain_sparse = Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermodomain);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
+  auto thermodomain_sparse =
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermodomain);
 
   // add scalar transport system matrix to global system matrix
   systemmatrix_sparse->add(*thermodomain_sparse, false, 1.0, 1.0);
@@ -313,9 +323,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra_structure(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrastructuredomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrastructureinterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatrastructuredomain_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatrastructuredomain);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(scatrastructuredomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
@@ -330,7 +341,8 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra_structure(
           scatrastructuredomain_block->matrix(iblock, 0));
 
       auto scatrastructureinterface_block =
-          Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
+          Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
+              scatrastructureinterface);
 
       assemble_xxx_structure_meshtying(
           systemmatrix_block->matrix(block_position_scatra().at(iblock), position_structure()),
@@ -353,10 +365,11 @@ void SSTI::AssembleStrategyBlockSparse::assemble_scatra_structure(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrastructuredomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrastructureinterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
 
   auto scatrastructuredomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatrastructuredomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatrastructuredomain);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -366,7 +379,7 @@ void SSTI::AssembleStrategyBlockSparse::assemble_scatra_structure(
         *scatrastructuredomain_sparse);
 
     auto scatrastructureinterface_sparse =
-        Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatrastructureinterface);
+        Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatrastructureinterface);
 
     assemble_xxx_structure_meshtying(
         systemmatrix_block->matrix(block_position_scatra().at(0), position_structure()),
@@ -388,9 +401,9 @@ void SSTI::AssembleStrategySparse::assemble_scatra_structure(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrastructuredomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrastructureinterface)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatrastructuredomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatrastructuredomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatrastructuredomain);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -398,7 +411,7 @@ void SSTI::AssembleStrategySparse::assemble_scatra_structure(
     assemble_xxx_structure_meshtying(*systemmatrix_sparse, *scatrastructuredomain_sparse);
 
     auto scatrastructureinterface_sparse =
-        Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatrastructureinterface);
+        Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatrastructureinterface);
 
     assemble_xxx_structure_meshtying(*systemmatrix_sparse, *scatrastructureinterface_sparse);
   }
@@ -444,9 +457,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra_thermo_domain(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermodomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatrathermodomain_block =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrathermodomain);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(scatrathermodomain);
 
   // assemble blocks of scalar transport-thermo matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
@@ -469,10 +483,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_scatra_thermo_domain(
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermodomain)
 {
   auto systemmatrix_subblock =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix)
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix)
           ->matrix(block_position_scatra().at(0), block_position_thermo().at(0));
   auto scatrathermodomain_sparse =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(scatrathermodomain);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(scatrathermodomain);
 
   systemmatrix_subblock.un_complete();
   systemmatrix_subblock.add(*scatrathermodomain_sparse, false, 1.0, 1.0);
@@ -484,9 +498,9 @@ void SSTI::AssembleStrategySparse::assemble_scatra_thermo_domain(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermodomain)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatrathermodomain_sparse =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(scatrathermodomain);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(scatrathermodomain);
 
   // add scalar transport-thermo matrix into global system matrix
   systemmatrix_sparse->add(*scatrathermodomain_sparse, false, 1.0, 1.0);
@@ -498,9 +512,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra_thermo_interface(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatrathermointerface_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatrathermointerface);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(scatrathermointerface);
 
   Core::LinAlg::SparseMatrix masterderiv(
       *all_maps()->block_map_scatra()->full_map(), 27, false, true);
@@ -556,9 +571,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_scatra_thermo_interface(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatrathermointerface_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatrathermointerface);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatrathermointerface);
 
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. slave temperatures into
   // system matrix
@@ -584,9 +600,9 @@ void SSTI::AssembleStrategySparse::assemble_scatra_thermo_interface(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatrathermointerface)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatrathermointerface_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatrathermointerface);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatrathermointerface);
 
   // assemble linearizations of slave- and master side scatra fluxes w.r.t. slave temperatures into
   // system matrix
@@ -609,9 +625,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto structurescatradomain_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(structurescatradomain);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(structurescatradomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
@@ -641,9 +658,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto structurescatradomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(structurescatradomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(structurescatradomain);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -667,9 +685,9 @@ void SSTI::AssembleStrategySparse::assemble_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structurescatradomain)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto structurescatradomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(structurescatradomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(structurescatradomain);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -716,9 +734,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_scatra(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatradomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatrainterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto thermoscatradomain_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermoscatradomain);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(thermoscatradomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_thermo().size()); ++iblock)
@@ -743,9 +762,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_thermo_scatra(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatradomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatrainterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto thermoscatradomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermoscatradomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermoscatradomain);
 
   auto& systemmatrix_block_thermo_scatra =
       systemmatrix_block->matrix(block_position_thermo().at(0), block_position_scatra().at(0));
@@ -762,9 +782,9 @@ void SSTI::AssembleStrategySparse::assemble_thermo_scatra(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatradomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatrainterface)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto thermoscatradomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermoscatradomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermoscatradomain);
 
   // add scalar transport system matrix to global system matrix
   systemmatrix_sparse->add(*thermoscatradomain_sparse, false, 1.0, 1.0);
@@ -778,10 +798,11 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_scatra_interface(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatrainterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
 
   auto thermoscatrainterface_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermoscatrainterface);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(thermoscatrainterface);
 
   Core::LinAlg::SparseMatrix masterflux(
       *all_maps()->block_map_thermo()->full_map(), 27, false, true);
@@ -848,9 +869,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_thermo_scatra_interface(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatrainterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto thermoscatrainterface_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermoscatrainterface);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermoscatrainterface);
 
   // assemble linearizations of slave side scatra fluxes w.r.t. slave and master side elch
   // into system matrix
@@ -876,9 +898,9 @@ void SSTI::AssembleStrategySparse::assemble_thermo_scatra_interface(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermoscatrainterface)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto thermoscatrainterface_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermoscatrainterface);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermoscatrainterface);
 
   // assemble linearizations of slave side scatra fluxes w.r.t. slave and master side elch
   // into system matrix
@@ -902,9 +924,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_structure(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermostructuredomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermostructureinterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto thermostructuredomain_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermostructuredomain);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(thermostructuredomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_thermo().size()); ++iblock)
@@ -919,7 +942,8 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_structure(
           thermostructuredomain_subblock);
 
       auto thermostructureinterface_block =
-          Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermostructureinterface);
+          Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
+              thermostructureinterface);
 
       assemble_xxx_structure_meshtying(
           systemmatrix_block->matrix(block_position_thermo().at(iblock), position_structure()),
@@ -942,9 +966,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_thermo_structure(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermostructuredomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermostructureinterface)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto thermostructuredomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermostructuredomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermostructuredomain);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -954,7 +979,7 @@ void SSTI::AssembleStrategyBlockSparse::assemble_thermo_structure(
         *thermostructuredomain_sparse);
 
     auto thermostructureinterface_sparse =
-        Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermostructureinterface);
+        Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermostructureinterface);
 
     assemble_xxx_structure_meshtying(
         systemmatrix_block->matrix(block_position_thermo().at(0), position_structure()),
@@ -976,16 +1001,16 @@ void SSTI::AssembleStrategySparse::assemble_thermo_structure(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermostructuredomain,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> thermostructureinterface)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto thermostructuredomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermostructuredomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermostructuredomain);
 
   if (interface_meshtying())
   {
     assemble_xxx_structure_meshtying(*systemmatrix_sparse, *thermostructuredomain_sparse);
 
     auto thermostructureinterface_sparse =
-        Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(thermostructureinterface);
+        Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(thermostructureinterface);
 
     assemble_xxx_structure_meshtying(*systemmatrix_sparse, *thermostructureinterface_sparse);
   }
@@ -999,9 +1024,10 @@ void SSTI::AssembleStrategyBlockBlock::assemble_structure_thermo(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structurethermodomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto structurethermodomain_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(structurethermodomain);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(structurethermodomain);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_thermo().size()); ++iblock)
@@ -1031,9 +1057,10 @@ void SSTI::AssembleStrategyBlockSparse::assemble_structure_thermo(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structurethermodomain)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto structurethermodomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(structurethermodomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(structurethermodomain);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -1057,9 +1084,9 @@ void SSTI::AssembleStrategySparse::assemble_structure_thermo(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structurethermodomain)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto structurethermodomain_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(structurethermodomain);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(structurethermodomain);
 
   // add entire block or assemble slave side to master side
   if (interface_meshtying())
@@ -1076,7 +1103,7 @@ void SSTI::AssembleStrategyBlockBlock::apply_meshtying_system_matrix(
   if (interface_meshtying())
   {
     auto systemmatrix_block =
-        Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+        Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
 
     apply_meshtying_sys_mat(systemmatrix_block->matrix(position_structure(), position_structure()));
   }
@@ -1091,7 +1118,7 @@ void SSTI::AssembleStrategyBlockSparse::apply_meshtying_system_matrix(
   {
     // cast systemmatrix
     auto systemmatrix_block =
-        Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+        Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
 
     apply_meshtying_sys_mat(systemmatrix_block->matrix(position_structure(), position_structure()));
   }
@@ -1105,7 +1132,7 @@ void SSTI::AssembleStrategySparse::apply_meshtying_system_matrix(
   if (interface_meshtying())
   {
     // cast systemmatrix
-    auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+    auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
 
     apply_meshtying_sys_mat(*systemmatrix_sparse);
   }
@@ -1163,7 +1190,7 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
   else
   {
     auto systemmatrix_block =
-        Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+        Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
 
     // apply structural Dirichlet conditions
     for (int iblock = 0; iblock < systemmatrix_block->cols(); ++iblock)
@@ -1197,7 +1224,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
     systemmatrix->apply_dirichlet(*dbcmap_structure);
   else
   {
-    auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+    auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
 
     // extract structural rows of global system matrix
     auto systemmatrix_structure =
@@ -1240,7 +1267,8 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Epetra_Vector> RHS,
     // make copy of structural right-hand side vector
     Epetra_Vector residual_structure(*RHSstructure);
 
-    auto rhs_structure_master = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(), true);
+    auto rhs_structure_master =
+        Core::LinAlg::create_vector(*structure_field()->dof_row_map(), true);
 
     for (const auto& meshtying : ssti_structure_meshtying()->mesh_tying_handlers())
     {
@@ -1290,7 +1318,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Epetra_Vector> RHS,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::BuildAssembleStrategy(
+Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::build_assemble_strategy(
     Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, Core::LinAlg::MatrixType matrixtype_ssti,
     Core::LinAlg::MatrixType matrixtype_scatra)
 {

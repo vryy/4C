@@ -123,7 +123,7 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
     Core::Communication::ParObject::extract_from_pack(position, *particledata, data);
 
     // this std::shared_ptr holds the memory
-    std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::Factory(data));
+    std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(data));
     ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
     if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
@@ -230,7 +230,7 @@ void PARTICLEENGINE::ParticleEngine::erase_particles_outside_bounding_box(
 
     if (static_cast<int>(pos.size()) != container->get_state_dim(Position))
       FOUR_C_THROW(
-          "dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
+          "dimension of particle state '%s' not valid!", enum_to_state_name(Position).c_str());
 #endif
 
     // check particle location with respect to bounding box in each spatial directions
@@ -924,7 +924,7 @@ void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
 {
   // create and init binning strategy and create bins
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
   binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(
@@ -1076,7 +1076,7 @@ void PARTICLEENGINE::ParticleEngine::setup_particle_vtp_writer() const
 {
   // get flag to determine output of ghosted particles (debug feature)
   bool write_ghosted_particles =
-      Core::UTILS::IntegralValue<int>(params_, "WRITE_GHOSTED_PARTICLES");
+      Core::UTILS::integral_value<int>(params_, "WRITE_GHOSTED_PARTICLES");
 
   // setup particle runtime vtp writer
   particlevtpwriter_->setup(write_ghosted_particles);
@@ -1091,7 +1091,7 @@ void PARTICLEENGINE::ParticleEngine::setup_type_weights()
   std::map<ParticleType, double> typetodynloadbal;
 
   // read parameters relating particle types to values
-  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+  PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
       params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
 
   // insert weight of particle type
@@ -1204,7 +1204,7 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
   }
 
   // communicate data via non-buffered send from proc to proc
-  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::immediate_recv_blocking_send(comm_, sdata, rdata);
 
   // init receiving vector
   std::vector<int> receivedbins;
@@ -1410,7 +1410,7 @@ void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_distributed(
 
     if (static_cast<int>(pos.size()) != container->get_state_dim(Position))
       FOUR_C_THROW(
-          "dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
+          "dimension of particle state '%s' not valid!", enum_to_state_name(Position).c_str());
 #endif
 
     // get global id of bin
@@ -1732,7 +1732,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
   particlestosend.clear();
 
   // communicate data via non-buffered send from proc to proc
-  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::immediate_recv_blocking_send(comm_, sdata, rdata);
 
   // unpack and store received data
   for (const auto& p : rdata)
@@ -1748,7 +1748,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
       Core::Communication::ParObject::extract_from_pack(position, rmsg, data);
 
       // this std::shared_ptr holds the memory
-      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::Factory(data));
+      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(data));
       ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
       if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
@@ -1788,7 +1788,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
   directghosting.clear();
 
   // communicate data via non-buffered send from proc to proc
-  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::immediate_recv_blocking_send(comm_, sdata, rdata);
 
   // init receiving map
   std::map<ParticleType, std::map<int, std::pair<int, int>>> receiveddirectghosting;
@@ -1874,7 +1874,7 @@ void PARTICLEENGINE::ParticleEngine::insert_owned_particles(
 
         if (static_cast<int>(pos.size()) != container->get_state_dim(Position))
           FOUR_C_THROW(
-              "dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
+              "dimension of particle state '%s' not valid!", enum_to_state_name(Position).c_str());
 
         // get global id of bin
         gidofbin = binstrategy_->convert_pos_to_gid(pos.data());

@@ -54,7 +54,7 @@ void NOX::Nln::Solver::LineSearchBased::init(
   checkType = ::NOX::Solver::parseStatusTestCheckType(paramsPtr->sublist("Solver Options"));
 
   // NOTE: We use different factories at this point!
-  lineSearchPtr = NOX::Nln::LineSearch::BuildLineSearch(
+  lineSearchPtr = NOX::Nln::LineSearch::build_line_search(
       globalDataPtr, testPtr, innerTests, paramsPtr->sublist("Line Search"));
 }
 

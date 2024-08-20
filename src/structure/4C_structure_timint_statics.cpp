@@ -49,7 +49,7 @@ void Solid::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
   // call init() in base class
   Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto dyntype = Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
+  auto dyntype = Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
   const Inpar::Solid::PreStress pre_stress_type =
       Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
           Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
@@ -85,16 +85,16 @@ void Solid::TimIntStatics::setup()
   // create force vectors
 
   // internal force vector F_{int;n+1} at new time
-  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fintn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // external force vector F_{n+1} at new time
-  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fextn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // internal force vector F_{int;n} at new time
-  fint_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fint_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // external force vector F_{n} at new time
-  fext_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fext_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   return;
 }
@@ -134,7 +134,7 @@ void Solid::TimIntStatics::predict_const_vel_consist_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->cond_map()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -166,7 +166,7 @@ void Solid::TimIntStatics::predict_const_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
     Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->cond_map()));

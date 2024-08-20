@@ -659,7 +659,7 @@ bool Cut::Element::position_by_angle(Point* p, Point* cutpoint, Side* s)
   double l_norm = line_vec.norm2();
   if (n_norm < MERGING_TOLERANCE or l_norm < MERGING_TOLERANCE)
   {
-    double distance_between = Cut::DistanceBetweenPoints(p, cutpoint);
+    double distance_between = Cut::distance_between_points(p, cutpoint);
     FOUR_C_THROW(
         " the norm of line_vec or n_norm is smaller than %lf, should these "
         "points be one point in pointpool?, lnorm=%lf, nnorm=%lf, distance between them = %lf",
@@ -733,11 +733,11 @@ bool Cut::Element::is_orthogonal_side(Side* s, Point* p, Point* cutpoint)
 
     if (s->shape() == Core::FE::CellType::tri3)
     {
-      rs = Core::FE::getLocalCenterPosition<2>(Core::FE::CellType::tri3);
+      rs = Core::FE::get_local_center_position<2>(Core::FE::CellType::tri3);
     }
     else if (s->shape() == Core::FE::CellType::quad4)
     {
-      rs = Core::FE::getLocalCenterPosition<2>(Core::FE::CellType::quad4);
+      rs = Core::FE::get_local_center_position<2>(Core::FE::CellType::quad4);
     }
     else
       FOUR_C_THROW("unsupported side-shape");
@@ -1087,8 +1087,8 @@ int Cut::Element::num_gauss_points(Core::FE::CellType shape)
  *----------------------------------------------------------------------------*/
 void Cut::Element::debug_dump()
 {
-  std::cout << "Problem in element " << id() << " of shape " << Core::FE::CellTypeToString(shape())
-            << ":\n";
+  std::cout << "Problem in element " << id() << " of shape "
+            << Core::FE::cell_type_to_string(shape()) << ":\n";
   bool haslevelsetside = false;
   const std::vector<Node*>& nodes = Element::nodes();
   for (std::vector<Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
@@ -1120,7 +1120,7 @@ void Cut::Element::debug_dump()
     std::stringstream str;
     str << "cut_test_generated_" << id() << ".cpp";
     std::ofstream file(str.str().c_str());
-    Cut::Output::GmshElementCutTest(file, this, haslevelsetside);
+    Cut::Output::gmsh_element_cut_test(file, this, haslevelsetside);
   }
 }
 
@@ -1132,10 +1132,10 @@ void Cut::Element::gmsh_failure_element_dump()
 {
   std::stringstream str;
   str << ".cut_element" << id() << "_CUTFAIL.pos";
-  std::string filename(Cut::Output::GenerateGmshOutputFilename(str.str()));
+  std::string filename(Cut::Output::generate_gmsh_output_filename(str.str()));
   std::ofstream file(filename.c_str());
 
-  Cut::Output::GmshCompleteCutElement(file, this);
+  Cut::Output::gmsh_complete_cut_element(file, this);
   file.close();
 }
 
@@ -1340,7 +1340,7 @@ Teuchos::RCP<Cut::Element> Cut::ElementFactory::create_element(Core::FE::CellTyp
     default:
     {
       FOUR_C_THROW("Unsupported element type! ( %d | %s )", elementtype,
-          Core::FE::CellTypeToString(elementtype).c_str());
+          Core::FE::cell_type_to_string(elementtype).c_str());
       break;
     }
   }
@@ -1362,7 +1362,7 @@ Teuchos::RCP<Cut::Element> Cut::Element::create(const Core::FE::CellType& elemen
 Teuchos::RCP<Cut::Element> Cut::Element::create(const unsigned& shardskey, const int& eid,
     const std::vector<Side*>& sides, const std::vector<Node*>& nodes, const bool& active)
 {
-  return create(Core::Elements::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
+  return create(Core::Elements::shards_key_to_dis_type(shardskey), eid, sides, nodes, active);
 }
 
 template class Cut::ConcreteElement<2, Core::FE::CellType::line2>;

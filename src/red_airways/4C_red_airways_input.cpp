@@ -30,7 +30,7 @@ bool Discret::ELEMENTS::RedAirway::read_element(const std::string& eletype,
 
   // Read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // Read the element type, the element specific variables and store them to airwayParams_
   elem_type_ = container.get<std::string>("TYPE");
@@ -104,7 +104,7 @@ bool Discret::ELEMENTS::RedAcinus::read_element(const std::string& eletype,
 
   // Read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // Read the element type, the element specific variables and store them to acinusParams_
   elem_type_ = container.get<std::string>("TYPE");
@@ -154,7 +154,7 @@ bool Discret::ELEMENTS::RedInterAcinarDep::read_element(const std::string& elety
 
   // Read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
 
   return true;

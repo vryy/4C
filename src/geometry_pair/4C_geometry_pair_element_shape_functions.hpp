@@ -55,15 +55,15 @@ namespace GEOMETRYPAIR
     {
       if constexpr (ElementType::element_dim_ == 1)
       {
-        Core::FE::shape_function_1D(N, xi, ElementType::discretization_);
+        Core::FE::shape_function_1d(N, xi, ElementType::discretization_);
       }
       else if constexpr (ElementType::element_dim_ == 2)
       {
-        Core::FE::shape_function_2D(N, xi(0), xi(1), ElementType::discretization_);
+        Core::FE::shape_function_2d(N, xi(0), xi(1), ElementType::discretization_);
       }
       else if constexpr (ElementType::element_dim_ == 3)
       {
-        Core::FE::shape_function_3D(N, xi(0), xi(1), xi(2), ElementType::discretization_);
+        Core::FE::shape_function_3d(N, xi(0), xi(1), xi(2), ElementType::discretization_);
       }
       else
       {
@@ -87,15 +87,15 @@ namespace GEOMETRYPAIR
     {
       if constexpr (ElementType::element_dim_ == 1)
       {
-        Core::FE::shape_function_1D_deriv1(dN, xi, ElementType::discretization_);
+        Core::FE::shape_function_1d_deriv1(dN, xi, ElementType::discretization_);
       }
       else if constexpr (ElementType::element_dim_ == 2)
       {
-        Core::FE::shape_function_2D_deriv1(dN, xi(0), xi(1), ElementType::discretization_);
+        Core::FE::shape_function_2d_deriv1(dN, xi(0), xi(1), ElementType::discretization_);
       }
       else if constexpr (ElementType::element_dim_ == 3)
       {
-        Core::FE::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), ElementType::discretization_);
+        Core::FE::shape_function_3d_deriv1(dN, xi(0), xi(1), xi(2), ElementType::discretization_);
       }
       else
       {
@@ -120,7 +120,7 @@ namespace GEOMETRYPAIR
     template <typename V, typename T>
     static void evaluate(V& N, const T& xi, const ShapeFunctionData<t_hermite>& shape_function_data)
     {
-      Core::FE::shape_function_hermite_1D(
+      Core::FE::shape_function_hermite_1d(
           N, xi, shape_function_data.ref_length_, t_hermite::discretization_);
     }
 
@@ -135,7 +135,7 @@ namespace GEOMETRYPAIR
     static void evaluate_deriv1(
         V& dN, const T& xi, const ShapeFunctionData<t_hermite>& shape_function_data)
     {
-      Core::FE::shape_function_hermite_1D_deriv1(
+      Core::FE::shape_function_hermite_1d_deriv1(
           dN, xi, shape_function_data.ref_length_, t_hermite::discretization_);
     }
   };
@@ -165,13 +165,13 @@ namespace GEOMETRYPAIR
 
       if constexpr (ElementType::element_dim_ == 2)
       {
-        Core::FE::Nurbs::nurbs_get_2D_funct<typename V::scalar_type>(N, xi,
+        Core::FE::Nurbs::nurbs_get_2d_funct<typename V::scalar_type>(N, xi,
             shape_function_data.myknots_, shape_function_data.weights_,
             ElementType::discretization_);
       }
       else if constexpr (ElementType::element_dim_ == 3)
       {
-        Core::FE::Nurbs::nurbs_get_3D_funct(N, xi, shape_function_data.myknots_,
+        Core::FE::Nurbs::nurbs_get_3d_funct(N, xi, shape_function_data.myknots_,
             shape_function_data.weights_, ElementType::discretization_);
       }
       else
@@ -201,13 +201,13 @@ namespace GEOMETRYPAIR
 
       if constexpr (ElementType::element_dim_ == 2)
       {
-        Core::FE::Nurbs::nurbs_get_2D_funct_deriv<typename V::scalar_type>(N_dummy, dN, xi,
+        Core::FE::Nurbs::nurbs_get_2d_funct_deriv<typename V::scalar_type>(N_dummy, dN, xi,
             shape_function_data.myknots_, shape_function_data.weights_,
             ElementType::discretization_);
       }
       else if constexpr (ElementType::element_dim_ == 3)
       {
-        Core::FE::Nurbs::nurbs_get_3D_funct_deriv(N_dummy, dN, xi, shape_function_data.myknots_,
+        Core::FE::Nurbs::nurbs_get_3d_funct_deriv(N_dummy, dN, xi, shape_function_data.myknots_,
             shape_function_data.weights_, t_nurbs27::discretization_);
       }
       else
@@ -229,7 +229,7 @@ namespace GEOMETRYPAIR
    */
   template <typename ElementType, typename T, typename ScalarTypeResult,
       typename... ShapeFunctionDataType>
-  inline void EvaluateShapeFunctionMatrix(
+  inline void evaluate_shape_function_matrix(
       Core::LinAlg::Matrix<ElementType::spatial_dim_, ElementType::n_dof_, ScalarTypeResult>& N,
       const T& xi, const ShapeFunctionDataType&... shape_function_data)
   {

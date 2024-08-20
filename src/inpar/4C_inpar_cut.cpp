@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Cut::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using namespace FourC::Cut;
@@ -62,29 +62,29 @@ void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &cut_general);
 
   // Specifiy is Cutsides are triangulated
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "SPLIT_CUTSIDES", "Yes", "Split Quad4 CutSides into Tri3-Subtriangles?", &cut_general);
 
   // Do the Selfcut before standard CUT
-  Core::UTILS::BoolParameter("DO_SELFCUT", "Yes", "Do the SelfCut?", &cut_general);
+  Core::UTILS::bool_parameter("DO_SELFCUT", "Yes", "Do the SelfCut?", &cut_general);
 
   // Do meshcorrection in Selfcut
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "SELFCUT_DO_MESHCORRECTION", "Yes", "Do meshcorrection in the SelfCut?", &cut_general);
 
   // Selfcut meshcorrection multiplicator
-  Core::UTILS::IntParameter("SELFCUT_MESHCORRECTION_MULTIPLICATOR", 30,
+  Core::UTILS::int_parameter("SELFCUT_MESHCORRECTION_MULTIPLICATOR", 30,
       "ISLANDS with maximal size of the bounding box of h*multiplacator will be removed in the "
       "meshcorrection",
       &cut_general);
 
   // Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.
-  Core::UTILS::IntParameter("BOUNDARYCELL_CUBATURDEGREE", 20,
+  Core::UTILS::int_parameter("BOUNDARYCELL_CUBATURDEGREE", 20,
       "Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.",
       &cut_general);
 
   // Integrate inside volume cells
-  Core::UTILS::BoolParameter("INTEGRATE_INSIDE_CELLS", "Yes",
+  Core::UTILS::bool_parameter("INTEGRATE_INSIDE_CELLS", "Yes",
       "Should the integration be done on inside cells", &cut_general);
 }
 

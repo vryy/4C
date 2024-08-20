@@ -53,7 +53,7 @@ namespace FBI
      * @param num_dof (out) Number total DOFs on the element.
      *
      */
-    void GetFBIElementCenterlineDOFIndices(Core::FE::Discretization const& discret,
+    void get_fbi_element_centerline_dof_indices(Core::FE::Discretization const& discret,
         const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
         unsigned int& num_dof);
 
@@ -79,7 +79,7 @@ namespace FBI
      *
      */
 
-    void AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
+    void assemble_centerline_dof_force_stiff_into_fbi_element_force_stiff(
         const Core::FE::Discretization& discretization1,
         const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
         std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,

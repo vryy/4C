@@ -43,19 +43,20 @@ Wear::WearInterface::WearInterface(
       wearimpl_(false),
       wearpv_(false),
       wearboth_(false),
-      sswear_(Core::UTILS::IntegralValue<int>(icontact, "SSWEAR"))
+      sswear_(Core::UTILS::integral_value<int>(icontact, "SSWEAR"))
 {
   // set wear contact status
   Inpar::Wear::WearType wtype =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearType>(icontact, "WEARTYPE");
+      Core::UTILS::integral_value<Inpar::Wear::WearType>(icontact, "WEARTYPE");
 
   Inpar::Wear::WearTimInt wtimint =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearTimInt>(icontact, "WEARTIMINT");
+      Core::UTILS::integral_value<Inpar::Wear::WearTimInt>(icontact, "WEARTIMINT");
 
   Inpar::Wear::WearSide wside =
-      Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(icontact, "WEAR_SIDE");
+      Core::UTILS::integral_value<Inpar::Wear::WearSide>(icontact, "WEAR_SIDE");
 
-  Inpar::Wear::WearLaw wlaw = Core::UTILS::IntegralValue<Inpar::Wear::WearLaw>(icontact, "WEARLAW");
+  Inpar::Wear::WearLaw wlaw =
+      Core::UTILS::integral_value<Inpar::Wear::WearLaw>(icontact, "WEARLAW");
 
   if (wlaw != Inpar::Wear::wear_none) wear_ = true;
 
@@ -204,7 +205,7 @@ void Wear::WearInterface::assemble_te_master(
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -459,7 +460,7 @@ void Wear::WearInterface::assemble_lin_t_d_master(Core::LinAlg::SparseMatrix& li
   //                 with c = Displacement slave or master dof
   // we compute (LinT)_kc = T_wj,c * z_j
   /**********************************************************************/
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
@@ -699,7 +700,7 @@ void Wear::WearInterface::assemble_lin_e_d_master(Core::LinAlg::SparseMatrix& li
   //                 with c = Displacement slave or master dof
   // we compute (LinE)_kc = T_wj,c * z_j
   /**********************************************************************/
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
@@ -846,7 +847,7 @@ void Wear::WearInterface::assemble_lin_t_lm_master(Core::LinAlg::SparseMatrix& l
   // nothing to do if no active nodes
   if (slipmasternodes_ == Teuchos::null) return;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
 
   // typedef std::map<int,double>::const_iterator CI;
@@ -956,7 +957,7 @@ void Wear::WearInterface::export_nodal_normals() const
   // --------------------------------------------------------------------------------------
   if (wearboth_ and wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
 
     // build info on row map
     for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
@@ -1254,8 +1255,8 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
     Core::LinAlg::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
 {
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -1266,7 +1267,7 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
   double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
 
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   bool consistent = false;
 
@@ -1351,7 +1352,7 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
       for (int i = 0; i < n_dim(); i++) znor += n[i] * z[i];
 
       // for slip
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->fri_data().jump_var()[0];
 
@@ -1412,12 +1413,12 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
         lmowner[1] = cnode->owner();
       }
 
-      Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+      Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
 
       // 3) Entries from differentiation with respect to displacements
       /******************************************************************/
 
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         std::vector<std::map<int, double>> derivjump_ = cnode->fri_data().get_deriv_var_jump();
 
@@ -1632,7 +1633,7 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
       double* jump = cnode->fri_data().jump();
 
       // slip
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->fri_data().jump_var()[0];
 
@@ -1679,11 +1680,11 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
         lmowner[1] = cnode->owner();
       }
 
-      Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+      Core::LinAlg::assemble(linstickRHSglobal, rhsnode, lm, lmowner);
 
       // Entries from differentiation with respect to displacements
       /*** 1 ************************************** tangent.deriv(jump) ***/
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         std::map<int, double> derivjump1 = cnode->fri_data().get_deriv_var_jump()[0];
         std::map<int, double> derivjump2 = cnode->fri_data().get_deriv_var_jump()[1];
@@ -1778,7 +1779,7 @@ void Wear::WearInterface::assemble_lin_slip_w(Core::LinAlg::SparseMatrix& linsli
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff = interface_params().get<double>("FRCOEFF");
   double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
   double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
@@ -1862,7 +1863,7 @@ void Wear::WearInterface::assemble_lin_slip_w(Core::LinAlg::SparseMatrix& linsli
       double* jump = cnode->fri_data().jump();
 
       // for slip
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->fri_data().jump_var()[0];
 
@@ -1964,7 +1965,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff = interface_params().get<double>("FRCOEFF");
   double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
   double cn = interface_params().get<double>("SEMI_SMOOTH_CN");
@@ -2048,7 +2049,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
       double* jump = cnode->fri_data().jump();
 
       // for gp slip
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->fri_data().jump_var()[0];
 
@@ -2148,7 +2149,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
           lmowner[1] = cnode->owner();
         }
 
-        Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
@@ -2278,7 +2279,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
           lmowner[1] = cnode->owner();
         }
 
-        Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::assemble(linslipRHSglobal, rhsnode, lm, lmowner);
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
@@ -2286,7 +2287,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
         std::vector<std::map<int, double>> derivjump;  // for dm slip
 
         /*** 01  ********* -Deriv(euclidean).ct.tangent.deriv(u)*ztan ***/
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           derivjump1 = cnode->fri_data().get_deriv_var_jump()[0];
           derivjump2 = cnode->fri_data().get_deriv_var_jump()[1];
@@ -2389,7 +2390,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
 
 
         /*** 02 ***************** frcoeff*znor*ct*tangent.deriv(jump) ***/
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           for (colcurr = derivjump1.begin(); colcurr != derivjump1.end(); ++colcurr)
           {
@@ -2523,7 +2524,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
         }
 
         /*** 3 ****************** deriv(euclidean).deriv(T).jump.ztan ***/
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!
         }
@@ -2610,7 +2611,7 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
         }
 
         /*** 5 *********************** (frcoeff*znor).deriv(T).jump ***/
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           //!!!!!!!!!!!!!!! DO NOTHING !!!!!!!!!!!!!!!!!!!!!!
         }
@@ -2797,8 +2798,8 @@ void Wear::WearInterface::assemble_lin_w_lm_st(Core::LinAlg::SparseMatrix& sglob
   if (!wearimpl_) FOUR_C_THROW("This matrix deriv. is only required for implicit wear algorithm!");
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -3020,7 +3021,7 @@ void Wear::WearInterface::assemble_wear(Epetra_Vector& wglobal)
     lm[0] = frinode->id();
     lmowner[0] = frinode->owner();
 
-    Core::LinAlg::Assemble(wglobal, wnode, lm, lmowner);
+    Core::LinAlg::assemble(wglobal, wnode, lm, lmowner);
   }
 
   return;
@@ -3045,7 +3046,7 @@ void Wear::WearInterface::assemble_d2(Core::LinAlg::SparseMatrix& dglobal)
   // are filled with entries. Therefore, the integrated
   // entries are unique on nodes!
   //*******************************************************
-  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
+  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
 
   for (int i = 0; i < masternodes->NumMyElements(); ++i)  // mnoderowmap_
   {
@@ -3126,8 +3127,8 @@ bool Wear::WearInterface::build_active_set_master()
   Teuchos::RCP<Epetra_Map> auxsl =
       Teuchos::rcp(new Epetra_Map(-1, (int)sl.size(), sl.data(), 0, get_comm()));
 
-  const Teuchos::RCP<Epetra_Map> ara = Core::LinAlg::AllreduceEMap(*(auxa));
-  const Teuchos::RCP<Epetra_Map> arsl = Core::LinAlg::AllreduceEMap(*(auxsl));
+  const Teuchos::RCP<Epetra_Map> ara = Core::LinAlg::allreduce_e_map(*(auxa));
+  const Teuchos::RCP<Epetra_Map> arsl = Core::LinAlg::allreduce_e_map(*(auxsl));
 
   for (int j = 0; j < slave_col_nodes()->NumMyElements(); ++j)
   {
@@ -3158,7 +3159,7 @@ bool Wear::WearInterface::build_active_set_master()
   }
 
   // spread info for attached status...
-  const Teuchos::RCP<Epetra_Map> meleall = Core::LinAlg::AllreduceEMap(*(master_row_elements()));
+  const Teuchos::RCP<Epetra_Map> meleall = Core::LinAlg::allreduce_e_map(*(master_row_elements()));
   std::vector<int> eleatt;
 
   for (int j = 0; j < meleall->NumMyElements(); ++j)
@@ -3174,7 +3175,7 @@ bool Wear::WearInterface::build_active_set_master()
 
   Teuchos::RCP<Epetra_Map> auxe =
       Teuchos::rcp(new Epetra_Map(-1, (int)eleatt.size(), eleatt.data(), 0, get_comm()));
-  const Teuchos::RCP<Epetra_Map> att = Core::LinAlg::AllreduceEMap(*(auxe));
+  const Teuchos::RCP<Epetra_Map> att = Core::LinAlg::allreduce_e_map(*(auxe));
 
   for (int j = 0; j < att->NumMyElements(); ++j)
   {
@@ -3250,8 +3251,8 @@ bool Wear::WearInterface::build_active_set_master()
 
   // reset nodes
   // loop over all master nodes on the current interface
-  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
-  const Teuchos::RCP<Epetra_Map> mastereles = Core::LinAlg::AllreduceEMap(*(melerowmap_));
+  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
+  const Teuchos::RCP<Epetra_Map> mastereles = Core::LinAlg::allreduce_e_map(*(melerowmap_));
 
   for (int j = 0; j < masternodes->NumMyElements(); ++j)
   {
@@ -3279,8 +3280,8 @@ bool Wear::WearInterface::build_active_set_master()
   Teuchos::RCP<Epetra_Map> slimd =
       Teuchos::rcp(new Epetra_Map(-1, (int)wsln.size(), wsln.data(), 0, get_comm()));
 
-  const Teuchos::RCP<Epetra_Map> ARactmn = Core::LinAlg::AllreduceOverlappingEMap(*(actmn));
-  const Teuchos::RCP<Epetra_Map> ARslimn = Core::LinAlg::AllreduceOverlappingEMap(*(slimn));
+  const Teuchos::RCP<Epetra_Map> ARactmn = Core::LinAlg::allreduce_overlapping_e_map(*(actmn));
+  const Teuchos::RCP<Epetra_Map> ARslimn = Core::LinAlg::allreduce_overlapping_e_map(*(slimn));
 
   std::vector<int> ga;
   std::vector<int> gs;
@@ -3387,7 +3388,7 @@ bool Wear::WearInterface::build_active_set(bool init)
     // Note, this node could be ghosted! At the end, the owning proc will take the
     // information to build the map.
 
-    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
 
     for (int k = 0; k < masternodes->NumMyElements(); ++k)  // mnoderowmap_
     {
@@ -3444,7 +3445,8 @@ void Wear::WearInterface::initialize_data_container()
   //***********************************************************
   if (wearboth_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(master_row_nodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes =
+        Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements(); ++i)  // MasterRowNodes()
     {
@@ -3485,9 +3487,9 @@ void Wear::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
   Teuchos::RCP<Epetra_Map> inactivenodes;
 
   if (sswear_)
-    inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *activenodes_);
+    inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
   else
-    inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *slipnodes_);
+    inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *slipnodes_);
 
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
@@ -3512,7 +3514,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
           -cnode->wear_data().wold()[0] - cnode->wear_data().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->dofs()[0];                                        // inactivedofs->GID(2*i);
 
-      if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(inactiverhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-15) Core::LinAlg::assemble(inactiverhs, w_i, w_gid, w_owner);
     }
     else if (n_dim() == 3)
     {
@@ -3527,7 +3529,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs(Epetra_Vector& inactiverhs)
           -cnode->wear_data().wold()[0] - cnode->wear_data().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->dofs()[0];                                        // inactivedofs->GID(3*i);
 
-      if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(inactiverhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-15) Core::LinAlg::assemble(inactiverhs, w_i, w_gid, w_owner);
     }
   }
 }
@@ -3542,14 +3544,15 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::SplitMap(*mnoderowmap_, *slipmasternodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::SplitMap(*(mn_dofs()), *slipmn_);
+  Teuchos::RCP<Epetra_Map> inactivenodes =
+      Core::LinAlg::split_map(*mnoderowmap_, *slipmasternodes_);
+  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::split_map(*(mn_dofs()), *slipmn_);
 
 
 
-  const Teuchos::RCP<Epetra_Map> allredi = Core::LinAlg::AllreduceEMap(*(inactivedofs));
+  const Teuchos::RCP<Epetra_Map> allredi = Core::LinAlg::allreduce_e_map(*(inactivedofs));
 
-  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*allredi, true);
+  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*allredi, true);
 
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
@@ -3574,7 +3577,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
           -cnode->wear_data().wold()[0] - cnode->wear_data().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->dofs()[0];                                        // inactivedofs->GID(2*i);
 
-      if (abs(w_i[0]) > 1e-12) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-12) Core::LinAlg::assemble(*rhs, w_i, w_gid, w_owner);
     }
     else if (n_dim() == 3)
     {
@@ -3589,7 +3592,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
           -cnode->wear_data().wold()[0] - cnode->wear_data().wcurr()[0];  // already negative rhs!!!
       w_gid[0] = cnode->dofs()[0];                                        // inactivedofs->GID(3*i);
 
-      if (abs(w_i[0]) > 1e-12) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
+      if (abs(w_i[0]) > 1e-12) Core::LinAlg::assemble(*rhs, w_i, w_gid, w_owner);
     }
   }
 
@@ -3626,7 +3629,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs(Epetra_Vector& rhs)
   }
 
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(interface_params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(interface_params(), "SYSTEM");
 
   double wcoeff = interface_params().get<double>("WEARCOEFF");
 
@@ -3664,7 +3667,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs(Epetra_Vector& rhs)
             (-(csnode->wear_data().wold()[0]) - (csnode->wear_data().wcurr()[0])) * (p->second);
         w_gid[0] = fnode->dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::assemble(rhs, w_i, w_gid, w_owner);
       }
     }
 
@@ -3695,7 +3698,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs(Epetra_Vector& rhs)
         w_i[0] = wcoeff * lmn * (p->second);
         w_gid[0] = fnode->dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::assemble(rhs, w_i, w_gid, w_owner);
       }
     }
   }
@@ -3717,16 +3720,16 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
   if (slipmasternodes_ == Teuchos::null) return;
 
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(interface_params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(interface_params(), "SYSTEM");
 
   double wcoeff = interface_params().get<double>("WEARCOEFF_MASTER");
 
   typedef std::map<int, double>::const_iterator CI;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::AllreduceEMap(*(slipmasternodes_));
-  const Teuchos::RCP<Epetra_Map> slmastern = Core::LinAlg::AllreduceEMap(*(slipmn_));
+  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
+  const Teuchos::RCP<Epetra_Map> slmastern = Core::LinAlg::allreduce_e_map(*(slipmn_));
 
-  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*slmastern, true);
+  Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*slmastern, true);
 
   for (int i = 0; i < slmasternodes->NumMyElements(); ++i)
   {
@@ -3757,7 +3760,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
             (-(csnode->wear_data().wold()[0]) - (csnode->wear_data().wcurr()[0])) * (p->second);
         w_gid[0] = fnode->dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::assemble(*rhs, w_i, w_gid, w_owner);
       }
     }
 
@@ -3788,7 +3791,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
         w_i[0] = wcoeff * lmn * (p->second);
         w_gid[0] = fnode->dofs()[0];
 
-        if (abs(w_i[0]) > 1e-15) Core::LinAlg::Assemble(*rhs, w_i, w_gid, w_owner);
+        if (abs(w_i[0]) > 1e-15) Core::LinAlg::assemble(*rhs, w_i, w_gid, w_owner);
       }
     }
   }
@@ -3822,7 +3825,8 @@ void Wear::WearInterface::initialize()
   //**************************************************
   if (wearboth_ and !wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(master_row_nodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes =
+        Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
@@ -3895,7 +3899,7 @@ void Wear::WearInterface::initialize()
       frinode->fri_data().get_m_nodes().clear();
 
       // for gp slip
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         // reset jump deriv.
         for (int j = 0; j < (int)((frinode->fri_data().get_deriv_var_jump()).size()); ++j)
@@ -3951,7 +3955,8 @@ void Wear::WearInterface::initialize()
   // for both-sided wear with discrete wear
   if (wearboth_ and wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(master_row_nodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes =
+        Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)

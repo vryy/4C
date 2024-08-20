@@ -29,7 +29,7 @@ PoroElast::Partitioned::Partitioned(const Epetra_Comm& comm,
   itmax_ = porodyn.get<int>("ITEMAX");     // default: =10
   ittol_ = porodyn.get<double>("INCTOL");  // default: =1e-6
 
-  fluidveln_ = Core::LinAlg::CreateVector(*(fluid_field()->dof_row_map()), true);
+  fluidveln_ = Core::LinAlg::create_vector(*(fluid_field()->dof_row_map()), true);
   fluidveln_->PutScalar(0.0);
 }
 

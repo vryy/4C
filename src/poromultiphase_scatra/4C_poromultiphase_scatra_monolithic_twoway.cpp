@@ -106,7 +106,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::init(
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
 
-  fdcheck_ = Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::FdCheck>(
+  fdcheck_ = Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::FdCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
   equilibration_method_ = Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
@@ -114,11 +114,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::init(
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
   solveradapttol_ =
-      (Core::UTILS::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+      (Core::UTILS::integral_value<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
 
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
-  solve_structure_ = Core::UTILS::IntegralValue<int>(poroparams, "SOLVE_STRUCTURE");
+  solve_structure_ = Core::UTILS::integral_value<int>(poroparams, "SOLVE_STRUCTURE");
   if (!solve_structure_) struct_offset_ = 0;
 }
 
@@ -159,7 +159,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_system()
   // instantiate appropriate equilibration class
   auto equilibration_method =
       std::vector<Core::LinAlg::EquilibrationMethod>(1, equilibration_method_);
-  equilibration_ = Core::LinAlg::BuildEquilibration(
+  equilibration_ = Core::LinAlg::build_equilibration(
       Core::LinAlg::MatrixType::block_field, equilibration_method, fullmap_);
 
   return;
@@ -215,7 +215,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_combined_
   const Teuchos::RCP<const Epetra_Map> porocondmap = poro_field()->combined_dbc_map();
   const Teuchos::RCP<const Epetra_Map> scatracondmap =
       scatra_algo()->scatra_field()->dirich_maps()->cond_map();
-  combinedDBCMap_ = Core::LinAlg::MergeMap(porocondmap, scatracondmap, false);
+  combinedDBCMap_ = Core::LinAlg::merge_map(porocondmap, scatracondmap, false);
 
   return;
 }
@@ -273,9 +273,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_solver()
 
   create_linear_solver(solverparams, solvertype);
 
-  vectornormfres_ = Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
+  vectornormfres_ = Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
-  vectornorminc_ = Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
+  vectornorminc_ = Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
 }
 
@@ -286,7 +286,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::create_linear_s
 {
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   // no need to do the rest for direct solvers
   if (solvertype == Core::LinearSolver::SolverType::umfpack or
@@ -604,7 +604,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
 
   if (solve_structure_)
   {
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
     // other parameters that might be needed by the elements
     sparams_struct.set("delta time", dt());
@@ -650,7 +650,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
 
   k_spf->zero();
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", dt());
@@ -908,13 +908,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_newton()
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
-    iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
   if (zeros_ == Teuchos::null)
-    zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     zeros_->PutScalar(0.0);
 
@@ -969,11 +969,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::newton_error_ch
       printf(
           "|  Max. rel. increment [%3s]:  %10.3E  < %10.3E                                        "
           "       |\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
+          vector_norm_string(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
           "|  Maximum    residual [%3s]:  %10.3E  < %10.3E                                        "
           "       |\n",
-          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
+          vector_norm_string(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
           "+--------------+-------------+-------------+--------------+------------+-----"
           "-------+-----------------+\n");
@@ -994,11 +994,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::newton_error_ch
       printf(
           "|  Max. rel. increment [%3s]:  %10.3E    %10.3E                                        "
           "|\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
+          vector_norm_string(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
           "|  Maximum    residual [%3s]:  %10.3E    %10.3E                                        "
           "|\n",
-          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
+          vector_norm_string(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
           "+--------------+-------------+-------------+--------------+------------+-----"
           "-------+-----------------+\n");
@@ -1082,7 +1082,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
   }
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
-  iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1093,7 +1093,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = Core::LinAlg::CreateMatrix(*dof_row_map(), 81);
+  stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
@@ -1597,7 +1597,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   const Teuchos::RCP<const Epetra_Map> artscatracondmap =
       scatramsht_->art_scatra_field()->dirich_maps()->cond_map();
 
-  combinedDBCMap_ = Core::LinAlg::MergeMap(combinedDBCMap_, artscatracondmap, false);
+  combinedDBCMap_ = Core::LinAlg::merge_map(combinedDBCMap_, artscatracondmap, false);
 }
 
 /*----------------------------------------------------------------------*
@@ -1624,7 +1624,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
   k_asa->zero();
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_fluid, sparams_artery);
   // other parameters that might be needed by the elements
   sparams_artery.set("delta time", dt());

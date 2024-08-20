@@ -45,8 +45,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       //------------------------------------------------------
       // Step 1: precompute element penalty parameter
@@ -82,8 +82,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       // get current direction
       const int dir = params.get<int>("direction");

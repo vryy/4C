@@ -43,7 +43,7 @@ void Discret::ELEMENTS::Wall1::w1_eassetup(Core::LinAlg::SerialDenseMatrix& bopl
   Core::LinAlg::SerialDenseMatrix deriv0;
   deriv0.shape(2, num_node());
 
-  Core::FE::shape_function_2D_deriv1(deriv0, 0.0, 0.0, distype);
+  Core::FE::shape_function_2d_deriv1(deriv0, 0.0, 0.0, distype);
 
   // compute jacobian matrix at origin
   xjm0.putScalar(0.0);

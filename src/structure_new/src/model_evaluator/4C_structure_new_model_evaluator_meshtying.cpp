@@ -116,7 +116,7 @@ void Solid::ModelEvaluator::Meshtying::setup()
   if (!global_state().get_restart_step())
   {
     // perform mesh initialization if required by input parameter MESH_RELOCATION
-    auto mesh_relocation_parameter = Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+    auto mesh_relocation_parameter = Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
         Global::Problem::instance()->mortar_coupling_params(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == Inpar::Mortar::relocation_initial)
@@ -160,14 +160,14 @@ bool Solid::ModelEvaluator::Meshtying::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty())
   {
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     FOUR_C_ASSERT(!block_vec_ptr.is_null(), "force not available");
-    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (strategy().is_condensed_system())
   {
@@ -176,7 +176,7 @@ bool Solid::ModelEvaluator::Meshtying::assemble_force(
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (strategy().is_saddle_point_system())
   {
@@ -185,7 +185,7 @@ bool Solid::ModelEvaluator::Meshtying::assemble_force(
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
   }
 
   return true;
@@ -201,7 +201,7 @@ bool Solid::ModelEvaluator::Meshtying::assemble_jacobian(
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty())
   {
@@ -307,7 +307,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Meshtying::get_block_dof_r
   else
   {
     enum Inpar::CONTACT::SystemType systype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(strategy().params(), "SYSTEM");
+        Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(strategy().params(), "SYSTEM");
 
     if (systype == Inpar::CONTACT::system_saddlepoint)
       return strategy().lm_do_f_row_map_ptr(true);
@@ -426,12 +426,12 @@ void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
 
   // create fully overlapping slave node map
   Teuchos::RCP<Epetra_Map> slavemap = strategy_ptr_->slave_row_nodes_ptr();
-  Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::AllreduceEMap(*slavemap);
+  Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::allreduce_e_map(*slavemap);
 
   // export modified node positions to column map of problem discretization
   const Epetra_Map* dof_colmap = discret_ptr()->dof_col_map();
   const Epetra_Map* node_colmap = discret_ptr()->node_col_map();
-  Teuchos::RCP<Epetra_Vector> Xslavemodcol = Core::LinAlg::CreateVector(*dof_colmap, false);
+  Teuchos::RCP<Epetra_Vector> Xslavemodcol = Core::LinAlg::create_vector(*dof_colmap, false);
   Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();

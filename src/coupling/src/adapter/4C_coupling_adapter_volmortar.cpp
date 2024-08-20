@@ -112,12 +112,12 @@ void Coupling::Adapter::MortarVolCoupl::setup(
 
   //-----------------------
   // Evaluate volmortar coupling:
-  if (Core::UTILS::IntegralValue<FourC::Coupling::VolMortar::CouplingType>(
+  if (Core::UTILS::integral_value<FourC::Coupling::VolMortar::CouplingType>(
           params, "COUPLINGTYPE") == FourC::Coupling::VolMortar::couplingtype_volmortar)
     coupdis->evaluate_volmortar();
   //-----------------------
   // consistent interpolation (NO Core::VOLMORTAR)
-  else if (Core::UTILS::IntegralValue<FourC::Coupling::VolMortar::CouplingType>(
+  else if (Core::UTILS::integral_value<FourC::Coupling::VolMortar::CouplingType>(
                params, "COUPLINGTYPE") == FourC::Coupling::VolMortar::couplingtype_coninter)
     coupdis->evaluate_consistent_interpolation();
   //-----------------------
@@ -156,7 +156,7 @@ void Coupling::Adapter::MortarVolCoupl::redistribute(const Teuchos::ParameterLis
   dis.push_back(masterdis_);
   dis.push_back(slavedis_);
 
-  Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params, output_control, dis,
+  Core::Rebalance::rebalance_discretizations_by_binning(binning_params, output_control, dis,
       std::move(correct_node), std::move(determine_relevant_points), false);
 }
 
@@ -223,7 +223,7 @@ Teuchos::RCP<const Epetra_Vector> Coupling::Adapter::MortarVolCoupl::apply_vecto
   check_setup();
   check_init();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::CreateVector(p12_->row_map(), true);
+  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::create_vector(p12_->row_map(), true);
   int err = p12_->multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
@@ -240,7 +240,7 @@ Teuchos::RCP<const Epetra_Vector> Coupling::Adapter::MortarVolCoupl::apply_vecto
   check_setup();
   check_init();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::CreateVector(p21_->row_map(), true);
+  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::create_vector(p21_->row_map(), true);
   int err = p21_->multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
@@ -257,7 +257,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::appl
   check_setup();
   check_init();
 
-  return Core::LinAlg::MLMultiply(*mat, false, *p12_, false, false, false, true);
+  return Core::LinAlg::ml_multiply(*mat, false, *p12_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -270,7 +270,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::appl
   check_setup();
   check_init();
 
-  return Core::LinAlg::MLMultiply(*mat, false, *p21_, false, false, false, true);
+  return Core::LinAlg::ml_multiply(*mat, false, *p21_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -283,7 +283,7 @@ Teuchos::RCP<Epetra_Vector> Coupling::Adapter::MortarVolCoupl::master_to_slave(
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> sv = Core::LinAlg::CreateVector(p21_->row_map(), true);
+  Teuchos::RCP<Epetra_Vector> sv = Core::LinAlg::create_vector(p21_->row_map(), true);
   // project
   master_to_slave(mv, sv);
 
@@ -351,7 +351,7 @@ Teuchos::RCP<Epetra_Vector> Coupling::Adapter::MortarVolCoupl::slave_to_master(
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::CreateVector(p12_->row_map(), true);
+  Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::create_vector(p12_->row_map(), true);
   // project
   slave_to_master(sv, mv);
 

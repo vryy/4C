@@ -26,13 +26,13 @@ namespace Inpar
      *
      * @param[in/out] list Parameter list to be filled with valid parameters and their defaults
      */
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// create map of problem name and problem type enum
-    std::map<std::string, Core::ProblemType> StringToProblemTypeMap();
+    std::map<std::string, Core::ProblemType> string_to_problem_type_map();
 
     /// return problem type enum for a given problem name
-    Core::ProblemType StringToProblemType(std::string name);
+    Core::ProblemType string_to_problem_type(std::string name);
 
 
   }  // namespace PROBLEMTYPE

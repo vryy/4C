@@ -81,9 +81,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 //! Print function
 /*----------------------------------------------------------------------*/
-void PrintValidParameters()
+void print_valid_parameters()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = Input::ValidParameters();
+  Teuchos::RCP<const Teuchos::ParameterList> list = Input::valid_parameters();
   list->print(std::cout,
       Teuchos::ParameterList::PrintOptions().showDoc(true).showFlags(false).indent(4).showTypes(
           false));
@@ -93,7 +93,7 @@ void PrintValidParameters()
 /*----------------------------------------------------------------------*/
 //! Print help message
 /*----------------------------------------------------------------------*/
-void PrintHelpMessage()
+void print_help_message()
 {
   std::cout << "NAME\n"
             << "\t"
@@ -172,7 +172,7 @@ void PrintHelpMessage()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Input::PrintDatHeader(
+void Input::print_dat_header(
     std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool comment)
 {
   // prevent invalid ordering of parameters caused by alphabetical output:
@@ -207,7 +207,7 @@ void Input::PrintDatHeader(
         unsigned l = secname.length();
         stream << "--" << std::string(std::max<int>(65 - l, 0), '-');
         stream << secname << '\n';
-        PrintDatHeader(stream, list.sublist(name), secname, comment);
+        print_dat_header(stream, list.sublist(name), secname, comment);
       }
       else
       {
@@ -244,7 +244,7 @@ void Input::PrintDatHeader(
         stream << name;
         unsigned l = name.length();
         stream << std::string(std::max<int>(31 - l, 0), ' ');
-        if (NeedToPrintEqualSign(list)) stream << " =";
+        if (need_to_print_equal_sign(list)) stream << " =";
         stream << ' ' << v << '\n';
       }
     }
@@ -254,56 +254,56 @@ void Input::PrintDatHeader(
 /*----------------------------------------------------------------------*/
 //! Print function
 /*----------------------------------------------------------------------*/
-void PrintDefaultDatHeader()
+void print_default_dat_header()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = Input::ValidParameters();
-  Input::PrintDatHeader(std::cout, *list);
+  Teuchos::RCP<const Teuchos::ParameterList> list = Input::valid_parameters();
+  Input::print_dat_header(std::cout, *list);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
+Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
 {
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& discret = list->sublist("DISCRETISATION", false, "");
 
-  Core::UTILS::IntParameter("NUMFLUIDDIS", 1, "Number of meshes in fluid field", &discret);
-  Core::UTILS::IntParameter("NUMSTRUCDIS", 1, "Number of meshes in structural field", &discret);
-  Core::UTILS::IntParameter("NUMALEDIS", 1, "Number of meshes in ale field", &discret);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter("NUMFLUIDDIS", 1, "Number of meshes in fluid field", &discret);
+  Core::UTILS::int_parameter("NUMSTRUCDIS", 1, "Number of meshes in structural field", &discret);
+  Core::UTILS::int_parameter("NUMALEDIS", 1, "Number of meshes in ale field", &discret);
+  Core::UTILS::int_parameter(
       "NUMARTNETDIS", 1, "Number of meshes in arterial network field", &discret);
-  Core::UTILS::IntParameter("NUMTHERMDIS", 1, "Number of meshes in thermal field", &discret);
-  Core::UTILS::IntParameter("NUMAIRWAYSDIS", 1,
+  Core::UTILS::int_parameter("NUMTHERMDIS", 1, "Number of meshes in thermal field", &discret);
+  Core::UTILS::int_parameter("NUMAIRWAYSDIS", 1,
       "Number of meshes in reduced dimensional airways network field", &discret);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& size = list->sublist("PROBLEM SIZE", false, "");
 
-  Core::UTILS::IntParameter("DIM", 3, "2d or 3d problem", &size);
+  Core::UTILS::int_parameter("DIM", 3, "2d or 3d problem", &size);
 
   // deactivate all the follwing (unused) parameters one day
   // they are nice as general info in the input file but should not
   // read into a parameter list. Misuse is possible
-  Core::UTILS::IntParameter("ELEMENTS", 0, "Total number of elements", &size);
-  Core::UTILS::IntParameter("NODES", 0, "Total number of nodes", &size);
-  Core::UTILS::IntParameter("NPATCHES", 0, "number of nurbs patches", &size);
-  Core::UTILS::IntParameter("MATERIALS", 0, "number of materials", &size);
-  Core::UTILS::IntParameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
+  Core::UTILS::int_parameter("ELEMENTS", 0, "Total number of elements", &size);
+  Core::UTILS::int_parameter("NODES", 0, "Total number of nodes", &size);
+  Core::UTILS::int_parameter("NPATCHES", 0, "number of nurbs patches", &size);
+  Core::UTILS::int_parameter("MATERIALS", 0, "number of materials", &size);
+  Core::UTILS::int_parameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
 
-  Inpar::PROBLEMTYPE::SetValidParameters(list);
+  Inpar::PROBLEMTYPE::set_valid_parameters(list);
 
   /*----------------------------------------------------------------------*/
 
   Teuchos::ParameterList& nurbs_param = list->sublist(
       "NURBS", false, "Section to define information related to NURBS discretizations.");
 
-  Core::UTILS::BoolParameter("DO_LS_DBC_PROJECTION", "No",
+  Core::UTILS::bool_parameter("DO_LS_DBC_PROJECTION", "No",
       "Determines if a projection is needed for least square Dirichlet boundary conditions.",
       &nurbs_param);
 
-  Core::UTILS::IntParameter("SOLVER_LS_DBC_PROJECTION", -1,
+  Core::UTILS::int_parameter("SOLVER_LS_DBC_PROJECTION", -1,
       "Number of linear solver for the projection of least squares Dirichlet boundary conditions "
       "for NURBS "
       "discretizations",
@@ -313,78 +313,78 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/
 
-  Inpar::Solid::SetValidParameters(list);
-  Inpar::IO::SetValidParameters(list);
-  Inpar::IOMonitorStructureDBC::SetValidParameters(list);
-  Inpar::IORuntimeOutput::SetValidParameters(list);
-  Inpar::IORuntimeVTPStructure::SetValidParameters(list);
-  Inpar::Mortar::SetValidParameters(list);
-  Inpar::CONTACT::SetValidParameters(list);
-  Inpar::VolMortar::SetValidParameters(list);
-  Inpar::Wear::SetValidParameters(list);
-  Inpar::IORuntimeOutput::FLUID::SetValidParameters(list);
-  Inpar::IORuntimeOutput::Solid::SetValidParameters(list);
-  Inpar::IORuntimeOutput::BEAMS::SetValidParameters(list);
-  Inpar::BEAMCONTACT::SetValidParameters(list);
-  Inpar::BEAMPOTENTIAL::SetValidParameters(list);
-  Inpar::BEAMINTERACTION::SetValidParameters(list);
-  Inpar::RveMpc::SetValidParameters(list);
-  Inpar::BrownianDynamics::SetValidParameters(list);
+  Inpar::Solid::set_valid_parameters(list);
+  Inpar::IO::set_valid_parameters(list);
+  Inpar::IOMonitorStructureDBC::set_valid_parameters(list);
+  Inpar::IORuntimeOutput::set_valid_parameters(list);
+  Inpar::IORuntimeVTPStructure::set_valid_parameters(list);
+  Inpar::Mortar::set_valid_parameters(list);
+  Inpar::CONTACT::set_valid_parameters(list);
+  Inpar::VolMortar::set_valid_parameters(list);
+  Inpar::Wear::set_valid_parameters(list);
+  Inpar::IORuntimeOutput::FLUID::set_valid_parameters(list);
+  Inpar::IORuntimeOutput::Solid::set_valid_parameters(list);
+  Inpar::IORuntimeOutput::BEAMS::set_valid_parameters(list);
+  Inpar::BEAMCONTACT::set_valid_parameters(list);
+  Inpar::BEAMPOTENTIAL::set_valid_parameters(list);
+  Inpar::BEAMINTERACTION::set_valid_parameters(list);
+  Inpar::RveMpc::set_valid_parameters(list);
+  Inpar::BrownianDynamics::set_valid_parameters(list);
 
-  Inpar::Plasticity::SetValidParameters(list);
+  Inpar::Plasticity::set_valid_parameters(list);
 
-  Inpar::Thermo::SetValidParameters(list);
-  Inpar::TSI::SetValidParameters(list);
+  Inpar::Thermo::set_valid_parameters(list);
+  Inpar::TSI::set_valid_parameters(list);
 
-  Inpar::FLUID::SetValidParameters(list);
-  Inpar::LowMach::SetValidParameters(list);
-  Inpar::Cut::SetValidParameters(list);
-  Inpar::XFEM::SetValidParameters(list);
-  Inpar::CONSTRAINTS::SetValidParameters(list);
+  Inpar::FLUID::set_valid_parameters(list);
+  Inpar::LowMach::set_valid_parameters(list);
+  Inpar::Cut::set_valid_parameters(list);
+  Inpar::XFEM::set_valid_parameters(list);
+  Inpar::CONSTRAINTS::set_valid_parameters(list);
 
-  Inpar::LUBRICATION::SetValidParameters(list);
-  Inpar::ScaTra::SetValidParameters(list);
-  Inpar::LevelSet::SetValidParameters(list);
-  Inpar::ElCh::SetValidParameters(list);
-  Inpar::ElectroPhysiology::SetValidParameters(list);
-  Inpar::STI::SetValidParameters(list);
+  Inpar::LUBRICATION::set_valid_parameters(list);
+  Inpar::ScaTra::set_valid_parameters(list);
+  Inpar::LevelSet::set_valid_parameters(list);
+  Inpar::ElCh::set_valid_parameters(list);
+  Inpar::ElectroPhysiology::set_valid_parameters(list);
+  Inpar::STI::set_valid_parameters(list);
 
-  Inpar::S2I::SetValidParameters(list);
-  Inpar::FS3I::SetValidParameters(list);
-  Inpar::PoroElast::SetValidParameters(list);
-  Inpar::PoroScaTra::SetValidParameters(list);
-  Inpar::POROMULTIPHASE::SetValidParameters(list);
-  Inpar::PoroMultiPhaseScaTra::SetValidParameters(list);
-  Inpar::POROFLUIDMULTIPHASE::SetValidParameters(list);
-  Inpar::EHL::SetValidParameters(list);
-  Inpar::SSI::SetValidParameters(list);
-  Inpar::SSTI::SetValidParameters(list);
-  Inpar::ALE::SetValidParameters(list);
-  Inpar::FSI::SetValidParameters(list);
+  Inpar::S2I::set_valid_parameters(list);
+  Inpar::FS3I::set_valid_parameters(list);
+  Inpar::PoroElast::set_valid_parameters(list);
+  Inpar::PoroScaTra::set_valid_parameters(list);
+  Inpar::POROMULTIPHASE::set_valid_parameters(list);
+  Inpar::PoroMultiPhaseScaTra::set_valid_parameters(list);
+  Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(list);
+  Inpar::EHL::set_valid_parameters(list);
+  Inpar::SSI::set_valid_parameters(list);
+  Inpar::SSTI::set_valid_parameters(list);
+  Inpar::ALE::set_valid_parameters(list);
+  Inpar::FSI::set_valid_parameters(list);
 
-  Inpar::ArtDyn::SetValidParameters(list);
-  Inpar::ArteryNetwork::SetValidParameters(list);
-  Inpar::BioFilm::SetValidParameters(list);
-  Inpar::ReducedLung::SetValidParameters(list);
-  Inpar::Cardiovascular0D::SetValidParameters(list);
-  Inpar::Immersed::SetValidParameters(list);
-  Inpar::FPSI::SetValidParameters(list);
-  Inpar::FBI::SetValidParameters(list);
+  Inpar::ArtDyn::set_valid_parameters(list);
+  Inpar::ArteryNetwork::set_valid_parameters(list);
+  Inpar::BioFilm::set_valid_parameters(list);
+  Inpar::ReducedLung::set_valid_parameters(list);
+  Inpar::Cardiovascular0D::set_valid_parameters(list);
+  Inpar::Immersed::set_valid_parameters(list);
+  Inpar::FPSI::set_valid_parameters(list);
+  Inpar::FBI::set_valid_parameters(list);
 
-  Inpar::PARTICLE::SetValidParameters(list);
+  Inpar::PARTICLE::set_valid_parameters(list);
 
-  Inpar::ModelOrderRed::SetValidParameters(list);
+  Inpar::ModelOrderRed::set_valid_parameters(list);
 
-  Inpar::EleMag::SetValidParameters(list);
+  Inpar::EleMag::set_valid_parameters(list);
 
-  Inpar::Geo::SetValidParameters(list);
-  Inpar::BINSTRATEGY::SetValidParameters(list);
-  Inpar::GeometricSearch::SetValidParameters(list);
-  Inpar::PaSI::SetValidParameters(list);
+  Inpar::Geo::set_valid_parameters(list);
+  Inpar::BINSTRATEGY::set_valid_parameters(list);
+  Inpar::GeometricSearch::set_valid_parameters(list);
+  Inpar::PaSI::set_valid_parameters(list);
 
-  Inpar::Rebalance::SetValidParameters(list);
-  Inpar::SOLVER::SetValidParameters(list);
-  Inpar::NlnSol::SetValidParameters(list);
+  Inpar::Rebalance::set_valid_parameters(list);
+  Inpar::SOLVER::set_valid_parameters(list);
+  Inpar::NlnSol::set_valid_parameters(list);
 
   return list;
 }
@@ -392,7 +392,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Input::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
+bool Input::need_to_print_equal_sign(const Teuchos::ParameterList& list)
 {
   // Helper function to check if string contains a space.
   const auto string_has_space = [](const std::string& s)

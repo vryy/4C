@@ -57,11 +57,11 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
 {
   // system type
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // shape function
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -113,14 +113,14 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     }
 
     // first split into slave/master block row + remaining part
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         kteffmatrix, gsmdofrowmap_, gndofrowmap_, fvelrow_, tempmap1, csm, tempmtx1, cn, tempmtx2);
 
     //    std::cout<< " tempmap1 " << std::endl;
     //    tempmap1->print(std::cout);
 
     // second split slave/master block row
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         csm, gsdofrowmap_, gmdofrowmap_, fvelrow_, tempmap2, cs, tempmtx3, cm, tempmtx4);
 
     // store some stuff for the recovery of the lagrange multiplier
@@ -137,7 +137,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     cmmod->add(*cm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cmadd =
-        Core::LinAlg::MLMultiply(*get_m_hat(), true, *cs, false, false, false, true);
+        Core::LinAlg::ml_multiply(*get_m_hat(), true, *cs, false, false, false, true);
     cmmod->add(*cmadd, false, 1.0, 1.0);
     cmmod->complete(cm->domain_map(), cm->row_map());
 

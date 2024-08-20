@@ -23,9 +23,9 @@ bool Thermo::Element::read_element(const std::string& eletype, const std::string
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
-  set_dis_type(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::string_to_cell_type(distype));
 
   return true;
 }

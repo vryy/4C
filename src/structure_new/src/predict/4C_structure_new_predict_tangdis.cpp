@@ -49,7 +49,7 @@ void Solid::Predict::TangDis::setup()
   Teuchos::ParameterList& p_grp_opt = nox_params().sublist("Group Options");
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::Nln::GROUP::PrePostOperator::Map& prepostgroup_map =
-      NOX::Nln::GROUP::PrePostOp::GetMap(p_grp_opt);
+      NOX::Nln::GROUP::PrePostOp::get_map(p_grp_opt);
   // create the new tangdis pre/post operator
   Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> preposttangdis_ptr =
       Teuchos::rcp(new NOX::Nln::GROUP::PrePostOp::TangDis(Teuchos::rcp(this, false)));
@@ -211,7 +211,7 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
   if (stiff_ptr->multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
-  Core::LinAlg::AssembleMyVector(1.0, F, 1.0, *freact_ptr);
+  Core::LinAlg::assemble_my_vector(1.0, F, 1.0, *freact_ptr);
 }
 
 FOUR_C_NAMESPACE_CLOSE

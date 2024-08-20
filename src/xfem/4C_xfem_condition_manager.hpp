@@ -125,13 +125,13 @@ namespace XFEM
     void add_mesh_coupling(const std::string& cond_name,
         Teuchos::RCP<Core::FE::Discretization> cond_dis, const int coupling_id)
     {
-      if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
-          CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_MONO)
+      if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
+          cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_MONO)
       {
         mesh_coupl_.push_back(Teuchos::rcp(
             new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
-      else if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FPI_MONO)
+      else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FPI_MONO)
       {
         mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_ps)));
@@ -142,39 +142,39 @@ namespace XFEM
         mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_pf)));
       }
-      else if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
+      else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
       {
         mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
-      else if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
+      else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
       {
         mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
-      else if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+      else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
         mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlip(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
-      else if (CondType_stringToEnum(cond_name) ==
+      else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
         mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlipTwoPhase(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
-      else if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
+      else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
       {
         mesh_coupl_.push_back(Teuchos::rcp(
             new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
-      else if (CondType_stringToEnum(cond_name) ==
+      else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF)
       {
         mesh_coupl_.push_back(Teuchos::rcp(
             new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", false)));
       }
-      else if (CondType_stringToEnum(cond_name) ==
+      else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL)
       {
         // do nothing
@@ -192,17 +192,18 @@ namespace XFEM
             cond_dis,  ///< discretization from which the cutter discretization can be derived
         const int coupling_id)
     {
-      if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
+      if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
       {
         levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
-      else if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN)
+      else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN)
       {
         levelset_coupl_.push_back(Teuchos::rcp(
             new LevelSetCouplingNeumann(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
-      else if (CondType_stringToEnum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
+      else if (cond_type_string_to_enum(cond_name) ==
+               Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
       {
         levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNavierSlip(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
@@ -571,7 +572,7 @@ namespace XFEM
     /// have coupling matrices to be evaluated or not?
     bool is_coupling_condition(const std::string& cond_name)
     {
-      return is_coupling_condition(CondType_stringToEnum(cond_name));
+      return is_coupling_condition(cond_type_string_to_enum(cond_name));
     }
 
     /// have coupling matrices to be evaluated or not?

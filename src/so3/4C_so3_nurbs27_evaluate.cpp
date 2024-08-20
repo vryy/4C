@@ -113,9 +113,9 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<81, 81>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -132,9 +132,9 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<81, 81> myemat(true);
       sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, &myemat, nullptr, &elevec1, params);
@@ -151,9 +151,9 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       sonurbs27_nlnstiffmass(
           lm, discretization, mydisp, myres, &elemat1, &elemat2, &elevec1, params);
@@ -187,7 +187,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_stc_matrix_inverse:
     {
       const auto stc_scaling =
-          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
@@ -201,7 +201,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_stc_matrix:
     {
       const auto stc_scaling =
-          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
@@ -219,7 +219,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
       // need current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       elevec1_epetra(0) = calc_int_energy(discretization, mydisp, params);
       break;
@@ -288,7 +288,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
     gpa(1) = -1.0;
     gpa(2) = -1.0;
 
-    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3d_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -307,7 +307,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
     gpa(1) = -1.0;
     gpa(2) = -1.0;
 
-    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3d_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -325,7 +325,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
     gpa(1) = 1.0;
     gpa(2) = -1.0;
 
-    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3d_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -343,7 +343,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
     gpa(1) = -1.0;
     gpa(2) = 1.0;
 
-    Core::FE::Nurbs::nurbs_get_3D_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
+    Core::FE::Nurbs::nurbs_get_3d_funct(funct, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -623,7 +623,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+    Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
         shape, deriv, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     // compute the Jacobian matrix
@@ -820,7 +820,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+    Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
         funct, deriv, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -999,7 +999,7 @@ std::vector<Core::LinAlg::Matrix<27, 1>> Discret::ELEMENTS::Nurbs::SoNurbs27::so
     gp(1) = intpoints.qxg[igp][1];
     gp(2) = intpoints.qxg[igp][2];
 
-    Core::FE::Nurbs::nurbs_get_3D_funct(
+    Core::FE::Nurbs::nurbs_get_3d_funct(
         shapefcts[igp], gp, myknots, weights, Core::FE::CellType::nurbs27);
   }
   return shapefcts;
@@ -1029,7 +1029,7 @@ std::vector<Core::LinAlg::Matrix<3, 27>> Discret::ELEMENTS::Nurbs::SoNurbs27::so
 
     Core::LinAlg::Matrix<27, 1> dummyfct;
 
-    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+    Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
         dummyfct, derivs[igp], gp, myknots, weights, Core::FE::CellType::nurbs27);
   }
   return derivs;
@@ -1141,7 +1141,7 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
 
-    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+    Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
         funct, deriv, gpa, myknots, weights, Core::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1219,7 +1219,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::lumpmass(
  * \brief Helper function to evaluate the NURBS interpolation inside the element.
  */
 template <unsigned int n_points, unsigned int n_val>
-void EvalNurbs3DInterpolation(Core::LinAlg::Matrix<n_val, 1, double>& r,
+void eval_nurbs_3d_interpolation(Core::LinAlg::Matrix<n_val, 1, double>& r,
     const Core::LinAlg::Matrix<n_points * n_val, 1, double>& q,
     const Core::LinAlg::Matrix<3, 1, double>& xi,
     const Core::LinAlg::Matrix<n_points, 1, double>& weights,
@@ -1227,7 +1227,7 @@ void EvalNurbs3DInterpolation(Core::LinAlg::Matrix<n_val, 1, double>& r,
 {
   // Get the shape functions.
   Core::LinAlg::Matrix<n_points, 1, double> N;
-  Core::FE::Nurbs::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
+  Core::FE::Nurbs::nurbs_get_3d_funct(N, xi, myknots, weights, distype);
 
   // Multiply the shape functions with the control point values.
   r.clear();

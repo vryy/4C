@@ -88,8 +88,8 @@ void XFEM::MeshCouplingFPI::init_state_vectors()
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->dof_col_map();
 
-  itrueresidual_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
-  iforcecol_ = Core::LinAlg::CreateVector(*cutterdofcolmap, true);
+  itrueresidual_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
+  iforcecol_ = Core::LinAlg::create_vector(*cutterdofcolmap, true);
 }
 
 /*--------------------------------------------------------------------------*
@@ -286,7 +286,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp(double& kappa_m,  //< fl
     static double stabnit = 0.0;
     static double stabadj = 0.0;
 
-    XFEM::UTILS::GetNavierSlipStabilizationParameters(
+    XFEM::UTILS::get_navier_slip_stabilization_parameters(
         visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
 
     // Overall there are 9 coupling blocks to evaluate for fpi:
@@ -457,7 +457,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
   static double stabnit = 0.0;
   static double stabadj = 0.0;
 
-  XFEM::UTILS::GetNavierSlipStabilizationParameters(
+  XFEM::UTILS::get_navier_slip_stabilization_parameters(
       visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
 
 #ifdef WRITE_GMSH
@@ -637,7 +637,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_fsi.str(), cutter_dis_->writer()->output()->file_name(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
@@ -648,7 +648,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "iforce \" {" << std::endl;
     // draw vector field 'force' for every node
-    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
         cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -658,7 +658,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "idispnp \" {" << std::endl;
     // draw vector field 'idispnp' for every node
-    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
         cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -668,7 +668,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "ivelnp \" {" << std::endl;
     // draw vector field 'ivelnp' for every node
-    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
         cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -688,12 +688,12 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
 
   // write dis with zero solid displacements here!
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
-      Core::LinAlg::CreateVector(*cond_dis_->dof_row_map(), true);
+      Core::LinAlg::create_vector(*cond_dis_->dof_row_map(), true);
 
   XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
 
-  XFEM::UTILS::PrintDiscretizationToStream(cond_dis_, cond_dis_->name(), true, false, true, false,
-      false, false, gmshfilecontent, &currsolidpositions);
+  XFEM::UTILS::print_discretization_to_stream(cond_dis_, cond_dis_->name(), true, false, true,
+      false, false, false, gmshfilecontent, &currsolidpositions);
 }
 
 void XFEM::MeshCouplingFPI::output(const int step, const double time, const bool write_restart_data)
@@ -770,9 +770,9 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
       if (fluid_ele->shape() == Core::FE::CellType::hex8)
       {
         Core::LinAlg::Matrix<3, 8> xyze(true);
-        Core::Geo::fillInitialPositionArray(fluid_ele, xyze);
-        double vol = XFEM::UTILS::EvalElementVolume<Core::FE::CellType::hex8>(xyze);
-        hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
+        Core::Geo::fill_initial_position_array(fluid_ele, xyze);
+        double vol = XFEM::UTILS::eval_element_volume<Core::FE::CellType::hex8>(xyze);
+        hmax = std::max(hmax, XFEM::UTILS::compute_vol_eq_diameter(vol));
       }
       else
         FOUR_C_THROW("Element type != hex8, add it here!");
@@ -836,7 +836,7 @@ void XFEM::MeshCouplingFPI::lift_drag(const int step, const double time) const
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Epetra_Vector> iforcecol =
-      Core::Rebalance::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
+      Core::Rebalance::get_col_version_of_row_vector(cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
   {
@@ -971,7 +971,7 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
     Core::LinAlg::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
     Core::LinAlg::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
 
-    Core::FE::BoundaryGPToParentGP<SLAVE_NUMDOF>(
+    Core::FE::boundary_gp_to_parent_gp<SLAVE_NUMDOF>(
         pqxg, derivtrafo, intpoints, coupl_ele->shape(), fele->shape(), fele->face_parent_number());
 
     Core::LinAlg::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
@@ -1055,13 +1055,13 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
     else
       FOUR_C_THROW(
           "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
-          (Core::FE::CellTypeToString(coupl_ele->shape())).c_str());
+          (Core::FE::cell_type_to_string(coupl_ele->shape())).c_str());
     return -1.0;
   }
   else
     FOUR_C_THROW(
         "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
-        (Core::FE::CellTypeToString(fele->shape())).c_str());
+        (Core::FE::cell_type_to_string(fele->shape())).c_str());
   return -1.0;
 }
 

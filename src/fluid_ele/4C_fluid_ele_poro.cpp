@@ -131,7 +131,7 @@ void Discret::ELEMENTS::FluidPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // kintype_
   kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
@@ -161,17 +161,17 @@ void Discret::ELEMENTS::FluidPoro::unpack(const std::vector<char>& data)
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::lines()
 {
-  return Core::Communication::GetElementLines<FluidPoroBoundary, FluidPoro>(*this);
+  return Core::Communication::get_element_lines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
+  return Core::Communication::get_element_surfaces<FluidPoroBoundary, FluidPoro>(*this);
 }
 
 void Discret::ELEMENTS::FluidPoro::print(std::ostream& os) const
 {
-  os << "FluidPoro " << (Core::FE::CellTypeToString(distype_)).c_str();
+  os << "FluidPoro " << (Core::FE::cell_type_to_string(distype_)).c_str();
   Element::print(os);
 }
 

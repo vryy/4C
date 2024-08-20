@@ -134,7 +134,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::conditioned_element_map
 void FLD::UTILS::VelPressExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::instance()->n_dim();
-  Core::LinAlg::CreateMapExtractorFromDiscretization(dis, ndim, *this);
+  Core::LinAlg::create_map_extractor_from_discretization(dis, ndim, *this);
 }
 
 /*----------------------------------------------------------------------*/

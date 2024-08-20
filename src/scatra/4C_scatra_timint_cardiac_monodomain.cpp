@@ -56,7 +56,7 @@ void ScaTra::TimIntCardiacMonodomain::setup()
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Activation time at time n+1
-  activation_time_np_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  activation_time_np_ = Core::LinAlg::create_vector(*dofrowmap, true);
   activation_threshold_ = ep_params_->get<double>("ACTTHRES");
   // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
   nb_max_mat_int_state_vars_ = ep_params_->get<int>(
@@ -66,7 +66,7 @@ void ScaTra::TimIntCardiacMonodomain::setup()
     material_internal_state_np_ = Teuchos::rcp(
         new Epetra_MultiVector(*(discret_->element_row_map()), nb_max_mat_int_state_vars_, true));
     material_internal_state_np_component_ =
-        Core::LinAlg::CreateVector(*(discret_->element_row_map()), true);
+        Core::LinAlg::create_vector(*(discret_->element_row_map()), true);
   }
   // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
   nb_max_mat_ionic_currents_ = ep_params_->get<int>(
@@ -76,7 +76,7 @@ void ScaTra::TimIntCardiacMonodomain::setup()
     material_ionic_currents_np_ = Teuchos::rcp(
         new Epetra_MultiVector(*(discret_->element_row_map()), nb_max_mat_ionic_currents_, true));
     material_ionic_currents_np_component_ =
-        Core::LinAlg::CreateVector(*(discret_->element_row_map()), true);
+        Core::LinAlg::create_vector(*(discret_->element_row_map()), true);
   }
 }
 
@@ -105,7 +105,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
   if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
   {
     Teuchos::ParameterList params;
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state",
         material_internal_state_np_);  // Probably do it once at the beginning
@@ -130,7 +130,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
   if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
   {
     Teuchos::ParameterList params;
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_ionic_currents, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents",
         material_ionic_currents_np_);  // Probably do it once at the beginning
@@ -159,7 +159,7 @@ void ScaTra::TimIntCardiacMonodomain::element_material_time_update()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::time_update_material, p);
   // further required parameter
   p.set<double>("time-step length", dta_);
@@ -179,10 +179,10 @@ void ScaTra::TimIntCardiacMonodomain::set_element_specific_scatra_parameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check
-  if (Core::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
+  if (Core::UTILS::integral_value<int>(*params_, "SEMIIMPLICIT"))
   {
     if (Inpar::ScaTra::timeint_gen_alpha ==
-        Core::UTILS::IntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
+        Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
     {
       if (params_->get<double>("ALPHA_M") < 1.0 or params_->get<double>("ALPHA_F") < 1.0)
         FOUR_C_THROW(
@@ -191,7 +191,7 @@ void ScaTra::TimIntCardiacMonodomain::set_element_specific_scatra_parameters(
     }
   }
 
-  eleparams.set<bool>("semiimplicit", Core::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
+  eleparams.set<bool>("semiimplicit", Core::UTILS::integral_value<int>(*params_, "SEMIIMPLICIT"));
 }
 
 /*----------------------------------------------------------------------*

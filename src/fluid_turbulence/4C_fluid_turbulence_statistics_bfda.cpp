@@ -77,8 +77,8 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
 
   //----------------------------------------------------------------------

@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::LinSystem::ConditionNumber Solid::Nln::Convert2NoxConditionNumberType(
+NOX::Nln::LinSystem::ConditionNumber Solid::Nln::convert2_nox_condition_number_type(
     const Inpar::Solid::ConditionNumber stype)
 {
   switch (stype)
@@ -57,7 +57,7 @@ NOX::Nln::LinSystem::ConditionNumber Solid::Nln::Convert2NoxConditionNumberType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum ::NOX::Abstract::Vector::NormType Solid::Nln::Convert2NoxNormType(
+enum ::NOX::Abstract::Vector::NormType Solid::Nln::convert2_nox_norm_type(
     const enum Inpar::Solid::VectorNorm& normtype)
 {
   enum ::NOX::Abstract::Vector::NormType nox_normtype = ::NOX::Abstract::Vector::TwoNorm;
@@ -77,7 +77,7 @@ enum ::NOX::Abstract::Vector::NormType Solid::Nln::Convert2NoxNormType(
     case Inpar::Solid::norm_vague:
     default:
       FOUR_C_THROW("Unknown conversion for the given vector norm type: \" %s \"!",
-          Inpar::Solid::VectorNormString(normtype).c_str());
+          Inpar::Solid::vector_norm_string(normtype).c_str());
       break;
   }  // switch case normtype
 
@@ -86,7 +86,7 @@ enum ::NOX::Abstract::Vector::NormType Solid::Nln::Convert2NoxNormType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Nln::ConvertModelType2SolType(std::vector<enum NOX::Nln::SolutionType>& soltypes,
+void Solid::Nln::convert_model_type2_sol_type(std::vector<enum NOX::Nln::SolutionType>& soltypes,
     std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& slinsolvers,
     const std::set<enum Inpar::Solid::ModelType>& modeltypes,
     const std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>& mlinsolvers)
@@ -105,7 +105,7 @@ void Solid::Nln::ConvertModelType2SolType(std::vector<enum NOX::Nln::SolutionTyp
   std::set<enum Inpar::Solid::ModelType>::const_iterator mt_iter;
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
-    const enum NOX::Nln::SolutionType soltype = ConvertModelType2SolType(*mt_iter);
+    const enum NOX::Nln::SolutionType soltype = convert_model_type2_sol_type(*mt_iter);
 
     soltypes.push_back(soltype);
     // copy the linsolver pointers into the new map
@@ -116,7 +116,7 @@ void Solid::Nln::ConvertModelType2SolType(std::vector<enum NOX::Nln::SolutionTyp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::Nln::SolutionType Solid::Nln::ConvertModelType2SolType(
+enum NOX::Nln::SolutionType Solid::Nln::convert_model_type2_sol_type(
     const enum Inpar::Solid::ModelType& modeltype, const bool& do_check)
 {
   enum NOX::Nln::SolutionType soltype = NOX::Nln::sol_unknown;
@@ -151,7 +151,7 @@ enum NOX::Nln::SolutionType Solid::Nln::ConvertModelType2SolType(
         FOUR_C_THROW(
             "The corresponding solution-type was not found. "
             "Given string: %s",
-            Inpar::Solid::ModelTypeString(modeltype).c_str());
+            Inpar::Solid::model_type_string(modeltype).c_str());
       break;
   }
 
@@ -160,7 +160,7 @@ enum NOX::Nln::SolutionType Solid::Nln::ConvertModelType2SolType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::ModelType Solid::Nln::ConvertSolType2ModelType(
+enum Inpar::Solid::ModelType Solid::Nln::convert_sol_type2_model_type(
     const enum NOX::Nln::SolutionType& soltype, const bool& do_check)
 {
   enum Inpar::Solid::ModelType modeltype = Inpar::Solid::model_vague;
@@ -187,7 +187,7 @@ enum Inpar::Solid::ModelType Solid::Nln::ConvertSolType2ModelType(
         FOUR_C_THROW(
             "The corresponding model-type was not found. "
             "Given string: %s",
-            NOX::Nln::SolutionType2String(soltype).c_str());
+            NOX::Nln::solution_type_to_string(soltype).c_str());
       break;
   }
 
@@ -196,16 +196,16 @@ enum Inpar::Solid::ModelType Solid::Nln::ConvertSolType2ModelType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::ModelType Solid::Nln::ConvertQuantityType2ModelType(
+enum Inpar::Solid::ModelType Solid::Nln::convert_quantity_type2_model_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const bool& do_check)
 {
   const NOX::Nln::SolutionType st = NOX::Nln::Aux::convert_quantity_type_to_solution_type(qtype);
-  return ConvertSolType2ModelType(st, do_check);
+  return convert_sol_type2_model_type(st, do_check);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::Solid::EleTech Solid::Nln::ConvertQuantityType2EleTech(
+enum Inpar::Solid::EleTech Solid::Nln::convert_quantity_type2_ele_tech(
     const enum NOX::Nln::StatusTest::QuantityType& qtype)
 {
   enum Inpar::Solid::EleTech eletech;
@@ -219,7 +219,7 @@ enum Inpar::Solid::EleTech Solid::Nln::ConvertQuantityType2EleTech(
       break;
     default:
       FOUR_C_THROW("Cannot convert QuantityType %s to EleTech.",
-          NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
+          NOX::Nln::StatusTest::quantity_type_to_string(qtype).c_str());
       break;
   }
 
@@ -228,7 +228,7 @@ enum Inpar::Solid::EleTech Solid::Nln::ConvertQuantityType2EleTech(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::Nln::OptimizationProblemType Solid::Nln::OptimizationType(
+enum NOX::Nln::OptimizationProblemType Solid::Nln::optimization_type(
     const std::vector<enum NOX::Nln::SolutionType>& soltypes)
 {
   enum NOX::Nln::OptimizationProblemType opttype = NOX::Nln::opt_unconstrained;
@@ -272,7 +272,7 @@ enum NOX::Nln::OptimizationProblemType Solid::Nln::OptimizationType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Nln::CreateConstraintInterfaces(NOX::Nln::CONSTRAINT::ReqInterfaceMap& iconstr,
+void Solid::Nln::create_constraint_interfaces(NOX::Nln::CONSTRAINT::ReqInterfaceMap& iconstr,
     Solid::Integrator& integrator, const std::vector<enum NOX::Nln::SolutionType>& soltypes)
 {
   if (iconstr.size() > 0) iconstr.clear();
@@ -315,7 +315,7 @@ void Solid::Nln::CreateConstraintInterfaces(NOX::Nln::CONSTRAINT::ReqInterfaceMa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Nln::CreateConstraintPreconditioner(
+void Solid::Nln::create_constraint_preconditioner(
     NOX::Nln::CONSTRAINT::PrecInterfaceMap& iconstr_prec, Solid::Integrator& integrator,
     const std::vector<enum NOX::Nln::SolutionType>& soltypes)
 {
@@ -365,14 +365,14 @@ void Solid::Nln::CreateConstraintPreconditioner(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Nln::CreateScaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
+void Solid::Nln::create_scaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
     const Solid::TimeInt::BaseDataSDyn& DataSDyn, Solid::TimeInt::BaseDataGlobalState& GState)
 {
   if (DataSDyn.get_stc_algo_type() != Inpar::Solid::stc_none)
     iscale = Teuchos::rcp(new Solid::Nln::LinSystem::StcScaling(DataSDyn, GState));
 }
 
-void Solid::ComputeGeneralizedAlphaParameters(Solid::IMPLICIT::GenAlpha::Coefficients& coeffs)
+void Solid::compute_generalized_alpha_parameters(Solid::IMPLICIT::GenAlpha::Coefficients& coeffs)
 {
   // ------ check if the user provide RHO_INF and any other parameters at the same time
   if (((coeffs.beta_ != -1.0) or (coeffs.gamma_ != -1.0) or (coeffs.alpham_ != -1.0) or

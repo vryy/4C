@@ -228,7 +228,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  impedancetbc_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  impedancetbc_ = Core::LinAlg::create_vector(*dofrowmap, true);
   impedancetbcsysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
   // NOTE: do not call impedancetbcsysmat_->Complete() before it is filled, since
   // this is our check if it has already been initialized
@@ -298,7 +298,7 @@ void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
 
   discret_->evaluate_condition(eleparams, flowrates, "ImpedanceCond", condid);
 
@@ -398,7 +398,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   {
     // calculate dQ/du = ( \phi o n )_Gamma
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> dQdu = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> dQdu = Core::LinAlg::create_vector(*dofrowmap, true);
 
     Teuchos::ParameterList eleparams2;
     // action for elements
@@ -407,7 +407,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
     discret_->evaluate_condition(eleparams2, dQdu, "ImpedanceCond", condid);
 
     // now move dQdu to one proc
-    Teuchos::RCP<Epetra_Map> dofrowmapred = Core::LinAlg::AllreduceEMap(*dofrowmap);
+    Teuchos::RCP<Epetra_Map> dofrowmapred = Core::LinAlg::allreduce_e_map(*dofrowmap);
     Teuchos::RCP<Epetra_Vector> dQdu_full = Teuchos::rcp(new Epetra_Vector(*dofrowmapred, true));
 
     Core::LinAlg::export_to(*dQdu, *dQdu_full);  //!!! add off proc components

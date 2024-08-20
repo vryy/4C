@@ -49,7 +49,7 @@ namespace
   /*----------------------------------------------------------------------*/
   /* create default bc file                                               */
   /*----------------------------------------------------------------------*/
-  int CreateDefaultBCFile(EXODUS::Mesh& mymesh)
+  int create_default_bc_file(EXODUS::Mesh& mymesh)
   {
     using namespace FourC;
 
@@ -145,8 +145,8 @@ namespace
     // print validconditions as proposal
     defaultbc << "-----------------------------------------VALIDCONDITIONS" << std::endl;
     Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
-        Input::ValidConditions();
-    Input::PrintEmptyConditionDefinitions(defaultbc, *condlist);
+        Input::valid_conditions();
+    Input::print_empty_condition_definitions(defaultbc, *condlist);
 
     // print valid element lines as proposal (parobjects have to be registered for doing this!)
     defaultbc << std::endl << std::endl;
@@ -176,13 +176,13 @@ int main(int argc, char** argv)
   // communication
   MPI_Init(&argc, &argv);
 
-  GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
+  global_legacy_module_callbacks().RegisterParObjectTypes();
 
   // create a problem instance
   Global::Problem* problem = Global::Problem::instance();
   // create default communicators
   Teuchos::RCP<Core::Communication::Communicators> communicators =
-      Core::Communication::CreateComm({});
+      Core::Communication::create_comm({});
   Global::Problem::instance()->set_communicators(communicators);
   Teuchos::RCP<Epetra_Comm> comm = communicators->global_comm();
 
@@ -251,7 +251,7 @@ int main(int argc, char** argv)
       if (datfile != "")
       {
         // just validate a given 4C input file
-        EXODUS::ValidateInputFile(comm, datfile);
+        EXODUS::validate_input_file(comm, datfile);
         return 0;
       }
       else
@@ -273,7 +273,7 @@ int main(int argc, char** argv)
     // transform quads->tris
     if (quadtri)
     {
-      EXODUS::Mesh trimesh = EXODUS::QuadtoTri(mymesh);
+      EXODUS::Mesh trimesh = EXODUS::quadto_tri(mymesh);
       trimesh.write_mesh("tri_" + exofile);
       exit(0);
     }
@@ -288,13 +288,13 @@ int main(int argc, char** argv)
 
     if (bcfile == "")
     {
-      int error = CreateDefaultBCFile(mymesh);
+      int error = create_default_bc_file(mymesh);
       if (error != 0) FOUR_C_THROW("Creation of default bc-file not successful.");
     }
     else
     {
       // read provided bc-file
-      EXODUS::ReadBCFile(bcfile, eledefs, condefs);
+      EXODUS::read_bc_file(bcfile, eledefs, condefs);
 
       int sum =
           mymesh.get_num_element_blocks() + mymesh.get_num_node_sets() + mymesh.get_num_side_sets();
@@ -322,11 +322,11 @@ int main(int argc, char** argv)
       if (!defaulthead) FOUR_C_THROW("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
-      Teuchos::RCP<const Teuchos::ParameterList> list = Input::ValidParameters();
+      Teuchos::RCP<const Teuchos::ParameterList> list = Input::valid_parameters();
 
       // write default .dat header into file
       std::stringstream prelimhead;
-      Input::PrintDatHeader(prelimhead, *list);
+      Input::print_dat_header(prelimhead, *list);
       std::string headstring = prelimhead.str();
       size_t size_section =
           headstring.find("-------------------------------------------------------PROBLEM SIZE");
@@ -341,8 +341,8 @@ int main(int argc, char** argv)
       // get valid input materials
       {
         Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> mlist =
-            Input::ValidMaterials();
-        Input::PrintEmptyMaterialDefinitions(defaulthead, *mlist);
+            Input::valid_materials();
+        Input::print_empty_material_definitions(defaulthead, *mlist);
       }
 
       // print cloning material map default lines (right after the materials)
@@ -361,7 +361,7 @@ int main(int argc, char** argv)
       {
         std::stringstream tmp;
         Core::UTILS::FunctionManager functionmanager;
-        GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(functionmanager);
+        global_legacy_module_callbacks().AttachFunctionDefinitions(functionmanager);
         const std::vector<Input::LineDefinition> flines = functionmanager.valid_function_lines();
         Core::IO::DatFileUtils::print_section(tmp, "FUNCT", flines);
         std::string tmpstring = tmp.str();
@@ -377,7 +377,7 @@ int main(int argc, char** argv)
 
       // default result-test lines
       {
-        const auto lines = GlobalLegacyModuleCallbacks().valid_result_description_lines();
+        const auto lines = global_legacy_module_callbacks().valid_result_description_lines();
         Core::IO::DatFileUtils::print_section(defaulthead, "RESULT DESCRIPTION", lines);
       }
 
@@ -405,7 +405,7 @@ int main(int argc, char** argv)
       {
         std::cout << "...Ensure positive element jacobians";
         timer->start();
-        ValidateMeshElementJacobians(mymesh);
+        validate_mesh_element_jacobians(mymesh);
         timer->stop();
         std::cout << "        in...." << timer->totalElapsedTime(true) << " secs" << std::endl;
         timer->reset();
@@ -417,11 +417,11 @@ int main(int argc, char** argv)
       // in order to keep the Krylov norm below 1e-6 :-)
       // only supported for angle 0.0
       {
-        if (PeriodicBoundaryConditionsFound(condefs))
+        if (periodic_boundary_conditions_found(condefs))
         {
           std::cout << "...Ensure high quality p.b.c.";
           timer->start();
-          CorrectNodalCoordinatesForPeriodicBoundaryConditions(mymesh, condefs);
+          correct_nodal_coordinates_for_periodic_boundary_conditions(mymesh, condefs);
           timer->stop();
           std::cout << "               in...." << timer->totalElapsedTime(true) << " secs"
                     << std::endl;
@@ -434,7 +434,7 @@ int main(int argc, char** argv)
         if (twodim) mymesh.set_nsd(2);
         std::cout << "...Writing dat-file";
         timer->start();
-        EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
+        EXODUS::write_dat_file(datfile, mymesh, headfile, eledefs, condefs);
         timer->stop();
         std::cout << "                         in...." << timer->totalElapsedTime(true) << " secs"
                   << std::endl;
@@ -442,7 +442,7 @@ int main(int argc, char** argv)
       }
 
       // validate the generated 4C input file
-      EXODUS::ValidateInputFile(comm, datfile);
+      EXODUS::validate_input_file(comm, datfile);
     }
   }
   catch (Core::Exception& err)

@@ -47,7 +47,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 
   MPI_Init(&argc, &argv);
 
-  GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
+  global_legacy_module_callbacks().RegisterParObjectTypes();
 
   std::string file = "xxx";
   std::string output;
@@ -157,9 +157,9 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 
   const char* type = map_read_string(&control_table_, "problem_type");
   const std::string probtype(type);
-  problemtype_ = Inpar::PROBLEMTYPE::StringToProblemType(probtype);
+  problemtype_ = Inpar::PROBLEMTYPE::string_to_problem_type(probtype);
 
-  spatial_approx_ = Core::FE::StringToShapeFunctionType(
+  spatial_approx_ = Core::FE::string_to_shape_function_type(
       map_read_string(&control_table_, "spatial_approximation"));
 
   /*--------------------------------------------------------------------*/

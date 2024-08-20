@@ -96,7 +96,7 @@ namespace Mortar
      */
     Inpar::Mortar::LagMultQuad lag_mult_quad()
     {
-      return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
+      return Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!
@@ -105,7 +105,7 @@ namespace Mortar
      */
     Inpar::Mortar::ShapeFcn shape_fcn()
     {
-      return Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     /*!
@@ -264,7 +264,7 @@ namespace Mortar
      */
     virtual Inpar::Mortar::LagMultQuad lag_mult_quad()
     {
-      return Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
+      return Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!
@@ -273,7 +273,7 @@ namespace Mortar
      */
     virtual Inpar::Mortar::IntType int_type()
     {
-      return Core::UTILS::IntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
+      return Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
     }
 
     /*!
@@ -294,7 +294,7 @@ namespace Mortar
      */
     Inpar::Mortar::ShapeFcn shape_fcn()
     {
-      return Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     //@}

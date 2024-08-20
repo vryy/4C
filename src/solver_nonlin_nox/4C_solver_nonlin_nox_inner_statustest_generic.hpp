@@ -48,7 +48,7 @@ namespace NOX
           status_converged = 1
         };
 
-        inline std::string StatusType2String(enum StatusType status)
+        inline std::string status_type_to_string(enum StatusType status)
         {
           switch (status)
           {

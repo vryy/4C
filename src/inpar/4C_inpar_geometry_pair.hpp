@@ -62,7 +62,7 @@ namespace Inpar
     /**
      * \brief Map number of gauss points to 1D gauss rule
      */
-    Core::FE::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
+    Core::FE::GaussRule1D int_to_gauss_rule1_d(const int n_gauss_points);
 
     /**
      * \brief Set valid input parameters for line to 3D geometry pairs.
@@ -72,7 +72,7 @@ namespace Inpar
      *
      * @param (out) Parameter list to add the line to 3D parameters to.
      */
-    void SetValidParametersLineTo3D(Teuchos::ParameterList& list);
+    void set_valid_parameters_line_to3_d(Teuchos::ParameterList& list);
 
     /**
      * \brief Set valid input parameters for line to surface geometry pairs.
@@ -82,7 +82,7 @@ namespace Inpar
      *
      * @param (out) Parameter list to add the line to surface parameters to.
      */
-    void SetValidParametersLineToSurface(Teuchos::ParameterList& list);
+    void set_valid_parameters_line_to_surface(Teuchos::ParameterList& list);
 
   }  // namespace GEOMETRYPAIR
 

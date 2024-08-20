@@ -133,7 +133,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::communicate_specific_affiliat
   }
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(comm_, sdata, rdata);
 
   // unpack affiliation pairs
   for (auto& p : rdata) unpack_affiliation_pairs(p.second);

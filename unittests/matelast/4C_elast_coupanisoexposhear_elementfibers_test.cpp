@@ -21,7 +21,7 @@ namespace
 {
   using namespace FourC;
 
-  void SetupSingleStructuralTensor(const Core::LinAlg::Matrix<3, 1>& fiber1,
+  void setup_single_structural_tensor(const Core::LinAlg::Matrix<3, 1>& fiber1,
       const Core::LinAlg::Matrix<3, 1>& fiber2, Core::LinAlg::Matrix<3, 3>& structuralTensor)
   {
     Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
@@ -57,7 +57,7 @@ namespace
       eleFibers_[2](2) = 0.469809238649817;
 
       // setup structural tensor
-      SetupSingleStructuralTensor(
+      setup_single_structural_tensor(
           eleFibers_[get_fiber_ids()[0]], eleFibers_[get_fiber_ids()[1]], eleTensors_);
 
       // Setup structural tensors in stress like Voigt notation

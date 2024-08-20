@@ -25,7 +25,7 @@ void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
       data, static_cast<int>(properties.prestress_technology));
 }
 
-void Discret::ELEMENTS::ExtractFromPack(std::size_t& position, const std::vector<char>& data,
+void Discret::ELEMENTS::extract_from_pack(std::size_t& position, const std::vector<char>& data,
     Discret::ELEMENTS::SolidElementProperties& properties)
 {
   properties.kintype = static_cast<Inpar::Solid::KinemType>(

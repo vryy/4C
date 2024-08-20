@@ -30,7 +30,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
 
       // extract local values of the global vectors
       std::vector<double> myscalar(la[2].lm_.size());
-      Core::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
+      Core::FE::extract_my_values(*scalarnp, myscalar, la[2].lm_);
 
       if (So3Ele::num_material() < 2)
         FOUR_C_THROW("no second material defined for Wall poro element!");
@@ -63,7 +63,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
     xrefe.resize(3);
     Core::Nodes::Node** nodes = my::nodes();
     // get displacements of this element
-    //  Core::FE::ExtractMyValues(*disp,mydisp,lm);
+    //  Core::FE::extract_my_values(*disp,mydisp,lm);
     for (int i = 0; i < numnod_; ++i)
     {
       const auto& x = nodes[i]->x();

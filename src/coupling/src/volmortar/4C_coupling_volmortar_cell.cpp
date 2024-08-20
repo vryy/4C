@@ -64,7 +64,7 @@ double Coupling::VolMortar::Cell::calc_jac(const double* xi)
   const double s = xi[1];
   const double t = xi[2];
 
-  Core::FE::shape_function_3D_deriv1(derivs, r, s, t, Core::FE::CellType::hex8);
+  Core::FE::shape_function_3d_deriv1(derivs, r, s, t, Core::FE::CellType::hex8);
 
 
   Core::LinAlg::Matrix<8, 3> xrefe;
@@ -92,8 +92,8 @@ void Coupling::VolMortar::Cell::local_to_global(double* local, double* global)
   if (shape_ == Core::FE::CellType::tet4)
   {
     // check input
-    if (!local) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
-    if (!global) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
+    if (!local) FOUR_C_THROW("ERROR: local_to_global called with xi=nullptr");
+    if (!global) FOUR_C_THROW("ERROR: local_to_global called with globcoord=nullptr");
 
     static const int n = 4;
     static const int ndim = 3;
@@ -101,7 +101,7 @@ void Coupling::VolMortar::Cell::local_to_global(double* local, double* global)
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
     Core::LinAlg::Matrix<n, 1> val;
-    Core::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    Core::FE::shape_function_3d(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {
@@ -115,8 +115,8 @@ void Coupling::VolMortar::Cell::local_to_global(double* local, double* global)
   else if (shape_ == Core::FE::CellType::hex8)
   {
     // check input
-    if (!local) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
-    if (!global) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
+    if (!local) FOUR_C_THROW("ERROR: local_to_global called with xi=nullptr");
+    if (!global) FOUR_C_THROW("ERROR: local_to_global called with globcoord=nullptr");
 
     static const int n = 8;
     static const int ndim = 3;
@@ -124,7 +124,7 @@ void Coupling::VolMortar::Cell::local_to_global(double* local, double* global)
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
     Core::LinAlg::Matrix<n, 1> val;
-    Core::FE::shape_function_3D(val, local[0], local[1], local[2], shape_);
+    Core::FE::shape_function_3d(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
     {

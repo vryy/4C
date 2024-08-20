@@ -29,7 +29,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::Para
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
   // Initialize Boxfilter
@@ -190,7 +190,7 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_vreman_scatra, calc_vreman_params_scatra);
   calc_vreman_params_scatra.set("col_filtered_phi", col_filtered_phi_);
   calc_vreman_params_scatra.set("col_filtered_phi2", col_filtered_phi2_);

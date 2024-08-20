@@ -52,9 +52,9 @@ FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
 
   // some exclusions and safety checks:
   if (nsd != 3) FOUR_C_THROW("Only 3D problems considered in xwall modelling!");
-  if (Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+  if (Core::UTILS::get_as_enum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
           Inpar::FLUID::timeint_afgenalpha &&
-      Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+      Core::UTILS::get_as_enum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
           Inpar::FLUID::timeint_npgenalpha)
     FOUR_C_THROW(
         "Use Af-Genalpha for time integration in combination with xwall wall modeling. There would "
@@ -141,7 +141,7 @@ FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
     FOUR_C_THROW(
         "smoothing of tauw works only for residual-based tauw, as the residual is smoothed");
 
-  fix_residual_on_inflow_ = Core::UTILS::IntegralValue<int>(
+  fix_residual_on_inflow_ = Core::UTILS::integral_value<int>(
       params_->sublist("WALL MODEL"), "Treat_Tauw_on_Dirichlet_Inflow");
 
   // output:
@@ -393,7 +393,7 @@ void FLD::XWall::init_wall_dist()
   }
 
   Teuchos::RCP<Epetra_Map> testrednodecolmap =
-      Core::LinAlg::AllreduceEMap(*(discret_->node_row_map()));
+      Core::LinAlg::allreduce_e_map(*(discret_->node_row_map()));
   commondis->export_column_nodes(*testrednodecolmap);
 
   // do not assign any dofs to save memory
@@ -638,13 +638,14 @@ void FLD::XWall::setup_x_wall_dis()
     Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(*xwdiscret_->element_row_map()));
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(discret_->get_comm().Clone());
 
-    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::BuildGraph(xwdiscret_, elemap);
+    Teuchos::RCP<const Epetra_CrsGraph> nodegraph =
+        Core::Rebalance::build_graph(xwdiscret_, elemap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
 
     const auto& [rownodes, colnodes] =
-        Core::Rebalance::RebalanceNodeMaps(nodegraph, rebalanceParams);
+        Core::Rebalance::rebalance_node_maps(nodegraph, rebalanceParams);
 
     // rebuild of the system with new maps
     xwdiscret_->redistribute(*rownodes, *colnodes, false, false);
@@ -748,7 +749,7 @@ void FLD::XWall::setup_l2_projection()
 
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, xwdiscret_->get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     if (solvertype != Core::LinearSolver::SolverType::umfpack)
@@ -1067,8 +1068,8 @@ void FLD::XWall::calc_tau_w(
       }
 
       // assembling into node maps
-      Core::LinAlg::Assemble(*newtauwxwdis, elevector1, lm, lmowner);
-      Core::LinAlg::Assemble(*timesvec, elevector2, lm, lmowner);
+      Core::LinAlg::assemble(*newtauwxwdis, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(*timesvec, elevector2, lm, lmowner);
     }  // end element loop
 
     xwdiscret_->clear_state();
@@ -1231,7 +1232,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
       // copy results into Serial_DenseVector for assembling
       for (int idf = 0; idf < numnode * numdf; ++idf) elevector1(idf) = elematrix2(idf, n);
       // assemble into nth vector of MultiVector
-      Core::LinAlg::Assemble(*rhsassemble, n, elevector1, lmassemble, lmownerassemble);
+      Core::LinAlg::assemble(*rhsassemble, n, elevector1, lmassemble, lmownerassemble);
     }
   }  // end element loop
 
@@ -1702,10 +1703,10 @@ void FLD::XWallAleFSI::set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparam
   // params required for the shape functions
   eleparams.set("incwalldist", incwdistxwdis_);
   Teuchos::RCP<Epetra_Vector> xwdisdispnp =
-      Core::LinAlg::CreateVector(*(xwdiscret_->dof_row_map()), true);
+      Core::LinAlg::create_vector(*(xwdiscret_->dof_row_map()), true);
   Core::LinAlg::export_to(*mydispnp_, *xwdisdispnp);
   Teuchos::RCP<Epetra_Vector> xwdisgridv =
-      Core::LinAlg::CreateVector(*(xwdiscret_->dof_row_map()), true);
+      Core::LinAlg::create_vector(*(xwdiscret_->dof_row_map()), true);
   Core::LinAlg::export_to(*mygridv_, *xwdisgridv);
 
   xwdiscret_->set_state("dispnp", xwdisdispnp);

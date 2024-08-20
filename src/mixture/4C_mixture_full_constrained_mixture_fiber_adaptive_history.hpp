@@ -365,7 +365,7 @@ namespace MIXTURE
   {
     const double dt = (end_time - begin_time) / 2;
     const Number numerical_integration =
-        Core::UTILS::IntegrateSimpsonStep(dt,
+        Core::UTILS::integrate_simpson_step(dt,
             growth_evolution.evaluate_survival_function(time - begin_time),
             growth_evolution.evaluate_survival_function(time - (begin_time + end_time) / 2),
             growth_evolution.evaluate_survival_function(time - end_time)) /
@@ -374,9 +374,9 @@ namespace MIXTURE
         growth_evolution.evaluate_survival_function_integration(time, begin_time, end_time) /
         growth_evolution.decay_time_;
 
-    return Core::FADUtils::Norm<Number>(numerical_integration - exact_integration) <= tolerance ||
-           (Core::FADUtils::Norm<Number>(numerical_integration) <= tolerance &&
-               Core::FADUtils::Norm<Number>(exact_integration) <= tolerance);
+    return Core::FADUtils::norm<Number>(numerical_integration - exact_integration) <= tolerance ||
+           (Core::FADUtils::norm<Number>(numerical_integration) <= tolerance &&
+               Core::FADUtils::norm<Number>(exact_integration) <= tolerance);
   }
 }  // namespace MIXTURE
 

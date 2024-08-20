@@ -29,7 +29,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>
 Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>>(
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     {
       static Core::LinAlg::Matrix<nen_, nsd_> xyze_transposed;
       xyze_transposed.update_t(my::xyze_);
-      Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
+      Core::FE::evaluate_shape_function_spatial_derivative_in_prob_dim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
     }
@@ -300,7 +300,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, pro
         case ScaTra::DifferentiationType::disp:
         {
           double dj_dsqrtdetg(0.0), dj_ddetF(0.0);
-          CalculateButlerVolmerDispLinearizations(
+          calculate_butler_volmer_disp_linearizations(
               kineticmodel, alphaa, alphac, frt, j0, eta, depd_ddetF, dj_dsqrtdetg, dj_ddetF);
 
           const double dj_dsqrtdetg_timefacwgt = pseudo_contact_fac * dj_dsqrtdetg * timefacwgt;
@@ -344,7 +344,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, pro
           double dj_dT_slave(0.0);
 
           // calculate linearizations of Butler-Volmer kinetics w.r.t. tmperature dofs
-          CalculateButlerVolmerTempLinearizations(
+          calculate_butler_volmer_temp_linearizations(
               alphaa, alphac, depddT, eta, etempint, faraday, frt, gasconstant, j0, dj_dT_slave);
 
           const double djdT_slave_timefacfac = dj_dT_slave * timefacfac;

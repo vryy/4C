@@ -243,18 +243,18 @@ namespace Core::IO
   };
 
   /// Extract the path of a full filename.
-  std::string ExtractPath(const std::string& full_filename);
+  std::string extract_path(const std::string& full_filename);
 
-  std::string ExtractFileName(const std::string& full_filename);
+  std::string extract_file_name(const std::string& full_filename);
 
   /// remove the @p restart_step from the @p filename
-  std::string RemoveRestartStepFromFileName(const std::string& filename, int restart_step);
+  std::string remove_restart_step_from_file_name(const std::string& filename, int restart_step);
 
   /// Create a new directory.
   void create_directory(const std::string& dir_path, const int myrank);
 
   /// Return number of lines in the given file
-  int CountLinesInFile(const std::string& filepath);
+  int count_lines_in_file(const std::string& filepath);
 }  // namespace Core::IO
 
 

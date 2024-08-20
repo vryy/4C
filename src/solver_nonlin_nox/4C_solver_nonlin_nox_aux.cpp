@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 void NOX::Nln::Aux::set_printing_parameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
 {
   // make all Yes/No integral values to Boolean
-  Input::BoolifyValidInputParameters(p_nox);
+  Input::boolify_valid_input_parameters(p_nox);
 
   // adjust printing parameter list
   Teuchos::ParameterList& printParams = p_nox.sublist("Printing");
@@ -567,7 +567,7 @@ enum NOX::Nln::SolutionType NOX::Nln::Aux::convert_quantity_type_to_solution_typ
     case NOX::Nln::StatusTest::quantity_unknown:
     default:
       FOUR_C_THROW("Unknown conversion for the quantity type \"%s\".",
-          NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
+          NOX::Nln::StatusTest::quantity_type_to_string(qtype).c_str());
   }
   // return the corresponding solution type
   return soltype;

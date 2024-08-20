@@ -24,7 +24,7 @@ namespace Inpar
   namespace NlnSol
   {
     /// set the nonlinear solver parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace NlnSol
 }  // namespace Inpar

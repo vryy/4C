@@ -64,7 +64,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::set_element_data(
       dynamic_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(newele.get());
   if (porofluidele != nullptr)
   {
-    porofluidele->set_material(0, Mat::Factory(matid));
+    porofluidele->set_material(0, Mat::factory(matid));
     porofluidele->set_dis_type(oldele->shape());  // set distype as well!
   }
   else

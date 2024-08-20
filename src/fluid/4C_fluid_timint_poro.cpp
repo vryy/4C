@@ -155,7 +155,8 @@ void FLD::TimIntPoro::update_iter_incrementally(
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::CreateVector(*(discret_->dof_row_map(0)), true);
+    Teuchos::RCP<Epetra_Vector> aux =
+        Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
 
     // only one step theta
     // new end-point accelerations

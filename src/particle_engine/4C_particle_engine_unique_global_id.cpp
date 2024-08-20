@@ -142,7 +142,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
   }
 
   // communicate data via non-buffered send from proc to proc
-  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::immediate_recv_blocking_send(comm_, sdata, rdata);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (myrank_ != masterrank_)
@@ -303,7 +303,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
   }
 
   // communicate data via non-buffered send from proc to proc
-  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::immediate_recv_blocking_send(comm_, sdata, rdata);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   for (const auto& p : rdata)

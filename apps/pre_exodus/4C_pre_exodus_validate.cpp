@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
+void EXODUS::validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
 {
   using namespace FourC;
 
@@ -38,35 +38,35 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;
-  Global::ReadParameter(*problem, reader);
+  Global::read_parameter(*problem, reader);
 
   // read and validate all material definitions
   std::cout << "...Read materials" << std::endl;
-  Global::ReadMaterials(*problem, reader);
+  Global::read_materials(*problem, reader);
 
   // do NOT allocate the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
   // But, we have to perform at least the problem-specific setup since
   // some reading procedures depend on the number of fields (e.g., ReadKnots())
   std::cout << "...Read field setup" << std::endl;
-  Global::ReadFields(*problem, reader, false);  // option false is important here!
+  Global::read_fields(*problem, reader, false);  // option false is important here!
 
   std::cout << "...";
   {
     Core::UTILS::FunctionManager function_manager;
-    GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+    global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
     function_manager.read_input(reader);
   }
 
-  Global::ReadResult(*problem, reader);
-  Global::ReadConditions(*problem, reader);
+  Global::read_result(*problem, reader);
+  Global::read_conditions(*problem, reader);
 
   // input of materials of cloned fields (if needed)
-  Global::ReadCloningMaterialMap(*problem, reader);
+  Global::read_cloning_material_map(*problem, reader);
 
   // read all knot information for isogeometric analysis
   // and add it to the (derived) nurbs discretization
-  Global::ReadKnots(*problem, reader);
+  Global::read_knots(*problem, reader);
 
   // inform user about unused/obsolete section names being found
   // and force him/her to correct the input file accordingly
@@ -80,7 +80,7 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
+void EXODUS::validate_mesh_element_jacobians(Mesh& mymesh)
 {
   if (mymesh.get_num_dim() != 3) FOUR_C_THROW("Element Validation only for 3 Dimensions");
 
@@ -90,21 +90,21 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
   for (i_eb = myebs.begin(); i_eb != myebs.end(); ++i_eb)
   {
     Teuchos::RCP<ElementBlock> eb = i_eb->second;
-    const Core::FE::CellType distype = PreShapeToDrt(eb->get_shape());
+    const Core::FE::CellType distype = pre_shape_to_drt(eb->get_shape());
     // check and rewind if necessary
-    ValidateElementJacobian(mymesh, distype, eb);
+    validate_element_jacobian(mymesh, distype, eb);
     // full check at all gausspoints
-    int invalid_dets = ValidateElementJacobian_fullgp(mymesh, distype, eb);
+    int invalid_dets = validate_element_jacobian_fullgp(mymesh, distype, eb);
     if (invalid_dets > 0)
       std::cout << invalid_dets << " negative Jacobian determinants in EB of shape "
-                << ShapeToString(eb->get_shape()) << std::endl;
+                << shape_to_string(eb->get_shape()) << std::endl;
   }
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ValidateElementJacobian(
+void EXODUS::validate_element_jacobian(
     Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
   using namespace FourC;
@@ -161,18 +161,18 @@ void EXODUS::ValidateElementJacobian(
     int rewcount = 0;
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
-      Core::FE::shape_function_3D_deriv1(
+      Core::FE::shape_function_3d_deriv1(
           deriv, intpoints.qxg[igp][0], intpoints.qxg[igp][1], intpoints.qxg[igp][2], distype);
-      if (!PositiveEle(i_ele->first, i_ele->second, mymesh, deriv))
+      if (!positive_ele(i_ele->first, i_ele->second, mymesh, deriv))
       {
         // rewind the element nodes
         if (rewcount == 0)
         {
-          i_ele->second = RewindEle(i_ele->second, distype);
+          i_ele->second = rewind_ele(i_ele->second, distype);
           numrewindedeles++;
         }
         // double check
-        if (!PositiveEle(i_ele->first, i_ele->second, mymesh, deriv))
+        if (!positive_ele(i_ele->first, i_ele->second, mymesh, deriv))
           FOUR_C_THROW(
               "No proper rewinding for element id %d at gauss point %d", i_ele->first, igp);
         rewcount++;
@@ -188,7 +188,7 @@ void EXODUS::ValidateElementJacobian(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::ValidateElementJacobian_fullgp(
+int EXODUS::validate_element_jacobian_fullgp(
     Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
 {
   using namespace FourC;
@@ -246,9 +246,9 @@ int EXODUS::ValidateElementJacobian_fullgp(
   {
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
-      Core::FE::shape_function_3D_deriv1(
+      Core::FE::shape_function_3d_deriv1(
           deriv, intpoints.qxg[igp][0], intpoints.qxg[igp][1], intpoints.qxg[igp][2], distype);
-      if (PositiveEle(i_ele->first, i_ele->second, mymesh, deriv) == false)
+      if (positive_ele(i_ele->first, i_ele->second, mymesh, deriv) == false)
       {
         invalids++;
       }
@@ -260,7 +260,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
+bool EXODUS::positive_ele(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
     const Core::LinAlg::SerialDenseMatrix& deriv)
 {
   using namespace FourC;
@@ -297,7 +297,7 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::EleSaneSign(
+int EXODUS::ele_sane_sign(
     const std::vector<int>& nodes, const std::map<int, std::vector<double>>& nodecoords)
 {
   using namespace FourC;
@@ -380,7 +380,7 @@ int EXODUS::EleSaneSign(
 
   for (int i = 0; i < iel; ++i)
   {
-    Core::FE::shape_function_3D_deriv1(
+    Core::FE::shape_function_3d_deriv1(
         deriv, local_nodecoords(i, 0), local_nodecoords(i, 1), local_nodecoords(i, 2), distype);
     Core::LinAlg::multiply_nt(xjm, deriv, xyze);
     const double det = xjm(0, 0) * xjm(1, 1) * xjm(2, 2) + xjm(0, 1) * xjm(1, 2) * xjm(2, 0) +
@@ -407,7 +407,7 @@ int EXODUS::EleSaneSign(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const Core::FE::CellType distype)
+std::vector<int> EXODUS::rewind_ele(std::vector<int> old_nodeids, const Core::FE::CellType distype)
 {
   using namespace FourC;
 

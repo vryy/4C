@@ -123,7 +123,7 @@ namespace SSI
   };
 
   //! build specific contact strategy
-  Teuchos::RCP<SSI::ContactStrategyBase> BuildContactStrategy(
+  Teuchos::RCP<SSI::ContactStrategyBase> build_contact_strategy(
       Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, Core::LinAlg::MatrixType matrixtype_scatra);
 }  // namespace SSI

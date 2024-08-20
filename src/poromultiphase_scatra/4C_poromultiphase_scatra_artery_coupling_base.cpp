@@ -28,7 +28,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     : arterydis_(arterydis),
       contdis_(contdis),
       myrank_(arterydis->get_comm().MyPID()),
-      evaluate_in_ref_config_(Core::UTILS::IntegralValue<int>(
+      evaluate_in_ref_config_(Core::UTILS::integral_value<int>(
           Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params().sublist(
               "ARTERY COUPLING"),
           "EVALUATE_IN_REF_CONFIG")),

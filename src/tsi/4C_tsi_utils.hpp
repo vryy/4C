@@ -65,10 +65,10 @@ namespace TSI
     };  // class ThermoStructureCloneStrategy
 
     //! setup TSI, clone the structural discretization
-    void SetupTSI(const Epetra_Comm& comm);
+    void setup_tsi(const Epetra_Comm& comm);
 
 
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+    void set_material_pointers_matching_grid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
         Teuchos::RCP<const Core::FE::Discretization> targetdis);
 
     //! strategy for material assignment for non matching meshes with TSI

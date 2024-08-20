@@ -263,7 +263,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
       // allocate an "empty node". Fill it with info from
       // extracted node data
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::Factory(data));
+          Teuchos::rcp(Core::Communication::factory(data));
 
       // check type of ParObject, and return gid
       const int id = check_valid_entity_type(o);
@@ -499,7 +499,7 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
       // allocate an "empty node". Fill it with info from
       // extracted node data
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::Factory(data));
+          Teuchos::rcp(Core::Communication::factory(data));
 
       // cast ParObject to specific type and return id
       const int id = check_valid_entity_type(o);
@@ -652,7 +652,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
       // allocate an "empty node". Fill it with info from
       // extracted node data
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::Factory(data));
+          Teuchos::rcp(Core::Communication::factory(data));
 
       const int id = check_valid_entity_type(o);
 
@@ -899,7 +899,7 @@ void Core::GeometricSearch::ElementMatchingOctree::un_pack_entity(
     std::vector<char> nodedata;
     Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, nodedata);
     Teuchos::RCP<Core::Communication::ParObject> o =
-        Teuchos::rcp(Core::Communication::Factory(nodedata));
+        Teuchos::rcp(Core::Communication::factory(nodedata));
     Teuchos::RCP<Core::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(o);
     if (actnode == Teuchos::null) FOUR_C_THROW("cast from ParObject to Node failed");
     nodes_.insert(std::pair<int, Teuchos::RCP<Core::Nodes::Node>>(actnode->id(), actnode));

@@ -24,7 +24,7 @@ bool Discret::ELEMENTS::Beam3eb::read_element(const std::string& eletype,
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   const auto mat_type = material()->parameter()->type();
   FOUR_C_THROW_UNLESS(

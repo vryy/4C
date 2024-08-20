@@ -180,25 +180,25 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
 
   // store the product Cfs_{\GammaI} \Delta d_I^{n+1} in here
   Teuchos::RCP<Epetra_Vector> cfsgiddi =
-      Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
   // compute the above mentioned product
   cfsgicur_->multiply(false, *ddiinc_, *cfsgiddi);
 
   // store the product F_{\GammaI} \Delta u_I^{n+1} in here
   Teuchos::RCP<Epetra_Vector> fgiddi =
-      Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
   // compute the above mentioned product
   fgicur_->multiply(false, *duiinc_, *fgiddi);
 
   // store the product Cfs_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
   Teuchos::RCP<Epetra_Vector> cfsggddg =
-      Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
   // compute the above mentioned product
   cfsggcur_->multiply(false, *ddginc_, *cfsggddg);
 
   // store the prodcut F_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
   Teuchos::RCP<Epetra_Vector> fggddg =
-      Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
   // compute the above mentioned product
   fggcur_->multiply(false, *duginc_, *fggddg);
 
@@ -317,13 +317,13 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   cfsggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_fs->matrix(fidx_nopen, sidx_nopen)));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDkfsgi =
-      Core::LinAlg::MLMultiply(*k_lambdainv_d_, *cfsgicur_, true);  // T*D^-1*K^FS_gi;
+      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *cfsgicur_, true);  // T*D^-1*K^FS_gi;
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDfgi =
-      Core::LinAlg::MLMultiply(*k_lambdainv_d_, *fgicur_, true);  // T*D^-1*Fgi;
+      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *fgicur_, true);  // T*D^-1*Fgi;
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDfgg =
-      Core::LinAlg::MLMultiply(*k_lambdainv_d_, *fggcur_, true);  // T*D^-1*Fgg;
+      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *fggcur_, true);  // T*D^-1*Fgg;
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDkfsgg =
-      Core::LinAlg::MLMultiply(*k_lambdainv_d_, *cfsggcur_, true);  // T*D^-1*K^FS_gg;
+      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *cfsggcur_, true);  // T*D^-1*K^FS_gg;
 
   mat.matrix(1, 0).add(*tanginvDkfsgi, false, -1.0, 1.0);
   mat.matrix(1, 0).add(*tanginvDkfsgg, false, -1.0, 1.0);
@@ -503,7 +503,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   // invd->Complete();
 
   Teuchos::RCP<Epetra_Vector> diag =
-      Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
 
   int err = 0;
 
@@ -559,7 +559,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
       *fluid_field()->interface()->fsi_cond_map(), *structure_field()->interface()->fsi_cond_map());
 
   // Calculate 1/b*Tangent*invD
-  k_lambdainv_d_ = Core::LinAlg::MLMultiply(*k_lambda_, *k_inv_d_, true);
+  k_lambdainv_d_ = Core::LinAlg::ml_multiply(*k_lambda_, *k_inv_d_, true);
   k_lambdainv_d_->scale(1.0 / (1.0 - stiparam));  // *= 1/b
 }
 

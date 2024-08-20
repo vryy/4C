@@ -134,7 +134,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     if (verbose_)
     {
       Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-          Core::Communication::toTeuchosComm<int>(discret_->get_comm());
+          Core::Communication::to_teuchos_comm<int>(discret_->get_comm());
       Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
     }
 
@@ -1364,7 +1364,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     const Epetra_Map* noderowmap = discret_->node_row_map();
 
     // weights for graph partition
-    auto node_weights = Core::LinAlg::CreateVector(*noderowmap, true);
+    auto node_weights = Core::LinAlg::create_vector(*noderowmap, true);
     node_weights->PutScalar(1.0);
 
     // apply weight of special elements
@@ -1571,7 +1571,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
       Teuchos::RCP<const Epetra_CrsGraph> const_nodegraph(nodegraph);
 
       auto newnodegraph =
-          Core::Rebalance::RebalanceGraph(*const_nodegraph, paramlist, node_weights, edge_weights);
+          Core::Rebalance::rebalance_graph(*const_nodegraph, paramlist, node_weights, edge_weights);
       newnodegraph->OptimizeStorage();
 
       // the rowmap will become the new distribution of nodes

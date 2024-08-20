@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Core::LinAlg::FindMyPos(int nummyelements, const Epetra_Comm& comm)
+int Core::LinAlg::find_my_pos(int nummyelements, const Epetra_Comm& comm)
 {
   const int myrank = comm.MyPID();
   const int numproc = comm.NumProc();
@@ -33,7 +33,7 @@ int Core::LinAlg::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::AllreduceVector(
+void Core::LinAlg::allreduce_vector(
     const std::vector<int>& src, std::vector<int>& dest, const Epetra_Comm& comm)
 {
   // communicate size
@@ -42,7 +42,7 @@ void Core::LinAlg::AllreduceVector(
   comm.SumAll(&localsize, &globalsize, 1);
 
   // communicate values
-  int pos = FindMyPos(localsize, comm);
+  int pos = find_my_pos(localsize, comm);
   std::vector<int> sendglobal(globalsize, 0);
   dest.resize(globalsize);
   std::copy(src.begin(), src.end(), sendglobal.data() + pos);
@@ -56,9 +56,9 @@ void Core::LinAlg::AllreduceVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap)
+void Core::LinAlg::allreduce_e_map(std::vector<int>& rredundant, const Epetra_Map& emap)
 {
-  const int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
+  const int mynodepos = find_my_pos(emap.NumMyElements(), emap.Comm());
 
   std::vector<int> sredundant(emap.NumGlobalElements(), 0);
 
@@ -71,7 +71,7 @@ void Core::LinAlg::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
+void Core::LinAlg::allreduce_e_map(std::map<int, int>& idxmap, const Epetra_Map& emap)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
@@ -80,7 +80,7 @@ void Core::LinAlg::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& e
   idxmap.clear();
 
   std::vector<int> rredundant;
-  AllreduceEMap(rredundant, emap);
+  allreduce_e_map(rredundant, emap);
 
   for (std::size_t i = 0; i < rredundant.size(); ++i)
   {
@@ -91,13 +91,13 @@ void Core::LinAlg::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& e
 /*----------------------------------------------------------------------*
  |  create an allreduced map on a distinct processor (public)  gjb 12/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceEMap(const Epetra_Map& emap, const int pid)
+Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap, const int pid)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
-  AllreduceEMap(rv, emap);
+  allreduce_e_map(rv, emap);
   Teuchos::RCP<Epetra_Map> rmap;
 
   if (emap.Comm().MyPID() == pid)
@@ -120,13 +120,13 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceEMap(const Epetra_Map& emap, con
 /*----------------------------------------------------------------------*
  |  create an allreduced map on EVERY processor (public)        tk 12/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceEMap(const Epetra_Map& emap)
+Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
-  AllreduceEMap(rv, emap);
+  allreduce_e_map(rv, emap);
   Teuchos::RCP<Epetra_Map> rmap;
 
   rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
@@ -137,10 +137,10 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceEMap(const Epetra_Map& emap)
 /*----------------------------------------------------------------------*
 |  create an allreduced map on EVERY processor (public)                 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceOverlappingEMap(const Epetra_Map& emap)
+Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(const Epetra_Map& emap)
 {
   std::vector<int> rv;
-  AllreduceEMap(rv, emap);
+  allreduce_e_map(rv, emap);
 
   // remove duplicates
   std::set<int> rs(rv.begin(), rv.end());
@@ -152,11 +152,11 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceOverlappingEMap(const Epetra_Map
 /*----------------------------------------------------------------------*
 | create an allreduced map on a distinct processor (public)  ghamm 10/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceOverlappingEMap(
+Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
     const Epetra_Map& emap, const int pid)
 {
   std::vector<int> rv;
-  AllreduceEMap(rv, emap);
+  allreduce_e_map(rv, emap);
   Teuchos::RCP<Epetra_Map> rmap;
 
   if (emap.Comm().MyPID() == pid)
@@ -183,7 +183,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::AllreduceOverlappingEMap(
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.  (heiner 09/07)                     |
  *----------------------------------------------------------------------*/
-void Core::LinAlg::AllToAllCommunication(const Epetra_Comm& comm,
+void Core::LinAlg::all_to_all_communication(const Epetra_Comm& comm,
     const std::vector<std::vector<int>>& send, std::vector<std::vector<int>>& recv)
 {
   if (comm.NumProc() == 1)
@@ -257,7 +257,7 @@ void Core::LinAlg::AllToAllCommunication(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.                                     |
  *----------------------------------------------------------------------*/
-void Core::LinAlg::AllToAllCommunication(
+void Core::LinAlg::all_to_all_communication(
     const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv)
 {
   if (comm.NumProc() == 1)

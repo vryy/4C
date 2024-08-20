@@ -243,7 +243,7 @@ Core::LinearSolver::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& par
     Teuchos::RCP<std::vector<double>> ns =
         Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
 
-    Core::LinAlg::EpetraMultiVectorToStdVector(nullspace, *ns, null_spaces_dim_[block]);
+    Core::LinAlg::epetra_multi_vector_to_std_vector(nullspace, *ns, null_spaces_dim_[block]);
     null_spaces_data_[block] = ns;
 
     // Some checks

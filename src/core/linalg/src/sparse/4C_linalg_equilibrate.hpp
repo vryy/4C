@@ -256,7 +256,7 @@ namespace Core::LinAlg
    *
    * @return equilibration method
    */
-  Teuchos::RCP<Core::LinAlg::Equilibration> BuildEquilibration(MatrixType type,
+  Teuchos::RCP<Core::LinAlg::Equilibration> build_equilibration(MatrixType type,
       const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 }  // namespace Core::LinAlg
 FOUR_C_NAMESPACE_CLOSE

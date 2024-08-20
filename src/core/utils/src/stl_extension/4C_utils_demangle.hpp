@@ -23,7 +23,7 @@ namespace Core::UTILS
    * Utility function which tries to demangle the given @p mangledString. As a fallback, it returns
    * the input string. You should typically pass the result of typeid().name to this function.
    */
-  inline std::string TryDemangle(const char* mangledString)
+  inline std::string try_demangle(const char* mangledString)
   {
     int status;
     std::unique_ptr<char[], void (*)(void*)> result(

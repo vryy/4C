@@ -55,7 +55,7 @@ void EleMag::UTILS::ScatraCloneStrategy<sft>::set_element_data(
   if (Transport != nullptr)
   {
     Transport->set_dis_type(oldele->shape());
-    Transport->set_material(0, Mat::Factory(matid));
+    Transport->set_material(0, Mat::factory(matid));
     if (sft == Core::FE::ShapeFunctionType::hdg)
     {
       auto scatraele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(Transport);

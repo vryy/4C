@@ -43,13 +43,13 @@ void ParticleInteraction::SPHPhaseChangeBase::init()
 
   // get phase below transition value
   if (phasechangedefinition >> word)
-    belowphase_ = PARTICLEENGINE::EnumFromTypeName(word);
+    belowphase_ = PARTICLEENGINE::enum_from_type_name(word);
   else
     FOUR_C_THROW("expecting particle type for phase below transition value!");
 
   // get phase above transition value
   if (phasechangedefinition >> word)
-    abovephase_ = PARTICLEENGINE::EnumFromTypeName(word);
+    abovephase_ = PARTICLEENGINE::enum_from_type_name(word);
   else
     FOUR_C_THROW("expecting particle type for phase above transition value!");
 
@@ -59,12 +59,12 @@ void ParticleInteraction::SPHPhaseChangeBase::init()
 
   // get transition state of phase change
   if (phasechangedefinition >> word)
-    transitionstate_ = PARTICLEENGINE::EnumFromStateName(word);
+    transitionstate_ = PARTICLEENGINE::enum_from_state_name(word);
   else
     FOUR_C_THROW("expecting particle state of phase change!");
 
   // safety check
-  if (PARTICLEENGINE::EnumToStateDim(transitionstate_) != 1)
+  if (PARTICLEENGINE::enum_to_state_dim(transitionstate_) != 1)
     FOUR_C_THROW("expecting scalar particle state for phase change!");
 
   // get transition value of phase change
@@ -126,7 +126,7 @@ void ParticleInteraction::SPHPhaseChangeBase::setup(
   for (const auto& type_i : {belowphase_, abovephase_})
     if (not particlecontainerbundle_->get_particle_types().count(type_i))
       FOUR_C_THROW("no particle container for particle type '%s' found!",
-          PARTICLEENGINE::EnumToTypeName(type_i).c_str());
+          PARTICLEENGINE::enum_to_type_name(type_i).c_str());
 }
 
 void ParticleInteraction::SPHPhaseChangeBase::evaluate_phase_change_from_below_to_above_phase(

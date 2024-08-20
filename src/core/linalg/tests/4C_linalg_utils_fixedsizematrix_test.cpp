@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  auto GetTestValuesAssignmentOperators()
+  auto get_test_values_assignment_operators()
   {
     static const unsigned int n_dim = 2;
     using fad_type = Sacado::Fad::DFad<double>;
@@ -37,7 +37,7 @@ namespace
   };
 
   template <typename T, typename V>
-  void CheckTestResults(const T& x, const V& x_ref)
+  void check_test_results(const T& x, const V& x_ref)
   {
     const double eps = 1e-12;
     const unsigned int n_dim = x.num_rows();
@@ -45,30 +45,31 @@ namespace
     // Check the values of the result as well as the first derivatives
     for (unsigned int i = 0; i < n_dim; i++)
     {
-      EXPECT_NEAR(Core::FADUtils::CastToDouble(x(i)), Core::FADUtils::CastToDouble(x_ref(i)), eps);
+      EXPECT_NEAR(
+          Core::FADUtils::cast_to_double(x(i)), Core::FADUtils::cast_to_double(x_ref(i)), eps);
       for (unsigned int j = 0; j < (unsigned int)x(i).length(); j++)
       {
-        EXPECT_NEAR(Core::FADUtils::CastToDouble(x(i).dx(j)),
-            Core::FADUtils::CastToDouble(x_ref(i).dx(j)), eps);
+        EXPECT_NEAR(Core::FADUtils::cast_to_double(x(i).dx(j)),
+            Core::FADUtils::cast_to_double(x_ref(i).dx(j)), eps);
       }
     }
   }
 
   TEST(FixedSizeMatrixTest, AssignmentOperatorPlusEqualDifferentTypes)
   {
-    const auto [X, u, x_ref] = GetTestValuesAssignmentOperators();
+    const auto [X, u, x_ref] = get_test_values_assignment_operators();
     using result_type = typename std::decay<decltype(x_ref)>::type;
     result_type x;
 
     x = u;
     x += X;
 
-    CheckTestResults(x, x_ref);
+    check_test_results(x, x_ref);
   }
 
   TEST(FixedSizeMatrixTest, AssignmentOperatorMinusEqualDifferentTypes)
   {
-    const auto [X, u, x_ref] = GetTestValuesAssignmentOperators();
+    const auto [X, u, x_ref] = get_test_values_assignment_operators();
     using result_type = typename std::decay<decltype(x_ref)>::type;
     result_type x;
 
@@ -77,19 +78,19 @@ namespace
     x -= X;
     x.scale(-1.0);
 
-    CheckTestResults(x, x_ref);
+    check_test_results(x, x_ref);
   }
 
   TEST(FixedSizeMatrixTest, UpdateDifferentTypes)
   {
-    const auto [X, u, x_ref] = GetTestValuesAssignmentOperators();
+    const auto [X, u, x_ref] = get_test_values_assignment_operators();
     using result_type = typename std::decay<decltype(x_ref)>::type;
     result_type x;
 
     x.update(X);
     x += u;
 
-    CheckTestResults(x, x_ref);
+    check_test_results(x, x_ref);
   }
 
   TEST(FixedSizeMatrixTest, MultiplyDifferentTypes)
@@ -119,7 +120,7 @@ namespace
     u_ref(1).fastAccessDx(1) = 0.75;
     u_ref(1).fastAccessDx(3) = 0.25;
 
-    CheckTestResults(u, u_ref);
+    check_test_results(u, u_ref);
   }
 }  // namespace
 

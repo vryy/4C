@@ -59,7 +59,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       solveradapttol_(true),
       solveradaptolbetter_(fsimono_.get<double>("ADAPTIVEDIST")),  // adaptive distance
       merge_fsi_blockmatrix_(false),
-      scaling_infnorm_((bool)Core::UTILS::IntegralValue<int>(fsimono_, "INFNORMSCALING")),
+      scaling_infnorm_((bool)Core::UTILS::integral_value<int>(fsimono_, "INFNORMSCALING")),
       log_(Teuchos::null),
       /// tolerance and for linear solver
       tolrhs_(fsimono_.get<double>(
@@ -71,9 +71,10 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       itermax_(fsimono_.get<int>("ITEMAX")),
       itermax_outer_(xfpsimono_.get<int>("ITEMAX_OUTER")),
       /// Convergence criterion and convergence tolerances for Newton scheme
-      normtypeinc_(Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono_, "NORM_INC")),
-      normtypefres_(Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono_, "NORM_RESF")),
-      combincfres_(Core::UTILS::IntegralValue<Inpar::FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
+      normtypeinc_(Core::UTILS::integral_value<Inpar::FSI::ConvNorm>(fsimono_, "NORM_INC")),
+      normtypefres_(Core::UTILS::integral_value<Inpar::FSI::ConvNorm>(fsimono_, "NORM_RESF")),
+      combincfres_(
+          Core::UTILS::integral_value<Inpar::FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
       tolinc_(fsimono_.get<double>("CONVTOL")),
       tolfres_(fsimono_.get<double>("CONVTOL")),
       /// set tolerances for nonlinear solver
@@ -92,7 +93,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       tol_vel_res_inf_(fsimono_.get<double>("TOL_VEL_RES_INF")),
       tol_vel_inc_l2_(fsimono_.get<double>("TOL_VEL_INC_L2")),
       tol_vel_inc_inf_(fsimono_.get<double>("TOL_VEL_INC_INF")),
-      nd_newton_damping_((bool)Core::UTILS::IntegralValue<int>(xfpsimono_, "ND_NEWTON_DAMPING")),
+      nd_newton_damping_((bool)Core::UTILS::integral_value<int>(xfpsimono_, "ND_NEWTON_DAMPING")),
       nd_newton_incmax_damping_(nd_newton_damping_),
       nd_levels_(3),
       nd_reduction_fac_(0.75),
@@ -128,7 +129,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
   // enable debugging
   //-------------------------------------------------------------------------
-  if (Core::UTILS::IntegralValue<int>(fsidyn_, "DEBUGOUTPUT") == 1)
+  if (Core::UTILS::integral_value<int>(fsidyn_, "DEBUGOUTPUT") == 1)
   {
     // debug writer for structure field
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_poro()->discretization()));
@@ -145,7 +146,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
-  if (Core::UTILS::IntegralValue<int>(fsidyn_.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
+  if (Core::UTILS::integral_value<int>(fsidyn_.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
     FOUR_C_THROW("writing energy not supported yet");
     //  TODO
@@ -159,7 +160,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   // time step size adaptivity
   //-------------------------------------------------------------------------
   const bool timeadapton =
-      Core::UTILS::IntegralValue<bool>(fsidyn_.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::integral_value<bool>(fsidyn_.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (timeadapton)
   {
@@ -204,7 +205,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
     // we do this here, since we have direct access to all necessary parameters
     const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
     Inpar::FLUID::InitialField initfield =
-        Core::UTILS::IntegralValue<Inpar::FLUID::InitialField>(fdyn, "INITIALFIELD");
+        Core::UTILS::integral_value<Inpar::FLUID::InitialField>(fdyn, "INITIALFIELD");
     if (initfield != Inpar::FLUID::initfield_zero_field)
     {
       int startfuncno = fdyn.get<int>("STARTFUNCNO");
@@ -1153,7 +1154,7 @@ bool FSI::MonolithicXFEM::newton()
       //     this vector remains unchanged/non-permuted until the next restart has to be performed.
       //     In order to update this vector and to use it for further evaluate-calls permutations
       //     backward/forward of the fluid block have to be applied
-      x_sum_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+      x_sum_ = Core::LinAlg::create_vector(*dof_row_map(), true);
 
 
       //-------------------
@@ -1171,18 +1172,18 @@ bool FSI::MonolithicXFEM::newton()
       // permuted dofsets,
       //       directly after the linear_solve the vector is permuted backwards to the initial
       //       ordering of creation
-      iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+      iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
 
       // Global residual vector, unchanged/permuting dofsets (the same as for the iterinc_ vector)
       // note: for the assembly and during the solve the residual vector can have permuted dofsets,
       //       directly after the linear_solve the vector is permuted backwards to the initial
       //       ordering of creation
-      rhs_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+      rhs_ = Core::LinAlg::create_vector(*dof_row_map(), true);
 
       // Global zero vector for DBCs, unchanged/permuting dofsets (the same as for the iterinc_
       // vector) note: this vector is just used during the solve and is NOT permuted backwards as
       // iterinc or rhs
-      zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+      zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
     }
     else
       FOUR_C_THROW("the Newton iteration index is assumed to be >= 0");
@@ -2038,13 +2039,13 @@ void FSI::MonolithicXFEM::create_linear_solver()
     merge_fsi_blockmatrix_ = true;
 
     Teuchos::ParameterList solverparams;
-    Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>("SOLVER",
+    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>("SOLVER",
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(xfsisolverparams, "SOLVER"),
         solverparams);
 
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     return;
@@ -2129,7 +2130,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
       solver_ = Teuchos::rcp(new Core::LinAlg::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
           get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
       // use solver blocks for structure and fluid
@@ -2140,14 +2141,14 @@ void FSI::MonolithicXFEM::create_linear_solver()
 
       solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
       structure_poro()->discretization()->compute_null_space_if_necessary(
           solver_->params().sublist("Inverse1"));
 
       solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
       fluid_field()->discretization()->compute_null_space_if_necessary(
           solver_->params().sublist("Inverse2"), true);
@@ -2156,7 +2157,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
       {
         solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
             Global::Problem::instance()->solver_params_callback(),
-            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                 Global::Problem::instance()->io_params(), "VERBOSITY"));
         structure_poro()->fluid_field()->discretization()->compute_null_space_if_necessary(
             solver_->params().sublist("Inverse3"));
@@ -2169,7 +2170,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
         {
           solver_->put_solver_params_to_sub_params("Inverse3", asolverparams,
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           ale_field()->write_access_discretization()->compute_null_space_if_necessary(
               solver_->params().sublist("Inverse3"));
@@ -2178,7 +2179,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
         {
           solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           ale_field()->write_access_discretization()->compute_null_space_if_necessary(
               solver_->params().sublist("Inverse4"));
@@ -2200,7 +2201,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
       solver_ = Teuchos::rcp(new Core::LinAlg::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
           get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
       // use solver blocks for structure and fluid
@@ -2213,11 +2214,11 @@ void FSI::MonolithicXFEM::create_linear_solver()
       // first read in solver parameters. These have to contain ML parameters such that...
       solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
       solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       // ... 4C calculates the null space vectors. These are then stored in the sublists
@@ -2263,7 +2264,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
       solver_ = Teuchos::rcp(new Core::LinAlg::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
           get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
       // use solver blocks for structure and fluid
@@ -2274,14 +2275,14 @@ void FSI::MonolithicXFEM::create_linear_solver()
 
       solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
       Core::LinearSolver::Parameters::compute_solver_parameters(
           *structure_poro()->discretization(), solver_->params().sublist("Inverse1"));
 
       solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
       Core::LinearSolver::Parameters::compute_solver_parameters(
           *fluid_field()->discretization(), solver_->params().sublist("Inverse2"));
@@ -2290,7 +2291,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
       {
         solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
             Global::Problem::instance()->solver_params_callback(),
-            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                 Global::Problem::instance()->io_params(), "VERBOSITY"));
         Core::LinearSolver::Parameters::compute_solver_parameters(
             *structure_poro()->fluid_field()->discretization(),
@@ -2304,7 +2305,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
         {
           solver_->put_solver_params_to_sub_params("Inverse3", asolverparams,
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           Core::LinearSolver::Parameters::compute_solver_parameters(
               *ale_field()->write_access_discretization(), solver_->params().sublist("Inverse3"));
@@ -2313,7 +2314,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
         {
           solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           Core::LinearSolver::Parameters::compute_solver_parameters(
               *ale_field()->write_access_discretization(), solver_->params().sublist("Inverse4"));
@@ -2497,7 +2498,7 @@ Teuchos::RCP<Epetra_Map> FSI::MonolithicXFEM::combined_dbc_map()
   const Teuchos::RCP<const Epetra_Map> fcondmap =
       fluid_field()->get_dbc_map_extractor()->cond_map();
 
-  Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(scondmap, fcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::merge_map(scondmap, fcondmap, false);
 
   return condmap;
 }

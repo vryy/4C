@@ -83,10 +83,10 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       myrank_(actdis->get_comm().MyPID()),
       solver_(solver),
       contactsolver_(contactsolver),
-      solveradapttol_(Core::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1),
+      solveradapttol_(Core::UTILS::integral_value<int>(sdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
       dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
-      divcontype_(Core::UTILS::IntegralValue<Inpar::Solid::DivContAct>(sdynparams, "DIVERCONT")),
+      divcontype_(Core::UTILS::integral_value<Inpar::Solid::DivContAct>(sdynparams, "DIVERCONT")),
       divconrefinementlevel_(0),
       divconnumfinestep_(0),
       sdynparams_(sdynparams),
@@ -94,26 +94,28 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
       printlogo_(bool(printscreen_)),  // no std out no logo
       printiter_(true),                // ADD INPUT PARAMETER
-      outputeveryiter_((bool)Core::UTILS::IntegralValue<int>(ioparams, "OUTPUT_EVERY_ITER")),
+      outputeveryiter_((bool)Core::UTILS::integral_value<int>(ioparams, "OUTPUT_EVERY_ITER")),
       oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
       writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
-      writeele_((bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_ELE")),
-      writestate_((bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_DISP")),
-      writevelacc_((bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC")),
+      writeele_((bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_ELE")),
+      writestate_((bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_DISP")),
+      writevelacc_((bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_VEL_ACC")),
       writeresultsevery_(timeparams.get<int>("RESULTSEVRY")),
-      writestress_(Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS")),
-      writecouplstress_(
-          Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_COUPLING_STRESS")),
-      writestrain_(Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN")),
+      writestress_(
+          Core::UTILS::integral_value<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS")),
+      writecouplstress_(Core::UTILS::integral_value<Inpar::Solid::StressType>(
+          ioparams, "STRUCT_COUPLING_STRESS")),
+      writestrain_(
+          Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN")),
       writeplstrain_(
-          Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN")),
-      writeoptquantity_(Core::UTILS::IntegralValue<Inpar::Solid::OptQuantityType>(
+          Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN")),
+      writeoptquantity_(Core::UTILS::integral_value<Inpar::Solid::OptQuantityType>(
           ioparams, "STRUCT_OPTIONAL_QUANTITY")),
       writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
-      writesurfactant_((bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT")),
-      writerotation_((bool)Core::UTILS::IntegralValue<int>(ioparams, "OUTPUT_ROT")),
+      writesurfactant_((bool)Core::UTILS::integral_value<int>(ioparams, "STRUCT_SURFACTANT")),
+      writerotation_((bool)Core::UTILS::integral_value<int>(ioparams, "OUTPUT_ROT")),
       energyfile_(Teuchos::null),
-      damping_(Core::UTILS::IntegralValue<Inpar::Solid::DampKind>(sdynparams, "DAMPING")),
+      damping_(Core::UTILS::integral_value<Inpar::Solid::DampKind>(sdynparams, "DAMPING")),
       dampk_(sdynparams.get<double>("K_DAMP")),
       dampm_(sdynparams.get<double>("M_DAMP")),
       conman_(Teuchos::null),
@@ -134,7 +136,7 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       stepn_(0),
       rand_tsfac_(1.0),
       firstoutputofrun_(true),
-      lumpmass_(Core::UTILS::IntegralValue<int>(sdynparams, "LUMPMASS") == 1),
+      lumpmass_(Core::UTILS::integral_value<int>(sdynparams, "LUMPMASS") == 1),
       zeros_(Teuchos::null),
       dis_(Teuchos::null),
       dismat_(Teuchos::null),
@@ -305,7 +307,7 @@ void Solid::TimInt::setup()
 
 
   // Check for porosity dofs within the structure and build a map extractor if necessary
-  porositysplitter_ = PoroElast::UTILS::BuildPoroSplitter(discret_);
+  porositysplitter_ = PoroElast::UTILS::build_poro_splitter(discret_);
 
 
   // we have successfully set up this class
@@ -325,13 +327,13 @@ void Solid::TimInt::create_all_solution_vectors()
   acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  disn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   if ((Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale and
           (Global::Problem::instance()->wear_params()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
-    dismatn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    dismatn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
     // material_displacements D_{n}
     dismat_ =
@@ -339,11 +341,11 @@ void Solid::TimInt::create_all_solution_vectors()
   }
 
   // velocities V_{n+1} at t_{n+1}
-  veln_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  veln_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  accn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // create empty interface force vector
-  fifc_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fifc_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -352,7 +354,7 @@ void Solid::TimInt::create_all_solution_vectors()
 void Solid::TimInt::create_fields()
 {
   // a zero vector of full length
-  zeros_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  zeros_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -368,7 +370,7 @@ void Solid::TimInt::create_fields()
       const Teuchos::ParameterList& nurbs_params = Global::Problem::instance()->nurbs_params();
 
       const bool is_ls_dbc_needed =
-          Core::UTILS::IntegralValue<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
+          Core::UTILS::integral_value<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
 
       if (is_ls_dbc_needed)
       {
@@ -444,7 +446,7 @@ void Solid::TimInt::prepare_beam_contact(const Teuchos::ParameterList& sdynparam
   // some parameters
   const Teuchos::ParameterList& beamcontact = Global::Problem::instance()->beam_contact_params();
   Inpar::BEAMCONTACT::Strategy strategy =
-      Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
+      Core::UTILS::integral_value<Inpar::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
   // conditions for potential-based beam interaction
   std::vector<Core::Conditions::Condition*> beampotconditions(0);
@@ -481,13 +483,13 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   const Teuchos::ParameterList& smortar = Global::Problem::instance()->mortar_coupling_params();
   const Teuchos::ParameterList& scontact = Global::Problem::instance()->contact_dynamic_params();
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(smortar, "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(smortar, "LM_SHAPEFCN");
   Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(scontact, "STRATEGY");
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(scontact, "STRATEGY");
   Inpar::CONTACT::SystemType systype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(scontact, "SYSTEM");
+      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(scontact, "SYSTEM");
   Inpar::Mortar::AlgorithmType algorithm =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(smortar, "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(smortar, "ALGORITHM");
 
   // check mortar contact or meshtying conditions
   std::vector<Core::Conditions::Condition*> mortarconditions(0);
@@ -515,7 +517,7 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
   // is defined just the other way round as alphaf in GenAlpha schemes.
   // Thus, we have to hand in 1-theta for OST!!!)
   double time_integration_factor = 0.0;
-  const bool do_endtime = Core::UTILS::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
+  const bool do_endtime = Core::UTILS::integral_value<int>(scontact, "CONTACTFORCE_ENDTIME");
   if (!do_endtime) time_integration_factor = tim_int_param();
 
   // create instance for meshtying contact bridge
@@ -552,7 +554,7 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
     cmtbridge_->mt_manager()->get_strategy().mortar_coupling(zeros_);
 
     // perform mesh initialization if required by input parameter MESH_RELOCATION
-    auto mesh_relocation_parameter = Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+    auto mesh_relocation_parameter = Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
         Global::Problem::instance()->mortar_coupling_params(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == Inpar::Mortar::relocation_initial)
@@ -660,7 +662,7 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
                       << std::endl;
           }
           else if (soltype == Inpar::CONTACT::solution_lagmult &&
-                   Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(smortar, "LM_QUAD") ==
+                   Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(smortar, "LM_QUAD") ==
                        Inpar::Mortar::lagmult_const)
           {
             std::cout << "================================================================"
@@ -764,7 +766,7 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
                       << std::endl;
           }
           else if (soltype == Inpar::CONTACT::solution_lagmult &&
-                   Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(smortar, "LM_QUAD") ==
+                   Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(smortar, "LM_QUAD") ==
                        Inpar::Mortar::lagmult_const)
           {
             std::cout << "================================================================"
@@ -915,11 +917,11 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> 
   // create fully overlapping slave node map
   Teuchos::RCP<Epetra_Map> slavemap =
       cmtbridge_->mt_manager()->get_strategy().slave_row_nodes_ptr();
-  Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::AllreduceEMap(*slavemap);
+  Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::allreduce_e_map(*slavemap);
 
   // export modified node positions to column map of problem discretization
   Teuchos::RCP<Epetra_Vector> Xslavemodcol =
-      Core::LinAlg::CreateVector(*discret_->dof_col_map(), false);
+      Core::LinAlg::create_vector(*discret_->dof_col_map(), false);
   Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
@@ -994,12 +996,12 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
 {
   // temporary right hand sinde vector in this routing
   Teuchos::RCP<Epetra_Vector> rhs =
-      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // right hand side
+      Core::LinAlg::create_vector(*dof_row_map_view(), true);  // right hand side
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
-      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // external force
+      Core::LinAlg::create_vector(*dof_row_map_view(), true);  // external force
   Teuchos::RCP<Epetra_Vector> fint =
-      Core::LinAlg::CreateVector(*dof_row_map_view(), true);  // internal force
+      Core::LinAlg::create_vector(*dof_row_map_view(), true);  // internal force
 
   // initialise matrices
   stiff_->zero();
@@ -1008,7 +1010,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
   // auxiliary vector in order to store accelerations of inhomogeneous Dirichilet-DoFs
   // Meier 2015: This contribution is necessary in order to determine correct initial
   // accelerations in case of inhomogeneous Dirichlet conditions
-  Teuchos::RCP<Epetra_Vector> acc_aux = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  Teuchos::RCP<Epetra_Vector> acc_aux = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   acc_aux->PutScalar(0.0);
 
   // overwrite initial state vectors with DirichletBCs
@@ -1127,7 +1129,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     }
 
     // Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
-    Teuchos::RCP<Epetra_Vector> finert0 = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    Teuchos::RCP<Epetra_Vector> finert0 = Core::LinAlg::create_vector(*dof_row_map_view(), true);
     finert0->PutScalar(0.0);
     mass_->multiply(false, *acc_aux, *finert0);
     rhs->Update(-1.0, *finert0, 1.0);
@@ -1208,7 +1210,7 @@ void Solid::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Ve
     const Teuchos::ParameterList& nurbs_params = Global::Problem::instance()->nurbs_params();
 
     const bool is_ls_dbc_needed =
-        Core::UTILS::IntegralValue<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
+        Core::UTILS::integral_value<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
 
     if (is_ls_dbc_needed)
     {
@@ -1290,7 +1292,7 @@ void Solid::TimInt::update_step_contact_vum()
   if (have_contact_meshtying())
   {
     bool do_vum =
-        Core::UTILS::IntegralValue<int>(cmtbridge_->get_strategy().params(), "VELOCITY_UPDATE");
+        Core::UTILS::integral_value<int>(cmtbridge_->get_strategy().params(), "VELOCITY_UPDATE");
 
     //********************************************************************
     // VELOCITY UPDATE METHOD
@@ -1302,7 +1304,7 @@ void Solid::TimInt::update_step_contact_vum()
       if (!isincontact) return;
 
       // check for contact force evaluation
-      bool do_end = Core::UTILS::IntegralValue<int>(
+      bool do_end = Core::UTILS::integral_value<int>(
           cmtbridge_->get_strategy().params(), "CONTACTFORCE_ENDTIME");
       if (do_end == false)
       {
@@ -1320,7 +1322,7 @@ void Solid::TimInt::update_step_contact_vum()
       double alpham = 0.0;
       double beta = 0.0;
       double gamma = 0.0;
-      if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP") ==
+      if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP") ==
           Inpar::Solid::dyna_genalpha)
       {
         auto genAlpha = dynamic_cast<Solid::TimIntGenAlpha*>(this);
@@ -1349,7 +1351,7 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
           cmtbridge_->get_strategy().non_redist_master_row_dofs();
       Teuchos::RCP<Epetra_Map> notactivenodemap =
-          Core::LinAlg::SplitMap(*slavenodemap, *activenodemap);
+          Core::LinAlg::split_map(*slavenodemap, *activenodemap);
 
       // the lumped mass matrix and its inverse
       if (lumpmass_ == false)
@@ -1361,7 +1363,7 @@ void Solid::TimInt::update_step_contact_vum()
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Minv =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*Mass));
-      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*dofmap, true);
       int err = 0;
       Minv->extract_diagonal_copy(*diag);
       err = diag->Reciprocal(*diag);
@@ -1370,7 +1372,7 @@ void Solid::TimInt::update_step_contact_vum()
       Minv->complete(*dofmap, *dofmap);
 
       // displacement increment Dd
-      Teuchos::RCP<Epetra_Vector> Dd = Core::LinAlg::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> Dd = Core::LinAlg::create_vector(*dofmap, true);
       Dd->Update(1.0, *disn_, 0.0);
       Dd->Update(-1.0, (*dis_)[0], 1.0);
 
@@ -1388,8 +1390,8 @@ void Solid::TimInt::update_step_contact_vum()
               cmtbridge_->get_strategy().params().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none)
       {
-        M = Mortar::MatrixColTransform(Mmat, notredistmasterdofmap);
-        D = Mortar::MatrixColTransform(Dmat, notredistslavedofmap);
+        M = Mortar::matrix_col_transform(Mmat, notredistmasterdofmap);
+        D = Mortar::matrix_col_transform(Dmat, notredistslavedofmap);
       }
       else
       {
@@ -1407,14 +1409,14 @@ void Solid::TimInt::update_step_contact_vum()
 
       // lagrange multiplier z
       Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->get_strategy().lagrange_multiplier();
-      Teuchos::RCP<Epetra_Vector> Z = Core::LinAlg::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> z = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> Z = Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> z = Core::LinAlg::create_vector(*activenodemap, true);
       N->multiply(false, *LM, *Z);
       Core::LinAlg::export_to(*Z, *z);
 
       // auxiliary operator BN = Bc * N
       Teuchos::RCP<Core::LinAlg::SparseMatrix> BN =
-          Core::LinAlg::MLMultiply(*Bc, false, *N, true, false, false, true);
+          Core::LinAlg::ml_multiply(*Bc, false, *N, true, false, false, true);
 
       // operator A
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1;
@@ -1422,22 +1424,22 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx3;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> A;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Atemp1 =
-          Core::LinAlg::MLMultiply(*BN, true, *Minv, false, false, false, true);
+          Core::LinAlg::ml_multiply(*BN, true, *Minv, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Atemp2 =
-          Core::LinAlg::MLMultiply(*Atemp1, false, *BN, false, false, false, true);
+          Core::LinAlg::ml_multiply(*Atemp1, false, *BN, false, false, false, true);
       Atemp2->scale(R4);
-      Core::LinAlg::SplitMatrix2x2(Atemp2, notactivenodemap, activenodemap, notactivenodemap,
+      Core::LinAlg::split_matrix2x2(Atemp2, notactivenodemap, activenodemap, notactivenodemap,
           activenodemap, tempmtx1, tempmtx2, tempmtx3, A);
       A->complete(*activenodemap, *activenodemap);
 
       // diagonal of A
-      Teuchos::RCP<Epetra_Vector> AD = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> AD = Core::LinAlg::create_vector(*activenodemap, true);
       A->extract_diagonal_copy(*AD);
 
       // operator b
-      Teuchos::RCP<Epetra_Vector> btemp1 = Core::LinAlg::CreateVector(*dofmap, true);
-      Teuchos::RCP<Epetra_Vector> btemp2 = Core::LinAlg::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> b = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> btemp1 = Core::LinAlg::create_vector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> btemp2 = Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> b = Core::LinAlg::create_vector(*activenodemap, true);
       btemp1->Update(R1, *Dd, 0.0);
       btemp1->Update(R2, (*vel_)[0], 1.0);
       btemp1->Update(R3, (*acc_)[0], 1.0);
@@ -1445,22 +1447,22 @@ void Solid::TimInt::update_step_contact_vum()
       Core::LinAlg::export_to(*btemp2, *b);
 
       // operatior c
-      Teuchos::RCP<Epetra_Vector> ctemp = Core::LinAlg::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> c = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> ctemp = Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> c = Core::LinAlg::create_vector(*activenodemap, true);
       BN->multiply(true, *Dd, *ctemp);
       Core::LinAlg::export_to(*ctemp, *c);
 
       // contact work wc
-      Teuchos::RCP<Epetra_Vector> wc = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wc = Core::LinAlg::create_vector(*activenodemap, true);
       wc->Multiply(1.0, *c, *z, 0.0);
 
       // gain and loss of energy
       double gain = 0;
       double loss = 0;
-      Teuchos::RCP<Epetra_Vector> wp = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wn = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wd = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wt = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wp = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wn = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wd = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wt = Core::LinAlg::create_vector(*activenodemap, true);
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
       {
         if ((*wc)[i] > 0)
@@ -1490,9 +1492,9 @@ void Solid::TimInt::update_step_contact_vum()
 
       // manipulated contact work w
       double tolerance = 0.01;
-      Teuchos::RCP<Epetra_Vector> wtemp1 = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wtemp2 = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> w = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wtemp1 = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wtemp2 = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> w = Core::LinAlg::create_vector(*activenodemap, true);
       if (abs(gain - loss) < 1.0e-8)
       {
         return;
@@ -1523,9 +1525,9 @@ void Solid::TimInt::update_step_contact_vum()
       }
 
       // (1) initial solution p_0
-      Teuchos::RCP<Epetra_Vector> p1 = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> p2 = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> p = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> p1 = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> p2 = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> p = Core::LinAlg::create_vector(*activenodemap, true);
       if (gain > loss)
       {
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
@@ -1562,8 +1564,8 @@ void Solid::TimInt::update_step_contact_vum()
       }
 
       // (2) initial residual f_0, |f_0|, DF_0
-      Teuchos::RCP<Epetra_Vector> x = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> f = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> x = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> f = Core::LinAlg::create_vector(*activenodemap, true);
       int NumEntries = 0;
       int* Indices = nullptr;
       double* Values = nullptr;
@@ -1614,8 +1616,8 @@ void Solid::TimInt::update_step_contact_vum()
       DF->complete(*activenodemap, *activenodemap);
 
       // (3) Newton-Iteration
-      Teuchos::RCP<Epetra_Vector> mf = Core::LinAlg::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> dp = Core::LinAlg::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> mf = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> dp = Core::LinAlg::create_vector(*activenodemap, true);
       double tol = 0.00000001;
       double numiter = 0;
       double stopcrit = 100;
@@ -1682,9 +1684,9 @@ void Solid::TimInt::update_step_contact_vum()
       }
 
       // (4) VelocityUpdate
-      Teuchos::RCP<Epetra_Vector> ptemp1 = Core::LinAlg::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> ptemp2 = Core::LinAlg::CreateVector(*dofmap, true);
-      Teuchos::RCP<Epetra_Vector> VU = Core::LinAlg::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> ptemp1 = Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> ptemp2 = Core::LinAlg::create_vector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> VU = Core::LinAlg::create_vector(*dofmap, true);
       Core::LinAlg::export_to(*p, *ptemp1);
       BN->multiply(false, *ptemp1, *ptemp2);
       Minv->multiply(false, *ptemp2, *VU);
@@ -2082,7 +2084,7 @@ void Solid::TimInt::write_gmsh_struc_output_step()
 {
   if (not gmsh_out_) return;
 
-  const std::string filename = Core::IO::Gmsh::GetFileName(
+  const std::string filename = Core::IO::Gmsh::get_file_name(
       "struct", discret_->writer()->output()->file_name(), stepn_, false, myrank_);
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -2090,7 +2092,7 @@ void Solid::TimInt::write_gmsh_struc_output_step()
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  Core::IO::Gmsh::VectorFieldDofBasedToGmsh(discret_, dispn(), gmshfilecontent, 0, true);
+  Core::IO::Gmsh::vector_field_dof_based_to_gmsh(discret_, dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 
@@ -2416,7 +2418,7 @@ void Solid::TimInt::determine_energy()
     // global calculation of kinetic energy
     kinergy_ = 0.0;  // total kinetic energy
     {
-      Teuchos::RCP<Epetra_Vector> linmom = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+      Teuchos::RCP<Epetra_Vector> linmom = Core::LinAlg::create_vector(*dof_row_map_view(), true);
       mass_->multiply(false, *veln_, *linmom);
       linmom->Dot(*veln_, &kinergy_);
       kinergy_ *= 0.5;
@@ -2628,7 +2630,7 @@ void Solid::TimInt::output_contact()
     cmtbridge_->get_strategy().print_active_set();
 
     // check chosen output option
-    Inpar::CONTACT::EmOutputType emtype = Core::UTILS::IntegralValue<Inpar::CONTACT::EmOutputType>(
+    Inpar::CONTACT::EmOutputType emtype = Core::UTILS::integral_value<Inpar::CONTACT::EmOutputType>(
         cmtbridge_->get_strategy().params(), "EMOUTPUT");
 
     // get out of here if no energy/momentum output wanted
@@ -2640,7 +2642,7 @@ void Solid::TimInt::output_contact()
     int dim = cmtbridge_->get_strategy().n_dim();
 
     // global linear momentum (M*v)
-    Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+    Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
     mass_->multiply(false, (*vel_)[0], *mv);
 
     // linear / angular momentum
@@ -2798,7 +2800,7 @@ void Solid::TimInt::output_contact()
 void Solid::TimInt::output_volume_mass()
 {
   const Teuchos::ParameterList& listwear = Global::Problem::instance()->wear_params();
-  bool massvol = Core::UTILS::IntegralValue<int>(listwear, "VOLMASS_OUTPUT");
+  bool massvol = Core::UTILS::integral_value<int>(listwear, "VOLMASS_OUTPUT");
   if (!massvol) return;
 
   // initialize variables
@@ -2895,7 +2897,7 @@ void Solid::TimInt::apply_force_external(const double time, const Teuchos::RCP<E
 int Solid::TimInt::have_nonlinear_mass() const
 {
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  int masslin = Core::UTILS::IntegralValue<Inpar::Solid::MassLin>(sdyn, "MASSLIN");
+  int masslin = Core::UTILS::integral_value<Inpar::Solid::MassLin>(sdyn, "MASSLIN");
 
   return masslin;
 }
@@ -2938,7 +2940,7 @@ void Solid::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Epetra_Vector
   }
 
   if (have_nonlinear_mass() == Inpar::Solid::ml_rotations and
-      Core::UTILS::IntegralValue<Inpar::Solid::PredEnum>(*sdynparams, "PREDICT") !=
+      Core::UTILS::integral_value<Inpar::Solid::PredEnum>(*sdynparams, "PREDICT") !=
           Inpar::Solid::pred_constdis)
   {
     FOUR_C_THROW(
@@ -2949,7 +2951,7 @@ void Solid::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Epetra_Vector
   if (sdynparams != nullptr)
   {
     if (have_nonlinear_mass() == Inpar::Solid::ml_rotations and
-        Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(*sdynparams, "DYNAMICTYP") !=
+        Core::UTILS::integral_value<Inpar::Solid::DynamicType>(*sdynparams, "DYNAMICTYP") !=
             Inpar::Solid::dyna_genalpha)
       FOUR_C_THROW(
           "Nonlinear inertia forces for rotational DoFs only implemented "
@@ -3316,13 +3318,13 @@ void Solid::TimInt::reset()
   acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  disn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // velocities V_{n+1} at t_{n+1}
-  veln_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  veln_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  accn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // create empty interface force vector
-  fifc_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fifc_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // set initial fields
   set_initial_fields();

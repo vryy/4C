@@ -57,13 +57,13 @@ void MIXTURE::MixtureConstituentElastHyper::evaluate(const Core::LinAlg::Matrix<
 {
   if (prestress_strategy() != nullptr)
   {
-    Mat::ElastHyperEvaluateElasticPart(
+    Mat::elast_hyper_evaluate_elastic_part(
         F, prestretch_tensor(gp), S_stress, cmat, summands(), summand_properties(), gp, eleGID);
   }
   else
   {
     // Evaluate stresses using ElastHyper service functions
-    Mat::ElastHyperEvaluate(
+    Mat::elast_hyper_evaluate(
         F, E_strain, params, S_stress, cmat, gp, eleGID, summands(), summand_properties(), false);
   }
 }
@@ -77,7 +77,7 @@ void MIXTURE::MixtureConstituentElastHyper::evaluate_elastic_part(
   static Core::LinAlg::Matrix<3, 3> iFin(false);
   iFin.multiply_nn(iFextin, prestretch_tensor(gp));
 
-  Mat::ElastHyperEvaluateElasticPart(
+  Mat::elast_hyper_evaluate_elastic_part(
       F, iFin, S_stress, cmat, summands(), summand_properties(), gp, eleGID);
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -194,7 +194,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
             std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
                 discretization.get_state(1, "porofluid");
-            Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+            Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
             nonlinear_stiffness_poroelast_pressure_based(
@@ -228,8 +228,8 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       if (isNurbs_)
       {
         // access knots and weights for this element
-        bool zero_size =
-            Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, this, myknots_, weights_);
+        bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
+            discretization, this, myknots_, weights_);
 
         // if we have a zero sized element due to a interpolated point -> exit here
         if (zero_size) return 0;
@@ -273,7 +273,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
             std::vector<double> myephi(la[1].size());
             Teuchos::RCP<const Epetra_Vector> matrix_state =
                 discretization.get_state(1, "porofluid");
-            Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+            Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
             // calculate tangent stiffness matrix
             nonlinear_stiffness_poroelast_pressure_based(
@@ -300,8 +300,8 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       if (isNurbs_)
       {
         // access knots and weights for this element
-        bool zero_size =
-            Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, this, myknots_, weights_);
+        bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
+            discretization, this, myknots_, weights_);
 
         // if we have a zero sized element due to a interpolated point -> exit here
         if (zero_size) return 0;
@@ -341,7 +341,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
           Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
-          Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+          Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
           Core::LinAlg::Matrix<numdim_, numnod_> mydisp(true);
           extract_values_from_global_vector(
@@ -396,7 +396,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
           Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
-          Core::FE::ExtractMyValues(*matrix_state, myephi, la[1].lm_);
+          Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
           // calculate tangent stiffness matrix
           nonlinear_stiffness_poroelast_pressure_based(
@@ -425,7 +425,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       }
       else
       {
-        iocouplingstress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        iocouplingstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iocouplstress", Inpar::Solid::stress_none);
 
         // check for output of coupling stress
@@ -1268,7 +1268,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::extract_values_from_global_vec
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+  Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
   if (numdofpernode == numdim_ + 1)
   {

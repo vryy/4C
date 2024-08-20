@@ -99,7 +99,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::init(
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
 
-  fdcheck_ = Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::FdCheck>(
+  fdcheck_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::FdCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
   equilibration_method_ = Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
@@ -107,7 +107,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::init(
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
   solveradapttol_ =
-      (Core::UTILS::IntegralValue<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+      (Core::UTILS::integral_value<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
 }
 
 /*----------------------------------------------------------------------*
@@ -140,7 +140,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system()
   // instantiate appropriate equilibration class
   auto equilibration_method =
       std::vector<Core::LinAlg::EquilibrationMethod>(1, equilibration_method_);
-  equilibration_ = Core::LinAlg::BuildEquilibration(
+  equilibration_ = Core::LinAlg::build_equilibration(
       Core::LinAlg::MatrixType::block_field, equilibration_method, fullmap_);
 
   // structure_field: check whether we have locsys BCs, i.e. inclined structural
@@ -241,7 +241,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_combined_dbc_map()
   const Teuchos::RCP<const Epetra_Map> fcondmap =
       fluid_field()->get_dbc_map_extractor()->cond_map();
   // merge them
-  combinedDBCMap_ = Core::LinAlg::MergeMap(scondmap, fcondmap, false);
+  combinedDBCMap_ = Core::LinAlg::merge_map(scondmap, fcondmap, false);
 
   return;
 }
@@ -604,9 +604,9 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_solver()
 
   create_linear_solver(solverparams, solvertype);
 
-  vectornormfres_ = Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::VectorNorm>(
+  vectornormfres_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::VectorNorm>(
       poromultdyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
-  vectornorminc_ = Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::VectorNorm>(
+  vectornorminc_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::VectorNorm>(
       poromultdyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
 
   return true;
@@ -620,7 +620,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::create_linear_solver(
 {
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   // no need to do the rest for direct solvers
   if (solvertype == Core::LinearSolver::SolverType::umfpack or
@@ -710,13 +710,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_newton()
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
-    iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
   if (zeros_ == Teuchos::null)
-    zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     zeros_->PutScalar(0.0);
 
@@ -849,11 +849,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::newton_error_check()
       printf(
           "|  Max. rel. increment [%3s]:  %10.3E  < %10.3E                                      "
           "|\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
+          vector_norm_string(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
           "|  Maximum    residual [%3s]:  %10.3E  < %10.3E                                      "
           "|\n",
-          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
+          vector_norm_string(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
           "+--------------+--------------+--------------+--------------+--------------+"
           "-----------------+\n");
@@ -870,10 +870,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::newton_error_check()
           itmax_);
       printf(
           "|  Max. rel. increment [%3s]:  %10.3E    %10.3E                                    |\n",
-          VectorNormString(vectornorminc_).c_str(), maxinc_, ittolinc_);
+          vector_norm_string(vectornorminc_).c_str(), maxinc_, ittolinc_);
       printf(
           "|  Maximum    residual [%3s]:  %10.3E    %10.3E                                    |\n",
-          VectorNormString(vectornormfres_).c_str(), maxres_, ittolres_);
+          vector_norm_string(vectornormfres_).c_str(), maxres_, ittolres_);
       printf(
           "+--------------+----------------+------------------+--------------------+---------------"
           "---+\n");
@@ -1043,8 +1043,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> abs_iterinc = Teuchos::null;
-  iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  abs_iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
+  abs_iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1057,7 +1057,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
   abs_iterinc->Update(1.0, *iterinc_, 0.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = Core::LinAlg::CreateMatrix(*dof_row_map(), 81);
+  stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
@@ -1450,7 +1450,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_combine
       fluid_field()->art_net_tim_int()->get_dbc_map_extractor()->cond_map();
 
   // merge them
-  combinedDBCMap_ = Core::LinAlg::MergeMap(combinedDBCMap_, artcondmap, false);
+  combinedDBCMap_ = Core::LinAlg::merge_map(combinedDBCMap_, artcondmap, false);
 
   return;
 }

@@ -150,7 +150,7 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       if (act == Core::Elements::struct_calc_nlnstiffmass)
       {
@@ -405,13 +405,13 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
 
       if (act == Core::Elements::struct_calc_brownianforce)
       {
@@ -532,7 +532,7 @@ int Discret::ELEMENTS::Beam3r::evaluate(Teuchos::ParameterList& params,
     }
 
     default:
-      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      std::cout << "\ncalled element with action type " << action_type_to_string(act);
       FOUR_C_THROW("This action type is not implemented for Beam3r");
       break;
   }
@@ -608,11 +608,11 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
     wgt = intpoints.qwgt[numgp];
 
     // evaluation of shape functions at Gauss points
-    Core::FE::shape_function_1D(I_i, xi, distype);
+    Core::FE::shape_function_1d(I_i, xi, distype);
     if (centerline_hermite_)
-      Core::FE::shape_function_hermite_1D(H_i, xi, reflength_, Core::FE::CellType::line2);
+      Core::FE::shape_function_hermite_1d(H_i, xi, reflength_, Core::FE::CellType::line2);
     else
-      Core::FE::shape_function_1D(H_i, xi, distype);
+      Core::FE::shape_function_1d(H_i, xi, distype);
 
     // position vector at the gauss point at reference configuration needed for function evaluation
     std::vector<double> X_ref(3, 0.0);
@@ -787,7 +787,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_and_inertia_forces_and_stiff(
     if (force != nullptr)
     {
       for (unsigned int idof = 0; idof < numdofelement; ++idof)
-        (*force)(idof) = Core::FADUtils::CastToDouble(internal_force(idof));
+        (*force)(idof) = Core::FADUtils::cast_to_double(internal_force(idof));
     }
 
     if (stiffmatrix != nullptr)
@@ -923,10 +923,10 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodetriad, 1>(
+  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
       gausspoints_elast_force, I_i, this->shape());
 
-  Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAllGPs<nnodecl, vpernode>(
+  Discret::UTILS::Beam::evaluate_shape_function_derivs_all_gps<nnodecl, vpernode>(
       gausspoints_elast_force, H_i_xi, this->shape(), this->ref_length());
 
   // re-assure correct size of strain and stress resultant class variables
@@ -1011,22 +1011,22 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
     // add elastic energy from forces at this GP
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
-      eint_ += 0.5 * Core::FADUtils::CastToDouble(Gamma(dim)) *
-               Core::FADUtils::CastToDouble(stressN(dim)) * jacobi_gp_elastf_[numgp] * wgt;
+      eint_ += 0.5 * Core::FADUtils::cast_to_double(Gamma(dim)) *
+               Core::FADUtils::cast_to_double(stressN(dim)) * jacobi_gp_elastf_[numgp] * wgt;
     }
 
     // store material strain and stress values in class variables
-    axial_strain_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(Gamma(0));
-    shear_strain_2_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(Gamma(1));
-    shear_strain_3_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(Gamma(2));
+    axial_strain_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(Gamma(0));
+    shear_strain_2_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(Gamma(1));
+    shear_strain_3_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(Gamma(2));
 
-    material_axial_force_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(stressN(0));
-    material_shear_force_2_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(stressN(1));
-    material_shear_force_3_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(stressN(2));
+    material_axial_force_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(stressN(0));
+    material_shear_force_2_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(stressN(1));
+    material_shear_force_3_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(stressN(2));
 
-    spatial_x_force_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(stressn(0));
-    spatial_y_force_2_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(stressn(1));
-    spatial_z_force_3_gp_elastf_[numgp] = Core::FADUtils::CastToDouble(stressn(2));
+    spatial_x_force_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(stressn(0));
+    spatial_y_force_2_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(stressn(1));
+    spatial_z_force_3_gp_elastf_[numgp] = Core::FADUtils::cast_to_double(stressn(2));
   }
 
 
@@ -1042,7 +1042,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad, 1>(
+  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodetriad, 1>(
       gausspoints_elast_moment, I_i, I_i_xi, this->shape());
 
   // reset norm of maximal bending curvature
@@ -1080,8 +1080,8 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
 
     // determine norm of maximal bending curvature at this GP and store in class variable if needed
     double Kmax =
-        std::sqrt(Core::FADUtils::CastToDouble(Cur(1)) * Core::FADUtils::CastToDouble(Cur(1)) +
-                  Core::FADUtils::CastToDouble(Cur(2)) * Core::FADUtils::CastToDouble(Cur(2)));
+        std::sqrt(Core::FADUtils::cast_to_double(Cur(1)) * Core::FADUtils::cast_to_double(Cur(1)) +
+                  Core::FADUtils::cast_to_double(Cur(2)) * Core::FADUtils::cast_to_double(Cur(2)));
     if (Kmax > kmax_) kmax_ = Kmax;
 
     get_templated_beam_material<T>().evaluate_moment_contributions_to_stress(
@@ -1120,22 +1120,22 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
     // add elastic energy from moments at this GP
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      eint_ += 0.5 * Core::FADUtils::CastToDouble(Cur(dim)) *
-               Core::FADUtils::CastToDouble(stressM(dim)) * jacobi_gp_elastm_[numgp] * wgt;
+      eint_ += 0.5 * Core::FADUtils::cast_to_double(Cur(dim)) *
+               Core::FADUtils::cast_to_double(stressM(dim)) * jacobi_gp_elastm_[numgp] * wgt;
     }
 
     // store material strain and stress values in class variables
-    twist_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(Cur(0));
-    curvature_2_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(Cur(1));
-    curvature_3_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(Cur(2));
+    twist_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(Cur(0));
+    curvature_2_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(Cur(1));
+    curvature_3_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(Cur(2));
 
-    material_torque_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(stressM(0));
-    material_bending_moment_2_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(stressM(1));
-    material_bending_moment_3_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(stressM(2));
+    material_torque_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(stressM(0));
+    material_bending_moment_2_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(stressM(1));
+    material_bending_moment_3_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(stressM(2));
 
-    spatial_x_moment_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(stressm(0));
-    spatial_y_moment_2_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(stressm(1));
-    spatial_z_moment_3_gp_elastm_[numgp] = Core::FADUtils::CastToDouble(stressm(2));
+    spatial_x_moment_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(stressm(0));
+    spatial_y_moment_2_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(stressm(1));
+    spatial_z_moment_3_gp_elastm_[numgp] = Core::FADUtils::cast_to_double(stressm(2));
   }
 }
 
@@ -1216,9 +1216,9 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
   H_i.resize(gausspoints_mass.nquad);
 
   // evaluate all shape functions at all specified Gauss points
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodetriad, 1>(
+  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
       gausspoints_mass, I_i, this->shape());
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodecl, vpernode>(
+  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodecl, vpernode>(
       gausspoints_mass, H_i, this->shape(), this->ref_length());
 
   // Calculate current centerline position at gauss points (needed for element intern time
@@ -1417,7 +1417,7 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     Jp_bar.update(-diff_factor_vel, SJpWnewmass, 1.0);
 
     Core::LinAlg::Matrix<3, 3> Tmatrix(true);
-    Tmatrix = Core::LargeRotations::Tmatrix(deltatheta);
+    Tmatrix = Core::LargeRotations::tmatrix(deltatheta);
 
     Core::LinAlg::Matrix<3, 3> Lambdanewmass_Jpbar(true);
     Lambdanewmass_Jpbar.multiply(Lambdanewmass, Jp_bar);
@@ -1930,7 +1930,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
     Core::LargeRotations::quaterniontoangle(Qnode[jnode], theta_totlag_j);
 
     // compute Tmatrix of theta_totlag_i
-    Tmat = Core::LargeRotations::Tmatrix(theta_totlag_j);
+    Tmat = Core::LargeRotations::tmatrix(theta_totlag_j);
 
     for (unsigned int inode = 0; inode < nnodecl; inode++)
     {
@@ -2004,7 +2004,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
     Core::LargeRotations::quaterniontoangle(Qnode[jnode], theta_totlag_j);
 
     // compute Tmatrix of theta_totlag_i
-    Tmat = Core::LargeRotations::Tmatrix(theta_totlag_j);
+    Tmat = Core::LargeRotations::tmatrix(theta_totlag_j);
 
     for (unsigned int inode = 0; inode < nnodecl; inode++)
     {
@@ -2191,7 +2191,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_ptc(
 
     // isotropic artificial stiffness
     Core::LinAlg::Matrix<3, 3> artstiff;
-    artstiff = Core::LargeRotations::Tmatrix(deltatheta);
+    artstiff = Core::LargeRotations::tmatrix(deltatheta);
 
     // scale artificial damping with crotptc parameter for PTC method
     artstiff.scale(params.get<double>("crotptc", 0.0));
@@ -2282,7 +2282,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
   std::vector<Core::LinAlg::Matrix<1, nnodetriad, double>> I_i(gausspoints.nquad);
 
   // evaluate all shape functions at all specified Gauss points
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<nnodetriad, 1>(
+  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
       gausspoints, I_i, this->shape());
 
   /* vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation function
@@ -2389,7 +2389,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
       // compute matrix gamma(2) * g_1 \otimes g_1 * \omega * Tmat
       Core::LinAlg::Matrix<3, 3> g1g1oldgammaTmat;
-      g1g1oldgammaTmat.multiply(g1g1oldgamma, Core::LargeRotations::Tmatrix(deltatheta));
+      g1g1oldgammaTmat.multiply(g1g1oldgamma, Core::LargeRotations::tmatrix(deltatheta));
 
       // compute spin matrix S(\omega)
       Core::LinAlg::Matrix<3, 3> Sofomega;
@@ -2533,7 +2533,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
+  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodecl, vpernode>(
       gausspoints, H_i, H_i_xi, this->shape(), this->ref_length());
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
@@ -2550,7 +2550,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
 
     // compute velocity vector at this Gauss point via same interpolation as for centerline position
     // vector
-    Discret::UTILS::Beam::CalcInterpolation<nnodecl, vpernode, 3, double>(
+    Discret::UTILS::Beam::calc_interpolation<nnodecl, vpernode, 3, double>(
         vel_centerline, H_i[gp], vel_rel);
     vel_rel -= velbackground;
 
@@ -2714,7 +2714,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
 
   // evaluate all shape function derivatives with respect to element parameter xi at all specified
   // Gauss points
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl, vpernode>(
+  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodecl, vpernode>(
       gausspoints, H_i, H_i_xi, this->shape(), this->ref_length());
 
 

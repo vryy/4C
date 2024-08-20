@@ -18,7 +18,7 @@ bool Discret::ELEMENTS::SoTet10::read_element(const std::string& eletype,
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   solid_material()->setup(NUMGPT_SOTET10, container);
 

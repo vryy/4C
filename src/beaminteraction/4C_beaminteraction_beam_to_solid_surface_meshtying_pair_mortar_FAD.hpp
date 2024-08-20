@@ -192,8 +192,8 @@ namespace BEAMINTERACTION
    * @param surface_normal_strategy (in) Strategy for surface normal evaluation.
    * @return Pointer to the created pair.
    */
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
-      const Core::FE::CellType surface_shape,
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+  beam_to_solid_surface_meshtying_pair_mortar_fad_factory(const Core::FE::CellType surface_shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
       const bool rotational_coupling,
       const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);

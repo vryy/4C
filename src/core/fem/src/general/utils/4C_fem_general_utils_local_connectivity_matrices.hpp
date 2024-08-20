@@ -349,7 +349,7 @@ namespace Core::FE
    *
    * @return number of nodes
    */
-  int getNumberOfElementNodes(const Core::FE::CellType& distype);
+  int get_number_of_element_nodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of corner nodes for an element of the given discretization type
@@ -357,7 +357,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return number of corner nodes
    */
-  int getNumberOfElementCornerNodes(const Core::FE::CellType& distype);
+  int get_number_of_element_corner_nodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of corner nodes for each face element for an element of the given
@@ -366,7 +366,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return number of corner nodes for each face element
    */
-  std::vector<int> getNumberOfFaceElementCornerNodes(const Core::FE::CellType& distype);
+  std::vector<int> get_number_of_face_element_corner_nodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of internal nodes for each face element for an element of the given
@@ -375,7 +375,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return number of internal nodes for each face element
    */
-  std::vector<int> getNumberOfFaceElementInternalNodes(const Core::FE::CellType& distype);
+  std::vector<int> get_number_of_face_element_internal_nodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of lines for the given discretization type
@@ -383,7 +383,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return number of lines
    */
-  int getNumberOfElementLines(const Core::FE::CellType& distype);
+  int get_number_of_element_lines(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of surface for the given discretization type
@@ -391,7 +391,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return number of surfaces
    */
-  int getNumberOfElementSurfaces(const Core::FE::CellType& distype);
+  int get_number_of_element_surfaces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of volumes for the given discretization type
@@ -399,7 +399,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return number of volumes
    */
-  int getNumberOfElementVolumes(const Core::FE::CellType& distype);
+  int get_number_of_element_volumes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of faces for the given discretization type (as opposed to
@@ -408,7 +408,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return number of faces
    */
-  int getNumberOfElementFaces(const Core::FE::CellType& distype);
+  int get_number_of_element_faces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the shape type of a face of a given element
@@ -417,7 +417,7 @@ namespace Core::FE
    * @param[in] face face index
    * @return discretization type of the element face
    */
-  Core::FE::CellType getEleFaceShapeType(
+  Core::FE::CellType get_ele_face_shape_type(
       const Core::FE::CellType& distype, const unsigned int face = 0);
 
   /*!
@@ -427,7 +427,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return map with all nodes for each face
    */
-  std::vector<std::vector<int>> getEleNodeNumberingFaces(const Core::FE::CellType& distype);
+  std::vector<std::vector<int>> get_ele_node_numbering_faces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Fills a vector<std::vector<int>> with all nodes for every surface
@@ -435,7 +435,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return map with all nodes for each surface
    */
-  std::vector<std::vector<int>> getEleNodeNumberingSurfaces(const Core::FE::CellType& distype);
+  std::vector<std::vector<int>> get_ele_node_numbering_surfaces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Fills a vector<std::vector<int>> with all nodes for every line
@@ -443,7 +443,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return map with all nodes for each line
    */
-  std::vector<std::vector<int>> getEleNodeNumberingLines(const Core::FE::CellType& distype);
+  std::vector<std::vector<int>> get_ele_node_numbering_lines(const Core::FE::CellType& distype);
 
   /*!
    * @brief Fills a vector<std::vector<int>> with all surfaces for every line
@@ -451,7 +451,7 @@ namespace Core::FE
    * @param[in] distype discretization type
    * @return map with surfaces adjacent to each line
    */
-  std::vector<std::vector<int>> getEleNodeNumbering_lines_surfaces(
+  std::vector<std::vector<int>> get_ele_node_numbering_lines_surfaces(
       const Core::FE::CellType& distype);
 
   /*!
@@ -461,7 +461,7 @@ namespace Core::FE
    * @param[in] celltype discretization type
    * @return map of parameter space coordinates for all nodes
    */
-  Core::LinAlg::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
+  Core::LinAlg::SerialDenseMatrix get_ele_node_numbering_nodes_paramspace(
       const Core::FE::CellType celltype);
 
   template <Core::FE::CellType celltype>
@@ -633,7 +633,7 @@ namespace Core::FE
    * @return coordinates in parameter space for a given node id and discretization type
    */
   template <int probdim = 3>
-  Core::LinAlg::Matrix<probdim, 1> GetNodeCoordinates(
+  Core::LinAlg::Matrix<probdim, 1> get_node_coordinates(
       const int nodeId, const Core::FE::CellType distype);
 
   /*!
@@ -645,7 +645,7 @@ namespace Core::FE
    * @param[in] hoindex  index of edge node
    * @param[in] distype  discretization type
    */
-  void getCornerNodeIndices(
+  void get_corner_node_indices(
       int& index1, int& index2, const int& hoindex, const Core::FE::CellType distype);
 
   /*!
@@ -653,7 +653,7 @@ namespace Core::FE
    *
    * @param[in] distype  discretization type
    */
-  int getDimension(const Core::FE::CellType distype);
+  int get_dimension(const Core::FE::CellType distype);
 
   /*!
    * @brief Returns the degree of an element based on its discretization type
@@ -1224,7 +1224,7 @@ namespace Core::FE
    * @param[in, opt] default_order if the distype is not known, throw an error
    *                               or return the value for default_order
    */
-  int getOrder(const Core::FE::CellType distype, std::optional<int> default_order = std::nullopt);
+  int get_order(const Core::FE::CellType distype, std::optional<int> default_order = std::nullopt);
 
   /*!
    * @brief returns the order of the element
@@ -1233,13 +1233,14 @@ namespace Core::FE
    * @param[in, opt] default_degree if the distype is not known, throw an error
    *                                or return the value for default_degree
    */
-  int getDegree(const Core::FE::CellType distype, std::optional<int> default_degree = std::nullopt);
+  int get_degree(
+      const Core::FE::CellType distype, std::optional<int> default_degree = std::nullopt);
 
   /*!
    * @brief Returns local node number in the parent element from a given face number and local node
    * number in the face element
    */
-  int getParentNodeNumberFromFaceNodeNumber(
+  int get_parent_node_number_from_face_node_number(
       const Core::FE::CellType parent_distype, const int faceId, const int faceNodeId);
 
   /*!
@@ -1250,7 +1251,7 @@ namespace Core::FE
    * @param[out] pos  local center position
    */
   template <unsigned dim>
-  Core::LinAlg::Matrix<dim, 1> getLocalCenterPosition(
+  Core::LinAlg::Matrix<dim, 1> get_local_center_position(
       const Core::FE::CellType distype, Core::LinAlg::Matrix<dim, 1>& pos)
   {
     switch (distype)
@@ -1310,7 +1311,7 @@ namespace Core::FE
       default:
       {
         FOUR_C_THROW("discretization type %s not yet implemented",
-            Core::FE::CellTypeToString(distype).c_str());
+            Core::FE::cell_type_to_string(distype).c_str());
         exit(EXIT_FAILURE);
       }
     }
@@ -1325,10 +1326,10 @@ namespace Core::FE
    * @return local center position.
    */
   template <unsigned dim>
-  inline Core::LinAlg::Matrix<dim, 1> getLocalCenterPosition(const Core::FE::CellType distype)
+  inline Core::LinAlg::Matrix<dim, 1> get_local_center_position(const Core::FE::CellType distype)
   {
     Core::LinAlg::Matrix<dim, 1> pos(false);
-    getLocalCenterPosition(distype, pos);
+    get_local_center_position(distype, pos);
     return pos;
   }
 
@@ -1339,7 +1340,8 @@ namespace Core::FE
    * @param[in] nen number of nodes of the boundary element
    * @param[in] parentshape shape of parent element
    */
-  Core::FE::CellType getShapeOfBoundaryElement(const int nen, const Core::FE::CellType parentshape);
+  Core::FE::CellType get_shape_of_boundary_element(
+      const int nen, const Core::FE::CellType parentshape);
 
 }  // namespace Core::FE
 

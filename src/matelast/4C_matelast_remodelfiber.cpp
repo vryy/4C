@@ -473,7 +473,7 @@ void Mat::Elastic::RemodelFiber::derivd_c(Core::LinAlg::Matrix<3, 3, T> const& C
   func.evaluate_func(r_fad, CeM_fad, gp, eleGID);
 
   Core::LinAlg::Matrix<3, 3> tmp(true);
-  FirstDerivToMatrix(r_fad, tmp);
+  first_deriv_to_matrix(r_fad, tmp);
   dfuncdC.update(1.0, tmp, 0.0);
 }
 
@@ -798,7 +798,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_growth(
   evaluate_local_cauchy_stress(CM_fad, iFinM_fad, AM_fad, fiberdat.fiber, gp, eleGID, sig_fad);
 
   Core::LinAlg::Matrix<3, 3> dsigdiFgM(true);
-  FirstDerivToMatrix(sig_fad, dsigdiFgM);
+  first_deriv_to_matrix(sig_fad, dsigdiFgM);
   dsigdrho = dsigdiFgM.dot(diFgdrhoM);
 
 
@@ -926,7 +926,7 @@ void Mat::Elastic::RemodelFiber::evaluate_derivatives_cauchy_remodel(
   evaluate_local_cauchy_stress(CM_fad, iFinM_fad, AM_fad, fiberdat.fiber, gp, eleGID, sig_fad);
 
   Core::LinAlg::Matrix<3, 3> dsigdiFrM(true);
-  FirstDerivToMatrix(sig_fad, dsigdiFrM);
+  first_deriv_to_matrix(sig_fad, dsigdiFrM);
   dsigdlambr = dsigdiFrM.dot(fiberdat.diFrdlambrM[gp]);
 
 

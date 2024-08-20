@@ -117,11 +117,11 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
     std::cout << "\n Coupling variable for partitioned FSI scheme :  Force " << std::endl;
 
   // set switch for interface velocity correction
-  correct_boundary_velocities_ = (Core::UTILS::IntegralValue<int>(
+  correct_boundary_velocities_ = (Core::UTILS::integral_value<int>(
       globalproblem_->immersed_method_params(), "CORRECT_BOUNDARY_VELOCITIES"));
 
   // set switch for output in every nln. iteration (for debugging)
-  output_evry_nlniter_ = (Core::UTILS::IntegralValue<int>(
+  output_evry_nlniter_ = (Core::UTILS::integral_value<int>(
       globalproblem_->immersed_method_params(), "OUTPUT_EVRY_NLNITER"));
 
   // print acceleration method
@@ -205,7 +205,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
   }
 
   // find the bounding box of the elements and initialize the search tree
-  const Core::LinAlg::Matrix<3, 2> rootBox = Core::Geo::getXAABBofPositions(currpositions_fluid_);
+  const Core::LinAlg::Matrix<3, 2> rootBox =
+      Core::Geo::get_xaab_bof_positions(currpositions_fluid_);
   fluid_SearchTree_->initialize_tree(rootBox, *fluiddis_, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   if (myrank_ == 0) std::cout << "\n Build Fluid SearchTree ... " << std::endl;
@@ -548,12 +549,12 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup_structural_discreti
   // on all procs.
   std::vector<int> procs(numproc_);
   for (int i = 0; i < numproc_; i++) procs[i] = i;
-  Core::LinAlg::Gather<int, Core::LinAlg::Matrix<3, 1>>(
+  Core::LinAlg::gather<int, Core::LinAlg::Matrix<3, 1>>(
       my_currpositions_struct, currpositions_struct_, numproc_, procs.data(), get_comm());
 
   // find the bounding box of the elements and initialize the search tree
   const Core::LinAlg::Matrix<3, 2> rootBox2 =
-      Core::Geo::getXAABBofDis(*structdis_, currpositions_struct_);
+      Core::Geo::get_xaab_bof_dis(*structdis_, currpositions_struct_);
   structure_SearchTree_->initialize_tree(
       rootBox2, *structdis_, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
@@ -639,7 +640,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
 
     // get the current displacement
     structdis_->dof(node, 0, dofstoextract);
-    Core::FE::ExtractMyValues(*displacements, mydisp, dofstoextract);
+    Core::FE::extract_my_values(*displacements, mydisp, dofstoextract);
 
     currpos(0) = node->x()[0] + mydisp.at(0);
     currpos(1) = node->x()[1] + mydisp.at(1);
@@ -654,7 +655,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
   // on all procs.
   std::vector<int> procs(numproc_);
   for (int i = 0; i < numproc_; i++) procs[i] = i;
-  Core::LinAlg::Gather<int, Core::LinAlg::Matrix<3, 1>>(
+  Core::LinAlg::gather<int, Core::LinAlg::Matrix<3, 1>>(
       my_currpositions_struct, currpositions_struct_, numproc_, procs.data(), get_comm());
 
   // take special care in case of multibody simulations
@@ -662,7 +663,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
   {
     // get bounding box of current configuration of structural dis
     const Core::LinAlg::Matrix<3, 2> structBox =
-        Core::Geo::getXAABBofDis(*structdis_, currpositions_struct_);
+        Core::Geo::get_xaab_bof_dis(*structdis_, currpositions_struct_);
     double max_radius =
         sqrt(pow(structBox(0, 0) - structBox(0, 1), 2) + pow(structBox(1, 0) - structBox(1, 1), 2) +
              pow(structBox(2, 0) - structBox(2, 1), 2));
@@ -720,7 +721,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
 
     // get bounding boxes of the bodies
     std::vector<Core::LinAlg::Matrix<3, 2>> structboxes =
-        Core::Geo::computeXAABBForLabeledStructures(
+        Core::Geo::compute_xaabb_for_labeled_structures(
             *structdis_, currpositions_struct_, elementList);
 
     double max_radius;

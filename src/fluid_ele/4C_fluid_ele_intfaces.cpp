@@ -87,7 +87,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidIntFace::clone() const
 Core::FE::CellType Discret::ELEMENTS::FluidIntFace::shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_master_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_master_element()->shape());
 }
 
 /*----------------------------------------------------------------------*

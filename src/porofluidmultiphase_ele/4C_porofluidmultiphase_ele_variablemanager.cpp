@@ -151,7 +151,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd,
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract element vector from global vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen, 1>>(*phinp, ephinp_, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen, 1>>(*phinp, ephinp_, lm);
 
   // set flag
   this->isextracted_ = true;
@@ -236,8 +236,8 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd,
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract values from global vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen, 1>>(*hist, ehist_, lm);
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen, 1>>(*phidtnp, ephidtnp_, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen, 1>>(*hist, ehist_, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen, 1>>(*phidtnp, ephidtnp_, lm);
 
   // call wrapped class
   this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
@@ -304,7 +304,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
   if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector velocity");
 
   // extract local values of velocity field from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
 
   // safety check
   Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp_, "dispnp");
@@ -320,7 +320,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
       lmdisp[inode * nsd + idim] = la[ndsdisp_].lm_[inode * numdispdofpernode + idim];
 
   // extract local values of displacement field from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd, nen>>(*dispnp, edispnp_, lmdisp);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd, nen>>(*dispnp, edispnp_, lmdisp);
 
   // add nodal displacements to point coordinates
   xyze += edispnp_;
@@ -383,7 +383,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd,
   escalarnp_.clear();
   escalarnp_.resize(numscalardofpernode, Core::LinAlg::Matrix<nen, 1>(true));
   // extract local values of displacement field from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen, 1>>(
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen, 1>>(
       *scalarnp, escalarnp_, la[ndsscalar_].lm_);
 
   return;
@@ -442,7 +442,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
 
   // extract values from global vector
   std::vector<Core::LinAlg::Matrix<nen, 1>> ephin(this->num_dof_per_node());
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen, 1>>(*phin, ephin, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen, 1>>(*phin, ephin, lm);
 
   const int numfluidphases = (int)(this->num_dof_per_node() - 2 * numvolfrac_);
 
@@ -451,7 +451,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
   {
     // get the volfrac pressure material
     const Mat::FluidPoroVolFracPressure& volfracpressmat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetVolFracPressureMatFromMaterial(
+        POROFLUIDMULTIPHASE::ElementUtils::get_vol_frac_pressure_mat_from_material(
             *multiphasemat_, k + numvolfrac_ + numfluidphases);
 
     // this approach proved to be the most stable one

@@ -33,7 +33,7 @@ namespace Core::IO
    * @param point_coordinates (in/out) point coordinates for the representation of this element
    * @return Number of added points
    */
-  unsigned int AppendVisualizationGeometryLagrangeEle(const Core::Elements::Element& ele,
+  unsigned int append_visualization_geometry_lagrange_ele(const Core::Elements::Element& ele,
       const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
@@ -59,7 +59,7 @@ namespace Core::IO
    * \brief Helper function to return the proper VTK cell type for nurbs elements.
    */
   template <Core::FE::CellType celltype>
-  auto GetVTKCellTypeForNURBSElements()
+  auto get_vtk_cell_type_for_nurbs_elements()
   {
     switch (celltype)
     {
@@ -69,7 +69,7 @@ namespace Core::IO
         return get_vtk_cell_type_from_element_cell_type(Core::FE::CellType::hex27);
       default:
         FOUR_C_THROW("The VTK cell type for the NURBS element %s is not implemented",
-            Core::FE::CellTypeToString(celltype).c_str());
+            Core::FE::cell_type_to_string(celltype).c_str());
     }
   }
 
@@ -83,7 +83,7 @@ namespace Core::IO
    * @return Number of added points
    */
   template <Core::FE::CellType celltype>
-  unsigned int AppendVisualizationGeometryNURBS(const Core::Elements::Element& ele,
+  unsigned int append_visualization_geometry_nurbs(const Core::Elements::Element& ele,
       const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
@@ -92,7 +92,7 @@ namespace Core::IO
     constexpr int dim_output = 3;
 
     // Get the vtk cell information
-    const auto vtk_cell_info = GetVTKCellTypeForNURBSElements<celltype>();
+    const auto vtk_cell_info = get_vtk_cell_type_for_nurbs_elements<celltype>();
     const std::vector<int>& numbering = vtk_cell_info.second;
 
     // Add the cell type to the output.
@@ -104,7 +104,7 @@ namespace Core::IO
       Core::LinAlg::Matrix<number_of_output_points, 1, double> weights(true);
       std::vector<Core::LinAlg::SerialDenseVector> knots(true);
       const bool zero_size =
-          Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discret, &ele, knots, weights);
+          Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discret, &ele, knots, weights);
       if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
       // Get the position of the control points in the reference configuration.
@@ -137,14 +137,13 @@ namespace Core::IO
               break;
             default:
               FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
-                  Core::FE::CellTypeToString(ele.shape()).c_str());
+                  Core::FE::cell_type_to_string(ele.shape()).c_str());
           }
         }
 
         // Get the position at the parameter coordinate.
-        point_result =
-            Core::FE::Nurbs::EvalNurbsInterpolation<number_of_output_points, dim_nurbs, dim_output>(
-                pos_controlpoints, xi, weights, knots, ele.shape());
+        point_result = Core::FE::Nurbs::eval_nurbs_interpolation<number_of_output_points, dim_nurbs,
+            dim_output>(pos_controlpoints, xi, weights, knots, ele.shape());
 
         for (unsigned int i_dim = 0; i_dim < dim_output; i_dim++)
           point_coordinates.push_back(point_result(i_dim));
@@ -157,16 +156,16 @@ namespace Core::IO
   /**
    * \brief Helper function to append the coordinates of vertices of NURBS elements.
    */
-  unsigned int AppendVisualizationGeometryNURBSEle(const Core::Elements::Element& ele,
+  unsigned int append_visualization_geometry_nurbs_ele(const Core::Elements::Element& ele,
       const Core::FE::Discretization& discret, std::vector<uint8_t>& cell_types,
       std::vector<double>& point_coordinates)
   {
     using implemented_celltypes =
         Core::FE::CelltypeSequence<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs27>;
-    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.shape(),
+    return Core::FE::cell_type_switch<implemented_celltypes>(ele.shape(),
         [&](auto celltype_t)
         {
-          return AppendVisualizationGeometryNURBS<celltype_t()>(
+          return append_visualization_geometry_nurbs<celltype_t()>(
               ele, discret, cell_types, point_coordinates);
         });
   }
@@ -279,7 +278,7 @@ namespace Core::IO
     constexpr int dim_nurbs = Core::FE::dim<celltype>;
 
     // Get the vtk cell information
-    const auto vtk_cell_info = GetVTKCellTypeForNURBSElements<celltype>();
+    const auto vtk_cell_info = get_vtk_cell_type_for_nurbs_elements<celltype>();
     const std::vector<int>& numbering = vtk_cell_info.second;
 
     // Add the data at the nodes of the nurbs visualization.
@@ -288,7 +287,7 @@ namespace Core::IO
       Core::LinAlg::Matrix<number_of_output_points, 1, double> weights(true);
       std::vector<Core::LinAlg::SerialDenseVector> knots(true);
       const bool zero_size =
-          Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discret, &ele, knots, weights);
+          Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discret, &ele, knots, weights);
       if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
       // Get the element result vector.
@@ -297,7 +296,7 @@ namespace Core::IO
       std::vector<double> ele_dof_values;
       std::vector<int> lm, lmowner, lmstride;
       ele.location_vector(discret, lm, lmowner, lmstride);
-      Core::FE::ExtractMyValues(result_data_dofbased, ele_dof_values, lm);
+      Core::FE::extract_my_values(result_data_dofbased, ele_dof_values, lm);
 
       const auto total_dofs_per_node = ele_dof_values.size() / number_of_output_points;
       FOUR_C_ASSERT((ele_dof_values.size() % total_dofs_per_node) == 0,
@@ -329,12 +328,12 @@ namespace Core::IO
               break;
             default:
               FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
-                  Core::FE::CellTypeToString(ele.shape()).c_str());
+                  Core::FE::cell_type_to_string(ele.shape()).c_str());
           }
         }
 
         // Get the field value at the parameter coordinate
-        point_result = Core::FE::Nurbs::EvalNurbsInterpolation<number_of_output_points, dim_nurbs,
+        point_result = Core::FE::Nurbs::eval_nurbs_interpolation<number_of_output_points, dim_nurbs,
             result_num_dofs_per_node>(dof_result, xi, weights, knots, ele.shape());
 
         for (unsigned int i_dim = 0; i_dim < result_num_dofs_per_node; i_dim++)
@@ -365,7 +364,7 @@ namespace Core::IO
     constexpr int dim_nurbs = Core::FE::dim<celltype>;
 
     // Get the vtk cell information
-    const auto vtk_cell_info = GetVTKCellTypeForNURBSElements<celltype>();
+    const auto vtk_cell_info = get_vtk_cell_type_for_nurbs_elements<celltype>();
     const std::vector<int>& numbering = vtk_cell_info.second;
 
     // Add the data at the nodes of the nurbs visualization.
@@ -374,14 +373,14 @@ namespace Core::IO
       Core::LinAlg::Matrix<number_of_output_points, 1, double> weights(true);
       std::vector<Core::LinAlg::SerialDenseVector> knots(true);
       const bool zero_size =
-          Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discret, &ele, knots, weights);
+          Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discret, &ele, knots, weights);
       if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
       // Get the element result vector.
       Core::LinAlg::Matrix<number_of_output_points * result_num_components_per_node, 1, double>
           result;
       std::vector<double> ele_node_values;
-      Core::FE::ExtractMyNodeBasedValues(&ele, ele_node_values, result_data_nodebased);
+      Core::FE::extract_my_node_based_values(&ele, ele_node_values, result_data_nodebased);
 
       for (auto i_node_nurbs = 0; i_node_nurbs < number_of_output_points; ++i_node_nurbs)
       {
@@ -410,12 +409,12 @@ namespace Core::IO
               break;
             default:
               FOUR_C_THROW("The node numbering for the nurbs element shape %s is not implemented",
-                  Core::FE::CellTypeToString(ele.shape()).c_str());
+                  Core::FE::cell_type_to_string(ele.shape()).c_str());
           }
         }
 
         // Get the field value at the parameter coordinate
-        point_result = Core::FE::Nurbs::EvalNurbsInterpolation<number_of_output_points, dim_nurbs,
+        point_result = Core::FE::Nurbs::eval_nurbs_interpolation<number_of_output_points, dim_nurbs,
             result_num_components_per_node>(result, xi, weights, knots, ele.shape());
 
         for (unsigned int i_dim = 0; i_dim < result_num_components_per_node; i_dim++)
@@ -445,7 +444,7 @@ namespace Core::IO
   {
     using implemented_celltypes =
         Core::FE::CelltypeSequence<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs27>;
-    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.shape(),
+    return Core::FE::cell_type_switch<implemented_celltypes>(ele.shape(),
         [&](auto celltype_t)
         {
           switch (result_num_dofs_per_node)
@@ -486,7 +485,7 @@ namespace Core::IO
   {
     using implemented_celltypes =
         Core::FE::CelltypeSequence<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs27>;
-    return Core::FE::CellTypeSwitch<implemented_celltypes>(ele.shape(),
+    return Core::FE::cell_type_switch<implemented_celltypes>(ele.shape(),
         [&](auto celltype_t)
         {
           switch (result_num_components_per_node)

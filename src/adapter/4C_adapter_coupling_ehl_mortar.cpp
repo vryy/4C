@@ -28,7 +28,7 @@ Adapter::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     Core::FE::ShapeFunctionType shape_function_type)
     : CouplingNonLinMortar(
           spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
-      contact_regularization_(Core::UTILS::IntegralValue<int>(
+      contact_regularization_(Core::UTILS::integral_value<int>(
           Global::Problem::instance()->contact_dynamic_params(), "REGULARIZED_NORMAL_CONTACT")),
       regularization_thickness_(Global::Problem::instance()->contact_dynamic_params().get<double>(
           "REGULARIZATION_THICKNESS")),
@@ -46,9 +46,9 @@ Adapter::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     if (regularization_compliance_ <= 0. || regularization_thickness_ <= 0.)
       FOUR_C_THROW("need positive REGULARIZATION_THICKNESS and REGULARIZATION_STIFFNESS");
   if (contact_regularization_) regularization_compliance_ = 1. / regularization_compliance_;
-  if (Core::UTILS::IntegralValue<int>(Global::Problem::instance()->contact_dynamic_params(),
+  if (Core::UTILS::integral_value<int>(Global::Problem::instance()->contact_dynamic_params(),
           "REGULARIZED_NORMAL_CONTACT") == true &&
-      Core::UTILS::IntegralValue<bool>(
+      Core::UTILS::integral_value<bool>(
           Global::Problem::instance()->elasto_hydro_dynamic_params(), "DRY_CONTACT_MODEL") == false)
     FOUR_C_THROW("for dry contact model you need REGULARIZED_NORMAL_CONTACT and DRY_CONTACT_MODEL");
 }
@@ -78,7 +78,7 @@ void Adapter::CouplingEhlMortar::setup(Teuchos::RCP<Core::FE::Discretization> ma
   z_ = Teuchos::rcp(new Epetra_Vector(*interface_->slave_row_dofs(), true));
   fscn_ = Teuchos::rcp(new Epetra_Vector(*interface_->slave_row_dofs(), true));
 
-  Inpar::CONTACT::FrictionType ftype = Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(
+  Inpar::CONTACT::FrictionType ftype = Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(
       Global::Problem::instance()->contact_dynamic_params(), "FRICTION");
 
   std::vector<Core::Conditions::Condition*> ehl_conditions(0);
@@ -163,7 +163,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
 {
   const double alphaf_ = 0.;  // statics!
   const Inpar::CONTACT::ConstraintDirection& constr_direction_ =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::ConstraintDirection>(
+      Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
           interface()->interface_params(), "CONSTRAINT_DIRECTIONS");
 
   // return if this state has already been evaluated
@@ -181,12 +181,12 @@ void Adapter::CouplingEhlMortar::condense_contact(
       *interface_->active_dofs(), 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdLMc = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *interface_->active_dofs(), 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  Teuchos::RCP<Epetra_Vector> fcsa = Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
+  Teuchos::RCP<Epetra_Vector> fcsa = Core::LinAlg::create_vector(*interface_->active_dofs(), true);
   Teuchos::RCP<Epetra_Vector> g_all;
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-    g_all = Core::LinAlg::CreateVector(*interface_->slave_row_dofs(), true);
+    g_all = Core::LinAlg::create_vector(*interface_->slave_row_dofs(), true);
   else
-    g_all = Core::LinAlg::CreateVector(*interface_->slave_row_nodes(), true);
+    g_all = Core::LinAlg::create_vector(*interface_->slave_row_nodes(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*interface_->slave_row_dofs(), 10));
@@ -219,7 +219,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
     if (interface_->is_friction())
     {
       Teuchos::RCP<Epetra_Vector> rcsa_fr =
-          Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
+          Core::LinAlg::create_vector(*interface_->active_dofs(), true);
       interface_->assemble_lin_slip_normal_regularization(*dcsdLMc, *dcsdd, *rcsa_fr);
       interface_->assemble_lin_stick(*dcsdLMc, *dcsdd, *rcsa_fr);
       rcsa_fr->Scale(-1.);
@@ -228,7 +228,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
     else
     {
       Teuchos::RCP<Epetra_Vector> rcsa_fr =
-          Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
+          Core::LinAlg::create_vector(*interface_->active_dofs(), true);
       interface_->assemble_tn(dcsdLMc, Teuchos::null);
       interface_->assemble_t_nderiv(dcsdd, Teuchos::null);
       interface_->assemble_tangrhs(*rcsa_fr);
@@ -248,12 +248,12 @@ void Adapter::CouplingEhlMortar::condense_contact(
   Teuchos::RCP<Epetra_Vector> gact;
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
-    gact = Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
+    gact = Core::LinAlg::create_vector(*interface_->active_dofs(), true);
     if (gact->GlobalLength()) Core::LinAlg::export_to(*g_all, *gact);
   }
   else
   {
-    gact = Core::LinAlg::CreateVector(*interface_->active_nodes(), true);
+    gact = Core::LinAlg::create_vector(*interface_->active_nodes(), true);
     if (gact->GlobalLength())
     {
       Core::LinAlg::export_to(*g_all, *gact);
@@ -308,8 +308,8 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
 
   // map containing the inactive and non-contact structural dofs
-  Teuchos::RCP<Epetra_Map> str_gni_dofs = Core::LinAlg::SplitMap(
-      *Core::LinAlg::SplitMap(kss->row_map(), *interface_->master_row_dofs()),
+  Teuchos::RCP<Epetra_Map> str_gni_dofs = Core::LinAlg::split_map(
+      *Core::LinAlg::split_map(kss->row_map(), *interface_->master_row_dofs()),
       *interface_->active_dofs());
 
   // add to kss
@@ -348,7 +348,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // split kss block*************************************
   // ****************************************************
   // split first row
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       kss, str_gni_dofs, dummy_map1, gdisp_DofRowMap, dummy_map2, kss_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -363,7 +363,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       tmp, gmdof, dummy_map1, gdisp_DofRowMap, dummy_map2, kss_m, dummy1, kss_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -385,7 +385,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // split kst block*************************************
   // ****************************************************
   // split first row
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       kst, str_gni_dofs, dummy_map1, gpres_DofRowMap, dummy_map2, kst_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -400,7 +400,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       tmp, gmdof, dummy_map1, gpres_DofRowMap, dummy_map2, kst_m, dummy1, kst_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -440,7 +440,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       dmatrix, active_dofs, dummy_map1, active_dofs, dummy_map2, dInvA, dummy1, dummy2, dummy3);
   dInvA->complete(*interface_->active_dofs(), *interface_->active_dofs());
   // invert D-matrix
@@ -451,13 +451,13 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       mmatrix, active_dofs, dummy_map1, gmdof, dummy_map2, mA, dummy1, dummy2, dummy3);
   mA->complete(*interface_->master_row_dofs(), *interface_->active_dofs());
 
   // get dinv * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvMa =
-      Core::LinAlg::MLMultiply(*dInvA, false, *mA, false, false, false, true);
+      Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
 
   // we need to add another term, since AssembleLinStick/Slip assumes that we solve
   // for the Lagrange multiplier increments. However, we solve for the LM directly.
@@ -486,17 +486,17 @@ void Adapter::CouplingEhlMortar::condense_contact(
     if (haveDBC > 0.)
     {
       Teuchos::RCP<Epetra_Vector> diag =
-          Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
+          Core::LinAlg::create_vector(*interface_->active_dofs(), true);
       dInvA->extract_diagonal_copy(*diag);
       Teuchos::RCP<Epetra_Vector> lmDBC =
-          Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
+          Core::LinAlg::create_vector(*interface_->active_dofs(), true);
       Core::LinAlg::export_to(*sdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp =
-          Core::LinAlg::CreateVector(*interface_->active_dofs(), true);
+          Core::LinAlg::create_vector(*interface_->active_dofs(), true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
       dInvA->replace_diagonal_values(*diag);
-      dInvMa = Core::LinAlg::MLMultiply(*dInvA, false, *mA, false, false, false, true);
+      dInvMa = Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
     }
   }
 
@@ -545,9 +545,9 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // (3) condensed parts
   // second row
   kss_new.add(
-      *Core::LinAlg::MLMultiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::ml_multiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
   kst_new.add(
-      *Core::LinAlg::MLMultiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::ml_multiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->master_row_dofs()));
   if (dInvMa->multiply(true, *rsa, *tmpv)) FOUR_C_THROW("multiply failed");
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
@@ -555,10 +555,10 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // third row
   Teuchos::RCP<Core::LinAlg::SparseMatrix> wDinv =
-      Core::LinAlg::MLMultiply(*dcsdLMc, false, *dInvA, true, false, false, true);
-  kss_new.add(*Core::LinAlg::MLMultiply(*wDinv, false, *kss_a, false, false, false, true), false,
+      Core::LinAlg::ml_multiply(*dcsdLMc, false, *dInvA, true, false, false, true);
+  kss_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kss_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
-  kst_new.add(*Core::LinAlg::MLMultiply(*wDinv, false, *kst_a, false, false, false, true), false,
+  kst_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kst_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->active_dofs()));
   wDinv->multiply(false, *rsa, *tmpv);

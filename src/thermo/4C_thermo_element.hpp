@@ -109,7 +109,7 @@ namespace Thermo
     };
 
     //! \brief Return number of lines of this element
-    int num_line() const override { return Core::FE::getNumberOfElementLines(distype_); }
+    int num_line() const override { return Core::FE::get_number_of_element_lines(distype_); }
 
     //! \brief Return number of surfaces of this element
     int num_surface() const override
@@ -431,7 +431,7 @@ namespace Thermo
     int num_line() const override
     {
       // get spatial dimension of boundary
-      const int nsd = Core::FE::getDimension(parent_element()->shape()) - 1;
+      const int nsd = Core::FE::get_dimension(parent_element()->shape()) - 1;
 
       if ((num_node() == 4) or (num_node() == 8) or (num_node() == 9))
         return 4;
@@ -454,7 +454,7 @@ namespace Thermo
     int num_surface() const override
     {
       // get spatial dimension of parent element
-      const int nsd = Core::FE::getDimension(parent_element()->shape());
+      const int nsd = Core::FE::get_dimension(parent_element()->shape());
 
       if (nsd == 3)
         return 1;

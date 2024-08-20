@@ -174,28 +174,28 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disnp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  disnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // velocities V_{n+1} at t_{n+1}
-  velnp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  velnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accnp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  accnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fintnp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fintn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fintnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fextnp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fextn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fextnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-  freactn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  freactnp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  freactn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  freactnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-  finertialn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  finertialnp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  finertialn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  finertialnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-  fviscon_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fvisconp_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fviscon_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fvisconp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-  fstructold_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fstructold_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // --------------------------------------
   // sparse operators
@@ -282,11 +282,11 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     case Inpar::Solid::model_contact:
     {
       enum Inpar::CONTACT::SystemType systype =
-          Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+          Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
               problem->contact_dynamic_params(), "SYSTEM");
 
       enum Inpar::CONTACT::SolvingStrategy soltype =
-          Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+          Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
               problem->contact_dynamic_params(), "STRATEGY");
 
       // systems without additional dofs
@@ -318,7 +318,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       enum Inpar::CONTACT::SystemType systype = mt_me.strategy().system_type();
 
       enum Inpar::CONTACT::SolvingStrategy soltype =
-          Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+          Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
               mt_me.strategy().params(), "STRATEGY");
 
       // systems without additional dofs
@@ -417,7 +417,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     }
   }
   // create a global problem map
-  gproblem_map_ptr_ = Core::LinAlg::MergeMap(gproblem_map_ptr_, me_map_ptr);
+  gproblem_map_ptr_ = Core::LinAlg::merge_map(gproblem_map_ptr_, me_map_ptr);
 
   return gproblem_map_ptr_->MaxAllGID();
 }
@@ -485,7 +485,7 @@ Solid::TimeInt::BaseDataGlobalState::get_element_technology_map_extractor(
 {
   if (mapextractors_.find(etech) == mapextractors_.end())
     FOUR_C_THROW("Could not find element technology \"%s\" in map extractors.",
-        Inpar::Solid::EleTechString(etech).c_str());
+        Inpar::Solid::ele_tech_string(etech).c_str());
 
   return mapextractors_.at(etech);
 }
@@ -525,8 +525,8 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
     else
     {
       Teuchos::RCP<Core::FE::Discretization> discret = discret_;
-      nodaladditdofs = beameleptr->get_additive_dof_gi_ds(*discret, *nodeptr);
-      nodalrotvecdofs = beameleptr->get_rot_vec_dof_gi_ds(*discret, *nodeptr);
+      nodaladditdofs = beameleptr->get_additive_dof_gids(*discret, *nodeptr);
+      nodalrotvecdofs = beameleptr->get_rot_vec_dof_gids(*discret, *nodeptr);
 
       if (nodaladditdofs.size() + nodalrotvecdofs.size() !=
           (unsigned)beameleptr->num_dof_per_node(*nodeptr))
@@ -826,7 +826,7 @@ void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::Spars
       }
       default:
       {
-        FOUR_C_THROW("model block %s is not supported", MatBlockType2String(bt).c_str());
+        FOUR_C_THROW("model block %s is not supported", mat_block_type_to_string(bt).c_str());
         break;
       }
     }
@@ -892,7 +892,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::ex
       }
       default:
       {
-        FOUR_C_THROW("model block %s is not supported", MatBlockType2String(bt).c_str());
+        FOUR_C_THROW("model block %s is not supported", mat_block_type_to_string(bt).c_str());
         break;
       }
     }
@@ -1149,7 +1149,7 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
   xnew->Update(1.0, xold, step, dir, 0.0);
 
   // now replace the rotvec entries by the correct value computed before
-  Core::LinAlg::AssembleMyVector(0.0, *xnew, 1.0, x_rotvec);
+  Core::LinAlg::assemble_my_vector(0.0, *xnew, 1.0, x_rotvec);
   curr_grp_mutable.setX(xnew);
 
   /* tell the NOX::Nln::Group that the x vector has already been updated in

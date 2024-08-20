@@ -78,7 +78,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::unpack(const std::vector<char>&
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract scalar transport impltype
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(

@@ -51,7 +51,7 @@ void Solid::TimeInt::ParamsMonitorDBC::init(
 
   // write header in csv file
   write_header_ =
-      Core::UTILS::IntegralValue<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
+      Core::UTILS::integral_value<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
 
   isinit_ = true;
 }

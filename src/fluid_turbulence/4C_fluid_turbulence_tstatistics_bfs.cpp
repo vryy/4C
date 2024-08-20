@@ -33,7 +33,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
       params_(params),
       geotype_(TurbulenceStatisticsBfs::none),
       inflowchannel_(
-          Core::UTILS::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+          Core::UTILS::integral_value<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       statistics_outfilename_(statistics_outfilename)
 {
@@ -59,7 +59,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
   const Inpar::FLUID::PhysicalType physicaltype =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
+      Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
 
   // geometry of bfs
   convert_string_to_geo_type(geotype);
@@ -68,15 +68,15 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  squaredvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  squaredscanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  invscanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  squaredinvscanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  squaredvelnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  squaredscanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  invscanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  squaredinvscanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  toggleu_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglev_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // bounds for extension of flow domain in x2-direction
   x2min_ = +10e+19;

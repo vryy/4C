@@ -44,7 +44,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Element
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phiam = discretization.get_state("phiam");
       if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
     }
   }
 
@@ -131,7 +131,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_val
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.get_state("phiam");
     if (phiam == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phiam'");
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
   }
 
   // get thermodynamic pressure

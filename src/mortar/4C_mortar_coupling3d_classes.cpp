@@ -632,8 +632,8 @@ Mortar::IntCell::IntCell(int id, int nvertices, Core::LinAlg::Matrix<3, 3>& coor
 bool Mortar::IntCell::local_to_global(const double* xi, double* globcoord, int inttype)
 {
   // check input
-  if (!xi) FOUR_C_THROW("LocalToGlobal called with xi=nullptr");
-  if (!globcoord) FOUR_C_THROW("LocalToGlobal called with globcoord=nullptr");
+  if (!xi) FOUR_C_THROW("local_to_global called with xi=nullptr");
+  if (!globcoord) FOUR_C_THROW("local_to_global called with globcoord=nullptr");
 
   if (shape() == Core::FE::CellType::tri3 or shape() == Core::FE::CellType::line2)
   {

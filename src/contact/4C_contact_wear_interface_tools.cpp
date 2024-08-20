@@ -32,8 +32,8 @@ FOUR_C_NAMESPACE_OPEN
 void Wear::WearInterface::fd_check_gap_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -307,8 +307,8 @@ void Wear::WearInterface::fd_check_gap_deriv()
 void Wear::WearInterface::fd_check_gap_deriv_w()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -419,8 +419,8 @@ void Wear::WearInterface::fd_check_gap_deriv_w()
 void Wear::WearInterface::fd_check_deriv_e_d(Core::LinAlg::SparseMatrix& linedis)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
@@ -734,8 +734,8 @@ void Wear::WearInterface::fd_check_deriv_e_d(Core::LinAlg::SparseMatrix& linedis
 void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& linedis)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
@@ -1049,8 +1049,8 @@ void Wear::WearInterface::fd_check_deriv_e_d_master(Core::LinAlg::SparseMatrix& 
 void Wear::WearInterface::fd_check_deriv_t_d(Core::LinAlg::SparseMatrix& lintdis)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // nothing to do if no slip nodes
@@ -1241,8 +1241,8 @@ void Wear::WearInterface::fd_check_deriv_t_d(Core::LinAlg::SparseMatrix& lintdis
 void Wear::WearInterface::fd_check_deriv_t_d_master(Core::LinAlg::SparseMatrix& lintdis)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // nothing to do if no slip nodes
@@ -1436,13 +1436,13 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
     Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::SparseMatrix& linslipWglobal)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frbound = interface_params().get<double>("FRBOUND");
   double frcoeff = interface_params().get<double>("FRCOEFF");
   double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
@@ -1522,7 +1522,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->fri_data().jump_var()[0];
         jumpteta = 0.0;
@@ -1652,7 +1652,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -1888,7 +1888,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -2127,7 +2127,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -2355,7 +2355,7 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -2493,8 +2493,8 @@ void Wear::WearInterface::fd_check_slip_deriv(Core::LinAlg::SparseMatrix& linsli
 void Wear::WearInterface::fd_check_mortar_t_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
@@ -2663,8 +2663,8 @@ void Wear::WearInterface::fd_check_mortar_t_deriv()
 void Wear::WearInterface::fd_check_mortar_t_master_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
@@ -2947,8 +2947,8 @@ void Wear::WearInterface::fd_check_mortar_t_master_deriv()
 void Wear::WearInterface::fd_check_mortar_e_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
@@ -3117,8 +3117,8 @@ void Wear::WearInterface::fd_check_mortar_e_deriv()
 void Wear::WearInterface::fd_check_mortar_e_master_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
@@ -3404,8 +3404,8 @@ void Wear::WearInterface::fd_check_wear_deriv_lm()
   double wcoeff = interface_params().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -3555,8 +3555,8 @@ void Wear::WearInterface::fd_check_wear_deriv()
   double wcoeff = interface_params().get<double>("WEARCOEFF");
 
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values

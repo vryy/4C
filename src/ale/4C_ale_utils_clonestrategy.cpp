@@ -60,14 +60,14 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
     Discret::ELEMENTS::Ale2* ale2 = dynamic_cast<Discret::ELEMENTS::Ale2*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->set_material(0, Mat::Factory(matid));
+      ale2->set_material(0, Mat::factory(matid));
     }
     else
     {
       Discret::ELEMENTS::Ale3* ale3 = dynamic_cast<Discret::ELEMENTS::Ale3*>(newele.get());
       if (ale3 != nullptr)
       {
-        ale3->set_material(0, Mat::Factory(matid));
+        ale3->set_material(0, Mat::factory(matid));
       }
       else
       {
@@ -81,7 +81,7 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
         dynamic_cast<Discret::ELEMENTS::Nurbs::Ale2Nurbs*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->set_material(0, Mat::Factory(matid));
+      ale2->set_material(0, Mat::factory(matid));
     }
     else
     {
@@ -90,7 +90,7 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
 
       if (ale3 != nullptr)
       {
-        ale3->set_material(0, Mat::Factory(matid));
+        ale3->set_material(0, Mat::factory(matid));
       }
       else
       {
@@ -122,7 +122,7 @@ bool ALE::UTILS::AleCloneStrategy::determine_ele_type(
   // Clone it now.
   if (cloneit and ismyele)
   {
-    const int nsd = Core::FE::getDimension(actele->shape());
+    const int nsd = Core::FE::get_dimension(actele->shape());
     if (nsd == 3)
       eletype.push_back("ALE3");
     else if (nsd == 2)

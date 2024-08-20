@@ -39,7 +39,7 @@ namespace Inpar
     /**
      * \brief Get the condition strings for the beam-to-solid interactions.
      */
-    void BeamToSolidInteractionGetString(
+    void beam_to_solid_interaction_get_string(
         const Inpar::BEAMINTERACTION::BeamInteractionConditions& interaction,
         std::array<std::string, 2>& condition_names);
 
@@ -202,12 +202,12 @@ namespace Inpar
     /**
     \brief Set the beam-to-solid parameters
     */
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /**
      * \brief Set beam beam-to-solid specific conditions.
      */
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
   }  // namespace BeamToSolid
 }  // namespace Inpar

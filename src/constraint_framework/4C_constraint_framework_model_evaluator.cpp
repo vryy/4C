@@ -39,7 +39,7 @@ void Solid::ModelEvaluator::Constraints::setup()
   set_sub_model_types();
   create_sub_model_evaluators();
 
-  visualization_params_ = Core::IO::VisualizationParametersFactory(
+  visualization_params_ = Core::IO::visualization_parameters_factory(
       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
       *Global::Problem::instance()->output_control_file(), global_state().get_time_n());
 
@@ -187,7 +187,7 @@ void Solid::ModelEvaluator::Constraints::pre_evaluate()
 bool Solid::ModelEvaluator::Constraints::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *constraint_force_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *constraint_force_ptr_);
   constraint_force_ptr_->PutScalar(0.0);
   return true;
 }
@@ -278,12 +278,12 @@ void Solid::ModelEvaluator::Constraints::runtime_output_step_state() const
   std::pair<double, int> output_time_and_step;
   if (visualization_params_.every_iteration_ == true)
   {
-    output_time_and_step = Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+    output_time_and_step = Core::IO::get_time_and_time_step_index_for_output(visualization_params_,
         global_state().get_time_n(), global_state().get_step_n(), eval_data().get_nln_iter());
   }
   else
   {
-    output_time_and_step = Core::IO::GetTimeAndTimeStepIndexForOutput(
+    output_time_and_step = Core::IO::get_time_and_time_step_index_for_output(
         visualization_params_, global_state().get_time_n(), global_state().get_step_n());
   }
 

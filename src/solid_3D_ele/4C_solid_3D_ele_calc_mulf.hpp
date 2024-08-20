@@ -196,7 +196,7 @@ namespace Discret::ELEMENTS
         FOUR_C_THROW(
             "Your element evaluation %s does not allow to update prestress. You may need to add "
             "MULF to your element line definitions.",
-            Core::UTILS::TryDemangle(typeid(T).name()).c_str());
+            Core::UTILS::try_demangle(typeid(T).name()).c_str());
       }
 
       const Core::Elements::Element& element;

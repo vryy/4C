@@ -190,7 +190,7 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
       FOUR_C_THROW(
           "The given side element type is currently unsupported! \n"
           "( dim = %d | sideType = %s ",
-          dimside, Core::FE::CellTypeToString(sidetype).c_str());
+          dimside, Core::FE::cell_type_to_string(sidetype).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -227,13 +227,13 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
 {
   // calculate the normal at the side element center
   const Core::LinAlg::Matrix<dimside, 1> rst_side_center(
-      Core::FE::getLocalCenterPosition<dimside>(sidetype));
+      Core::FE::get_local_center_position<dimside>(sidetype));
 
   Core::LinAlg::Matrix<probdim, num_nodes_side> side_deriv1;
   Core::LinAlg::Matrix<probdim, probdim> xjm;
   Core::LinAlg::Matrix<probdim, 1> normal_center;
-  Cut::EvalDerivsInParameterSpace<probdim, sidetype, double>(xyze_surfaceElement_, rst_side_center,
-      side_deriv1, xjm, nullptr, &normal_center, nullptr, true);
+  Cut::eval_derivs_in_parameter_space<probdim, sidetype, double>(xyze_surfaceElement_,
+      rst_side_center, side_deriv1, xjm, nullptr, &normal_center, nullptr, true);
 
   // calcualte the direction vector of the edge element
   Core::LinAlg::Matrix<probdim, 1> dedge(&xyze_lineElement_(0, 0), false);
@@ -274,7 +274,8 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
     FOUR_C_THROW(
         "Two line2 elements are expected, but instead a %s (edge) and %s (side) "
         "element were given.",
-        Core::FE::CellTypeToString(edgetype).c_str(), Core::FE::CellTypeToString(sidetype).c_str());
+        Core::FE::cell_type_to_string(edgetype).c_str(),
+        Core::FE::cell_type_to_string(sidetype).c_str());
 
   side_rs_corner_intersect.clear();
   edge_r_corner_intersect.clear();
@@ -437,7 +438,7 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
   {
     pos = r_endpoints[i];
 
-    Core::FE::shape_function_1D(lineFunct, pos, edgetype);
+    Core::FE::shape_function_1d(lineFunct, pos, edgetype);
     dist.multiply_nn(xyze_lineElement_, lineFunct);
 
     dist.update(1.0, xyz, -1.0);
@@ -881,7 +882,7 @@ void Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
     // compute intersection with no cln, just to make sure we don't fail
     Kernel::ComputeIntersection<probdim, edgetype, sidetype, false> ci(xsi_);
     ci(xyze_surfaceElement_, xyze_lineElement_);
-    std::string filename(Output::GenerateGmshOutputFilename(".intersection_CUTFAIL_end.pos"));
+    std::string filename(Output::generate_gmsh_output_filename(".intersection_CUTFAIL_end.pos"));
     std::ofstream file(filename.c_str());
     ci.write_to_gmsh(file);
     file.close();
@@ -1400,7 +1401,7 @@ Teuchos::RCP<Cut::IntersectionBase> Cut::IntersectionFactory::create_intersectio
       FOUR_C_THROW(
           "Unsupported edgeType! If meaningful, add your edgeType here. \n"
           "Given edgeType = %s",
-          Core::FE::CellTypeToString(edge_type).c_str());
+          Core::FE::cell_type_to_string(edge_type).c_str());
       break;
   }
   exit(EXIT_FAILURE);

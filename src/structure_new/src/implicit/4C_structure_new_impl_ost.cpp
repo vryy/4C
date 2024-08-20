@@ -254,14 +254,14 @@ bool Solid::IMPLICIT::OneStepTheta::assemble_force(
 void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n}
-  Core::LinAlg::AssembleMyVector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
   // viscous damping forces at t_{n+1}
-  Core::LinAlg::AssembleMyVector(1.0, f, theta_, *fvisconp_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, theta_, *fvisconp_ptr_);
 
   // inertial forces at t_{n}
-  Core::LinAlg::AssembleMyVector(1.0, f, (1.0 - theta_), *finertian_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, (1.0 - theta_), *finertian_ptr_);
   // inertial forces at t_{n+1}
-  Core::LinAlg::AssembleMyVector(1.0, f, (theta_), *finertianp_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, (theta_), *finertianp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*

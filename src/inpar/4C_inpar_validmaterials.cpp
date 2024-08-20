@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Input::PrintEmptyMaterialDefinitions(
+void Input::print_empty_material_definitions(
     std::ostream& stream, std::vector<Teuchos::RCP<Mat::MaterialDefinition>>& matlist)
 {
   const std::string sectionname = "MATERIALS";
@@ -39,17 +39,17 @@ void Input::PrintEmptyMaterialDefinitions(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PrintMaterialDatHeader()
+void print_material_dat_header()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> matlist =
-      Input::ValidMaterials();
-  Input::PrintEmptyMaterialDefinitions(std::cout, *matlist);
+      Input::valid_materials();
+  Input::print_empty_material_definitions(std::cout, *matlist);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMaterials()
+Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::valid_materials()
 {
   using Teuchos::tuple;
 
@@ -71,7 +71,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENSITY", "spatial mass density");
     add_named_real(m, "GAMMA", "surface tension coefficient", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -88,7 +88,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "MATPARAMETER", "material parameter according to Murnaghan-Tait");
     add_named_real(m, "GAMMA", "surface tension coefficient", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -105,7 +105,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "COEFFVISCOSITY", "viscosity-pressure coefficient");
     add_named_real(m, "GAMMA", "surface tension coefficient", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "REFPRESSURE", "reference pressure");
     add_named_real(m, "COMPRCOEFF", "compressibility coefficient");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "BPARAM", "constant parameter");
     add_named_real(m, "DENSITY", "density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -151,7 +151,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "AEXP", "exponent");
     add_named_real(m, "DENSITY", "density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -169,7 +169,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "UPLIMSHEARRATE", "upper limit of shear rate");
     add_named_real(m, "DENSITY", "density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "LUBRICATIONLAWID", "lubrication law id");
     add_named_real(m, "DENSITY", "lubricant density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
 
@@ -193,7 +193,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "VISCOSITY", "lubricant viscosity");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -205,7 +205,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "ABSViscosity", "absolute lubricant viscosity");
     add_named_real(m, "PreVisCoeff", "pressure viscosity coefficient");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -219,7 +219,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "RefVisc", "reference viscosity");
     add_named_real(m, "RefPress", "reference Pressure");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -234,7 +234,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENSIFICATION", "densification coefficient", 0.0, true);
     add_named_bool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
 
@@ -258,7 +258,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(m, "ROLE", "role in michaelis-menten like reactions", "NUMSCAL");
     add_named_real_vector(m, "REACSTART", "starting point of reaction", "NUMSCAL", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material
@@ -278,7 +278,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(m, "ROLE", "role in michaelis-menten like reactions", "NUMSCAL");
     add_named_real_vector(m, "REACSTART", "starting point of reaction", "NUMSCAL", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -300,7 +300,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_bool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
     add_named_int(m, "RELATIVE_MOBILITY_FUNCTION_ID", "relative mobility function ID", 0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -319,7 +319,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_bool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
     add_named_int(m, "RELATIVE_MOBILITY_FUNCTION_ID", "relative mobility function ID", 0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -338,7 +338,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DELTA", "delta", 0.0, true);
     add_named_bool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -364,7 +364,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENSIFICATION", "densification coefficient", 0.0, true);
     add_named_bool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -377,7 +377,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(m, "PAIR", "chemotaxis pairing", "NUMSCAL");
     add_named_real(m, "CHEMOCOEFF", "chemotaxis coefficient");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -398,7 +398,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENSIFICATION", "densification coefficient", 0.0, true);
     add_named_bool(m, "REACTS_TO_EXTERNAL_FORCE", "reacts to external force", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -442,7 +442,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "scaling factor in intervals (1=full activation, 0=no activation)", "ACTINTERVALSNUM");
     add_named_real(m, "DENS", "density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -521,7 +521,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "DENS", "density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -565,7 +565,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "scaling factor in intervals (1=full activation, 0=no activation)", "ACTINTERVALSNUM");
     add_named_real(m, "DENS", "density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -583,7 +583,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_string(m, "TISSUE", "Tissue type: M (default), ENDO, EPI, AN, N or NH", "M");
     add_named_real(m, "TIME_SCALE", "Scale factor for time units of Model");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -600,7 +600,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "THERMPRESS", "(initial) thermodynamic pressure (J/m^3)");
     add_named_real(m, "GASCON", "specific gas constant R (J/(kg*K))");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
 
@@ -618,7 +618,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "ELIM_DIFFUSIVITY", "kinematic diffusivity of elim. species", 0.0, true);
     add_named_real(m, "ELIM_VALENCE", "valence of elim. species", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -665,7 +665,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "parameters for temperature scaling of conductivity", "COND_TEMP_SCALE_FUNCT_PARA_NUM", 0.0,
         true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -720,7 +720,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "parameters for temperature scaling of conductivity", "COND_TEMP_SCALE_FUNCT_PARA_NUM", 0.0,
         true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   {
     auto m = Teuchos::rcp(new Mat::MaterialDefinition(
@@ -768,7 +768,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "SUSCEPT", "susceptibility", 1.0);
     add_named_real(m, "DELTA_NU", "difference of partial molar volumes (vacancy & cation)", 0.0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
 
@@ -847,7 +847,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "\\*.csv file with data points for half cell open circuit potential", "", true);
 
     // add electrode material to global list of valid materials
-    Mat::AppendMaterialDefinition(matlist, matelectrode);
+    Mat::append_material_definition(matlist, matelectrode);
   }
 
   /*----------------------------------------------------------------------*/
@@ -863,7 +863,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMMAT", "number of materials in list");
     add_named_int_vector(m, "MATIDS", "the list material IDs", "NUMMAT");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -880,7 +880,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMREAC", "number of reactions for these elements", 0);
     add_named_int_vector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -897,7 +897,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMPAIR", "number of pairs for these elements", 0);
     add_named_int_vector(m, "PAIRIDS", "chemotaxis pairs list", "NUMPAIR", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -916,7 +916,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMREAC", "number of reactions for these elements", 0);
     add_named_int_vector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -933,7 +933,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMPHASE", "number of phases in electrolyte");
     add_named_int_vector(m, "PHASEIDS", "the list phasel IDs", "NUMPHASE");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -950,7 +950,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMMAT", "number of materials in electrolyte");
     add_named_int_vector(m, "MATIDS", "the list phasel IDs", "NUMMAT");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -963,7 +963,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "NUE", "Poisson's ratio");
     add_named_real(m, "DENS", "mass density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -984,7 +984,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "INITTEMP", "initial temperature");
     add_named_int(m, "THERMOMAT", "mat id of thermal material part", -1, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // Plastic linear elastic St.Venant Kirchhoff / Drucker Prager plasticity
@@ -1004,7 +1004,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_string(m, "TANG", "Method to compute the material tangent", "consistent", true);
     add_named_int(m, "MAXITER", "Maximum Iterations for local Neuton Raphson", 50, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1028,7 +1028,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         m, "EPSBAR_P", "accumulated plastic strain corresponding to SIGMA_Y", "SAMPLENUM");
     add_named_real(m, "TOL", "tolerance for local Newton iteration");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1055,7 +1055,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "FC", "GTN constant fC for damage coalescence");
     add_named_real(m, "KAPPA", "GTN constant kappa for damage coalescence");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1099,7 +1099,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         true);
 
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1124,7 +1124,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "thermal hardening softening (acting on SATHARDENING and ISOHARD)", 0., true);
     add_named_real(m, "TOL", "tolerance for local Newton iteration", 1.e-8, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
 
@@ -1148,7 +1148,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "RATE_DEPENDENCY", "rate dependency", 0., true);
     add_named_int(m, "HARDENING_FUNC", "Function number for isotropic hardening", 0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1167,7 +1167,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "KINHARD", "linear kinematic hardening modulus");
     add_named_real(m, "TOL", "tolerance for local Newton iteration");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1193,7 +1193,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "FLOW_RES_SAT_FAC", "flow resistance saturation factor 'S_*'");
     add_named_real(m, "FLOW_RES_SAT_EXP", "flow resistance saturation exponent 'b'");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1226,7 +1226,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(m, "BETA", "beta", "BETANUM");
     add_named_real(m, "H_FACT", "'H'");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1251,7 +1251,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "HARDEXPO", "hardening exponent");
     add_named_real(m, "TOL", "tolerance for local Newton iteration");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1266,7 +1266,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "NUE", "Poisson's ratio");
     add_named_real(m, "DENS", "mass density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
 
@@ -1282,7 +1282,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "RELAX", "???");
     add_named_real(m, "THETA", "???");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1305,7 +1305,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(
         m, "ELETHICKDIR", "Element thickness direction applies also to fibers (only sosh)");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1320,7 +1320,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "MICRODIS_NUM", "Number of microscale discretization");
     add_named_real(m, "INITVOL", "Initial volume of RVE", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1335,7 +1335,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENS", "material mass density");
     add_named_int(m, "POLYCONVEX", "1.0 if polyconvexity of system is checked", 0., true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1350,7 +1350,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENS", "material mass density");
     add_named_int(m, "POLYCONVEX", "1.0 if polyconvexity of system is checked", 0., true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1398,7 +1398,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(
         m, "TAYLOR_QUINNEY", "Taylor-Quinney factor for plastic heat conversion", 1., true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1448,7 +1448,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "POLYCONVEX", "1.0 if polyconvexity of system is checked", 0., true);
 
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1465,7 +1465,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "C1", "E or mue");
     add_named_real(m, "C2", "nue or lambda");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1477,7 +1477,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "YOUNG", "Young's modulus");
     add_named_real(m, "NUE", "Poisson's ratio");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1488,7 +1488,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "MUE", "material constant");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1504,7 +1504,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "C1", "E or mue");
     add_named_real(m, "C2", "nue or lambda");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1517,7 +1517,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "B", "material constant linear I_1");
     add_named_real(m, "C", "material constant linear J");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1529,7 +1529,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "YOUNG", "Young's modulus", 0.0, true);
     add_named_real(m, "NUE", "Poisson's ratio", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   // Mooney Rivlin  material acc. to Holzapfel
   {
@@ -1540,7 +1540,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "C2", "material constant", 0.0, true);
     add_named_real(m, "C3", "material constant", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1553,7 +1553,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "NUE", "Poisson's ratio");
     add_named_real(m, "F", "interpolation parameter");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1565,7 +1565,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "MUE", "Shear modulus");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1576,7 +1576,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "MUE", "Shear modulus");
     add_named_real(m, "ALPHA", "Nonlinearity parameter");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1589,7 +1589,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "C2", "Quadratic modulus");
     add_named_real(m, "C3", "Cubic modulus");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1600,7 +1600,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "C", "material parameter");
     add_named_int(m, "D", "exponent");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1611,7 +1611,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "C", "material parameter");
     add_named_int(m, "D", "exponent");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1622,7 +1622,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "C", "material parameter");
     add_named_int(m, "D", "exponent");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1633,7 +1633,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "C", "material parameter");
     add_named_int(m, "D", "exponent");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1644,7 +1644,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "C", "material parameter");
     add_named_int(m, "D", "exponent");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1657,7 +1657,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "C", "material parameter");
     add_named_int(m, "D", "exponent of all");
     add_named_real(m, "A", "negative exponent of I3");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1670,7 +1670,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "K1", "material parameter");
     add_named_real(m, "K2", "material parameter");
     add_named_int(m, "C", "exponent");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1682,7 +1682,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "C1", "Linear modulus for first invariant");
     add_named_real(m, "C2", "Linear modulus for second invariant");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1703,7 +1703,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "BETA", "constant scaling tanh-type activation function");
     add_named_real(m, "ACTSTARTTIME", "starting time of muscle activation");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1714,7 +1714,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "C1", "Modulus for first invariant");
     add_named_real(m, "C2", "Modulus for second invariant");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -1732,7 +1732,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         true);
     add_named_real(m, "DEPOSITIONSTRETCH", "deposition stretch");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1743,7 +1743,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "KAPPA", "dilatation modulus");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1755,7 +1755,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "EPSILON", "penalty parameter");
     add_named_real(m, "GAMMA", "penalty parameter");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1767,7 +1767,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "KAPPA", "dilatation modulus");
     add_named_real(m, "BETA", "empiric constant");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1779,7 +1779,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "A", "prefactor of power law");
     add_named_real(m, "EXPON", "exponent of power law");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1801,7 +1801,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "LAMBDA0", "stretch at zero active force generation");
     add_named_real(m, "DENS", "total reference mass density of constrained mixture");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1821,7 +1821,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(
         m, "FIBER_ID", "Id of the fiber to be used (1 for first fiber, default)", 1, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1839,7 +1839,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(m, "FIBER_IDS",
         "Ids of the two fibers to be used (1 for the first fiber, 2 for the second, default)", 2);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1861,7 +1861,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "INIT", "initialization modus for fiber alignment", 1, true);
     add_named_bool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1883,7 +1883,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         m, "FIB_COMP", "fibers support compression: yes (true) or no (false)", true, true);
     add_named_bool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1898,7 +1898,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "INIT", "initialization modus for fiber alignment", 1, true);
     add_named_bool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1929,7 +1929,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "INIT", "initialization mode for fiber alignment", 1, true);
     add_named_bool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1948,7 +1948,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "INIT", "initialization mode for fiber alignment", 1, true);
     add_named_bool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1966,7 +1966,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "INIT", "initialization modus for fiber alignment", 1, true);
     add_named_bool(m, "ADAPT_ANGLE", "adapt angle during remodeling", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -1996,7 +1996,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "C3", "constant 3 for distribution function", 0.0, true);
     add_named_real(m, "C4", "constant 4 for distribution function", 1e16, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2015,7 +2015,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "FIBER", "exponential constant", 1, true);
     add_named_int(m, "INIT", "initialization modus for fiber alignment", 1, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2027,7 +2027,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "MUE", "Shear modulus");
     add_named_real(m, "BETA", "'Anti-modulus'");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2039,7 +2039,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "MUE", "Shear modulus");
     add_named_real(m, "BETA", "'Anti-modulus'");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2050,7 +2050,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "N", "material parameter");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2061,7 +2061,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "N", "material parameter");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2077,7 +2077,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "OST");
 
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2090,7 +2090,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "ALPHA", "fractional order derivative");
     add_named_real(m, "BETA", "emphasis of viscous to elastic part");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2101,7 +2101,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "TAU", "dynamic viscosity divided by young's modulus of the branch");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   /*--------------------------------------------------------------------*/
   // viscoelatic branches of a generalized Maxwell model
@@ -2115,7 +2115,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "Solution for evolution equation: OST (default) or CONVOL (convolution integral)",
         "CONVOL");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2128,7 +2128,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMMAT", "number of materials in the viscoelastic branch");
     add_named_int_vector(m, "MATIDS", "the list material IDs", "NUMMAT");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2160,7 +2160,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "with zero diameter and is not evaluated)",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2172,7 +2172,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "CAPA", "volumetric heat capacity");
     add_named_real(m, "CONDUCT", "thermal conductivity");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2189,7 +2189,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(matsoret, "SORET", "Soret coefficient");
 
     // add Soret material to global list of valid materials
-    Mat::AppendMaterialDefinition(matlist, matsoret);
+    Mat::append_material_definition(matlist, matsoret);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2204,7 +2204,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENS", "material mass density");
     add_named_int(m, "POLYCONVEX", "1.0 if polyconvexity of system is checked", 0., true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2221,7 +2221,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "VOLTHRESH", "voltage threshold for activation", false);
     add_named_real(m, "ALPHA1", "intensity of contraction in fiber direction 1", false);
     add_named_real(m, "ALPHA2", "intensity of contraction in fiber direction 2", false);
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2268,7 +2268,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "Flag that geometry is a cylinder. 1: aligned in x-direction; 2: y-direction; 3: "
         "z-direction",
         -1, true);
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2285,7 +2285,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(m, "INELDEFGRADFACIDS",
         "the list of inelastic deformation gradient factor IDs", "NUMFACINEL", false);
     add_named_real(m, "DENS", "material mass density", false);
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2295,7 +2295,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "no volume change, i.e. the inelastic deformation gradient is the identity tensor",
         Core::Materials::mfi_no_growth));
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2311,7 +2311,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "SCALAR1_MolarGrowthFac", "isotropic molar growth factor due to scalar 1");
     add_named_real(m, "SCALAR1_RefConc", "reference concentration of scalar 1 causing no strains");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2331,7 +2331,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(
         m, "GrowthDirection", "vector that defines the growth direction", "NUMSPACEDIM");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2352,7 +2352,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "X_max", "upper bound of validity of polynomial");
     add_named_int(m, "MATID", "material ID of the corresponding scatra material");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2377,7 +2377,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "X_max", "upper bound of validity of polynomial");
     add_named_int(m, "MATID", "material ID of the corresponding scatra material");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2389,7 +2389,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "Temp_GrowthFac", "isotropic growth factor due to temperature");
     add_named_real(m, "RefTemp", "reference temperature causing no strains");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2403,7 +2403,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "FUNCT_NUM",
         "Time-dependent function of the determinant of the inelastic deformation gradient");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2417,7 +2417,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(mm, "IDMATUNITSC", "material for lambda equal to one");
     //      add_named_real(mm,"ALPHA","size of ",-1.0,true);
 
-    Mat::AppendMaterialDefinition(matlist, mm);
+    Mat::append_material_definition(matlist, mm);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2478,7 +2478,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_bool(m, "STOREHISTORY",
         "store all history variables, not recommended for forward simulations", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2491,7 +2491,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "POROLAWID", "ID of porosity law");
     add_named_real(m, "INITPOROSITY", "initial porosity of porous medium");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // linear law for porosity in porous media problems
@@ -2501,7 +2501,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "BULKMODULUS", "bulk modulus of porous medium");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // constant law for porosity in porous media problems
@@ -2509,7 +2509,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     auto m = Teuchos::rcp(new Mat::MaterialDefinition("MAT_PoroLawConstant",
         "constant constitutive law for porosity", Core::Materials::m_poro_law_constant));
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // neo-hookean law for porosity in porous media problems
@@ -2521,7 +2521,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "BULKMODULUS", "bulk modulus of porous medium");
     add_named_real(m, "PENALTYPARAMETER", "penalty paramter of porous medium");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
   /*----------------------------------------------------------------------*/
   // incompressible skeleton law for porosity in porous media problems
@@ -2530,7 +2530,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "porosity law for incompressible skeleton phase",
         Core::Materials::m_poro_law_incompr_skeleton));
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2542,7 +2542,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "INVBIOTMODULUS", "inverse Biot modulus of porous medium");
     add_named_real(m, "BIOTCEOFF", "Biot coefficient of porous medium");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2553,7 +2553,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_int(m, "DENSITYLAWID", "material ID of density law");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2563,7 +2563,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "density law for constant density in porous multiphase medium",
         Core::Materials::m_poro_densitylaw_constant));
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2574,7 +2574,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         Core::Materials::m_poro_densitylaw_exp));
 
     add_named_real(m, "BULKMODULUS", "bulk modulus of porous medium");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2585,7 +2585,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         Core::Materials::m_fluidporo_relpermeabilitylaw_constant));
 
     add_named_real(m, "VALUE", "constant value of permeability");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2598,7 +2598,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real(m, "EXP", "exponent of the saturation of this phase");
     add_named_real(m, "MIN_SAT", "minimum saturation which is used for calculation");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2609,7 +2609,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         Core::Materials::m_fluidporo_viscositylaw_constant));
 
     add_named_real(m, "VALUE", "constant value of viscosity");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2622,7 +2622,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "VISC_0", "Visc0 parameter for modelling cell adherence");
     add_named_real(m, "XI", "xi parameter for modelling cell adherence");
     add_named_real(m, "PSI", "psi parameter for modelling cell adherence");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2638,7 +2638,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "DOFIDREACSCALAR",
         "Id of DOF within scalar transport problem, which controls the reaction");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2654,7 +2654,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "DENSCOLLAGEN", "density of collagen");
     add_named_int(m, "DOFIDREACSCALAR",
         "Id of DOF within scalar transport problem, which controls the reaction");
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2676,7 +2676,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "Permeability function: Const(Default) or Kozeny_Carman", "Const", true);
     //  add_named_real(m,"BULKMODULUS","bulk modulus of medium");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2692,7 +2692,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(m, "MATIDS", "the list material IDs", "NUMMAT");
     add_named_int(m, "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE", "number of fluid phases");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2711,7 +2711,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMREAC", "number of reactions for these elements", 0);
     add_named_int_vector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2730,7 +2730,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "no_coupling", false);
     add_named_int(m, "FUNCTID", "function ID defining the reaction");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2746,7 +2746,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "VISCOSITYLAWID", "ID of viscosity law");
     add_named_int(m, "DOFTYPEID", "ID of dof definition");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2766,7 +2766,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(
         m, "OMEGA_HALF", "Constant for receptor kinetic law", "NUMSCAL", 1.0e13, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2781,7 +2781,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "MIN_VOLFRAC",
         "Minimum volume fraction under which we assume that VolfracPressure is zero", 1.0e-3, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2795,7 +2795,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "pressure IDs for differential pressure", "NUMDOF", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2807,7 +2807,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_int(m, "PHASELAWID", "ID of pressure-saturation law");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2819,7 +2819,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_int(m, "PHASELAWID", "ID of pressure-saturation law");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2833,7 +2833,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "Coefficients for pressure dependence", "NUMDOF", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2848,7 +2848,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "Coefficients for pressure dependence", "NUMDOF", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2858,7 +2858,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "constraint fluid phase of porous medium",
         Core::Materials::m_fluidporo_phaselaw_constraint));
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2873,7 +2873,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "Coefficients for pressure dependence", "NUMDOF", 0);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -2885,7 +2885,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "STIFFNESS", "spring constant");
     add_named_real(m, "DENS", "density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -2966,7 +2966,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
   /*--------------------------------------------------------------------*/
   // material parameter definition for a Simo-Reissner type elasto-plastic beam element
@@ -3019,7 +3019,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
   /*--------------------------------------------------------------------*/
   // material parameter definition for a Simo-Reissner type beam element,
@@ -3069,7 +3069,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3114,7 +3114,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3163,7 +3163,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3197,7 +3197,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3232,7 +3232,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...",
         -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3245,7 +3245,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(matdef, "POISSON_RATIO", "Poisson's ratio");
     add_named_real(matdef, "THICKNESS", "Thickness of the shell");
 
-    AppendMaterialDefinition(matlist, matdef);
+    append_material_definition(matlist, matdef);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3279,7 +3279,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "arbitrary (default), actin, collagen, integrin",
         "arbitrary", true);
 
-    Mat::AppendMaterialDefinition(matlist, matdef);
+    Mat::append_material_definition(matlist, matdef);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3293,7 +3293,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "Viscosity1", "first viscosity");
     add_named_real(m, "Viscosity2", "second viscosity");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3307,7 +3307,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "Viscosity1", "first viscosity");
     add_named_real(m, "Viscosity2", "second viscosity");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3321,7 +3321,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "Viscosity1", "first viscosity");
     add_named_real(m, "Viscosity2", "second viscosity");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3336,7 +3336,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "Viscosity1", "first viscosity");
     add_named_real(m, "Viscosity2", "second viscosity");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3350,7 +3350,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "Viscosity1", "first viscosity");
     add_named_real(m, "Viscosity2", "second viscosity");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
 
@@ -3375,7 +3375,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "THERMALCONDUCTIVITY", "thermal conductivity", 0.0, true);
     add_named_real(m, "THERMALABSORPTIVITY", "thermal absorptivity", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3391,7 +3391,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "THERMALCONDUCTIVITY", "thermal conductivity", 0.0, true);
     add_named_real(m, "THERMALABSORPTIVITY", "thermal absorptivity", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3403,7 +3403,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "INITRADIUS", "initial radius of particle");
     add_named_real(m, "INITDENSITY", "initial density of particle");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3417,7 +3417,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "FRICT_COEFF_ROLL", "friction coefficient for rolling contact", -1.0, true);
     add_named_real(m, "ADHESION_SURFACE_ENERGY", "adhesion surface energy", -1.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3430,7 +3430,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "PERMITTIVITY", "Permittivity");
     add_named_real(m, "PERMEABILITY", "Permeability");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3444,7 +3444,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(
         m, "MATIDSCONST", "list material IDs of the mixture constituents", "NUMCONST");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3458,7 +3458,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "PRESTRESS_STRATEGY",
         "Material id of the prestress strategy (optional, by default no prestretch)", 0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3475,7 +3475,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "Reference to the function that is a gain for the increase/decrease of the reference mass "
         "density.");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3496,7 +3496,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "Reference to the function that is a gain for the increase/decrease of the reference mass "
         "density.");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3507,7 +3507,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_int(m, "MATID", "ID of the solid material");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3516,7 +3516,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     auto m = Teuchos::rcp(new Mat::MaterialDefinition("MIX_GrowthStrategy_Isotropic",
         "isotropic growth", Core::Materials::mix_growth_strategy_isotropic));
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3530,7 +3530,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "FIBER_ID",
         "Id of the fiber to point the growth direction (1 for first fiber, default)", 1, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3544,7 +3544,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(
         m, "KAPPA", "Penalty parameter for the modified penalty term for incompressibility");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3555,7 +3555,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
 
     add_named_real_vector(m, "PRESTRETCH", "Definition of the prestretch as a 9x1 vector", 9);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3571,7 +3571,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "CIRCUMFERENTIAL_PRESTRETCH", "Prestretch in circumferential direction");
     add_named_real(m, "PRESSURE", "Pressure in the inner of the cylinder");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3584,7 +3584,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_bool(m, "ACTIVE", "Flag whether prestretch tensor should be updated");
     add_named_bool(m, "ISOCHORIC", "Flag whether prestretch tensor is isochoric", false, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3611,7 +3611,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(
         m, "ADAPTIVE_HISTORY_TOLERANCE", "Tolerance of the adaptive history", 1e-6, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3637,7 +3637,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(
         m, "GAMMA", "Angle of fiber alignment in degree (default = 0.0 degrees)", 0.0, true);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3659,7 +3659,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "Id of the time function to scale the deposition stretch (Default: 0=None)", 0, true);
     add_named_int(m, "INIT", "Initialization mode for fibers (1=element fibers, 2=nodal fibers)");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3676,7 +3676,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_bool(
         m, "COMPRESSION", "Bool, whether the fiber material also supports compressive forces.");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3699,7 +3699,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "LAMBDAACT", "Current stretch", 1.0, true);
     add_named_real(m, "DENS", "Density of the whole mixture");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3715,7 +3715,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "list of functions (their ids) defining the mass fractions of the mixture constituents",
         "NUMCONST");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3761,7 +3761,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "file path of pattern file defining the massfractions as discrete values", operation,
         print_string, false);
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3775,7 +3775,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(
         m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3791,7 +3791,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(
         m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*----------------------------------------------------------------------*/
@@ -3877,7 +3877,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
         "(optional) vector containing NUMTWINSETS entries for the work hardening coefficients by "
         "twins on non-coplanar systems",
         "NUMTWINSETS", 0., true);
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3889,7 +3889,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "YOUNG", "Young's modulus");
     add_named_real(m, "DENS", "mass density");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   /*--------------------------------------------------------------------*/
@@ -3908,7 +3908,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "POLY_PARA_NUM", "number of polynomial coefficients");
     add_named_real_vector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
 
-    Mat::AppendMaterialDefinition(matlist, m);
+    Mat::append_material_definition(matlist, m);
   }
 
   // deliver

@@ -68,7 +68,7 @@ void NOX::Nln::GROUP::PrePostOperator::reset(Teuchos::ParameterList& groupOption
 // non-member function
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::GROUP::PrePostOperator::Map& NOX::Nln::GROUP::PrePostOp::GetMap(
+NOX::Nln::GROUP::PrePostOperator::Map& NOX::Nln::GROUP::PrePostOp::get_map(
     Teuchos::ParameterList& p_grp_opt)
 {
   Teuchos::RCP<NOX::Nln::GROUP::PrePostOperator::Map>& mapptr =

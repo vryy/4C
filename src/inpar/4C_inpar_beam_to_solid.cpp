@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-void Inpar::BeamToSolid::BeamToSolidInteractionGetString(
+void Inpar::BeamToSolid::beam_to_solid_interaction_get_string(
     const Inpar::BEAMINTERACTION::BeamInteractionConditions& interaction,
     std::array<std::string, 2>& condition_names)
 {
@@ -53,7 +53,7 @@ void Inpar::BeamToSolid::BeamToSolidInteractionGetString(
 /**
  *
  */
-void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BeamToSolid::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -88,11 +88,11 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_volume_mestying);
 
-    Core::UTILS::DoubleParameter("PENALTY_PARAMETER", 0.0,
+    Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid volume meshtying", &beam_to_solid_volume_mestying);
 
     // Add the geometry pair input parameters.
-    Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_volume_mestying);
+    Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(beam_to_solid_volume_mestying);
 
     // This option only has an effect during a restart simulation.
     // - No:  (default) The coupling is treated the same way as during a non restart simulation,
@@ -100,7 +100,7 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     //        coupled.
     // - Yes: The beam and solid states at the restart configuration are coupled. This allows to
     //        pre-deform the structures and then couple them.
-    Core::UTILS::BoolParameter("COUPLE_RESTART_STATE", "No",
+    Core::UTILS::bool_parameter("COUPLE_RESTART_STATE", "No",
         "Enable / disable the coupling of the restart configuration.",
         &beam_to_solid_volume_mestying);
 
@@ -136,7 +136,7 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_volume_mestying);
 
-    Core::UTILS::DoubleParameter("ROTATION_COUPLING_PENALTY_PARAMETER", 0.0,
+    Core::UTILS::double_parameter("ROTATION_COUPLING_PENALTY_PARAMETER", 0.0,
         "Penalty parameter for rotational coupling in beam-to-solid volume mesh tying",
         &beam_to_solid_volume_mestying);
   }
@@ -146,35 +146,35 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       beam_to_solid_volume_mestying.sublist("RUNTIME VTK OUTPUT", false, "");
   {
     // Whether to write visualization output at all for btsvmt.
-    Core::UTILS::BoolParameter("WRITE_OUTPUT", "No",
+    Core::UTILS::bool_parameter("WRITE_OUTPUT", "No",
         "Enable / disable beam-to-solid volume mesh tying output.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::BoolParameter("NODAL_FORCES", "No",
+    Core::UTILS::bool_parameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
+    Core::UTILS::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
+    Core::UTILS::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+    Core::UTILS::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::BoolParameter("SEGMENTATION", "No",
+    Core::UTILS::bool_parameter("SEGMENTATION", "No",
         "Enable / disable output of segmentation points.", &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::BoolParameter("INTEGRATION_POINTS", "No",
+    Core::UTILS::bool_parameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::BoolParameter("UNIQUE_IDS", "No",
+    Core::UTILS::bool_parameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
         &beam_to_solid_volume_mestying_output);
   }
@@ -217,13 +217,13 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_surface_mestying);
 
-    Core::UTILS::DoubleParameter("PENALTY_PARAMETER", 0.0,
+    Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface meshtying", &beam_to_solid_surface_mestying);
 
     // Parameters for rotational coupling.
-    Core::UTILS::BoolParameter("ROTATIONAL_COUPLING", "No", "Enable / disable rotational coupling",
+    Core::UTILS::bool_parameter("ROTATIONAL_COUPLING", "No", "Enable / disable rotational coupling",
         &beam_to_solid_surface_mestying);
-    Core::UTILS::DoubleParameter("ROTATIONAL_COUPLING_PENALTY_PARAMETER", 0.0,
+    Core::UTILS::double_parameter("ROTATIONAL_COUPLING_PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface rotational meshtying",
         &beam_to_solid_surface_mestying);
     setStringToIntegralParameter<BeamToSolidSurfaceRotationCoupling>(
@@ -235,10 +235,10 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         &beam_to_solid_surface_mestying);
 
     // Add the geometry pair input parameters.
-    Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying);
+    Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(beam_to_solid_surface_mestying);
 
     // Add the surface options.
-    Inpar::GEOMETRYPAIR::SetValidParametersLineToSurface(beam_to_solid_surface_mestying);
+    Inpar::GEOMETRYPAIR::set_valid_parameters_line_to_surface(beam_to_solid_surface_mestying);
   }
 
   // Beam to solid surface contact parameters.
@@ -259,7 +259,7 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
         &beam_to_solid_surface_contact);
 
-    Core::UTILS::DoubleParameter("PENALTY_PARAMETER", 0.0,
+    Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface contact", &beam_to_solid_surface_contact);
 
     setStringToIntegralParameter<BeamToSolidSurfaceContact>("CONTACT_TYPE", "none",
@@ -276,7 +276,7 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic),
         &beam_to_solid_surface_contact);
 
-    Core::UTILS::DoubleParameter("PENALTY_PARAMETER_G0", 0.0,
+    Core::UTILS::double_parameter("PENALTY_PARAMETER_G0", 0.0,
         "First penalty regularization parameter G0 >=0: For gap<G0 contact is active",
         &beam_to_solid_surface_contact);
 
@@ -290,10 +290,10 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         &beam_to_solid_surface_contact);
 
     // Add the geometry pair input parameters.
-    Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_contact);
+    Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(beam_to_solid_surface_contact);
 
     // Add the surface options.
-    Inpar::GEOMETRYPAIR::SetValidParametersLineToSurface(beam_to_solid_surface_contact);
+    Inpar::GEOMETRYPAIR::set_valid_parameters_line_to_surface(beam_to_solid_surface_contact);
 
     // Define the mortar shape functions for contact
     setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
@@ -312,38 +312,38 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       beam_to_solid_surface.sublist("RUNTIME VTK OUTPUT", false, "");
   {
     // Whether to write visualization output at all.
-    Core::UTILS::BoolParameter("WRITE_OUTPUT", "No",
+    Core::UTILS::bool_parameter("WRITE_OUTPUT", "No",
         "Enable / disable beam-to-solid volume mesh tying output.", &beam_to_solid_surface_output);
 
-    Core::UTILS::BoolParameter("NODAL_FORCES", "No",
+    Core::UTILS::bool_parameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::BoolParameter("AVERAGED_NORMALS", "No",
+    Core::UTILS::bool_parameter("AVERAGED_NORMALS", "No",
         "Enable / disable output of averaged nodal normals on the surface.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
+    Core::UTILS::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
+    Core::UTILS::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+    Core::UTILS::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_surface_output);
 
-    Core::UTILS::BoolParameter("SEGMENTATION", "No",
+    Core::UTILS::bool_parameter("SEGMENTATION", "No",
         "Enable / disable output of segmentation points.", &beam_to_solid_surface_output);
 
-    Core::UTILS::BoolParameter("INTEGRATION_POINTS", "No",
+    Core::UTILS::bool_parameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::BoolParameter("UNIQUE_IDS", "No",
+    Core::UTILS::bool_parameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
         &beam_to_solid_surface_output);
   }
@@ -352,7 +352,7 @@ void Inpar::BeamToSolid::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 /**
  *
  */
-void Inpar::BeamToSolid::SetValidConditions(
+void Inpar::BeamToSolid::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
@@ -360,7 +360,7 @@ void Inpar::BeamToSolid::SetValidConditions(
   // Beam-to-volume mesh tying conditions.
   {
     std::array<std::string, 2> condition_names;
-    BeamToSolidInteractionGetString(
+    beam_to_solid_interaction_get_string(
         Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
         condition_names);
 
@@ -386,7 +386,7 @@ void Inpar::BeamToSolid::SetValidConditions(
   // Beam-to-surface mesh tying conditions.
   {
     std::array<std::string, 2> condition_names;
-    BeamToSolidInteractionGetString(
+    beam_to_solid_interaction_get_string(
         Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying,
         condition_names);
 
@@ -412,7 +412,7 @@ void Inpar::BeamToSolid::SetValidConditions(
   // Beam-to-surface contact conditions.
   {
     std::array<std::string, 2> condition_names;
-    BeamToSolidInteractionGetString(
+    beam_to_solid_interaction_get_string(
         Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact,
         condition_names);
 

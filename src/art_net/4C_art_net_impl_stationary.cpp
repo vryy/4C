@@ -88,13 +88,13 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 3, false, true));
 
   // right hand side vector
-  rhs_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
@@ -110,26 +110,26 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   }
 
   // the vector containing body and surface forces
-  neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  neumann_loads_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1
-  pressurenp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  pressureincnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  pressurenp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  pressureincnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // for output of volumetric flow
-  ele_volflow_ = Core::LinAlg::CreateVector(*discret_->element_row_map());
+  ele_volflow_ = Core::LinAlg::create_vector(*discret_->element_row_map());
 
   // for output of element radius
-  ele_radius_ = Core::LinAlg::CreateVector(*discret_->element_row_map());
+  ele_radius_ = Core::LinAlg::create_vector(*discret_->element_row_map());
 
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
   set_initial_field(
-      Core::UTILS::IntegralValue<Inpar::ArtDyn::InitialField>(arteryparams, "INITIALFIELD"),
+      Core::UTILS::integral_value<Inpar::ArtDyn::InitialField>(arteryparams, "INITIALFIELD"),
       arteryparams.get<int>("INITFUNCNO"));
 
 
@@ -137,8 +137,8 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   {
     const Teuchos::ParameterList& myscatraparams =
         Global::Problem::instance()->scalar_transport_dynamic_params();
-    if (Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
-        Inpar::ScaTra::velocity_zero)
+    if (Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(
+            myscatraparams, "VELOCITYFIELD") != Inpar::ScaTra::velocity_zero)
       FOUR_C_THROW("set your velocity field to zero!");
     // construct the scatra problem
     scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
@@ -631,7 +631,7 @@ void Arteries::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
   // read restart for diameter of previous time step
   reader.read_vector(ele_radius_, "ele_radius");
   Teuchos::RCP<Epetra_Vector> ele_radius_col =
-      Core::LinAlg::CreateVector(*discret_->element_col_map(), true);
+      Core::LinAlg::create_vector(*discret_->element_col_map(), true);
   Core::LinAlg::export_to(*ele_radius_, *ele_radius_col);
 
   // set the diameter in material

@@ -136,7 +136,7 @@ void MultiScale::MicroStatic::set_up_homogenization()
     }
   }
 
-  Xp_ = Core::LinAlg::CreateVector(*pdof_, true);
+  Xp_ = Core::LinAlg::create_vector(*pdof_, true);
   *Xp_ = Xp_temp;
 
   // now create D and its transpose DT (following Miehe et al., 2002)

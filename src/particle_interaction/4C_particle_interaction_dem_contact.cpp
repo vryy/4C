@@ -40,9 +40,9 @@ FOUR_C_NAMESPACE_OPEN
 ParticleInteraction::DEMContact::DEMContact(const Teuchos::ParameterList& params)
     : params_dem_(params),
       dt_(0.0),
-      tension_cutoff_(Core::UTILS::IntegralValue<int>(params_dem_, "TENSION_CUTOFF")),
+      tension_cutoff_(Core::UTILS::integral_value<int>(params_dem_, "TENSION_CUTOFF")),
       writeparticlewallinteraction_(
-          Core::UTILS::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
+          Core::UTILS::integral_value<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -110,7 +110,8 @@ void ParticleInteraction::DEMContact::setup(
   {
     // get type of normal contact law
     Inpar::PARTICLE::NormalContact normalcontacttype =
-        Core::UTILS::IntegralValue<Inpar::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
+        Core::UTILS::integral_value<Inpar::PARTICLE::NormalContact>(
+            params_dem_, "NORMALCONTACTLAW");
 
     if (normalcontacttype != Inpar::PARTICLE::NormalLinSpring and
         normalcontacttype != Inpar::PARTICLE::NormalLinSpringDamp)
@@ -215,7 +216,7 @@ void ParticleInteraction::DEMContact::init_normal_contact_handler()
 {
   // get type of normal contact law
   Inpar::PARTICLE::NormalContact normalcontacttype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
+      Core::UTILS::integral_value<Inpar::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
 
   // create normal contact handler
   switch (normalcontacttype)
@@ -271,7 +272,7 @@ void ParticleInteraction::DEMContact::init_tangential_contact_handler()
 {
   // get type of tangential contact law
   Inpar::PARTICLE::TangentialContact tangentialcontacttype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::TangentialContact>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::TangentialContact>(
           params_dem_, "TANGENTIALCONTACTLAW");
 
   // create tangential contact handler
@@ -304,7 +305,8 @@ void ParticleInteraction::DEMContact::init_rolling_contact_handler()
 {
   // get type of rolling contact law
   Inpar::PARTICLE::RollingContact rollingcontacttype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::RollingContact>(params_dem_, "ROLLINGCONTACTLAW");
+      Core::UTILS::integral_value<Inpar::PARTICLE::RollingContact>(
+          params_dem_, "ROLLINGCONTACTLAW");
 
   // create rolling contact handler
   switch (rollingcontacttype)
@@ -436,8 +438,8 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
     double r_ci[3], r_cj[3];
     if (contacttangential_)
     {
-      UTILS::VecSetScale(r_ci, (rad_i[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
-      UTILS::VecSetScale(r_cj, -(rad_j[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
+      UTILS::vec_set_scale(r_ci, (rad_i[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
+      UTILS::vec_set_scale(r_cj, -(rad_j[0] + 0.5 * particlepair.gap_), particlepair.e_ji_);
     }
     else
     {
@@ -447,16 +449,16 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
 
     // relative velocity in contact point c between particle i and j
     double vel_rel[3];
-    UTILS::VecSet(vel_rel, vel_i);
-    UTILS::VecSub(vel_rel, vel_j);
+    UTILS::vec_set(vel_rel, vel_i);
+    UTILS::vec_sub(vel_rel, vel_j);
     if (contacttangential_)
     {
-      UTILS::VecAddCross(vel_rel, angvel_i, r_ci);
-      UTILS::VecAddCross(vel_rel, r_cj, angvel_j);
+      UTILS::vec_add_cross(vel_rel, angvel_i, r_ci);
+      UTILS::vec_add_cross(vel_rel, r_cj, angvel_j);
     }
 
     // magnitude of relative velocity in normal direction
-    const double vel_rel_normal = UTILS::VecDot(vel_rel, particlepair.e_ji_);
+    const double vel_rel_normal = UTILS::vec_dot(vel_rel, particlepair.e_ji_);
 
     // calculate normal contact force
     double normalcontactforce(0.0);
@@ -467,9 +469,9 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
     if (tension_cutoff_) normalcontactforce = std::min(normalcontactforce, 0.0);
 
     // add normal contact force contribution
-    UTILS::VecAddScale(force_i, normalcontactforce, particlepair.e_ji_);
+    UTILS::vec_add_scale(force_i, normalcontactforce, particlepair.e_ji_);
     if (status_j == PARTICLEENGINE::Owned)
-      UTILS::VecAddScale(force_j, -normalcontactforce, particlepair.e_ji_);
+      UTILS::vec_add_scale(force_j, -normalcontactforce, particlepair.e_ji_);
 
     // calculation of tangential contact force
     if (contacttangential_)
@@ -486,8 +488,8 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
 
       // relative velocity in tangential direction
       double vel_rel_tangential[3];
-      UTILS::VecSet(vel_rel_tangential, vel_rel);
-      UTILS::VecAddScale(vel_rel_tangential, -vel_rel_normal, particlepair.e_ji_);
+      UTILS::vec_set(vel_rel_tangential, vel_rel);
+      UTILS::vec_add_scale(vel_rel_tangential, -vel_rel_normal, particlepair.e_ji_);
 
       // calculate tangential contact force
       double tangentialcontactforce[3];
@@ -509,18 +511,18 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
         DEMHistoryPairTangential& tangentialhistory_ji = touchedtangentialhistory_ji.second;
 
         // set tangential gap and tangential stick flag
-        UTILS::VecSetScale(tangentialhistory_ji.gap_t_, -1.0, tangentialhistory_ij.gap_t_);
+        UTILS::vec_set_scale(tangentialhistory_ji.gap_t_, -1.0, tangentialhistory_ij.gap_t_);
         tangentialhistory_ji.stick_ = tangentialhistory_ij.stick_;
       }
 
       // add tangential contact force contribution
-      UTILS::VecAdd(force_i, tangentialcontactforce);
-      if (status_j == PARTICLEENGINE::Owned) UTILS::VecSub(force_j, tangentialcontactforce);
+      UTILS::vec_add(force_i, tangentialcontactforce);
+      if (status_j == PARTICLEENGINE::Owned) UTILS::vec_sub(force_j, tangentialcontactforce);
 
       // add tangential contact moment contribution
-      UTILS::VecAddCross(moment_i, r_ci, tangentialcontactforce);
+      UTILS::vec_add_cross(moment_i, r_ci, tangentialcontactforce);
       if (status_j == PARTICLEENGINE::Owned)
-        UTILS::VecAddCross(moment_j, tangentialcontactforce, r_cj);
+        UTILS::vec_add_cross(moment_j, tangentialcontactforce, r_cj);
     }
 
     // calculation of rolling contact moment
@@ -565,13 +567,13 @@ void ParticleInteraction::DEMContact::evaluate_particle_contact()
         DEMHistoryPairRolling& rollinghistory_ji = touchedrollinghistory_ji.second;
 
         // set rolling gap and rolling stick flag
-        UTILS::VecSetScale(rollinghistory_ji.gap_r_, -1.0, rollinghistory_ij.gap_r_);
+        UTILS::vec_set_scale(rollinghistory_ji.gap_r_, -1.0, rollinghistory_ij.gap_r_);
         rollinghistory_ji.stick_ = rollinghistory_ij.stick_;
       }
 
       // add rolling contact moment contribution
-      UTILS::VecAdd(moment_i, rollingcontactmoment);
-      if (status_j == PARTICLEENGINE::Owned) UTILS::VecSub(moment_j, rollingcontactmoment);
+      UTILS::vec_add(moment_i, rollingcontactmoment);
+      if (status_j == PARTICLEENGINE::Owned) UTILS::vec_sub(moment_j, rollingcontactmoment);
     }
   }
 }
@@ -660,7 +662,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
         walldatastate->get_force_col() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
-      Core::FE::shape_function_2D(
+      Core::FE::shape_function_2d(
           funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->shape());
 
       // get location vector of wall element
@@ -701,7 +703,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
-      Core::FE::ExtractMyValues(*walldatastate->get_vel_col(), nodal_vel, lmele);
+      Core::FE::extract_my_values(*walldatastate->get_vel_col(), nodal_vel, lmele);
 
       // determine velocity of wall contact point j
       for (int node = 0; node < numnodes; ++node)
@@ -710,16 +712,16 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
 
     // compute vector from particle i to wall contact point j
     double r_ji[3];
-    UTILS::VecSetScale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
+    UTILS::vec_set_scale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
 
     // relative velocity in wall contact point j
     double vel_rel[3];
-    UTILS::VecSet(vel_rel, vel_i);
-    UTILS::VecSub(vel_rel, vel_j);
-    if (contacttangential_) UTILS::VecAddCross(vel_rel, angvel_i, r_ji);
+    UTILS::vec_set(vel_rel, vel_i);
+    UTILS::vec_sub(vel_rel, vel_j);
+    if (contacttangential_) UTILS::vec_add_cross(vel_rel, angvel_i, r_ji);
 
     // magnitude of relative velocity in normal direction
-    const double vel_rel_normal = UTILS::VecDot(vel_rel, particlewallpair.e_ji_);
+    const double vel_rel_normal = UTILS::vec_dot(vel_rel, particlewallpair.e_ji_);
 
     // calculate normal contact force
     double normalcontactforce(0.0);
@@ -730,7 +732,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     if (tension_cutoff_) normalcontactforce = std::min(normalcontactforce, 0.0);
 
     // add normal contact force contribution
-    UTILS::VecAddScale(force_i, normalcontactforce, particlewallpair.e_ji_);
+    UTILS::vec_add_scale(force_i, normalcontactforce, particlewallpair.e_ji_);
 
     // calculation of tangential contact force
     double tangentialcontactforce[3] = {0.0, 0.0, 0.0};
@@ -748,8 +750,8 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
 
       // relative velocity in tangential direction
       double vel_rel_tangential[3];
-      UTILS::VecSet(vel_rel_tangential, vel_rel);
-      UTILS::VecAddScale(vel_rel_tangential, -vel_rel_normal, particlewallpair.e_ji_);
+      UTILS::vec_set(vel_rel_tangential, vel_rel);
+      UTILS::vec_add_scale(vel_rel_tangential, -vel_rel_normal, particlewallpair.e_ji_);
 
       // calculate tangential contact force
       contacttangential_->tangential_contact_force(tangentialhistory_ij.gap_t_,
@@ -757,10 +759,10 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
           mu_tangential, normalcontactforce, tangentialcontactforce);
 
       // add tangential contact force contribution
-      UTILS::VecAdd(force_i, tangentialcontactforce);
+      UTILS::vec_add(force_i, tangentialcontactforce);
 
       // add tangential contact moment contribution
-      UTILS::VecAddCross(moment_i, r_ji, tangentialcontactforce);
+      UTILS::vec_add_cross(moment_i, r_ji, tangentialcontactforce);
 
       // copy history to relevant wall elements in penetration volume
       for (int histele : particlewallpair.histeles_)
@@ -796,7 +798,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
           rollingcontactmoment);
 
       // add rolling contact moment contribution
-      UTILS::VecAdd(moment_i, rollingcontactmoment);
+      UTILS::vec_add(moment_i, rollingcontactmoment);
 
       // copy history to relevant wall elements in penetration volume
       for (int histele : particlewallpair.histeles_)
@@ -807,8 +809,8 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     double wallcontactforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
     {
-      UTILS::VecSetScale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);
-      UTILS::VecSub(wallcontactforce, tangentialcontactforce);
+      UTILS::vec_set_scale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);
+      UTILS::vec_sub(wallcontactforce, tangentialcontactforce);
     }
 
     // write interaction output
@@ -816,8 +818,8 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     {
       // calculate wall contact point
       double wallcontactpoint[3];
-      UTILS::VecSet(wallcontactpoint, pos_i);
-      UTILS::VecAdd(wallcontactpoint, r_ji);
+      UTILS::vec_set(wallcontactpoint, pos_i);
+      UTILS::vec_add(wallcontactpoint, r_ji);
 
       // set wall attack point and states
       for (int dim = 0; dim < 3; ++dim) attackpoints.push_back(wallcontactpoint[dim]);

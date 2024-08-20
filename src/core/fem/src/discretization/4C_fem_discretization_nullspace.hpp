@@ -28,7 +28,7 @@ namespace Core::FE
      \param dimns (in): nullspace dimension
      \param map (in): nullspace map
       */
-  Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const Core::FE::Discretization& dis,
+  Teuchos::RCP<Epetra_MultiVector> compute_null_space(const Core::FE::Discretization& dis,
       const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
 }  // namespace Core::FE
 

@@ -28,7 +28,7 @@ namespace Mat
   const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /// create element material object given the number of a material definition
-  Teuchos::RCP<Core::Mat::Material> Factory(int matnum  ///< material ID
+  Teuchos::RCP<Core::Mat::Material> factory(int matnum  ///< material ID
   );
 
   /**

@@ -108,7 +108,7 @@ FSI::LungMonolithic::LungMonolithic(
 
   // build an all reduced version of the constraintmap, since sometimes all processors
   // have to know all values of the constraints and Lagrange multipliers
-  RedConstrMap_ = Core::LinAlg::AllreduceEMap(*ConstrMap_);
+  RedConstrMap_ = Core::LinAlg::allreduce_e_map(*ConstrMap_);
 
   // create importer
   ConstrImport_ = Teuchos::rcp(new Epetra_Export(*RedConstrMap_, *ConstrMap_));
@@ -126,7 +126,7 @@ FSI::LungMonolithic::LungMonolithic(
 
   // build merged structure dof map
   Teuchos::RCP<Epetra_Map> FullStructDofMap =
-      Core::LinAlg::MergeMap(*structure_field()->dof_row_map(), *ConstrMap_, false);
+      Core::LinAlg::merge_map(*structure_field()->dof_row_map(), *ConstrMap_, false);
   Core::LinAlg::MapExtractor StructConstrExtractor(
       *FullStructDofMap, ConstrMap_, structure_field()->dof_row_map());
 
@@ -198,7 +198,7 @@ void FSI::LungMonolithic::general_setup()
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -444,7 +444,7 @@ void FSI::LungMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat,
   // should we scale the system?
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -497,7 +497,7 @@ void FSI::LungMonolithic::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -959,7 +959,7 @@ void FSI::LungMonolithic::create_system_matrix(bool structuresplit)
     case Inpar::FSI::PreconditionedKrylov:
       systemmatrix_ = Teuchos::rcp(new LungOverlappingBlockMatrix(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
-          Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
+          Core::UTILS::integral_value<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
           spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));
       break;
     default:

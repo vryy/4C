@@ -253,7 +253,7 @@ namespace Core::FE
   /*!
    \brief generates complete Lagrange basis in 1D for [-1,1]^d elements
    */
-  std::vector<LagrangePolynomial> generateLagrangeBasis1D(const unsigned int degree);
+  std::vector<LagrangePolynomial> generate_lagrange_basis1_d(const unsigned int degree);
 
 
 
@@ -264,7 +264,7 @@ namespace Core::FE
    to the usual mathematical definition, we also scale the polynomials such that
    they are actually orthonormal on the unit interval.
    */
-  std::vector<Polynomial> generateLegendreBasis1D(const unsigned int degree);
+  std::vector<Polynomial> generate_legendre_basis1_d(const unsigned int degree);
 
 
 
@@ -503,7 +503,7 @@ namespace Core::FE
     \brief Constructor from a vector of one-dimensional polynomials
      */
     LagrangeBasis(const unsigned int degree)
-        : PolynomialSpaceTensor<nsd, LagrangePolynomial>(generateLagrangeBasis1D(degree))
+        : PolynomialSpaceTensor<nsd, LagrangePolynomial>(generate_lagrange_basis1_d(degree))
     {
     }
   };
@@ -523,7 +523,7 @@ namespace Core::FE
    \brief Constructor from a vector of one-dimensional polynomials
      */
     LegendreBasis(const unsigned int degree)
-        : PolynomialSpaceComplete<nsd, Polynomial>(generateLegendreBasis1D(degree))
+        : PolynomialSpaceComplete<nsd, Polynomial>(generate_legendre_basis1_d(degree))
     {
     }
   };
@@ -630,7 +630,7 @@ namespace Core::FE
    public:
     PolynomialSpace(
         const Core::FE::CellType distype, const unsigned int degree, const bool completeSpace)
-        : polyspace_((Core::FE::getNumberOfElementFaces(distype) == 1 + nsd && nsd > 1)
+        : polyspace_((Core::FE::get_number_of_element_faces(distype) == 1 + nsd && nsd > 1)
                          ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
                                new Core::FE::LagrangeBasisTet<nsd>(degree))
                      : completeSpace ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
@@ -638,12 +638,12 @@ namespace Core::FE
                                      : static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
                                            new Core::FE::LagrangeBasis<nsd>(degree)))
     {
-      if (nsd != Core::FE::getDimension(distype))
+      if (nsd != Core::FE::get_dimension(distype))
         FOUR_C_THROW("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
     }
 
     PolynomialSpace(PolynomialSpaceParams params)
-        : polyspace_((Core::FE::getNumberOfElementFaces(params.distype_) == 1 + nsd && nsd > 1)
+        : polyspace_((Core::FE::get_number_of_element_faces(params.distype_) == 1 + nsd && nsd > 1)
                          ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
                                new Core::FE::LagrangeBasisTet<nsd>(params.degree_))
                      : params.completeSpace_
@@ -730,11 +730,11 @@ namespace Core::FE
 
    Note: This class must always be synchronized with PolynomialSpace above!
    */
-  inline int getBasisSize(
+  inline int get_basis_size(
       const Core::FE::CellType distype, const int degree, const bool completeSpace)
   {
-    const int dim = Core::FE::getDimension(distype);
-    const int nfaces = Core::FE::getNumberOfElementFaces(distype);
+    const int dim = Core::FE::get_dimension(distype);
+    const int nfaces = Core::FE::get_number_of_element_faces(distype);
     switch (dim)
     {
       case 3:

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::GetComponentOfRotatedVectorField(const int idf,
+double FLD::get_component_of_rotated_vector_field(const int idf,
     const Teuchos::RCP<const Epetra_Vector> proc0data, const int lid, const double rotangle)
 {
   switch (idf)
@@ -52,7 +52,7 @@ double FLD::GetComponentOfRotatedVectorField(const int idf,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FLD::IsSlaveNodeOfRotSymPBC(const Core::Nodes::Node* node, double& rotangle)
+bool FLD::is_slave_node_of_rot_sym_pbc(const Core::Nodes::Node* node, double& rotangle)
 {
   // get periodic surface/line boundary conditions
   std::vector<Core::Conditions::Condition*> pbc;
@@ -66,7 +66,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const Core::Nodes::Node* node, double& rotangle
         pbc[j]->parameters().get<std::string>("Is slave periodic boundary condition");
     if (isslave == "Slave")
     {
-      rotangle = GetRotAngleFromCondition(pbc[j]);
+      rotangle = get_rot_angle_from_condition(pbc[j]);
       if (abs(rotangle) > 1e-13)  // angle is not zero
       {
         if (isrotsymslave) FOUR_C_THROW("Node is slave of more than one rot.sym. periodic bc");
@@ -80,7 +80,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(const Core::Nodes::Node* node, double& rotangle
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FLD::GetRotAngleFromCondition(const Core::Conditions::Condition* cond)
+double FLD::get_rot_angle_from_condition(const Core::Conditions::Condition* cond)
 {
   const double rotangle_deg = cond->parameters().get<double>("ANGLE");
 
@@ -89,7 +89,7 @@ double FLD::GetRotAngleFromCondition(const Core::Conditions::Condition* cond)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::GetRelevantSlaveNodesOfRotSymPBC(
+void FLD::get_relevant_slave_nodes_of_rot_sym_pbc(
     std::map<int, double>& pbcslavenodemap, Teuchos::RCP<Core::FE::Discretization> dis)
 {
   // get all periodic boundary conditions
@@ -105,7 +105,7 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
   {
     const std::string& mymasterslavetoggle =
         mypbccond[numcond]->parameters().get<std::string>("Is slave periodic boundary condition");
-    const double rotangle = FLD::GetRotAngleFromCondition(mypbccond[numcond]);
+    const double rotangle = FLD::get_rot_angle_from_condition(mypbccond[numcond]);
 
     // only slave nodes with non-zero angle of rotation require rotation
     // of vector results!

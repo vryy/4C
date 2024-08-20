@@ -143,10 +143,10 @@ namespace CONTACT
   namespace UTILS
   {
     /// Compute Cauchy stress component sigma_{n dir} at local coord xsi
-    double SolidCauchyAtXi(CONTACT::Element* cele,  ///< the contact element
-        const Core::LinAlg::Matrix<2, 1>& xsi,      ///< local coord on the ele element
-        const Core::LinAlg::Matrix<3, 1>& n,        ///< normal n
-        const Core::LinAlg::Matrix<3, 1>& dir       ///< second directional vector
+    double solid_cauchy_at_xi(CONTACT::Element* cele,  ///< the contact element
+        const Core::LinAlg::Matrix<2, 1>& xsi,         ///< local coord on the ele element
+        const Core::LinAlg::Matrix<3, 1>& n,           ///< normal n
+        const Core::LinAlg::Matrix<3, 1>& dir          ///< second directional vector
     );
   }  // namespace UTILS
 }  // namespace CONTACT

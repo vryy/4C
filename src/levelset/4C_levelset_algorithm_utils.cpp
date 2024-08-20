@@ -206,7 +206,7 @@ void ScaTra::LevelSetAlgorithm::mass_conservation_check(
 void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 {
   const Inpar::ScaTra::CalcErrorLevelSet calcerr =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
+      Core::UTILS::integral_value<Inpar::ScaTra::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
 
   switch (calcerr)
   {
@@ -234,7 +234,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
       {
         // create the parameters for the error calculation
         Teuchos::ParameterList eleparams;
-        Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+        Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
         eleparams.set<int>("calcerrorflag", calcerr);
 
@@ -382,7 +382,7 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
               std::vector<double> myconvel(lmvel.size());
 
               // extract local values from global vector
-              Core::FE::ExtractMyValues(*convel, myconvel, lmvel);
+              Core::FE::extract_my_values(*convel, myconvel, lmvel);
 
               // determine number of velocity related dofs per node
               const int numveldofpernode = lmvel.size() / nen;
@@ -693,7 +693,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     // which then eliminate all but their row nodes
     {
       Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::rcp(new std::set<int>);
-      Core::LinAlg::Gather<int>(
+      Core::LinAlg::gather<int>(
           *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->get_comm());
 
       allcollectednodes->clear();
@@ -753,7 +753,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 2>>> mysurfacenodes = surfacenodes;
     surfacenodes = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 2>>);
 
-    Core::LinAlg::Gather<Core::LinAlg::Matrix<3, 2>>(
+    Core::LinAlg::gather<Core::LinAlg::Matrix<3, 2>>(
         *mysurfacenodes, *surfacenodes, numproc, allproc.data(), discret_->get_comm());
   }
 
@@ -922,7 +922,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mass_center_smoothingfunct, eleparams);
 
   // give access to interface thickness from smoothing function (TPF module) in element calculations
@@ -1029,14 +1029,14 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (phinp_ != Teuchos::null)
   {
     old = phinp_;
-    phinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    phinp_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *phinp_);
   }
 
   if (phin_ != Teuchos::null)
   {
     old = phin_;
-    phin_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    phin_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *phin_);
   }
 
@@ -1044,7 +1044,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (phidtnp_ != Teuchos::null)
   {
     old = phidtnp_;
-    phidtnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    phidtnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *phidtnp_);
   }
 
@@ -1052,7 +1052,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (phidtn_ != Teuchos::null)
   {
     old = phidtn_;
-    phidtn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    phidtn_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *phidtn_);
   }
 
@@ -1061,7 +1061,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (hist_ != Teuchos::null)
   {
     old = hist_;
-    hist_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    hist_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *hist_);
   }
 
@@ -1072,7 +1072,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (zeros_ != Teuchos::null)
   {
     old = zeros_;
-    zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *zeros_);
   }
 
@@ -1083,7 +1083,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (neumann_loads_ != Teuchos::null)
   {
     old = neumann_loads_;
-    neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    neumann_loads_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *neumann_loads_);
   }
 
@@ -1091,7 +1091,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (residual_ != Teuchos::null)
   {
     old = residual_;
-    residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    residual_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *residual_);
   }
 
@@ -1099,7 +1099,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (trueresidual_ != Teuchos::null)
   {
     old = trueresidual_;
-    trueresidual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    trueresidual_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *trueresidual_);
   }
 
@@ -1107,7 +1107,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (increment_ != Teuchos::null)
   {
     old = increment_;
-    increment_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    increment_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *increment_);
   }
 
@@ -1117,14 +1117,14 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (subgrdiff_ != Teuchos::null)
   {
     old = subgrdiff_;
-    subgrdiff_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    subgrdiff_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *subgrdiff_);
   }
 
   if (initialphireinit_ != Teuchos::null)
   {
     old = initialphireinit_;
-    initialphireinit_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    initialphireinit_ = Core::LinAlg::create_vector(*dofrowmap, true);
     Core::LinAlg::export_to(*old, *initialphireinit_);
   }
 

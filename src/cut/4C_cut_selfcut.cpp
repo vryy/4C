@@ -610,7 +610,7 @@ void Cut::SelfCut::find_self_cut_triangulation()
     cutsidepoints[0] = cutsidenodes[0]->point();
     cutsidepoints[1] = cutsidenodes[1]->point();
     cutsidepoints[2] = cutsidenodes[2]->point();
-    std::vector<double> cutsideplane = Kernel::EqnPlaneOfPolygon(cutsidepoints);
+    std::vector<double> cutsideplane = Kernel::eqn_plane_of_polygon(cutsidepoints);
 
     // -----
     // STEP 1 : Create facets on cut side by taking into account the self-cut points
@@ -685,7 +685,7 @@ void Cut::SelfCut::find_self_cut_triangulation()
            i != maincycletriangles.end(); ++i)
       {
         std::vector<Point*> maincycletriangle = *i;
-        if (Kernel::IsOnLine(maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
+        if (Kernel::is_on_line(maincycletriangle[0], maincycletriangle[1], maincycletriangle[2]))
         {
           error_status_text(*cutside);
           error_gmsh("triangle_with_collinear_points.pos", *cutside);
@@ -3178,7 +3178,7 @@ void Cut::SelfCut::get_self_cut_edges(Side& cutside)
 bool Cut::SelfCut::check_normal(std::vector<double> cutsideplane, Cycle& maincycle)
 {
   std::vector<Point*> maincyclepoints = maincycle();
-  std::vector<double> maincycleplane = Kernel::EqnPlaneOfPolygon(maincyclepoints);
+  std::vector<double> maincycleplane = Kernel::eqn_plane_of_polygon(maincyclepoints);
   if (fabs(cutsideplane[0]) > TOL_EQN_PLANE and cutsideplane[0] * maincycleplane[0] < 0.0)
   {
     return false;

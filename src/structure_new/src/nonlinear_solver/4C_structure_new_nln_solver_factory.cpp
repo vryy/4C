@@ -53,7 +53,7 @@ Teuchos::RCP<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_nln
       //      break;
     default:
       FOUR_C_THROW("Solution technique \"%s\" is not implemented.",
-          Inpar::Solid::NonlinSolTechString(nlnSolType).c_str());
+          Inpar::Solid::nonlin_sol_tech_string(nlnSolType).c_str());
       break;
   }
 

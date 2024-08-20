@@ -40,7 +40,7 @@ namespace Internal
      * @param planeStressStressLike (out) : Stress in voigt notation assuming plane stress in the
      * x-y plane
      */
-    inline void LocalPlaneStressToStressLikeVoigt(
+    inline void local_plane_stress_to_stress_like_voigt(
         const Core::LinAlg::Matrix<3, 3>& stress, Core::LinAlg::Matrix<3, 1>& planeStressStressLike)
     {
       planeStressStressLike(0) = stress(0, 0);
@@ -54,7 +54,7 @@ namespace Internal
      * @param cmat (in) : Full linearization
      * @param cmatred (out) : Reduced linearization assuming plane stress in the x-y plane
      */
-    inline void LocalFourthTensorPlaneStressToStressLikeVoigt(
+    inline void local_fourth_tensor_plane_stress_to_stress_like_voigt(
         const Core::LinAlg::Matrix<6, 6>& cmat, Core::LinAlg::Matrix<3, 3>& cmatred)
     {
       cmatred(0, 0) = cmat(0, 0);
@@ -139,7 +139,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -157,7 +157,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -175,7 +175,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       mem_nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
           Inpar::Solid::stress_none, Inpar::Solid::strain_none);
@@ -191,7 +191,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       update_element(mydisp, params, material());
     }
     break;
@@ -215,7 +215,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
@@ -236,9 +236,9 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
 
-        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
       }
 
@@ -309,7 +309,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get reference configuration and determine current configuration
       Core::LinAlg::Matrix<numnod_, noddof_> xrefe(true);
@@ -334,7 +334,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         double gpweight = intpoints_.qwgt[gp];
 
         // get shape function derivatives in the plane of the element
-        Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
+        Core::FE::shape_function_2d_deriv1(derivs, xi_gp, eta_gp, shape());
 
         /*===============================================================================*
          | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -379,7 +379,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
         // surface deformation gradient in 3 dimensions in local coordinates
-        Core::LinAlg::Tensor::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+        Core::LinAlg::Tensor::inverse_tensor_rotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
         /*===============================================================================*
          | right cauchygreen tensor in local coordinates                                 |
@@ -493,7 +493,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
      | default                                                                       |
      *===============================================================================*/
     default:
-      FOUR_C_THROW("Unknown type of action for Membrane: %s", ActionType2String(act).c_str());
+      FOUR_C_THROW("Unknown type of action for Membrane: %s", action_type_to_string(act).c_str());
       break;
   }
 
@@ -556,7 +556,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
   Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
-  Core::FE::ExtractMyValues(*disp, mydisp, lm);
+  Core::FE::extract_my_values(*disp, mydisp, lm);
 
   // get reference configuration and determine current configuration
   Core::LinAlg::Matrix<numnod_, noddof_> xrefe(true);
@@ -582,8 +582,8 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, shape());
-    Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
+    Core::FE::shape_function_2d(shapefcts, xi_gp, eta_gp, shape());
+    Core::FE::shape_function_2d_deriv1(derivs, xi_gp, eta_gp, shape());
 
     /*===============================================================================*
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -704,8 +704,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
-    Core::FE::shape_function_2D(shapefcts, xi_gp, eta_gp, shape());
-    Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
+    Core::FE::shape_function_2d(shapefcts, xi_gp, eta_gp, shape());
+    Core::FE::shape_function_2d_deriv1(derivs, xi_gp, eta_gp, shape());
 
     /*===============================================================================*
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -755,7 +755,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
     // surface deformation gradient in 3 dimensions in local coordinates
-    Core::LinAlg::Tensor::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+    Core::LinAlg::Tensor::inverse_tensor_rotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
     /*===============================================================================*
      | right cauchygreen tensor in local coordinates                                 |
@@ -785,7 +785,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
       // center of element in reference configuration
       Core::LinAlg::Matrix<numnod_, 1> funct_center;
-      Core::FE::shape_function_2D(funct_center, 0.0, 0.0, distype);
+      Core::FE::shape_function_2d(funct_center, 0.0, 0.0, distype);
       Core::LinAlg::Matrix<noddof_, 1> midpoint;
       midpoint.multiply_tn(xrefe, funct_center);
       params.set("elecenter_coords_ref", midpoint);
@@ -801,7 +801,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
       // update surface deformation gradient in 3 dimensions in local coordinates
-      Core::LinAlg::Tensor::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+      Core::LinAlg::Tensor::inverse_tensor_rotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       // update three dimensional right cauchy-green strain tensor in orthonormal base
       cauchygreen_loc.multiply_tn(1.0, defgrd_loc, defgrd_loc, 0.0);
@@ -824,12 +824,12 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
       // Transform stress and elasticity into the local membrane coordinate system
       Core::LinAlg::Matrix<3, 3> pk2M_loc(true);
-      Core::LinAlg::Tensor::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
-      Internal::LocalPlaneStressToStressLikeVoigt(pk2M_loc, pk2red_loc);
+      Core::LinAlg::Tensor::inverse_tensor_rotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
+      Internal::local_plane_stress_to_stress_like_voigt(pk2M_loc, pk2red_loc);
 
       Core::LinAlg::Matrix<6, 6> cmat_loc(true);
-      Core::LinAlg::Tensor::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
-      Internal::LocalFourthTensorPlaneStressToStressLikeVoigt(cmat_loc, cmatred_loc);
+      Core::LinAlg::Tensor::inverse_fourth_tensor_rotation(Q_localToGlobal, cmat_glob, cmat_loc);
+      Internal::local_fourth_tensor_plane_stress_to_stress_like_voigt(cmat_loc, cmatred_loc);
     }
     else
     {
@@ -970,7 +970,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
         // transform local cauchygreen to global coordinates
         Core::LinAlg::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        Core::LinAlg::Tensor::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        Core::LinAlg::Tensor::tensor_rotation<3>(
+            Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         Core::LinAlg::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -999,7 +1000,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
         // transform local cauchygreen to global coordinates
         Core::LinAlg::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        Core::LinAlg::Tensor::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        Core::LinAlg::Tensor::tensor_rotation<3>(
+            Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
         Core::LinAlg::Matrix<noddof_, noddof_> glstrain_glob(true);
@@ -1039,13 +1041,14 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
         // transform local cauchygreen to global coordinates
         Core::LinAlg::Matrix<noddof_, noddof_> cauchygreen_glob(true);
-        Core::LinAlg::Tensor::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
+        Core::LinAlg::Tensor::tensor_rotation<3>(
+            Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // eigenvalue decomposition (from elasthyper.cpp)
         Core::LinAlg::Matrix<noddof_, noddof_> prstr2(true);  // squared principal stretches
         Core::LinAlg::Matrix<noddof_, 1> prstr(true);         // principal stretch
         Core::LinAlg::Matrix<noddof_, noddof_> prdir(true);   // principal directions
-        Core::LinAlg::SYEV(cauchygreen_glob, prstr2, prdir);
+        Core::LinAlg::syev(cauchygreen_glob, prstr2, prdir);
 
         // THE principal stretches
         for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
@@ -1151,7 +1154,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         Core::LinAlg::Matrix<noddof_, noddof_> pkstress_glob(true);
-        Core::LinAlg::Tensor::TensorRotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
+        Core::LinAlg::Tensor::tensor_rotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
 
         (*elestress)(gp, 0) = pkstress_glob(0, 0);
         (*elestress)(gp, 1) = pkstress_glob(1, 1);
@@ -1176,7 +1179,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
         Core::LinAlg::Matrix<noddof_, noddof_> pkstress_glob(true);
-        Core::LinAlg::Tensor::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
+        Core::LinAlg::Tensor::tensor_rotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
 
         Core::LinAlg::Matrix<noddof_, noddof_> cauchy_glob(true);
         mem_p_k2to_cauchy(pkstress_glob, defgrd_glob, cauchy_glob);
@@ -1506,7 +1509,7 @@ Discret::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 
     // shape functions for the extrapolated coordinates
     Core::LinAlg::Matrix<numgpt_post_, 1> funct;
-    Core::FE::shape_function_2D(funct, e1, e2, shape());
+    Core::FE::shape_function_2d(funct, e1, e2, shape());
 
     for (int i = 0; i < numgpt_post_; ++i) extrapol(nd, i) = funct(i);
   }
@@ -1551,7 +1554,7 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
       double eta_gp = intpoints_.qxg[gp][1];
 
       // get derivatives in the plane of the element
-      Core::FE::shape_function_2D_deriv1(derivs, xi_gp, eta_gp, shape());
+      Core::FE::shape_function_2d_deriv1(derivs, xi_gp, eta_gp, shape());
 
       /*===============================================================================*
        | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
@@ -1582,7 +1585,7 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
       // surface deformation gradient in 3 dimensions in global coordinates
       mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
 
-      Core::LinAlg::Tensor::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
+      Core::LinAlg::Tensor::inverse_tensor_rotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       auto material_local_coordinates =
           Teuchos::rcp_dynamic_cast<Mat::MembraneMaterialLocalCoordinates>(

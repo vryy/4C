@@ -234,7 +234,7 @@ namespace SSI
   };
 
   //! build specific mesh tying strategy
-  Teuchos::RCP<SSI::MeshtyingStrategyBase> BuildMeshtyingStrategy(bool is_scatra_manifold,
+  Teuchos::RCP<SSI::MeshtyingStrategyBase> build_meshtying_strategy(bool is_scatra_manifold,
       Core::LinAlg::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
 }  // namespace SSI

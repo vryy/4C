@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
 {
-  inline void EvaluateCe(const Core::LinAlg::Matrix<3, 3>& F,
+  inline void evaluate_ce(const Core::LinAlg::Matrix<3, 3>& F,
       const Core::LinAlg::Matrix<3, 3>& iFin, Core::LinAlg::Matrix<3, 3>& Ce)
   {
     static Core::LinAlg::Matrix<3, 3> FiFin(false);
@@ -31,7 +31,7 @@ namespace Mat
     Ce.multiply_tn(FiFin, FiFin);
   }
 
-  inline void EvaluateiCinCiCin(const Core::LinAlg::Matrix<3, 3>& C,
+  inline void evaluatei_cin_ci_cin(const Core::LinAlg::Matrix<3, 3>& C,
       const Core::LinAlg::Matrix<3, 3>& iCin, Core::LinAlg::Matrix<3, 3>& iCinCiCin)
   {
     static Core::LinAlg::Matrix<3, 3> CiCin(false);
@@ -39,7 +39,7 @@ namespace Mat
     iCinCiCin.multiply_nn(iCin, CiCin);
   }
 
-  inline void ElastHyperEvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+  inline void elast_hyper_evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
       const Core::LinAlg::Matrix<3, 3>& iFin, Core::LinAlg::Matrix<6, 1>& S_stress,
       Core::LinAlg::Matrix<6, 6>& cmat,
       const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
@@ -76,10 +76,10 @@ namespace Mat
     iCin.multiply_nt(iFin, iFin);
 
     // Compute iCin * C * iCin
-    Mat::EvaluateiCinCiCin(C, iCin, iCinCiCin);
+    Mat::evaluatei_cin_ci_cin(C, iCin, iCinCiCin);
 
     // Compute Ce
-    Mat::EvaluateCe(F, iFin, Ce);
+    Mat::evaluate_ce(F, iFin, Ce);
 
     // Compute principal invariants
     Mat::invariants_principal(principleInvariantsCe, Ce);
@@ -87,7 +87,7 @@ namespace Mat
     Core::LinAlg::Matrix<3, 1> dPIe(true);
     Core::LinAlg::Matrix<6, 1> ddPIIe(true);
 
-    Mat::ElastHyperEvaluateInvariantDerivatives(
+    Mat::elast_hyper_evaluate_invariant_derivatives(
         principleInvariantsCe, dPIe, ddPIIe, potsum, summandProperties, gp, eleGID);
 
     // 2nd Piola Kirchhoff stress factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
@@ -95,7 +95,7 @@ namespace Mat
     // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
     static Core::LinAlg::Matrix<8, 1> delta(true);
 
-    Mat::CalculateGammaDelta(gamma, delta, principleInvariantsCe, dPIe, ddPIIe);
+    Mat::calculate_gamma_delta(gamma, delta, principleInvariantsCe, dPIe, ddPIIe);
 
     // Convert necessary tensors to stress-like Voigt-Notation
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCin, iCinv);

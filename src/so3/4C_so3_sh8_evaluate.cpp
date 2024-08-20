@@ -136,7 +136,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.get_state("material_displacement");
-          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
@@ -155,9 +155,9 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
@@ -171,7 +171,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.get_state("material_displacement");
-          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
@@ -190,9 +190,9 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
@@ -208,7 +208,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.get_state("material_displacement");
-          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
@@ -233,9 +233,9 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
@@ -250,7 +250,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.get_state("material_displacement");
-          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, &elemat2, &elevec1,
@@ -280,20 +280,20 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get plastic strain 'data'");
 
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
 
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "iostrain", Inpar::Solid::strain_none);
-      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "ioplstrain", Inpar::Solid::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
@@ -309,7 +309,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.get_state("material_displacement");
-          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
@@ -445,7 +445,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::shell_calc_stc_matrix:
     {
       const auto stc_scaling =
-          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
@@ -460,7 +460,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::shell_calc_stc_matrix_inverse:
     {
       const auto stc_scaling =
-          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
@@ -491,7 +491,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
 
       if (is_params_interface())  // new structural time integration
@@ -526,7 +526,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     default:
     {
       FOUR_C_THROW("Unknown type of action for So_sh8: %s | %d",
-          Core::Elements::ActionType2String(act).c_str(), act);
+          Core::Elements::action_type_to_string(act).c_str(), act);
       exit(EXIT_FAILURE);
     }
   }
@@ -538,7 +538,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
 double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
-  if (Prestress::IsMulf(pstype_)) FOUR_C_THROW("mulf is unsupported for the So_sh8 element!");
+  if (Prestress::is_mulf(pstype_)) FOUR_C_THROW("mulf is unsupported for the So_sh8 element!");
 
   if (kintype_ != Inpar::Solid::KinemType::nonlinearTotLag)
     FOUR_C_THROW("Unsupported kinematic type for the So_sh8 element!");
@@ -1176,7 +1176,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
   if (eastype_ != soh8_easnone && split_res)
     // only add for row-map elements
     if (params.get<int>("MyPID") == owner())
-      params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::Norm2(feas), 2.);
+      params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
   {

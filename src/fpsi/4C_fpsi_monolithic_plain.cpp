@@ -841,10 +841,10 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Epetra_Vector& f)
 
   // Reset quantities of previous iteration step since they still store values from the last time
   // step
-  ddginc_ = Core::LinAlg::CreateVector(
+  ddginc_ = Core::LinAlg::create_vector(
       *poro_field()->structure_field()->interface()->fsi_cond_map(), true);
-  duiinc_ = Core::LinAlg::CreateVector(*fluid_field()->interface()->other_map(), true);
-  ddialeinc_ = Core::LinAlg::CreateVector(*ale_field()->interface()->other_map(), true);
+  duiinc_ = Core::LinAlg::create_vector(*fluid_field()->interface()->other_map(), true);
+  ddialeinc_ = Core::LinAlg::create_vector(*ale_field()->interface()->other_map(), true);
   soliprev_ = Teuchos::null;
   solgprev_ = Teuchos::null;
   fgicur_ = Teuchos::null;
@@ -1078,7 +1078,7 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
        */
 
       // extract inner velocity DOFs after calling AleToFluid()
-      Teuchos::RCP<Epetra_Map> velothermap = Core::LinAlg::SplitMap(
+      Teuchos::RCP<Epetra_Map> velothermap = Core::LinAlg::split_map(
           *fluid_field()->velocity_row_map(), *interface_fluid_ale_coupling_fsi().master_dof_map());
       Core::LinAlg::MapExtractor velothermapext =
           Core::LinAlg::MapExtractor(*fluid_field()->velocity_row_map(), velothermap, false);

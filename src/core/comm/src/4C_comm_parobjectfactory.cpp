@@ -230,7 +230,7 @@ void Core::Communication::ParObjectFactory::initialize_elements(Core::FE::Discre
   localtypeids.reserve(ids.size());
   localtypeids.assign(ids.begin(), ids.end());
 
-  Core::LinAlg::AllreduceVector(localtypeids, globaltypeids, dis.get_comm());
+  Core::LinAlg::allreduce_vector(localtypeids, globaltypeids, dis.get_comm());
 
   std::set<Core::Elements::ElementType*>& ae = active_elements_[&dis];
 

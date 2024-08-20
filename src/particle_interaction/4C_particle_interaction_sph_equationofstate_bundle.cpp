@@ -32,7 +32,7 @@ void ParticleInteraction::SPHEquationOfStateBundle::init(
 {
   // get type of smoothed particle hydrodynamics equation of state
   Inpar::PARTICLE::EquationOfStateType equationofstatetype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::EquationOfStateType>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::EquationOfStateType>(
           params_sph_, "EQUATIONOFSTATE");
 
   // determine size of vector indexed by particle types

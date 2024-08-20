@@ -562,7 +562,7 @@ namespace Solid
     virtual enum Inpar::Solid::DynamicType method_name() const = 0;
 
     //! Provide title
-    std::string method_title() const { return Inpar::Solid::DynamicTypeString(method_name()); }
+    std::string method_title() const { return Inpar::Solid::dynamic_type_string(method_name()); }
 
     //! Return true, if time integrator is implicit
     virtual bool method_implicit() = 0;

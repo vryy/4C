@@ -79,7 +79,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
 
       std::string filename1("element_x_normal_equal_0_CUTFAIL_DD.pos");
       std::ofstream file1(filename1.c_str());
-      Cut::Output::GmshCompleteCutElement(file1, elem1_, false);
+      Cut::Output::gmsh_complete_cut_element(file1, elem1_, false);
       file1.close();
 
       std::stringstream err_msg;
@@ -167,7 +167,7 @@ void Cut::DirectDivergence::list_facets(std::vector<plain_facet_set::const_itera
     std::vector<std::vector<double>> cornersLocal = fe->corner_points_global(elem1_, true);
 #endif
 
-    std::vector<double> RefPlaneTemp = Kernel::EqnPlaneOfPolygon(cornersLocal);
+    std::vector<double> RefPlaneTemp = Kernel::eqn_plane_of_polygon(cornersLocal);
     const int index = std::distance(facete.begin(), i);
     eqnAllFacets[index] = RefPlaneTemp;
 
@@ -429,7 +429,7 @@ void Cut::DirectDivergence::divengence_cells_gmsh(
   str << "divergenceCells" << sideno << ".pos";
   std::ofstream file(str.str().c_str());
 
-  Cut::Output::GmshCompleteCutElement(file, elem1_);
+  Cut::Output::gmsh_complete_cut_element(file, elem1_);
   volcell_->dump_gmsh(file);
 
   // Activate this if you doubt that something is wrong with the vc
@@ -533,25 +533,25 @@ void Cut::DirectDivergence::debug_volume(const Core::FE::GaussIntegration& gpv, 
       case Core::FE::CellType::hex8:
       {
         volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::hex8>(
-            TotalInteg, "LocalToGlobal");
+            TotalInteg, "local_to_global");
         break;
       }
       case Core::FE::CellType::tet4:
       {
         volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::tet4>(
-            TotalInteg, "LocalToGlobal");
+            TotalInteg, "local_to_global");
         break;
       }
       case Core::FE::CellType::wedge6:
       {
         volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::wedge6>(
-            TotalInteg, "LocalToGlobal");
+            TotalInteg, "local_to_global");
         break;
       }
       case Core::FE::CellType::pyramid5:
       {
         volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::pyramid5>(
-            TotalInteg, "LocalToGlobal");
+            TotalInteg, "local_to_global");
         break;
       }
       default:
@@ -566,19 +566,19 @@ void Cut::DirectDivergence::debug_volume(const Core::FE::GaussIntegration& gpv, 
       case Core::FE::CellType::hex20:
       {
         volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::hex20>(
-            TotalInteg, "LocalToGlobal", true);
+            TotalInteg, "local_to_global", true);
         break;
       }
       case Core::FE::CellType::hex27:
       {
         volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::hex27>(
-            TotalInteg, "LocalToGlobal", true);
+            TotalInteg, "local_to_global", true);
         break;
       }
       case Core::FE::CellType::tet10:
       {
         volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::tet10>(
-            TotalInteg, "LocalToGlobal", true);
+            TotalInteg, "local_to_global", true);
         break;
       }
       default:

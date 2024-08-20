@@ -42,7 +42,7 @@ namespace Core::GeometricSearch
    * @return {indices, offsets} stores indices of the objects that satisfy the predicates and
    *          offsets stores the locations in the indices view that start a predicate
    */
-  std::pair<std::vector<int>, std::vector<int>> CollisionSearch(
+  std::pair<std::vector<int>, std::vector<int>> collision_search(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const Core::IO::Verbositylevel verbosity);

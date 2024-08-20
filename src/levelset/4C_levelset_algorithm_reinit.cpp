@@ -68,7 +68,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
   Teuchos::ParameterList eleparams;
 
   // set action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_lsreinit_scatra_parameter, eleparams);
 
   // reinitialization equation is given in convective form
@@ -129,7 +129,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
 
   eleparams.set<bool>("using generalized-alpha time integration", false);
@@ -376,7 +376,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
   {
     // define vector for velocity component
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> velcomp = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> velcomp = Core::LinAlg::create_vector(*dofrowmap, true);
     velcomp->PutScalar(0.0);
 
     if (lsdim_ == Inpar::ScaTra::ls_3D or (lsdim_ == Inpar::ScaTra::ls_2Dx and idim != 0) or
@@ -392,7 +392,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
 
       // parameters for the elements
       // action
-      Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_node_based_reinit_velocity, eleparams);
       // set current spatial direction
       // we have to loop the dimensions, since we merely have one dof per node here
@@ -498,7 +498,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
   // generate a parameterlist for communication and control
   Teuchos::ParameterList eleparams;
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs_lsreinit_correction_step, eleparams);
   eleparams.set<bool>("solve reinit eq", true);
 
@@ -1328,11 +1328,11 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
     // evaluate shape functions in boundary cell space at current position \eta_1,\eta_2 on the
     // patch
     funct.clear();
-    Core::FE::shape_function_2D(funct, eta(0), eta(1), patch.shape());
+    Core::FE::shape_function_2d(funct, eta(0), eta(1), patch.shape());
     // evaluate derivatives of shape functions in boundary cell space at current position
     // \eta_1,\eta_2 on the patch
     deriv.clear();
-    Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), patch.shape());
+    Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), patch.shape());
 
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)
@@ -1480,7 +1480,7 @@ void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
   // this vector is only initialized: currently function calc_node_based_reinit_vel() is also
   // used to compute nodal level-set gradients, and this function expects that initialphireinit_ has
   // been set although it is not used for the present purposes
-  initialphireinit_ = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  initialphireinit_ = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   //-------------------------------------------------
   // solve

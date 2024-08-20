@@ -73,7 +73,7 @@ namespace Solid
 
     /*! Non-member function, which relates to the Solid::TimeInt::Factory
      *  Please call this method, if you want to build a new adaptive wrapper object. */
-    Teuchos::RCP<Solid::TimAda> BuildAdaptiveWrapper(
+    Teuchos::RCP<Solid::TimAda> build_adaptive_wrapper(
         const Teuchos::ParameterList& ioflags,          //!< input-output-flags
         const Teuchos::ParameterList& sdyn,             //!< structural dynamic flags
         const Teuchos::ParameterList& xparams,          //!< extra flags

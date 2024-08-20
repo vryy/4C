@@ -104,8 +104,8 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
   {
     // get shape functions and derivatives of element surface
     const double e = intpoints.qxg[gp][0];
-    Core::FE::shape_function_1D(shapefcts, e, shape);
-    Core::FE::shape_function_1D_deriv1(deriv, e, shape);
+    Core::FE::shape_function_1d(shapefcts, e, shape);
+    Core::FE::shape_function_1d_deriv1(deriv, e, shape);
     switch (ltype)
     {
       case neum_live:

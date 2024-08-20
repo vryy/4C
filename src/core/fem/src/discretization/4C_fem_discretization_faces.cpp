@@ -137,13 +137,13 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
       case Core::Communication::buildSurfaces:
       {
         nele = ele->num_surface();
-        connectivity = Core::FE::getEleNodeNumberingSurfaces(distype);
+        connectivity = Core::FE::get_ele_node_numbering_surfaces(distype);
         break;
       }
       case Core::Communication::buildLines:
       {
         nele = ele->num_line();
-        connectivity = Core::FE::getEleNodeNumberingLines(distype);
+        connectivity = Core::FE::get_ele_node_numbering_lines(distype);
         break;
       }
       default:

@@ -32,31 +32,31 @@ namespace POROFLUIDMULTIPHASE
   namespace ElementUtils
   {
     //! get the single phase material from the element material
-    const Mat::FluidPoroSinglePhase& GetSinglePhaseMatFromMaterial(
+    const Mat::FluidPoroSinglePhase& get_single_phase_mat_from_material(
         const Core::Mat::Material& material, int phasenum);
 
     //! get the single phase material from the element multiphase material
-    const Mat::FluidPoroSinglePhase& GetSinglePhaseMatFromMultiMaterial(
+    const Mat::FluidPoroSinglePhase& get_single_phase_mat_from_multi_material(
         const Mat::FluidPoroMultiPhase& multiphasemat, int phasenum);
 
     //! get the single volume fraction material from the element material
-    const Mat::FluidPoroSingleVolFrac& GetSingleVolFracMatFromMaterial(
+    const Mat::FluidPoroSingleVolFrac& get_single_vol_frac_mat_from_material(
         const Core::Mat::Material& material, int volfracnum);
 
     //! get the single volume fraction material from the element multiphase material
-    const Mat::FluidPoroSingleVolFrac& GetSingleVolFracMatFromMultiMaterial(
+    const Mat::FluidPoroSingleVolFrac& get_single_vol_frac_mat_from_multi_material(
         const Mat::FluidPoroMultiPhase& multiphasemat, int volfracnum);
 
     //! get the volume fraction pressure material from the element material
-    const Mat::FluidPoroVolFracPressure& GetVolFracPressureMatFromMaterial(
+    const Mat::FluidPoroVolFracPressure& get_vol_frac_pressure_mat_from_material(
         const Core::Mat::Material& material, int volfracnum);
 
     //! get the volume fraction pressure material from the element multiphase material
-    const Mat::FluidPoroVolFracPressure& GetVolFracPressureMatFromMultiMaterial(
+    const Mat::FluidPoroVolFracPressure& get_vol_frac_pressure_mat_from_multi_material(
         const Mat::FluidPoroMultiPhase& multiphasemat, int volfracnum);
 
     //! get the single phase material from the element multiphase reactions material
-    Mat::FluidPoroSingleReaction& GetSingleReactionMatFromMultiReactionsMaterial(
+    Mat::FluidPoroSingleReaction& get_single_reaction_mat_from_multi_reactions_material(
         const Mat::FluidPoroMultiPhaseReactions& multiphasereacmat, int phasenum);
 
     /*!

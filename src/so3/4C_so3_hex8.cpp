@@ -85,7 +85,7 @@ void Discret::ELEMENTS::SoHex8Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::SoHex8Type::setup_element_definition(
@@ -138,12 +138,12 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
   {
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
-    pstype_ = Prestress::GetType();
-    pstime_ = Prestress::GetPrestressTime();
-    if (Core::UTILS::IntegralValue<int>(sdyn, "MATERIALTANGENT"))
+    pstype_ = Prestress::get_type();
+    pstime_ = Prestress::get_prestress_time();
+    if (Core::UTILS::integral_value<int>(sdyn, "MATERIALTANGENT"))
       analyticalmaterialtangent_ = false;
   }
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
   if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale)
@@ -184,7 +184,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(const Discret::ELEMENTS::SoHex8& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
 
   if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale)
@@ -243,7 +243,7 @@ void Discret::ELEMENTS::SoHex8::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, static_cast<int>(pstype_));
   add_to_pack(data, pstime_);
   add_to_pack(data, time_);
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
   {
     Core::Communication::ParObject::add_to_pack(data, *prestress_);
   }
@@ -268,7 +268,7 @@ void Discret::ELEMENTS::SoHex8::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -288,7 +288,7 @@ void Discret::ELEMENTS::SoHex8::unpack(const std::vector<char>& data)
   pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     extract_from_pack(position, data, tmpprestress);
@@ -366,7 +366,7 @@ void Discret::ELEMENTS::SoHex8::print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex8::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
 }
 
@@ -375,7 +375,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex8::su
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex8::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
 }
 
@@ -396,7 +396,7 @@ std::vector<double> Discret::ELEMENTS::SoHex8::element_center_refe_coords()
   const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_SOH8, 1> funct;
   // Element midpoint at r=s=t=0.0
-  Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  Core::FE::shape_function_3d(funct, 0.0, 0.0, 0.0, distype);
   Core::LinAlg::Matrix<1, NUMDIM_SOH8> midpoint;
   // midpoint.multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.multiply_tn(funct, xrefe);
@@ -430,7 +430,7 @@ bool Discret::ELEMENTS::SoHex8::vis_data(const std::string& name, std::vector<do
 // Compute nodal fibers and call post setup routine of the materials
 void Discret::ELEMENTS::SoHex8::material_post_setup(Teuchos::ParameterList& params)
 {
-  if (Core::Nodes::HaveNodalFibers<Core::FE::CellType::hex8>(nodes()))
+  if (Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex8>(nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -444,7 +444,7 @@ void Discret::ELEMENTS::SoHex8::material_post_setup(Teuchos::ParameterList& para
     Core::Nodes::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    Core::Nodes::ProjectFibersToGaussPoints<Core::FE::CellType::hex8>(
+    Core::Nodes::project_fibers_to_gauss_points<Core::FE::CellType::hex8>(
         nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);

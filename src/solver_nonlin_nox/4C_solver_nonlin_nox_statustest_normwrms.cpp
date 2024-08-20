@@ -224,7 +224,7 @@ std::ostream& NOX::Nln::StatusTest::NormWRMS::print(std::ostream& stream, int in
   {
     stream << indent_string;
     stream << status_[i];
-    stream << QuantityType2String(check_list_[i]) << "-";
+    stream << quantity_type_to_string(check_list_[i]) << "-";
     stream << "WRMS-Norm = " << ::NOX::Utils::sciformat((*norm_wrms_)[i], 3) << " < "
            << ::NOX::Utils::sciformat(tol_[i], 3);
     stream << std::endl;

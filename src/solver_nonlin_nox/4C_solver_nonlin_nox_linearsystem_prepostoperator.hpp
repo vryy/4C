@@ -157,7 +157,7 @@ namespace NOX
         /*! Returns the inherent pre/post operator std::map of the "Linear Solver" sublist.
          *  If the corresponding parameter called "User Defined Pre/Post Operator" is not yet
          *  defined, a empty std::map is generated and set into the parameter list first. */
-        NOX::Nln::LinSystem::PrePostOperator::Map& GetMap(Teuchos::ParameterList& p_linsolver);
+        NOX::Nln::LinSystem::PrePostOperator::Map& get_map(Teuchos::ParameterList& p_linsolver);
       }  // namespace PrePostOp
     }    // namespace LinSystem
   }      // namespace Nln

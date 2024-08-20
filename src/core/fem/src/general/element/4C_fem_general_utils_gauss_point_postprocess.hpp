@@ -38,7 +38,7 @@ namespace Core::FE
    * @param dis (in) : Reference to the discretization
    * @param nodal_data (out) : Assembled data
    */
-  void ExtrapolateGaussPointQuantityToNodes(Core::Elements::Element& ele,
+  void extrapolate_gauss_point_quantity_to_nodes(Core::Elements::Element& ele,
       const Core::LinAlg::SerialDenseMatrix& data, const Core::FE::Discretization& dis,
       Epetra_MultiVector& nodal_data);
 
@@ -50,7 +50,7 @@ namespace Core::FE
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param element_data (out) : Assembled data
    */
-  void EvaluateGaussPointQuantityAtElementCenter(Core::Elements::Element& ele,
+  void evaluate_gauss_point_quantity_at_element_center(Core::Elements::Element& ele,
       const Core::LinAlg::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
 
   /*!
@@ -62,13 +62,13 @@ namespace Core::FE
    * \param ele element
    */
   template <class T>
-  void AssembleAveragedElementValues(
+  void assemble_averaged_element_values(
       Epetra_MultiVector& global_data, const T& gp_data, const Core::Elements::Element& ele);
 
 
   // --- template and inline functions --- //
   template <class T>
-  void AssembleAveragedElementValues(
+  void assemble_averaged_element_values(
       Epetra_MultiVector& global_data, const T& gp_data, const Core::Elements::Element& ele)
   {
     const Epetra_BlockMap& elemap = global_data.Map();

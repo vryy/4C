@@ -45,7 +45,7 @@ namespace Solid
   //! Create marching time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<Solid::TimInt> TimIntCreate(
+  Teuchos::RCP<Solid::TimInt> tim_int_create(
       const Teuchos::ParameterList& timeparams,             //!< time parameters
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
@@ -60,7 +60,7 @@ namespace Solid
   //! Create \b implicit marching time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<Solid::TimIntImpl> TimIntImplCreate(
+  Teuchos::RCP<Solid::TimIntImpl> tim_int_impl_create(
       const Teuchos::ParameterList& timeparams,             //!< time parameters
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
@@ -75,7 +75,7 @@ namespace Solid
   //! Create \b explicit marching time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<Solid::TimIntExpl> TimIntExplCreate(
+  Teuchos::RCP<Solid::TimIntExpl> tim_int_expl_create(
       const Teuchos::ParameterList& timeparams,             //!< time parameters
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags

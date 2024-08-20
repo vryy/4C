@@ -23,7 +23,7 @@ bool Discret::ELEMENTS::Wall1::read_element(const std::string& eletype, const st
     const Core::IO::InputParameterContainer& container)
 {
   // set discretization type
-  set_dis_type(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::string_to_cell_type(distype));
 
   thickness_ = container.get<double>("THICK");
   if (thickness_ <= 0) FOUR_C_THROW("WALL element thickness needs to be < 0");
@@ -45,7 +45,7 @@ bool Discret::ELEMENTS::Wall1::read_element(const std::string& eletype, const st
 
   // read number of material model
   int material_id = container.get_or<int>("MAT", 0);
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   Teuchos::RCP<Core::Mat::Material> mat = material();
 

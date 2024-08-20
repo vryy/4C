@@ -48,7 +48,7 @@ namespace Core::Rebalance
 
   @return Node row map and node column map after rebalancing with weights
   */
-  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> RebalanceNodeMaps(
+  std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> rebalance_node_maps(
       Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
       const Teuchos::RCP<Epetra_Vector>& initialNodeWeights = Teuchos::null,
@@ -73,7 +73,7 @@ namespace Core::Rebalance
 
   @return Rebalanced graph
   */
-  Teuchos::RCP<Epetra_CrsGraph> RebalanceGraph(const Epetra_CrsGraph& initialGraph,
+  Teuchos::RCP<Epetra_CrsGraph> rebalance_graph(const Epetra_CrsGraph& initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
       const Teuchos::RCP<Epetra_Vector>& initialNodeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
@@ -92,7 +92,7 @@ namespace Core::Rebalance
   @return Rebalanced coordinates
   */
   std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
-  RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
+  rebalance_coordinates(const Epetra_MultiVector& initialCoordinates,
       const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights);
 
   /*!
@@ -102,7 +102,7 @@ namespace Core::Rebalance
 
   @return Node and edge weights to be used for repartitioning
   */
-  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> BuildWeights(
+  std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> build_weights(
       const Core::FE::Discretization& dis);
 
   /*!
@@ -115,7 +115,7 @@ namespace Core::Rebalance
 
   @return Uncompleted node graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
+  Teuchos::RCP<const Epetra_CrsGraph> build_graph(
       Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
 
   /*!
@@ -131,7 +131,8 @@ namespace Core::Rebalance
 
   @return Completed monolithic node graph of input discretization
   */
-  Teuchos::RCP<const Epetra_CrsGraph> BuildMonolithicNodeGraph(const Core::FE::Discretization& dis,
+  Teuchos::RCP<const Epetra_CrsGraph> build_monolithic_node_graph(
+      const Core::FE::Discretization& dis,
       const Core::GeometricSearch::GeometricSearchParams& params);
 
 }  // namespace Core::Rebalance

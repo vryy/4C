@@ -58,7 +58,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
 
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // remove state vectors from thermo discretization
@@ -283,10 +283,10 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
 {
   Teuchos::ParameterList condparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::DifferentiationType>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::disp, condparams);
 
   thermo_->scatra_field()->discretization()->clear_state();
@@ -338,9 +338,9 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
       evaluate_matrix->complete();
 
       auto evaluate_matrix_block =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(evaluate_matrix);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(evaluate_matrix);
       auto slavematrix_block =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(slavematrix);
 
       // "slave side" from thermo and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -361,7 +361,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
           auto slave_iblock = slavematrix_block->matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              Core::LinAlg::IntersectMap(*thermo_->scatra_field()->block_maps()->Map(iblock),
+              Core::LinAlg::intersect_map(*thermo_->scatra_field()->block_maps()->Map(iblock),
                   *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map());
 
           Coupling::Adapter::MatrixLogicalSplitAndTransform()(evaluate_iblock,
@@ -376,8 +376,8 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
     case Core::LinAlg::MatrixType::sparse:
     {
       auto evaluate_matrix_sparse =
-          Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(evaluate_matrix);
-      auto slavematrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(slavematrix);
+          Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(evaluate_matrix);
+      auto slavematrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(slavematrix);
 
       evaluate_matrix->complete(
           *full_map_structure_, *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map());

@@ -38,7 +38,7 @@ namespace Core::FADUtils
    */
   template <typename ScalarType,
       std::enable_if_t<Details::is_double_convertible<ScalarType>, bool> = true>
-  inline double CastToDouble(ScalarType a)
+  inline double cast_to_double(ScalarType a)
   {
     return static_cast<double>(a);
   }
@@ -55,9 +55,9 @@ namespace Core::FADUtils
   template <typename FADType,
       typename =
           std::enable_if_t<Sacado::IsFad<FADType>::value || Sacado::IsExpr<FADType>::value, void*>>
-  inline double CastToDouble(FADType a)
+  inline double cast_to_double(FADType a)
   {
-    return CastToDouble(a.val());
+    return cast_to_double(a.val());
   }
 
 
@@ -65,7 +65,7 @@ namespace Core::FADUtils
   \brief Cast of a FAD matrix to a double matrix
   */
   template <typename Type, unsigned int dim1, unsigned int dim2>
-  Core::LinAlg::Matrix<dim1, dim2, double> CastToDouble(Core::LinAlg::Matrix<dim1, dim2, Type> a)
+  Core::LinAlg::Matrix<dim1, dim2, double> cast_to_double(Core::LinAlg::Matrix<dim1, dim2, Type> a)
   {
     Core::LinAlg::Matrix<dim1, dim2, double> b(true);
 
@@ -73,7 +73,7 @@ namespace Core::FADUtils
     {
       for (unsigned int j = 0; j < dim2; j++)
       {
-        b(i, j) = CastToDouble(a(i, j));
+        b(i, j) = cast_to_double(a(i, j));
       }
     }
     return b;
@@ -83,7 +83,7 @@ namespace Core::FADUtils
   \brief Calculate signum function of FAD or double quantity
   */
   template <typename Type>
-  double Signum(Type a)
+  double signum(Type a)
   {
     if (a >= 0.0)
       return 1.0;
@@ -118,7 +118,7 @@ namespace Core::FADUtils
   Core::FADUtils::Norm<my_AD_type>(...)
   */
   template <typename ScalarType>
-  inline ScalarType Norm(ScalarType a)
+  inline ScalarType norm(ScalarType a)
   {
     return Core::FADUtils::sqrt<ScalarType>(a * a);
   }
@@ -127,7 +127,7 @@ namespace Core::FADUtils
   \brief Calculate Norm of a FAD vector
   */
   template <typename ScalarType, unsigned int length>
-  ScalarType VectorNorm(Core::LinAlg::Matrix<length, 1, ScalarType> v)
+  ScalarType vector_norm(Core::LinAlg::Matrix<length, 1, ScalarType> v)
   {
     ScalarType norm_squared = 0.0;
     for (unsigned int i = 0; i < length; i++)
@@ -142,7 +142,7 @@ namespace Core::FADUtils
   \brief Template specialization for double
   */
   template <unsigned int length>
-  double VectorNorm(Core::LinAlg::Matrix<length, 1, double> v)
+  double vector_norm(Core::LinAlg::Matrix<length, 1, double> v)
   {
     return v.norm2();
   }
@@ -150,7 +150,7 @@ namespace Core::FADUtils
   //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
   // Todo this function is obsolete
   template <typename T>
-  T Norm(Core::LinAlg::Matrix<3, 1, T> v)
+  T norm(Core::LinAlg::Matrix<3, 1, T> v)
   {
     T norm_squared = 0.0;
     for (int i = 0; i < 3; i++)
@@ -166,7 +166,7 @@ namespace Core::FADUtils
   */
   // Todo this function is obsolete, use Dot of Core::LinAlg::Matrix instead
   template <typename Type>
-  Type ScalarProduct(Core::LinAlg::Matrix<3, 1, Type> a, Core::LinAlg::Matrix<3, 1, Type> b)
+  Type scalar_product(Core::LinAlg::Matrix<3, 1, Type> a, Core::LinAlg::Matrix<3, 1, Type> b)
   {
     return a(0) * b(0) + a(1) * b(1) + a(2) * b(2);
   }
@@ -176,7 +176,7 @@ namespace Core::FADUtils
   */
   // Todo this function is obsolete, use Update of Core::LinAlg::Matrix instead
   template <typename Type>
-  Core::LinAlg::Matrix<3, 1, Type> DiffVector(
+  Core::LinAlg::Matrix<3, 1, Type> diff_vector(
       Core::LinAlg::Matrix<3, 1, Type> a, Core::LinAlg::Matrix<3, 1, Type> b)
   {
     Core::LinAlg::Matrix<3, 1, Type> c(true);
@@ -190,7 +190,7 @@ namespace Core::FADUtils
   */
   // Todo this function is obsolete, use cross_product of Core::LinAlg::Matrix instead
   template <typename Type>
-  Core::LinAlg::Matrix<3, 1, Type> VectorProduct(
+  Core::LinAlg::Matrix<3, 1, Type> vector_product(
       Core::LinAlg::Matrix<3, 1, Type> first_vector, Core::LinAlg::Matrix<3, 1, Type> second_vector)
   {
     Core::LinAlg::Matrix<3, 1, Type> result_vector;

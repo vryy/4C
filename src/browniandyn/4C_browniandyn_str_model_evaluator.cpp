@@ -223,8 +223,8 @@ bool Solid::ModelEvaluator::BrownianDyn::assemble_force(
   // build residual  Res = F_{brw;n+1}
   //                     - F_{ext;n+1}
   // -------------------------------------------------------------------------
-  Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, *f_ext_np_ptr_);
-  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *f_brown_np_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, -timefac_np, *f_ext_np_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *f_brown_np_ptr_);
 
   return true;
 }

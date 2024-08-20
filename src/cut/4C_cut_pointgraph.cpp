@@ -85,7 +85,7 @@ Cut::Impl::PointGraph::PointGraph(
   catch (Core::Exception &err)
   {
     std::ofstream file("failed_pointgraph.pos");
-    Cut::Output::GmshSideDump(file, side, std::string("Side"));
+    Cut::Output::gmsh_side_dump(file, side, std::string("Side"));
 
     // add cut lines to graph
     const std::vector<Line *> &cut_lines = side->cut_lines();
@@ -96,12 +96,12 @@ Cut::Impl::PointGraph::PointGraph(
       std::stringstream section_name;
       section_name << "Cut_lines" << line_index;
       Line *l = *i;
-      Cut::Output::GmshNewSection(file, section_name.str());
-      Cut::Output::GmshLineDump(file, l, false, nullptr);
-      Cut::Output::GmshEndSection(file, false);
+      Cut::Output::gmsh_new_section(file, section_name.str());
+      Cut::Output::gmsh_line_dump(file, l, false, nullptr);
+      Cut::Output::gmsh_end_section(file, false);
       // output distance between points of the line
       file << "// Distance between points of the line is"
-           << Cut::DistanceBetweenPoints(l->begin_point(), l->end_point()) << std::endl;
+           << Cut::distance_between_points(l->begin_point(), l->end_point()) << std::endl;
     }
     file.close();
     FOUR_C_THROW("");
@@ -393,13 +393,13 @@ bool Cut::Impl::find_cycles(graph_t &g, Cut::Cycle &cycle,
 
         std::ofstream file("double_arc.pos");
 
-        Cut::Output::GmshNewSection(file, "NewLine");
-        Cut::Output::GmshLineDump(file, first, second, first->id(), second->id(), false, nullptr);
-        Cut::Output::GmshEndSection(file);
-        Cut::Output::GmshNewSection(file, "OldLine");
-        Cut::Output::GmshLineDump(
+        Cut::Output::gmsh_new_section(file, "NewLine");
+        Cut::Output::gmsh_line_dump(file, first, second, first->id(), second->id(), false, nullptr);
+        Cut::Output::gmsh_end_section(file);
+        Cut::Output::gmsh_new_section(file, "OldLine");
+        Cut::Output::gmsh_line_dump(
             file, first, previous, first->id(), previous->id(), false, nullptr);
-        Cut::Output::GmshEndSection(file, true);
+        Cut::Output::gmsh_end_section(file, true);
 
         err_msg
             << "Numerical error: double arc when trying to create arc with between points with Id="
@@ -994,13 +994,13 @@ bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *sid
 #ifdef DEBUG_POINTGRAPH
           std::ofstream file("touchign_element_detectiong_failed.pos");
 
-          Cut::Output::GmshNewSection(file, "Element");
-          Cut::Output::GmshElementDump(file, element, false);
-          Cut::Output::GmshEndSection(file, false);
+          Cut::Output::gmsh_new_section(file, "Element");
+          Cut::Output::gmsh_element_dump(file, element, false);
+          Cut::Output::gmsh_end_section(file, false);
 
-          Cut::Output::GmshSideDump(file, side, std::string("Side"));
-          Cut::Output::GmshEdgeDump(file, ed, std::string("EdgeContainingPoint"));
-          Cut::Output::GmshPointDump(
+          Cut::Output::gmsh_side_dump(file, side, std::string("Side"));
+          Cut::Output::gmsh_edge_dump(file, ed, std::string("EdgeContainingPoint"));
+          Cut::Output::gmsh_point_dump(
               file, cut_point, cut_point->id(), std::string("CutPoint"), false, nullptr);
 
 
@@ -1021,10 +1021,10 @@ bool Cut::Impl::PointGraph::Graph::has_touching_edge(Element *element, Side *sid
           {
             std::stringstream point_section_name;
             point_section_name << "Point" << (it->second)->id();
-            Cut::Output::GmshNewSection(file_pgraph, point_section_name.str());
-            Cut::Output::GmshPointDump(
+            Cut::Output::gmsh_new_section(file_pgraph, point_section_name.str());
+            Cut::Output::gmsh_point_dump(
                 file_pgraph, (it->second), (it->second)->id(), false, nullptr);
-            Cut::Output::GmshEndSection(file_pgraph, false);
+            Cut::Output::gmsh_end_section(file_pgraph, false);
             (it->second)->dump_connectivity_info();
           }
 

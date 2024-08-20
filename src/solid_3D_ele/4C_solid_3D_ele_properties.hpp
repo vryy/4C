@@ -121,7 +121,7 @@ namespace Discret::ELEMENTS
   void add_to_pack(Core::Communication::PackBuffer& data,
       const Discret::ELEMENTS::SolidElementProperties& properties);
 
-  void ExtractFromPack(std::size_t& position, const std::vector<char>& data,
+  void extract_from_pack(std::size_t& position, const std::vector<char>& data,
       Discret::ELEMENTS::SolidElementProperties& properties);
 
 }  // namespace Discret::ELEMENTS

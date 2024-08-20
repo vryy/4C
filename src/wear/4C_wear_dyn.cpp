@@ -68,7 +68,7 @@ void wear_dyn_drt(int restart)
   // clone ale mesh from structure discretization
   if (aledis->num_global_nodes() == 0)
   {
-    Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
         structdis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -79,7 +79,7 @@ void wear_dyn_drt(int restart)
   else  // filled ale discretization
   {
     // if we have non-matching meshes:
-    if (!Core::UTILS::IntegralValue<bool>(
+    if (!Core::UTILS::integral_value<bool>(
             Global::Problem::instance()->wear_params(), "MATCHINGGRID"))
     {
       // create vector of discr.
@@ -89,11 +89,11 @@ void wear_dyn_drt(int restart)
 
       Teuchos::ParameterList binning_params =
           Global::Problem::instance()->binning_strategy_params();
-      Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
           "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
           binning_params);
 
-      Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+      Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
           Global::Problem::instance()->output_control_file(), dis, nullptr, nullptr, false);
     }
   }
@@ -102,12 +102,12 @@ void wear_dyn_drt(int restart)
   Teuchos::RCP<Wear::Algorithm> stru_ale = Teuchos::null;
 
   // structure ale object
-  if (Core::UTILS::IntegralValue<Inpar::Wear::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+  if (Core::UTILS::integral_value<Inpar::Wear::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
       Inpar::Wear::wear_stagg)
   {
     stru_ale = Teuchos::rcp(new Wear::Partitioned(comm));
   }
-  else if (Core::UTILS::IntegralValue<Inpar::Wear::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
+  else if (Core::UTILS::integral_value<Inpar::Wear::WearCoupAlgo>(wearpara, "WEAR_COUPALGO") ==
            Inpar::Wear::wear_iterstagg)
   {
     stru_ale = Teuchos::rcp(new Wear::Partitioned(comm));

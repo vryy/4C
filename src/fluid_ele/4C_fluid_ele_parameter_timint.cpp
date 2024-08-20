@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::FluidEleParameterTimInt* Discret::ELEMENTS::FluidEleParameterTimInt::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterTimInt>(
@@ -75,8 +75,8 @@ void Discret::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
   }
 
   // set flag, time integration scheme
-  timealgo_ =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
+  timealgo_ = Core::UTILS::get_as_enum<Inpar::FLUID::TimeIntegrationScheme>(
+      params, "TimeIntegrationScheme");
 
   // set time integration scheme-specific element parameters
   if (timealgo_ == Inpar::FLUID::timeint_stationary)
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
 
       // set flag, time integration scheme
       ostalgo_ =
-          Core::UTILS::GetAsEnum<Inpar::FLUID::OstContAndPress>(params, "ost cont and press");
+          Core::UTILS::get_as_enum<Inpar::FLUID::OstContAndPress>(params, "ost cont and press");
       ostnew_ = params.get<bool>("ost new", false);
 
       if (ostnew_)

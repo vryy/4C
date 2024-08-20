@@ -77,7 +77,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
   // set velocity field
   const Inpar::ScaTra::VelocityField veltype =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+      Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
   switch (veltype)
   {
     case Inpar::ScaTra::velocity_zero:      // zero  (see case 1)
@@ -131,7 +131,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // one face is shared with the neighboring element (which is owned by an other processor =
       // ghosted element) which again is sharing other faces with elements on other processors
       // (extended ghosted element)
-      if (Core::UTILS::IntegralValue<bool>(scatradyn, "PADAPTIVITY"))
+      if (Core::UTILS::integral_value<bool>(scatradyn, "PADAPTIVITY"))
       {
         // redistribute discr. with help of binning strategy
         if (scatradis->get_comm().NumProc() > 1)
@@ -149,7 +149,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           // binning strategy is created and parallel redistribution is performed
           Teuchos::ParameterList binning_params =
               Global::Problem::instance()->binning_strategy_params();
-          Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+          Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
               "spatial_approximation_type",
               Global::Problem::instance()->spatial_approximation_type(), binning_params);
           binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
@@ -198,7 +198,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
       if (fluiddis->num_global_nodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
 
       const Inpar::ScaTra::FieldCoupling fieldcoupling =
-          Core::UTILS::IntegralValue<Inpar::ScaTra::FieldCoupling>(
+          Core::UTILS::integral_value<Inpar::ScaTra::FieldCoupling>(
               Global::Problem::instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
 
       // create scatra elements if the scatra discretization is empty
@@ -213,7 +213,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
         scatradis->fill_complete();
 
         // fill scatra discretization by cloning fluid discretization
-        Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
+        Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
             fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
 
         // set implementation type of cloned scatra elements
@@ -297,7 +297,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
             /// binning strategy is created and parallel redistribution is performed
             Teuchos::ParameterList binning_params =
                 Global::Problem::instance()->binning_strategy_params();
-            Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+            Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
                 "spatial_approximation_type",
                 Global::Problem::instance()->spatial_approximation_type(), binning_params);
             binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
@@ -335,14 +335,14 @@ void scatra_cardiac_monodomain_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if ((Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
-                true) and
+        if ((Core::UTILS::integral_value<int>(
+                 fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true) and
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
           algo->read_inflow_restart(restart);
         else
           algo->read_restart(restart);
       }
-      else if (Core::UTILS::IntegralValue<int>(
+      else if (Core::UTILS::integral_value<int>(
                    fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true)
         FOUR_C_THROW(
             "Turbulent inflow generation for passive scalar transport should be performed as fluid "

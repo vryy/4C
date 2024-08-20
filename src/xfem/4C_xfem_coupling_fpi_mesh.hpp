@@ -84,8 +84,8 @@ namespace XFEM
             "initialize_struc_pres_map: (pfmap->NumGlobalElements() != "
             "psmap->NumGlobalElements())!");
 
-      Teuchos::RCP<Epetra_Map> fullpfmap = Core::LinAlg::AllreduceEMap(*pfmap);
-      Teuchos::RCP<Epetra_Map> fullpsmap = Core::LinAlg::AllreduceEMap(*psmap);
+      Teuchos::RCP<Epetra_Map> fullpfmap = Core::LinAlg::allreduce_e_map(*pfmap);
+      Teuchos::RCP<Epetra_Map> fullpsmap = Core::LinAlg::allreduce_e_map(*psmap);
 
       if (fullpfmap->NumMyElements() != fullpsmap->NumMyElements())
         FOUR_C_THROW(

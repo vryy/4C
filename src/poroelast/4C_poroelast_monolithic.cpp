@@ -94,7 +94,7 @@ PoroElast::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
-  solveradapttol_ = (Core::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (Core::UTILS::integral_value<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   const Teuchos::ParameterList& poroparams =
@@ -102,7 +102,7 @@ PoroElast::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
   equilibration_method_ =
       Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
-  strmethodname_ = Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
+  strmethodname_ = Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
   no_penetration_ = false;
   nit_contact_ = false;
   // if inpar is set to nopenetration for contact!!! to be done!
@@ -444,7 +444,7 @@ void PoroElast::Monolithic::setup_equilibration()
   // instantiate appropriate equilibration class
   auto equilibration_method =
       std::vector<Core::LinAlg::EquilibrationMethod>(1, equilibration_method_);
-  equilibration_ = Core::LinAlg::BuildEquilibration(
+  equilibration_ = Core::LinAlg::build_equilibration(
       Core::LinAlg::MatrixType::block_field, equilibration_method, fullmap_);
 }
 
@@ -654,7 +654,7 @@ void PoroElast::Monolithic::create_linear_solver()
 
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(porosolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // use solver blocks for structure and fluid
@@ -665,11 +665,11 @@ void PoroElast::Monolithic::create_linear_solver()
 
   solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   switch (azprectype)
@@ -825,8 +825,9 @@ void PoroElast::Monolithic::print_newton_iter_header_stream(std::ostringstream& 
 {
   oss << "------------------------------------------------------------" << std::endl;
   oss << "                   Newton-Raphson Scheme                    " << std::endl;
-  oss << "                NormRES " << VectorNormString(vectornormfres_);
-  oss << "     NormINC " << VectorNormString(vectornorminc_) << "                    " << std::endl;
+  oss << "                NormRES " << vector_norm_string(vectornormfres_);
+  oss << "     NormINC " << vector_norm_string(vectornorminc_) << "                    "
+      << std::endl;
   oss << "------------------------------------------------------------" << std::endl;
 
   // enter converged state etc
@@ -1139,8 +1140,8 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> abs_iterinc = Teuchos::null;
-  iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  abs_iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
+  abs_iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1153,7 +1154,7 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
   abs_iterinc->Update(1.0, *iterinc_, 0.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = Core::LinAlg::CreateMatrix(*dof_row_map(), 81);
+  stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
@@ -1478,13 +1479,13 @@ void PoroElast::Monolithic::setup_newton()
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
-    iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
   if (zeros_ == Teuchos::null)
-    zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   else
     zeros_->PutScalar(0.0);
 
@@ -1584,7 +1585,7 @@ bool PoroElast::Monolithic::setup_solver()
   {
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
   }
   else
@@ -1594,14 +1595,15 @@ bool PoroElast::Monolithic::setup_solver()
   // Get the parameters for the Newton iteration
   itermax_ = poroelastdyn.get<int>("ITEMAX");
   itermin_ = poroelastdyn.get<int>("ITEMIN");
-  normtypeinc_ = Core::UTILS::IntegralValue<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_INC");
-  normtypefres_ = Core::UTILS::IntegralValue<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_RESF");
+  normtypeinc_ = Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_INC");
+  normtypefres_ =
+      Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_RESF");
   combincfres_ =
-      Core::UTILS::IntegralValue<Inpar::PoroElast::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
+      Core::UTILS::integral_value<Inpar::PoroElast::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      Core::UTILS::IntegralValue<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
+      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      Core::UTILS::IntegralValue<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
+      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
 
   tolinc_ = poroelastdyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroelastdyn.get<double>("TOLRES_GLOBAL");
@@ -1641,8 +1643,8 @@ void PoroElast::Monolithic::aitken()
   // difference of last two solutions
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {
-    del_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-    delhist_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    del_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+    delhist_ = Core::LinAlg::create_vector(*dof_row_map(), true);
     del_->PutScalar(1.0e20);
     delhist_->PutScalar(0.0);
   }
@@ -1678,8 +1680,8 @@ void PoroElast::Monolithic::aitken()
 {
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {
-    del_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-    delhist_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+    del_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+    delhist_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   }
   del_->PutScalar(1.0e20);
   delhist_->PutScalar(0.0);
@@ -1936,7 +1938,7 @@ void PoroElast::Monolithic::build_combined_dbc_map()
       structure_field()->get_dbc_map_extractor()->cond_map();
   const Teuchos::RCP<const Epetra_Map> fcondmap =
       fluid_field()->get_dbc_map_extractor()->cond_map();
-  combinedDBCMap_ = Core::LinAlg::MergeMap(scondmap, fcondmap, false);
+  combinedDBCMap_ = Core::LinAlg::merge_map(scondmap, fcondmap, false);
 }
 
 void PoroElast::Monolithic::read_restart(const int step)

@@ -48,27 +48,27 @@ namespace Mortar
     // ----------------------------------------------------------------------
 
     template <class V>
-    void mortar_shape_function_1D(V& funct,      ///< to be filled with shape function values
+    void mortar_shape_function_1d(V& funct,      ///< to be filled with shape function values
         const double& r,                         ///< r coordinate
         const Mortar::Element::ShapeType& shape  ///< distinguish between mortar shape
     );
 
     template <class V>
-    void mortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
+    void mortar_dualshape_function_1d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& r,                         ///< r coordinate
         const Mortar::Element::ShapeType& shape  ///< distinguish between mortar shape
     );
 
     template <class V>
-    void mortar_shape_function_2D(V& funct,      ///< to be filled with shape function values
+    void mortar_shape_function_2d(V& funct,      ///< to be filled with shape function values
         const double& xi0,                       ///< xi0 coordinate
         const double& xi1,                       ///< xi1 coordinate
         const Mortar::Element::ShapeType& shape  ///< distinguish between mortar shape
     );
 
     template <class V>
-    void mortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
+    void mortar_dualshape_function_2d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,                       ///< xi0 coordinate
         const double& xi1,                       ///< xi1 coordinate
@@ -77,14 +77,14 @@ namespace Mortar
 
     // nurbs shape function evaluation
     template <class V>
-    void mortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_shape_function_1d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const Core::FE::CellType& shape  ///< distinguish between shape
     );
 
     template <class V>
-    void mortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_shape_function_2d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi0 coordinate
@@ -92,14 +92,14 @@ namespace Mortar
     );
 
     template <class V>
-    void mortar_nurbs_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_dualshape_function_1d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const Core::FE::CellType& shape  ///< distinguish between shape
     );
 
     template <class V>
-    void mortar_nurbs_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_dualshape_function_2d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi1 coordinate
@@ -114,7 +114,7 @@ namespace Mortar
      |  Evaluate displacement shape functions                     popp 01/08|
      *----------------------------------------------------------------------*/
     template <class V>
-    void EvaluateShape_Displ(const double* xi, V& val, Mortar::Element& ele, bool dualquad)
+    void evaluate_shape_displ(const double* xi, V& val, Mortar::Element& ele, bool dualquad)
     {
       if (!xi) FOUR_C_THROW("evaluate_shape called with xi=nullptr");
 
@@ -129,7 +129,7 @@ namespace Mortar
       // valid for 1- and 2-dimensional interfaces
       if (nnode == 1)
       {
-        mortar_shape_function_2D(val, -1.0, -1.0, Mortar::Element::p0);
+        mortar_shape_function_2d(val, -1.0, -1.0, Mortar::Element::p0);
         return;
       }
 
@@ -148,7 +148,7 @@ namespace Mortar
         case Core::FE::CellType::line2:
         {
           if (nnode != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
-          mortar_shape_function_1D(val, xi[0], Mortar::Element::lin1D);
+          mortar_shape_function_1d(val, xi[0], Mortar::Element::lin1D);
           break;
         }
         // 2D quadratic case (3noded line element)
@@ -160,23 +160,23 @@ namespace Mortar
                 "There is no quadratic interpolation for dual shape functions for 2-D problems "
                 "with quadratic elements available!");
           else if (dualquad && bound)
-            mortar_shape_function_1D(val, xi[0], Mortar::Element::quad1D_hierarchical);
+            mortar_shape_function_1d(val, xi[0], Mortar::Element::quad1D_hierarchical);
           else
-            mortar_shape_function_1D(val, xi[0], Mortar::Element::quad1D);
+            mortar_shape_function_1d(val, xi[0], Mortar::Element::quad1D);
           break;
         }
         // 3D linear case (3noded triangular element)
         case Core::FE::CellType::tri3:
         {
           if (nnode != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
-          mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::lin2D);
+          mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::lin2D);
           break;
         }
         // 3D bilinear case (4noded quadrilateral element)
         case Core::FE::CellType::quad4:
         {
           if (nnode != 4) FOUR_C_THROW("Inconsistency in evaluate_shape");
-          mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::bilin2D);
+          mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::bilin2D);
           break;
         }
         // 3D quadratic case (6noded triangular element)
@@ -184,11 +184,11 @@ namespace Mortar
         {
           if (nnode != 6) FOUR_C_THROW("Inconsistency in evaluate_shape");
           if (dualquad && !bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::quad2D_modified);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::quad2D_modified);
           else if (dualquad && bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::quad2D_hierarchical);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::quad2D_hierarchical);
           else
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::quad2D);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::quad2D);
           break;
         }
         // 3D serendipity case (8noded quadrilateral element)
@@ -196,12 +196,12 @@ namespace Mortar
         {
           if (nnode != 8) FOUR_C_THROW("Inconsistency in evaluate_shape");
           if (dualquad && !bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::serendipity2D_modified);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::serendipity2D_modified);
           else if (dualquad && bound)
-            mortar_shape_function_2D(
+            mortar_shape_function_2d(
                 val, xi[0], xi[1], Mortar::Element::serendipity2D_hierarchical);
           else
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::serendipity2D);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::serendipity2D);
           break;
         }
         // 3D biquadratic case (9noded quadrilateral element)
@@ -209,11 +209,11 @@ namespace Mortar
         {
           if (nnode != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
           if (dualquad && !bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::biquad2D_modified);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::biquad2D_modified);
           else if (dualquad && bound)
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::biquad2D_hierarchical);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::biquad2D_hierarchical);
           else
-            mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::biquad2D);
+            mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::biquad2D);
           break;
         }
         //==================================================
@@ -222,13 +222,13 @@ namespace Mortar
         case Core::FE::CellType::nurbs2:
         {
           if (nnode != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
-          mortar_nurbs_shape_function_1D(val, ele, xi[0], Core::FE::CellType::nurbs2);
+          mortar_nurbs_shape_function_1d(val, ele, xi[0], Core::FE::CellType::nurbs2);
           break;
         }
         case Core::FE::CellType::nurbs3:
         {
           if (nnode != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
-          mortar_nurbs_shape_function_1D(val, ele, xi[0], Core::FE::CellType::nurbs3);
+          mortar_nurbs_shape_function_1d(val, ele, xi[0], Core::FE::CellType::nurbs3);
           break;
         }
 
@@ -236,7 +236,7 @@ namespace Mortar
         case Core::FE::CellType::nurbs9:
         {
           if (nnode != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
-          mortar_nurbs_shape_function_2D(val, ele, xi[0], xi[1], Core::FE::CellType::nurbs9);
+          mortar_nurbs_shape_function_2d(val, ele, xi[0], xi[1], Core::FE::CellType::nurbs9);
           break;
         }
         // unknown case
@@ -254,7 +254,7 @@ namespace Mortar
      |  Evaluate Lagrange multiplier shape functions              popp 12/07|
      *----------------------------------------------------------------------*/
     template <class V>
-    void EvaluateShape_LM(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
+    void evaluate_shape_lm(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
         Mortar::Element& ele, const int& valdim)
     {
       if (!xi) FOUR_C_THROW("evaluate_shape_lag_mult called with xi=nullptr");
@@ -272,7 +272,7 @@ namespace Mortar
       // valid for 1- and 2-dimensional interfaces
       if (ele.num_node() == 1)
       {
-        mortar_shape_function_2D(val, -1.0, -1.0, Mortar::Element::p0);
+        mortar_shape_function_2d(val, -1.0, -1.0, Mortar::Element::p0);
         return;
       }
 
@@ -284,9 +284,9 @@ namespace Mortar
           if (valdim != 2) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
-            mortar_dualshape_function_1D(val, ele, xi[0], Mortar::Element::lindual1D);
+            mortar_dualshape_function_1d(val, ele, xi[0], Mortar::Element::lindual1D);
           else
-            mortar_shape_function_1D(val, xi[0], Mortar::Element::lin1D);
+            mortar_shape_function_1d(val, xi[0], Mortar::Element::lin1D);
 
           break;
         }
@@ -297,9 +297,9 @@ namespace Mortar
           if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
-            mortar_dualshape_function_1D(val, ele, xi[0], Mortar::Element::quaddual1D);
+            mortar_dualshape_function_1d(val, ele, xi[0], Mortar::Element::quaddual1D);
           else
-            mortar_shape_function_1D(val, xi[0], Mortar::Element::quad1D);
+            mortar_shape_function_1d(val, xi[0], Mortar::Element::quad1D);
           break;
         }
 
@@ -314,31 +314,31 @@ namespace Mortar
           if (dual)
           {
             if (ele.shape() == Core::FE::CellType::tri3)
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], Mortar::Element::lindual2D);
+              mortar_dualshape_function_2d(val, ele, xi[0], xi[1], Mortar::Element::lindual2D);
             else if (ele.shape() == Core::FE::CellType::quad4)
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], Mortar::Element::bilindual2D);
+              mortar_dualshape_function_2d(val, ele, xi[0], xi[1], Mortar::Element::bilindual2D);
             else if (ele.shape() == Core::FE::CellType::tri6)
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], Mortar::Element::quaddual2D);
+              mortar_dualshape_function_2d(val, ele, xi[0], xi[1], Mortar::Element::quaddual2D);
             else if (ele.shape() == Core::FE::CellType::quad8)
-              mortar_dualshape_function_2D(
+              mortar_dualshape_function_2d(
                   val, ele, xi[0], xi[1], Mortar::Element::serendipitydual2D);
             else /*Shape()==quad9*/
-              mortar_dualshape_function_2D(val, ele, xi[0], xi[1], Mortar::Element::biquaddual2D);
+              mortar_dualshape_function_2d(val, ele, xi[0], xi[1], Mortar::Element::biquaddual2D);
           }
 
           // standard Lagrange multipliers
           else
           {
             if (ele.shape() == Core::FE::CellType::tri3)
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::lin2D);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::lin2D);
             else if (ele.shape() == Core::FE::CellType::quad4)
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::bilin2D);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::bilin2D);
             else if (ele.shape() == Core::FE::CellType::tri6)
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::quad2D);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::quad2D);
             else if (ele.shape() == Core::FE::CellType::quad8)
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::serendipity2D);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::serendipity2D);
             else /*Shape()==quad9*/
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::biquad2D);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::biquad2D);
           }
 
           break;
@@ -356,7 +356,7 @@ namespace Mortar
           if (dual)
             FOUR_C_THROW("no dual shape functions provided for nurbs!");
           else
-            mortar_nurbs_shape_function_1D(val, ele, xi[0], Core::FE::CellType::nurbs2);
+            mortar_nurbs_shape_function_1d(val, ele, xi[0], Core::FE::CellType::nurbs2);
 
           break;
         }
@@ -367,9 +367,9 @@ namespace Mortar
           if (valdim != 3) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
-            mortar_nurbs_dualshape_function_1D(val, ele, xi[0], Core::FE::CellType::nurbs3);
+            mortar_nurbs_dualshape_function_1d(val, ele, xi[0], Core::FE::CellType::nurbs3);
           else
-            mortar_nurbs_shape_function_1D(val, ele, xi[0], Core::FE::CellType::nurbs3);
+            mortar_nurbs_shape_function_1d(val, ele, xi[0], Core::FE::CellType::nurbs3);
 
           break;
         }
@@ -380,9 +380,9 @@ namespace Mortar
           if (valdim != 9) FOUR_C_THROW("Inconsistency in evaluate_shape");
 
           if (dual)
-            mortar_nurbs_dualshape_function_2D(val, ele, xi[0], xi[1], Core::FE::CellType::nurbs9);
+            mortar_nurbs_dualshape_function_2d(val, ele, xi[0], xi[1], Core::FE::CellType::nurbs9);
           else
-            mortar_nurbs_shape_function_2D(val, ele, xi[0], xi[1], Core::FE::CellType::nurbs9);
+            mortar_nurbs_shape_function_2d(val, ele, xi[0], xi[1], Core::FE::CellType::nurbs9);
 
           break;
         }
@@ -403,7 +403,7 @@ namespace Mortar
      |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH CONST LM!    |
      *----------------------------------------------------------------------*/
     template <class V>
-    void EvaluateShape_LM_Const(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
+    void evaluate_shape_lm_const(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
         Mortar::Element& ele, const int& valdim)
     {
       switch (ele.shape())
@@ -426,7 +426,7 @@ namespace Mortar
      |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH LIN LM!      |
      *----------------------------------------------------------------------*/
     template <class V>
-    void EvaluateShape_LM_Lin(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
+    void evaluate_shape_lm_lin(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
         Mortar::Element& ele, const int& valdim)
     {
       if (!xi) FOUR_C_THROW("evaluate_shape_lag_mult_lin called with xi=nullptr");
@@ -469,10 +469,10 @@ namespace Mortar
           // the middle node is defined as slave boundary (=master)
           // dual Lagrange multipliers
           if (dual)
-            mortar_dualshape_function_1D(val, ele, xi[0], Mortar::Element::quaddual1D_only_lin);
+            mortar_dualshape_function_1d(val, ele, xi[0], Mortar::Element::quaddual1D_only_lin);
           // standard Lagrange multipliers
           else
-            mortar_shape_function_1D(val, xi[0], Mortar::Element::quad1D_only_lin);
+            mortar_shape_function_1d(val, xi[0], Mortar::Element::quad1D_only_lin);
 
           break;
         }
@@ -489,13 +489,13 @@ namespace Mortar
             // FOUR_C_THROW("Quad->Lin modification of dual LM shape functions not yet
             // implemented");
             if (ele.shape() == Core::FE::CellType::tri6)
-              mortar_dualshape_function_2D(
+              mortar_dualshape_function_2d(
                   val, ele, xi[0], xi[1], Mortar::Element::quaddual2D_only_lin);
             else if (ele.shape() == Core::FE::CellType::quad8)
-              mortar_dualshape_function_2D(
+              mortar_dualshape_function_2d(
                   val, ele, xi[0], xi[1], Mortar::Element::serendipitydual2D_only_lin);
             else /*Shape()==quad9*/
-              mortar_dualshape_function_2D(
+              mortar_dualshape_function_2d(
                   val, ele, xi[0], xi[1], Mortar::Element::biquaddual2D_only_lin);
           }
 
@@ -503,11 +503,11 @@ namespace Mortar
           else
           {
             if (ele.shape() == Core::FE::CellType::tri6)
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::quad2D_only_lin);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::quad2D_only_lin);
             else if (ele.shape() == Core::FE::CellType::quad8)
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::serendipity2D_only_lin);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::serendipity2D_only_lin);
             else /*Shape()==quad9*/
-              mortar_shape_function_2D(val, xi[0], xi[1], Mortar::Element::biquad2D_only_lin);
+              mortar_shape_function_2d(val, xi[0], xi[1], Mortar::Element::biquad2D_only_lin);
           }
 
           break;
@@ -528,7 +528,7 @@ namespace Mortar
      |  evaluate std. shape 1D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_shape_function_1D(V& funct,      ///< to be filled with shape function values
+    void mortar_shape_function_1d(V& funct,      ///< to be filled with shape function values
         const double& r,                         ///< r coordinate
         const Mortar::Element::ShapeType& shape  ///< distinguish between mortar shape
     )
@@ -635,7 +635,7 @@ namespace Mortar
      |  evaluate dual shape 1D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
+    void mortar_dualshape_function_1d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& r,                         ///< r coordinate
         const Mortar::Element::ShapeType& shape  ///< distinguish between mortar shape
@@ -665,7 +665,7 @@ namespace Mortar
 
             Core::LinAlg::Matrix<2, 1> stdval;
             double xi[1] = {r};
-            EvaluateShape_Displ(xi, stdval, ele, false);
+            evaluate_shape_displ(xi, stdval, ele, false);
 
             Core::LinAlg::SerialDenseMatrix& ae = *(ele.mo_data().dual_shape());
 
@@ -727,7 +727,7 @@ namespace Mortar
           {
             double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
 
-            EvaluateShape_Displ(gpc, stdval, ele, false);
+            evaluate_shape_displ(gpc, stdval, ele, false);
 
             detg = ele.jacobian(gpc);
 
@@ -742,12 +742,12 @@ namespace Mortar
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
           double xi[1] = {r};
-          EvaluateShape_Displ(xi, stdval, ele, false);
+          evaluate_shape_displ(xi, stdval, ele, false);
 
           // evaluate dual shape functions
           for (int i = 0; i < nnodes; ++i)
@@ -807,7 +807,7 @@ namespace Mortar
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          Core::LinAlg::Inverse(melin);
+          Core::LinAlg::inverse(melin);
 
           // re-inflate inverse of melin to full size
           Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1004,7 +1004,7 @@ namespace Mortar
      |  evaluate std. shape 2D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_shape_function_2D(V& funct,      ///< to be filled with shape function values
+    void mortar_shape_function_2d(V& funct,      ///< to be filled with shape function values
         const double& xi0,                       ///< xi0 coordinate
         const double& xi1,                       ///< xi1 coordinate
         const Mortar::Element::ShapeType& shape  ///< distinguish between mortar shape
@@ -1407,7 +1407,7 @@ namespace Mortar
      |  evaluate dual shape 2D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
+    void mortar_dualshape_function_2d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,                       ///< xi0 coordinate
         const double& xi1,                       ///< xi1 coordinate
@@ -1440,7 +1440,7 @@ namespace Mortar
             // need standard shape functions at xi first
             Core::LinAlg::Matrix<nnodes, 1> stdval;
             double xi[2] = {xi0, xi1};
-            EvaluateShape_Displ(xi, stdval, ele, false);
+            evaluate_shape_displ(xi, stdval, ele, false);
 
             // evaluate dual shape functions
             Core::LinAlg::Matrix<nnodes, 1> valtemp;
@@ -1481,7 +1481,7 @@ namespace Mortar
             for (int i = 0; i < integrator.n_gp(); ++i)
             {
               double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
-              EvaluateShape_Displ(gpc, stdval, ele, false);
+              evaluate_shape_displ(gpc, stdval, ele, false);
               detg = ele.jacobian(gpc);
 
               for (int j = 0; j < nnodes; ++j)
@@ -1493,7 +1493,7 @@ namespace Mortar
             }
 
             // invert bi-ortho matrix me
-            Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+            Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
           }
 
           // pre-computed dual shape functions
@@ -1506,7 +1506,7 @@ namespace Mortar
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
           double xi[2] = {xi0, xi1};
-          EvaluateShape_Displ(xi, stdval, ele, false);
+          evaluate_shape_displ(xi, stdval, ele, false);
 
           // evaluate dual shape functions
           Core::LinAlg::Matrix<nnodes, 1> valtemp(true);
@@ -1559,7 +1559,7 @@ namespace Mortar
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
@@ -1610,7 +1610,7 @@ namespace Mortar
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
@@ -1661,7 +1661,7 @@ namespace Mortar
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
@@ -1720,7 +1720,7 @@ namespace Mortar
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          Core::LinAlg::Inverse(melin);
+          Core::LinAlg::inverse(melin);
 
           // re-inflate inverse of melin to full size
           Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1790,7 +1790,7 @@ namespace Mortar
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          Core::LinAlg::Inverse(melin);
+          Core::LinAlg::inverse(melin);
 
           // re-inflate inverse of melin to full size
           Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
@@ -1858,7 +1858,7 @@ namespace Mortar
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          Core::LinAlg::Inverse(melin);
+          Core::LinAlg::inverse(melin);
           // re-inflate inverse of melin to full size
           Core::LinAlg::SerialDenseMatrix invme(nnodes, nnodes, true);
           for (int j = 0; j < nnodeslin; ++j)
@@ -1893,7 +1893,7 @@ namespace Mortar
      |  evaluate std. nurbs shape 1D                             farah 05/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_shape_function_1d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const Core::FE::CellType& shape  ///< distinguish between shape
@@ -1911,7 +1911,7 @@ namespace Mortar
             weights(inode) = dynamic_cast<Mortar::Node*>(ele.nodes()[inode])->nurbs_w();
 
           Core::LinAlg::SerialDenseMatrix auxderiv(1, ele.num_node());
-          Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
+          Core::FE::Nurbs::nurbs_get_1d_funct_deriv(
               funct, auxderiv, xi0, ele.knots()[0], weights, Core::FE::CellType::nurbs2);
           break;
         }
@@ -1925,7 +1925,7 @@ namespace Mortar
             weights(inode) = dynamic_cast<Mortar::Node*>(ele.nodes()[inode])->nurbs_w();
 
           Core::LinAlg::SerialDenseMatrix auxderiv(1, ele.num_node());
-          Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
+          Core::FE::Nurbs::nurbs_get_1d_funct_deriv(
               funct, auxderiv, xi0, ele.knots()[0], weights, Core::FE::CellType::nurbs3);
           break;
         }
@@ -1944,7 +1944,7 @@ namespace Mortar
      |  evaluate std. nurbs shape 2D                             seitz 02/15|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_shape_function_2d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi0 coordinate
@@ -1975,7 +1975,7 @@ namespace Mortar
           uv(1) = xi1;
 
           Core::LinAlg::SerialDenseMatrix auxderiv(2, ele.num_node());
-          Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
+          Core::FE::Nurbs::nurbs_get_2d_funct_deriv(
               funct, auxderiv, uv, ele.knots(), weights, Core::FE::CellType::nurbs9);
           break;
         }
@@ -1993,7 +1993,7 @@ namespace Mortar
      |  evaluate dual nurbs shape 1D                             farah 05/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_nurbs_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_dualshape_function_1d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const Core::FE::CellType& shape  ///< distinguish between shape
@@ -2017,7 +2017,7 @@ namespace Mortar
           for (int i = 0; i < integrator.n_gp(); ++i)
           {
             double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
-            mortar_nurbs_shape_function_1D(funct, ele, gpc[0], Core::FE::CellType::nurbs3);
+            mortar_nurbs_shape_function_1d(funct, ele, gpc[0], Core::FE::CellType::nurbs3);
             detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -2031,11 +2031,11 @@ namespace Mortar
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
-          mortar_nurbs_shape_function_1D(funct, ele, xi0, Core::FE::CellType::nurbs3);
+          mortar_nurbs_shape_function_1d(funct, ele, xi0, Core::FE::CellType::nurbs3);
 
           // evaluate dual shape functions
           Core::LinAlg::Matrix<nnodes, 1> valtemp(true);
@@ -2063,7 +2063,7 @@ namespace Mortar
      |  evaluate dual nurbs shape 2D                             seitz 02/15|
      *----------------------------------------------------------------------*/
     template <class V>
-    void mortar_nurbs_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
+    void mortar_nurbs_dualshape_function_2d(V& funct,  ///< to be filled with shape function values
         Mortar::Element& ele,
         const double& xi0,               ///< xi0 coordinate
         const double& xi1,               ///< xi1 coordinate
@@ -2088,7 +2088,7 @@ namespace Mortar
           for (int i = 0; i < integrator.n_gp(); ++i)
           {
             double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
-            mortar_nurbs_shape_function_2D(funct, ele, gpc[0], gpc[1], shape);
+            mortar_nurbs_shape_function_2d(funct, ele, gpc[0], gpc[1], shape);
             detg = ele.jacobian(gpc);
 
             for (int j = 0; j < nnodes; ++j)
@@ -2102,14 +2102,14 @@ namespace Mortar
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions
           Core::LinAlg::Matrix<nnodes, 1> valtemp(true);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
-          mortar_nurbs_shape_function_2D(funct, ele, xi0, xi1, Core::FE::CellType::nurbs9);
+          mortar_nurbs_shape_function_2d(funct, ele, xi0, xi1, Core::FE::CellType::nurbs9);
 
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j) valtemp(i) += ae(i, j) * funct(j);

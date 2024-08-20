@@ -58,14 +58,14 @@ int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList&
       std::vector<Core::LinAlg::SerialDenseVector> myknots;
       Core::LinAlg::Matrix<9, 1> weights(true);
       const bool zero_size =
-          Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, this, myknots, weights);
+          Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discretization, this, myknots, weights);
       if (zero_size) return 0;
 
       // Get current displacement
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       Core::LinAlg::Matrix<9 * 3, 1> displacement(mydisp.data(), true);
 
       // Get reference configuration
@@ -113,7 +113,7 @@ int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList&
     default:
     {
       FOUR_C_THROW("Unknown type of action for KirchhoffLoveShellNurbs element: %s",
-          ActionType2String(act).c_str());
+          action_type_to_string(act).c_str());
       break;
     }
   }
@@ -211,7 +211,7 @@ int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_neumann(Teuchos::Parame
 
   // Get integration points, we use the same integration rule (6GP) in both parameter directions
   const Core::FE::IntegrationPoints1D integration_points = Core::FE::IntegrationPoints1D(
-      Core::FE::NumGaussPointsToGaussRule<Core::FE::CellType::line2>(6));
+      Core::FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::line2>(6));
 
   // Evaluate the residuum and the tangent stiffness matrix
   evaluate_body_load_auto_generated(

@@ -14,6 +14,10 @@
 
 #include "4C_config.hpp"
 
+// Do not lint the file for identifier names since we do not own these identifiers.
+
+// NOLINTBEGIN(readability-identifier-naming)
+
 // append underscores, if necessary. Important for linking to fortran routines
 #undef CCA_APPEND_U
 #define CCA_APPEND_U (1)
@@ -52,5 +56,7 @@ extern "C"
 }
 
 #endif
+
+// NOLINTEND(readability-identifier-naming)
 
 #endif

@@ -38,7 +38,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
         if (is_params_interface())
           return params_interface().get_action_type();
         else
-          return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
+          return Core::Elements::string_to_action_type(params.get<std::string>("action", "none"));
       });
 
   switch (action)
@@ -132,7 +132,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
       return 0;
     default:
       FOUR_C_THROW("The element action %s is not yet implemented for the new solid-scatra elements",
-          ActionType2String(action).c_str());
+          action_type_to_string(action).c_str());
   }
 
   return 0;

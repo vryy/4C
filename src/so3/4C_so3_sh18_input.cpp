@@ -20,7 +20,7 @@ bool Discret::ELEMENTS::SoSh18::read_element(const std::string& eletype, const s
   // read number of material model
   int material_id = container.get<int>("MAT");
 
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
 

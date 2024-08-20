@@ -49,7 +49,7 @@ void Thermo::BaseAlgorithm::setup_thermo(
 
   // major switch to different time integrators
   Inpar::Thermo::DynamicType timinttype =
-      Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP");
+      Core::UTILS::integral_value<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP");
   switch (timinttype)
   {
     case Inpar::Thermo::dyna_statics:
@@ -126,7 +126,7 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
           actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
   actdis->compute_null_space_if_necessary(solver->params());
 

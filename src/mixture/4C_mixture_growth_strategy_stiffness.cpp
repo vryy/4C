@@ -38,7 +38,7 @@ void MIXTURE::StiffnessGrowthStrategy::evaluate_inverse_growth_deformation_gradi
     Core::LinAlg::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
-  iFgM = Core::LinAlg::IdentityMatrix<3>();
+  iFgM = Core::LinAlg::identity_matrix<3>();
 }
 
 void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(

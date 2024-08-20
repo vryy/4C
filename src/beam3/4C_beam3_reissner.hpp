@@ -360,7 +360,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      inline void get_material_strain_resultants_at_all_g_ps(std::vector<double>& axial_strain_GPs,
+      inline void get_material_strain_resultants_at_all_gps(std::vector<double>& axial_strain_GPs,
           std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
           std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
           std::vector<double>& curvature_3_GPs) const override
@@ -378,17 +378,17 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      inline void get_spatial_stress_resultants_at_all_g_ps(
+      inline void get_spatial_stress_resultants_at_all_gps(
           std::vector<double>& spatial_axial_force_GPs,
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs, std::vector<double>& spatial_torque_GPs,
           std::vector<double>& spatial_bending_moment_2_GPs,
           std::vector<double>& spatial_bending_moment_3_GPs) const override
       {
-        get_spatial_forces_at_all_g_ps(
+        get_spatial_forces_at_all_gps(
             spatial_axial_force_GPs, spatial_shear_force_2_GPs, spatial_shear_force_3_GPs);
 
-        get_spatial_moments_at_all_g_ps(
+        get_spatial_moments_at_all_gps(
             spatial_torque_GPs, spatial_bending_moment_2_GPs, spatial_bending_moment_3_GPs);
       }
 
@@ -396,7 +396,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      inline void get_spatial_forces_at_all_g_ps(std::vector<double>& spatial_axial_force_GPs,
+      inline void get_spatial_forces_at_all_gps(std::vector<double>& spatial_axial_force_GPs,
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs) const override
       {
@@ -409,7 +409,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      inline void get_spatial_moments_at_all_g_ps(std::vector<double>& spatial_torque_GPs,
+      inline void get_spatial_moments_at_all_gps(std::vector<double>& spatial_torque_GPs,
           std::vector<double>& spatial_bending_moment_2_GPs,
           std::vector<double>& spatial_bending_moment_3_GPs) const override
       {
@@ -422,7 +422,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      inline void get_material_stress_resultants_at_all_g_ps(
+      inline void get_material_stress_resultants_at_all_gps(
           std::vector<double>& material_axial_force_GPs,
           std::vector<double>& material_shear_force_2_GPs,
           std::vector<double>& material_shear_force_3_GPs, std::vector<double>& material_torque_GPs,
@@ -744,7 +744,7 @@ namespace Discret
           }
         }
 
-        Discret::UTILS::Beam::EvaluateShapeFunctionDerivsAtXi<nnodecl, vpernode>(
+        Discret::UTILS::Beam::evaluate_shape_function_derivs_at_xi<nnodecl, vpernode>(
             xi, N_i_xi, this->shape(), this->ref_length());
         this->calc_r_xi<nnodecl, vpernode, double>(disp_centerline_ref, N_i_xi, r0_xi);
 
@@ -803,7 +803,7 @@ namespace Discret
          * the element type considered here),
          * or Jelenic 1999, paragraph on page 153 between NOTE 5 and NOTE 6*/
         Core::LinAlg::Matrix<3, 3, T> Tinv(true);
-        Tinv = Core::LargeRotations::Tinvmatrix<T>(Psi_l);
+        Tinv = Core::LargeRotations::tinvmatrix<T>(Psi_l);
         // It is important to use the transposed matrix Tinv^T instead of Tinv (these two only
         // differ in one of three terms)
         K.multiply_tn(Tinv, Psi_l_s);

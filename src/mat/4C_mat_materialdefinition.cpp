@@ -133,7 +133,7 @@ std::ostream& Mat::MaterialDefinition::print(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::AppendMaterialDefinition(std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,
+void Mat::append_material_definition(std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,
     const Teuchos::RCP<MaterialDefinition>& mat)
 {
   // test if material was defined with same name or type

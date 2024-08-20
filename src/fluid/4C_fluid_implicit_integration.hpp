@@ -651,7 +651,7 @@ namespace FLD
       // set fine-scale velocity for parallel nigthly tests
       // separation matrix depends on the number of proc here
       if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
-          (Core::UTILS::IntegralValue<int>(
+          (Core::UTILS::integral_value<int>(
               params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
         fsvelaf_->PutScalar(0.01);
 
@@ -728,7 +728,7 @@ namespace FLD
     virtual Teuchos::RCP<Epetra_Vector> create_dispnp()
     {
       const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
-      dispnp_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
+      dispnp_ = Core::LinAlg::create_vector(*aledofrowmap, true);
       return dispnp_;
     }
 
@@ -739,7 +739,7 @@ namespace FLD
     virtual Teuchos::RCP<Epetra_Vector> create_dispn()
     {
       const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
-      dispn_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
+      dispn_ = Core::LinAlg::create_vector(*aledofrowmap, true);
       return dispn_;
     }
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override

@@ -288,8 +288,8 @@ namespace FLD
           }
 
           // compute the shape function values
-          Core::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          Core::FE::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3d(funct, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3d_deriv1(deriv, e[0], e[1], e[2], distype);
 
           // get transposed Jacobian matrix and determinant
           //
@@ -688,8 +688,8 @@ namespace FLD
           }
 
           // compute the shape function values
-          Core::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          Core::FE::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3d(funct, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3d_deriv1(deriv, e[0], e[1], e[2], distype);
 
           // get transposed Jacobian matrix and determinant
           //
@@ -946,8 +946,8 @@ namespace FLD
     const double e3 = intpoints_onepoint.qxg[0][2];
     const double wquad = intpoints_onepoint.qwgt[0];
 
-    Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
-    Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    Core::FE::shape_function_3d(funct, e1, e2, e3, distype);
+    Core::FE::shape_function_3d_deriv1(deriv, e1, e2, e3, distype);
 
     // get Jacobian matrix and determinant
 
@@ -1328,7 +1328,7 @@ namespace FLD
 
    */
   template <int iel>
-  void f3_calc_smag_const_LijMij_and_MijMij(Discret::ELEMENTS::Fluid* ele,
+  void f3_calc_smag_const_lij_mij_and_mij_mij(Discret::ELEMENTS::Fluid* ele,
       Discret::ELEMENTS::FluidEleParameterStd* fldpara,
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
@@ -1436,8 +1436,8 @@ namespace FLD
     const double e3 = intpoints_onepoint.qxg[0][2];
 
     // shape functions and derivs at element center
-    Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
-    Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    Core::FE::shape_function_3d(funct, e1, e2, e3, distype);
+    Core::FE::shape_function_3d_deriv1(deriv, e1, e2, e3, distype);
 
     Core::LinAlg::Matrix<3, 3> xjm;
     // get Jacobian matrix and its determinant
@@ -1891,8 +1891,8 @@ namespace FLD
     const double e3 = intpoints_onepoint.qxg[0][2];
     const double wquad = intpoints_onepoint.qwgt[0];
 
-    Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
-    Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    Core::FE::shape_function_3d(funct, e1, e2, e3, distype);
+    Core::FE::shape_function_3d_deriv1(deriv, e1, e2, e3, distype);
 
     for (int nn = 0; nn < 3; ++nn)
     {
@@ -2155,7 +2155,7 @@ namespace FLD
     strainnorm = (sqrt(strainnorm / 4.0));
 
     // do we have a fixed parameter N
-    if ((Core::UTILS::IntegralValue<int>(*turbmodelparamsmfs, "CALC_N")) == false)
+    if ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "CALC_N")) == false)
     {
       for (int rr = 1; rr < 3; rr++) Nvel[rr] = turbmodelparamsmfs->get<double>("N");
     }
@@ -2467,7 +2467,7 @@ namespace FLD
 
     // calculate near-wall correction
     double Cai_phi = 0.0;
-    if ((Core::UTILS::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true)
+    if ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true)
     {
       // get Re from strain rate
       double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
@@ -2507,7 +2507,7 @@ namespace FLD
       // ratio of dissipation scale to element length
       double scale_ratio_phi = 0.0;
 
-      if ((Core::UTILS::IntegralValue<int>(*turbmodelparamsmfs, "CALC_N")) == true)
+      if ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "CALC_N")) == true)
       {
         //
         //   Delta
@@ -2596,9 +2596,9 @@ namespace FLD
       }
 
       // apply near-wall limit if required
-      if (((Core::UTILS::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI")) ==
+      if (((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI")) ==
               true) and
-          ((Core::UTILS::IntegralValue<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true))
+          ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true))
       {
         D *= Cai_phi;
         Csgs_phi *= Cai_phi;
@@ -3052,7 +3052,7 @@ namespace FLD
     \param edispnp (in)       : Displacement-vector
   */
   template <Core::FE::CellType distype>
-  void ElementNodeNormal(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+  void element_node_normal(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
       Core::FE::Discretization& discretization, std::vector<int>& lm,
       Core::LinAlg::SerialDenseVector& elevec1)
   {
@@ -3088,7 +3088,7 @@ namespace FLD
       }
 
       std::vector<double> mydispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp,mydispnp,lm);
+      Core::FE::extract_my_values(*dispnp,mydispnp,lm);
 
       // extract velocity part from "mygridvelaf" and get
       // set element displacements
@@ -3115,7 +3115,7 @@ namespace FLD
     // get node coordinates
     // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
     // element!)
-    Core::Geo::fillInitialPositionArray<distype, nsd, Core::LinAlg::Matrix<nsd, iel>>(ele, xyze);
+    Core::Geo::fill_initial_position_array<distype, nsd, Core::LinAlg::Matrix<nsd, iel>>(ele, xyze);
 
     /*
     // get node coordinates
@@ -3143,7 +3143,7 @@ namespace FLD
       }
 
       std::vector<double> mydispnp(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
 
       // extract velocity part from "mygridvelaf" and get
       // set element displacements

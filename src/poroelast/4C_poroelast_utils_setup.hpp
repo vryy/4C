@@ -29,14 +29,14 @@ namespace PoroElast
   {
     //! setup poro discretization,i.e. clone the structural discretization
     template <class PoroCloneStrategy>
-    void SetupPoro(bool setmaterialpointers = true)
+    void setup_poro(bool setmaterialpointers = true)
     {
       Global::Problem* problem = Global::Problem::instance();
 
       // access the problem-specific parameter list
       const Teuchos::ParameterList& porodyn =
           Global::Problem::instance()->poroelast_dynamic_params();
-      const bool matchinggrid = Core::UTILS::IntegralValue<bool>(porodyn, "MATCHINGGRID");
+      const bool matchinggrid = Core::UTILS::integral_value<bool>(porodyn, "MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
       Teuchos::RCP<Core::FE::Discretization> structdis;
@@ -63,13 +63,13 @@ namespace PoroElast
         }
 
         // create fluid discretization
-        Core::FE::CloneDiscretization<PoroCloneStrategy>(
+        Core::FE::clone_discretization<PoroCloneStrategy>(
             structdis, fluiddis, Global::Problem::instance()->cloning_material_map());
         fluiddis->fill_complete();
 
         // set material pointers
         if (setmaterialpointers)
-          PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
+          PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
 
         // if one discretization is a subset of the other, they will differ in node number (and
         // element number) we assume matching grids for the overlapping part here

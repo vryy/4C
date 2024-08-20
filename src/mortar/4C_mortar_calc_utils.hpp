@@ -39,17 +39,17 @@ namespace Mortar
      |  Get global coords for given local coords                 farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    bool LocalToGlobal(Mortar::Element& ele, const double* xi, double* globcoord, int inttype)
+    bool local_to_global(Mortar::Element& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
-      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
+      if (!xi) FOUR_C_THROW("ERROR: local_to_global called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: local_to_global called with globcoord=nullptr");
 
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype> + 1;
 
       Core::Nodes::Node** mynodes = ele.points();
-      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: local_to_global: Null pointer!");
 
       std::fill(globcoord, globcoord + ndim, 0.0);
 
@@ -79,7 +79,7 @@ namespace Mortar
                 }
                 default:
                 {
-                  Core::FE::shape_function_1D(val, xi[0], distype);
+                  Core::FE::shape_function_1d(val, xi[0], distype);
                   break;
                 }
               }
@@ -103,7 +103,7 @@ namespace Mortar
                 }
                 default:
                 {
-                  Core::FE::shape_function_2D(val, xi[0], xi[1], distype);
+                  Core::FE::shape_function_2d(val, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -120,7 +120,7 @@ namespace Mortar
           for (int i = 0; i < n; ++i)
           {
             Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
-            FOUR_C_ASSERT(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
+            FOUR_C_ASSERT(mymrtrnode, "ERROR: local_to_global: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
             {
@@ -155,7 +155,7 @@ namespace Mortar
                 }
                 default:
                 {
-                  Core::FE::shape_function_1D_deriv1(deriv1, xi[0], distype);
+                  Core::FE::shape_function_1d_deriv1(deriv1, xi[0], distype);
                   break;
                 }
               }
@@ -180,7 +180,7 @@ namespace Mortar
                 }
                 default:
                 {
-                  Core::FE::shape_function_2D_deriv1(deriv1, xi[0], xi[1], distype);
+                  Core::FE::shape_function_2d_deriv1(deriv1, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -196,7 +196,7 @@ namespace Mortar
           for (int i = 0; i < n; ++i)
           {
             Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
-            FOUR_C_ASSERT(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
+            FOUR_C_ASSERT(mymrtrnode, "ERROR: local_to_global: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
             {
@@ -230,7 +230,7 @@ namespace Mortar
                 }
                 default:
                 {
-                  Core::FE::shape_function_1D_deriv1(deriv2, xi[0], distype);
+                  Core::FE::shape_function_1d_deriv1(deriv2, xi[0], distype);
                   break;
                 }
               }
@@ -255,7 +255,7 @@ namespace Mortar
                 }
                 default:
                 {
-                  Core::FE::shape_function_2D_deriv1(deriv2, xi[0], xi[1], distype);
+                  Core::FE::shape_function_2d_deriv1(deriv2, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -272,7 +272,7 @@ namespace Mortar
           for (int i = 0; i < n; ++i)
           {
             Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
-            FOUR_C_ASSERT(mymrtrnode, "ERROR: LocalToGlobal: Null pointer!");
+            FOUR_C_ASSERT(mymrtrnode, "ERROR: local_to_global: Null pointer!");
 
             if constexpr (ndim > 2)
             {
@@ -301,17 +301,17 @@ namespace Mortar
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    bool LocalToGlobal(Core::Elements::Element& ele, const double* xi, double* globcoord)
+    bool local_to_global(Core::Elements::Element& ele, const double* xi, double* globcoord)
     {
       // check input
-      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
+      if (!xi) FOUR_C_THROW("ERROR: local_to_global called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: local_to_global called with globcoord=nullptr");
 
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype> + 1;
 
       Core::Nodes::Node** mynodes = ele.nodes();
-      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: local_to_global: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
 
@@ -319,9 +319,9 @@ namespace Mortar
 
       Core::LinAlg::Matrix<n, 1> val;
       if (ndim == 2)
-        Core::FE::shape_function_1D(val, xi[0], distype);
+        Core::FE::shape_function_1d(val, xi[0], distype);
       else if (ndim == 3)
-        Core::FE::shape_function_2D(val, xi[0], xi[1], distype);
+        Core::FE::shape_function_2d(val, xi[0], xi[1], distype);
       else
         FOUR_C_THROW("Wrong Dimension");
 
@@ -353,12 +353,12 @@ namespace Mortar
      |  globcoord (out): global xyz coordinate in current configuration of "xi"  |
      *---------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    bool LocalToCurrentGlobal(Core::Elements::Element& ele, const int globdim, const double* xi,
+    bool local_to_current_global(Core::Elements::Element& ele, const int globdim, const double* xi,
         const std::vector<double> edisp, double* globcoord)
     {
       // check input
-      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
+      if (!xi) FOUR_C_THROW("ERROR: local_to_global called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: local_to_global called with globcoord=nullptr");
 
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype>;
@@ -368,7 +368,7 @@ namespace Mortar
             n * globdim, edisp.size());
 
       Core::Nodes::Node** mynodes = ele.nodes();
-      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: local_to_global: Null pointer!");
 
       for (int i = 0; i < globdim; ++i) globcoord[i] = 0.0;
 
@@ -376,11 +376,11 @@ namespace Mortar
 
       Core::LinAlg::Matrix<n, 1> val;
       if (ndim == 1)
-        Core::FE::shape_function_1D(val, xi[0], distype);
+        Core::FE::shape_function_1d(val, xi[0], distype);
       else if (ndim == 2)
-        Core::FE::shape_function_2D(val, xi[0], xi[1], distype);
+        Core::FE::shape_function_2d(val, xi[0], xi[1], distype);
       else if (ndim == 3)
-        Core::FE::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
+        Core::FE::shape_function_3d(val, xi[0], xi[1], xi[2], distype);
 
       else
         FOUR_C_THROW("Wrong Dimension");
@@ -402,9 +402,9 @@ namespace Mortar
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    void GlobalToLocal(Core::Elements::Element& ele,  // element (input)
-        double* xgl,                                  // global position (input)
-        double* xi)                                   // local position  (output)
+    void global_to_local(Core::Elements::Element& ele,  // element (input)
+        double* xgl,                                    // global position (input)
+        double* xi)                                     // local position  (output)
     {
       static constexpr int numnod = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype>;
@@ -462,13 +462,13 @@ namespace Mortar
 
         if (ndim == 2)
         {
-          Core::FE::shape_function_2D(funct, xi[0], xi[1], distype);
-          Core::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          Core::FE::shape_function_2d(funct, xi[0], xi[1], distype);
+          Core::FE::shape_function_2d_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          Core::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          Core::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3d(funct, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3d_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           FOUR_C_THROW("ERROR");
@@ -529,8 +529,8 @@ namespace Mortar
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    void GlobalToLocal(Core::Elements::Element& ele,  // element (input)
-        double* xgl,                                  // global position (input)
+    void global_to_local(Core::Elements::Element& ele,  // element (input)
+        double* xgl,                                    // global position (input)
         double* xi,
         bool& converged)  // converged solution ?
     {
@@ -589,13 +589,13 @@ namespace Mortar
 
         if (ndim == 2)
         {
-          Core::FE::shape_function_2D(funct, xi[0], xi[1], distype);
-          Core::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          Core::FE::shape_function_2d(funct, xi[0], xi[1], distype);
+          Core::FE::shape_function_2d_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          Core::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          Core::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3d(funct, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3d_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           FOUR_C_THROW("ERROR");
@@ -654,7 +654,7 @@ namespace Mortar
      |  Get local coords for given global coords (curr position) rauch 08/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    void GlobalToCurrentLocal(Core::Elements::Element& ele,  // element (input)
+    void global_to_current_local(Core::Elements::Element& ele,  // element (input)
         const double* targetdisp,
         double* xgl,  // global position (input)
         double* xi, bool& converged,
@@ -693,13 +693,13 @@ namespace Mortar
 
         if (ndim == 2)
         {
-          Core::FE::shape_function_2D(funct, xi[0], xi[1], distype);
-          Core::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          Core::FE::shape_function_2d(funct, xi[0], xi[1], distype);
+          Core::FE::shape_function_2d_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          Core::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          Core::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3d(funct, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3d_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           FOUR_C_THROW("ERROR");

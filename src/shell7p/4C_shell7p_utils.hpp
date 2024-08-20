@@ -91,13 +91,13 @@ namespace Solid::UTILS::Shell
    *  @return Teuchos::SerialDenseMatrix<int, double>: Translational (x,y,z) and
    *  rotational (around x,y,z) nullspace contribution for given node
    */
-  Teuchos::SerialDenseMatrix<int, double> ComputeShellNullSpace(
+  Teuchos::SerialDenseMatrix<int, double> compute_shell_null_space(
       Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir);
 
-  void NodalBlockInformationShell(
+  void nodal_block_information_shell(
       Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-  void LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_matrix);
+  void lump_mass_matrix(Core::LinAlg::SerialDenseMatrix& mass_matrix);
 
   namespace Director
   {
@@ -108,7 +108,7 @@ namespace Solid::UTILS::Shell
      * @param eletype (in) : Reference to the element type
      * @param dis (in) : Reference to the discretization
      */
-    void SetupShellElementDirectors(
+    void setup_shell_element_directors(
         const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis);
 
     /*!
@@ -117,7 +117,7 @@ namespace Solid::UTILS::Shell
      * @param ele (in) : reference to the element
      * @param nodal_directors (in/out) : Nodal directors of one element
      */
-    void SetupDirectorForElement(
+    void setup_director_for_element(
         const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors);
 
     /*!
@@ -127,7 +127,7 @@ namespace Solid::UTILS::Shell
      * @param num_directors (in) : Number of directors to be considered
      * @param nodal_director (in/out) : Nodal director
      */
-    void AverageDirector(const Core::LinAlg::Matrix<3, 8>& dir_list, const int num_directors,
+    void average_director(const Core::LinAlg::Matrix<3, 8>& dir_list, const int num_directors,
         Core::LinAlg::Matrix<3, 1>& nodal_director);
 
     /*!
@@ -137,7 +137,7 @@ namespace Solid::UTILS::Shell
      * @param dis (in) : Reference to the discretization
      * @param director_map (in/out) : Nodal director map
      */
-    void AverageDirectorsAtNodes(const Core::Elements::ElementType& eletype,
+    void average_directors_at_nodes(const Core::Elements::ElementType& eletype,
         const Core::FE::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
     /*!
@@ -147,20 +147,20 @@ namespace Solid::UTILS::Shell
      * @param dis (in) : Reference to the discretization
      * @param director_map (in) : Nodal director map
      */
-    void ExportDirectorMapFromRowToColMap(const Core::Elements::ElementType& eletype,
+    void export_director_map_from_row_to_col_map(const Core::Elements::ElementType& eletype,
         const Core::FE::Discretization& dis, std::map<int, std::vector<double>>& director_map);
 
   }  // namespace Director
 
   namespace read_element
   {
-    int ReadAndSetElementMaterial(const Core::IO::InputParameterContainer& container);
+    int read_and_set_element_material(const Core::IO::InputParameterContainer& container);
 
-    void ReadAndSetLockingTypes(const Core::FE::CellType& distype,
+    void read_and_set_locking_types(const Core::FE::CellType& distype,
         const Core::IO::InputParameterContainer& container,
         Solid::ELEMENTS::ShellLockingTypes& locking_types);
 
-    int ReadAndSetNumANS(const Core::FE::CellType& distype);
+    int read_and_set_num_ans(const Core::FE::CellType& distype);
 
   }  // namespace read_element
 

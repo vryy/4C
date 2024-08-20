@@ -247,9 +247,9 @@ namespace FLD
 
     // allocate some (toggle) vectors
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    toggleu_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    togglev_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    togglew_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // set number of samples to zero
     numsamp_ = 0;
@@ -651,7 +651,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::create_vector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------
@@ -1073,7 +1073,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::create_vector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------

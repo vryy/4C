@@ -23,18 +23,18 @@ FOUR_C_NAMESPACE_OPEN
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
-void Core::Geo::checkGeoType(const Core::Elements::Element* element,
+void Core::Geo::check_geo_type(const Core::Elements::Element* element,
     const Core::LinAlg::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
 {
   bool cartesian = true;
   int CartesianCount = 0;
   const int dimCoord = 3;
   const Core::FE::CellType distype = element->shape();
-  const int eleDim = Core::FE::getDimension(distype);
+  const int eleDim = Core::FE::get_dimension(distype);
 
-  if (Core::FE::getOrder(distype) == 1)
+  if (Core::FE::get_order(distype) == 1)
     eleGeoType = LINEAR;
-  else if (Core::FE::getOrder(distype) == 2)
+  else if (Core::FE::get_order(distype) == 2)
     eleGeoType = HIGHERORDER;
   else
     FOUR_C_THROW("order of element shapefuntion is not correct");
@@ -43,7 +43,7 @@ void Core::Geo::checkGeoType(const Core::Elements::Element* element,
   if (eleDim == 3)
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
-        Core::FE::getEleNodeNumberingSurfaces(distype);
+        Core::FE::get_ele_node_numbering_surfaces(distype);
     std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces =
         (const_cast<Core::Elements::Element*>(element))->surfaces();
     for (int i = 0; i < element->num_surface(); i++)
@@ -102,7 +102,7 @@ void Core::Geo::checkGeoType(const Core::Elements::Element* element,
  | delivers a axis-aligned bounding box for a given          u.may 12/08|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-std::map<int, Core::LinAlg::Matrix<3, 2>> Core::Geo::getCurrentXAABBs(
+std::map<int, Core::LinAlg::Matrix<3, 2>> Core::Geo::get_current_xaab_bs(
     const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
@@ -112,11 +112,11 @@ std::map<int, Core::LinAlg::Matrix<3, 2>> Core::Geo::getCurrentXAABBs(
   {
     const Core::Elements::Element* element = dis.l_col_element(j);
     const Core::LinAlg::SerialDenseMatrix xyze_element(
-        Core::Geo::getCurrentNodalPositions(element, currentpositions));
+        Core::Geo::get_current_nodal_positions(element, currentpositions));
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-    Core::Geo::checkGeoType(element, xyze_element, eleGeoType);
+    Core::Geo::check_geo_type(element, xyze_element, eleGeoType);
     const Core::LinAlg::Matrix<3, 2> xaabbEle =
-        Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType);
+        Core::Geo::compute_fast_xaabb(element->shape(), xyze_element, eleGeoType);
     currentXAABBs[element->id()] = xaabbEle;
   }
   return currentXAABBs;
@@ -126,7 +126,7 @@ std::map<int, Core::LinAlg::Matrix<3, 2>> Core::Geo::getCurrentXAABBs(
 /*----------------------------------------------------------------------*
  |  ICS:    checks if two 18DOPs intersect                   u.may 12/08| |
  *----------------------------------------------------------------------*/
-bool Core::Geo::intersectionOfKDOPs(
+bool Core::Geo::intersection_of_kdo_ps(
     const Core::LinAlg::Matrix<9, 2>& cutterDOP, const Core::LinAlg::Matrix<9, 2>& xfemDOP)
 {
   // check intersection of 18 kdops
@@ -149,7 +149,7 @@ bool Core::Geo::intersectionOfKDOPs(
  |  checks the intersection between two bounding volumes (AABB)         |
  |                                                          wirtz 08/14 |
  *----------------------------------------------------------------------*/
-bool Core::Geo::intersectionOfBVs(
+bool Core::Geo::intersection_of_b_vs(
     const Core::LinAlg::Matrix<3, 2>& currentBV, const Core::LinAlg::Matrix<3, 2>& queryBV)
 {
   return (overlap(currentBV(0, 0), currentBV(0, 1), queryBV(0, 0), queryBV(0, 1)) and

@@ -118,7 +118,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
         eleconn->insert(std::pair<int, std::vector<int>>(j, actconn));
       }
       Teuchos::RCP<ElementBlock> actEleBlock =
-          Teuchos::rcp(new ElementBlock(StringToShape(ele_type), eleconn, blockname));
+          Teuchos::rcp(new ElementBlock(string_to_shape(ele_type), eleconn, blockname));
 
       // Add this ElementBlock into Mesh map
       element_blocks_.insert(std::pair<int, Teuchos::RCP<ElementBlock>>(ebids[i], actEleBlock));
@@ -582,7 +582,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
       }
       case ElementBlock::hex8:
       {
-        actface = HexSideNumberExoToFourC(actface);
+        actface = hex_side_number_exo_to_four_c(actface);
         hexc++;
         break;
       }
@@ -591,7 +591,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
         //      vector<std::vector<int> > test =
         //      Core::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
         //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
-        actface = PyrSideNumberExoToFourC(actface);
+        actface = pyr_side_number_exo_to_four_c(actface);
         pyrc++;
         break;
       }
@@ -605,13 +605,13 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
       }
       default:
       {
-        std::cout << ShapeToString(actshape) << ":" << std::endl;
+        std::cout << shape_to_string(actshape) << ":" << std::endl;
         FOUR_C_THROW("Parent Element Type not supported");
         break;
       }
     }
     std::vector<int> childmap =
-        Core::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        Core::FE::get_ele_node_numbering_surfaces(pre_shape_to_drt(actshape))[actface];
     // child gets its node ids
     std::vector<int> child;
     for (unsigned int j = 0; j < childmap.size(); ++j) child.push_back(parent_ele[childmap[j]]);
@@ -620,11 +620,11 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
     // some checking
     if ((child.size() != 3) && (child.size() != 4))
     {
-      PrintVec(std::cout, child);
-      PrintVec(std::cout, childmap);
-      PrintVec(std::cout, parent_ele);
-      std::cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size()
-                << std::endl;
+      print_vec(std::cout, child);
+      print_vec(std::cout, childmap);
+      print_vec(std::cout, parent_ele);
+      std::cout << shape_to_string(actshape) << ",Face: " << actface
+                << ",childsize:" << child.size() << std::endl;
       FOUR_C_THROW("Child Ele error");
     }
     // insert child into SideSet Connectivity
@@ -718,13 +718,13 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(
       }
       case ElementBlock::hex8:
       {
-        actface = HexSideNumberExoToFourC(actface);
+        actface = hex_side_number_exo_to_four_c(actface);
         hexc++;
         break;
       }
       case ElementBlock::pyramid5:
       {
-        actface = PyrSideNumberExoToFourC(actface);
+        actface = pyr_side_number_exo_to_four_c(actface);
         pyrc++;
         break;
       }
@@ -735,13 +735,13 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(
       }
       default:
       {
-        std::cout << ShapeToString(actshape) << ":" << std::endl;
+        std::cout << shape_to_string(actshape) << ":" << std::endl;
         FOUR_C_THROW("Parent Element Type not supported");
         break;
       }
     }
     std::vector<int> childmap =
-        Core::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape))[actface];
+        Core::FE::get_ele_node_numbering_surfaces(pre_shape_to_drt(actshape))[actface];
 
     std::vector<int> child;
     if (checkoutside)
@@ -752,11 +752,11 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(
     // some checking
     if ((child.size() != 3) && (child.size() != 4))
     {
-      PrintVec(std::cout, child);
-      PrintVec(std::cout, childmap);
-      PrintVec(std::cout, parent_ele);
-      std::cout << ShapeToString(actshape) << ",Face: " << actface << ",childsize:" << child.size()
-                << std::endl;
+      print_vec(std::cout, child);
+      print_vec(std::cout, childmap);
+      print_vec(std::cout, parent_ele);
+      std::cout << shape_to_string(actshape) << ",Face: " << actface
+                << ",childsize:" << child.size() << std::endl;
       FOUR_C_THROW("Child Ele error");
     }
 
@@ -1049,7 +1049,7 @@ void EXODUS::Mesh::write_mesh(const std::string newexofilename) const
     const int blockID = iebs->first;
     const ElementBlock eb = (*iebs->second);
     const ElementBlock::Shape shape = eb.get_shape();
-    const std::string shapestring = ShapeToString(shape);
+    const std::string shapestring = shape_to_string(shape);
     const std::vector<int> exampleconn = eb.get_ele_nodes(0);  // iebs->first);
     const int num_nod_per_elem = exampleconn.size();
     const int numele = eb.get_num_ele();
@@ -1450,7 +1450,8 @@ EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype,
   for (std::map<int, std::vector<int>>::const_iterator elem = eleconn->begin();
        elem != eleconn->end(); ++elem)
   {
-    if (Core::FE::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int)elem->second.size())
+    if (Core::FE::get_number_of_element_nodes(pre_shape_to_drt(Distype)) !=
+        (int)elem->second.size())
     {
       FOUR_C_THROW("number of read nodes does not fit the distype");
     }
@@ -1499,7 +1500,7 @@ void EXODUS::ElementBlock::fill_econn_array(int* connarray) const
 void EXODUS::ElementBlock::print(std::ostream& os, bool verbose) const
 {
   os << "Element Block, named: " << name_ << std::endl
-     << "of Shape: " << ShapeToString(distype_) << std::endl
+     << "of Shape: " << shape_to_string(distype_) << std::endl
      << "has " << get_num_ele() << " Elements" << std::endl;
   if (verbose)
   {
@@ -1615,7 +1616,7 @@ void EXODUS::SideSet::print(std::ostream& os, bool verbose) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
+EXODUS::Mesh EXODUS::quadto_tri(EXODUS::Mesh& basemesh)
 {
   std::map<int, Teuchos::RCP<EXODUS::ElementBlock>> neweblocks;  // here the new EBlocks are stored
   std::map<int, Teuchos::RCP<EXODUS::ElementBlock>> ebs = basemesh.get_element_blocks();
@@ -1681,7 +1682,7 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::vector<int>> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<int, std::vector<int>> mymap)
 {
   std::map<int, std::vector<int>>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1699,7 +1700,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::vector<int>> my
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::set<int>> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<int, std::set<int>> mymap)
 {
   std::map<int, std::set<int>>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1717,7 +1718,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::set<int>> mymap
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::vector<double>> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<int, std::vector<double>> mymap)
 {
   std::map<int, std::vector<double>>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1735,7 +1736,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::vector<double>>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<double, int> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<double, int> mymap)
 {
   std::map<double, int>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1747,7 +1748,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<double, int> mymap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::map<int, int>> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<int, std::map<int, int>> mymap)
 {
   std::map<int, std::map<int, int>>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1765,7 +1766,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::map<int, int>> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::pair<int, int>> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<int, std::pair<int, int>> mymap)
 {
   std::map<int, std::pair<int, int>>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1779,7 +1780,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<int, std::pair<int, int>>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<int, int> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<int, int> mymap)
 {
   std::map<int, int>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1792,7 +1793,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<int, int> mymap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(std::ostream& os, const std::map<int, double> mymap)
+void EXODUS::print_map(std::ostream& os, const std::map<int, double> mymap)
 {
   std::map<int, double>::const_iterator iter;
   for (iter = mymap.begin(); iter != mymap.end(); ++iter)
@@ -1805,7 +1806,7 @@ void EXODUS::PrintMap(std::ostream& os, const std::map<int, double> mymap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintVec(std::ostream& os, const std::vector<int> actvec)
+void EXODUS::print_vec(std::ostream& os, const std::vector<int> actvec)
 {
   std::vector<int>::const_iterator i;
   for (i = actvec.begin(); i < actvec.end(); ++i)
@@ -1817,7 +1818,7 @@ void EXODUS::PrintVec(std::ostream& os, const std::vector<int> actvec)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintVec(std::ostream& os, const std::vector<double> actvec)
+void EXODUS::print_vec(std::ostream& os, const std::vector<double> actvec)
 {
   std::vector<double>::const_iterator i;
   for (i = actvec.begin(); i < actvec.end(); ++i)
@@ -1829,7 +1830,7 @@ void EXODUS::PrintVec(std::ostream& os, const std::vector<double> actvec)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintSet(std::ostream& os, const std::set<int> actset)
+void EXODUS::print_set(std::ostream& os, const std::set<int> actset)
 {
   std::set<int>::iterator i;
   for (i = actset.begin(); i != actset.end(); ++i)
@@ -1841,7 +1842,7 @@ void EXODUS::PrintSet(std::ostream& os, const std::set<int> actset)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::HexSideNumberExoToFourC(const int exoface)
+int EXODUS::hex_side_number_exo_to_four_c(const int exoface)
 {
   constexpr std::array<int, 6> map = {1, 2, 3, 4, 0, 5};
   return map[exoface];
@@ -1849,7 +1850,7 @@ int EXODUS::HexSideNumberExoToFourC(const int exoface)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::PyrSideNumberExoToFourC(const int exoface)
+int EXODUS::pyr_side_number_exo_to_four_c(const int exoface)
 {
   constexpr std::array<int, 5> map = {1, 2, 3, 4, 0};
   return map[exoface];

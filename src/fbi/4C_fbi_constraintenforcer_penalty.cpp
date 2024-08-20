@@ -119,7 +119,7 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
   {
     double penalty_parameter = bridge()->get_params()->get_penalty_parameter();
 
-    Teuchos::RCP<Epetra_Vector> violation = Core::LinAlg::CreateVector(
+    Teuchos::RCP<Epetra_Vector> violation = Core::LinAlg::create_vector(
         Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp()->Map());
 
     int err =

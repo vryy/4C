@@ -17,7 +17,8 @@ namespace
 {
   /// converts the values of variables from type double to FAD double and returns the modified
   /// vector of name-value-pairs
-  std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>> ConvertVariableValuesToFADObjects(
+  std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>>
+  convert_variable_values_to_fad_objects(
       const std::vector<std::pair<std::string, double>>& variables)
   {
     // prepare return vector
@@ -73,7 +74,7 @@ namespace
     variables.emplace_back("Variable1", 6.0);
     variables.emplace_back("Variable2", 3.0);
 
-    auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+    auto variables_FAD = convert_variable_values_to_fad_objects(variables);
 
     // convert vector of pairs to map variables_values
     std::map<std::string, Sacado::Fad::DFad<double>> variable_values;

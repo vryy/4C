@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& state)
+int PARTICLEENGINE::enum_to_state_dim(const enum ParticleState& state)
 {
   int dim = 0;
 
@@ -76,7 +76,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& state)
   return dim;
 }
 
-std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& state)
+std::string PARTICLEENGINE::enum_to_state_name(const enum ParticleState& state)
 {
   std::string name;
 
@@ -209,7 +209,7 @@ std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& state)
   return name;
 }
 
-enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& name)
+enum PARTICLEENGINE::ParticleState PARTICLEENGINE::enum_from_state_name(const std::string& name)
 {
   enum ParticleState state;
 
@@ -225,7 +225,7 @@ enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::
   return state;
 }
 
-std::string PARTICLEENGINE::EnumToTypeName(const enum ParticleType& type)
+std::string PARTICLEENGINE::enum_to_type_name(const enum ParticleType& type)
 {
   std::string name;
 
@@ -256,7 +256,7 @@ std::string PARTICLEENGINE::EnumToTypeName(const enum ParticleType& type)
   return name;
 }
 
-enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::string& name)
+enum PARTICLEENGINE::ParticleType PARTICLEENGINE::enum_from_type_name(const std::string& name)
 {
   enum ParticleType type;
 
@@ -278,7 +278,7 @@ enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::st
   return type;
 }
 
-std::string PARTICLEENGINE::EnumToStatusName(const enum ParticleStatus& status)
+std::string PARTICLEENGINE::enum_to_status_name(const enum ParticleStatus& status)
 {
   std::string name;
 

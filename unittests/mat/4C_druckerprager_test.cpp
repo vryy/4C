@@ -199,8 +199,8 @@ namespace
         ref_cmat(i, j) = result_stress(i).dx(j);
       }
     }
-    FOUR_C_EXPECT_NEAR(Core::FADUtils::CastToDouble(result_stress),
-        Core::FADUtils::CastToDouble(ref_stress), 1.0e-12);
+    FOUR_C_EXPECT_NEAR(Core::FADUtils::cast_to_double(result_stress),
+        Core::FADUtils::cast_to_double(ref_stress), 1.0e-12);
   };
 
   //! test member function Evaluate for arbitrary values

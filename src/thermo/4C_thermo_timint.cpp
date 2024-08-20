@@ -48,7 +48,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     : discret_(actdis),
       myrank_(actdis->get_comm().MyPID()),
       solver_(solver),
-      solveradapttol_(Core::UTILS::IntegralValue<int>(tdynparams, "ADAPTCONV") == 1),
+      solveradapttol_(Core::UTILS::integral_value<int>(tdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
       dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
       output_(output),
@@ -56,15 +56,15 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
       printiter_(true),  // ADD INPUT PARAMETER
       writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
-      writeglob_((bool)Core::UTILS::IntegralValue<int>(ioparams, "THERM_TEMPERATURE")),
+      writeglob_((bool)Core::UTILS::integral_value<int>(ioparams, "THERM_TEMPERATURE")),
       writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
       writeheatflux_(
-          Core::UTILS::IntegralValue<Inpar::Thermo::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
+          Core::UTILS::integral_value<Inpar::Thermo::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
       writetempgrad_(
-          Core::UTILS::IntegralValue<Inpar::Thermo::TempGradType>(ioparams, "THERM_TEMPGRAD")),
+          Core::UTILS::integral_value<Inpar::Thermo::TempGradType>(ioparams, "THERM_TEMPGRAD")),
       writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
       energyfile_(nullptr),
-      calcerror_(Core::UTILS::IntegralValue<Inpar::Thermo::CalcError>(tdynparams, "CALCERROR")),
+      calcerror_(Core::UTILS::integral_value<Inpar::Thermo::CalcError>(tdynparams, "CALCERROR")),
       errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
       time_(Teuchos::null),
       timen_(0.0),
@@ -74,7 +74,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       step_(0),
       stepn_(0),
       firstoutputofrun_(true),
-      lumpcapa_(Core::UTILS::IntegralValue<int>(tdynparams, "LUMPCAPA") == 1),
+      lumpcapa_(Core::UTILS::integral_value<int>(tdynparams, "LUMPCAPA") == 1),
       zeros_(Teuchos::null),
       temp_(Teuchos::null),
       rate_(Teuchos::null),
@@ -108,7 +108,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   if ((writeenergyevery_ != 0) and (myrank_ == 0)) attach_energy_file();
 
   // a zero vector of full length
-  zeros_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  zeros_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -128,12 +128,12 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
 
   // temperatures T_{n+1} at t_{n+1}
-  tempn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  tempn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   // temperature rates R_{n+1} at t_{n+1}
-  raten_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  raten_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // create empty interface force vector
-  fifc_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  fifc_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // create empty matrix
   tang_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*discret_->dof_row_map(), 81, true, true));
@@ -144,7 +144,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   // -------------------------------------------------------------------
   const int startfuncno = tdynparams.get<int>("INITFUNCNO");
   set_initial_field(
-      Core::UTILS::IntegralValue<Inpar::Thermo::InitialField>(tdynparams, "INITIALFIELD"),
+      Core::UTILS::integral_value<Inpar::Thermo::InitialField>(tdynparams, "INITIALFIELD"),
       startfuncno);
 
   // stay with us
@@ -161,9 +161,9 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
-      Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);  //!< external force
+      Core::LinAlg::create_vector(*discret_->dof_row_map(), true);  //!< external force
   Teuchos::RCP<Epetra_Vector> fint =
-      Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);  //!< internal force
+      Core::LinAlg::create_vector(*discret_->dof_row_map(), true);  //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
   apply_dirichlet_bc((*time_)[0], (*temp_)(0), (*rate_)(0), false);
@@ -209,7 +209,7 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
   {
     // rhs corresponds to residual on the rhs
     // K . DT = - R_n+1 = - R_n - (fint_n+1 - fext_n+1)
-    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), rhs);

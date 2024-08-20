@@ -57,24 +57,24 @@ namespace SSI
     class SSISlaveSideConverter;
 
     //! Modification of time parameter list for problem with different time step size
-    void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
+    void change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
         Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn);
 
     //! check for a consistent input file definition of the SSIInterfaceContact condition
-    void CheckConsistencyOfSSIInterfaceContactCondition(
+    void check_consistency_of_ssi_interface_contact_condition(
         const std::vector<Core::Conditions::Condition*>& conditionsToBeTested,
         Teuchos::RCP<Core::FE::Discretization>& structdis);
 
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
-    int CheckTimeStepping(double dt1, double dt2);
+    int check_time_stepping(double dt1, double dt2);
 
     //! clone scatra specific parameters for solver of manifold. Add manifold specific parameters
-    Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
+    Teuchos::ParameterList clone_sca_tra_manifold_params(const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& sublist_manifold_params);
 
     //! modify scatra parameters for ssi specific values
-    Teuchos::ParameterList ModifyScaTraParams(const Teuchos::ParameterList& scatraparams);
+    Teuchos::ParameterList modify_sca_tra_params(const Teuchos::ParameterList& scatraparams);
 
 
     /*---------------------------------------------------------------------------------*

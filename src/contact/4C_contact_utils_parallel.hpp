@@ -35,7 +35,7 @@ namespace CONTACT
     @param[in] contactParams Parameter list with all contact-relevant input parameters
     @return True, if new path is chosen. False otherwise.
     */
-    bool UseSafeRedistributeAndGhosting(const Teuchos::ParameterList& contactParams);
+    bool use_safe_redistribute_and_ghosting(const Teuchos::ParameterList& contactParams);
 
   }  // namespace UTILS
 }  // namespace CONTACT

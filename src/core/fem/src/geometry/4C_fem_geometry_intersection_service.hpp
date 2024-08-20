@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Geo
 {
-  std::map<int, Core::LinAlg::Matrix<3, 2>> getCurrentXAABBs(const Core::FE::Discretization& dis,
+  std::map<int, Core::LinAlg::Matrix<3, 2>> get_current_xaab_bs(const Core::FE::Discretization& dis,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
   /*!
@@ -33,7 +33,7 @@ namespace Core::Geo
   \param xfemDOP     (in)         : DOP of the xfem element
   \return true if the DOP's intersect or false otherwise
    */
-  bool intersectionOfKDOPs(
+  bool intersection_of_kdo_ps(
       const Core::LinAlg::Matrix<9, 2>& cutterDOP, const Core::LinAlg::Matrix<9, 2>& xfemDOP);
 
   /*!
@@ -42,7 +42,7 @@ namespace Core::Geo
   \param queryBV     (in)         : AABB of the query element
   \return true if the AABB's intersect or false otherwise
    */
-  bool intersectionOfBVs(
+  bool intersection_of_b_vs(
       const Core::LinAlg::Matrix<3, 2>& currentBV, const Core::LinAlg::Matrix<3, 2>& queryBV);
 
   /*!
@@ -62,7 +62,7 @@ namespace Core::Geo
   \param xyze_element   (in)         : coordinates of the element
   \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
    */
-  void checkGeoType(const Core::Elements::Element* element,
+  void check_geo_type(const Core::Elements::Element* element,
       const Core::LinAlg::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType);
 
 }  // namespace Core::Geo

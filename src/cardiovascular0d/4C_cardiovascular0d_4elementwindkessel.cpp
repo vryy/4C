@@ -245,7 +245,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
           cardiovascular0dlm.push_back(gindex[j]);
           cardiovascular0downer.push_back(curr->second->owner());
         }
-        Core::LinAlg::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        Core::LinAlg::assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
     }
   }
@@ -338,7 +338,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::initialize(Teuchos::ParameterLis
         cardiovascular0dlm.push_back(gindex[j]);
         cardiovascular0downer.push_back(curr->second->owner());
       }
-      Core::LinAlg::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
+      Core::LinAlg::assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }
 

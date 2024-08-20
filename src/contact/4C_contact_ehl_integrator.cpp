@@ -203,12 +203,12 @@ void CONTACT::IntegratorEhl::gp_weighted_av_rel_vel(Mortar::Element& sele, Morta
   Core::Gen::Pairedvector<int, double> dvt1(0);
   Core::Gen::Pairedvector<int, double> dvt2(0);
 
-  CONTACT::UTILS::BuildTangentVectors<dim>(normal, dnmap_unit, t1.data(), dt1, t2.data(), dt2);
-  CONTACT::UTILS::RelVelInvariant<dim>(sele, sxi, derivsxi, sval, sderiv, mele, mxi, derivmxi, mval,
-      mderiv, gap, deriv_gap, relVel, relVel_deriv, -.5);
+  CONTACT::UTILS::build_tangent_vectors<dim>(normal, dnmap_unit, t1.data(), dt1, t2.data(), dt2);
+  CONTACT::UTILS::rel_vel_invariant<dim>(sele, sxi, derivsxi, sval, sderiv, mele, mxi, derivmxi,
+      mval, mderiv, gap, deriv_gap, relVel, relVel_deriv, -.5);
 
-  CONTACT::UTILS::VectorScalarProduct<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
-  CONTACT::UTILS::VectorScalarProduct<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
+  CONTACT::UTILS::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
+  CONTACT::UTILS::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
 
   for (int i = 0; i < sele.num_node(); ++i)
   {
@@ -268,9 +268,9 @@ void CONTACT::IntegratorEhl::gp_weighted_av_rel_vel(Mortar::Element& sele, Morta
             jac * wgt * lmval(i) * vt2 * p->second;
   }
 
-  CONTACT::UTILS::RelVel<dim>(sele, sval, sderiv, derivsxi, -1., relVel, relVel_deriv);
-  CONTACT::UTILS::VectorScalarProduct<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
-  CONTACT::UTILS::VectorScalarProduct<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
+  CONTACT::UTILS::rel_vel<dim>(sele, sval, sderiv, derivsxi, -1., relVel, relVel_deriv);
+  CONTACT::UTILS::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
+  CONTACT::UTILS::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
 
   for (int i = 0; i < sele.num_node(); ++i)
   {

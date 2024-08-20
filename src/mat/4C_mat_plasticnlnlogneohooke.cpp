@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::pair<double, double> ResiduumAndJacobianFromFunction(
+  std::pair<double, double> residuum_and_jacobian_from_function(
       Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double Dgamma, double dt, double accplstrain,
       double abs_dev_KH_trial, const Core::UTILS::FunctionOfAnything& hardeningfunction)
   {
@@ -62,7 +62,7 @@ namespace
     return {residuum, tangent};
   }
 
-  std::pair<double, double> ResiduumAndJacobian(Mat::PAR::PlasticNlnLogNeoHooke* matparameter,
+  std::pair<double, double> residuum_and_jacobian(Mat::PAR::PlasticNlnLogNeoHooke* matparameter,
       double Dgamma, double dt, double accplstrain_last, double abs_dev_KH_trial)
   {
     const double ym = matparameter->youngs_;        // Young's modulus
@@ -91,7 +91,7 @@ namespace
     return {residuum, tangent};
   }
 
-  std::pair<double, double> SolveNewtonWithHardeningFunc(
+  std::pair<double, double> solve_newton_with_hardening_func(
       Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double abs_dev_KH_trial,
       double accplstrain_last, double dt, const Core::UTILS::FunctionOfAnything& hardening_function,
       bool error_tol)
@@ -105,7 +105,7 @@ namespace
 
     auto residuumAndJacobianFromFunction = [&](double Dgamma)
     {
-      return ResiduumAndJacobianFromFunction(
+      return residuum_and_jacobian_from_function(
           matparameter, Dgamma, dt, accplstrain_last, abs_dev_KH_trial, hardening_function);
     };
 
@@ -124,8 +124,9 @@ namespace
     return {Dgamma, dy_d_dgamma};
   }
 
-  std::pair<double, double> SolveNewtonWithParameters(Mat::PAR::PlasticNlnLogNeoHooke* matparameter,
-      double abs_dev_KH_trial, double accplstrain_last, double dt, bool error_tol)
+  std::pair<double, double> solve_newton_with_parameters(
+      Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double abs_dev_KH_trial,
+      double accplstrain_last, double dt, bool error_tol)
   {
     // plastic material data
     const double yield = matparameter->yield_;          // initial yield stress
@@ -140,7 +141,7 @@ namespace
     const double tol = matparameter->tolerance_nr_;
 
     auto residuumAndJacobian = [&](double Dgamma)
-    { return ResiduumAndJacobian(matparameter, Dgamma, dt, accplstrain_last, abs_dev_KH_trial); };
+    { return residuum_and_jacobian(matparameter, Dgamma, dt, accplstrain_last, abs_dev_KH_trial); };
 
     const double Dgamma = Core::UTILS::solve_local_newton(residuumAndJacobian, 0.0, tol, maxiter);
 
@@ -273,7 +274,7 @@ void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid
   int matid;
@@ -480,7 +481,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     for (int j = 0; j < 3; j++) n(i, j) = Be_trial(i, j);
 
   // calculate eigenvectors and eigenvalues
-  Core::LinAlg::SymmetricEigenProblem(n, lambda_trial_square);
+  Core::LinAlg::symmetric_eigen_problem(n, lambda_trial_square);
   // eigenvectors are stored in n, i.e. original matrix inserted in method is
   // destroyed.
   // eigenvalues correspond to the square of the stretches
@@ -549,9 +550,9 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   else  // -------------------------------------------------- plastic step
   {
     std::pair<double, double> gamma_and_derivative =
-        (hardening_function_) ? SolveNewtonWithHardeningFunc(params_, abs_dev_KH_trial,
+        (hardening_function_) ? solve_newton_with_hardening_func(params_, abs_dev_KH_trial,
                                     accplstrainlast_.at(gp), dt, *hardening_function_, error_tol)
-                              : SolveNewtonWithParameters(params_, abs_dev_KH_trial,
+                              : solve_newton_with_parameters(params_, abs_dev_KH_trial,
                                     accplstrainlast_.at(gp), dt, error_tol);
 
     Dgamma = gamma_and_derivative.first;

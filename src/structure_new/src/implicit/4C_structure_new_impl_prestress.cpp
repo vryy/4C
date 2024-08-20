@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  inline bool IsMaterialIterative()
+  inline bool is_material_iterative()
   {
     return Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
                Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS") ==
            Inpar::Solid::PreStress::material_iterative;
   }
 
-  inline bool IsMaterialIterativeActive(const double currentTime)
+  inline bool is_material_iterative_active(const double currentTime)
   {
     Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
@@ -37,7 +37,7 @@ namespace
     return pstype == Inpar::Solid::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
   }
 
-  static inline bool IsMulfActive(const double currentTime)
+  static inline bool is_mulf_active(const double currentTime)
   {
     Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
@@ -98,7 +98,7 @@ void Solid::IMPLICIT::PreStress::update_step_element()
 void Solid::IMPLICIT::PreStress::post_update()
 {
   // Check for prestressing
-  if (IsMulfActive(global_state().get_time_n()))
+  if (is_mulf_active(global_state().get_time_n()))
 
   {
     if (global_state().get_my_rank() == 0)
@@ -110,7 +110,7 @@ void Solid::IMPLICIT::PreStress::post_update()
     global_state().get_vel_n()->PutScalar(0.0);
     global_state().get_acc_n()->PutScalar(0.0);
   }
-  else if (IsMaterialIterativeActive(global_state().get_time_n()))
+  else if (is_material_iterative_active(global_state().get_time_n()))
   {
     // Print prestress status update
     if (global_state().get_my_rank() == 0)
@@ -124,7 +124,7 @@ void Solid::IMPLICIT::PreStress::post_update()
 
 bool Solid::IMPLICIT::PreStress::is_material_iterative_prestress_converged() const
 {
-  return IsMaterialIterative() &&
+  return is_material_iterative() &&
          global_state().get_step_n() >= s_dyn().get_pre_stress_minimum_number_of_load_steps() &&
          absolute_displacement_norm_ < s_dyn().get_pre_stress_displacement_tolerance();
 }
@@ -149,7 +149,7 @@ bool Solid::IMPLICIT::PreStress::early_stopping() const
 
 void Solid::IMPLICIT::PreStress::post_time_loop()
 {
-  if (IsMaterialIterative())
+  if (is_material_iterative())
   {
     if (absolute_displacement_norm_ > sdyn().get_pre_stress_displacement_tolerance())
     {

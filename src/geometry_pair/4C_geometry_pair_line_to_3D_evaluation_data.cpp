@@ -40,7 +40,7 @@ GEOMETRYPAIR::LineTo3DEvaluationData::LineTo3DEvaluationData(
             "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION");
 
     gauss_rule_ =
-        Inpar::GEOMETRYPAIR::IntToGaussRule1D(input_parameter_list.get<int>("GAUSS_POINTS"));
+        Inpar::GEOMETRYPAIR::int_to_gauss_rule1_d(input_parameter_list.get<int>("GAUSS_POINTS"));
 
     integration_points_circumference_ =
         input_parameter_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");

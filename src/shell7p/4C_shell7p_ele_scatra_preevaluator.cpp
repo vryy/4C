@@ -16,26 +16,26 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Discret::ELEMENTS::Shell::PreEvaluateScatraByElement(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell::pre_evaluate_scatra_by_element(Core::Elements::Element& ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& dof_index_array)
 {
   switch (ele.shape())
   {
     case Core::FE::CellType::quad4:
-      return PreEvaluateScatra<Core::FE::CellType::quad4>(
+      return pre_evaluate_scatra<Core::FE::CellType::quad4>(
           ele, params, discretization, dof_index_array);
     case Core::FE::CellType::quad8:
-      return PreEvaluateScatra<Core::FE::CellType::quad8>(
+      return pre_evaluate_scatra<Core::FE::CellType::quad8>(
           ele, params, discretization, dof_index_array);
     case Core::FE::CellType::quad9:
-      return PreEvaluateScatra<Core::FE::CellType::quad9>(
+      return pre_evaluate_scatra<Core::FE::CellType::quad9>(
           ele, params, discretization, dof_index_array);
     case Core::FE::CellType::tri3:
-      return PreEvaluateScatra<Core::FE::CellType::tri3>(
+      return pre_evaluate_scatra<Core::FE::CellType::tri3>(
           ele, params, discretization, dof_index_array);
     case Core::FE::CellType::tri6:
-      return PreEvaluateScatra<Core::FE::CellType::tri6>(
+      return pre_evaluate_scatra<Core::FE::CellType::tri6>(
           ele, params, discretization, dof_index_array);
     default:
       FOUR_C_THROW(
@@ -45,7 +45,7 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatraByElement(Core::Elements::Elemen
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::Element::LocationArray& dof_index_array)
 {
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
       Teuchos::RCP<std::vector<double>> myscalar =
           Teuchos::rcp(new std::vector<double>(dof_index_array[1].lm_.size(), 0.0));
 
-      Core::FE::ExtractMyValues(*scalarnp, *myscalar, dof_index_array[1].lm_);
+      Core::FE::extract_my_values(*scalarnp, *myscalar, dof_index_array[1].lm_);
 
       // element vector for k-th scalar
       std::vector<Core::LinAlg::Matrix<Shell::DETAIL::num_node<distype>, 1>> elescalar(numscal);
@@ -103,7 +103,7 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
         double eta_gp = intpoints_midsurface_.qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
-        Core::FE::shape_function_2D(shapefunctions, xi_gp, eta_gp, distype);
+        Core::FE::shape_function_2d(shapefunctions, xi_gp, eta_gp, distype);
 
         // scalar at current gp
         std::vector<double> scalar_curr_gp(numscal, 0.0);

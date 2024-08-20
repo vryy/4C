@@ -45,7 +45,7 @@ void Solid::EXPLICIT::Generic::setup()
 
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::Nln::GROUP::PrePostOperator::Map& prepostgroup_map =
-      NOX::Nln::GROUP::PrePostOp::GetMap(p_grp_opt);
+      NOX::Nln::GROUP::PrePostOp::get_map(p_grp_opt);
 
   // insert/replace the old pointer in the map
   prepostgroup_map[NOX::Nln::GROUP::prepost_impl_generic] = prepost_generic_ptr;

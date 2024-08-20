@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] Core::LinAlg::Matrix<3, 3> EvaluateC(const Core::LinAlg::Matrix<3, 3>& F)
+  [[nodiscard]] Core::LinAlg::Matrix<3, 3> evaluate_c(const Core::LinAlg::Matrix<3, 3>& F)
   {
     Core::LinAlg::Matrix<3, 3> C(false);
     C.multiply_tn(F, F);
@@ -41,7 +41,7 @@ MIXTURE::PAR::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiber
       fiber_id_(matdata.parameters.get<int>("FIBER_ID") - 1),
       init_(matdata.parameters.get<int>("INIT")),
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
-      fiber_material_(FiberMaterialFactory(fiber_material_id_)),
+      fiber_material_(fiber_material_factory(fiber_material_id_)),
       enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
       enable_basal_mass_production_(matdata.parameters.get<bool>("ENABLE_BASAL_MASS_PRODUCTION")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
@@ -290,7 +290,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::M
 {
   const double dt = params.get<double>("delta time");
 
-  Core::LinAlg::Matrix<3, 3> C = EvaluateC(F);
+  Core::LinAlg::Matrix<3, 3> C = evaluate_c(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, 1.0);

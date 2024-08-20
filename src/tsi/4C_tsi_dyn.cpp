@@ -40,7 +40,7 @@ void tsi_dyn_drt()
   if (comm.MyPID() == 0) TSI::printlogo();
 
   // setup of the discretizations, including clone strategy
-  TSI::UTILS::SetupTSI(comm);
+  TSI::UTILS::setup_tsi(comm);
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
@@ -48,7 +48,7 @@ void tsi_dyn_drt()
   const Teuchos::ParameterList& sdynparams =
       Global::Problem::instance()->structural_dynamic_params();
   const Inpar::TSI::SolutionSchemeOverFields coupling =
-      Core::UTILS::IntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+      Core::UTILS::integral_value<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // create an empty TSI::Algorithm instance
   Teuchos::RCP<TSI::Algorithm> tsi;

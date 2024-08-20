@@ -248,7 +248,7 @@ std::ostream& NOX::Nln::StatusTest::NormUpdate::print(std::ostream& stream, int 
     if (i > 0) stream << "\n";
     stream << indent_string;
     stream << status_[i];
-    stream << QuantityType2String(checkList_[i]) << "-";
+    stream << quantity_type_to_string(checkList_[i]) << "-";
     stream << "Update-Norm = " << ::NOX::Utils::sciformat(normUpdate_->at(i), 3) << " < "
            << trueTolerance_[i];
     stream << std::endl;

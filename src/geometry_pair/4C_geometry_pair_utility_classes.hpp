@@ -98,9 +98,9 @@ namespace GEOMETRYPAIR
     inline void set_from_other_point_double(
         const ProjectionPoint1DTo3D<ScalarTypeOther>& point_other)
     {
-      eta_ = Core::FADUtils::CastToDouble(point_other.get_eta());
+      eta_ = Core::FADUtils::cast_to_double(point_other.get_eta());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        xi_(i_dim) = Core::FADUtils::CastToDouble(point_other.get_xi()(i_dim));
+        xi_(i_dim) = Core::FADUtils::cast_to_double(point_other.get_xi()(i_dim));
       projection_result_ = point_other.get_projection_result();
       gauss_weight_ = point_other.get_gauss_weight_no_check();
       intersection_face_ = point_other.get_intersection_face();
@@ -290,7 +290,8 @@ namespace GEOMETRYPAIR
             "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a "
             "has "
             "to be smaller than eta_b!",
-            Core::FADUtils::CastToDouble(get_etadata()), Core::FADUtils::CastToDouble(get_eta_b()));
+            Core::FADUtils::cast_to_double(get_etadata()),
+            Core::FADUtils::cast_to_double(get_eta_b()));
     }
 
     /**

@@ -59,7 +59,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>*
 Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::pair<std::string, int>>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::pair<std::string, int>>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleCalc<distype>>(
@@ -83,7 +83,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate(Core::Eleme
 {
   // check for the action parameter
   const POROFLUIDMULTIPHASE::Action action =
-      Core::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(params, "action");
+      Core::UTILS::get_as_enum<POROFLUIDMULTIPHASE::Action>(params, "action");
 
   // setup
   if (setup_calc(ele, discretization, action) == -1) return -1;
@@ -487,7 +487,8 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
     Core::FE::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action)
 {
   // get element coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze0_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze0_);
 
   // set current coordinates to initial coordinates
   // the displacements will be added later in extract_element_and_node_values() for the moving mesh
@@ -647,7 +648,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::compute_jacobian_at
     const int inode)
 {
   // get parameter space coordinates of current node
-  Core::LinAlg::Matrix<3, 1> myXi = Core::FE::GetNodeCoordinates(inode, distype);
+  Core::LinAlg::Matrix<3, 1> myXi = Core::FE::get_node_coordinates(inode, distype);
   for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = myXi(idim);
 
   det_ = eval_shape_func_and_derivs_in_parameter_space();

@@ -379,7 +379,7 @@ namespace Solid
    *
    * @param coeffs
    */
-  void ComputeGeneralizedAlphaParameters(Solid::IMPLICIT::GenAlpha::Coefficients& coeffs);
+  void compute_generalized_alpha_parameters(Solid::IMPLICIT::GenAlpha::Coefficients& coeffs);
 
 }  // namespace Solid
 

@@ -78,7 +78,7 @@ namespace
    */
   template <Core::FE::CellType celltype>
   Core::LinAlg::Matrix<Discret::ELEMENTS::num_str<celltype>, Discret::ELEMENTS::num_str<celltype>>
-  evaluate_T0invT(const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_centroid)
+  evaluate_t0inv_t(const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_centroid)
   {
     // build T0^T (based on strain-like Voigt notation: xx,yy,zz,xy,yz,xz)
     // currently only works in 3D
@@ -163,7 +163,7 @@ namespace
     centroid_transformation.detJ0_ = jacobian_mapping_centroid.determinant_;
 
     // 2) compute matrix T0^{-T}: T0^{-T} maps the matrix M from local to global coordinates
-    centroid_transformation.T0invT_ = evaluate_T0invT(jacobian_mapping_centroid);
+    centroid_transformation.T0invT_ = evaluate_t0inv_t(jacobian_mapping_centroid);
 
     return centroid_transformation;
   }
@@ -182,7 +182,7 @@ namespace
   {
     auto residual_from_dis = discretization.get_state("residual displacement");
     std::vector<double> residual(lm.size());
-    Core::FE::ExtractMyValues(*residual_from_dis, residual, lm);
+    Core::FE::extract_my_values(*residual_from_dis, residual, lm);
     Core::LinAlg::Matrix<Discret::ELEMENTS::num_dof_per_ele<celltype>, 1> displ_inc(false);
     for (int i = 0; i < Discret::ELEMENTS::num_dof_per_ele<celltype>; ++i)
       displ_inc(i) = residual[i];
@@ -516,7 +516,7 @@ namespace
     U_enh(0, 2) = enhanced_gl_strain(5);
     U_enh(2, 0) = enhanced_gl_strain(5);
 
-    Core::LinAlg::SYEV(U_enh, EW, U_enh);
+    Core::LinAlg::syev(U_enh, EW, U_enh);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
     tmp.multiply(U_enh, EW);
     tmp2.multiply_nt(tmp, U_enh);
@@ -525,7 +525,7 @@ namespace
     // calculate displacement-based right stretch tensor
     U_disp.multiply_tn(defgrd_disp, defgrd_disp);
 
-    Core::LinAlg::SYEV(U_disp, EW, U_disp);
+    Core::LinAlg::syev(U_disp, EW, U_disp);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
     tmp.multiply(U_disp, EW);
     tmp2.multiply_nt(tmp, U_disp);
@@ -675,7 +675,7 @@ namespace
           gl_strain_displacement_based, eas_kinematics.m_tilde, eas_iteration_data.alpha_);
 
       eas_kinematics.enhanced_deformation_gradient =
-          Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
+          Core::LinAlg::identity_matrix<Core::FE::dim<celltype>>();
     }
     else
     {
@@ -772,7 +772,8 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
 
   double element_mass = 0.0;
   double element_volume = 0.0;
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point<celltype>(nodal_coordinates,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -840,7 +841,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
   {
     // integrate mass matrix
     FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
-    ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
+    Discret::ELEMENTS::for_each_gauss_point<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp) {
@@ -903,7 +904,8 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::upda
 
   evaluate_centroid_coordinates_and_add_to_parameter_list<celltype>(nodal_coordinates, params);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point<celltype>(nodal_coordinates,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -943,7 +945,8 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::calc
 
   evaluate_centroid_coordinates_and_add_to_parameter_list<celltype>(nodal_coordinates, params);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point<celltype>(nodal_coordinates,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -984,7 +987,8 @@ Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::calculate
   CentroidTransformation<celltype> centroid_transformation =
       evaluate_centroid_transformation<celltype>(nodal_coordinates);
 
-  ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point<celltype>(nodal_coordinates,
+      stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -1018,7 +1022,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::mate
   Teuchos::ParameterList params{};
 
   // Check if element has fiber nodes, if so interpolate fibers to Gauss Points and add to params
-  InterpolateFibersToGaussPointsAndAddToParameterList<celltype>(
+  interpolate_fibers_to_gauss_points_and_add_to_parameter_list<celltype>(
       stiffness_matrix_integration_, ele, params);
 
   // Call post_setup of material
@@ -1071,7 +1075,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::for_
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, lm);
 
-  ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)

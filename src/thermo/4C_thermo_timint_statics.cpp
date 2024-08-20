@@ -39,15 +39,15 @@ Thermo::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
   //! create force vectors
 
   //! internal force vector F_{int;n} at last time
-  fint_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  fint_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   //! internal force vector F_{int;n+1} at new time
-  fintn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  fintn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   //! set initial internal force vector
   apply_force_tang_internal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fint_, tang_);
   //! external force vector F_ext at last times
-  fext_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  fext_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   //! external force vector F_{n+1} at new time
-  fextn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  fextn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // set initial external force vector of convective heat transfer boundary
   // conditions

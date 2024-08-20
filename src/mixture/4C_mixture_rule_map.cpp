@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<double> GetValidateMassFractions(
+  std::vector<double> get_validate_mass_fractions(
       const std::unordered_map<int, std::vector<double>>& mass_fractions_map, const int ele_id_key,
       const std::size_t num_constituents)
   {
@@ -100,7 +100,7 @@ void MIXTURE::MapMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
 
   // evaluate the mass fractions at the given element id (one based entires in the csv file)
   auto massfracs =
-      GetValidateMassFractions(params_->mass_fractions_map_, eleGID + 1, constituents().size());
+      get_validate_mass_fractions(params_->mass_fractions_map_, eleGID + 1, constituents().size());
 
   // Iterate over all constituents and add all stress/cmat contributions
   for (std::size_t i = 0; i < constituents().size(); ++i)

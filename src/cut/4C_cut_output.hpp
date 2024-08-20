@@ -31,28 +31,28 @@ namespace Cut
 
   namespace Output
   {
-    char GmshElementType(Core::FE::CellType shape);
+    char gmsh_element_type(Core::FE::CellType shape);
 
     /** \brief Write a Gmsh output file, which contains only the given volume cells
      *
      *  The volume cells are numbered and stored individually.
      *
      *  \author hiermeier \date 12/16 */
-    void GmshVolumeCellsOnly(const plain_volumecell_set& vcells);
+    void gmsh_volume_cells_only(const plain_volumecell_set& vcells);
 
     /** \brief Write a Gmsh output file, which contains only the given facets
      *
      *  The facets are numbered and stored individually.
      *
      *  \author hiermeier \date 12/16 */
-    void GmshFacetsOnly(
+    void gmsh_facets_only(
         const plain_facet_set& facets, Element* ele, const std::string& file_affix = "");
-    inline void GmshFacetsOnly(
+    inline void gmsh_facets_only(
         const plain_facet_set& facets, Element* ele, const int& file_affix = -100)
     {
       std::ostringstream affix;
       if (file_affix != -100) affix << file_affix;
-      GmshFacetsOnly(facets, ele, affix.str());
+      gmsh_facets_only(facets, ele, affix.str());
     }
 
     /** \brief Write a Gmsh output file, which contains only the given volume cells
@@ -60,7 +60,7 @@ namespace Cut
      *  The volume cells are numbered and stored individually.
      *
      *  \author hiermeier \date 12/16 */
-    void GmshEdgesOnly(const plain_edge_set& edges);
+    void gmsh_edges_only(const plain_edge_set& edges);
 
     /** \brief Write Gmsh output for a cell of given discretization type
      *
@@ -72,57 +72,57 @@ namespace Cut
      *                         it will overrule the position input.
      *
      *  \author hiermeier \date 01/17 */
-    void GmshCellDump(std::ofstream& file, Core::FE::CellType shape,
+    void gmsh_cell_dump(std::ofstream& file, Core::FE::CellType shape,
         const Core::LinAlg::SerialDenseMatrix& xyze, const Point::PointPosition* position = nullptr,
         const int* value = nullptr);
 
     /*!
     \brief Write output of background element geometry
      */
-    void GmshElementDump(std::ofstream& file, Element* ele, bool to_local = false);
+    void gmsh_element_dump(std::ofstream& file, Element* ele, bool to_local = false);
 
     /*!
     \brief Write output of background element geometry
      */
-    void GmshElementDump(std::ofstream& file, const std::vector<Node*>& nodes, char elementtype,
+    void gmsh_element_dump(std::ofstream& file, const std::vector<Node*>& nodes, char elementtype,
         bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a side
      */
-    void GmshSideDump(
+    void gmsh_side_dump(
         std::ofstream& file, const Side* s, bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a side with given name
      */
-    void GmshSideDump(std::ofstream& file, const Side* s, const std::string& sname,
+    void gmsh_side_dump(std::ofstream& file, const Side* s, const std::string& sname,
         bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a Triside
      */
-    void GmshTriSideDump(std::ofstream& file, std::vector<Point*> points, bool to_local = false,
+    void gmsh_tri_side_dump(std::ofstream& file, std::vector<Point*> points, bool to_local = false,
         Element* ele = nullptr);
 
     /*!
     \brief Write output of a facet
      */
-    void GmshFacetDump(std::ofstream& file, Facet* facet,
+    void gmsh_facet_dump(std::ofstream& file, Facet* facet,
         const std::string& visualizationtype = "sides", bool print_all = false,
         bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a volumecell
      */
-    void GmshVolumecellDump(std::ofstream& file, VolumeCell* VC,
+    void gmsh_volumecell_dump(std::ofstream& file, VolumeCell* VC,
         const std::string& visualizationtype = "sides", bool print_all = false,
         bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a cylce
      */
-    void GmshCycleDump(std::ofstream& file, Cycle* cycle,
+    void gmsh_cycle_dump(std::ofstream& file, Cycle* cycle,
         const std::string& visualizationtype = "sides", bool to_local = false,
         Element* ele = nullptr);
 
@@ -130,147 +130,149 @@ namespace Cut
     \brief Write output of the background element and all the cut sides corresponding to this
     element
      */
-    void GmshCompleteCutElement(std::ofstream& file, Element* ele, bool to_local = false);
+    void gmsh_complete_cut_element(std::ofstream& file, Element* ele, bool to_local = false);
 
     /*!
     \brief Write output of a coord as point with idx
      */
-    void GmshCoordDump(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord, double idx,
+    void gmsh_coord_dump(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord, double idx,
         bool to_local = false, Element* ele = nullptr);
 
 
     /*!
     \brief Write output of a line
      */
-    void GmshLineDump(std::ofstream& file, Cut::Point* p1, Cut::Point* p2, int idx1, int idx2,
+    void gmsh_line_dump(std::ofstream& file, Cut::Point* p1, Cut::Point* p2, int idx1, int idx2,
         bool to_local = false, Element* ele = nullptr);
 
-    inline void GmshLineDump(std::ofstream& file, Cut::Point* p1, Cut::Point* p2)
+    inline void gmsh_line_dump(std::ofstream& file, Cut::Point* p1, Cut::Point* p2)
     {
-      GmshLineDump(file, p1, p2, p1->id(), p2->id(), false, nullptr);
+      gmsh_line_dump(file, p1, p2, p1->id(), p2->id(), false, nullptr);
     }
 
-    inline void GmshLineDump(std::ofstream& file, Cut::Point* p1, Cut::Point* p2, bool to_local)
+    inline void gmsh_line_dump(std::ofstream& file, Cut::Point* p1, Cut::Point* p2, bool to_local)
     {
-      GmshLineDump(file, p1, p2, p1->id(), p2->id(), to_local, nullptr);
+      gmsh_line_dump(file, p1, p2, p1->id(), p2->id(), to_local, nullptr);
     }
 
-    inline void GmshLineDump(
+    inline void gmsh_line_dump(
         std::ofstream& file, Cut::Point* p1, Cut::Point* p2, bool to_local, Element* ele)
     {
-      GmshLineDump(file, p1, p2, p1->id(), p2->id(), to_local, ele);
+      gmsh_line_dump(file, p1, p2, p1->id(), p2->id(), to_local, ele);
     }
 
-    void GmshLineDump(
+    void gmsh_line_dump(
         std::ofstream& file, Cut::Line* line, bool to_local = false, Element* ele = nullptr);
     /*!
     \brief Write output of a edge
      */
-    void GmshEdgeDump(
+    void gmsh_edge_dump(
         std::ofstream& file, Cut::Edge* edge, bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a edge
      */
-    void GmshEdgeDump(std::ofstream& file, Cut::Edge* edge, const std::string& ename,
+    void gmsh_edge_dump(std::ofstream& file, Cut::Edge* edge, const std::string& ename,
         bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a node
      */
-    void GmshNodeDump(
+    void gmsh_node_dump(
         std::ofstream& file, Cut::Node* node, bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write output of a point with special idx
      */
-    void GmshPointDump(std::ofstream& file, Cut::Point* point, int idx, bool to_local = false,
+    void gmsh_point_dump(std::ofstream& file, Cut::Point* point, int idx, bool to_local = false,
         Element* ele = nullptr);
 
     /*!
     \brief Write output of a point with special idx and special name
      */
-    void GmshPointDump(std::ofstream& file, Cut::Point* point, int idx, const std::string& pname,
+    void gmsh_point_dump(std::ofstream& file, Cut::Point* point, int idx, const std::string& pname,
         bool to_local, Element* ele);
 
     /*!
     \brief Write output of a point with point position as idx
      */
-    void GmshPointDump(
+    void gmsh_point_dump(
         std::ofstream& file, Cut::Point* point, bool to_local = false, Element* ele = nullptr);
 
     /*!
     \brief Write level set value on cut surface (information taken from facet).
      */
-    void GmshLevelSetValueDump(
+    void gmsh_level_set_value_dump(
         std::ofstream& file, Element* ele, bool dumpnodevalues = false, bool to_local = false);
 
     /*!
     \brief Write level set gradient on cut surface (information taken from facet).
      */
-    void GmshLevelSetGradientDump(std::ofstream& file, Element* ele, bool to_local = false);
+    void gmsh_level_set_gradient_dump(std::ofstream& file, Element* ele, bool to_local = false);
 
     /*!
     \brief Write level set value on cut surface (information taken from facet).
      */
-    void GmshLevelSetValueZeroSurfaceDump(std::ofstream& file, Element* ele, bool to_local = false);
+    void gmsh_level_set_value_zero_surface_dump(
+        std::ofstream& file, Element* ele, bool to_local = false);
 
     /*!
      * Write Level Set Gradient Orientation of Boundary-Cell Normal and LevelSet
      */
-    void GmshLevelSetOrientationDump(std::ofstream& file, Element* ele, bool to_local = false);
+    void gmsh_level_set_orientation_dump(std::ofstream& file, Element* ele, bool to_local = false);
 
     /*!
     \brief Write Eqn of plane normal for all facets (used for DirectDivergence).
     */
-    void GmshEqnPlaneNormalDump(
+    void gmsh_eqn_plane_normal_dump(
         std::ofstream& file, Element* ele, bool normalize = false, bool to_local = false);
-    void GmshEqnPlaneNormalDump(std::ofstream& file, Facet* facet, bool normalize = false,
+    void gmsh_eqn_plane_normal_dump(std::ofstream& file, Facet* facet, bool normalize = false,
         bool to_local = false, Element* ele = nullptr);
     /*!
     \brief Get equation of plane as implemented in DirectDivergence routine.
      */
-    std::vector<double> GetEqOfPlane(std::vector<Point*> pts);
+    std::vector<double> get_eq_of_plane(std::vector<Point*> pts);
 
     /*!
     \brief Simplify output of for normal output options.
      */
-    void GmshScalar(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord, double scalar,
+    void gmsh_scalar(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord, double scalar,
         bool to_local = false, Element* ele = nullptr);
-    void GmshVector(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord,
+    void gmsh_vector(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord,
         std::vector<double> vector, bool normalize = false, bool to_local = false,
         Element* ele = nullptr);
 
     /*!
     \brief Write cuttest for this element!
     */
-    void GmshElementCutTest(std::ofstream& file, Cut::Element* ele, bool haslevelsetside = false);
+    void gmsh_element_cut_test(
+        std::ofstream& file, Cut::Element* ele, bool haslevelsetside = false);
 
     /*!
      \brief Generate filename for gmsh output with specific ending
      */
-    std::string GenerateGmshOutputFilename(const std::string& filename_tail);
+    std::string generate_gmsh_output_filename(const std::string& filename_tail);
 
     /*!
      \brief Write new Section in Gmsh file (eventually end section from before...)
      */
-    void GmshNewSection(
+    void gmsh_new_section(
         std::ofstream& file, const std::string& section, bool first_endsection = false);
 
     /*!
      \brief End Section in Gmsh file
      */
-    void GmshEndSection(std::ofstream& file, bool close_file = false);
+    void gmsh_end_section(std::ofstream& file, bool close_file = false);
 
     /// generate combination of output of this particular edge and intersection, useful for
     /// debugging cut libraries
-    void GmshCutPairDump(
+    void gmsh_cut_pair_dump(
         std::ofstream& file, Side* side, Edge* edge, int id, const std::string& suffix);
 
-    void GmshCutPairDump(std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id,
+    void gmsh_cut_pair_dump(std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id,
         const std::string& suffix);
 
-    // void GmshObjectDump2(std::ofstream & file, Cut::Facet* f)
+    // void gmsh_object_dump2(std::ofstream & file, Cut::Facet* f)
     //{
     //  return;
     //};//GmshFacetDump(file,f);}
@@ -284,105 +286,109 @@ namespace Cut
     //{
     //  GmshNewSection(file, section);
     //  for (typename std::vector<T>::iterator t = container.begin(); t!=container.end(); ++t)
-    //    //GmshObjectDump( file, (T)(*t));
+    //    //gmsh_object_dump( file, (T)(*t));
     //  GmshEndSection(file);
     //}
     /*!
      \brief Write Coordinates in Gmsh file (for internal use)
      //to_local ... transform to local coordinates of the ele?
      */
-    void GmshWriteCoords(std::ofstream& file, std::vector<double> coord, bool to_local = false,
+    void gmsh_write_coords(std::ofstream& file, std::vector<double> coord, bool to_local = false,
         Element* ele = nullptr);
 
-    void GmshWriteCoords(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord,
+    void gmsh_write_coords(std::ofstream& file, Core::LinAlg::Matrix<3, 1> coord,
         bool to_local = false, Element* ele = nullptr);
 
-    void GmshWriteCoords(
+    void gmsh_write_coords(
         std::ofstream& file, Node* node, bool to_local = false, Element* ele = nullptr);
 
-    void GmshWriteCoords(
+    void gmsh_write_coords(
         std::ofstream& file, Point* point, bool to_local = false, Element* ele = nullptr);
 
     // Generate debug output for various critical cases
-    void DebugDump_ThreePointsOnEdge(
+    void debug_dump_three_points_on_edge(
         Side* first, Side* second, Edge* e, Point* p, const PointSet& cut);
 
-    void DebugDump_MoreThanTwoIntersectionPoints(
+    void debug_dump_more_than_two_intersection_points(
         Edge* edge, Side* other, const std::vector<Point*>& point_stack);
 
-    void DebugDump_MultipleCutPointsSpecial(Side* first, Side* second, const PointSet& cut,
+    void debug_dump_multiple_cut_points_special(Side* first, Side* second, const PointSet& cut,
         const PointSet& collected_points, const point_line_set& new_lines);
 
     /*!
     \brief Dumps object into gmsh file!
     */
     template <class T>
-    void GmshObjectDump(std::ofstream& file, T* obj, bool to_local = false, Element* ele = nullptr)
+    void gmsh_object_dump(
+        std::ofstream& file, T* obj, bool to_local = false, Element* ele = nullptr)
     {
-      FOUR_C_THROW("GmshObjectDump: no specific implementation for your Object type!");
+      FOUR_C_THROW("gmsh_object_dump: no specific implementation for your Object type!");
     }
 
     template <>
-    inline void GmshObjectDump<Point>(std::ofstream& file, Point* obj, bool to_local, Element* ele)
+    inline void gmsh_object_dump<Point>(
+        std::ofstream& file, Point* obj, bool to_local, Element* ele)
     {
-      GmshPointDump(file, obj, to_local, ele);
+      gmsh_point_dump(file, obj, to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<Node>(std::ofstream& file, Node* obj, bool to_local, Element* ele)
+    inline void gmsh_object_dump<Node>(std::ofstream& file, Node* obj, bool to_local, Element* ele)
     {
-      GmshNodeDump(file, obj, to_local, ele);
+      gmsh_node_dump(file, obj, to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<Element>(
+    inline void gmsh_object_dump<Element>(
         std::ofstream& file, Element* obj, bool to_local, Element* ele)
     {
-      GmshElementDump(file, obj, to_local);
+      gmsh_element_dump(file, obj, to_local);
     }
 
     template <>
-    inline void GmshObjectDump<Edge>(std::ofstream& file, Edge* obj, bool to_local, Element* ele)
+    inline void gmsh_object_dump<Edge>(std::ofstream& file, Edge* obj, bool to_local, Element* ele)
     {
-      GmshEdgeDump(file, obj, to_local, ele);
+      gmsh_edge_dump(file, obj, to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<Side>(std::ofstream& file, Side* obj, bool to_local, Element* ele)
+    inline void gmsh_object_dump<Side>(std::ofstream& file, Side* obj, bool to_local, Element* ele)
     {
-      GmshSideDump(file, obj, to_local, ele);
+      gmsh_side_dump(file, obj, to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<Line>(std::ofstream& file, Line* obj, bool to_local, Element* ele)
+    inline void gmsh_object_dump<Line>(std::ofstream& file, Line* obj, bool to_local, Element* ele)
     {
-      GmshLineDump(file, obj, to_local, ele);
+      gmsh_line_dump(file, obj, to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<Facet>(std::ofstream& file, Facet* obj, bool to_local, Element* ele)
+    inline void gmsh_object_dump<Facet>(
+        std::ofstream& file, Facet* obj, bool to_local, Element* ele)
     {
-      GmshFacetDump(file, obj, "sides", true, to_local, ele);
+      gmsh_facet_dump(file, obj, "sides", true, to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<VolumeCell>(
+    inline void gmsh_object_dump<VolumeCell>(
         std::ofstream& file, VolumeCell* obj, bool to_local, Element* ele)
     {
-      GmshVolumecellDump(file, obj, "sides", true, to_local, ele);
+      gmsh_volumecell_dump(file, obj, "sides", true, to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<Cycle>(std::ofstream& file, Cycle* obj, bool to_local, Element* ele)
+    inline void gmsh_object_dump<Cycle>(
+        std::ofstream& file, Cycle* obj, bool to_local, Element* ele)
     {
-      GmshCycleDump(file, obj, "lines", to_local, ele);
+      gmsh_cycle_dump(file, obj, "lines", to_local, ele);
     }
 
     template <>
-    inline void GmshObjectDump<BoundaryCell>(
+    inline void gmsh_object_dump<BoundaryCell>(
         std::ofstream& file, BoundaryCell* obj, bool to_local, Element* ele)
     {
-      GmshCellDump(file, obj->shape(), obj->coordinates());
+      gmsh_cell_dump(file, obj->shape(), obj->coordinates());
     }
 
     /*!
@@ -390,101 +396,101 @@ namespace Cut
      */
     // for std::vector<T*>
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section,
+    void gmsh_write_section(std::ofstream& file, const std::string& section,
         std::vector<T*> container, bool close_file = false, bool to_local = false,
         Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
+      if (section != "") gmsh_new_section(file, section);
       for (typename std::vector<T*>::iterator t = container.begin(); t != container.end(); ++t)
-        GmshObjectDump<T>(file, (*t), to_local, ele);
-      if (section != "") GmshEndSection(file, close_file);
+        gmsh_object_dump<T>(file, (*t), to_local, ele);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
     // for std::vector<Teuchos::RCP<T> >
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section,
+    void gmsh_write_section(std::ofstream& file, const std::string& section,
         std::vector<Teuchos::RCP<T>> container, bool close_file = false, bool to_local = false,
         Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
+      if (section != "") gmsh_new_section(file, section);
       for (typename std::vector<Teuchos::RCP<T>>::iterator t = container.begin();
            t != container.end(); ++t)
-        GmshObjectDump<T>(file, &(*(*t)), to_local, ele);
-      if (section != "") GmshEndSection(file, close_file);
+        gmsh_object_dump<T>(file, &(*(*t)), to_local, ele);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
     // for std::map<int, Teuchos::RCP<T> >
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section,
+    void gmsh_write_section(std::ofstream& file, const std::string& section,
         std::map<int, Teuchos::RCP<T>> container, bool close_file = false, bool to_local = false,
         Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
+      if (section != "") gmsh_new_section(file, section);
       for (typename std::map<int, Teuchos::RCP<T>>::iterator t = container.begin();
            t != container.end(); ++t)
-        GmshObjectDump<T>(file, &(*(t->second)), to_local, ele);
-      if (section != "") GmshEndSection(file, close_file);
+        gmsh_object_dump<T>(file, &(*(t->second)), to_local, ele);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
     // for std::map<plain_int_set, Teuchos::RCP<T> >
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section,
+    void gmsh_write_section(std::ofstream& file, const std::string& section,
         std::map<plain_int_set, Teuchos::RCP<T>> container, bool close_file = false,
         bool to_local = false, Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
+      if (section != "") gmsh_new_section(file, section);
       for (typename std::map<plain_int_set, Teuchos::RCP<T>>::iterator t = container.begin();
            t != container.end(); ++t)
       {
-        GmshObjectDump<T>(file, &(*(t->second)), to_local, ele);
+        gmsh_object_dump<T>(file, &(*(t->second)), to_local, ele);
       }
-      if (section != "") GmshEndSection(file, close_file);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
     // for sorted_vector<T*>
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section,
+    void gmsh_write_section(std::ofstream& file, const std::string& section,
         SortedVector<T*> container, bool close_file = false, bool to_local = false,
         Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
+      if (section != "") gmsh_new_section(file, section);
       for (typename SortedVector<T*>::iterator t = container.begin(); t != container.end(); ++t)
-        GmshObjectDump<T>(file, (*t), to_local, ele);
-      if (section != "") GmshEndSection(file, close_file);
+        gmsh_object_dump<T>(file, (*t), to_local, ele);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
     // for sorted_vector<T*,true,PointPidLess>
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section,
+    void gmsh_write_section(std::ofstream& file, const std::string& section,
         SortedVector<T*, true, PointPidLess> container, bool close_file = false,
         bool to_local = false, Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
+      if (section != "") gmsh_new_section(file, section);
       for (typename SortedVector<T*, true, PointPidLess>::iterator t = container.begin();
            t != container.end(); ++t)
-        GmshObjectDump<T>(file, (*t), to_local, ele);
-      if (section != "") GmshEndSection(file, close_file);
+        gmsh_object_dump<T>(file, (*t), to_local, ele);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
     // for std::set<T*>
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section, std::set<T*> container,
+    void gmsh_write_section(std::ofstream& file, const std::string& section, std::set<T*> container,
         bool close_file = false, bool to_local = false, Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
+      if (section != "") gmsh_new_section(file, section);
       for (typename std::set<T*>::iterator t = container.begin(); t != container.end(); ++t)
-        GmshObjectDump<T>(file, (*t), to_local, ele);
-      if (section != "") GmshEndSection(file, close_file);
+        gmsh_object_dump<T>(file, (*t), to_local, ele);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
     // for T*
     template <class T>
-    void GmshWriteSection(std::ofstream& file, const std::string& section, T* obj,
+    void gmsh_write_section(std::ofstream& file, const std::string& section, T* obj,
         bool close_file = false, bool to_local = false, Element* ele = nullptr)
     {
-      if (section != "") GmshNewSection(file, section);
-      GmshObjectDump<T>(file, obj, to_local, ele);
-      if (section != "") GmshEndSection(file, close_file);
+      if (section != "") gmsh_new_section(file, section);
+      gmsh_object_dump<T>(file, obj, to_local, ele);
+      if (section != "") gmsh_end_section(file, close_file);
     }
 
   }  // namespace Output

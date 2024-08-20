@@ -39,7 +39,7 @@ namespace PoroMultiPhaseScaTra
   namespace UTILS
   {
     //! setup discretizations and dofsets
-    std::map<int, std::set<int>> SetupDiscretizationsAndFieldCoupling(const Epetra_Comm& comm,
+    std::map<int, std::set<int>> setup_discretizations_and_field_coupling(const Epetra_Comm& comm,
         const std::string& struct_disname, const std::string& fluid_disname,
         const std::string& scatra_disname, int& ndsporo_disp, int& ndsporo_vel,
         int& ndsporo_solidpressure, int& ndsporofluid_scatra, const bool artery_coupl);
@@ -51,15 +51,15 @@ namespace PoroMultiPhaseScaTra
 
     //! create solution algorithm depending on input file
     Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase>
-    CreatePoroMultiPhaseScatraAlgorithm(Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields
-                                            solscheme,  //!< solution scheme to build (i)
-        const Teuchos::ParameterList& timeparams,       //!< problem parameters (i)
-        const Epetra_Comm& comm                         //!< communicator(i)
+    create_poro_multi_phase_scatra_algorithm(Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields
+                                                 solscheme,  //!< solution scheme to build (i)
+        const Teuchos::ParameterList& timeparams,            //!< problem parameters (i)
+        const Epetra_Comm& comm                              //!< communicator(i)
     );
 
     //! create coupling strategy for coupling with 1D network depending on input file
     Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
-    CreateAndInitArteryCouplingStrategy(Teuchos::RCP<Core::FE::Discretization> arterydis,
+    create_and_init_artery_coupling_strategy(Teuchos::RCP<Core::FE::Discretization> arterydis,
         Teuchos::RCP<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname,
@@ -86,7 +86,7 @@ namespace PoroMultiPhaseScaTra
      * @param alpha_eff [in]: effective solubility of oxygen in blood
      */
     template <typename T>
-    void GetOxyPartialPressureFromConcentration(T& Pb, const T& CaO2, const double& CaO2_max,
+    void get_oxy_partial_pressure_from_concentration(T& Pb, const T& CaO2, const double& CaO2_max,
         const double& Pb50, const double& n, const double& alpha_eff)
     {
       // start value
@@ -118,7 +118,7 @@ namespace PoroMultiPhaseScaTra
 
   }  // namespace UTILS
   //! Print the logo
-  void PrintLogo();
+  void print_logo();
 }  // namespace PoroMultiPhaseScaTra
 
 

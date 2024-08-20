@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Rebalance using BinningStrategy                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-void Core::Rebalance::RebalanceDiscretizationsByBinning(
+void Core::Rebalance::rebalance_discretizations_by_binning(
     const Teuchos::ParameterList& binning_params,
     Teuchos::RCP<Core::IO::OutputControl> output_control,
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
@@ -93,7 +93,7 @@ void Core::Rebalance::RebalanceDiscretizationsByBinning(
 /*----------------------------------------------------------------------*
  |  Ghost input discr. redundantly on all procs             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void Core::Rebalance::GhostDiscretizationOnAllProcs(
+void Core::Rebalance::ghost_discretization_on_all_procs(
     const Teuchos::RCP<Core::FE::Discretization> distobeghosted)
 {
   // clone communicator of target discretization
@@ -126,7 +126,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
 
   // gather all master row node gids redundantly in rdata
   std::vector<int> rdata;
-  Core::LinAlg::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
+  Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
 
   // build new node column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
@@ -145,7 +145,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
 
   // gather all gids of elements redundantly
   rdata.resize(0);
-  Core::LinAlg::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
+  Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
 
   // build new element column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newelecolmap =
@@ -179,7 +179,7 @@ void Core::Rebalance::GhostDiscretizationOnAllProcs(
 /*---------------------------------------------------------------------*
 |  Rebalance Elements Matching Template discretization     rauch 09/16 |
 *----------------------------------------------------------------------*/
-void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
+void Core::Rebalance::match_element_distribution_of_matching_discretizations(
     Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
@@ -208,7 +208,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
 
     // match elements to be rebalanced to template elements and fill vectors
     // with desired row and col gids for redistribution.
-    MatchElementRowColDistribution(
+    match_element_row_col_distribution(
         dis_template, dis_to_rebalance, rebalance_rowelegid_vec, rebalance_colelegid_vec);
 
     // construct rebalanced element row map
@@ -227,7 +227,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
 
     // match nodes to be rebalanced to template nodes and fill vectors
     // with desired row and col gids for redistribution.
-    MatchNodalRowColDistribution(
+    match_nodal_row_col_distribution(
         dis_template, dis_to_rebalance, rebalance_nodegid_vec, rebalance_colnodegid_vec);
 
     // construct rebalanced node row map
@@ -264,7 +264,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(
 /*---------------------------------------------------------------------*
 |  Rebalance Conditioned Elements Matching Template        rauch 10/16 |
 *----------------------------------------------------------------------*/
-void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
+void Core::Rebalance::match_element_distribution_of_matching_conditioned_elements(
     Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance,
     const std::string& condname_template, const std::string& condname_rebalance, const bool print)
 {
@@ -546,7 +546,7 @@ void Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Core::Rebalance::GetColVersionOfRowVector(
+Teuchos::RCP<const Epetra_Vector> Core::Rebalance::get_col_version_of_row_vector(
     const Teuchos::RCP<const Core::FE::Discretization> dis,
     const Teuchos::RCP<const Epetra_Vector> state, const int nds)
 {
@@ -567,7 +567,7 @@ Teuchos::RCP<const Epetra_Vector> Core::Rebalance::GetColVersionOfRowVector(
   // if it's not in column map export and allocate
   else
   {
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*colmap, false);
+    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
     Core::LinAlg::export_to(*state, *tmp);
     return tmp;
   }
@@ -578,7 +578,7 @@ Teuchos::RCP<const Epetra_Vector> Core::Rebalance::GetColVersionOfRowVector(
  |recompute nodecolmap of standard discretization to include all        |
  |nodes as of subdicretization                                          |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::Rebalance::ComputeNodeColMap(
+Teuchos::RCP<Epetra_Map> Core::Rebalance::compute_node_col_map(
     const Teuchos::RCP<Core::FE::Discretization>
         sourcedis,  ///< standard discretization we want to rebalance
     const Teuchos::RCP<Core::FE::Discretization> subdis  ///< subdiscretization prescribing ghosting
@@ -607,9 +607,9 @@ Teuchos::RCP<Epetra_Map> Core::Rebalance::ComputeNodeColMap(
 /*----------------------------------------------------------------------*
  *                                                          rauch 10/16 |
  *----------------------------------------------------------------------*/
-void Core::Rebalance::MatchElementRowColDistribution(const Core::FE::Discretization& dis_template,
-    const Core::FE::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
-    std::vector<int>& col_id_vec_to_fill)
+void Core::Rebalance::match_element_row_col_distribution(
+    const Core::FE::Discretization& dis_template, const Core::FE::Discretization& dis_to_rebalance,
+    std::vector<int>& row_id_vec_to_fill, std::vector<int>& col_id_vec_to_fill)
 {
   // preliminary work
   const Epetra_Map* rebalance_elerowmap = dis_to_rebalance.element_row_map();
@@ -656,7 +656,7 @@ void Core::Rebalance::MatchElementRowColDistribution(const Core::FE::Discretizat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Rebalance::MatchNodalRowColDistribution(const Core::FE::Discretization& dis_template,
+void Core::Rebalance::match_nodal_row_col_distribution(const Core::FE::Discretization& dis_template,
     const Core::FE::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
     std::vector<int>& col_id_vec_to_fill)
 {

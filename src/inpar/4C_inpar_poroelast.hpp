@@ -86,7 +86,7 @@ namespace Inpar
     };
 
     //! map enum term to std::string
-    static inline std::string VectorNormString(const enum VectorNorm norm  //!< input enum term
+    static inline std::string vector_norm_string(const enum VectorNorm norm  //!< input enum term
     )
     {
       switch (norm)
@@ -116,7 +116,7 @@ namespace Inpar
 
 
     /// set the poroelast parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace PoroElast
 

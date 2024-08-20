@@ -28,7 +28,7 @@ Solid::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      modexpleuler_(Core::UTILS::IntegralValue<int>(sdynparams, "MODIFIEDEXPLEULER") == 1),
+      modexpleuler_(Core::UTILS::integral_value<int>(sdynparams, "MODIFIEDEXPLEULER") == 1),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null),
       fviscn_(Teuchos::null),
@@ -82,11 +82,11 @@ void Solid::TimIntExplEuler::setup()
   resize_m_step();
 
   // allocate force vectors
-  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fviscn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  fcmtn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
-  frimpn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fextn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fintn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fviscn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  fcmtn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  frimpn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   return;
 }
@@ -227,7 +227,7 @@ int Solid::TimIntExplEuler::integrate_step()
     else
     {
       // extract the diagonal values of the mass matrix
-      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(
+      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(
           (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->row_map(), false);
       (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->extract_diagonal_copy(*diag);
       // A_{n+1} = M^{-1} . ( -fint + fext )

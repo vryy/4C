@@ -152,7 +152,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_taylor_hughes_
   */
 
   // get element-type constant for tau
-  const double mk = ScaTra::MK<distype>();
+  const double mk = ScaTra::mk<distype>();
 
   // effective velocity at element center:
   // (weighted) convective velocity + individual migration velocity
@@ -233,7 +233,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valenti
   */
 
   // get element-type constant for tau
-  const double mk = ScaTra::MK<distype>();
+  const double mk = ScaTra::mk<distype>();
 
   // get Euclidean norm of (weighted) velocity at element center
   double vel_norm;
@@ -310,7 +310,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_
   */
 
   // get element-type constant for tau
-  const double mk = ScaTra::MK<distype>();
+  const double mk = ScaTra::mk<distype>();
 
   // get Euclidean norm of velocity
   const double vel_norm = convelint.norm2();
@@ -373,7 +373,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_codina(
   */
 
   // get element-type constant for tau
-  const double mk = ScaTra::MK<distype>();
+  const double mk = ScaTra::mk<distype>();
 
   // get Euclidean norm of velocity
   const double vel_norm = convelint.norm2();
@@ -424,7 +424,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madurei
   */
 
   // get element-type constant for tau
-  const double mk = ScaTra::MK<distype>();
+  const double mk = ScaTra::mk<distype>();
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
@@ -600,7 +600,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
   if (scatrapara_->assgd_type() == Inpar::ScaTra::assgd_artificial)
   {
     // get element-type constant
-    const double mk = ScaTra::MK<distype>();
+    const double mk = ScaTra::mk<distype>();
 
     // velocity norm
     const double vel_norm = convelint.norm2();
@@ -943,13 +943,13 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
   switch (nsd_)
   {
     case 3:
-      Core::Conditions::FindElementConditions(ele, "FluidVolumeNeumann", myfluidneumcond);
+      Core::Conditions::find_element_conditions(ele, "FluidVolumeNeumann", myfluidneumcond);
       break;
     case 2:
-      Core::Conditions::FindElementConditions(ele, "FluidSurfaceNeumann", myfluidneumcond);
+      Core::Conditions::find_element_conditions(ele, "FluidSurfaceNeumann", myfluidneumcond);
       break;
     case 1:
-      Core::Conditions::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
+      Core::Conditions::find_element_conditions(ele, "FluidLineNeumann", myfluidneumcond);
       break;
     default:
       FOUR_C_THROW("Illegal number of space dimensions: %d", nsd_);

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
+int EXODUS::write_dat_file(const std::string& datfile, const EXODUS::Mesh& mymesh,
     const std::string& headfile, const std::vector<EXODUS::ElemDef>& eledefs,
     const std::vector<EXODUS::CondDef>& condefs)
 {
@@ -29,22 +29,22 @@ int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
   if (!dat) FOUR_C_THROW("failed to open file: %s", datfile.c_str());
 
   // write dat-file intro
-  EXODUS::WriteDatIntro(headfile, mymesh, dat);
+  EXODUS::write_dat_intro(headfile, mymesh, dat);
 
   // write "header"
-  EXODUS::WriteDatHead(headfile, dat);
+  EXODUS::write_dat_head(headfile, dat);
 
   // write conditions
-  EXODUS::WriteDatConditions(condefs, mymesh, dat);
+  EXODUS::write_dat_conditions(condefs, mymesh, dat);
 
   // write design-topology
-  EXODUS::WriteDatDesignTopology(condefs, mymesh, dat);
+  EXODUS::write_dat_design_topology(condefs, mymesh, dat);
 
   // write nodal coordinates
-  EXODUS::WriteDatNodes(mymesh, dat);
+  EXODUS::write_dat_nodes(mymesh, dat);
 
   // write elements
-  EXODUS::WriteDatEles(eledefs, mymesh, dat);
+  EXODUS::write_dat_eles(eledefs, mymesh, dat);
 
   // write END
   dat << "---------------------------------------------------------------END\n"
@@ -59,7 +59,7 @@ int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatIntro(
+void EXODUS::write_dat_intro(
     const std::string& headfile, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   dat << "==================================================================\n"
@@ -79,7 +79,7 @@ void EXODUS::WriteDatIntro(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatHead(const std::string& headfile, std::ostream& dat)
+void EXODUS::write_dat_head(const std::string& headfile, std::ostream& dat)
 {
   std::stringstream head;
   const char* headfilechar = headfile.c_str();
@@ -95,7 +95,7 @@ void EXODUS::WriteDatHead(const std::string& headfile, std::ostream& dat)
   std::string headstring = head.str();
 
   // delete sections which has been written by WriteDatIntro already
-  RemoveDatSection("PROBLEM SIZE", headstring);
+  remove_dat_section("PROBLEM SIZE", headstring);
 
   // delete very first line with comment "//"
   if (headstring.find("//") == 0)
@@ -118,7 +118,7 @@ void EXODUS::WriteDatHead(const std::string& headfile, std::ostream& dat)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstring)
+void EXODUS::remove_dat_section(const std::string& secname, std::string& headstring)
 {
   const size_t secpos = headstring.find(secname);
   if (secpos != std::string::npos)
@@ -135,13 +135,13 @@ void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstrin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatConditions(
+void EXODUS::write_dat_conditions(
     const std::vector<EXODUS::CondDef>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   using namespace FourC;
 
   Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
-      Input::ValidConditions();
+      Input::valid_conditions();
 
   // count how often we have one specific condition
   std::map<std::string, std::vector<int>> count_cond;
@@ -220,7 +220,7 @@ void EXODUS::WriteDatConditions(
           actcon.me == EXODUS::bcns)
       {
         // special case for locsys conditions: calculate normal
-        std::vector<double> normal_tangent = EXODUS::CalcNormalSurfLocsys(actcon.id, mymesh);
+        std::vector<double> normal_tangent = EXODUS::calc_normal_surf_locsys(actcon.id, mymesh);
         dat << "E " << actcon.e_id << " - ";
         for (double normtang : normal_tangent)
           dat << std::setprecision(10) << std::fixed << normtang << " ";
@@ -245,7 +245,7 @@ void EXODUS::WriteDatConditions(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::Mesh& m)
+std::vector<double> EXODUS::calc_normal_surf_locsys(const int ns_id, const EXODUS::Mesh& m)
 {
   std::vector<double> normaltangent;
   EXODUS::NodeSet ns = m.get_node_set(ns_id);
@@ -333,7 +333,7 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatDesignTopology(
+void EXODUS::write_dat_design_topology(
     const std::vector<EXODUS::CondDef>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   using namespace FourC;
@@ -372,7 +372,7 @@ void EXODUS::WriteDatDesignTopology(
   dat << "-----------------------------------------------DNODE-NODE TOPOLOGY" << std::endl;
   for (const auto& dpoint : dpoints)
   {
-    const auto nodes = EXODUS::GetNsFromBCEntity(dpoint.second, mymesh);
+    const auto nodes = EXODUS::get_ns_from_bc_entity(dpoint.second, mymesh);
     for (auto node : nodes)
     {
       dat << "NODE    " << node << " "
@@ -382,7 +382,7 @@ void EXODUS::WriteDatDesignTopology(
   dat << "-----------------------------------------------DLINE-NODE TOPOLOGY" << std::endl;
   for (const auto& dline : dlines)
   {
-    const auto nodes = EXODUS::GetNsFromBCEntity(dline.second, mymesh);
+    const auto nodes = EXODUS::get_ns_from_bc_entity(dline.second, mymesh);
     for (auto node : nodes)
     {
       dat << "NODE    " << node << " "
@@ -392,7 +392,7 @@ void EXODUS::WriteDatDesignTopology(
   dat << "-----------------------------------------------DSURF-NODE TOPOLOGY" << std::endl;
   for (const auto& dsurf : dsurfs)
   {
-    const auto nodes = EXODUS::GetNsFromBCEntity(dsurf.second, mymesh);
+    const auto nodes = EXODUS::get_ns_from_bc_entity(dsurf.second, mymesh);
     for (auto node : nodes)
     {
       dat << "NODE    " << node << " "
@@ -402,7 +402,7 @@ void EXODUS::WriteDatDesignTopology(
   dat << "------------------------------------------------DVOL-NODE TOPOLOGY" << std::endl;
   for (const auto& dvol : dvols)
   {
-    const auto nodes = EXODUS::GetNsFromBCEntity(dvol.second, mymesh);
+    const auto nodes = EXODUS::get_ns_from_bc_entity(dvol.second, mymesh);
     for (auto node : nodes)
     {
       dat << "NODE    " << node << " "
@@ -414,7 +414,7 @@ void EXODUS::WriteDatDesignTopology(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::CondDef& e, const EXODUS::Mesh& m)
+std::set<int> EXODUS::get_ns_from_bc_entity(const EXODUS::CondDef& e, const EXODUS::Mesh& m)
 {
   if (e.me == EXODUS::bcns)
   {
@@ -454,7 +454,7 @@ std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::CondDef& e, const EXODUS::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
+void EXODUS::write_dat_nodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << std::endl;
   dat.precision(16);
@@ -472,7 +472,7 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::WriteDatEles(
+void EXODUS::write_dat_eles(
     const std::vector<ElemDef>& eledefs, const EXODUS::Mesh& mymesh, std::ostream& dat)
 {
   // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
@@ -544,7 +544,7 @@ void EXODUS::WriteDatEles(
     for (const auto& ele : ele_vector)
     {
       Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.get_element_block(ele.id);
-      EXODUS::DatEles(eb, ele, startele, dat, ele.id);
+      EXODUS::dat_eles(eb, ele, startele, dat, ele.id);
     }
   };
 
@@ -586,7 +586,7 @@ void EXODUS::WriteDatEles(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
+void EXODUS::dat_eles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
     int& startele, std::ostream& datfile, const int eb_id)
 {
   auto eles = eb->get_ele_conn();
@@ -597,7 +597,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLID"
-    dat << " " << Core::FE::CellTypeToString(PreShapeToDrt(eb->get_shape()));
+    dat << " " << Core::FE::cell_type_to_string(pre_shape_to_drt(eb->get_shape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"

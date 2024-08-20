@@ -24,7 +24,7 @@ int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& param
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const auto act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
 
   // switch between different physical types as used below
   std::string impltype = "poro";
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::FluidPoroBoundary::location_vector(const Core::FE::Discr
     Teuchos::ParameterList& params) const
 {
   // get the action required
-  const auto act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const auto act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
   switch (act)
   {
     case FLD::poro_boundary:

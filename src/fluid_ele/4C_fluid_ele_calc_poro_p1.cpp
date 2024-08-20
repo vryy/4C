@@ -25,7 +25,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcPoroP1<distype>*
 Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcPoroP1<distype>>(
@@ -57,7 +57,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate(Discret::ELEMENTS::
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -184,7 +184,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate(Discret::ELEMENTS::
       discretization, lm, *Base::rotsymmpbc_, &edispn, nullptr, "dispn");
 
   // get node coordinates and number of elements per node
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
 
   // construct views
@@ -295,7 +295,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENT
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -410,7 +410,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_od(Discret::ELEMENT
       discretization, lm, *Base::rotsymmpbc_, &egridvn, nullptr, "gridvn");
 
   // get node coordinates and number of elements per node
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
 
   Base::pre_evaluate(params, ele, discretization);
@@ -1180,7 +1180,7 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_volume(Teuchos::Para
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
   // set element id
   Base::eid_ = ele->id();

@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   template <bool do_piv, unsigned dim, typename Valtype>
-  Valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, Valtype>& A,
+  Valtype gauss_elimination(Core::LinAlg::Matrix<dim, dim, Valtype>& A,
       Core::LinAlg::Matrix<dim, 1, Valtype>& b, Core::LinAlg::Matrix<dim, 1, Valtype>& x)
   {
     if (dim > 1)
@@ -130,9 +130,9 @@ namespace Core::LinAlg
     \return determinant of system matrix
   */
   template <unsigned dim>
-  double scaledGaussElimination(Core::LinAlg::Matrix<dim, dim>& A,  ///< (in)    : system matrix
-      Core::LinAlg::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
-      Core::LinAlg::Matrix<dim, 1>& x                               ///< (out)   : solution vector
+  double scaled_gauss_elimination(Core::LinAlg::Matrix<dim, dim>& A,  ///< (in)    : system matrix
+      Core::LinAlg::Matrix<dim, 1>& b,                                ///< (in)    : right-hand-side
+      Core::LinAlg::Matrix<dim, 1>& x                                 ///< (out)   : solution vector
   )
   {
     // infnorm scaling
@@ -149,7 +149,7 @@ namespace Core::LinAlg
       // close to zero row detected -> matrix does probably not have full rank
       if (max < 1.0e-14)
       {
-        return Core::LinAlg::gaussElimination<true, dim>(A, b, x);
+        return Core::LinAlg::gauss_elimination<true, dim>(A, b, x);
       }
 
       // scale row with inv of max entry
@@ -162,7 +162,7 @@ namespace Core::LinAlg
     }
 
     // solve scaled system using pivoting
-    return Core::LinAlg::gaussElimination<true, dim>(A, b, x);
+    return Core::LinAlg::gauss_elimination<true, dim>(A, b, x);
   }
 
 }  // namespace Core::LinAlg

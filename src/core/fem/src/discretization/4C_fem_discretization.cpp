@@ -542,7 +542,7 @@ void Core::FE::Discretization::set_state(
         "col map of discretization %s and state vector %s are different. This is a fatal bug!",
         name_.c_str(), name.c_str());
     // make a copy as in parallel such that no additional RCP points to the state vector
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*colmap, false);
+    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
     tmp->Update(1.0, *state, 0.0);
     state_[nds][name] = tmp;
   }
@@ -551,7 +551,7 @@ void Core::FE::Discretization::set_state(
     FOUR_C_ASSERT(dof_row_map(nds)->SameAs(state->Map()),
         "row map of discretization %s and state vector %s are different. This is a fatal bug!",
         name_.c_str(), name.c_str());
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*colmap, false);
+    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
 
     // this is necessary to find out the number of nodesets in the beginning
     if (stateimporter_.size() <= nds)
@@ -706,7 +706,7 @@ void Core::FE::Discretization::un_pack_my_elements(Teuchos::RCP<std::vector<char
   {
     std::vector<char> data;
     Core::Communication::ParObject::extract_from_pack(index, *e, data);
-    Core::Communication::ParObject* o = Core::Communication::Factory(data);
+    Core::Communication::ParObject* o = Core::Communication::factory(data);
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_THROW_UNLESS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
@@ -726,7 +726,7 @@ void Core::FE::Discretization::un_pack_my_nodes(Teuchos::RCP<std::vector<char>> 
   {
     std::vector<char> data;
     Core::Communication::ParObject::extract_from_pack(index, *e, data);
-    Core::Communication::ParObject* o = Core::Communication::Factory(data);
+    Core::Communication::ParObject* o = Core::Communication::factory(data);
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_THROW_UNLESS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());
@@ -747,7 +747,7 @@ void Core::FE::Discretization::redistribute_state(const unsigned nds, const std:
   {
     // get the state and export it to the rowmap to be able to reset the state
     auto statevec = get_state(nds, name);
-    auto statevecrowmap = Core::LinAlg::CreateVector(*dof_row_map(nds), true);
+    auto statevecrowmap = Core::LinAlg::create_vector(*dof_row_map(nds), true);
     Core::LinAlg::export_to(*statevec, *statevecrowmap);
 
     // now set the state again

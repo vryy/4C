@@ -115,7 +115,7 @@ void Solid::Nln::SOLVER::convert_model_type_to_quantity_type(const enum Inpar::S
       const Teuchos::ParameterList& p_contact =
           Global::Problem::instance()->contact_dynamic_params();
       enum Inpar::CONTACT::FrictionType frictiontype =
-          Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(p_contact, "FRICTION");
+          Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(p_contact, "FRICTION");
       switch (frictiontype)
       {
         case Inpar::CONTACT::friction_none:
@@ -502,7 +502,7 @@ void Solid::Nln::SOLVER::set_norm_update_params(Teuchos::ParameterList& qlist,
     case Inpar::Solid::convnorm_abs:
     {
       qlist.set("Test Type", "NormUpdate");
-      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::quantity_type_to_string(qtype).c_str());
       qlist.set("Tolerance Type", "Absolute");
       break;
     }
@@ -510,7 +510,7 @@ void Solid::Nln::SOLVER::set_norm_update_params(Teuchos::ParameterList& qlist,
     case Inpar::Solid::convnorm_rel:
     {
       qlist.set("Test Type", "NormUpdate");
-      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::quantity_type_to_string(qtype).c_str());
       qlist.set("Tolerance Type", "Relative");
       break;
     }
@@ -602,7 +602,7 @@ void Solid::Nln::SOLVER::set_norm_f_params(Teuchos::ParameterList& qlist,
     case Inpar::Solid::convnorm_abs:
     {
       qlist.set("Test Type", "NormF");
-      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::quantity_type_to_string(qtype).c_str());
       qlist.set("Tolerance Type", "Absolute");
       break;
     }
@@ -610,7 +610,7 @@ void Solid::Nln::SOLVER::set_norm_f_params(Teuchos::ParameterList& qlist,
     case Inpar::Solid::convnorm_rel:
     {
       qlist.set("Test Type", "NormF");
-      qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
+      qlist.set("Quantity Type", NOX::Nln::StatusTest::quantity_type_to_string(qtype).c_str());
       qlist.set("Tolerance Type", "Relative");
       break;
     }
@@ -674,7 +674,7 @@ void Solid::Nln::SOLVER::set_active_set_params(
 {
   qlist.set("Test Type", "ActiveSet");
   // set the quantity type
-  qlist.set("Quantity Type", NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
+  qlist.set("Quantity Type", NOX::Nln::StatusTest::quantity_type_to_string(qtype).c_str());
   qlist.set<int>("Max Cycle Size", 3);
 }
 

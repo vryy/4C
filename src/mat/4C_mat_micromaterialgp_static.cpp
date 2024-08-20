@@ -40,8 +40,8 @@ Mat::MicroMaterialGP::MicroMaterialGP(
 {
   Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
   Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
-  dis_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
-  disn_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
+  dis_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
+  disn_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
   lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
   oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
   oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
@@ -84,7 +84,7 @@ Mat::MicroMaterialGP::MicroMaterialGP(
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
-  if (Core::UTILS::IntegralValue<Inpar::Solid::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
+  if (Core::UTILS::integral_value<Inpar::Solid::NonlinSolTech>(sdyn_micro, "NLNSOL") ==
       Inpar::Solid::soltech_newtonmod)
     mod_newton_ = true;
   else
@@ -183,7 +183,7 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
         Teuchos::rcp(new Core::IO::OutputControl(microdis->get_comm(), "Structure",
             microproblem->spatial_approximation_type(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->file_steps(),
-            Core::UTILS::IntegralValue<bool>(microproblem->io_params(), "OUTPUT_BIN"), adaptname));
+            Core::UTILS::integral_value<bool>(microproblem->io_params(), "OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));

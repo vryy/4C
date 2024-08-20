@@ -47,8 +47,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements:
 
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephizero(my::numscal_);
 
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_s
       ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const Inpar::ScaTra::CalcErrorLevelSet errortype =
-      Core::UTILS::GetAsEnum<Inpar::ScaTra::CalcErrorLevelSet>(params, "calcerrorflag");
+      Core::UTILS::get_as_enum<Inpar::ScaTra::CalcErrorLevelSet>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::ScaTra::calcerror_initial_field:

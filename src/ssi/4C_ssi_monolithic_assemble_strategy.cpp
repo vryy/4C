@@ -68,9 +68,10 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatra_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_scatra_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatra_scatra_matrix_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatra_scatra_matrix);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(scatra_scatra_matrix);
   systemmatrix_block->un_complete();
 
   // assemble blocks of scalar transport system matrix into global system matrix
@@ -93,9 +94,10 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatra_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_scatra_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatra_scatra_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatra_scatra_matrix);
 
   auto& systemmatrix_block_scatra_scatra =
       systemmatrix_block->matrix(block_position_scatra().at(0), block_position_scatra().at(0));
@@ -109,9 +111,9 @@ void SSI::AssembleStrategySparse::assemble_scatra_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_scatra_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatra_scatra_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatra_scatra_matrix);
 
   // add scalar transport system matrix to global system matrix
   systemmatrix_sparse->add(*scatra_scatra_matrix_sparse, false, 1.0, 1.0);
@@ -123,7 +125,8 @@ void SSI::AssembleStrategyBlockBlock::assemble_structure_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> structure_structure_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto& systemmatrix_block_struct_struct =
       systemmatrix_block->matrix(position_structure(), position_structure());
 
@@ -136,7 +139,8 @@ void SSI::AssembleStrategyBlockSparse::assemble_structure_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> structure_structure_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto& systemmatrix_block_struct_struct =
       systemmatrix_block->matrix(position_structure(), position_structure());
 
@@ -149,7 +153,7 @@ void SSI::AssembleStrategySparse::assemble_structure_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> structure_structure_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   systemmatrix_sparse->add(*structure_structure_matrix, false, 1.0, 1.0);
 }
 
@@ -159,9 +163,11 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatra_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_structure_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatra_structure_matrix_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
+          scatra_structure_matrix);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
@@ -180,9 +186,10 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatra_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_structure_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatra_structure_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatra_structure_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatra_structure_matrix);
 
   auto& systemmatrix_block_scatra_struct =
       systemmatrix_block->matrix(block_position_scatra().at(0), position_structure());
@@ -197,9 +204,9 @@ void SSI::AssembleStrategySparse::assemble_scatra_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_structure_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatra_structure_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatra_structure_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatra_structure_matrix);
 
   systemmatrix_sparse->add(*scatra_structure_matrix_sparse, false, 1.0, 1.0);
 }
@@ -210,9 +217,11 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatra_scatramanifold(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_scatramanifold_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatra_scatramanifold_matrix_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatra_scatramanifold_matrix);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
+          scatra_scatramanifold_matrix);
 
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
   {
@@ -232,9 +241,10 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatra_scatramanifold(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_scatramanifold_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatra_scatramanifold_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatra_scatramanifold_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatra_scatramanifold_matrix);
 
   systemmatrix_block->matrix(block_position_scatra().at(0), block_position_scatra_manifold().at(0))
       .add(*scatra_scatramanifold_matrix_sparse, false, 1.0, 1.0);
@@ -246,9 +256,9 @@ void SSI::AssembleStrategySparse::assemble_scatra_scatramanifold(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatra_scatramanifold_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatra_scatramanifold_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatra_scatramanifold_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatra_scatramanifold_matrix);
 
   systemmatrix_sparse->add(*scatra_scatramanifold_matrix_sparse, false, 1.0, 1.0);
 }
@@ -259,9 +269,11 @@ void SSI::AssembleStrategyBlockBlock::assemble_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structure_scatra_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto structure_scatra_matrix_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
+          structure_scatra_matrix);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
@@ -279,9 +291,10 @@ void SSI::AssembleStrategyBlockSparse::assemble_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structure_scatra_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto structure_scatra_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(structure_scatra_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(structure_scatra_matrix);
 
   auto& systemmatrix_block_struct_scatra =
       systemmatrix_block->matrix(position_structure(), block_position_scatra().at(0));
@@ -295,9 +308,9 @@ void SSI::AssembleStrategySparse::assemble_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> structure_scatra_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto structure_scatra_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(structure_scatra_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(structure_scatra_matrix);
 
   systemmatrix_sparse->add(*structure_scatra_matrix_sparse, false, 1.0, 1.0);
 }
@@ -308,9 +321,11 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatramanifold_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_scatra_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatramanifold_scatra_matrix_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatramanifold_scatra_matrix);
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
+          scatramanifold_scatra_matrix);
 
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra_manifold().size()); ++iblock)
   {
@@ -329,9 +344,10 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatramanifold_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_scatra_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatramanifold_scatra_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_scatra_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatramanifold_scatra_matrix);
 
   systemmatrix_block->matrix(block_position_scatra_manifold().at(0), block_position_scatra().at(0))
       .add(*scatramanifold_scatra_matrix_sparse, false, 1.0, 1.0);
@@ -343,9 +359,9 @@ void SSI::AssembleStrategySparse::assemble_scatramanifold_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_scatra_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatramanifold_scatra_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_scatra_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatramanifold_scatra_matrix);
 
   systemmatrix_sparse->add(*scatramanifold_scatra_matrix_sparse, false, 1.0, 1.0);
 }
@@ -356,9 +372,10 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatramanifold_scatramanifold(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_scatramanifold_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatramanifold_scatramanifold_matrix_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
           scatramanifold_scatramanifold_matrix);
 
   // assemble blocks of scalar transport system matrix into global system matrix
@@ -382,9 +399,11 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatramanifold_scatramanifold(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_scatramanifold_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatramanifold_scatramanifold_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_scatramanifold_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(
+          scatramanifold_scatramanifold_matrix);
 
   auto& systemmatrix_block_scatramanifold_scatramanifold = systemmatrix_block->matrix(
       block_position_scatra_manifold().at(0), block_position_scatra_manifold().at(0));
@@ -399,9 +418,10 @@ void SSI::AssembleStrategySparse::assemble_scatramanifold_scatramanifold(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_scatramanifold_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatramanifold_scatramanifold_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_scatramanifold_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(
+          scatramanifold_scatramanifold_matrix);
 
   systemmatrix_sparse->add(*scatramanifold_scatramanifold_matrix_sparse, false, 1.0, 1.0);
 }
@@ -412,9 +432,10 @@ void SSI::AssembleStrategyBlockBlock::assemble_scatramanifold_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_structure_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatramanifold_structure_matrix_block =
-      Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
           scatramanifold_structure_matrix);
 
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra_manifold().size()); ++iblock)
@@ -432,9 +453,10 @@ void SSI::AssembleStrategyBlockSparse::assemble_scatramanifold_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_structure_matrix)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(systemmatrix);
   auto scatramanifold_structure_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_structure_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatramanifold_structure_matrix);
 
   auto& systemmatrix_block_scatramanifold_struct =
       systemmatrix_block->matrix(block_position_scatra_manifold().at(0), position_structure());
@@ -448,9 +470,9 @@ void SSI::AssembleStrategySparse::assemble_scatramanifold_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
     Teuchos::RCP<const Core::LinAlg::SparseOperator> scatramanifold_structure_matrix)
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(systemmatrix);
   auto scatramanifold_structure_matrix_sparse =
-      Core::LinAlg::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_structure_matrix);
+      Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(scatramanifold_structure_matrix);
 
   systemmatrix_sparse->add(*scatramanifold_structure_matrix_sparse, false, 1.0, 1.0);
 }
@@ -476,7 +498,7 @@ void SSI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Epetra_Vector> rhs,
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
+Teuchos::RCP<SSI::AssembleStrategyBase> SSI::build_assemble_strategy(
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold,
     Core::LinAlg::MatrixType matrixtype_ssi, Core::LinAlg::MatrixType matrixtype_scatra)
 {

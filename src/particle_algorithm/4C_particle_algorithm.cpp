@@ -47,7 +47,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
       myrank_(comm.MyPID()),
       params_(params),
       numparticlesafterlastloadbalance_(0),
-      transferevery_(Core::UTILS::IntegralValue<int>(params_, "TRANSFER_EVERY")),
+      transferevery_(Core::UTILS::integral_value<int>(params_, "TRANSFER_EVERY")),
       writeresultsevery_(params.get<int>("RESULTSEVRY")),
       writerestartevery_(params.get<int>("RESTARTEVRY")),
       writeresultsthisstep_(true),
@@ -391,7 +391,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_wall()
 {
   // get type of particle wall source
   Inpar::PARTICLE::ParticleWallSource particlewallsource =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::ParticleWallSource>(
+      Core::UTILS::integral_value<Inpar::PARTICLE::ParticleWallSource>(
           params_, "PARTICLE_WALL_SOURCE");
 
   // create particle wall handler
@@ -427,7 +427,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_wall()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_rigid_body()
 {
   // create rigid body handler
-  if (Core::UTILS::IntegralValue<int>(params_, "RIGID_BODY_MOTION"))
+  if (Core::UTILS::integral_value<int>(params_, "RIGID_BODY_MOTION"))
     particlerigidbody_ = std::make_shared<ParticleRigidBody::RigidBodyHandler>(get_comm(), params_);
 
   // init rigid body handler
@@ -438,7 +438,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_time_integration()
 {
   // get particle time integration scheme
   Inpar::PARTICLE::DynamicType timinttype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
+      Core::UTILS::integral_value<Inpar::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
 
   // create particle time integration
   switch (timinttype)
@@ -470,7 +470,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_interaction()
 {
   // get particle interaction type
   Inpar::PARTICLE::InteractionType interactiontype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::InteractionType>(params_, "INTERACTION");
+      Core::UTILS::integral_value<Inpar::PARTICLE::InteractionType>(params_, "INTERACTION");
 
   // create particle interaction handler
   switch (interactiontype)
@@ -564,7 +564,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::determine_particle_types()
   std::map<PARTICLEENGINE::TypeEnum, double> typetodynloadbal;
 
   // read parameters relating particle types to values
-  PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+  PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
       params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
 
   // insert into map of particle types and corresponding states with empty set
@@ -576,7 +576,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::determine_particle_types()
   for (auto& particle : particlestodistribute_)
     if (not particlestatestotypes_.count(particle->return_particle_type()))
       FOUR_C_THROW("particle type '%s' of initial particle not defined!",
-          PARTICLEENGINE::EnumToTypeName(particle->return_particle_type()).c_str());
+          PARTICLEENGINE::enum_to_type_name(particle->return_particle_type()).c_str());
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::determine_particle_states_of_particle_types()

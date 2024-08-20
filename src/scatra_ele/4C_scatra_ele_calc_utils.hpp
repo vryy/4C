@@ -1002,7 +1002,7 @@ namespace ScaTra
 
   //! for each distype provide the m_k needed for stabilization computation
   template <Core::FE::CellType distype>
-  inline double MK()
+  inline double mk()
   {
     switch (distype)
     {
@@ -1156,15 +1156,15 @@ namespace ScaTra
 
 
   //! determine whether there are only two charged species present or not
-  bool IsBinaryElectrolyte(const std::vector<double>& valence);
+  bool is_binary_electrolyte(const std::vector<double>& valence);
 
   //! determine indices of the two charged species in case of an binary electrolyte
-  std::vector<int> GetIndicesBinaryElectrolyte(const std::vector<double>& valence);
+  std::vector<int> get_indices_binary_electrolyte(const std::vector<double>& valence);
 
   //! calculate resultant diffusion coefficient for stabilization of binary electrolyte systems
-  double CalResDiffCoeff(const std::vector<double>& valence,  ///< valences
-      const std::vector<double>& diffus,                      ///< diffusivities
-      const std::vector<int>& indices                         ///< indices
+  double cal_res_diff_coeff(const std::vector<double>& valence,  ///< valences
+      const std::vector<double>& diffus,                         ///< diffusivities
+      const std::vector<int>& indices                            ///< indices
   );
 
   //! identify elements of inflow section
@@ -1172,7 +1172,7 @@ namespace ScaTra
 
   //! convert implementation type of scalar transport elements into corresponding string for output
   //! purposes
-  std::string ImplTypeToString(const Inpar::ScaTra::ImplType impltype);
+  std::string impl_type_to_string(const Inpar::ScaTra::ImplType impltype);
 }  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE

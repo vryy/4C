@@ -40,7 +40,7 @@ namespace LibB64
   char* encode_block(const char* data, const int data_size);
 
   template <typename T>
-  void writeCompressedBlock(const std::vector<T>& data, std::ostream& out)
+  void write_compressed_block(const std::vector<T>& data, std::ostream& out)
   {
     uLongf compressed_data_length = compressBound(data.size() * sizeof(T));
     char* compressed_data = new char[compressed_data_length];
@@ -354,17 +354,15 @@ class VtkWriterBase
  * @return Vtk type string.
  */
 template <typename T>
-std::string ScalarTypeToVtkType()
-{
-  FOUR_C_THROW("The scalar type has to be specialized in vtk_writer_base.hpp");
-}
+std::string scalar_type_to_vtk_type() = delete;
+
 template <>
-inline std::string ScalarTypeToVtkType<int>()
+inline std::string scalar_type_to_vtk_type<int>()
 {
   return "Int32";
 }
 template <>
-inline std::string ScalarTypeToVtkType<double>()
+inline std::string scalar_type_to_vtk_type<double>()
 {
   return "Float64";
 }

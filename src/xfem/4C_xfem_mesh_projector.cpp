@@ -82,7 +82,7 @@ void XFEM::MeshProjector::set_source_position_vector(Teuchos::RCP<const Epetra_V
     {
       // get the current displacement
       sourcedis_->dof(node, 0, src_dofs);
-      Core::FE::ExtractMyValues(*sourcedisp, mydisp, src_dofs);
+      Core::FE::extract_my_values(*sourcedisp, mydisp, src_dofs);
     }
 
     for (int d = 0; d < 3; ++d) src_nodepositions_n_[node->id()](d) = node->x()[d] + mydisp.at(d);
@@ -105,7 +105,7 @@ void XFEM::MeshProjector::find_search_radius()
   double max_diameter = 0.0;
 
   // build connectivity matrix for every surface of the embedded element
-  std::vector<std::vector<int>> connectivity = Core::FE::getEleNodeNumberingSurfaces(distype);
+  std::vector<std::vector<int>> connectivity = Core::FE::get_ele_node_numbering_surfaces(distype);
 
   //-----------------------------------------------------------------------------------
   // We have hex elements & the faces are quads:
@@ -185,7 +185,7 @@ void XFEM::MeshProjector::setup_search_tree()
 
   // find the bounding box of all elements of source discretization
   const Core::LinAlg::Matrix<3, 2> sourceEleBox =
-      Core::Geo::getXAABBofPositions(src_nodepositions_n_);
+      Core::Geo::get_xaab_bof_positions(src_nodepositions_n_);
   search_tree_->initialize_tree(sourceEleBox, *sourcedis_, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   // TODO: find the bounding box of the nodes from the target discretization, that demand
@@ -229,7 +229,7 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
     {
       // get the current displacement
       targetdis_->dof(node, 0, tar_dofs);
-      Core::FE::ExtractMyValues(*targetdisp, mydisp, tar_dofs);
+      Core::FE::extract_my_values(*targetdisp, mydisp, tar_dofs);
     }
 
     Core::LinAlg::Matrix<3, 1> pos;
@@ -356,7 +356,7 @@ bool XFEM::MeshProjector::check_position_and_project(const Core::Elements::Eleme
 
     // Evaluate elements shape function at this point and fill values
     Core::LinAlg::SerialDenseVector shp(src_numnodes);
-    Core::FE::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
+    Core::FE::shape_function_3d(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
 
     // extract state values and interpolate
     for (int in = 0; in < src_ele->num_node(); ++in)
@@ -373,7 +373,7 @@ bool XFEM::MeshProjector::check_position_and_project(const Core::Elements::Eleme
       {
         if (source_statevecs_[iv] == Teuchos::null) continue;
 
-        Core::FE::ExtractMyValues(*source_statevecs_[iv], myval, src_dofs);
+        Core::FE::extract_my_values(*source_statevecs_[iv], myval, src_dofs);
         for (unsigned isd = 0; isd < numdofpernode; ++isd)
         {
           interpolatedvec(isd + offset) += myval[isd] * shp(in);
@@ -440,8 +440,8 @@ void XFEM::MeshProjector::find_covering_elements_and_interpolate_values(
                 pele, node_xyz, interpolatedvec);
             break;
           default:
-            FOUR_C_THROW(
-                "Unsupported element shape %s!", Core::FE::CellTypeToString(pele->shape()).c_str());
+            FOUR_C_THROW("Unsupported element shape %s!",
+                Core::FE::cell_type_to_string(pele->shape()).c_str());
             break;
         }
 
@@ -600,11 +600,12 @@ void XFEM::MeshProjector::gmsh_output(int step, Teuchos::RCP<const Epetra_Vector
 {
   // output of source discretization with element numbers and target nodes together with element id
   // of source element for value projection
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("tarnode_to_src_ele",
-      targetdis_->writer()->output()->file_name(), step, 30, 0, targetdis_->get_comm().MyPID());
+  const std::string filename =
+      Core::IO::Gmsh::get_new_file_name_and_delete_old_files("tarnode_to_src_ele",
+          targetdis_->writer()->output()->file_name(), step, 30, 0, targetdis_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
-    XFEM::UTILS::PrintDiscretizationToStream(
+    XFEM::UTILS::print_discretization_to_stream(
         Teuchos::rcp_const_cast<Core::FE::Discretization>(sourcedis_), sourcedis_->name(), true,
         false, false, false, false, false, gmshfilecontent, &src_nodepositions_n_);
 
@@ -621,7 +622,7 @@ void XFEM::MeshProjector::gmsh_output(int step, Teuchos::RCP<const Epetra_Vector
       {
         // get the current displacement
         targetdis_->dof(actnode, 0, tar_dofs);
-        Core::FE::ExtractMyValues(*targetdisp, mydisp, tar_dofs);
+        Core::FE::extract_my_values(*targetdisp, mydisp, tar_dofs);
         for (unsigned isd = 0; isd < 3; ++isd)
         {
           pos(isd, 0) += mydisp[isd];
@@ -635,7 +636,7 @@ void XFEM::MeshProjector::gmsh_output(int step, Teuchos::RCP<const Epetra_Vector
       if (iter != targetnode_to_parent_.end())
       {
         int id = iter->second;
-        Core::IO::Gmsh::ScalarToStream(pos, id, gmshfilecontent);
+        Core::IO::Gmsh::scalar_to_stream(pos, id, gmshfilecontent);
       }
     }
     gmshfilecontent << "};\n";

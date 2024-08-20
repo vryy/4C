@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> create_combust_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -36,7 +36,7 @@ namespace
   }
 }  // namespace
 
-void Discret::UTILS::AddValidCombustFunctions(Core::UTILS::FunctionManager& function_manager)
+void Discret::UTILS::add_valid_combust_functions(Core::UTILS::FunctionManager& function_manager)
 {
   Input::LineDefinition zalesaksdisk =
       Input::LineDefinition::Builder().add_tag("ZALESAKSDISK").build();
@@ -45,7 +45,7 @@ void Discret::UTILS::AddValidCombustFunctions(Core::UTILS::FunctionManager& func
       Input::LineDefinition::Builder().add_tag("COLLAPSINGWATERCOLUMN").build();
 
   function_manager.add_function_definition(
-      {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, CreateCombustFunction);
+      {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, create_combust_function);
 }
 
 

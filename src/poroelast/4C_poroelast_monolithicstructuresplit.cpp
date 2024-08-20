@@ -303,25 +303,25 @@ void PoroElast::MonolithicStructureSplit::recover_lagrange_multiplier_after_time
 
     // store the product S_{\GammaI} \Delta d_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sgiddi =
-        Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     sgicur_->multiply(false, *ddiinc_, *sgiddi);
 
     // store the product C_{\GammaI} \Delta u_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> fgiddi =
-        Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     cgicur_->multiply(false, *duiinc_, *fgiddi);
 
     // store the product S_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sggddg =
-        Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     sggcur_->multiply(false, *ddginc_, *sggddg);
 
     // store the prodcut C_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> cggddg =
-        Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     cggcur_->multiply(false, *ddginc_, *cggddg);
     cggddg->Scale(timescale);

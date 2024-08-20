@@ -57,7 +57,7 @@ int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       Teuchos::RCP<const Epetra_Vector> vel;
       std::vector<double> myvel(lm.size());
@@ -96,13 +96,13 @@ int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
 
       if (act == Core::Elements::struct_calc_brownianforce)
         calc_brownian_forces_and_stiff(params, myvel, mydisp, nullptr, &elevec1);
@@ -340,7 +340,7 @@ Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::get_boundi
   std::vector<int> lm, lmowner, lmstride;
   this->location_vector(discret, lm, lmowner, lmstride);
   std::vector<double> mydisp(lm.size());
-  Core::FE::ExtractMyValues(result_data_dofbased, mydisp, lm);
+  Core::FE::extract_my_values(result_data_dofbased, mydisp, lm);
 
   // Add reference position.
   if (mydisp.size() != 3)

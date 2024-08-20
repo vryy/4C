@@ -437,7 +437,7 @@ void Core::LinAlg::BlockSparseMatrixBase::get_partial_extractor(
   {
     p_block_maps.push_back(full_extractor.Map(id));
 
-    full_map = MergeMap(full_map, full_extractor.Map(id), false);
+    full_map = merge_map(full_map, full_extractor.Map(id), false);
   }
 
   partial_extractor.setup(*full_map, p_block_maps);
@@ -446,7 +446,7 @@ void Core::LinAlg::BlockSparseMatrixBase::get_partial_extractor(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
-Core::LinAlg::BlockMatrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::SparseMatrix& A01,
+Core::LinAlg::block_matrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::SparseMatrix& A01,
     Core::LinAlg::SparseMatrix& A10, Core::LinAlg::SparseMatrix& A11)
 {
   if (!A00.range_map().SameAs(A01.range_map()) || !A00.domain_map().SameAs(A10.domain_map()) ||
@@ -564,7 +564,7 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
   cgidlist.clear();
 
   std::vector<std::vector<int>> requests;
-  AllToAllCommunication(comm, ghostgids, requests);
+  all_to_all_communication(comm, ghostgids, requests);
 
   // Now all gids are at the processors that own them. Lets find the owning
   // block for each of them.
@@ -596,7 +596,7 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
 
   // communicate our findings back
   requests.clear();
-  AllToAllCommunication(comm, block, requests);
+  all_to_all_communication(comm, block, requests);
   block.clear();
 
   // store domain block number for each ghost gid
@@ -652,7 +652,7 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
-Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(
+Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(
     Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix)
 {
   auto block_matrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(input_matrix);
@@ -664,7 +664,7 @@ Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase>
-Core::LinAlg::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
     Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix)
 {
   auto block_matrix =

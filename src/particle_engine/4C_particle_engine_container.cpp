@@ -51,7 +51,7 @@ void PARTICLEENGINE::ParticleContainer::setup(
   for (const auto& state : storedstates_)
   {
     // set particle state dimension for current state
-    statedim_[state] = EnumToStateDim(state);
+    statedim_[state] = enum_to_state_dim(state);
 
     // allocate memory for current state in particle container
     states_[state].resize(containersize_ * statedim_[state]);
@@ -125,7 +125,7 @@ void PARTICLEENGINE::ParticleContainer::add_particle(
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (static_cast<int>(states[state].size()) != statedim_[state])
         FOUR_C_THROW("can not add particle: dimensions of state '%s' do not match!",
-            EnumToStateName(state).c_str());
+            enum_to_state_name(state).c_str());
 #endif
 
       // store state in container
@@ -166,7 +166,7 @@ void PARTICLEENGINE::ParticleContainer::replace_particle(
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (static_cast<int>(states[state].size()) != statedim_[state])
         FOUR_C_THROW("can not replace particle: dimensions of state '%s' do not match!",
-            EnumToStateName(state).c_str());
+            enum_to_state_name(state).c_str());
 #endif
 
       // replace state in container
@@ -228,7 +228,7 @@ double PARTICLEENGINE::ParticleContainer::get_min_value_of_state(ParticleState s
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not storedstates_.count(state))
-    FOUR_C_THROW("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+    FOUR_C_THROW("particle state '%s' not stored in container!", enum_to_state_name(state).c_str());
 #endif
 
   if (particlestored_ <= 0) return 0.0;
@@ -245,7 +245,7 @@ double PARTICLEENGINE::ParticleContainer::get_max_value_of_state(ParticleState s
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not storedstates_.count(state))
-    FOUR_C_THROW("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
+    FOUR_C_THROW("particle state '%s' not stored in container!", enum_to_state_name(state).c_str());
 #endif
 
   if (particlestored_ <= 0) return 0.0;

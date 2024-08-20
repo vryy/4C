@@ -39,7 +39,7 @@ namespace BEAMINTERACTION
      *  \author grill, meier
      *  \date 10/17, 01/14 */
     template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-    bool PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> const& r_slave, T& xi_master,
+    bool point_to_curve_projection(Core::LinAlg::Matrix<3, 1, T> const& r_slave, T& xi_master,
         double const& xi_master_initial_guess,
         const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>&
             master_centerline_dof_values,
@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
      *  \author grill, meier
      *  \date 10/17, 10/14 */
     template <typename T>
-    void EvaluatePointToCurveOrthogonalityCondition(T& f,
+    void evaluate_point_to_curve_orthogonality_condition(T& f,
         const Core::LinAlg::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
         const Core::LinAlg::Matrix<3, 1, T>& r_xi_master);
 
@@ -61,7 +61,7 @@ namespace BEAMINTERACTION
      *  \author grill, meier
      *  \date 10/17, 10/14 */
     template <typename T>
-    bool EvaluateLinearizationPointToCurveOrthogonalityCondition(T& df,
+    bool evaluate_linearization_point_to_curve_orthogonality_condition(T& df,
         const Core::LinAlg::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
         const Core::LinAlg::Matrix<3, 1, T>& r_xi_master,
         const Core::LinAlg::Matrix<3, 1, T>& r_xixi_master);
@@ -72,7 +72,7 @@ namespace BEAMINTERACTION
      *  \author grill, meier
      *  \date 10/17, 10/14 */
     template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-    void CalcLinearizationPointToCurveProjectionParameterCoordMaster(
+    void calc_linearization_point_to_curve_projection_parameter_coord_master(
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_slaveDofs,
         Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_masterDofs,
         const Core::LinAlg::Matrix<3, 1, T>& delta_r,
@@ -89,7 +89,7 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 10/17 */
     template <typename T>
-    void CalcPointToCurveProjectionParameterCoordMasterPartialDerivs(
+    void calc_point_to_curve_projection_parameter_coord_master_partial_derivs(
         Core::LinAlg::Matrix<1, 3, T>& xi_master_partial_r_slave,
         Core::LinAlg::Matrix<1, 3, T>& xi_master_partial_r_master,
         Core::LinAlg::Matrix<1, 3, T>& xi_master_partial_r_xi_master,
@@ -105,7 +105,7 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 04/19 */
     template <typename T>
-    void CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
+    void calc_point_to_curve_projection_parameter_coord_master_partial2nd_derivs(
         Core::LinAlg::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_slave,
         Core::LinAlg::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_master,
         Core::LinAlg::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xi_master,
@@ -139,7 +139,7 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 10/17 */
     template <typename T>
-    void CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
+    void calc_ptc_projection_orthogonality_condition_partial_deriv_parameter_coord_master(
         T& orthogon_condition_partial_xi_master, const Core::LinAlg::Matrix<3, 1, T>& delta_r,
         const Core::LinAlg::Matrix<3, 1, T>& r_xi_master,
         const Core::LinAlg::Matrix<3, 1, T>& r_xixi_master);
@@ -151,7 +151,7 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 10/17 */
     template <typename T>
-    void CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
+    void calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_slave(
         Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_slave,
         const Core::LinAlg::Matrix<3, 1, T>& r_xi_master);
 
@@ -162,7 +162,7 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 10/17 */
     template <typename T>
-    void CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
+    void calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_master(
         Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_master,
         const Core::LinAlg::Matrix<3, 1, T>& r_xi_master);
 
@@ -173,7 +173,7 @@ namespace BEAMINTERACTION
      *  \author grill
      *  \date 10/17 */
     template <typename T>
-    void CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
+    void calc_ptc_projection_orthogonality_condition_partial_deriv_cl_tangent_master(
         Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_xi_master,
         const Core::LinAlg::Matrix<3, 1, T>& delta_r);
 
@@ -182,7 +182,7 @@ namespace BEAMINTERACTION
      *  \author grill, meier
      *  \date 10/17, 10/14 */
     template <typename T>
-    void CalcEnclosedAngle(T& angle, T& cosine_angle, const Core::LinAlg::Matrix<3, 1, T>& a,
+    void calc_enclosed_angle(T& angle, T& cosine_angle, const Core::LinAlg::Matrix<3, 1, T>& a,
         const Core::LinAlg::Matrix<3, 1, T>& b);
 
   }  // namespace Geo

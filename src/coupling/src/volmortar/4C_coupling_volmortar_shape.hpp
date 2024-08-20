@@ -41,7 +41,7 @@ namespace Coupling::VolMortar
     //=====================================================================================
     //=====================================================================================
     template <class V>
-    void volmortar_shape_function_3D_deriv(V& deriv1,  ///< to be filled with shape function values
+    void volmortar_shape_function_3d_deriv(V& deriv1,  ///< to be filled with shape function values
         double& r,                                     ///< xi0 coordinate
         double& s,                                     ///< xi1 coordinate
         double& t,                                     ///< xi2 coordinate
@@ -49,16 +49,16 @@ namespace Coupling::VolMortar
     );
 
     template <Core::FE::CellType distype>
-    bool LocalToGlobal(const Core::Elements::Element& ele,  ///< element which is considered
-        const double* xi,                                   ///< para. coordinates
+    bool local_to_global(const Core::Elements::Element& ele,  ///< element which is considered
+        const double* xi,                                     ///< para. coordinates
         double* globcoord);
 
     template <Core::FE::CellType distype>
-    double Jacobian(const double* xi,         ///< para. coordinates
+    double jacobian(const double* xi,         ///< para. coordinates
         const Core::Elements::Element& ele);  ///< element which is considered
 
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    double nurbs_Jacobian(W& deriv,  ///< to be filled with shape function deriv
+    double nurbs_jacobian(W& deriv,  ///< to be filled with shape function deriv
         const U* xi,                 ///< xi coordinates
         T& weights,                  ///< control point weights
         std::vector<Core::LinAlg::SerialDenseVector>& knots,  ///< knot vectors
@@ -66,13 +66,13 @@ namespace Coupling::VolMortar
     );
 
     template <class V>
-    void volmortar_shape_function_1D(V& funct,  ///< to be filled with shape function values
+    void volmortar_shape_function_1d(V& funct,  ///< to be filled with shape function values
         double& xi0,                            ///< xi0 coordinate
         Core::FE::CellType shape                ///< distinguish between mortar shape
     );
 
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
+    void volmortar_nurbs_shape_function_1d(V& funct,  ///< to be filled with shape function values
         W& deriv,                                     ///< to be filled with shape function values
         const U* xi,                                  ///< xi0 coordinate
         T& weights,                                   ///< control point weights
@@ -80,14 +80,14 @@ namespace Coupling::VolMortar
     );
 
     template <class V>
-    void volmortar_shape_function_2D(V& funct,  ///< to be filled with shape function values
+    void volmortar_shape_function_2d(V& funct,  ///< to be filled with shape function values
         const double& xi0,                      ///< xi0 coordinate
         const double& xi1,                      ///< xi1 coordinate
         Core::FE::CellType shape                ///< distinguish between mortar shape
     );
 
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
+    void volmortar_nurbs_shape_function_2d(V& funct,  ///< to be filled with shape function values
         W& deriv,                                     ///< to be filled with shape function values
         const U* xi,                                  ///< xi0 coordinate
         T& weights,                                   ///< control point weights
@@ -95,7 +95,7 @@ namespace Coupling::VolMortar
     );
 
     template <class V>
-    void volmortar_shape_function_3D(V& funct,  ///< to be filled with shape function values
+    void volmortar_shape_function_3d(V& funct,  ///< to be filled with shape function values
         const double& r,                        ///< xi0 coordinate
         const double& s,                        ///< xi1 coordinate
         const double& t,                        ///< xi2 coordinate
@@ -103,7 +103,7 @@ namespace Coupling::VolMortar
     );
 
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_shape_function_3D(V& funct,  ///< to be filled with shape function values
+    void volmortar_nurbs_shape_function_3d(V& funct,  ///< to be filled with shape function values
         W& deriv,                                     ///< to be filled with shape function values
         const U* xi,                                  ///< xi0 coordinate
         T& weights,                                   ///< control point weights
@@ -111,7 +111,7 @@ namespace Coupling::VolMortar
     );
 
     template <class V>
-    void volmortar_shape_function_3D_modified(
+    void volmortar_shape_function_3d_modified(
         V& funct,                 ///< to be filled with shape function values
         const double& r,          ///< xi0 coordinate
         const double& s,          ///< xi1 coordinate
@@ -120,14 +120,14 @@ namespace Coupling::VolMortar
     );
 
     template <Core::FE::CellType distype, class V, class T>
-    void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
+    void volmortar_dualshape_function_1d(V& funct,  ///< to be filled with shape function values
         const Core::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     );
 
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_dualshape_function_1D(
+    void volmortar_nurbs_dualshape_function_1d(
         V& funct,     ///< to be filled with shape function values
         W& deriv,     ///< to be filled with shape function derivs
         const U* xi,  ///< xi coordinates
@@ -137,14 +137,14 @@ namespace Coupling::VolMortar
     );
 
     template <Core::FE::CellType distype, class V, class T>
-    void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
+    void volmortar_dualshape_function_2d(V& funct,  ///< to be filled with shape function values
         const Core::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     );
 
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_dualshape_function_2D(
+    void volmortar_nurbs_dualshape_function_2d(
         V& funct,     ///< to be filled with shape function values
         W& deriv,     ///< to be filled with shape function derivs
         const U* xi,  ///< xi coordinates
@@ -154,14 +154,14 @@ namespace Coupling::VolMortar
     );
 
     template <Core::FE::CellType distype, class V, class T>
-    void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
+    void volmortar_dualshape_function_3d(V& funct,  ///< to be filled with shape function values
         const Core::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
     );
 
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_dualshape_function_3D(
+    void volmortar_nurbs_dualshape_function_3d(
         V& funct,     ///< to be filled with shape function values
         W& deriv,     ///< to be filled with shape function derivs
         const U* xi,  ///< xi coordinates
@@ -319,7 +319,7 @@ namespace Coupling::VolMortar
      |  Evaluate Jacobian determinant                            farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    double Jacobian(const double* xi, const Core::Elements::Element& ele)
+    double jacobian(const double* xi, const Core::Elements::Element& ele)
     {
       //! nn_: number of master element nodes
       static constexpr int nn = Core::FE::num_nodes<distype>;
@@ -340,7 +340,7 @@ namespace Coupling::VolMortar
           Core::LinAlg::Matrix<ndim, nn> deriv;
 
           // get shape function values and derivatives at xi
-          Core::FE::shape_function_1D_deriv1(deriv, xi[0], distype);
+          Core::FE::shape_function_1d_deriv1(deriv, xi[0], distype);
 
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
@@ -373,7 +373,7 @@ namespace Coupling::VolMortar
           Core::LinAlg::Matrix<ndim, nn> deriv;
 
           // get shape function values and derivatives at xi
-          Core::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          Core::FE::shape_function_2d_deriv1(deriv, xi[0], xi[1], distype);
 
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
@@ -420,7 +420,7 @@ namespace Coupling::VolMortar
           const double s = xi[1];
           const double t = xi[2];
 
-          Core::FE::shape_function_3D_deriv1(derivs, r, s, t, distype);
+          Core::FE::shape_function_3d_deriv1(derivs, r, s, t, distype);
 
           Core::LinAlg::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
@@ -454,7 +454,7 @@ namespace Coupling::VolMortar
      |  Evaluate Jacobian determinant for NURBS                  farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    double nurbs_Jacobian(W& deriv,  ///< to be filled with shape function derivs
+    double nurbs_jacobian(W& deriv,  ///< to be filled with shape function derivs
         const U* xi,                 ///< xi coordinates
         T& weights,                  ///< control point weights
         std::vector<Core::LinAlg::SerialDenseVector>& knots,  ///< knot vectors
@@ -560,7 +560,7 @@ namespace Coupling::VolMortar
      |  evaluate std. shape 1D                                   farah 09/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void volmortar_shape_function_1D(V& funct,  ///< to be filled with shape function values
+    void volmortar_shape_function_1d(V& funct,  ///< to be filled with shape function values
         const double& xi0,                      ///< xi0 coordinate
         Core::FE::CellType shape                ///< distinguish between mortar shape
     )
@@ -598,7 +598,7 @@ namespace Coupling::VolMortar
      |  evaluate std. nurbs shape 1D                             farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_shape_function_1D(V& funct,  ///< to be filled with shape function values
+    void volmortar_nurbs_shape_function_1d(V& funct,  ///< to be filled with shape function values
         W& deriv,                                     ///< to be filled with shape function derivs
         const U* xi,                                  ///< xi coordinates
         T& weights,                                   ///< control point weights
@@ -610,7 +610,7 @@ namespace Coupling::VolMortar
         case Core::FE::CellType::nurbs2:
         case Core::FE::CellType::nurbs3:
         {
-          Core::FE::Nurbs::nurbs_get_1D_funct_deriv(funct, deriv, xi, knots, weights, distype);
+          Core::FE::Nurbs::nurbs_get_1d_funct_deriv(funct, deriv, xi, knots, weights, distype);
 
           break;
         }
@@ -624,7 +624,7 @@ namespace Coupling::VolMortar
      |  evaluate std. shape 2D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void volmortar_shape_function_2D(V& funct,  ///< to be filled with shape function values
+    void volmortar_shape_function_2d(V& funct,  ///< to be filled with shape function values
         const double& xi0,                      ///< xi0 coordinate
         const double& xi1,                      ///< xi1 coordinate
         Core::FE::CellType shape                ///< distinguish between mortar shape
@@ -696,7 +696,7 @@ namespace Coupling::VolMortar
      |  evaluate std. nurbs shape 2D                             farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_shape_function_2D(V& funct,  ///< to be filled with shape function values
+    void volmortar_nurbs_shape_function_2d(V& funct,  ///< to be filled with shape function values
         W& deriv,                                     ///< to be filled with shape function derivs
         const U* xi,                                  ///< xi coordinates
         T& weights,                                   ///< control point weights
@@ -708,7 +708,7 @@ namespace Coupling::VolMortar
         case Core::FE::CellType::nurbs4:
         case Core::FE::CellType::nurbs9:
         {
-          Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct, deriv, xi, knots, weights, distype);
+          Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct, deriv, xi, knots, weights, distype);
 
           break;
         }
@@ -722,7 +722,7 @@ namespace Coupling::VolMortar
      |  evaluate std. shape 3D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void volmortar_shape_function_3D(V& funct,  ///< to be filled with shape function values
+    void volmortar_shape_function_3d(V& funct,  ///< to be filled with shape function values
         const double& r,                        ///< xi0 coordinate
         const double& s,                        ///< xi1 coordinate
         const double& t,                        ///< xi2 coordinate
@@ -867,7 +867,7 @@ namespace Coupling::VolMortar
         }
         case Core::FE::CellType::pyramid5:
         {
-          Core::FE::shape_function_3D(funct, r, s, t, shape);
+          Core::FE::shape_function_3d(funct, r, s, t, shape);
 
           break;
         }
@@ -882,7 +882,7 @@ namespace Coupling::VolMortar
      |  evaluate std. nurbs shape 3D                             farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_shape_function_3D(V& funct,  ///< to be filled with shape function values
+    void volmortar_nurbs_shape_function_3d(V& funct,  ///< to be filled with shape function values
         W& deriv,                                     ///< to be filled with shape function derivs
         const U* xi,                                  ///< xi coordinates
         T& weights,                                   ///< control point weights
@@ -894,7 +894,7 @@ namespace Coupling::VolMortar
         case Core::FE::CellType::nurbs8:
         case Core::FE::CellType::nurbs27:
         {
-          Core::FE::Nurbs::nurbs_get_3D_funct_deriv(funct, deriv, xi, knots, weights, distype);
+          Core::FE::Nurbs::nurbs_get_3d_funct_deriv(funct, deriv, xi, knots, weights, distype);
 
           break;
         }
@@ -908,7 +908,7 @@ namespace Coupling::VolMortar
      |  evaluate modified shape 3D (for quadr. dual elements)    farah 05/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void volmortar_shape_function_3D_modified(
+    void volmortar_shape_function_3d_modified(
         V& funct,                 ///< to be filled with shape function values
         const double& r,          ///< xi0 coordinate
         const double& s,          ///< xi1 coordinate
@@ -1040,7 +1040,7 @@ namespace Coupling::VolMortar
      |  evaluate dual shape 1D                                   farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class T>
-    void volmortar_dualshape_function_1D(V& funct,  ///< to be filled with shape function values
+    void volmortar_dualshape_function_1d(V& funct,  ///< to be filled with shape function values
         const Core::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
@@ -1088,7 +1088,7 @@ namespace Coupling::VolMortar
             double gpc[1] = {intpoints.ip().qxg[i][0]};
 
             shape_function<distype>(stdval, gpc);
-            detg = Jacobian<distype>(gpc, ele);
+            detg = jacobian<distype>(gpc, ele);
 
             for (int j = 0; j < nnodes; ++j)
             {
@@ -1101,11 +1101,11 @@ namespace Coupling::VolMortar
           }
 
           // get solution matrix with dual parameters
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
-          volmortar_shape_function_1D(stdval, xi[0], Core::FE::CellType::line3);
+          volmortar_shape_function_1d(stdval, xi[0], Core::FE::CellType::line3);
 
           // evaluate dual shape functions
           for (int i = 0; i < nnodes; ++i)
@@ -1124,7 +1124,7 @@ namespace Coupling::VolMortar
      |  evaluate dual NURBS shapes 1D                            farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_dualshape_function_1D(
+    void volmortar_nurbs_dualshape_function_1d(
         V& funct,     ///< to be filled with shape function values
         W& deriv,     ///< to be filled with shape function derivs
         const U* xi,  ///< xi coordinates
@@ -1165,7 +1165,7 @@ namespace Coupling::VolMortar
           {
             double gpc[1] = {intpoints.ip().qxg[i][0]};
             nurbs_shape_function<distype>(stdval, refderiv, gpc, weights, knots);
-            detg = nurbs_Jacobian<distype>(refderiv, gpc, weights, knots, ele);
+            detg = nurbs_jacobian<distype>(refderiv, gpc, weights, knots, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
@@ -1176,7 +1176,7 @@ namespace Coupling::VolMortar
           }
 
           // calcute coefficient matrix
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1208,7 +1208,7 @@ namespace Coupling::VolMortar
      |  evaluate dual shape 2D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class T>
-    void volmortar_dualshape_function_2D(V& funct,  ///< to be filled with shape function values
+    void volmortar_dualshape_function_2d(V& funct,  ///< to be filled with shape function values
         const Core::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
@@ -1259,7 +1259,7 @@ namespace Coupling::VolMortar
             double gpc[2] = {intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1]};
             shape_function<distype>(stdval, gpc);
 
-            detg = Jacobian<distype>(gpc, ele);
+            detg = jacobian<distype>(gpc, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
@@ -1269,7 +1269,7 @@ namespace Coupling::VolMortar
               }
           }
           // invert bi-ortho matrix me
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1294,7 +1294,7 @@ namespace Coupling::VolMortar
      |  evaluate dual NURBS shapes 2D                            farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_dualshape_function_2D(
+    void volmortar_nurbs_dualshape_function_2d(
         V& funct,     ///< to be filled with shape function values
         W& deriv,     ///< to be filled with shape function derivs
         const U* xi,  ///< xi coordinates
@@ -1335,7 +1335,7 @@ namespace Coupling::VolMortar
           {
             double gpc[2] = {intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1]};
             nurbs_shape_function<distype>(stdval, refderiv, gpc, weights, knots);
-            detg = nurbs_Jacobian<distype>(refderiv, gpc, weights, knots, ele);
+            detg = nurbs_jacobian<distype>(refderiv, gpc, weights, knots, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
@@ -1346,7 +1346,7 @@ namespace Coupling::VolMortar
           }
 
           // calcute coefficient matrix
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1380,7 +1380,7 @@ namespace Coupling::VolMortar
      |  evaluate dual shape 3D                                   farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class T>
-    void volmortar_dualshape_function_3D(V& funct,  ///< to be filled with shape function values
+    void volmortar_dualshape_function_3d(V& funct,  ///< to be filled with shape function values
         const Core::Elements::Element& ele,         ///< element which is considered
         const T* xi,                                ///< para. coordinates
         DualQuad quadtype                           ///< type of quadratic element modification
@@ -1421,7 +1421,7 @@ namespace Coupling::VolMortar
             double gpc[3] = {
                 intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1], intpoints.ip().qxg[i][2]};
             shape_function<distype>(stdval, gpc, quadtype);
-            detg = Jacobian<distype>(gpc, ele);
+            detg = jacobian<distype>(gpc, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
@@ -1432,7 +1432,7 @@ namespace Coupling::VolMortar
           }
 
           // calcute coefficient matrix
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1469,7 +1469,7 @@ namespace Coupling::VolMortar
      |  evaluate dual NURBS shapes 3D                            farah 09/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype, class V, class W, class U, class T>
-    void volmortar_nurbs_dualshape_function_3D(
+    void volmortar_nurbs_dualshape_function_3d(
         V& funct,     ///< to be filled with shape function values
         W& deriv,     ///< to be filled with shape function derivs
         const U* xi,  ///< xi coordinates
@@ -1511,7 +1511,7 @@ namespace Coupling::VolMortar
             double gpc[3] = {
                 intpoints.ip().qxg[i][0], intpoints.ip().qxg[i][1], intpoints.ip().qxg[i][2]};
             nurbs_shape_function<distype>(stdval, refderiv, gpc, weights, knots);
-            detg = nurbs_Jacobian<distype>(refderiv, gpc, weights, knots, ele);
+            detg = nurbs_jacobian<distype>(refderiv, gpc, weights, knots, ele);
 
             for (int j = 0; j < nnodes; ++j)
               for (int k = 0; k < nnodes; ++k)
@@ -1522,7 +1522,7 @@ namespace Coupling::VolMortar
           }
 
           // calcute coefficient matrix
-          Core::LinAlg::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1558,7 +1558,7 @@ namespace Coupling::VolMortar
      |  evaluate modified deriv 3D                               farah 05/14|
      *----------------------------------------------------------------------*/
     template <class V>
-    void volmortar_shape_function_3D_deriv(V& deriv1,  ///< to be filled with shape function values
+    void volmortar_shape_function_3d_deriv(V& deriv1,  ///< to be filled with shape function values
         double& r,                                     ///< xi0 coordinate
         double& s,                                     ///< xi1 coordinate
         double& t,                                     ///< xi2 coordinate
@@ -1768,18 +1768,19 @@ namespace Coupling::VolMortar
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    bool LocalToGlobal(const Core::Elements::Element& ele, const double* xi, double* globcoord)
+    bool local_to_global(const Core::Elements::Element& ele, const double* xi, double* globcoord)
     {
       // check input
-      if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
-      if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
-      if (Core::FE::is_nurbs<distype>) FOUR_C_THROW("ERROR: Lagr. LocalToGlobal called for NURBS!");
+      if (!xi) FOUR_C_THROW("ERROR: local_to_global called with xi=nullptr");
+      if (!globcoord) FOUR_C_THROW("ERROR: local_to_global called with globcoord=nullptr");
+      if (Core::FE::is_nurbs<distype>)
+        FOUR_C_THROW("ERROR: Lagr. local_to_global called for NURBS!");
 
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype>;
 
       const Core::Nodes::Node* const* mynodes = ele.nodes();
-      if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
+      if (!mynodes) FOUR_C_THROW("ERROR: local_to_global: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
 
@@ -1812,23 +1813,23 @@ namespace Coupling::VolMortar
       {
         case 1:
         {
-          volmortar_shape_function_1D(f, xi[0], distype);
+          volmortar_shape_function_1d(f, xi[0], distype);
           break;
         }
         case 2:
         {
-          volmortar_shape_function_2D(f, xi[0], xi[1], distype);
+          volmortar_shape_function_2d(f, xi[0], xi[1], distype);
           break;
         }
         case 3:
         {
           // modified shape function
           if (dualquad == dualquad_quad_mod)
-            volmortar_shape_function_3D_modified(f, xi[0], xi[1], xi[2], distype);
+            volmortar_shape_function_3d_modified(f, xi[0], xi[1], xi[2], distype);
 
           // non-modified shape function
           else if (dualquad == dualquad_no_mod)
-            volmortar_shape_function_3D(f, xi[0], xi[1], xi[2], distype);
+            volmortar_shape_function_3d(f, xi[0], xi[1], xi[2], distype);
 
           // not implemented
           else
@@ -1858,17 +1859,17 @@ namespace Coupling::VolMortar
       {
         case 1:
         {
-          volmortar_nurbs_shape_function_1D<distype>(funct, deriv, xi, weights, knots);
+          volmortar_nurbs_shape_function_1d<distype>(funct, deriv, xi, weights, knots);
           break;
         }
         case 2:
         {
-          volmortar_nurbs_shape_function_2D<distype>(funct, deriv, xi, weights, knots);
+          volmortar_nurbs_shape_function_2d<distype>(funct, deriv, xi, weights, knots);
           break;
         }
         case 3:
         {
-          volmortar_nurbs_shape_function_3D<distype>(funct, deriv, xi, weights, knots);
+          volmortar_nurbs_shape_function_3d<distype>(funct, deriv, xi, weights, knots);
           break;
         }
         default:
@@ -1889,17 +1890,17 @@ namespace Coupling::VolMortar
       {
         case 1:
         {
-          volmortar_dualshape_function_1D<distype>(f, ele, xi, dualquad);
+          volmortar_dualshape_function_1d<distype>(f, ele, xi, dualquad);
           break;
         }
         case 2:
         {
-          volmortar_dualshape_function_2D<distype>(f, ele, xi, dualquad);
+          volmortar_dualshape_function_2d<distype>(f, ele, xi, dualquad);
           break;
         }
         case 3:
         {
-          volmortar_dualshape_function_3D<distype>(f, ele, xi, dualquad);
+          volmortar_dualshape_function_3d<distype>(f, ele, xi, dualquad);
           break;
         }
         default:
@@ -1925,17 +1926,17 @@ namespace Coupling::VolMortar
       {
         case 1:
         {
-          volmortar_nurbs_dualshape_function_1D<distype>(funct, deriv, xi, weights, knots, ele);
+          volmortar_nurbs_dualshape_function_1d<distype>(funct, deriv, xi, weights, knots, ele);
           break;
         }
         case 2:
         {
-          volmortar_nurbs_dualshape_function_2D<distype>(funct, deriv, xi, weights, knots, ele);
+          volmortar_nurbs_dualshape_function_2d<distype>(funct, deriv, xi, weights, knots, ele);
           break;
         }
         case 3:
         {
-          volmortar_nurbs_dualshape_function_3D<distype>(funct, deriv, xi, weights, knots, ele);
+          volmortar_nurbs_dualshape_function_3d<distype>(funct, deriv, xi, weights, knots, ele);
           break;
         }
         default:

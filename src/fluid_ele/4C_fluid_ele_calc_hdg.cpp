@@ -118,7 +118,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate(Discret::ELEMENTS::Flu
   {
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "forcing");
     std::vector<int> localDofs = discretization.dof(1, ele);
-    Core::FE::ExtractMyValues(*matrix_state, interiorebofoaf_, localDofs);
+    Core::FE::extract_my_values(*matrix_state, interiorebofoaf_, localDofs);
   }
 
   // interior correction term for the weakly compressible benchmark if applicable
@@ -193,15 +193,15 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
   interior_acc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   FOUR_C_ASSERT(lm.size() == trace_val_.size(), "Internal error");
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state("velaf");
-  Core::FE::ExtractMyValues(*matrix_state, trace_val_, lm);
+  Core::FE::extract_my_values(*matrix_state, trace_val_, lm);
 
   // read the interior values from solution vector
   matrix_state = discretization.get_state(1, "intvelaf");
   std::vector<int> localDofs = discretization.dof(1, &ele);
-  Core::FE::ExtractMyValues(*matrix_state, interior_val_, localDofs);
+  Core::FE::extract_my_values(*matrix_state, interior_val_, localDofs);
 
   matrix_state = discretization.get_state(1, "intaccam");
-  Core::FE::ExtractMyValues(*matrix_state, interior_acc_, localDofs);
+  Core::FE::extract_my_values(*matrix_state, interior_acc_, localDofs);
 }
 
 
@@ -266,7 +266,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_service(Discret::ELEME
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -344,9 +344,9 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(Discret::ELEMENTS
   Core::LinAlg::Matrix<nsd_, 1> xyz(true);
 
   const Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
   const int calcerrfunctno =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "error function number");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "error function number");
 
   double err_u = 0., err_p = 0., err_h = 0., norm_u = 0., norm_p = 0., norm_h = 0.;
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -678,7 +678,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
   Core::LinAlg::SerialDenseMatrix locations =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(distype);
+      Core::FE::get_ele_node_numbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -749,14 +749,14 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = Core::FE::getEleNodeNumbering_nodes_paramspace(
+  locations = Core::FE::get_ele_node_numbering_nodes_paramspace(
       Core::FE::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = Core::FE::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = Core::FE::get_number_of_face_element_corner_nodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = Core::FE::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = Core::FE::get_number_of_face_element_internal_nodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
@@ -861,7 +861,8 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
   // get coordinates of hex 8
   Core::LinAlg::Matrix<nsd_, nen_> xyze(true);
 
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze);
 
   const int numsamppoints = 5;
   FOUR_C_ASSERT(elevec1.numRows() == numsamppoints * numsamppoints * numsamppoints * 6,
@@ -1161,8 +1162,8 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
 
     Core::LinAlg::Matrix<nsd_, nsd_> trafo;
     Core::LinAlg::SerialDenseMatrix faceQPoints;
-    Core::FE::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_, distype,
-        Core::FE::getEleFaceShapeType(distype, face), face);
+    Core::FE::boundary_gp_to_parent_gp<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_, distype,
+        Core::FE::get_ele_face_shape_type(distype, face), face);
 
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
@@ -1323,7 +1324,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcHDG<distype>* Discret::ELEMENTS::FluidEleCalcHDG<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcHDG<distype>>(
@@ -1361,7 +1362,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(
   // get function used to evaluate the error
   const Teuchos::ParameterList fluidparams = Global::Problem::instance()->fluid_dynamic_params();
   const Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::IntegralValue<Inpar::FLUID::CalcError>(fluidparams, "CALCERROR");
+      Core::UTILS::integral_value<Inpar::FLUID::CalcError>(fluidparams, "CALCERROR");
   const int calcerrfunctno = fluidparams.get<int>("CALCERRORFUNCNO");
 
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -1695,7 +1696,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
   // If only the convective part has to be recalculated do this
   else
   {
-    Core::LinAlg::Zero(fuMat, fuMat.numRows() * ndofs_ * nsd_);  // clear only velocity part
+    Core::LinAlg::zero(fuMat, fuMat.numRows() * ndofs_ * nsd_);  // clear only velocity part
     for (int f = 0; f < ufMat.numCols(); ++f)
       for (unsigned int i = 0; i < nsd_ * ndofs_; ++i) ufMat(i, f) = 0.;
   }

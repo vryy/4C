@@ -40,7 +40,7 @@ namespace NOX
     };
 
     //! Map quantity enum to std::string
-    inline std::string SolutionType2String(const enum SolutionType type)
+    inline std::string solution_type_to_string(const enum SolutionType type)
     {
       switch (type)
       {
@@ -64,7 +64,7 @@ namespace NOX
     };
 
     //! Map quantity std::string to enum
-    inline enum SolutionType String2SolutionType(const std::string& name)
+    inline enum SolutionType string_to_solution_type(const std::string& name)
     {
       SolutionType type = sol_unknown;
       if (name == "Structure")
@@ -101,7 +101,7 @@ namespace NOX
     };
 
     //! Map second order correction type enum to std::string
-    inline std::string CorrectionType2String(const enum CorrectionType type)
+    inline std::string correction_type_to_string(const enum CorrectionType type)
     {
       switch (type)
       {
@@ -128,7 +128,7 @@ namespace NOX
         max_min_ev_ratio  ///< condition number as ration of largest and smallest eigenvalue
       };
 
-      inline std::string ConditionNumber2String(const enum ConditionNumber condtype)
+      inline std::string condition_number_to_string(const enum ConditionNumber condtype)
       {
         switch (condtype)
         {
@@ -156,7 +156,7 @@ namespace NOX
       };
 
       /// Map linear system type to std::string
-      inline std::string LinearSystemType2String(const enum LinearSystemType type)
+      inline std::string linear_system_type_to_string(const enum LinearSystemType type)
       {
         switch (type)
         {
@@ -188,7 +188,7 @@ namespace NOX
       };
 
       /// Map operator type to std::string
-      inline std::string OperatorType2String(const enum OperatorType type)
+      inline std::string operator_type_to_string(const enum OperatorType type)
       {
         switch (type)
         {
@@ -216,7 +216,7 @@ namespace NOX
         volume_change_control  ///< use the volume change test
       };
 
-      inline std::string DefaultStepTest2String(const enum DefaultStepTest test_type)
+      inline std::string default_step_test_to_string(const enum DefaultStepTest test_type)
       {
         switch (test_type)
         {
@@ -270,7 +270,7 @@ namespace NOX
         mrtfct_vague                          //!< unspecified
       };
 
-      inline std::string MeritFuncName2String(const enum MeritFctName mrt_func)
+      inline std::string merit_func_name_to_string(const enum MeritFctName mrt_func)
       {
         switch (mrt_func)
         {
@@ -298,7 +298,7 @@ namespace NOX
     namespace StatusTest
     {
       //! map status type (outer status test) to std::string
-      inline std::string StatusType2String(const enum ::NOX::StatusTest::StatusType stype)
+      inline std::string status_type_to_string(const enum ::NOX::StatusTest::StatusType stype)
       {
         switch (stype)
         {
@@ -333,7 +333,7 @@ namespace NOX
       };
 
       /// Map quantity name to std::string
-      inline std::string QuantityType2String(const enum QuantityType type)
+      inline std::string quantity_type_to_string(const enum QuantityType type)
       {
         switch (type)
         {
@@ -367,7 +367,7 @@ namespace NOX
       };
 
       /// Map std::string to quantity type
-      inline QuantityType String2QuantityType(const std::string& name)
+      inline QuantityType string_to_quantity_type(const std::string& name)
       {
         QuantityType type = quantity_unknown;
 

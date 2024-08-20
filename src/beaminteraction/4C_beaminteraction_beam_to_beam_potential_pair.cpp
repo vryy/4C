@@ -180,13 +180,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::eval
   {
     forcevec1->size(dim1);
     for (unsigned int i = 0; i < dim1; ++i)
-      (*forcevec1)(i) = Core::FADUtils::CastToDouble(force_pot1(i));
+      (*forcevec1)(i) = Core::FADUtils::cast_to_double(force_pot1(i));
   }
   if (forcevec2 != nullptr)
   {
     forcevec2->size(dim2);
     for (unsigned int i = 0; i < dim2; ++i)
-      (*forcevec2)(i) = Core::FADUtils::CastToDouble(force_pot2(i));
+      (*forcevec2)(i) = Core::FADUtils::cast_to_double(force_pot2(i));
   }
 
   return true;
@@ -292,8 +292,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     double jacobifactor_segment1 =
         0.5 * (integration_segment1_upper_limit - integration_segment1_lower_limit);
 
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints, N1_i,
-        beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
+    Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
+        N1_i, beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit);
 
     for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
@@ -307,7 +307,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       double jacobifactor_segment2 =
           0.5 * (integration_segment2_upper_limit - integration_segment2_lower_limit);
 
-      Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints,
+      Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
           N2_i, beam_element2()->shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit);
 
@@ -328,7 +328,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         compute_centerline_position(r1, N1_i[igp1], ele1pos_);
 
         // store for visualization
-        centerline_coords_gp_1_[igp1_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r1);
+        centerline_coords_gp_1_[igp1_total] = Core::FADUtils::cast_to_double<T, 3, 1>(r1);
 
         double jacobifac1 = beam_element1()->get_jacobi_fac_at_xi(xi_GP1);
 
@@ -349,16 +349,16 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           compute_centerline_position(r2, N2_i[igp2], ele2pos_);
 
           // store for visualization
-          centerline_coords_gp_2_[igp2_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r2);
+          centerline_coords_gp_2_[igp2_total] = Core::FADUtils::cast_to_double<T, 3, 1>(r2);
 
           double jacobifac2 = beam_element2()->get_jacobi_fac_at_xi(xi_GP2);
 
-          dist = Core::FADUtils::DiffVector(r1, r2);
+          dist = Core::FADUtils::diff_vector(r1, r2);
 
-          norm_dist = Core::FADUtils::VectorNorm(dist);
+          norm_dist = Core::FADUtils::vector_norm(dist);
 
           // check cutoff criterion: if specified, contributions are neglected at larger separation
-          if (cutoff_radius != -1.0 and Core::FADUtils::CastToDouble(norm_dist) > cutoff_radius)
+          if (cutoff_radius != -1.0 and Core::FADUtils::cast_to_double(norm_dist) > cutoff_radius)
             continue;
 
           // auxiliary variables to store pre-calculated common terms
@@ -419,17 +419,17 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
           // store for visualization
           forces_pot_gp_1_[igp1_total].update(
-              1.0 * prefactor * q1 * q2 * Core::FADUtils::CastToDouble(norm_dist_exp1) *
+              1.0 * prefactor * q1 * q2 * Core::FADUtils::cast_to_double(norm_dist_exp1) *
                   jacobifac2 * jacobifactor_segment2 * gausspoints.qwgt[igp2],
-              Core::FADUtils::CastToDouble<T, 3, 1>(dist), 1.0);
+              Core::FADUtils::cast_to_double<T, 3, 1>(dist), 1.0);
           forces_pot_gp_2_[igp2_total].update(
-              -1.0 * prefactor * q1 * q2 * Core::FADUtils::CastToDouble(norm_dist_exp1) *
+              -1.0 * prefactor * q1 * q2 * Core::FADUtils::cast_to_double(norm_dist_exp1) *
                   jacobifac1 * jacobifactor_segment1 * gausspoints.qwgt[igp1],
-              Core::FADUtils::CastToDouble<T, 3, 1>(dist), 1.0);
+              Core::FADUtils::cast_to_double<T, 3, 1>(dist), 1.0);
 
           // store for energy output
           interaction_potential_ += prefactor / m_ * q1q2_JacFac_GaussWeights *
-                                    std::pow(Core::FADUtils::CastToDouble(norm_dist), -m_);
+                                    std::pow(Core::FADUtils::cast_to_double(norm_dist), -m_);
 
         }  // end gauss quadrature loop (element 2)
       }    // end gauss quadrature loop (element 1)
@@ -705,8 +705,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     double jacobifactor_segment1 =
         0.5 * (integration_segment1_upper_limit - integration_segment1_lower_limit);
 
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints, N1_i,
-        beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
+    Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
+        N1_i, beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit);
 
     for (unsigned int isegment2 = 0; isegment2 < num_integration_segments; ++isegment2)
@@ -720,7 +720,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       double jacobifactor_segment2 =
           0.5 * (integration_segment2_upper_limit - integration_segment2_lower_limit);
 
-      Discret::UTILS::Beam::EvaluateShapeFunctionsAllGPs<numnodes, numnodalvalues>(gausspoints,
+      Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
           N2_i, beam_element2()->shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit);
 
@@ -741,7 +741,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         compute_centerline_position(r1, N1_i[igp1], ele1pos_);
 
         // store for visualization
-        centerline_coords_gp_1_[igp1_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r1);
+        centerline_coords_gp_1_[igp1_total] = Core::FADUtils::cast_to_double<T, 3, 1>(r1);
 
         double jacobifac1 = beam_element1()->get_jacobi_fac_at_xi(xi_GP1);
 
@@ -762,13 +762,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           compute_centerline_position(r2, N2_i[igp2], ele2pos_);
 
           // store for visualization
-          centerline_coords_gp_2_[igp2_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r2);
+          centerline_coords_gp_2_[igp2_total] = Core::FADUtils::cast_to_double<T, 3, 1>(r2);
 
           double jacobifac2 = beam_element2()->get_jacobi_fac_at_xi(xi_GP2);
 
-          dist = Core::FADUtils::DiffVector(r1, r2);
+          dist = Core::FADUtils::diff_vector(r1, r2);
 
-          norm_dist = Core::FADUtils::VectorNorm(dist);
+          norm_dist = Core::FADUtils::vector_norm(dist);
 
           if (norm_dist == 0.0)
           {
@@ -780,7 +780,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           }
 
           // check cutoff criterion: if specified, contributions are neglected at larger separation
-          if (cutoff_radius != -1.0 and Core::FADUtils::CastToDouble(norm_dist) > cutoff_radius)
+          if (cutoff_radius != -1.0 and Core::FADUtils::cast_to_double(norm_dist) > cutoff_radius)
             continue;
 
           gap = norm_dist - radius1_ - radius2_;
@@ -825,7 +825,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           // store for energy output
           interaction_potential_ +=
               prefactor / (m_ - 3.5) * q1q2_JacFac_GaussWeights *
-              std::pow(Core::FADUtils::CastToDouble(gap_regularized), -m_ + 3.5);
+              std::pow(Core::FADUtils::cast_to_double(gap_regularized), -m_ + 3.5);
 
           if ((regularization_type == Inpar::BEAMPOTENTIAL::regularization_constant or
                   regularization_type == Inpar::BEAMPOTENTIAL::regularization_linear) and
@@ -835,8 +835,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             // and quadratic in case of linear extrapolation
             // add the linear contribution from this part of the force law
             interaction_potential_ +=
-                prefactor * q1q2_JacFac_GaussWeights * Core::FADUtils::CastToDouble(gap_exp1) *
-                (regularization_separation - Core::FADUtils::CastToDouble(gap));
+                prefactor * q1q2_JacFac_GaussWeights * Core::FADUtils::cast_to_double(gap_exp1) *
+                (regularization_separation - Core::FADUtils::cast_to_double(gap));
           }
 
 
@@ -853,9 +853,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             // add the quadratic contribution from this part of the force law
             interaction_potential_ +=
                 prefactor * q1q2_JacFac_GaussWeights * 0.5 * (m_ - 2.5) *
-                Core::FADUtils::CastToDouble(gap_exp2) *
-                (regularization_separation - Core::FADUtils::CastToDouble(gap)) *
-                (regularization_separation - Core::FADUtils::CastToDouble(gap));
+                Core::FADUtils::cast_to_double(gap_exp2) *
+                (regularization_separation - Core::FADUtils::cast_to_double(gap)) *
+                (regularization_separation - Core::FADUtils::cast_to_double(gap));
           }
 
           // auxiliary term, same for both element forces
@@ -900,15 +900,15 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
           // store for visualization
           forces_pot_gp_1_[igp1_total].update(
-              1.0 * prefactor * q1 * q2 * Core::FADUtils::CastToDouble(gap_exp1) /
-                  Core::FADUtils::CastToDouble(norm_dist) * jacobifac2 * jacobifactor_segment2 *
+              1.0 * prefactor * q1 * q2 * Core::FADUtils::cast_to_double(gap_exp1) /
+                  Core::FADUtils::cast_to_double(norm_dist) * jacobifac2 * jacobifactor_segment2 *
                   gausspoints.qwgt[igp2],
-              Core::FADUtils::CastToDouble<T, 3, 1>(dist), 1.0);
+              Core::FADUtils::cast_to_double<T, 3, 1>(dist), 1.0);
           forces_pot_gp_2_[igp2_total].update(
-              -1.0 * prefactor * q1 * q2 * Core::FADUtils::CastToDouble(gap_exp1) /
-                  Core::FADUtils::CastToDouble(norm_dist) * jacobifac1 * jacobifactor_segment1 *
+              -1.0 * prefactor * q1 * q2 * Core::FADUtils::cast_to_double(gap_exp1) /
+                  Core::FADUtils::cast_to_double(norm_dist) * jacobifac1 * jacobifactor_segment1 *
                   gausspoints.qwgt[igp1],
-              Core::FADUtils::CastToDouble<T, 3, 1>(dist), 1.0);
+              Core::FADUtils::cast_to_double<T, 3, 1>(dist), 1.0);
 
         }  // end: loop over gauss points of element 2
       }    // end: loop over gauss points of element 1
@@ -1264,7 +1264,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         0.5 * (integration_segment_upper_limit - integration_segment_lower_limit);
 
     // Evaluate shape functions at Gauss points of slave element and store values
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
         gausspoints, N_i_slave, N_i_xi_slave, beam_element1()->shape(), ele1length_,
         integration_segment_lower_limit, integration_segment_upper_limit);
 
@@ -1287,12 +1287,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       compute_centerline_position(r_slave, N_i_slave[igp], ele1pos_);
       compute_centerline_tangent(r_xi_slave, N_i_xi_slave[igp], ele1pos_);
 
-      norm_r_xi_slave = Core::FADUtils::VectorNorm(r_xi_slave);
+      norm_r_xi_slave = Core::FADUtils::vector_norm(r_xi_slave);
 
       t_slave.update(1.0 / norm_r_xi_slave, r_xi_slave);
 
       // store for visualization
-      centerline_coords_gp_1_[igp_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r_slave);
+      centerline_coords_gp_1_[igp_total] = Core::FADUtils::cast_to_double<T, 3, 1>(r_slave);
 
       rho1rho2_JacFac_GaussWeight = rho1 * rho2 * jacobifactor_segment *
                                     beam_element1()->get_jacobi_fac_at_xi(xi_GP) *
@@ -1303,8 +1303,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       iter_projection = 0;
 
       while (iter_projection < num_initial_values and
-             (not BEAMINTERACTION::Geo::PointToCurveProjection<numnodes, numnodalvalues, T>(r_slave,
-                 xi_master, xi_master_initial_guess_values[iter_projection], ele2pos_,
+             (not BEAMINTERACTION::Geo::point_to_curve_projection<numnodes, numnodalvalues, T>(
+                 r_slave, xi_master, xi_master_initial_guess_values[iter_projection], ele2pos_,
                  element2()->shape(), ele2length_)))
       {
         iter_projection++;
@@ -1321,20 +1321,20 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       }
 
       // Todo: specify tolerance value in a more central place
-      if (Core::FADUtils::Norm(xi_master) > 1.0 + 1.0e-10)
+      if (Core::FADUtils::norm(xi_master) > 1.0 + 1.0e-10)
       {
         continue;
       }
       // ensure no end node is utilized to prevent a possible doubled potential contribution
-      else if (Core::FADUtils::Norm(xi_master) >= 1.0 - 1.0e-10)
+      else if (Core::FADUtils::norm(xi_master) >= 1.0 - 1.0e-10)
       {
         FOUR_C_THROW(
             "Point-to-curve projection yields xi_master= %f. This is a critical case "
             "since it is very close to the element boundary!",
-            Core::FADUtils::CastToDouble(xi_master));
+            Core::FADUtils::cast_to_double(xi_master));
       }
 
-      Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi<numnodes,
+      Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_and2nd_derivs_at_xi<numnodes,
           numnodalvalues>(xi_master, N_i_master, N_i_xi_master, N_i_xixi_master,
           beam_element2()->shape(), ele2length_);
 
@@ -1344,50 +1344,51 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       compute_centerline_tangent(r_xixi_master, N_i_xixi_master, ele2pos_);
 
 
-      norm_r_xi_master = Core::FADUtils::VectorNorm(r_xi_master);
+      norm_r_xi_master = Core::FADUtils::vector_norm(r_xi_master);
 
       t_master.update(1.0 / norm_r_xi_master, r_xi_master);
 
       // store for visualization
-      centerline_coords_gp_2_[igp_total] = Core::FADUtils::CastToDouble<T, 3, 1>(r_master);
+      centerline_coords_gp_2_[igp_total] = Core::FADUtils::cast_to_double<T, 3, 1>(r_master);
 
       // distance vector between unilateral closest points
       dist_ul.update(1.0, r_slave, -1.0, r_master);
 
-      norm_dist_ul = Core::FADUtils::VectorNorm(dist_ul);
+      norm_dist_ul = Core::FADUtils::vector_norm(dist_ul);
 
-      if (Core::FADUtils::CastToDouble(norm_dist_ul) == 0.0)
+      if (Core::FADUtils::cast_to_double(norm_dist_ul) == 0.0)
       {
         this->print(std::cout);
         FOUR_C_THROW("centerline separation |r1-r2|=0!");
       }
 
       // check cutoff criterion: if specified, contributions are neglected at larger separation
-      if (cutoff_radius != -1.0 and Core::FADUtils::CastToDouble(norm_dist_ul) > cutoff_radius)
+      if (cutoff_radius != -1.0 and Core::FADUtils::cast_to_double(norm_dist_ul) > cutoff_radius)
       {
         continue;
       }
 
       // mutual angle of tangent vectors at unilateral closest points
-      BEAMINTERACTION::Geo::CalcEnclosedAngle(alpha, cos_alpha, r_xi_slave, r_xi_master);
+      BEAMINTERACTION::Geo::calc_enclosed_angle(alpha, cos_alpha, r_xi_slave, r_xi_master);
 
       if (alpha < 0.0 or alpha > M_PI_2)
-        FOUR_C_THROW("alpha=%f, should be in [0,pi/2]", Core::FADUtils::CastToDouble(alpha));
+        FOUR_C_THROW("alpha=%f, should be in [0,pi/2]", Core::FADUtils::cast_to_double(alpha));
 
       // Todo: maybe avoid this assembly of shape fcns into matrices
       // Fixme: at least, do this only in case of FAD-based linearization
-      Discret::UTILS::Beam::AssembleShapeFunctions<numnodes, numnodalvalues>(
+      Discret::UTILS::Beam::assemble_shape_functions<numnodes, numnodalvalues>(
           N_i_slave[igp], N_slave);
 
-      Discret::UTILS::Beam::AssembleShapeFunctionsAndDerivsAnd2ndDerivs<numnodes, numnodalvalues>(
+      Discret::UTILS::Beam::assemble_shape_functions_and_derivs_and2nd_derivs<numnodes,
+          numnodalvalues>(
           N_i_master, N_i_xi_master, N_i_xixi_master, N_master, N_xi_master, N_xixi_master);
 
-      BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<numnodes,
-          numnodalvalues>(lin_xi_master_slaveDofs, lin_xi_master_masterDofs, dist_ul, r_xi_master,
-          r_xixi_master, N_slave, N_master, N_xixi_master);
+      BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<
+          numnodes, numnodalvalues>(lin_xi_master_slaveDofs, lin_xi_master_masterDofs, dist_ul,
+          r_xi_master, r_xixi_master, N_slave, N_master, N_xixi_master);
 
 
-      BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs(
+      BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial_derivs(
           xi_master_partial_r_slave, xi_master_partial_r_master, xi_master_partial_r_xi_master,
           dist_ul, r_xi_master, r_xixi_master);
 
@@ -1446,7 +1447,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       interaction_potential_GP *= prefactor;
 
       // store for energy output
-      interaction_potential_ += Core::FADUtils::CastToDouble(interaction_potential_GP);
+      interaction_potential_ += Core::FADUtils::cast_to_double(interaction_potential_GP);
 
     }  // end loop over Gauss points per segment
   }    // end loop over integration segments
@@ -1605,8 +1606,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   // auxiliary and intermediate quantities required for second derivatives of cos(alpha)
 
-  double norm_r_xi_slave_inverse = 1.0 / Core::FADUtils::VectorNorm(r_xi_slave);
-  double norm_r_xi_master_inverse = 1.0 / Core::FADUtils::VectorNorm(r_xi_master);
+  double norm_r_xi_slave_inverse = 1.0 / Core::FADUtils::vector_norm(r_xi_slave);
+  double norm_r_xi_master_inverse = 1.0 / Core::FADUtils::vector_norm(r_xi_master);
 
   Core::LinAlg::Matrix<3, 1, double> t_slave(true);
   t_slave.update(norm_r_xi_slave_inverse, r_xi_slave);
@@ -1614,7 +1615,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   t_master.update(norm_r_xi_master_inverse, r_xi_master);
 
   double t_slave_dot_t_master = t_slave.dot(t_master);
-  double signum_tangentsscalarproduct = Core::FADUtils::Signum(t_slave_dot_t_master);
+  double signum_tangentsscalarproduct = Core::FADUtils::signum(t_slave_dot_t_master);
 
   Core::LinAlg::Matrix<3, 3, double> t_slave_tensorproduct_t_slave(true);
   Core::LinAlg::Matrix<3, 3, double> t_slave_tensorproduct_t_master(true);
@@ -1819,13 +1820,13 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // also to [.]_deriv_r_xixi_master expressions (according to chain rule)
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> N_i_xixixi_master(true);
 
-  Discret::UTILS::Beam::EvaluateShapeFunction3rdDerivsAtXi<numnodes, numnodalvalues>(
+  Discret::UTILS::Beam::evaluate_shape_function3rd_derivs_at_xi<numnodes, numnodalvalues>(
       xi_master, N_i_xixixi_master, beam_element2()->shape(), ele2length_);
 
   Core::LinAlg::Matrix<3, 1, double> r_xixixi_master(true);
 
-  Discret::UTILS::Beam::CalcInterpolation<numnodes, numnodalvalues, 3>(
-      Core::FADUtils::CastToDouble(ele2pos_), N_i_xixixi_master, r_xixixi_master);
+  Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3>(
+      Core::FADUtils::cast_to_double(ele2pos_), N_i_xixixi_master, r_xixixi_master);
 
   tmp_vec2.multiply(cos_alpha_deriv_r_slave_deriv_r_xixi_master, r_xixixi_master);
 
@@ -1921,7 +1922,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   Core::LinAlg::Matrix<3, 1, double> dist_ul(true);
   dist_ul.update(norm_dist_ul, normal_ul);
 
-  BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
+  BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial2nd_derivs(
       xi_master_partial_r_slave_partial_r_slave, xi_master_partial_r_slave_partial_r_master,
       xi_master_partial_r_slave_partial_r_xi_master,
       xi_master_partial_r_slave_partial_r_xixi_master, xi_master_partial_r_master_partial_r_slave,
@@ -2472,12 +2473,12 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   const double BEAMSCOLINEARANGLETHRESHOLD = 5.0 / 180.0 * M_PI;  // 5 works best so far
 
-  if (Core::FADUtils::Norm(alpha) < BEAMSCOLINEARANGLETHRESHOLD)
+  if (Core::FADUtils::norm(alpha) < BEAMSCOLINEARANGLETHRESHOLD)
   {
     // there is no unique bilateral closest point pair in case of alpha=0
     // hence, we can use the current (unilateral) closest point pair
     normal_bl = dist_ul;
-    norm_normal_bl_tilde = Core::FADUtils::VectorNorm(normal_bl);
+    norm_normal_bl_tilde = Core::FADUtils::vector_norm(normal_bl);
     normal_bl.scale(1.0 / norm_normal_bl_tilde);
 
     aux_plane_normal.clear();
@@ -2487,27 +2488,27 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     // normal vector at bilateral closest point Fixme
     normal_bl.cross_product(r_xi_slave, r_xi_master);
-    norm_normal_bl_tilde = Core::FADUtils::VectorNorm(normal_bl);
+    norm_normal_bl_tilde = Core::FADUtils::vector_norm(normal_bl);
     normal_bl.scale(1.0 / norm_normal_bl_tilde);
 
     // distance between Gauss point and bilateral closest point on slave
     aux_plane_normal.update(
         r_xi_master.dot(r_xi_master), r_xi_slave, -1.0 * r_xi_master.dot(r_xi_slave), r_xi_master);
 
-    x = Core::FADUtils::VectorNorm(r_xi_slave) *
+    x = Core::FADUtils::vector_norm(r_xi_slave) *
         (r_master.dot(aux_plane_normal) - r_slave.dot(aux_plane_normal)) /
         r_xi_slave.dot(aux_plane_normal);
   }
 
   // gap of bilateral closest point (also valid for special case alpha=0)
-  gap_bl = Core::FADUtils::Norm(dist_ul.dot(normal_bl)) - radius1_ - radius2_;
+  gap_bl = Core::FADUtils::norm(dist_ul.dot(normal_bl)) - radius1_ - radius2_;
 
   const double MAXNEGATIVEBILATERALGAP = -0.9 * radius2_;
 
-  if (Core::FADUtils::Norm(alpha) >= BEAMSCOLINEARANGLETHRESHOLD and
+  if (Core::FADUtils::norm(alpha) >= BEAMSCOLINEARANGLETHRESHOLD and
       gap_bl < MAXNEGATIVEBILATERALGAP)
   {
-    if (Core::FADUtils::Norm(x) < 20 * radius2_)
+    if (Core::FADUtils::norm(x) < 20 * radius2_)
     {
       FOUR_C_THROW(
           "Ignoring this GP with negative gap_bl in the non-parallel case "
@@ -2519,18 +2520,18 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     }
   }
 
-  if (std::norm(Core::FADUtils::CastToDouble(gap_bl) + radius2_) < 1e-14)
+  if (std::norm(Core::FADUtils::cast_to_double(gap_bl) + radius2_) < 1e-14)
     FOUR_C_THROW(
         "bilateral gap=%f is close to negative radius and thus the interaction potential is "
         "close to singular! Fatal error. Take care of this case!",
-        Core::FADUtils::CastToDouble(gap_bl));
+        Core::FADUtils::cast_to_double(gap_bl));
 
   beta = Core::FADUtils::sqrt<T>(
       (gap_bl + radius2_) * (gap_bl + radius2_) + x * x * sin_alpha * sin_alpha);
 
   if (beta < 1e-14)
     FOUR_C_THROW("beta=%f is negative or very close to zero! Fatal error. Take care of this case!",
-        Core::FADUtils::CastToDouble(beta));
+        Core::FADUtils::cast_to_double(beta));
 
   beta_exp2 = beta * beta;
   beta_exp3 = beta_exp2 * beta;
@@ -2546,15 +2547,15 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     this->print(std::cout);
 
-    std::cout << "\ngap_bl: " << Core::FADUtils::CastToDouble(gap_bl);
-    std::cout << "\nalpha: " << Core::FADUtils::CastToDouble(alpha * 180 / M_PI) << "degrees";
-    std::cout << "\nx: " << Core::FADUtils::CastToDouble(x) << std::endl;
+    std::cout << "\ngap_bl: " << Core::FADUtils::cast_to_double(gap_bl);
+    std::cout << "\nalpha: " << Core::FADUtils::cast_to_double(alpha * 180 / M_PI) << "degrees";
+    std::cout << "\nx: " << Core::FADUtils::cast_to_double(x) << std::endl;
 
-    std::cout << "\nbeta: " << Core::FADUtils::CastToDouble(beta);
-    std::cout << "\na: " << Core::FADUtils::CastToDouble(a);
+    std::cout << "\nbeta: " << Core::FADUtils::cast_to_double(beta);
+    std::cout << "\na: " << Core::FADUtils::cast_to_double(a);
 
     FOUR_C_THROW("Delta=%f is negative or very close to zero! Use a regularization to handle this!",
-        Core::FADUtils::CastToDouble(Delta));
+        Core::FADUtils::cast_to_double(Delta));
   }
 
   Delta_regularized = Delta;
@@ -2696,7 +2697,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
 
   // components from variation of bilateral gap
-  T signum_dist_bl_tilde = Core::FADUtils::Signum(dist_ul.dot(normal_bl));
+  T signum_dist_bl_tilde = Core::FADUtils::signum(dist_ul.dot(normal_bl));
 
   gap_bl_partial_r_slave.update(signum_dist_bl_tilde, normal_bl);
   gap_bl_partial_r_master.update(-1.0 * signum_dist_bl_tilde, normal_bl);
@@ -2735,17 +2736,17 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   else
   {
     gap_bl_partial_r_xi_slave.update(signum_dist_bl_tilde / norm_normal_bl_tilde,
-        Core::FADUtils::VectorProduct(r_xi_master, vec_tmp));
+        Core::FADUtils::vector_product(r_xi_master, vec_tmp));
 
     gap_bl_partial_r_xi_master.update(-1.0 * signum_dist_bl_tilde / norm_normal_bl_tilde,
-        Core::FADUtils::VectorProduct(r_xi_slave, vec_tmp));
+        Core::FADUtils::vector_product(r_xi_slave, vec_tmp));
 
     gap_bl_partial_xi_master += r_xixi_master.dot(gap_bl_partial_r_xi_master);
   }
 
 
   // components from variation of cosine of enclosed angle
-  T signum_tangentsscalarproduct = Core::FADUtils::Signum(r_xi_slave.dot(r_xi_master));
+  T signum_tangentsscalarproduct = Core::FADUtils::signum(r_xi_slave.dot(r_xi_master));
 
   v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
@@ -2755,7 +2756,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   cos_alpha_partial_r_xi_slave.multiply(
-      signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp, t1_master);
+      signum_tangentsscalarproduct / Core::FADUtils::vector_norm(r_xi_slave), v_mat_tmp, t1_master);
 
   v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
@@ -2765,13 +2766,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   cos_alpha_partial_r_xi_master.multiply(
-      signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_master), v_mat_tmp, t1_slave);
+      signum_tangentsscalarproduct / Core::FADUtils::vector_norm(r_xi_master), v_mat_tmp, t1_slave);
 
   cos_alpha_partial_xi_master = r_xixi_master.dot(cos_alpha_partial_r_xi_master);
 
 
   // components from variation of distance from bilateral closest point on slave
-  if (Core::FADUtils::CastToDouble(alpha) < BEAMSCOLINEARANGLETHRESHOLD)
+  if (Core::FADUtils::cast_to_double(alpha) < BEAMSCOLINEARANGLETHRESHOLD)
   {
     /* set the following quantities to zero since they are not required in this case
      * because pot_ia_partial_x is zero anyway */
@@ -2793,7 +2794,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
       for (unsigned int j = 0; j < 3; ++j) v_mat_tmp(i, j) -= t1_slave(i) * t1_slave(j);
     }
 
-    x_partial_r_xi_slave.multiply(1.0 / Core::FADUtils::VectorNorm(r_xi_slave) *
+    x_partial_r_xi_slave.multiply(1.0 / Core::FADUtils::vector_norm(r_xi_slave) *
                                       dist_ul.dot(aux_plane_normal) /
                                       std::pow(t1_slave.dot(aux_plane_normal), 2),
         v_mat_tmp, aux_plane_normal);
@@ -2828,38 +2829,38 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   // store for vtk visualization
   vtk_force_pot_slave_GP.update(
-      prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl),
-      Core::FADUtils::CastToDouble<T, 3, 1>(gap_bl_partial_r_slave), 1.0);
+      prefactor_visualization_data * Core::FADUtils::cast_to_double(pot_ia_partial_gap_bl),
+      Core::FADUtils::cast_to_double<T, 3, 1>(gap_bl_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.update_t(
       prefactor_visualization_data *
-          Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
+          Core::FADUtils::cast_to_double(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.update_t(
       prefactor_visualization_data *
-          Core::FADUtils::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
+          Core::FADUtils::cast_to_double(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.update(
-      prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_partial_x),
-      Core::FADUtils::CastToDouble<T, 3, 1>(x_partial_r_slave), 1.0);
+      prefactor_visualization_data * Core::FADUtils::cast_to_double(pot_ia_partial_x),
+      Core::FADUtils::cast_to_double<T, 3, 1>(x_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.update_t(
       prefactor_visualization_data *
-          Core::FADUtils::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
+          Core::FADUtils::cast_to_double(pot_ia_partial_x * x_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
   Core::LinAlg::Matrix<3, 1, double> moment_pot_tmp(true);
 
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl),
-      Core::FADUtils::CastToDouble<T, 3, 1>(gap_bl_partial_r_xi_slave));
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(pot_ia_partial_gap_bl),
+      Core::FADUtils::cast_to_double<T, 3, 1>(gap_bl_partial_r_xi_slave));
 
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(pot_ia_partial_cos_alpha),
-      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_partial_r_xi_slave), 1.0);
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(pot_ia_partial_cos_alpha),
+      Core::FADUtils::cast_to_double<T, 3, 1>(cos_alpha_partial_r_xi_slave), 1.0);
 
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(pot_ia_partial_x),
-      Core::FADUtils::CastToDouble<T, 3, 1>(x_partial_r_xi_slave), 1.0);
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(pot_ia_partial_x),
+      Core::FADUtils::cast_to_double<T, 3, 1>(x_partial_r_xi_slave), 1.0);
 
   /* note: relation between variation of tangent vector r_xi and variation of (transversal part
    *       of) rotation vector theta_perp describing cross-section orientation can be used to
@@ -2869,64 +2870,64 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
-  T norm_r_xi_slave = Core::FADUtils::VectorNorm(r_xi_slave);
+  T norm_r_xi_slave = Core::FADUtils::vector_norm(r_xi_slave);
 
-  moment_pot_tmp.multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_slave),
-      spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t1_slave));
+  moment_pot_tmp.multiply(1.0 / Core::FADUtils::cast_to_double(norm_r_xi_slave),
+      spin_pseudo_moment_tmp, Core::FADUtils::cast_to_double<T, 3, 1>(t1_slave));
 
   vtk_moment_pot_slave_GP.update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
   vtk_force_pot_master_GP.update(
-      prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl),
-      Core::FADUtils::CastToDouble<T, 3, 1>(gap_bl_partial_r_master), 1.0);
+      prefactor_visualization_data * Core::FADUtils::cast_to_double(pot_ia_partial_gap_bl),
+      Core::FADUtils::cast_to_double<T, 3, 1>(gap_bl_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.update_t(
       prefactor_visualization_data *
-          Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
+          Core::FADUtils::cast_to_double(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.update_t(
       prefactor_visualization_data *
-          Core::FADUtils::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
+          Core::FADUtils::cast_to_double(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.update(
-      prefactor_visualization_data * Core::FADUtils::CastToDouble(pot_ia_partial_x),
-      Core::FADUtils::CastToDouble<T, 3, 1>(x_partial_r_master), 1.0);
+      prefactor_visualization_data * Core::FADUtils::cast_to_double(pot_ia_partial_x),
+      Core::FADUtils::cast_to_double<T, 3, 1>(x_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.update_t(
       prefactor_visualization_data *
-          Core::FADUtils::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
+          Core::FADUtils::cast_to_double(pot_ia_partial_x * x_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
 
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl),
-      Core::FADUtils::CastToDouble<T, 3, 1>(gap_bl_partial_r_xi_master));
-
-  moment_pot_tmp.update_t(
-      Core::FADUtils::CastToDouble(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
-
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(pot_ia_partial_cos_alpha),
-      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_partial_r_xi_master), 1.0);
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(pot_ia_partial_gap_bl),
+      Core::FADUtils::cast_to_double<T, 3, 1>(gap_bl_partial_r_xi_master));
 
   moment_pot_tmp.update_t(
-      Core::FADUtils::CastToDouble(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
+      Core::FADUtils::cast_to_double(pot_ia_partial_gap_bl * gap_bl_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
 
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(pot_ia_partial_x),
-      Core::FADUtils::CastToDouble<T, 3, 1>(x_partial_r_xi_master), 1.0);
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(pot_ia_partial_cos_alpha),
+      Core::FADUtils::cast_to_double<T, 3, 1>(cos_alpha_partial_r_xi_master), 1.0);
 
-  moment_pot_tmp.update_t(Core::FADUtils::CastToDouble(pot_ia_partial_x * x_partial_xi_master),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
+  moment_pot_tmp.update_t(
+      Core::FADUtils::cast_to_double(pot_ia_partial_cos_alpha * cos_alpha_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
+
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(pot_ia_partial_x),
+      Core::FADUtils::cast_to_double<T, 3, 1>(x_partial_r_xi_master), 1.0);
+
+  moment_pot_tmp.update_t(Core::FADUtils::cast_to_double(pot_ia_partial_x * x_partial_xi_master),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_xi_master), 1.0);
 
   Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
-  T norm_r_xi_master = Core::FADUtils::VectorNorm(r_xi_master);
+  T norm_r_xi_master = Core::FADUtils::vector_norm(r_xi_master);
 
-  moment_pot_tmp.multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_master),
-      spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t1_master));
+  moment_pot_tmp.multiply(1.0 / Core::FADUtils::cast_to_double(norm_r_xi_master),
+      spin_pseudo_moment_tmp, Core::FADUtils::cast_to_double<T, 3, 1>(t1_master));
 
   vtk_moment_pot_master_GP.update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
@@ -3122,13 +3123,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   {
     this->print(std::cout);
 
-    std::cout << "\ngap_ul: " << Core::FADUtils::CastToDouble(gap_ul);
-    std::cout << "\nalpha: " << Core::FADUtils::CastToDouble(alpha * 180 / M_PI) << "degrees";
+    std::cout << "\ngap_ul: " << Core::FADUtils::cast_to_double(gap_ul);
+    std::cout << "\nalpha: " << Core::FADUtils::cast_to_double(alpha * 180 / M_PI) << "degrees";
 
     FOUR_C_THROW(
         "gap_ul=%f is negative or very close to zero! Fatal error. Use regularization to"
         " handle this!",
-        Core::FADUtils::CastToDouble(gap_ul));
+        Core::FADUtils::cast_to_double(gap_ul));
   }
 
 
@@ -3140,7 +3141,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   a = 0.5 / radius1_ + 0.5 * cos_alpha * cos_alpha / radius2_;
 
   // safety check
-  if (Core::FADUtils::CastToDouble(a) <= 0.0)
+  if (Core::FADUtils::cast_to_double(a) <= 0.0)
   {
     this->print(std::cout);
     FOUR_C_THROW("auxiliary quantity a<=0!");
@@ -3271,7 +3272,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   // compute components from variation of cosine of enclosed angle
-  signum_tangentsscalarproduct = Core::FADUtils::Signum(r_xi_slave.dot(r_xi_master));
+  signum_tangentsscalarproduct = Core::FADUtils::signum(r_xi_slave.dot(r_xi_master));
   // auxiliary variables
   Core::LinAlg::Matrix<3, 3, T> v_mat_tmp(true);
 
@@ -3282,7 +3283,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   cos_alpha_partial_r_xi_slave.multiply(
-      signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_slave), v_mat_tmp, t_master);
+      signum_tangentsscalarproduct / Core::FADUtils::vector_norm(r_xi_slave), v_mat_tmp, t_master);
 
   v_mat_tmp.clear();
   for (unsigned int i = 0; i < 3; ++i)
@@ -3292,7 +3293,7 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   }
 
   cos_alpha_partial_r_xi_master.multiply(
-      signum_tangentsscalarproduct / Core::FADUtils::VectorNorm(r_xi_master), v_mat_tmp, t_slave);
+      signum_tangentsscalarproduct / Core::FADUtils::vector_norm(r_xi_master), v_mat_tmp, t_slave);
 
   cos_alpha_partial_xi_master = r_xixi_master.dot(cos_alpha_partial_r_xi_master);
 
@@ -3314,28 +3315,28 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   // store for visualization
   vtk_force_pot_slave_GP.update_t(prefactor_visualization_data *
-                                      Core::FADUtils::CastToDouble(pot_red_fac_deriv_xi_master) *
-                                      Core::FADUtils::CastToDouble(interaction_potential_GP),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_slave), 1.0);
+                                      Core::FADUtils::cast_to_double(pot_red_fac_deriv_xi_master) *
+                                      Core::FADUtils::cast_to_double(interaction_potential_GP),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.update(prefactor_visualization_data *
-                                    Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
-                                    Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul),
-      Core::FADUtils::CastToDouble<T, 3, 1>(gap_ul_deriv_r_slave), 1.0);
+                                    Core::FADUtils::cast_to_double(potential_reduction_factor_GP) *
+                                    Core::FADUtils::cast_to_double(pot_ia_deriv_gap_ul),
+      Core::FADUtils::cast_to_double<T, 3, 1>(gap_ul_deriv_r_slave), 1.0);
 
   vtk_force_pot_slave_GP.update(prefactor_visualization_data *
-                                    Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
-                                    Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
+                                    Core::FADUtils::cast_to_double(potential_reduction_factor_GP) *
+                                    Core::FADUtils::cast_to_double(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::cast_to_double<T, 3, 1>(cos_alpha_deriv_r_slave), 1.0);
 
 
   Core::LinAlg::Matrix<3, 1, double> moment_pot_tmp(true);
   Core::LinAlg::Matrix<3, 3, double> spin_pseudo_moment_tmp(true);
 
 
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
-                            Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_slave));
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(potential_reduction_factor_GP) *
+                            Core::FADUtils::cast_to_double(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::cast_to_double<T, 3, 1>(cos_alpha_deriv_r_xi_slave));
 
   // TODO understand definition of distributed moments on cross-section
   /* note: relation between variation of tangent vector r_xi and variation of (transversal
@@ -3344,39 +3345,39 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
    */
   Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
-  moment_pot_tmp.multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_slave),
-      spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t_slave));
+  moment_pot_tmp.multiply(1.0 / Core::FADUtils::cast_to_double(norm_r_xi_slave),
+      spin_pseudo_moment_tmp, Core::FADUtils::cast_to_double<T, 3, 1>(t_slave));
 
   vtk_moment_pot_slave_GP.update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
 
   vtk_force_pot_master_GP.update_t(prefactor_visualization_data *
-                                       Core::FADUtils::CastToDouble(pot_red_fac_deriv_xi_master) *
-                                       Core::FADUtils::CastToDouble(interaction_potential_GP),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_master), 1.0);
+                                       Core::FADUtils::cast_to_double(pot_red_fac_deriv_xi_master) *
+                                       Core::FADUtils::cast_to_double(interaction_potential_GP),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_master), 1.0);
 
   vtk_force_pot_master_GP.update(prefactor_visualization_data *
-                                     Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
-                                     Core::FADUtils::CastToDouble(pot_ia_deriv_gap_ul),
-      Core::FADUtils::CastToDouble<T, 3, 1>(gap_ul_deriv_r_master), 1.0);
+                                     Core::FADUtils::cast_to_double(potential_reduction_factor_GP) *
+                                     Core::FADUtils::cast_to_double(pot_ia_deriv_gap_ul),
+      Core::FADUtils::cast_to_double<T, 3, 1>(gap_ul_deriv_r_master), 1.0);
 
   vtk_force_pot_master_GP.update(prefactor_visualization_data *
-                                     Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
-                                     Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_master), 1.0);
+                                     Core::FADUtils::cast_to_double(potential_reduction_factor_GP) *
+                                     Core::FADUtils::cast_to_double(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::cast_to_double<T, 3, 1>(cos_alpha_deriv_r_master), 1.0);
 
-  moment_pot_tmp.update_t(Core::FADUtils::CastToDouble(pot_red_fac_deriv_xi_master) *
-                              Core::FADUtils::CastToDouble(interaction_potential_GP),
-      Core::FADUtils::CastToDouble<T, 1, 3>(xi_master_partial_r_xi_master));
+  moment_pot_tmp.update_t(Core::FADUtils::cast_to_double(pot_red_fac_deriv_xi_master) *
+                              Core::FADUtils::cast_to_double(interaction_potential_GP),
+      Core::FADUtils::cast_to_double<T, 1, 3>(xi_master_partial_r_xi_master));
 
-  moment_pot_tmp.update(Core::FADUtils::CastToDouble(potential_reduction_factor_GP) *
-                            Core::FADUtils::CastToDouble(pot_ia_deriv_cos_alpha),
-      Core::FADUtils::CastToDouble<T, 3, 1>(cos_alpha_deriv_r_xi_master), 1.0);
+  moment_pot_tmp.update(Core::FADUtils::cast_to_double(potential_reduction_factor_GP) *
+                            Core::FADUtils::cast_to_double(pot_ia_deriv_cos_alpha),
+      Core::FADUtils::cast_to_double<T, 3, 1>(cos_alpha_deriv_r_xi_master), 1.0);
 
   Core::LargeRotations::computespin(spin_pseudo_moment_tmp, moment_pot_tmp);
 
-  moment_pot_tmp.multiply(1.0 / Core::FADUtils::CastToDouble(norm_r_xi_master),
-      spin_pseudo_moment_tmp, Core::FADUtils::CastToDouble<T, 3, 1>(t_master));
+  moment_pot_tmp.multiply(1.0 / Core::FADUtils::cast_to_double(norm_r_xi_master),
+      spin_pseudo_moment_tmp, Core::FADUtils::cast_to_double<T, 3, 1>(t_master));
 
   vtk_moment_pot_master_GP.update(prefactor_visualization_data, moment_pot_tmp, 1.0);
 
@@ -3537,19 +3538,19 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     {
       // d (Res_1) / d (d_1)
       stiffmat11(idof, jdof) += force_pot1(idof).dx(2 * dim) *
-                                Core::FADUtils::CastToDouble(lin_xi_master_slaveDofs(jdof));
+                                Core::FADUtils::cast_to_double(lin_xi_master_slaveDofs(jdof));
 
       // d (Res_1) / d (d_2)
       stiffmat12(idof, jdof) += force_pot1(idof).dx(2 * dim) *
-                                Core::FADUtils::CastToDouble(lin_xi_master_masterDofs(jdof));
+                                Core::FADUtils::cast_to_double(lin_xi_master_masterDofs(jdof));
 
       // d (Res_2) / d (d_1)
       stiffmat21(idof, jdof) += force_pot2(idof).dx(2 * dim) *
-                                Core::FADUtils::CastToDouble(lin_xi_master_slaveDofs(jdof));
+                                Core::FADUtils::cast_to_double(lin_xi_master_slaveDofs(jdof));
 
       // d (Res_2) / d (d_2)
       stiffmat22(idof, jdof) += force_pot2(idof).dx(2 * dim) *
-                                Core::FADUtils::CastToDouble(lin_xi_master_masterDofs(jdof));
+                                Core::FADUtils::cast_to_double(lin_xi_master_masterDofs(jdof));
     }
   }
 }
@@ -3574,11 +3575,11 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   {
     force_pot1(idof) = (potential_reduction_factor * interaction_potential).dx(idof) +
                        (potential_reduction_factor * interaction_potential).dx(2 * dim) *
-                           Core::FADUtils::CastToDouble(lin_xi_master_slaveDofs(idof));
+                           Core::FADUtils::cast_to_double(lin_xi_master_slaveDofs(idof));
 
     force_pot2(idof) = (potential_reduction_factor * interaction_potential).dx(dim + idof) +
                        (potential_reduction_factor * interaction_potential).dx(2 * dim) *
-                           Core::FADUtils::CastToDouble(lin_xi_master_masterDofs(idof));
+                           Core::FADUtils::cast_to_double(lin_xi_master_masterDofs(idof));
   }
 }
 
@@ -3623,9 +3624,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::prin
   out << "\nInstance of BeamToBeamPotentialPair (EleGIDs " << element1()->id() << " & "
       << element2()->id() << "):";
   out << "\nele1 dofvec: "
-      << Core::FADUtils::CastToDouble<T, 3 * numnodes * numnodalvalues, 1>(ele1pos_);
+      << Core::FADUtils::cast_to_double<T, 3 * numnodes * numnodalvalues, 1>(ele1pos_);
   out << "\nele2 dofvec: "
-      << Core::FADUtils::CastToDouble<T, 3 * numnodes * numnodalvalues, 1>(ele2pos_);
+      << Core::FADUtils::cast_to_double<T, 3 * numnodes * numnodalvalues, 1>(ele2pos_);
 
   out << "\n";
 }
@@ -3653,10 +3654,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::get_
     std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double>>& N2_i_xi,
     Core::FE::IntegrationPoints1D& gausspoints) const
 {
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
+  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
       gausspoints, N1_i, N1_i_xi, beam_element1()->shape(), ele1length_);
 
-  Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAllGPs<numnodes, numnodalvalues>(
+  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
       gausspoints, N2_i, N2_i_xi, beam_element2()->shape(), ele2length_);
 }
 
@@ -3670,7 +3671,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T2>& N_i,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
-  Discret::UTILS::Beam::CalcInterpolation<numnodes, numnodalvalues, 3, T, T2>(eledofvec, N_i, r);
+  Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T2>(eledofvec, N_i, r);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -3682,7 +3683,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
-  Discret::UTILS::Beam::CalcInterpolation<numnodes, numnodalvalues, 3, T, T2>(
+  Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T2>(
       eledofvec, N_i_xi, r_xi);
 }
 
@@ -3771,13 +3772,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
 
   for (unsigned int i_dim = 0; i_dim < num_spatial_dim; ++i_dim)
   {
-    position_element1node1(i_dim) = Core::FADUtils::CastToDouble(ele1pos_(0 + i_dim));
+    position_element1node1(i_dim) = Core::FADUtils::cast_to_double(ele1pos_(0 + i_dim));
     position_element1node2(i_dim) =
-        Core::FADUtils::CastToDouble(ele1pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
+        Core::FADUtils::cast_to_double(ele1pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
 
-    position_element2node1(i_dim) = Core::FADUtils::CastToDouble(ele2pos_(0 + i_dim));
+    position_element2node1(i_dim) = Core::FADUtils::cast_to_double(ele2pos_(0 + i_dim));
     position_element2node2(i_dim) =
-        Core::FADUtils::CastToDouble(ele2pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
+        Core::FADUtils::cast_to_double(ele2pos_(num_spatial_dim * 1 * numnodalvalues + i_dim));
   }
 
 

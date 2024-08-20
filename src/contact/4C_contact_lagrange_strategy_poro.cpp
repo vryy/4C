@@ -136,7 +136,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       fgsdofrowmap_ = coupfs.master_to_slave_map(gsdofrowmap_);
       fgmdofrowmap_ = coupfs.master_to_slave_map(gmdofrowmap_);
       fgsmdofrowmap_ = coupfs.master_to_slave_map(gsmdofrowmap_);
-      fgndofrowmap_ = Core::LinAlg::SplitMap(*fluiddofs,
+      fgndofrowmap_ = Core::LinAlg::split_map(*fluiddofs,
           *fgsmdofrowmap_);  // Not equal to transforming gndofrowmap_ (pressure dofs missing!)
       fgactivedofs_ = coupfs.master_to_slave_map(gactivedofs_);
       falldofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(*fluiddofs));
@@ -325,7 +325,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpm1, tmpm2, tmpm3;
 
       // This should just be a temporary solution to change the row map of the matrix ...
-      Core::LinAlg::SplitMatrix2x2(tmpfmhataam, fgactivedofs_, restfgactivedofs, fgmdofrowmap_,
+      Core::LinAlg::split_matrix2x2(tmpfmhataam, fgactivedofs_, restfgactivedofs, fgmdofrowmap_,
           restfgmdofrowmap, fmhataam_, tmpm1, tmpm2, tmpm3);
       fmhataam_->complete(*fgmdofrowmap_, *fgactivedofs_);
     }
@@ -344,7 +344,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     if (gactivedofs_->NumGlobalElements())
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvD =
-          Core::LinAlg::MLMultiply(*Tangential_, false, *invda_, true, false, false, true);
+          Core::LinAlg::ml_multiply(*Tangential_, false, *invda_, true, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpftanginvD =
           Teuchos::rcp<Core::LinAlg::SparseMatrix>(
               new Core::LinAlg::SparseMatrix(*falldofrowmap_, 1, true, false));
@@ -358,7 +358,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpm1, tmpm2, tmpm3;
 
       // This should just be a temporary solution to change the row map of the matrix ...
-      Core::LinAlg::SplitMatrix2x2(tmpftanginvD, fgactivet_, restfgactivet, fgactivedofs_,
+      Core::LinAlg::split_matrix2x2(tmpftanginvD, fgactivet_, restfgactivet, fgactivedofs_,
           restfgactivedofs, ftanginvD_, tmpm1, tmpm2, tmpm3);
 
       //
@@ -447,7 +447,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
 
   // shape function
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -467,8 +467,8 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!!!");
-    lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
   }
 
   k_fseff->un_complete();
@@ -513,16 +513,16 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   else
   {
     // only split, no need to transform
-    Core::LinAlg::SplitMatrix2x2(k_fseffmatrix, fgsmdofrowmap_, fgndofrowmap_, gsmdofrowmap_,
+    Core::LinAlg::split_matrix2x2(k_fseffmatrix, fgsmdofrowmap_, fgndofrowmap_, gsmdofrowmap_,
         gndofrowmap_, k_fs_smsm, k_fs_smn, k_fs_nsm, k_fs_nn);
   }
 
   // further splits into slave part + master part
-  Core::LinAlg::SplitMatrix2x2(k_fs_smsm, fgsdofrowmap_, fgmdofrowmap_, gsdofrowmap_, gmdofrowmap_,
+  Core::LinAlg::split_matrix2x2(k_fs_smsm, fgsdofrowmap_, fgmdofrowmap_, gsdofrowmap_, gmdofrowmap_,
       k_fs_ss, k_fs_sm, k_fs_ms, k_fs_mm);
-  Core::LinAlg::SplitMatrix2x2(k_fs_smn, fgsdofrowmap_, fgmdofrowmap_, gndofrowmap_, tempmap,
+  Core::LinAlg::split_matrix2x2(k_fs_smn, fgsdofrowmap_, fgmdofrowmap_, gndofrowmap_, tempmap,
       k_fs_sn, tempmtx1, k_fs_mn, tempmtx2);
-  Core::LinAlg::SplitMatrix2x2(k_fs_nsm, fgndofrowmap_, ftempmap1, gsdofrowmap_, gmdofrowmap_,
+  Core::LinAlg::split_matrix2x2(k_fs_nsm, fgndofrowmap_, ftempmap1, gsdofrowmap_, gmdofrowmap_,
       k_fs_ns, k_fs_nm, tempmtx1, tempmtx2);
 
   /**********************************************************************/
@@ -589,13 +589,13 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   Teuchos::RCP<Epetra_Map> ftempmap4, ftempmap5, ftempmap6, ftempmap7;
 
   // do the splitting
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       k_fs_ss, fgactivedofs_, fgidofs, gactivedofs_, gidofs, k_fs_aa, k_fs_ai, k_fs_ia, k_fs_ii);
-  Core::LinAlg::SplitMatrix2x2(k_fs_sn, fgactivedofs_, fgidofs, gndofrowmap_, tempmap1, k_fs_an,
+  Core::LinAlg::split_matrix2x2(k_fs_sn, fgactivedofs_, fgidofs, gndofrowmap_, tempmap1, k_fs_an,
       tempmtx1, k_fs_in, tempmtx2);
-  Core::LinAlg::SplitMatrix2x2(k_fs_sm, fgactivedofs_, fgidofs, gmdofrowmap_, tempmap2, k_fs_am,
+  Core::LinAlg::split_matrix2x2(k_fs_sm, fgactivedofs_, fgidofs, gmdofrowmap_, tempmap2, k_fs_am,
       tempmtx1, k_fs_im, tempmtx2);
-  Core::LinAlg::SplitMatrix2x2(k_fs_ms, fgmdofrowmap_, ftempmap4, gactivedofs_, gidofs, k_fs_ma,
+  Core::LinAlg::split_matrix2x2(k_fs_ms, fgmdofrowmap_, ftempmap4, gactivedofs_, gidofs, k_fs_ma,
       k_fs_mi, tempmtx1, tempmtx2);
 
   // abbreviations for active and inactive set
@@ -635,7 +635,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
     k_fs_mnmod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgmdofrowmap_, 100));
     k_fs_mnmod->add(*k_fs_mn, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_mnadd =
-        Core::LinAlg::MLMultiply(*fmhataam_, true, *k_fs_an, false, false, false, true);
+        Core::LinAlg::ml_multiply(*fmhataam_, true, *k_fs_an, false, false, false, true);
     k_fs_mnmod->add(*k_fs_mnadd, false, 1.0, 1.0);
     k_fs_mnmod->complete(k_fs_mn->domain_map(), k_fs_mn->row_map());
 
@@ -643,7 +643,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
     k_fs_mmmod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgmdofrowmap_, 100));
     k_fs_mmmod->add(*k_fs_mm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_mmadd =
-        Core::LinAlg::MLMultiply(*fmhataam_, true, *k_fs_am, false, false, false, true);
+        Core::LinAlg::ml_multiply(*fmhataam_, true, *k_fs_am, false, false, false, true);
     k_fs_mmmod->add(*k_fs_mmadd, false, 1.0, 1.0);
     k_fs_mmmod->complete(k_fs_mm->domain_map(), k_fs_mm->row_map());
 
@@ -653,7 +653,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
       k_fs_mimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgmdofrowmap_, 100));
       k_fs_mimod->add(*k_fs_mi, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_miadd =
-          Core::LinAlg::MLMultiply(*fmhataam_, true, *k_fs_ai, false, false, false, true);
+          Core::LinAlg::ml_multiply(*fmhataam_, true, *k_fs_ai, false, false, false, true);
       k_fs_mimod->add(*k_fs_miadd, false, 1.0, 1.0);
       k_fs_mimod->complete(k_fs_mi->domain_map(), k_fs_mi->row_map());
     }
@@ -664,7 +664,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
       k_fs_mamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgmdofrowmap_, 100));
       k_fs_mamod->add(*k_fs_ma, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_maadd =
-          Core::LinAlg::MLMultiply(*fmhataam_, true, *k_fs_aa, false, false, false, true);
+          Core::LinAlg::ml_multiply(*fmhataam_, true, *k_fs_aa, false, false, false, true);
       k_fs_mamod->add(*k_fs_maadd, false, 1.0, 1.0);
       k_fs_mamod->complete(k_fs_ma->domain_map(), k_fs_ma->row_map());
     }
@@ -678,7 +678,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgidofs, 100));
   k_fs_inmod->add(*k_fs_in, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_inadd =
-      Core::LinAlg::MLMultiply(*fdhat_, true, *k_fs_an, false, false, false, true);
+      Core::LinAlg::ml_multiply(*fdhat_, true, *k_fs_an, false, false, false, true);
   k_fs_inmod->add(*k_fs_inadd, false, -1.0, 1.0);
   k_fs_inmod->complete(k_fs_in->domain_map(), k_fs_in->row_map());
 
@@ -687,7 +687,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgidofs, 100));
   k_fs_immod->add(*k_fs_im, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_imadd =
-      Core::LinAlg::MLMultiply(*fdhat_, true, *k_fs_am, false, false, false, true);
+      Core::LinAlg::ml_multiply(*fdhat_, true, *k_fs_am, false, false, false, true);
   k_fs_immod->add(*k_fs_imadd, false, -1.0, 1.0);
   k_fs_immod->complete(k_fs_im->domain_map(), k_fs_im->row_map());
 
@@ -698,7 +698,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
     k_fs_iimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgidofs, 100));
     k_fs_iimod->add(*k_fs_ii, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_iiadd =
-        Core::LinAlg::MLMultiply(*fdhat_, true, *k_fs_ai, false, false, false, true);
+        Core::LinAlg::ml_multiply(*fdhat_, true, *k_fs_ai, false, false, false, true);
     k_fs_iimod->add(*k_fs_iiadd, false, -1.0, 1.0);
     k_fs_iimod->complete(k_fs_ii->domain_map(), k_fs_ii->row_map());
   }
@@ -710,7 +710,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
     k_fs_iamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgidofs, 100));
     k_fs_iamod->add(*k_fs_ia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_iaadd =
-        Core::LinAlg::MLMultiply(*fdhat_, true, *k_fs_aa, false, false, false, true);
+        Core::LinAlg::ml_multiply(*fdhat_, true, *k_fs_aa, false, false, false, true);
     k_fs_iamod->add(*k_fs_iaadd, false, -1.0, 1.0);
     k_fs_iamod->complete(k_fs_ia->domain_map(), k_fs_ia->row_map());
   }
@@ -721,22 +721,22 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   // kan: multiply tmatrix with invda and kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_anmod;
   if (aset)
-    k_fs_anmod = Core::LinAlg::MLMultiply(*ftanginvD_, false, *k_fs_an, false, false, false, true);
+    k_fs_anmod = Core::LinAlg::ml_multiply(*ftanginvD_, false, *k_fs_an, false, false, false, true);
 
   // kam: multiply tmatrix with invda and kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_ammod;
   if (aset)
-    k_fs_ammod = Core::LinAlg::MLMultiply(*ftanginvD_, false, *k_fs_am, false, false, false, true);
+    k_fs_ammod = Core::LinAlg::ml_multiply(*ftanginvD_, false, *k_fs_am, false, false, false, true);
 
   // kai: multiply tmatrix with invda and kai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_aimod;
   if (aset && iset)
-    k_fs_aimod = Core::LinAlg::MLMultiply(*ftanginvD_, false, *k_fs_ai, false, false, false, true);
+    k_fs_aimod = Core::LinAlg::ml_multiply(*ftanginvD_, false, *k_fs_ai, false, false, false, true);
 
   // kaa: multiply tmatrix with invda and kaa
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_aamod;
   if (aset)
-    k_fs_aamod = Core::LinAlg::MLMultiply(*ftanginvD_, false, *k_fs_aa, false, false, false, true);
+    k_fs_aamod = Core::LinAlg::ml_multiply(*ftanginvD_, false, *k_fs_aa, false, false, false, true);
 
   /**********************************************************************/
   /* (8) Build the final f blocks                                       */
@@ -881,7 +881,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs_effnew = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*falldofrowmap_, 81, true, false, k_fseff->get_matrixtype()));
-  Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::CreateVector(*falldofrowmap_);
+  Teuchos::RCP<Epetra_Vector> feffnew = Core::LinAlg::create_vector(*falldofrowmap_);
 
   //----------------------------------------------------------- FIRST LINE
   // add n submatrices to kteffnew
@@ -999,7 +999,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
 
   // shape function
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -1045,12 +1045,12 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   else
   {
     // only split, no need to transform
-    Core::LinAlg::SplitMatrix2x2(
+    Core::LinAlg::split_matrix2x2(
         Feffmatrix, fgsmdofrowmap_, fgndofrowmap_, domainmap, tempmap0, F_sm, F_sm0, F_n, F_n0);
   }
 
   // further splits into slave part + master part
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       F_sm, fgsdofrowmap_, fgmdofrowmap_, domainmap, tempmap0, F_s, F_s0, F_m, F_m0);
 
   // store some stuff for static condensation of LM
@@ -1069,7 +1069,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   // we will get the i rowmap as a by-product
   Teuchos::RCP<Epetra_Map> fgidofs;
 
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       F_s, fgactivedofs_, fgidofs, domainmap, tempmap1, F_a, F_a0, F_i, F_i0);
 
   // abbreviations for active and inactive set
@@ -1096,7 +1096,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   if (aset && mset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> F_madd =
-        Core::LinAlg::MLMultiply(*fmhataam_, true, *F_a, false, false, false, true);
+        Core::LinAlg::ml_multiply(*fmhataam_, true, *F_a, false, false, false, true);
     F_mmod->add(*F_madd, false, 1.0, 1.0);
   }
   F_mmod->complete(F_m->domain_map(), F_m->row_map());
@@ -1114,7 +1114,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   if (aset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> F_iadd =
-        Core::LinAlg::MLMultiply(*fdhat_, true, *F_a, false, false, false, true);
+        Core::LinAlg::ml_multiply(*fdhat_, true, *F_a, false, false, false, true);
     F_imod->add(*F_iadd, false, -1.0, 1.0);
   }
   F_imod->complete(F_i->domain_map(), F_i->row_map());
@@ -1126,7 +1126,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> F_amod;
   if (aset)
   {
-    F_amod = Core::LinAlg::MLMultiply(*ftanginvD_, false, *F_a, false, false, false, true);
+    F_amod = Core::LinAlg::ml_multiply(*ftanginvD_, false, *F_a, false, false, false, true);
   }
 
   /********************************************************************/
@@ -1230,7 +1230,7 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(
 
   // shape function and system types
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -1261,7 +1261,7 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> finvda;
     Teuchos::RCP<Epetra_Map> tempmap1, tempmap2;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
-    Core::LinAlg::SplitMatrix2x2(finvda_, fgactivedofs_, tempmap1, gactivedofs_, tempmap2, finvda,
+    Core::LinAlg::split_matrix2x2(finvda_, fgactivedofs_, tempmap1, gactivedofs_, tempmap2, finvda,
         tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> finvdmod =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgsdofrowmap_, 10));
@@ -1370,7 +1370,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
               std::vector<int> lm(numdof);
 
               for (int j = 0; j < numdof; ++j) lm[j] = node->dofs()[j];
-              Core::FE::ExtractMyValues(*global, myvel, lm);
+              Core::FE::extract_my_values(*global, myvel, lm);
 
               // add myvel[2]=0 for 2D problems
               if (myvel.size() < 3) myvel.resize(3);
@@ -1404,7 +1404,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
 
               for (int j = 0; j < numdof; ++j) lm[j] = node->dofs()[j];
 
-              Core::FE::ExtractMyValues(*global, mylm, lm);
+              Core::FE::extract_my_values(*global, mylm, lm);
 
               // add myvel[2]=0 for 2D problems
               if (mylm.size() < 3) mylm.resize(3);
@@ -1498,7 +1498,7 @@ void CONTACT::LagrangeStrategyPoro::set_parent_state(const enum Mortar::StateTyp
           ele->parent_element()->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          Core::FE::ExtractMyValues(*global, myval, lm);
+          Core::FE::extract_my_values(*global, myval, lm);
 
           ele->mo_data().parent_disp() = myval;
           ele->mo_data().parent_dof() = lm;
@@ -1520,7 +1520,7 @@ void CONTACT::LagrangeStrategyPoro::set_parent_state(const enum Mortar::StateTyp
           mele->parent_element()->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          Core::FE::ExtractMyValues(*global, myval, lm);
+          Core::FE::extract_my_values(*global, myval, lm);
 
           mele->mo_data().parent_disp() = myval;
           mele->mo_data().parent_dof() = lm;
@@ -1595,7 +1595,7 @@ void CONTACT::LagrangeStrategyPoro::poro_mt_set_coupling_matrices()
 
   // invert dmatrix to invd
   invd_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dmatrix_));
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -1616,32 +1616,34 @@ void CONTACT::LagrangeStrategyPoro::poro_mt_set_coupling_matrices()
 
   // active part of invd
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invda;
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       invd_, gactivedofs_, gidofs, gactivedofs_, gidofs, invda, tempmtx1, tempmtx2, tempmtx3);
 
   // coupling part of dmatrix (only nonzero for 3D quadratic case!)(not considered for poro
   // mt/contact yet-> ==0)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dai;
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       dmatrix_, gactivedofs_, gidofs, gactivedofs_, gidofs, tempmtx1, dai, tempmtx2, tempmtx3);
 
   int iset = gidofs->NumGlobalElements();
   // do the multiplication dhat = invda * dai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
-  if (aset && iset) dhat = Core::LinAlg::MLMultiply(*invda, false, *dai, false, false, false, true);
+  if (aset && iset)
+    dhat = Core::LinAlg::ml_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrixa;
-  Core::LinAlg::SplitMatrix2x2(mmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mmatrixa,
+  Core::LinAlg::split_matrix2x2(mmatrix_, gactivedofs_, gidofs, gmdofrowmap_, tempmap, mmatrixa,
       tempmtx1, tempmtx2, tempmtx3);
 
   // do the multiplication mhataam = invda * mmatrixa
   // (this is only different from mhata for 3D quadratic case!)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
-  if (aset) mhataam = Core::LinAlg::MLMultiply(*invda, false, *mmatrixa, false, false, false, true);
+  if (aset)
+    mhataam = Core::LinAlg::ml_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // scaling of invd and dai

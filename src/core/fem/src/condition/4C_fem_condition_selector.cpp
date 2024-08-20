@@ -112,10 +112,10 @@ void Core::Conditions::MultiConditionSelector::setup_extractor(const Core::FE::D
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.reserve(conddofset_.size() + 1);
 
-  maps.emplace_back(Core::LinAlg::CreateMap(otherdofset, dis.get_comm()));
+  maps.emplace_back(Core::LinAlg::create_map(otherdofset, dis.get_comm()));
   for (auto& conddofset : conddofset_)
   {
-    maps.emplace_back(Core::LinAlg::CreateMap(conddofset, dis.get_comm()));
+    maps.emplace_back(Core::LinAlg::create_map(conddofset, dis.get_comm()));
   }
 
   // MultiMapExtractor setup

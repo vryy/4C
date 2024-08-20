@@ -178,12 +178,12 @@ namespace Cut
       Core::LinAlg::Matrix<2, numnodes> deriv(false);
       Core::LinAlg::Matrix<2, 2> metrictensor(false);
 
-      Core::FE::shape_function_2D(funct, eta(0), eta(1), celldistype);
+      Core::FE::shape_function_2d(funct, eta(0), eta(1), celldistype);
 
       if (celldistype != Core::FE::CellType::tri3)
       {
-        Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
-        Core::FE::ComputeMetricTensorForBoundaryEle<celldistype>(
+        Core::FE::shape_function_2d_deriv1(deriv, eta(0), eta(1), celldistype);
+        Core::FE::compute_metric_tensor_for_boundary_ele<celldistype>(
             xyze, deriv, metrictensor, drs, &normal);
       }
       else
@@ -200,7 +200,7 @@ namespace Cut
           p1(dim) = xyze(dim, 1);
           p2(dim) = xyze(dim, 2);
         }
-        drs = 2.0 * (Cut::Kernel::getAreaTri(p0.data(), p1.data(), p2.data(), &normal));
+        drs = 2.0 * (Cut::Kernel::get_area_tri(p0.data(), p1.data(), p2.data(), &normal));
       }
 
       x_gp_lin.multiply(xyze, funct);
@@ -261,9 +261,9 @@ namespace Cut
       for (int i = 0; i < intpoints.nquad; ++i)
       {
         double* eta = intpoints.qxg[i];
-        Core::FE::shape_function_2D(funct, eta[0], eta[1], distype);
-        Core::FE::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
-        Core::FE::ComputeMetricTensorForBoundaryEle<distype>(
+        Core::FE::shape_function_2d(funct, eta[0], eta[1], distype);
+        Core::FE::shape_function_2d_deriv1(deriv, eta[0], eta[1], distype);
+        Core::FE::compute_metric_tensor_for_boundary_ele<distype>(
             xyze, deriv, metrictensor, drs, nullptr);
         if (not std::isnan(drs)) area += intpoints.qwgt[i] * drs;
       }

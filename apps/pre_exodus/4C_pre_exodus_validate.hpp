@@ -31,28 +31,28 @@ namespace EXODUS
   class ElementBlock;
 
   //! validate a given datfile
-  void ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile);
+  void validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile);
 
   //! Check Elements for positive Jacobian and otherwise 'rewind' them
-  void ValidateMeshElementJacobians(EXODUS::Mesh& mymesh);
+  void validate_mesh_element_jacobians(EXODUS::Mesh& mymesh);
 
   //! Check for positive Jacobian for Element of distype and otherwise 'rewind' them
-  void ValidateElementJacobian(
+  void validate_element_jacobian(
       EXODUS::Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<EXODUS::ElementBlock>);
 
   //! Check Elements of distype with full gauss integration rule for positive det at all gps and
   //! return number of negative dets
-  int ValidateElementJacobian_fullgp(
+  int validate_element_jacobian_fullgp(
       Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb);
 
   //! Check one element for positive Jacobi determinant
-  bool PositiveEle(const int& eleid, const std::vector<int>& nodes, const EXODUS::Mesh& mymesh,
+  bool positive_ele(const int& eleid, const std::vector<int>& nodes, const EXODUS::Mesh& mymesh,
       const Core::LinAlg::SerialDenseMatrix& deriv);
-  int EleSaneSign(
+  int ele_sane_sign(
       const std::vector<int>& nodes, const std::map<int, std::vector<double>>& nodecoords);
 
   //! Rewind one Element
-  std::vector<int> RewindEle(std::vector<int> old_nodeids, const Core::FE::CellType distype);
+  std::vector<int> rewind_ele(std::vector<int> old_nodeids, const Core::FE::CellType distype);
 
 }  // namespace EXODUS
 

@@ -98,7 +98,7 @@ void test_hex8_twintri()
   intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
-void test_hex8_twinQuad()
+void test_hex8_twin_quad()
 {
   Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
@@ -194,7 +194,7 @@ void test_hex8_twinQuad()
   intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
-void test_hex8_chairCut()
+void test_hex8_chair_cut()
 {
   Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln
@@ -344,7 +344,7 @@ void test_hex8_chairCut()
   intersection.cut_test_cut(true, Cut::VCellGaussPts_DirectDivergence);
 }
 
-void test_hex8_VCut()
+void test_hex8_v_cut()
 {
   Cut::MeshIntersection intersection;
   intersection.get_options().init_for_cuttests();  // use full cln

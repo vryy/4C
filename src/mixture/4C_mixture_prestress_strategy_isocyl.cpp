@@ -192,7 +192,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRul
         "strategy!");
   }
 
-  Core::LinAlg::Matrix<3, 3> F = Core::LinAlg::IdentityMatrix<3>();
+  Core::LinAlg::Matrix<3, 3> F = Core::LinAlg::identity_matrix<3>();
   Core::LinAlg::Matrix<6, 1> E_strain(true);
   Core::LinAlg::Matrix<6, 1> S_stress(true);
   Core::LinAlg::Matrix<6, 6> cmat(true);

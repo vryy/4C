@@ -133,7 +133,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
         Core::Communication::ParObject::extract_from_pack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<Core::Communication::ParObject> object =
-            Teuchos::rcp(Core::Communication::Factory(data), true);
+            Teuchos::rcp(Core::Communication::factory(data), true);
         Teuchos::RCP<Core::Nodes::Node> node = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(object);
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
@@ -409,7 +409,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
         Core::Communication::ParObject::extract_from_pack(index, rdata, data);
         // this Teuchos::rcp holds the memory of the node
         Teuchos::RCP<Core::Communication::ParObject> object =
-            Teuchos::rcp(Core::Communication::Factory(data), true);
+            Teuchos::rcp(Core::Communication::factory(data), true);
         Teuchos::RCP<Core::Nodes::Node> node = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(object);
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 

@@ -37,8 +37,8 @@ namespace
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_surface_params_list;
-      Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_surface_params_list);
-      Inpar::GEOMETRYPAIR::SetValidParametersLineToSurface(line_to_surface_params_list);
+      Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_surface_params_list);
+      Inpar::GEOMETRYPAIR::set_valid_parameters_line_to_surface(line_to_surface_params_list);
       evaluation_data_ =
           Teuchos::rcp(new GEOMETRYPAIR::LineToSurfaceEvaluationData(line_to_surface_params_list));
     }
@@ -70,7 +70,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
-    const auto element_data_solid = XtestSetupTri3();
+    const auto element_data_solid = xtest_setup_tri3();
 
     // Point to project to.
     Core::LinAlg::Matrix<3, 1, double> point(true);
@@ -104,7 +104,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
-    const auto element_data_solid = XtestSetupTri6();
+    const auto element_data_solid = xtest_setup_tri6();
 
     // Point to project to.
     Core::LinAlg::Matrix<3, 1, double> point(true);
@@ -138,7 +138,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
-    const auto element_data_solid = XtestSetupQuad4();
+    const auto element_data_solid = xtest_setup_quad4();
 
     // Point to project to.
     Core::LinAlg::Matrix<3, 1, double> point(true);
@@ -172,7 +172,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
-    const auto element_data_solid = XtestSetupQuad8();
+    const auto element_data_solid = xtest_setup_quad8();
 
     // Point to project to.
     Core::LinAlg::Matrix<3, 1, double> point(true);
@@ -206,7 +206,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates and normals for the solid element.
-    const auto element_data_solid = XtestSetupQuad9();
+    const auto element_data_solid = xtest_setup_quad9();
 
     // Point to project to.
     Core::LinAlg::Matrix<3, 1, double> point(true);
@@ -234,7 +234,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationTri3)
   {
     // Set up the beam.
-    const auto [element_line, element_data_line] = XtestSetupBeam();
+    const auto [element_line, element_data_line] = xtest_setup_beam();
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
@@ -242,7 +242,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
-    const auto element_data_solid = XtestSetupTri3();
+    const auto element_data_solid = xtest_setup_tri3();
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -282,7 +282,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationTri6)
   {
     // Set up the beam.
-    const auto [element_line, element_data_line] = XtestSetupBeam();
+    const auto [element_line, element_data_line] = xtest_setup_beam();
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
@@ -290,7 +290,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
-    const auto element_data_solid = XtestSetupTri6();
+    const auto element_data_solid = xtest_setup_tri6();
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -329,7 +329,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationQuad4)
   {
     // Set up the beam.
-    const auto [element_line, element_data_line] = XtestSetupBeam();
+    const auto [element_line, element_data_line] = xtest_setup_beam();
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
@@ -337,7 +337,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
-    const auto element_data_solid = XtestSetupQuad4();
+    const auto element_data_solid = xtest_setup_quad4();
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -377,7 +377,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationQuad8)
   {
     // Set up the beam.
-    const auto [element_line, element_data_line] = XtestSetupBeam();
+    const auto [element_line, element_data_line] = xtest_setup_beam();
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
@@ -385,7 +385,7 @@ namespace
     set_is_unit_test(pair, true);
 
     // Define the coordinates for the solid element.
-    const auto element_data_solid = XtestSetupQuad8();
+    const auto element_data_solid = xtest_setup_quad8();
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -425,14 +425,14 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestLineToSurfaceIntersectionNormalInterpolationQuad9)
   {
     // Set up the beam.
-    const auto [element_line, element_data_line] = XtestSetupBeam();
+    const auto [element_line, element_data_line] = xtest_setup_beam();
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(element_line.get(), nullptr, evaluation_data_);
     set_is_unit_test(pair, true);
     // Define the coordinates for the solid element.
-    const auto element_data_solid = XtestSetupQuad9();
+    const auto element_data_solid = xtest_setup_quad9();
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;

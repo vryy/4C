@@ -43,7 +43,7 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      return Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iocouplstress", Inpar::Solid::stress_none);
     }
   }

@@ -44,7 +44,7 @@ Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::create(
     const Teuchos::ParameterList& taflags,  //!< adaptive input flags
     Teuchos::RCP<Solid::TimeInt::Base> ti_strategy)
 {
-  auto kind = Core::UTILS::IntegralValue<Inpar::Solid::TimAdaKind>(taflags, "KIND");
+  auto kind = Core::UTILS::integral_value<Inpar::Solid::TimAdaKind>(taflags, "KIND");
   switch (kind)
   {
     case Inpar::Solid::timada_kind_zienxie:
@@ -98,7 +98,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
   sizeratiomin_ = tap.get<double>("SIZERATIOMIN");
   sizeratioscale_ = tap.get<double>("SIZERATIOSCALE");
   errctrl_ = ctrl_dis;  // PROVIDE INPUT PARAMETER
-  errnorm_ = Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM");
+  errnorm_ = Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM");
   errtol_ = tap.get<double>("LOCERRTOL");
   errorder_ = 1;  // CHANGE THIS CONSTANT
   adaptstepmax_ = tap.get<int>("ADAPTSTEPMAX");
@@ -125,7 +125,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
   outsizefile_ = Teuchos::null;
 
   // allocate displacement local error vector
-  locerrdisn_ = Core::LinAlg::CreateVector(*(stm_->dof_row_map()), true);
+  locerrdisn_ = Core::LinAlg::create_vector(*(stm_->dof_row_map()), true);
 
   // enable restart for adaptive timestepping
   const int restart = Global::Problem::instance()->restart();

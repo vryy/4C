@@ -120,12 +120,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
                                       get_jacobian_for_configuration(eta, contact_defined_on);
 
       // Get the surface normal vector
-      GEOMETRYPAIR::EvaluateSurfaceNormal<Surface>(
+      GEOMETRYPAIR::evaluate_surface_normal<Surface>(
           xi, this->face_element_->get_face_element_data(), surface_normal);
 
       // Evaluate the current position of beam and solid
-      GEOMETRYPAIR::EvaluatePosition<Beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<Surface>(
+      GEOMETRYPAIR::evaluate_position<Beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::evaluate_position<Surface>(
           xi, this->face_element_->get_face_element_data(), r_surface);
 
       // Evaluate the gap function
@@ -134,11 +134,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
       gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
 
       // Get the shape function matrices
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<mortar_trial>(N_lambda_trial, eta);
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Mortar>(N_lambda, eta);
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Beam>(
+      GEOMETRYPAIR::evaluate_shape_function_matrix<mortar_trial>(N_lambda_trial, eta);
+      GEOMETRYPAIR::evaluate_shape_function_matrix<Mortar>(N_lambda, eta);
+      GEOMETRYPAIR::evaluate_shape_function_matrix<Beam>(
           N_beam, eta, this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Surface>(
+      GEOMETRYPAIR::evaluate_shape_function_matrix<Surface>(
           N_surface, xi, this->face_element_->get_face_element_data().shape_function_data_);
 
       // Weighted gap
@@ -169,7 +169,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
 
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  BEAMINTERACTION::UTILS::GetElementCenterlineGIDIndices(
+  BEAMINTERACTION::UTILS::get_element_centerline_gid_indices(
       discret, this->element1(), beam_centerline_gid);
 
   // Get the patch GIDs.
@@ -183,7 +183,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   {
     for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
     {
-      const double value = Core::FADUtils::CastToDouble(
+      const double value = Core::FADUtils::cast_to_double(
           beam_shape_times_normal_times_lambda_shape_(i_beam, i_lambda));
       global_force_beam_lin_lambda.fe_assemble(
           value, beam_centerline_gid(i_beam), lambda_gid_pos[i_lambda]);
@@ -195,7 +195,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   {
     for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
     {
-      const double value = Core::FADUtils::CastToDouble(
+      const double value = Core::FADUtils::cast_to_double(
           surface_shape_times_normal_times_lambda_shape_(i_surface, i_lambda));
       global_force_solid_lin_lambda.fe_assemble(
           value, patch_gid[i_surface], lambda_gid_pos[i_lambda]);
@@ -230,12 +230,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   }
 
   // Assemble into global coupling vector
-  const auto constraint_vector_double = Core::FADUtils::CastToDouble(constraint_vector);
+  const auto constraint_vector_double = Core::FADUtils::cast_to_double(constraint_vector);
   global_constraint.SumIntoGlobalValues(
       lambda_gid_pos.size(), lambda_gid_pos.data(), constraint_vector_double.data());
 
   // Assemble into global kappa vector
-  auto kappa_double = Core::FADUtils::CastToDouble(kappa);
+  auto kappa_double = Core::FADUtils::cast_to_double(kappa);
   global_kappa.SumIntoGlobalValues(
       lambda_gid_pos.size(), lambda_gid_pos.data(), kappa_double.data());
   kappa_double.put_scalar(1.0);
@@ -268,7 +268,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   // Get the Lagrange multipliers DOF vector for this pair
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
   std::vector<double> lambda_pos_vector;
-  Core::FE::ExtractMyValues(global_lambda, lambda_pos_vector, lambda_gid_pos);
+  Core::FE::extract_my_values(global_lambda, lambda_pos_vector, lambda_gid_pos);
   const auto lambda_pos = Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>(lambda_pos_vector.data());
 
   // Multiply with the matrices evaluated in evaluate_and_assemble_mortar_contributions
@@ -279,7 +279,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
 
   // Assemble the terms to the global stiffness matrix
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  BEAMINTERACTION::UTILS::GetElementCenterlineGIDIndices(
+  BEAMINTERACTION::UTILS::get_element_centerline_gid_indices(
       discret, this->element1(), beam_centerline_gid);
   const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
 
@@ -325,13 +325,13 @@ ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam
   {
     case Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn::reference_configuration:
     {
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1posref_, dr_beam);
-      return Core::FADUtils::VectorNorm(dr_beam);
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(eta, this->ele1posref_, dr_beam);
+      return Core::FADUtils::vector_norm(dr_beam);
     }
     case Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn::current_configuration:
     {
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1pos_, dr_beam);
-      return Core::FADUtils::VectorNorm(dr_beam);
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(eta, this->ele1pos_, dr_beam);
+      return Core::FADUtils::vector_norm(dr_beam);
     }
     default:
       FOUR_C_THROW("Got unexpected mortar configuration");
@@ -343,7 +343,7 @@ ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam
  */
 template <typename Beam, typename Surface, typename ScalarType>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface(
+beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
     const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>
         beam_to_surface_contact_params)
 {
@@ -364,7 +364,7 @@ BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface(
  */
 template <typename Beam>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BeamToSolidSurfaceContactPairMortarFactoryTemplateBeam(
+beam_to_solid_surface_contact_pair_mortar_factory_template_beam(
     const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>
         beam_to_surface_contact_params,
     const Core::FE::CellType& surface_type)
@@ -374,7 +374,7 @@ BeamToSolidSurfaceContactPairMortarFactoryTemplateBeam(
   switch (surface_type)
   {
     case Core::FE::CellType::quad4:
-      return BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface<Beam, t_quad4,
+      return beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface<Beam, t_quad4,
           line_to_surface_patch_scalar_type_1st_order>(beam_to_surface_contact_params);
     default:
       FOUR_C_THROW("Got unexpected surface shape");
@@ -385,7 +385,7 @@ BeamToSolidSurfaceContactPairMortarFactoryTemplateBeam(
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairMortarFactory(
+BEAMINTERACTION::beam_to_solid_surface_contact_pair_mortar_factory(
     const Teuchos::RCP<const BeamToSolidSurfaceContactParams> beam_to_surface_contact_params,
     const Core::FE::CellType& surface_type, const bool beam_is_hermite)
 {
@@ -393,7 +393,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairMortarFactory(
 
   if (beam_is_hermite)
   {
-    return BeamToSolidSurfaceContactPairMortarFactoryTemplateBeam<t_hermite>(
+    return beam_to_solid_surface_contact_pair_mortar_factory_template_beam<t_hermite>(
         beam_to_surface_contact_params, surface_type);
   }
   else

@@ -53,7 +53,7 @@ namespace
    */
   TEST_F(GeometricSearchDistributed, CollisionSearchKDOPVsKDOP)
   {
-    const auto volumes = CreateKDOPBoundingVolumes();
+    const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives
     if (my_rank_ == 0)
@@ -78,8 +78,8 @@ namespace
       predicates_.emplace_back(std::pair{11, volumes[1]});
     }
 
-    const auto pairs =
-        Core::GeometricSearch::GlobalCollisionSearch(primitives_, predicates_, *comm_, verbosity_);
+    const auto pairs = Core::GeometricSearch::global_collision_search(
+        primitives_, predicates_, *comm_, verbosity_);
 
     // The order of the results we get are is not deterministic. Therefore, we save the reference
     // results in a map, with the colliding GIDs being the keys. Thus the ordering of the pairs in
@@ -148,7 +148,7 @@ namespace
    */
   TEST_F(GeometricSearchDistributed, CollisionSearchNoPrimitivesNoPredicatesMixed)
   {
-    const auto volumes = CreateKDOPBoundingVolumes();
+    const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives and predicates for rank 0 and 1
     if (my_rank_ == 0)
@@ -162,8 +162,8 @@ namespace
       predicates_.emplace_back(std::pair{3, volumes[2]});
     }
 
-    const auto pairs =
-        Core::GeometricSearch::GlobalCollisionSearch(primitives_, predicates_, *comm_, verbosity_);
+    const auto pairs = Core::GeometricSearch::global_collision_search(
+        primitives_, predicates_, *comm_, verbosity_);
 
     if (my_rank_ == 1)
     {
@@ -195,8 +195,8 @@ namespace
     EXPECT_EQ(primitives_.size(), 0);
     EXPECT_EQ(predicates_.size(), 0);
 
-    const auto pairs =
-        Core::GeometricSearch::GlobalCollisionSearch(primitives_, predicates_, *comm_, verbosity_);
+    const auto pairs = Core::GeometricSearch::global_collision_search(
+        primitives_, predicates_, *comm_, verbosity_);
 
     EXPECT_EQ(pairs.size(), 0);
   }

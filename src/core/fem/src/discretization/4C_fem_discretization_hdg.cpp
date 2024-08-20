@@ -89,7 +89,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
     const int* nodeIds = f->second->node_ids();
 
     std::vector<std::vector<int>> faceNodeOrder =
-        Core::FE::getEleNodeNumberingFaces(f->second->parent_master_element()->shape());
+        Core::FE::get_ele_node_numbering_faces(f->second->parent_master_element()->shape());
 
     bool exchangeMasterAndSlave = false;
     for (int i = 0; i < f->second->num_node(); ++i)
@@ -186,7 +186,7 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
 
   int mysize = sendblock.size();
   comm.SumAll(&mysize, &size, 1);
-  int mypos = Core::LinAlg::FindMyPos(sendblock.size(), comm);
+  int mypos = Core::LinAlg::find_my_pos(sendblock.size(), comm);
 
   std::vector<int> send(size);
   std::fill(send.begin(), send.end(), 0);
@@ -475,7 +475,7 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
     if (problem_type == Core::ProblemType::elemag or problem_type == Core::ProblemType::scatra)
     {
       initParams.set("hdg_action", true);
-      Core::UTILS::AddEnumClassToParameterList<Core::FE::HDGAction>(
+      Core::UTILS::add_enum_class_to_parameter_list<Core::FE::HDGAction>(
           "action", Core::FE::HDGAction::project_dirich_field, initParams);
     }
 

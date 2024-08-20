@@ -53,7 +53,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::unpack(const std::vector<char>& da
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -67,7 +67,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::unpack(const std::vector<char>& da
 template <Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1PoroP1<distype>::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1PoroP1>(
+  return Core::Communication::element_boundary_factory<Wall1Line, Wall1PoroP1>(
       Core::Communication::buildLines, *this);
 }
 

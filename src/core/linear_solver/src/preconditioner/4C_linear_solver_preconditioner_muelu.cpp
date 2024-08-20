@@ -500,7 +500,7 @@ void Core::LinearSolver::MueLuBeamSolidBlockPreconditioner::setup(
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> Ablock =
       Teuchos::null;
-  Core::LinAlg::SplitMatrix2x2(A, Ablock, solidDofRowmap, beamDofRowmap);
+  Core::LinAlg::split_matrix2x2(A, Ablock, solidDofRowmap, beamDofRowmap);
 
   ///////////////////////////////////////////////////////////////////////
   // Here the actual construction of the preconditioner starts

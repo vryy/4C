@@ -19,7 +19,7 @@ namespace ScaTra
 {
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  bool IsBinaryElectrolyte(const std::vector<double>& valence)
+  bool is_binary_electrolyte(const std::vector<double>& valence)
   {
     int numions(0);
     for (size_t k = 0; k < valence.size(); k++)
@@ -32,7 +32,7 @@ namespace ScaTra
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::vector<int> GetIndicesBinaryElectrolyte(const std::vector<double>& valence)
+  std::vector<int> get_indices_binary_electrolyte(const std::vector<double>& valence)
   {
     // indices of the two charged species to be determined
     std::vector<int> indices;
@@ -48,7 +48,7 @@ namespace ScaTra
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  double CalResDiffCoeff(const std::vector<double>& valence, const std::vector<double>& diffus,
+  double cal_res_diff_coeff(const std::vector<double>& valence, const std::vector<double>& diffus,
       const std::vector<int>& indices)
   {
     if (indices.size() != 2) FOUR_C_THROW("Non-matching number of indices!");
@@ -75,7 +75,7 @@ namespace ScaTra
     std::vector<Core::Conditions::Condition*> myinflowcond;
 
     // check whether all nodes have a unique inflow condition
-    Core::Conditions::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
+    Core::Conditions::find_element_conditions(ele, "TurbulentInflowSection", myinflowcond);
     if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
     if (myinflowcond.size() == 1) inflow_ele = true;
@@ -88,7 +88,7 @@ namespace ScaTra
    | convert implementation type of scalar transport elements into corresponding string for output
    purposes   fang 02/15 |
    *---------------------------------------------------------------------------------------------------------------------*/
-  std::string ImplTypeToString(const Inpar::ScaTra::ImplType impltype)
+  std::string impl_type_to_string(const Inpar::ScaTra::ImplType impltype)
   {
     // determine implementation type
     std::string impltypestring;

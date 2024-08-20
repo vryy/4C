@@ -193,7 +193,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
 {
   const Teuchos::ParameterList& fs3idyn = Global::Problem::instance()->f_s3_i_dynamic_params();
   Inpar::ScaTra::SolverType scatra_solvtype =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
+      Core::UTILS::integral_value<Inpar::ScaTra::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
 
   double conresnorm(0.0);
   scatrarhs_->Norm2(&conresnorm);

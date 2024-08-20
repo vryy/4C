@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Core::LinAlg::DeterminantLU(const Core::LinAlg::SerialDenseMatrix& A)
+double Core::LinAlg::determinant_lu(const Core::LinAlg::SerialDenseMatrix& A)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");

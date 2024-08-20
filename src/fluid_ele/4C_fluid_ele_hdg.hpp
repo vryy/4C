@@ -145,7 +145,7 @@ namespace Discret
       */
       int num_dof_per_face(const unsigned face) const override
       {
-        return Core::FE::getDimension(distype_) * num_dof_per_component(face);
+        return Core::FE::get_dimension(distype_) * num_dof_per_component(face);
       }
 
       /*!
@@ -153,8 +153,8 @@ namespace Discret
       */
       int num_dof_per_component(const unsigned face) const override
       {
-        return Core::FE::getBasisSize(
-            Core::FE::getEleFaceShapeType(distype_), this->degree(), completepol_);
+        return Core::FE::get_basis_size(
+            Core::FE::get_ele_face_shape_type(distype_), this->degree(), completepol_);
       }
 
       /*!
@@ -178,8 +178,8 @@ namespace Discret
        */
       int num_dof_per_element_auxiliary() const
       {
-        const int nsd_ = Core::FE::getDimension(distype_);
-        return (nsd_ * (nsd_ + 1) + 1) * Core::FE::getBasisSize(distype_, degree_, completepol_) +
+        const int nsd_ = Core::FE::get_dimension(distype_);
+        return (nsd_ * (nsd_ + 1) + 1) * Core::FE::get_basis_size(distype_, degree_, completepol_) +
                1;
       }
 

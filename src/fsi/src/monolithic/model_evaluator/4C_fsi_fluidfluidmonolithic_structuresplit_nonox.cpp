@@ -310,9 +310,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
   // -----------------------------------------------------
   // Reset quantities for previous iteration step since they still store values from the last time
   // step
-  ddiinc_ = Core::LinAlg::CreateVector(*structure_field()->interface()->other_map(), true);
+  ddiinc_ = Core::LinAlg::create_vector(*structure_field()->interface()->other_map(), true);
   solipre_ = Teuchos::null;
-  ddginc_ = Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
+  ddginc_ = Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
   solgpre_ = Teuchos::null;
 }
 
@@ -443,7 +443,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::scale_system(
   // should we scale the system?
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -517,7 +517,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -973,7 +973,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_i
   if (get_comm().MyPID() == 0) Core::IO::cout << " New Map!! " << Core::IO::endl;
 
   // save the old x_sum
-  Teuchos::RCP<Epetra_Vector> x_sum_n = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> x_sum_n = Core::LinAlg::create_vector(*dof_row_map(), true);
   *x_sum_n = *x_sum_;
   Teuchos::RCP<const Epetra_Vector> sx_n;
   Teuchos::RCP<const Epetra_Vector> ax_n;
@@ -987,10 +987,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_i
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           extractor(), extractor(), 81, false, true));
 
-  rhs_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  x_sum_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  rhs_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+  x_sum_ = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   // build the new iter_sum
   extractor().insert_vector(sx_n, 0, x_sum_);

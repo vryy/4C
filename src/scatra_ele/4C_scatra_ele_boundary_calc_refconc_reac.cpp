@@ -26,7 +26,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcRefConcReac<distype, probdim>>(
@@ -131,7 +131,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
   // get local node coordinates
   Core::LinAlg::Matrix<pnsd, pnen> pxyze(true);
   Core::LinAlg::Matrix<pnsd, pnen> pxyze0(true);
-  Core::Geo::fillInitialPositionArray<pdistype, pnsd, Core::LinAlg::Matrix<pnsd, pnen>>(
+  Core::Geo::fill_initial_position_array<pdistype, pnsd, Core::LinAlg::Matrix<pnsd, pnen>>(
       pele, pxyze0);
   pxyze = pxyze0;
 
@@ -160,7 +160,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
     Core::LinAlg::Matrix<pnsd, pnen> pedispnp(true);
 
     // extract local values of convective velocity field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     // my::rotsymmpbc_->template rotate_my_values_if_necessary<pnsd,pnen>(pedispnp);
@@ -189,9 +189,9 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
   // distinguish 2- and 3-D case
   Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, pnsd);
   if (pnsd == 2)
-    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bele->face_master_number());
+    Core::FE::boundary_gp_to_parent_gp2(pqxg, gps, pdistype, bdistype, bele->face_master_number());
   else if (pnsd == 3)
-    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bele->face_master_number());
+    Core::FE::boundary_gp_to_parent_gp3(pqxg, gps, pdistype, bdistype, bele->face_master_number());
 
 
   Core::LinAlg::Matrix<pnsd, 1> pxsi(true);

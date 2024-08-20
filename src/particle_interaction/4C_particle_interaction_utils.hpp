@@ -54,7 +54,7 @@ namespace ParticleInteraction
      *  when you use this helper function there will be no need to explicitly insert the class type
      */
     template <int n, class T>
-    T constexpr Pow(T const x)
+    T constexpr pow(T const x)
     {
       return Helper<T, n>::pow(x);
     }
@@ -66,7 +66,7 @@ namespace ParticleInteraction
      *  \brief clear vector c
      */
     template <class T>
-    inline void VecClear(T* c)
+    inline void vec_clear(T* c)
     {
       c[0] = 0.0;
       c[1] = 0.0;
@@ -77,7 +77,7 @@ namespace ParticleInteraction
      *  \brief set vector a to vector c
      */
     template <class T>
-    inline void VecSet(T* c, const T* a)
+    inline void vec_set(T* c, const T* a)
     {
       c[0] = a[0];
       c[1] = a[1];
@@ -88,7 +88,7 @@ namespace ParticleInteraction
      *  \brief add vector a to vector c
      */
     template <class T>
-    inline void VecAdd(T* c, const T* a)
+    inline void vec_add(T* c, const T* a)
     {
       c[0] += a[0];
       c[1] += a[1];
@@ -99,7 +99,7 @@ namespace ParticleInteraction
      *  \brief subtract vector a from vector c
      */
     template <class T>
-    inline void VecSub(T* c, const T* a)
+    inline void vec_sub(T* c, const T* a)
     {
       c[0] -= a[0];
       c[1] -= a[1];
@@ -110,7 +110,7 @@ namespace ParticleInteraction
      *  \brief scale vector c
      */
     template <class T>
-    inline void VecScale(T* c, const T fac)
+    inline void vec_scale(T* c, const T fac)
     {
       c[0] *= fac;
       c[1] *= fac;
@@ -121,7 +121,7 @@ namespace ParticleInteraction
      *  \brief scale vector a and set to vector c
      */
     template <class T>
-    inline void VecSetScale(T* c, const T fac, const T* a)
+    inline void vec_set_scale(T* c, const T fac, const T* a)
     {
       c[0] = fac * a[0];
       c[1] = fac * a[1];
@@ -132,7 +132,7 @@ namespace ParticleInteraction
      *  \brief scale vector a and add to vector c
      */
     template <class T>
-    inline void VecAddScale(T* c, const T fac, const T* a)
+    inline void vec_add_scale(T* c, const T fac, const T* a)
     {
       c[0] += fac * a[0];
       c[1] += fac * a[1];
@@ -143,7 +143,7 @@ namespace ParticleInteraction
      *  \brief set cross product of vector a and vector b to vector c
      */
     template <class T>
-    inline void VecSetCross(T* c, const T* a, const T* b)
+    inline void vec_set_cross(T* c, const T* a, const T* b)
     {
       c[0] = a[1] * b[2] - a[2] * b[1];
       c[1] = a[2] * b[0] - a[0] * b[2];
@@ -154,7 +154,7 @@ namespace ParticleInteraction
      *  \brief add cross product of vector a and vector b to vector c
      */
     template <class T>
-    inline void VecAddCross(T* c, const T* a, const T* b)
+    inline void vec_add_cross(T* c, const T* a, const T* b)
     {
       c[0] += a[1] * b[2] - a[2] * b[1];
       c[1] += a[2] * b[0] - a[0] * b[2];
@@ -165,7 +165,7 @@ namespace ParticleInteraction
      *  \brief return scalar product of vector a and vector b
      */
     template <class T>
-    inline T VecDot(const T* a, const T* b)
+    inline T vec_dot(const T* a, const T* b)
     {
       return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
     }
@@ -174,7 +174,7 @@ namespace ParticleInteraction
      *  \brief return 2-norm of vector a
      */
     template <class T>
-    inline T VecNormTwo(const T* a)
+    inline T vec_norm_two(const T* a)
     {
       return std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
     }
@@ -188,10 +188,10 @@ namespace ParticleInteraction
      *  \brief construct orthogonal unit surface tangent vectors from given unit surface normal
      */
     template <class T>
-    inline void UnitSurfaceTangents(const T* n, T* t1, T* t2)
+    inline void unit_surface_tangents(const T* n, T* t1, T* t2)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (std::abs(1.0 - VecNormTwo(n)) > 1.0e-14)
+      if (std::abs(1.0 - vec_norm_two(n)) > 1.0e-14)
         FOUR_C_THROW("given unit surface normal not normalized!");
 #endif
 
@@ -214,9 +214,9 @@ namespace ParticleInteraction
         t1[2] = 0.0;
       }
 
-      VecScale(t1, 1.0 / VecNormTwo(t1));
+      vec_scale(t1, 1.0 / vec_norm_two(t1));
 
-      VecSetCross(t2, n, t1);
+      vec_set_cross(t2, n, t1);
     }
 
     //@}
@@ -227,7 +227,7 @@ namespace ParticleInteraction
     /**
      *  \brief linear transition function
      */
-    inline double LinTrans(const double x, const double x1, const double x2)
+    inline double lin_trans(const double x, const double x1, const double x2)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (not(std::abs(x2 - x1) > 1.0e-14)) FOUR_C_THROW("danger of division by zero!");
@@ -241,9 +241,9 @@ namespace ParticleInteraction
     /**
      *  \brief complementary linear transition function
      */
-    inline double CompLinTrans(const double x, const double x1, const double x2)
+    inline double comp_lin_trans(const double x, const double x1, const double x2)
     {
-      return 1.0 - LinTrans(x, x1, x2);
+      return 1.0 - lin_trans(x, x1, x2);
     }
 
     //@}

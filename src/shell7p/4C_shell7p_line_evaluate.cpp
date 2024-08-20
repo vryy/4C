@@ -28,7 +28,7 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   std::vector<double> displacements(dof_index_array.size());
-  Core::FE::ExtractMyValues(*disp, displacements, dof_index_array);
+  Core::FE::extract_my_values(*disp, displacements, dof_index_array);
 
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().get<std::vector<int>>("ONOFF");
@@ -73,8 +73,8 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
   {
     // get shape functions and derivatives of element surface
     const double e = intpoints.qxg[gp][0];
-    Core::FE::shape_function_1D(shape_functions, e, shape);
-    Core::FE::shape_function_1D_deriv1(derivatives, e, shape);
+    Core::FE::shape_function_1d(shape_functions, e, shape);
+    Core::FE::shape_function_1d_deriv1(derivatives, e, shape);
 
     // covariant basis vectors and metric of shell body
     // g1,g2,g3 stored in Jacobian matrix  = (g1,g2,g3)

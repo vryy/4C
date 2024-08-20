@@ -352,24 +352,24 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidI
   if (nsd_ == 3)
   {
     // numbering of master's surfaces/lines w.r.t parent element
-    m_connectivity_ = Core::FE::getEleNodeNumberingSurfaces(pdistype);
-    s_connectivity_ = Core::FE::getEleNodeNumberingSurfaces(ndistype);
+    m_connectivity_ = Core::FE::get_ele_node_numbering_surfaces(pdistype);
+    s_connectivity_ = Core::FE::get_ele_node_numbering_surfaces(ndistype);
 
     // just for 3D
     if (pdistype != Core::FE::CellType::wedge6 and pdistype != Core::FE::CellType::wedge15)
-      connectivity_line_surf_ = Core::FE::getEleNodeNumbering_lines_surfaces(pdistype);
+      connectivity_line_surf_ = Core::FE::get_ele_node_numbering_lines_surfaces(pdistype);
   }
   else if (nsd_ == 2)
   {
     // numbering of master's surfaces/lines w.r.t parent element
-    m_connectivity_ = Core::FE::getEleNodeNumberingLines(pdistype);
-    s_connectivity_ = Core::FE::getEleNodeNumberingLines(ndistype);
+    m_connectivity_ = Core::FE::get_ele_node_numbering_lines(pdistype);
+    s_connectivity_ = Core::FE::get_ele_node_numbering_lines(ndistype);
   }
   else
     FOUR_C_THROW("not valid nsd %i", nsd_);
 
   // get the connectivity between lines and surfaces of an parent element
-  connectivity_line_nodes_ = Core::FE::getEleNodeNumberingLines(pdistype);
+  connectivity_line_nodes_ = Core::FE::get_ele_node_numbering_lines(pdistype);
 
 
   // is the face a higher order face with higher order neighboring elements?
@@ -993,21 +993,21 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (nsd_ == 3)
   {
     // get the local gp coordinates w.r.t parent (master) element
-    Core::FE::BoundaryGPToParentGP3(
+    Core::FE::boundary_gp_to_parent_gp3(
         p_xi_points_, face_xi_points_master_, pdistype, distype, intface->face_master_number());
 
     // get the local gp coordinates w.r.t parent (master) element
-    Core::FE::BoundaryGPToParentGP3(
+    Core::FE::boundary_gp_to_parent_gp3(
         n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->face_slave_number());
   }
   else if (nsd_ == 2)
   {
     // get the local gp coordinates w.r.t parent (master) element
-    Core::FE::BoundaryGPToParentGP2(
+    Core::FE::boundary_gp_to_parent_gp2(
         p_xi_points_, face_xi_points_master_, pdistype, distype, intface->face_master_number());
 
     // get the local gp coordinates w.r.t neighbor (slave) element
-    Core::FE::BoundaryGPToParentGP2(
+    Core::FE::boundary_gp_to_parent_gp2(
         n_xi_points_, face_xi_points_slave_, ndistype, distype, intface->face_slave_number());
   }
   else
@@ -1631,7 +1631,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // ------------------------------------------------
   // compute measure tensor for surface element and the infinitesimal
   // area element drs for the integration
-  Core::FE::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor_, drs_, &n_);
+  Core::FE::compute_metric_tensor_for_boundary_ele<distype>(
+      xyze_, deriv_, metrictensor_, drs_, &n_);
 
 
   // total integration factor
@@ -2040,7 +2041,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // compute local coordinates with respect to slave element
   Core::LinAlg::Matrix<nsd_, 1> nqxg(true);
 
-  bool inelement_n = Core::Geo::ComputeLocalCoordinates<ndistype>(nxyze_, x_gp, nqxg);
+  bool inelement_n = Core::Geo::compute_local_coordinates<ndistype>(nxyze_, x_gp, nqxg);
 
   if (!inelement_n) FOUR_C_THROW("point does not lie in element");
 
@@ -2049,7 +2050,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // compute local coordinates with respect to master element
 
   Core::LinAlg::Matrix<nsd_, 1> pqxg(true);
-  bool inelement_p = Core::Geo::ComputeLocalCoordinates<pdistype>(pxyze_, x_gp, pqxg);
+  bool inelement_p = Core::Geo::compute_local_coordinates<pdistype>(pxyze_, x_gp, pqxg);
 
   if (!inelement_p) FOUR_C_THROW("point does not lie in element");
 
@@ -2057,7 +2058,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // ------------------------------------------------
   // compute measure tensor for surface element and the infinitesimal
   // area element drs for the integration
-  Core::FE::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor_, drs_, &n_);
+  Core::FE::compute_metric_tensor_for_boundary_ele<distype>(
+      xyze_, deriv_, metrictensor_, drs_, &n_);
 
 
   // total integration factor

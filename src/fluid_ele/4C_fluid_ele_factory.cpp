@@ -98,7 +98,7 @@ Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::provide_i
     // no 1D elements
     default:
       FOUR_C_THROW("Element shape %s not activated. Just do it.",
-          Core::FE::CellTypeToString(distype).c_str());
+          Core::FE::cell_type_to_string(distype).c_str());
       break;
   }
   return nullptr;
@@ -190,7 +190,7 @@ Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::provide_i
       //    }
     default:
       FOUR_C_THROW("Element shape %s not activated for XFEM problems. Just do it.",
-          Core::FE::CellTypeToString(distype).c_str());
+          Core::FE::cell_type_to_string(distype).c_str());
       break;
   }
   return nullptr;

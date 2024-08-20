@@ -150,7 +150,7 @@ void Core::FE::AssembleStrategy::assemble(
 void Core::FE::AssembleStrategy::assemble(Epetra_Vector& V, const LinAlg::SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  LinAlg::Assemble(V, Vele, lm, lmowner);
+  LinAlg::assemble(V, Vele, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------*
@@ -159,7 +159,7 @@ void Core::FE::AssembleStrategy::assemble(Epetra_MultiVector& V, const int n,
     const LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
-  LinAlg::Assemble(V, n, Vele, lm, lmowner);
+  LinAlg::assemble(V, n, Vele, lm, lmowner);
 }
 
 FOUR_C_NAMESPACE_CLOSE

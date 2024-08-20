@@ -138,7 +138,7 @@ int Discret::ELEMENTS::Truss3::evaluate(Teuchos::ParameterList& params,
     }
     default:
     {
-      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      std::cout << "\ncalled element with action type " << action_type_to_string(act);
       FOUR_C_THROW("Unknown type of action for Truss3");
       break;
     }
@@ -497,7 +497,7 @@ void Discret::ELEMENTS::Truss3::calc_gp_stresses(
   else
   {
     stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-    iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+    iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
         params, "iostress", Inpar::Solid::stress_none);
   }
 
@@ -581,7 +581,7 @@ void Discret::ELEMENTS::Truss3::extract_elemental_variables(LocationArray& la,
 
   auto disp = discretization.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
-  Core::FE::ExtractMyValues(*disp, disp_ele, la[0].lm_);
+  Core::FE::extract_my_values(*disp, disp_ele, la[0].lm_);
 
   if (ele_state.find("disp") == ele_state.end())
     ele_state.emplace(std::make_pair("disp", disp_ele));

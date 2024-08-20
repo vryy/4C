@@ -46,8 +46,8 @@ namespace PARTICLEENGINE
      * \param[in]  sdata send buffers related to corresponding target processors
      * \param[out] rdata receive buffers related to corresponding source processors
      */
-    void ImmediateRecvBlockingSend(const Epetra_Comm& comm, std::map<int, std::vector<char>>& sdata,
-        std::map<int, std::vector<char>>& rdata);
+    void immediate_recv_blocking_send(const Epetra_Comm& comm,
+        std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata);
 
   }  // namespace COMMUNICATION
 

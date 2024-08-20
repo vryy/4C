@@ -44,9 +44,9 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     : AlgorithmBase(comm, timeparams),
       is_part_of_multifield_problem_(false),
       porosity_splitter_(porosity_splitter),
-      matchinggrid_(Core::UTILS::IntegralValue<bool>(
+      matchinggrid_(Core::UTILS::integral_value<bool>(
           Global::Problem::instance()->poroelast_dynamic_params(), "MATCHINGGRID")),
-      oldstructimint_(Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
+      oldstructimint_(Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(
                           Global::Problem::instance()->structural_dynamic_params(),
                           "INT_STRATEGY") == Inpar::Solid::int_old)
 {
@@ -72,7 +72,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, fluiddis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
 
@@ -151,9 +151,10 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
           "no Poro Coupling Condition defined for porous media problem. Fix your input file!");
 
     // check time integration algo -> currently only one-step-theta scheme supported
-    auto structtimealgo = Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+    auto structtimealgo =
+        Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
     auto fluidtimealgo =
-        Core::UTILS::IntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
+        Core::UTILS::integral_value<Inpar::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
     if (not((structtimealgo == Inpar::Solid::dyna_onesteptheta and
                 fluidtimealgo == Inpar::FLUID::timeint_one_step_theta) or
@@ -200,7 +201,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     // access the problem-specific parameter lists
     const Teuchos::ParameterList& pedyn = Global::Problem::instance()->poroelast_dynamic_params();
     auto physicaltype =
-        Core::UTILS::IntegralValue<Inpar::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
+        Core::UTILS::integral_value<Inpar::FLUID::PhysicalType>(pedyn, "PHYSICAL_TYPE");
     if (porosity_dof_ and physicaltype != Inpar::FLUID::poro_p1)
     {
       FOUR_C_THROW(
@@ -209,7 +210,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     auto transientfluid =
-        Core::UTILS::IntegralValue<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
+        Core::UTILS::integral_value<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
             pedyn, "TRANSIENT_TERMS");
 
     if (fluidtimealgo == Inpar::FLUID::timeint_stationary)
@@ -276,7 +277,7 @@ void PoroElast::PoroBase::read_restart(const int step)
     // They need to be reset.
     if (matchinggrid_)
     {
-      PoroElast::UTILS::SetMaterialPointersMatchingGrid(
+      PoroElast::UTILS::set_material_pointers_matching_grid(
           structure_field()->discretization(), fluid_field()->discretization());
     }
     else
@@ -357,7 +358,7 @@ Teuchos::RCP<Epetra_Vector> PoroElast::PoroBase::structure_to_fluid_field(
     Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->apply_vector_mapping21(iv);
 
     Teuchos::RCP<Epetra_Vector> sv =
-        Core::LinAlg::CreateVector(*(fluid_field()->vel_pres_splitter()->other_map()));
+        Core::LinAlg::create_vector(*(fluid_field()->vel_pres_splitter()->other_map()));
 
     std::copy(mv->Values(),
         mv->Values() + (static_cast<ptrdiff_t>(mv->MyLength() * mv->NumVectors())), sv->Values());
@@ -451,7 +452,8 @@ void PoroElast::PoroBase::setup_coupling()
     porosity_dof_ = true;
     if (porosity_splitter_.is_null())
     {
-      porosity_splitter_ = PoroElast::UTILS::BuildPoroSplitter(structure_field()->discretization());
+      porosity_splitter_ =
+          PoroElast::UTILS::build_poro_splitter(structure_field()->discretization());
     }
   }
 

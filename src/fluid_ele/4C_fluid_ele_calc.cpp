@@ -361,12 +361,12 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
     // extract gradient projection for consistent residual
     const Teuchos::RCP<Epetra_MultiVector> velafgrad =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
-    Core::FE::ExtractMyNodeBasedValues(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
+    Core::FE::extract_my_node_based_values(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
     if (fldparatimint_->is_new_ost_implementation())
     {
       const Teuchos::RCP<Epetra_MultiVector> velngrad =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("velngrad");
-      Core::FE::ExtractMyNodeBasedValues(ele, evelngrad_, velngrad, nsd_ * nsd_);
+      Core::FE::extract_my_node_based_values(ele, evelngrad_, velngrad, nsd_ * nsd_);
     }
   }
 
@@ -453,7 +453,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
   // ---------------------------------------------------------------------
   // get initial node coordinates for element
   // ---------------------------------------------------------------------
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -499,7 +500,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
   {
     // access knots and weights for this element
     bool zero_size =
-        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -1414,9 +1415,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
 
   // check whether all nodes have a unique Neumann condition
   if (nsd_ == 3)
-    Core::Conditions::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+    Core::Conditions::find_element_conditions(ele, "VolumeNeumann", myneumcond);
   else if (nsd_ == 2)
-    Core::Conditions::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+    Core::Conditions::find_element_conditions(ele, "SurfaceNeumann", myneumcond);
   else
     FOUR_C_THROW("Body force for 1D problem not yet implemented!");
 
@@ -1517,9 +1518,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
 
     // check whether all nodes have a unique Neumann condition
     if (nsd_ == 3)
-      Core::Conditions::FindElementConditions(ele, "TransportVolumeNeumann", myscatraneumcond);
+      Core::Conditions::find_element_conditions(ele, "TransportVolumeNeumann", myscatraneumcond);
     else if (nsd_ == 2)
-      Core::Conditions::FindElementConditions(ele, "TransportSurfaceNeumann", myscatraneumcond);
+      Core::Conditions::find_element_conditions(ele, "TransportSurfaceNeumann", myscatraneumcond);
     else
       FOUR_C_THROW("Body force for 1D problem not yet implemented!");
 
@@ -2322,7 +2323,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 double Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_mk()
 {
-  return Discret::ELEMENTS::MK<distype>();
+  return Discret::ELEMENTS::mk<distype>();
 }
 
 /*----------------------------------------------------------------------*
@@ -5832,7 +5833,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_service(
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -6002,7 +6003,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // set element id
   eid_ = ele->id();
 
@@ -6013,7 +6015,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
   {
     // access knots and weights for this element
     bool zero_size =
-        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -6061,7 +6063,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_op(Discret::ELEM
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // set element id
   eid_ = ele->id();
@@ -6118,7 +6121,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::vel_gradient_projection(
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // set element id
   eid_ = ele->id();
 
@@ -6191,7 +6195,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pres_gradient_projection(
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // set element id
   eid_ = ele->id();
 
@@ -6270,7 +6275,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_div_u(Discret::EL
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // set element id
   eid_ = ele->id();
@@ -6282,7 +6288,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_div_u(Discret::EL
   {
     // access knots and weights for this element
     bool zero_size =
-        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -6374,7 +6380,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
   Core::LinAlg::Matrix<nsd_, nsd_> dervelint(true);
 
   const Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
   const int calcerrfunctno = params.get<int>("error function number");
 
   //----------------------------------------------------------------------------
@@ -6400,7 +6406,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // set element id
   eid_ = ele->id();
 
@@ -6411,7 +6418,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
   {
     // access knots and weights for this element
     bool zero_size =
-        Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization, ele, myknots_, weights_);
+        Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discretization, ele, myknots_, weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if (zero_size) return (0);
@@ -7089,7 +7096,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::extract_values_from_glob
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+  Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   if (matrixtofill != nullptr) rotsymmpbc.rotate_my_values_if_necessary(mymatrix);
@@ -7196,7 +7203,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
   {
     const Teuchos::RCP<Epetra_MultiVector> velafgrad =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
-    Core::FE::ExtractMyNodeBasedValues(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
+    Core::FE::extract_my_node_based_values(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
   }
 
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -7227,7 +7234,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
   }
 
   // get node coordinates and number of elements per node
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // set element id
   eid_ = ele->id();
@@ -8515,7 +8523,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inflow_element(Core::Ele
   std::vector<Core::Conditions::Condition*> myinflowcond;
 
   // check whether all nodes have a unique inflow condition
-  Core::Conditions::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
+  Core::Conditions::find_element_conditions(ele, "TurbulentInflowSection", myinflowcond);
   if (myinflowcond.size() > 1) FOUR_C_THROW("More than one inflow condition on one node!");
 
   if (myinflowcond.size() == 1) is_inflow_ele_ = true;
@@ -8551,7 +8559,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->is_ale())
@@ -8813,7 +8822,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
   ele->location_vector(discretization, la, false);
   // extract local values of the global vectors
   std::vector<double> myvalues(la[0].lm_.size());
-  Core::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
+  Core::FE::extract_my_values(*state, myvalues, la[0].lm_);
 
   // split velocity and pressure
   for (int inode = 0; inode < nen_; ++inode)  // number of nodes
@@ -9062,8 +9071,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
         match = true;
       }
 
-      Immersed::InterpolateToBackgrdPoint<Core::FE::CellType::hex8,  // source/structure
-          Core::FE::CellType::hex8>                                  // target/fluid
+      Immersed::interpolate_to_backgrd_point<Core::FE::CellType::hex8,  // source/structure
+          Core::FE::CellType::hex8>                                     // target/fluid
           (curr_subset_of_structdis,
               immerseddis,  // source/structure
               backgrddis,   // target/fluid
@@ -9171,8 +9180,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
             match = true;
           }
 
-          Immersed::InterpolateToBackgrdPoint<Core::FE::CellType::hex8,  // source/structure
-              Core::FE::CellType::hex8>                                  // target/fluid
+          Immersed::interpolate_to_backgrd_point<Core::FE::CellType::hex8,  // source/structure
+              Core::FE::CellType::hex8>                                     // target/fluid
               (curr_subset_of_structdis,
                   immerseddis,  // source/structure
                   backgrddis,   // target/fluid
@@ -9260,7 +9269,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
 
     // extract local values of the global vectors
     myvalues.resize(la[0].lm_.size());
-    Core::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
+    Core::FE::extract_my_values(*state, myvalues, la[0].lm_);
 
     // split velocity and pressure
     for (int inode = 0; inode < nen_; ++inode)
@@ -9369,8 +9378,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
         match = true;
       }
 
-      Immersed::FindClosestStructureSurfacePoint<Core::FE::CellType::quad4,  // structure
-          Core::FE::CellType::hex8>                                          // fluid
+      Immersed::find_closest_structure_surface_point<Core::FE::CellType::quad4,  // structure
+          Core::FE::CellType::hex8>                                              // fluid
           (curr_subset_of_structdis,  // relevant struct elements
               struct_dis,             // structure discretization
               fluid_dis,              // fluid discretization
@@ -9445,7 +9454,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_p
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // set element id
   eid_ = ele->id();
 
@@ -9498,7 +9508,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_pressure_to_p
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // set element id
   eid_ = ele->id();
 
@@ -9643,7 +9654,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
 
   // extract local values from the global vectors
   std::vector<double> mysol(lm.size());
-  Core::FE::ExtractMyValues(*velnp, mysol, lm);
+  Core::FE::extract_my_values(*velnp, mysol, lm);
   // get view of solution and subgrid-viscosity vector
   Core::LinAlg::Matrix<4 * nen_, 1> sol(mysol.data(), true);
 
@@ -9685,7 +9696,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
 
   // get node coordinates of element
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->is_ale())
@@ -10254,7 +10266,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_time_step(Discret::E
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // Do ALE specific updates if necessary
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -10344,7 +10357,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_h
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->is_ale()) FOUR_C_THROW("no ale for periodic hill");
@@ -10427,7 +10441,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_vel_gradient_ele_cen
       distype != Core::FE::CellType::quad4 && distype != Core::FE::CellType::tri3)
     FOUR_C_THROW("this is currently only implemented for linear elements");
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      ele, xyze_);
   // Do ALE specific updates if necessary
   if (ele->is_ale())
   {

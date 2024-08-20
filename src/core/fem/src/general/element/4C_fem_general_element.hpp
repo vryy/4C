@@ -1490,7 +1490,7 @@ might become invalid after a redistribution of the discretization.
   };
 
   /// translate shards::key to enum
-  Core::FE::CellType ShardsKeyToDisType(const unsigned& key);
+  Core::FE::CellType shards_key_to_dis_type(const unsigned& key);
 }  // namespace Core::Elements
 
 

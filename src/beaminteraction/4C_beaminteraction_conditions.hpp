@@ -279,7 +279,7 @@ namespace BEAMINTERACTION
    * @param condition (in) A pointer to the condition.
    * @param element_ids (out) A vector with all global element IDs.
    */
-  void ConditionToElementIds(const Teuchos::RCP<const Core::Conditions::Condition>& condition,
+  void condition_to_element_ids(const Teuchos::RCP<const Core::Conditions::Condition>& condition,
       std::vector<int>& element_ids);
 
 }  // namespace BEAMINTERACTION

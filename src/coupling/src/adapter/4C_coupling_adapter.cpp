@@ -55,9 +55,9 @@ void Coupling::Adapter::Coupling::setup_condition_coupling(
     FOUR_C_THROW("Received %d master DOFs, but %d slave DOFs", numdof, numdof_slave);
 
   std::vector<int> masternodes;
-  Core::Conditions::FindConditionedNodes(masterdis, condname, masternodes);
+  Core::Conditions::find_conditioned_nodes(masterdis, condname, masternodes);
   std::vector<int> slavenodes;
-  Core::Conditions::FindConditionedNodes(slavedis, condname, slavenodes);
+  Core::Conditions::find_conditioned_nodes(slavedis, condname, slavenodes);
 
   int localmastercount = static_cast<int>(masternodes.size());
   int mastercount;
@@ -162,14 +162,14 @@ void Coupling::Adapter::Coupling::setup_constrained_condition_coupling(
     const std::string& condname1, const std::string& condname2, const int numdof, bool matchall)
 {
   std::vector<int> masternodes1;
-  Core::Conditions::FindConditionedNodes(masterdis, condname1, masternodes1);
+  Core::Conditions::find_conditioned_nodes(masterdis, condname1, masternodes1);
   std::vector<int> slavenodes1;
-  Core::Conditions::FindConditionedNodes(slavedis, condname1, slavenodes1);
+  Core::Conditions::find_conditioned_nodes(slavedis, condname1, slavenodes1);
 
   std::set<int> masternodes2;
-  Core::Conditions::FindConditionedNodes(masterdis, condname2, masternodes2);
+  Core::Conditions::find_conditioned_nodes(masterdis, condname2, masternodes2);
   std::set<int> slavenodes2;
-  Core::Conditions::FindConditionedNodes(slavedis, condname2, slavenodes2);
+  Core::Conditions::find_conditioned_nodes(slavedis, condname2, slavenodes2);
 
   // now find all those elements of slavenodes1 and masternodes1 that
   // do not belong to slavenodes2 and masternodes2 at the same time
@@ -762,7 +762,7 @@ Teuchos::RCP<Epetra_Map> Coupling::Adapter::Coupling::slave_to_master_map(
 {
   int nummyele = 0;
   std::vector<int> globalelements;
-  const Teuchos::RCP<Epetra_Map> slavemap = Core::LinAlg::AllreduceEMap(*slave);
+  const Teuchos::RCP<Epetra_Map> slavemap = Core::LinAlg::allreduce_e_map(*slave);
   for (int i = 0; i < slavemap->NumMyElements(); ++i)
   {
     int lid = permslavedofmap_->LID(slavemap->GID(i));
@@ -784,7 +784,7 @@ Teuchos::RCP<Epetra_Map> Coupling::Adapter::Coupling::master_to_slave_map(
 {
   int nummyele = 0;
   std::vector<int> globalelements;
-  const Teuchos::RCP<Epetra_Map> mastermap = Core::LinAlg::AllreduceEMap(*master);
+  const Teuchos::RCP<Epetra_Map> mastermap = Core::LinAlg::allreduce_e_map(*master);
   for (int i = 0; i < mastermap->NumMyElements(); ++i)
   {
     int lid = permmasterdofmap_->LID(mastermap->GID(i));

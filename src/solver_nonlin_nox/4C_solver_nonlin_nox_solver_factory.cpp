@@ -79,7 +79,7 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::Factory::build_solver(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::BuildSolver(
+Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::build_solver(
     const Teuchos::RCP<::NOX::Abstract::Group>& grp,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,

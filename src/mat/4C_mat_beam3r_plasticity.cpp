@@ -196,7 +196,7 @@ void Mat::BeamPlasticMaterial<T>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   int matid;
   this->extract_from_pack(position, data, matid);
@@ -263,7 +263,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
 
       delta_gammaplast_[gp](0) =
           ((CN(0, 0) - c_n_eff_[gp](0, 0)) / CN(0, 0) * deltastress_n_[gp](0) / CN(0, 0)) *
-          Core::FADUtils::Signum(stressN(0));
+          Core::FADUtils::signum(stressN(0));
 
       gammaplastnew_[gp](0) = gammaplastconv_[gp](0) + delta_gammaplast_[gp](0);
 

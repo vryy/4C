@@ -53,26 +53,26 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretizatio
       myrank_(actdis->get_comm().MyPID()),
       nsd_(Global::Problem::instance()->n_dim()),
       isale_(false),
-      skipinitder_(Core::UTILS::IntegralValue<int>(poroparams_, "SKIPINITDER")),
-      output_satpress_(Core::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_SATANDPRESS")),
-      output_solidpress_(Core::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
-      output_porosity_(Core::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_POROSITY")),
+      skipinitder_(Core::UTILS::integral_value<int>(poroparams_, "SKIPINITDER")),
+      output_satpress_(Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_SATANDPRESS")),
+      output_solidpress_(Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
+      output_porosity_(Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_POROSITY")),
       output_phase_velocities_(
-          Core::UTILS::IntegralValue<int>(poroparams_, "OUTPUT_PHASE_VELOCITIES")),
-      output_bloodvesselvolfrac_(Core::UTILS::IntegralValue<int>(
+          Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_PHASE_VELOCITIES")),
+      output_bloodvesselvolfrac_(Core::UTILS::integral_value<int>(
           poroparams_.sublist("ARTERY COUPLING"), "OUTPUT_BLOODVESSELVOLFRAC")),
-      stab_biot_(Core::UTILS::IntegralValue<int>(poroparams_, "STAB_BIOT")),
+      stab_biot_(Core::UTILS::integral_value<int>(poroparams_, "STAB_BIOT")),
       domainint_funct_(std::vector<int>()),
       num_domainint_funct_(0),
-      calcerr_(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::CalcError>(
+      calcerr_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::CalcError>(
           poroparams_, "CALCERROR")),
-      fluxrecon_(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+      fluxrecon_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
           poroparams_, "FLUX_PROJ_METHOD")),
       fluxreconsolvernum_(poroparams_.get<int>("FLUX_PROJ_SOLVER")),
-      divcontype_(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::DivContAct>(
+      divcontype_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::DivContAct>(
           poroparams_, "DIVERCONT")),
       fdcheck_(
-          Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::FdCheck>(poroparams_, "FDCHECK")),
+          Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::FdCheck>(poroparams_, "FDCHECK")),
       fdcheckeps_(poroparams_.get<double>("FDCHECKEPS")),
       fdchecktol_(poroparams_.get<double>("FDCHECKTOL")),
       stab_biot_scaling_(poroparams_.get<double>("STAB_BIOT_SCALING")),
@@ -87,13 +87,13 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretizatio
       itemax_(poroparams_.get<int>("ITEMAX")),
       upres_(params_.get<int>("RESULTSEVRY")),
       uprestart_(params_.get<int>("RESTARTEVRY")),
-      vectornormfres_(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
+      vectornormfres_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
           poroparams_, "VECTORNORM_RESF")),
-      vectornorminc_(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
+      vectornorminc_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
           poroparams_, "VECTORNORM_INC")),
       ittolres_(poroparams_.get<double>("TOLRES")),
       ittolinc_(poroparams_.get<double>("TOLINC")),
-      artery_coupling_active_(Core::UTILS::IntegralValue<int>(params_, "ARTERY_COUPLING")),
+      artery_coupling_active_(Core::UTILS::integral_value<int>(params_, "ARTERY_COUPLING")),
       // Initialization of degrees of freedom variables
       phin_(Teuchos::null),
       phinp_(Teuchos::null),
@@ -178,47 +178,47 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1
-  phinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  phinp_ = Core::LinAlg::create_vector(*dofrowmap, true);
   // solutions at time n
-  phin_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  phin_ = Core::LinAlg::create_vector(*dofrowmap, true);
   // time derivative of solutions at time n
-  phidtn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  phidtn_ = Core::LinAlg::create_vector(*dofrowmap, true);
   // time derivative of solutions at time n+1
-  phidtnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  phidtnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // history vector
-  hist_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  hist_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // valid (physically meaningful) volume fraction dofs
-  valid_volfracpress_dofs_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  valid_volfracspec_dofs_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  valid_volfracpress_dofs_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  valid_volfracspec_dofs_ = Core::LinAlg::create_vector(*dofrowmap, true);
   if (output_satpress_)
   {
     // pressure at time n+1
-    pressure_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    pressure_ = Core::LinAlg::create_vector(*dofrowmap, true);
     // saturation at time n+1
-    saturation_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    saturation_ = Core::LinAlg::create_vector(*dofrowmap, true);
   }
   // solid pressure at time n+1
   if (output_solidpress_)
-    solidpressure_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(nds_solidpressure_), true);
+    solidpressure_ = Core::LinAlg::create_vector(*discret_->dof_row_map(nds_solidpressure_), true);
   // porosity at time n+1 (lives on same dofset as solid pressure)
   if (output_porosity_)
-    porosity_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(nds_solidpressure_), true);
+    porosity_ = Core::LinAlg::create_vector(*discret_->dof_row_map(nds_solidpressure_), true);
 
   if (output_phase_velocities_)
   {
     const int num_poro_dof = discret_->num_dof(0, discret_->l_row_node(0));
     const int num_rows = num_poro_dof * nsd_;
     phase_velocities_ =
-        Core::LinAlg::CreateMultiVector(*discret_->element_row_map(), num_rows, true);
+        Core::LinAlg::create_multi_vector(*discret_->element_row_map(), num_rows, true);
   }
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   int stream;
   std::istringstream stream_dbc_onoff(
@@ -252,21 +252,21 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   // create vectors associated to solution process
   // -------------------------------------------------------------------
   // the vector containing body and surface forces
-  neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  neumann_loads_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // the residual vector --- more or less the rhs
-  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  residual_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // residual vector containing the normal boundary fluxes
-  trueresidual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  trueresidual_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // incremental solution vector
-  increment_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  increment_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
-  set_initial_field(Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::InitialField>(
+  set_initial_field(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::InitialField>(
                         poroparams_, "INITIALFIELD"),
       poroparams_.get<int>("INITFUNCNO"));
 
@@ -311,7 +311,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   solver_ = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber_),
           discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
   strategy_->initialize_linear_solver(solver_);
 
@@ -1055,7 +1055,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::nonlinear_solve()
   print_convergence_header();
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool isadapttol = (Core::UTILS::IntegralValue<int>(poroparams_, "ADAPTCONV"));
+  const bool isadapttol = (Core::UTILS::integral_value<int>(poroparams_, "ADAPTCONV"));
   const double adaptolbetter = poroparams_.get<double>("ADAPTCONV_BETTER");
   const double abstolres = poroparams_.get<double>("ABSTOLRES");
   double actresidual(0.0);
@@ -1272,7 +1272,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_pressures_and_saturations()
 
     // initialize counter vector (will store how many times the node has been evaluated)
     Teuchos::RCP<Epetra_Vector> counter =
-        Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+        Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
     // call loop over elements
     discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, pressure_, saturation_, counter);
@@ -1316,7 +1316,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_solid_pressures()
 
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
-      Core::LinAlg::CreateVector(*discret_->dof_row_map(nds_solidpressure_), true);
+      Core::LinAlg::create_vector(*discret_->dof_row_map(nds_solidpressure_), true);
 
   // create strategy for assembly of solid pressure
   Core::FE::AssembleStrategy strategysolidpressure(
@@ -1412,7 +1412,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_porosity()
 
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
-      Core::LinAlg::CreateVector(*discret_->dof_row_map(nds_solidpressure_), true);
+      Core::LinAlg::create_vector(*discret_->dof_row_map(nds_solidpressure_), true);
 
   // create strategy for assembly of porosity
   Core::FE::AssembleStrategy strategyporosity(
@@ -1543,14 +1543,14 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::print_convergence_values_first_iter
   {
     std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
               << std::setw(10) << std::setprecision(3) << std::scientific << ittolres_ << " ["
-              << std::setw(3) << VectorNormString(vectornormfres_).c_str() << "]  | ";
+              << std::setw(3) << vector_norm_string(vectornormfres_).c_str() << "]  | ";
 
     for (std::size_t i = 0; i < preresnorm.size(); ++i)
       std::cout << std::setw(10) << std::setprecision(3) << std::scientific << preresnorm[i]
                 << "   | ";
 
     std::cout << std::setw(10) << std::setprecision(3) << std::scientific << ittolinc_ << " ["
-              << std::setw(3) << VectorNormString(vectornorminc_).c_str() << "]  |";
+              << std::setw(3) << vector_norm_string(vectornorminc_).c_str() << "]  |";
 
     for (std::size_t i = 0; i < preresnorm.size(); ++i) std::cout << "      --      |";
     std::cout << " (    --   ,te=" << std::setw(10) << std::setprecision(3) << std::scientific
@@ -1577,12 +1577,12 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::print_convergence_values(
   {
     std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
               << std::setw(10) << std::setprecision(3) << std::scientific << ittolres_ << " ["
-              << std::setw(3) << VectorNormString(vectornormfres_).c_str() << "]  | ";
+              << std::setw(3) << vector_norm_string(vectornormfres_).c_str() << "]  | ";
     for (std::size_t i = 0; i < preresnorm.size(); ++i)
       std::cout << std::setw(10) << std::setprecision(3) << std::scientific << preresnorm[i]
                 << "   | ";
     std::cout << std::setw(10) << std::setprecision(3) << std::scientific << ittolres_ << " ["
-              << std::setw(3) << VectorNormString(vectornorminc_).c_str() << "]  | ";
+              << std::setw(3) << vector_norm_string(vectornorminc_).c_str() << "]  | ";
     for (std::size_t i = 0; i < preresnorm.size(); ++i)
       std::cout << std::setw(10) << std::setprecision(3) << std::scientific
                 << incprenorm[i] / prenorm[i] << "   | ";
@@ -1642,7 +1642,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> solidpressure_multi =
-        POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
+        POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *solidpressure_, nds_solidpressure_, 1);
 
     output_->write_vector("solidpressure", solidpressure_multi, Core::IO::nodevector);
@@ -1657,7 +1657,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
-        POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
+        POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *dispnp, nds_disp_, nsd_);
 
     output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
@@ -1726,7 +1726,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> porosity_multi =
-        POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(
+        POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *porosity_, nds_solidpressure_, 1);
 
     output_->write_vector("porosity", porosity_multi, Core::IO::nodevector);

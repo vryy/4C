@@ -73,13 +73,13 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::setup(
   dof_row_maps();
 
   // merge dofrowmap for slave and master discretization
-  gsmdofrowmap_ = Core::LinAlg::MergeMap(*gmdofrowmap_, *gsdofrowmap_, false);
+  gsmdofrowmap_ = Core::LinAlg::merge_map(*gmdofrowmap_, *gsdofrowmap_, false);
 
   // dofrowmap for discretisation without slave and master dofrowmap
-  gndofrowmap_ = Core::LinAlg::SplitMap(*dofrowmap_, *gsmdofrowmap_);
+  gndofrowmap_ = Core::LinAlg::split_map(*dofrowmap_, *gsmdofrowmap_);
 
   // map for 2x2 (uncoupled dof's & master dof's)
-  mergedmap_ = Core::LinAlg::MergeMap(*gndofrowmap_, *gmdofrowmap_, false);
+  mergedmap_ = Core::LinAlg::merge_map(*gndofrowmap_, *gmdofrowmap_, false);
 
   // std::cout << "number of n dof   " << gndofrowmap_->NumGlobalElements() << std::endl;
   // std::cout << "number of m dof   " << gmdofrowmap_->NumGlobalElements() << std::endl;
@@ -526,7 +526,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block nm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_mod =
-      MLMultiply(sysmatnew->matrix(0, 2), false, *P, false, false, false, true);
+      ml_multiply(sysmatnew->matrix(0, 2), false, *P, false, false, false, true);
 
   // Add transformation matrix to nm
   sysmatnew->matrix(0, 1).un_complete();
@@ -540,7 +540,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmn
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_mod =
-      MLMultiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
+      ml_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
 
   // Add transformation matrix to mn
   sysmatnew->matrix(1, 0).un_complete();
@@ -551,9 +551,9 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_mod =
-      MLMultiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
+      ml_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
-      MLMultiply(*kss_mod, false, *P, false, false, false, true);
+      ml_multiply(*kss_mod, false, *P, false, false, false, true);
 
   // Add transformation matrix to mm
   sysmatnew->matrix(1, 1).un_complete();
@@ -628,7 +628,7 @@ void ALE::Meshtying::update_slave_dof(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> P = get_mortar_matrix_p();
 
   // define new incremental vector
-  Teuchos::RCP<Epetra_Vector> incnew = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> incnew = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // delta_vp^s: add P*delta_vp^m
   Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
@@ -695,8 +695,8 @@ int ALE::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix = Teuchos::null;
 
-  res = Core::LinAlg::CreateVector(*mergedmap_, true);
-  dis = Core::LinAlg::CreateVector(*mergedmap_, true);
+  res = Core::LinAlg::create_vector(*mergedmap_, true);
+  dis = Core::LinAlg::create_vector(*mergedmap_, true);
 
   mergedmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*mergedmap_, 108, false, true));
 

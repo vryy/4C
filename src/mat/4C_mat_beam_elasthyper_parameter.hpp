@@ -31,21 +31,21 @@ namespace Mat
      *
      *  \author grill
      *  \date 02/17 */
-    double DetermineShearModulus(const Core::Mat::PAR::Parameter::Data& matdata);
+    double determine_shear_modulus(const Core::Mat::PAR::Parameter::Data& matdata);
 
     /** \brief determine default value for interaction radius from area moment of inertia just in
      * case that no value was explicitly specified
      *
      *  \author grill
      *  \date 02/17 */
-    double DetermineDefaultInteractionRadius(const Core::Mat::PAR::Parameter::Data& matdata);
+    double determine_default_interaction_radius(const Core::Mat::PAR::Parameter::Data& matdata);
 
     /** \brief determine default value for interaction radius from area moment of inertia just in
      * case that no value was explicitly specified: isotropic case, i.e. only one moment of inertia
      *
      *  \author grill
      *  \date 02/17 */
-    double DetermineDefaultInteractionRadiusIsotropic(
+    double determine_default_interaction_radius_isotropic(
         const Core::Mat::PAR::Parameter::Data& matdata);
 
     /*-------------------------------------------------------------------------------------------*/
