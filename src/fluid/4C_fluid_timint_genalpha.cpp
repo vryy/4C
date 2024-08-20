@@ -288,10 +288,10 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
   Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecnp->Map().NumGlobalElements(),
       vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm()));
 
-  Teuchos::RCP<Epetra_Vector> vecam = Core::LinAlg::CreateVector(*vecmap, true);
+  Teuchos::RCP<Epetra_Vector> vecam = Core::LinAlg::create_vector(*vecmap, true);
   vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
 
-  Teuchos::RCP<Epetra_Vector> vecaf = Core::LinAlg::CreateVector(*vecmap, true);
+  Teuchos::RCP<Epetra_Vector> vecaf = Core::LinAlg::create_vector(*vecmap, true);
   vecaf->Update((alphaF_), *vecnp, (1.0 - alphaF_), *vecn, 0.0);
 
   // store computed intermediate values in given vectors
@@ -321,7 +321,7 @@ void FLD::TimIntGenAlpha::treat_turbulence_models(Teuchos::ParameterList& elepar
 {
   FLD::FluidImplicitTimeInt::treat_turbulence_models(eleparams);
   if (reconstructder_)
-    FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velaf_, "velafgrad", alefluid_);
+    FLD::UTILS::project_gradient_and_set_param(discret_, eleparams, velaf_, "velafgrad", alefluid_);
   return;
 }
 

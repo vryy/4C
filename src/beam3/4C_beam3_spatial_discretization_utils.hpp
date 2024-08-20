@@ -26,8 +26,9 @@ namespace Discret::UTILS::Beam
   /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAtXi(const T& xi, Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i,
-      const Core::FE::CellType& distype, double hermite_length_param = -1.0)
+  void evaluate_shape_functions_at_xi(const T& xi,
+      Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i, const Core::FE::CellType& distype,
+      double hermite_length_param = -1.0)
   {
     I_i.clear();
 
@@ -36,7 +37,7 @@ namespace Discret::UTILS::Beam
       case 1:
       {
         // evaluate Lagrange shape functions at xi
-        Core::FE::shape_function_1D(I_i, xi, distype);
+        Core::FE::shape_function_1d(I_i, xi, distype);
         break;
       }
       case 2:
@@ -46,7 +47,7 @@ namespace Discret::UTILS::Beam
             "Hermite interpolation!");
 
         // evaluate Hermite shape functions at xi: vpernode=2 means 3rd order, i.e. line2
-        Core::FE::shape_function_hermite_1D(
+        Core::FE::shape_function_hermite_1d(
             I_i, xi, hermite_length_param, Core::FE::CellType::line2);
         break;
       }
@@ -59,7 +60,7 @@ namespace Discret::UTILS::Beam
    * [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionDerivsAtXi(const T& xi,
+  void evaluate_shape_function_derivs_at_xi(const T& xi,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
@@ -70,7 +71,7 @@ namespace Discret::UTILS::Beam
       case 1:
       {
         // evaluate Lagrange shape function derivs at xi
-        Core::FE::shape_function_1D_deriv1(I_i_xi, xi, distype);
+        Core::FE::shape_function_1d_deriv1(I_i_xi, xi, distype);
         break;
       }
       case 2:
@@ -80,7 +81,7 @@ namespace Discret::UTILS::Beam
             "Hermite interpolation!");
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-        Core::FE::shape_function_hermite_1D_deriv1(
+        Core::FE::shape_function_hermite_1d_deriv1(
             I_i_xi, xi, hermite_length_param, Core::FE::CellType::line2);
         break;
       }
@@ -93,7 +94,7 @@ namespace Discret::UTILS::Beam
    *         space [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunction2ndDerivsAtXi(const T& xi,
+  void evaluate_shape_function2nd_derivs_at_xi(const T& xi,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xixi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
@@ -104,7 +105,7 @@ namespace Discret::UTILS::Beam
       case 1:
       {
         // evaluate Lagrange shape function derivs at xi
-        Core::FE::shape_function_1D_deriv2(I_i_xixi, xi, distype);
+        Core::FE::shape_function_1d_deriv2(I_i_xixi, xi, distype);
         break;
       }
       case 2:
@@ -114,7 +115,7 @@ namespace Discret::UTILS::Beam
             "Hermite interpolation!");
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-        Core::FE::shape_function_hermite_1D_deriv2(
+        Core::FE::shape_function_hermite_1d_deriv2(
             I_i_xixi, xi, hermite_length_param, Core::FE::CellType::line2);
         break;
       }
@@ -127,7 +128,7 @@ namespace Discret::UTILS::Beam
    *         space [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunction3rdDerivsAtXi(const T& xi,
+  void evaluate_shape_function3rd_derivs_at_xi(const T& xi,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xixixi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
@@ -150,7 +151,7 @@ namespace Discret::UTILS::Beam
             "Hermite interpolation!");
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
-        Core::FE::shape_function_hermite_1D_deriv3(
+        Core::FE::shape_function_hermite_1d_deriv3(
             I_i_xixixi, xi, hermite_length_param, Core::FE::CellType::line2);
         break;
       }
@@ -163,13 +164,14 @@ namespace Discret::UTILS::Beam
    *         parameter space [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAndDerivsAtXi(const T& xi,
+  void evaluate_shape_functions_and_derivs_at_xi(const T& xi,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
-    EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
-    EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(xi, I_i_xi, distype, hermite_length_param);
+    evaluate_shape_functions_at_xi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
+    evaluate_shape_function_derivs_at_xi<nnode, vpernode>(
+        xi, I_i_xi, distype, hermite_length_param);
   }
 
   /** \brief evaluate shape functions and its first and second derivatives at position \xi in
@@ -177,15 +179,16 @@ namespace Discret::UTILS::Beam
    *
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi(const T& xi,
+  void evaluate_shape_functions_and_derivs_and2nd_derivs_at_xi(const T& xi,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xi,
       Core::LinAlg::Matrix<1, vpernode * nnode, T>& I_i_xixi, const Core::FE::CellType& distype,
       double hermite_length_param = -1.0)
   {
-    EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
-    EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(xi, I_i_xi, distype, hermite_length_param);
-    EvaluateShapeFunction2ndDerivsAtXi<nnode, vpernode>(
+    evaluate_shape_functions_at_xi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
+    evaluate_shape_function_derivs_at_xi<nnode, vpernode>(
+        xi, I_i_xi, distype, hermite_length_param);
+    evaluate_shape_function2nd_derivs_at_xi<nnode, vpernode>(
         xi, I_i_xixi, distype, hermite_length_param);
   }
 
@@ -193,7 +196,7 @@ namespace Discret::UTILS::Beam
    *
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAllGPs(const Core::FE::IntegrationPoints1D& gausspoints,
+  void evaluate_shape_functions_all_gps(const Core::FE::IntegrationPoints1D& gausspoints,
       std::vector<Core::LinAlg::Matrix<1, vpernode * nnode, T>>& I_i,
       const Core::FE::CellType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
@@ -213,7 +216,8 @@ namespace Discret::UTILS::Beam
       const T xi = 0.5 * ((1.0 - xi_tilde) * integration_interval_lower_limit +
                              (1.0 + xi_tilde) * integration_interval_upper_limit);
 
-      EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i[numgp], distype, hermite_length_param);
+      evaluate_shape_functions_at_xi<nnode, vpernode>(
+          xi, I_i[numgp], distype, hermite_length_param);
     }
   }
 
@@ -221,7 +225,7 @@ namespace Discret::UTILS::Beam
    *
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionDerivsAllGPs(const Core::FE::IntegrationPoints1D& gausspoints,
+  void evaluate_shape_function_derivs_all_gps(const Core::FE::IntegrationPoints1D& gausspoints,
       std::vector<Core::LinAlg::Matrix<1, vpernode * nnode, T>>& I_i_xi,
       const Core::FE::CellType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
@@ -242,7 +246,7 @@ namespace Discret::UTILS::Beam
       const T xi = 0.5 * ((1.0 - xi_tilde) * integration_interval_lower_limit +
                              (1.0 + xi_tilde) * integration_interval_upper_limit);
 
-      EvaluateShapeFunctionDerivsAtXi<nnode, vpernode>(
+      evaluate_shape_function_derivs_at_xi<nnode, vpernode>(
           xi, I_i_xi[numgp], distype, hermite_length_param);
     }
   }
@@ -251,22 +255,22 @@ namespace Discret::UTILS::Beam
    *
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAndDerivsAllGPs(const Core::FE::IntegrationPoints1D& gausspoints,
+  void evaluate_shape_functions_and_derivs_all_gps(const Core::FE::IntegrationPoints1D& gausspoints,
       std::vector<Core::LinAlg::Matrix<1, vpernode * nnode, T>>& I_i,
       std::vector<Core::LinAlg::Matrix<1, vpernode * nnode, T>>& I_i_xi,
       const Core::FE::CellType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
   {
-    EvaluateShapeFunctionsAllGPs<nnode, vpernode>(gausspoints, I_i, distype, hermite_length_param,
-        integration_interval_lower_limit, integration_interval_upper_limit);
-    EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(gausspoints, I_i_xi, distype,
+    evaluate_shape_functions_all_gps<nnode, vpernode>(gausspoints, I_i, distype,
+        hermite_length_param, integration_interval_lower_limit, integration_interval_upper_limit);
+    evaluate_shape_function_derivs_all_gps<nnode, vpernode>(gausspoints, I_i_xi, distype,
         hermite_length_param, integration_interval_lower_limit, integration_interval_upper_limit);
   }
 
   /** \brief assemble one shape function matrix, such that: r=N*d
    */
   template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-  void AssembleShapeFunctions(const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T>& N_i,
+  void assemble_shape_functions(const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T>& N_i,
       Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, T>& N)
   {
     // assembly_N is just an array to help assemble the matrices of the shape functions
@@ -307,7 +311,7 @@ namespace Discret::UTILS::Beam
   /** \brief assemble shape function matrices, such that: r=N*d, r_xi=N_xi*d, r_xixi=N_xixi*d
    */
   template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-  void AssembleShapeFunctionsAndDerivsAnd2ndDerivs(
+  void assemble_shape_functions_and_derivs_and2nd_derivs(
       const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T>& N_i,
       const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T>& N_i_xi,
       const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T>& N_i_xixi,
@@ -315,15 +319,15 @@ namespace Discret::UTILS::Beam
       Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi,
       Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xixi)
   {
-    AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i, N);
-    AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xi, N_xi);
-    AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xixi, N_xixi);
+    assemble_shape_functions<numnodes, numnodalvalues, T>(N_i, N);
+    assemble_shape_functions<numnodes, numnodalvalues, T>(N_i_xi, N_xi);
+    assemble_shape_functions<numnodes, numnodalvalues, T>(N_i_xixi, N_xixi);
   }
 
   /** \brief interpolation of nodal DoFs based on given shape function values
    */
   template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T, typename T2>
-  void CalcInterpolation(const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1, T>& dof_vals,
+  void calc_interpolation(const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1, T>& dof_vals,
       const Core::LinAlg::Matrix<1, vpernode * nnode, T2>& shapefcn_vals,
       Core::LinAlg::Matrix<ndim, 1, T>& result)
   {
@@ -337,7 +341,7 @@ namespace Discret::UTILS::Beam
   /** \brief evaluate length and derivative at all specified Gauss points at once
    */
   template <unsigned int nnode, unsigned int vpernode>
-  std::tuple<double, double> IntegrateCenterlineArcLengthAndArcLengthDerivative(
+  std::tuple<double, double> integrate_centerline_arc_length_and_arc_length_derivative(
       const Core::FE::IntegrationPoints1D& gausspoints,
       const Core::LinAlg::Matrix<3 * vpernode * nnode, 1, double>& disp_centerline,
       const Core::FE::CellType& distype, const double& reflength)
@@ -345,7 +349,8 @@ namespace Discret::UTILS::Beam
     std::vector<Core::LinAlg::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
     Core::LinAlg::Matrix<3, 1> r_xi;
 
-    EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(gausspoints, H_i_xi, distype, reflength);
+    evaluate_shape_function_derivs_all_gps<nnode, vpernode>(
+        gausspoints, H_i_xi, distype, reflength);
 
     double int_length = 0.0, deriv_length = 0.0;
 
@@ -353,7 +358,7 @@ namespace Discret::UTILS::Beam
     {
       double deriv_int = 0.0;
 
-      CalcInterpolation<nnode, vpernode, 3, double>(disp_centerline, H_i_xi[numgp], r_xi);
+      calc_interpolation<nnode, vpernode, 3, double>(disp_centerline, H_i_xi[numgp], r_xi);
       int_length += gausspoints.qwgt[numgp] * r_xi.norm2();
 
       for (int dim = 0; dim < 3; dim++)

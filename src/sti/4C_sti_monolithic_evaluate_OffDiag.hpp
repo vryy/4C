@@ -233,7 +233,7 @@ namespace STI
   };
 
   //! build specific off diagonal coupling object
-  Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> BuildScatraThermoOffDiagCoupling(
+  Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> build_scatra_thermo_off_diag_coupling(
       const Inpar::S2I::CouplingType& couplingtype,
       Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo,
       Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_interface,

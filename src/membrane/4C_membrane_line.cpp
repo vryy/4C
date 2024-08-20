@@ -135,7 +135,7 @@ void Discret::ELEMENTS::MembraneLine<distype>::print(std::ostream& os) const
 {
   os << "MembraneLine ";
   os << " discretization type: "
-     << Core::FE::CellTypeToString(Core::FE::DisTypeToFaceShapeType<distype>::shape).c_str();
+     << Core::FE::cell_type_to_string(Core::FE::DisTypeToFaceShapeType<distype>::shape).c_str();
   Element::print(os);
   return;
 }

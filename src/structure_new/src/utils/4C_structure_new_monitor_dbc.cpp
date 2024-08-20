@@ -162,14 +162,14 @@ void Solid::MonitorDbc::setup()
   full_filepaths_ = create_file_paths(rconds, full_dirpath, filename_only_prefix, filetype);
   // ... clear them and write header
   clear_files_and_write_header(rconds, full_filepaths_,
-      Core::UTILS::IntegralValue<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
+      Core::UTILS::integral_value<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
 
   // handle restart
   if (Global::Problem::instance()->restart())
   {
     const std::string full_restart_dirpath(
         Global::Problem::instance()->output_control_file()->restart_name() + "_monitor_dbc");
-    const std::string filename_restart_only_prefix(Core::IO::ExtractFileName(
+    const std::string filename_restart_only_prefix(Core::IO::extract_file_name(
         Global::Problem::instance()->output_control_file()->restart_name()));
 
     std::vector<std::string> full_restart_filepaths =
@@ -462,7 +462,7 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
     for (unsigned i = 0; i < num_fnodes; ++i) discret.dof(fele, fnodes[i], fele_dofs);
 
     std::vector<double> mydispn;
-    Core::FE::ExtractMyValues(dispn_col, mydispn, fele_dofs);
+    Core::FE::extract_my_values(dispn_col, mydispn, fele_dofs);
 
     xyze_ref.reshape(DIM, num_fnodes);
     xyze_curr.reshape(DIM, num_fnodes);
@@ -495,8 +495,8 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
       }
     }
 
-    larea[AreaType::ref] += Core::Geo::ElementArea(fele->shape(), xyze_ref);
-    larea[AreaType::curr] += Core::Geo::ElementArea(fele->shape(), xyze_curr);
+    larea[AreaType::ref] += Core::Geo::element_area(fele->shape(), xyze_ref);
+    larea[AreaType::curr] += Core::Geo::element_area(fele->shape(), xyze_curr);
   }
 
   discret.get_comm().SumAll(larea.data(), area, 2);
@@ -514,7 +514,7 @@ double Solid::MonitorDbc::get_reaction_force(
   for (unsigned d = 0; d < DIM; ++d)
   {
     Teuchos::RCP<Epetra_Vector> partial_freact_ptr =
-        Core::LinAlg::ExtractMyVector(complete_freact, *(react_maps[d]));
+        Core::LinAlg::extract_my_vector(complete_freact, *(react_maps[d]));
 
     double& lrforce_comp = lrforce_xyz(d, 0);
     const double* vals = partial_freact_ptr->Values();
@@ -560,7 +560,7 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
     for (unsigned i = 0; i < DIM; ++i) node_gid[i] = discret_ptr_->dof(node, i);
 
     std::vector<double> mydisp;
-    Core::FE::ExtractMyValues(*dispn, mydisp, node_gid);
+    Core::FE::extract_my_values(*dispn, mydisp, node_gid);
     for (unsigned i = 0; i < DIM; ++i) node_position(i) = node->x()[i] + mydisp[i];
 
     // Get the reaction force at this node. This force will only contain non-zero values at the DOFs

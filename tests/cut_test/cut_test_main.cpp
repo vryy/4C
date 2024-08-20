@@ -133,9 +133,9 @@ void test_hex8_quad4_alex36();
 void test_hex8_quad4_alex37();
 void test_hex8_quad4_alex38();
 void test_hex8_twintri();
-void test_hex8_twinQuad();
-void test_hex8_chairCut();
-void test_hex8_VCut();
+void test_hex8_twin_quad();
+void test_hex8_chair_cut();
+void test_hex8_v_cut();
 void test_alex39();
 void test_alex40();
 void test_alex41();
@@ -293,7 +293,7 @@ void test_hex8quad4selfcut86();
 void test_hex8quad4selfcut91();
 void test_hex8quad4selfcut92();
 
-void test_hex8quad4alignedEdges();
+void test_hex8quad4aligned_edges();
 
 typedef void (*testfunct)();
 
@@ -415,7 +415,7 @@ int runtests(char** argv, std::map<std::string, testfunct>& functable, std::stri
  * \brief Set the dimension and the parameters for this problem.
  *
  */
-void SetProblemDimension(const std::map<std::string, testfunct>& functable)
+void set_problem_dimension(const std::map<std::string, testfunct>& functable)
 {
   Global::Problem& problem = (*Global::Problem::instance());
   Teuchos::RCP<Teuchos::ParameterList> pptr = Teuchos::rcp(new Teuchos::ParameterList());
@@ -577,7 +577,7 @@ int main(int argc, char** argv)
   functable["sc91"] = test_hex8quad4selfcut91;
   functable["sc92"] = test_hex8quad4selfcut92;
 
-  functable["sc101"] = test_hex8quad4alignedEdges;
+  functable["sc101"] = test_hex8quad4aligned_edges;
 
   functable["quad4_line2"] = test_quad4_line2;
   functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;
@@ -620,9 +620,9 @@ int main(int argc, char** argv)
   functable["hex8_quad4_alex37"] = test_hex8_quad4_alex37;
   functable["hex8_quad4_alex38"] = test_hex8_quad4_alex38;
   functable["hex8_twintri"] = test_hex8_twintri;
-  functable["hex8_twinQuad"] = test_hex8_twinQuad;
-  functable["hex8_chairCut"] = test_hex8_chairCut;
-  functable["hex8_VCut"] = test_hex8_VCut;
+  functable["hex8_twinQuad"] = test_hex8_twin_quad;
+  functable["hex8_chairCut"] = test_hex8_chair_cut;
+  functable["hex8_VCut"] = test_hex8_v_cut;
   functable["alex39"] = test_alex39;
   functable["alex40"] = test_alex40;
   functable["alex41"] = test_alex41;
@@ -769,7 +769,7 @@ int main(int argc, char** argv)
       return 1;
   }
 
-  SetProblemDimension(functable);
+  set_problem_dimension(functable);
   int result = runtests(argv, functable, testname, ignore_testname);
   Global::Problem::done();
   MPI_Finalize();

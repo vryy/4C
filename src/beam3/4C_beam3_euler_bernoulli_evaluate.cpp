@@ -115,13 +115,13 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       // Only in the dynamic case the velocities are needed.
       // get element velocities only if example is static in nature
@@ -130,12 +130,12 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       myvel.clear();
       const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
-      if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
+      if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
           Inpar::Solid::dyna_statics)
       {
         vel = discretization.get_state("velocity");
         if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
-        Core::FE::ExtractMyValues(*vel, myvel, lm);
+        Core::FE::extract_my_values(*vel, myvel, lm);
       }
 
       if (act == Core::Elements::struct_calc_nlnstiffmass)
@@ -169,13 +169,13 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
       Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
 
       if (act == Core::Elements::struct_calc_brownianforce)
         calc_brownian_forces_and_stiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
@@ -218,7 +218,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       break;
     }
     default:
-      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      std::cout << "\ncalled element with action type " << action_type_to_string(act);
       FOUR_C_THROW("This action type is not implemented for Beam3eb");
       break;
   }
@@ -239,7 +239,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
-  Core::FE::ExtractMyValues(*disp, mydisp, lm);
+  Core::FE::extract_my_values(*disp, mydisp, lm);
 
 #ifndef INEXTENSIBLE
   const int dofpn = 3 * NODALDOFS;
@@ -252,13 +252,13 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   // get element velocities only if it's not a static problem, otherwise a dynamics problem
   // (UNCOMMENT IF NEEDED)
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
+  if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
       Inpar::Solid::dyna_statics)
   {
     Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     std::vector<double> myvel(lm.size());
-    Core::FE::ExtractMyValues(*vel, myvel, lm);
+    Core::FE::extract_my_values(*vel, myvel, lm);
   }
   // find out whether we will use a time curve
   double time = -1.0;
@@ -448,7 +448,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
 // evaluation of shape funcitons at Gauss points
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      Core::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
+      Core::FE::shape_function_hermite_1d(N_i, xi, jacobi_ * 2.0, distype);
 // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       // specific-for----------------------------------Frenet Serret
@@ -893,7 +893,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       }
 
 #ifdef ANS_BEAM3EB
-      Core::FE::shape_function_1D(L_i, xi, Core::FE::CellType::line3);
+      Core::FE::shape_function_1d(L_i, xi, Core::FE::CellType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -1178,7 +1178,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 #endif
 
     N_i_x.clear();
-    Core::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
+    Core::FE::shape_function_hermite_1d_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
 
     for (int i = 0; i < 2 * NODALDOFS; i++) N_i_x(i) = N_i_x(i) / jacobi_;
 
@@ -1223,13 +1223,13 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       switch (k)
       {
         case 0:
-          Core::FE::shape_function_hermite_1D_deriv1(N_i_x, -1.0, jacobi_ * 2.0, distype);
+          Core::FE::shape_function_hermite_1d_deriv1(N_i_x, -1.0, jacobi_ * 2.0, distype);
           break;
         case 1:
-          Core::FE::shape_function_hermite_1D_deriv1(N_i_x, 1.0, jacobi_ * 2.0, distype);
+          Core::FE::shape_function_hermite_1d_deriv1(N_i_x, 1.0, jacobi_ * 2.0, distype);
           break;
         case 2:
-          Core::FE::shape_function_hermite_1D_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
+          Core::FE::shape_function_hermite_1d_deriv1(N_i_x, 0.0, jacobi_ * 2.0, distype);
           break;
         default:
           FOUR_C_THROW("Index k should only run from 1 to 3 (three collocation points)!");
@@ -1377,9 +1377,9 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      Core::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
-      Core::FE::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
-      Core::FE::shape_function_hermite_1D_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
+      Core::FE::shape_function_hermite_1d(N_i, xi, jacobi_ * 2.0, distype);
+      Core::FE::shape_function_hermite_1d_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
+      Core::FE::shape_function_hermite_1d_deriv2(N_i_xx, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       // specific-for----------------------------------Frenet Serret
@@ -1456,8 +1456,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       ortho_normal(0) = rx_fad(1, 0);
       ortho_normal(1) = -rx_fad(0, 0);
       ortho_normal(2) = 0.0;
-      if (Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(ortho_normal)) > 1.0e-12)
-        ortho_normal.scale(1.0 / (Core::FADUtils::VectorNorm<3>(ortho_normal)));
+      if (Core::FADUtils::cast_to_double(Core::FADUtils::vector_norm<3>(ortho_normal)) > 1.0e-12)
+        ortho_normal.scale(1.0 / (Core::FADUtils::vector_norm<3>(ortho_normal)));
 
       Res_orthopressure.clear();
       R_orthopressure.clear();
@@ -1489,7 +1489,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
       // calculate quantities necessary for ANS approach
 #ifdef ANS_BEAM3EB
-      Core::FE::shape_function_1D(L_i, xi, Core::FE::CellType::line3);
+      Core::FE::shape_function_1d(L_i, xi, Core::FE::CellType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -1763,7 +1763,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-      Core::FE::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
+      Core::FE::shape_function_hermite_1d(N_i, xi, jacobi_ * 2.0, distype);
       // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       FOUR_C_THROW("massmatrix only implemented for the case NODALDOFS == 2!!!");
@@ -2013,7 +2013,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute position vector r of point in physical space corresponding to Gauss point
@@ -2028,7 +2028,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
 
     // compute velocity vector at this Gauss point via same interpolation as for centerline position
     // vector
-    Discret::UTILS::Beam::CalcInterpolation<nnode, vpernode, 3, double>(vel, N_i, vel_rel);
+    Discret::UTILS::Beam::calc_interpolation<nnode, vpernode, 3, double>(vel, N_i, vel_rel);
     vel_rel -= velbackground;
 
     // loop over lines and columns of damping matrix
@@ -2121,7 +2121,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAtXi<nnode, vpernode>(
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute tangent vector t_{\par}=r' at current Gauss point
@@ -2222,7 +2222,7 @@ double Discret::ELEMENTS::Beam3eb::get_axial_strain(
   Core::LinAlg::Matrix<1, 4> N_i_x(true);
   const Core::FE::CellType distype = shape();
   // First get shape functions
-  Core::FE::shape_function_hermite_1D_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
+  Core::FE::shape_function_hermite_1d_deriv1(N_i_x, xi, jacobi_ * 2.0, distype);
 
   for (int i = 0; i < 2 * NODALDOFS; i++) N_i_x(i) = N_i_x(i) / jacobi_;
 
@@ -2244,7 +2244,7 @@ double Discret::ELEMENTS::Beam3eb::get_axial_strain(
   }
 
   Core::LinAlg::Matrix<1, 3> L_i(true);
-  Core::FE::shape_function_1D(L_i, xi, Core::FE::CellType::line3);
+  Core::FE::shape_function_1d(L_i, xi, Core::FE::CellType::line3);
   double epsilon = 0.0;
   for (int i = 0; i < ANSVALUES; i++) epsilon += L_i(i) * epsilon_cp(i);
 

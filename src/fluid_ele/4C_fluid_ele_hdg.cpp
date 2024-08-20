@@ -67,7 +67,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::create(
 void Discret::ELEMENTS::FluidHDGType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = Core::FE::getDimension(dwele->shape()) + 1;
+  numdf = Core::FE::get_dimension(dwele->shape()) + 1;
   dimns = numdf;
   nv = numdf - 1;
   np = 1;
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::FluidHDGType::compute_null_space(
     for (int i = 0; i < frowmap->NumMyElements(); ++i)
     {
       std::vector<int> dofs = facedis->dof(0, facedis->l_row_face(i));
-      const unsigned int dim = Core::FE::getDimension(facedis->l_row_face(i)->shape()) + 1;
+      const unsigned int dim = Core::FE::get_dimension(facedis->l_row_face(i)->shape()) + 1;
       FOUR_C_ASSERT(dofs.size() % dim == 0, "Could not match face dofs");
       const unsigned int ndofs = dofs.size() / dim;
       for (unsigned int i = 0; i < dofs.size(); ++i)
@@ -107,7 +107,7 @@ void Discret::ELEMENTS::FluidHDGType::compute_null_space(
       std::vector<int> dofs = dis.dof(0, dis.l_row_element(i));
       FOUR_C_ASSERT(dofs.size() == 1, "Expect a single pressure dof per element for fluid HDG");
       const unsigned int lid = rowmap->LID(dofs[0]);
-      const unsigned int dim = Core::FE::getDimension(dis.l_row_element(i)->shape());
+      const unsigned int dim = Core::FE::get_dimension(dis.l_row_element(i)->shape());
       for (unsigned int d = 0; d < dim; ++d) mode[d][lid] = 0.;
       mode[dim][lid] = 1.;
     }
@@ -204,7 +204,7 @@ void Discret::ELEMENTS::FluidHDG::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -249,7 +249,7 @@ int Discret::ELEMENTS::FluidHDG::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<Core::Mat::Material> mat = material();

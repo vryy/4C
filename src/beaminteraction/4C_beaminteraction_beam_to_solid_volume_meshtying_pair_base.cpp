@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::create_ge
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, Beam, Solid>(
+  this->geometry_pair_ = GEOMETRYPAIR::geometry_pair_line_to_volume_factory<double, Beam, Solid>(
       element1, element2, geometry_evaluation_data_ptr);
 }
 
@@ -186,14 +186,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_
       // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.get_etadata(), segment.get_eta_b()})
       {
-        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1posref_, X);
-        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1pos_, r);
+        GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1posref_, X);
+        GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1pos_, r);
         u = r;
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
-          displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
+          point_coordinates.push_back(Core::FADUtils::cast_to_double(X(dim)));
+          displacement.push_back(Core::FADUtils::cast_to_double(u(dim)));
         }
 
         if (write_unique_ids)
@@ -239,7 +239,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_
         this->evaluate_beam_position_double(projection_point, r, false);
         u = r;
         u -= X;
-        GEOMETRYPAIR::EvaluatePosition<Solid>(projection_point.get_xi(),
+        GEOMETRYPAIR::evaluate_position<Solid>(projection_point.get_xi(),
             GEOMETRYPAIR::ElementDataToDouble<Solid>::to_double(this->ele2pos_), r_solid);
         evaluate_penalty_force_double(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)

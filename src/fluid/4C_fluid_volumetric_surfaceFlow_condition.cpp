@@ -367,9 +367,9 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   // create cond_velocities and codition traction velocity terms
   // -------------------------------------------------------------------
-  cond_velocities_ = Core::LinAlg::CreateVector(*cond_dofrowmap_, true);
-  cond_traction_vel_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  drt_velocities_ = Core::LinAlg::CreateVector(*drt_dofrowMap, true);
+  cond_velocities_ = Core::LinAlg::create_vector(*cond_dofrowmap_, true);
+  cond_traction_vel_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  drt_velocities_ = Core::LinAlg::create_vector(*drt_dofrowMap, true);
 
   // -------------------------------------------------------------------
   // Evaluate the area of the design surface.
@@ -474,9 +474,9 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
   //--------------------------------------------------------------------
   int myrank = discret_->get_comm().MyPID();
 
-  local_radii_ = Core::LinAlg::CreateVector(*cond_surfnoderowmap_, true);
+  local_radii_ = Core::LinAlg::create_vector(*cond_surfnoderowmap_, true);
 
-  border_radii_ = Core::LinAlg::CreateVector(*cond_surfnoderowmap_, true);
+  border_radii_ = Core::LinAlg::create_vector(*cond_surfnoderowmap_, true);
   //--------------------------------------------------------------------
   // get all of the border nodes
   //--------------------------------------------------------------------
@@ -1334,7 +1334,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   }
 
   // loop over all of the nodes
-  Teuchos::RCP<Epetra_Vector> correction_velnp = Core::LinAlg::CreateVector(*cond_dofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> correction_velnp =
+      Core::LinAlg::create_vector(*cond_dofrowmap_, true);
 
   params->set<int>("Number of Harmonics", 0);
   // condition id
@@ -1462,7 +1463,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
 
@@ -1498,7 +1499,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::pressure_calculation(
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
   discret_->evaluate_condition(eleparams, flowrates, condstring, condid);

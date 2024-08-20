@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Discret::ELEMENTS::Shell::EvaluateNeumannByElement(Core::Elements::Element& ele,
+void Discret::ELEMENTS::Shell::evaluate_neumann_by_element(Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time)
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
     double gpweights = intpoints.qwgt[gp];
     // get shape functions and derivatives at gaussian points
     ShapefunctionsAndDerivatives<distype> shapefunctions =
-        EvaluateShapefunctionsAndDerivs<distype>(xi_gp);
+        evaluate_shapefunctions_and_derivs<distype>(xi_gp);
     Core::LinAlg::Matrix<num_dim, num_dim> g_metrics_kovariant(true);
 
     Core::LinAlg::Matrix<numnod, num_dim> x_refe(true);
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
         loadlin = false;
         const Epetra_Vector& disp = *discretization.get_state("displacement");
         std::vector<double> displacements(dof_index_array.size());
-        Core::FE::ExtractMyValues(disp, displacements, dof_index_array);
+        Core::FE::extract_my_values(disp, displacements, dof_index_array);
 
         spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 
@@ -198,7 +198,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
       {
         const Epetra_Vector& disp = *discretization.get_state("displacement new");
         std::vector<double> displacements(dof_index_array.size());
-        Core::FE::ExtractMyValues(disp, displacements, dof_index_array);
+        Core::FE::extract_my_values(disp, displacements, dof_index_array);
 
         spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 

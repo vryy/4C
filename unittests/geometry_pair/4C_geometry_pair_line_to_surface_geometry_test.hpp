@@ -25,7 +25,7 @@ namespace
   /**
    * Setup the surface geometry for the tri3 tests.
    */
-  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_tri3, double> XtestSetupTri3()
+  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_tri3, double> xtest_setup_tri3()
   {
     auto element_data = GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_tri3, double>();
 
@@ -55,7 +55,7 @@ namespace
   /**
    * Setup the surface geometry for the tri6 tests.
    */
-  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_tri6, double> XtestSetupTri6()
+  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_tri6, double> xtest_setup_tri6()
   {
     auto element_data = GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_tri6, double>();
 
@@ -103,7 +103,7 @@ namespace
   /**
    * Setup the surface geometry for the quad4 tests.
    */
-  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad4, double> XtestSetupQuad4()
+  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad4, double> xtest_setup_quad4()
   {
     auto element_data = GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad4, double>();
 
@@ -139,7 +139,7 @@ namespace
   /**
    * Setup the surface geometry for the quad8 tests.
    */
-  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad8, double> XtestSetupQuad8()
+  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad8, double> xtest_setup_quad8()
   {
     auto element_data = GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad8, double>();
 
@@ -199,7 +199,7 @@ namespace
   /**
    * Setup the surface geometry for the quad9 tests.
    */
-  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad9, double> XtestSetupQuad9()
+  GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad9, double> xtest_setup_quad9()
   {
     auto element_data = GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_quad9, double>();
 
@@ -267,7 +267,7 @@ namespace
    */
   std::pair<std::shared_ptr<Core::Elements::Element>,
       GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_hermite, double>>
-  XtestSetupBeam()
+  xtest_setup_beam()
   {
     // Set up the beam element.
     const int dummy_node_ids[2] = {0, 1};

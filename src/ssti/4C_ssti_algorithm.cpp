@@ -83,9 +83,9 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
       sstitimeparams, const_cast<Teuchos::ParameterList&>(structparams), structuredis);
 
   // create and initialize scatra problem and thermo problem
-  scatra_ = Teuchos::rcp(
-      new Adapter::ScaTraBaseAlgorithm(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
-          problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true));
+  scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(sstitimeparams,
+      SSI::UTILS::modify_sca_tra_params(scatraparams),
+      problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true));
   scatra_->init();
   scatra_->scatra_field()->set_number_of_dof_set_displacement(1);
   scatra_->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -119,16 +119,16 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
     FOUR_C_THROW("unexpected dof sets in thermo field");
 
   // is adaptive time stepping activated?
-  if (Core::UTILS::IntegralValue<bool>(sstitimeparams, "ADAPTIVE_TIMESTEPPING"))
+  if (Core::UTILS::integral_value<bool>(sstitimeparams, "ADAPTIVE_TIMESTEPPING"))
   {
     // safety check: adaptive time stepping in one of the subproblems?
-    if (!Core::UTILS::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+    if (!Core::UTILS::integral_value<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
       FOUR_C_THROW(
           "Must provide adaptive time stepping in one of the subproblems. (Currently just ScaTra)");
-    if (Core::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
+    if (Core::UTILS::integral_value<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
         Inpar::Solid::timada_kind_none)
       FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-    if (Core::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == Inpar::Solid::dyna_ab2)
+    if (Core::UTILS::integral_value<int>(structparams, "DYNAMICTYP") == Inpar::Solid::dyna_ab2)
       FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
   }
 
@@ -186,7 +186,7 @@ void SSTI::SSTIAlgorithm::setup()
   if (interface_meshtying())
   {
     // check for consistent parameterization of these conditions
-    ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
+    ScaTra::ScaTraUtils::check_consistency_with_s2_i_kinetics_condition(
         "SSTIInterfaceMeshtying", structure_field()->discretization());
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
@@ -231,10 +231,10 @@ void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
 
   if (scatradis->num_global_nodes() == 0)
   {
-    Core::FE::CloneDiscretization<SSTI::SSTIScatraStructureCloneStrategy>(
+    Core::FE::clone_discretization<SSTI::SSTIScatraStructureCloneStrategy>(
         structdis, scatradis, Global::Problem::instance()->cloning_material_map());
     scatradis->fill_complete();
-    Core::FE::CloneDiscretization<SSTI::SSTIScatraThermoCloneStrategy>(
+    Core::FE::clone_discretization<SSTI::SSTIScatraThermoCloneStrategy>(
         scatradis, thermodis, Global::Problem::instance()->cloning_material_map());
     thermodis->fill_complete();
   }
@@ -277,7 +277,7 @@ void SSTI::SSTIAlgorithm::distribute_structure_solution()
   thermo_field()->apply_mesh_movement(structure_->dispnp());
 
   // convective velocity is set to zero
-  const auto convective_velocity = Core::LinAlg::CreateVector(*structure_->dof_row_map());
+  const auto convective_velocity = Core::LinAlg::create_vector(*structure_->dof_row_map());
 
   scatra_field()->set_velocity_field(
       convective_velocity, Teuchos::null, structure_->velnp(), Teuchos::null);
@@ -297,7 +297,7 @@ void SSTI::SSTIAlgorithm::distribute_scatra_solution()
   {
     // pass master-side scatra degrees of freedom to thermo discretization
     const Teuchos::RCP<Epetra_Vector> imasterphinp =
-        Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(), true);
+        Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(), true);
     meshtying_strategy_scatra_->interface_maps()->insert_vector(
         meshtying_strategy_scatra_->coupling_adapter()->master_to_slave(
             meshtying_strategy_scatra_->interface_maps()->extract_vector(
@@ -320,7 +320,7 @@ void SSTI::SSTIAlgorithm::distribute_thermo_solution()
   {
     // extract master side temperatures and copy to slave side dof map
     const Teuchos::RCP<Epetra_Vector> imastertempnp =
-        Core::LinAlg::CreateVector(*thermo_field()->discretization()->dof_row_map(), true);
+        Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true);
     meshtying_strategy_thermo_->interface_maps()->insert_vector(
         meshtying_strategy_thermo_->coupling_adapter()->master_to_slave(
             meshtying_strategy_thermo_->interface_maps()->extract_vector(
@@ -329,7 +329,7 @@ void SSTI::SSTIAlgorithm::distribute_thermo_solution()
 
     // extract slave side temperatures
     const Teuchos::RCP<Epetra_Vector> islavetempnp =
-        Core::LinAlg::CreateVector(*thermo_field()->discretization()->dof_row_map(), true);
+        Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true);
     meshtying_strategy_thermo_->interface_maps()->insert_vector(
         meshtying_strategy_thermo_->interface_maps()->extract_vector(*thermo_field()->phinp(), 1),
         1, islavetempnp);
@@ -458,7 +458,7 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::clone_thermo_params(
   thermoparams_copy.set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
   thermoparams_copy.sublist("S2I COUPLING").set<std::string>("SLAVEONLY", "No");
 
-  if (Core::UTILS::IntegralValue<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+  if (Core::UTILS::integral_value<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       Inpar::ScaTra::outputscalars_none)
     thermoparams_copy.set<bool>("output_file_name_discretization", true);
 
@@ -470,7 +470,7 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::clone_thermo_params(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<SSTI::SSTIAlgorithm> SSTI::BuildSSTI(Inpar::SSTI::SolutionScheme coupling,
+Teuchos::RCP<SSTI::SSTIAlgorithm> SSTI::build_ssti(Inpar::SSTI::SolutionScheme coupling,
     const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams)
 {
   Teuchos::RCP<SSTI::SSTIAlgorithm> ssti = Teuchos::null;

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 // Auxiliar routine to boolify integral Yes/No data
-void Input::BoolifyValidInputParameters(
+void Input::boolify_valid_input_parameters(
     Teuchos::ParameterList& list  ///< the valid input parameter list
 )
 {
@@ -32,7 +32,7 @@ void Input::BoolifyValidInputParameters(
   for (Teuchos::ParameterList::ConstIterator i = list.begin(); i != list.end(); ++i)
   {
     if (list.isSublist(list.name(i)))
-      BoolifyValidInputParameters(list.sublist(list.name(i)));
+      boolify_valid_input_parameters(list.sublist(list.name(i)));
     else
     {
       if (list.isType<std::string>(list.name(i)))

@@ -36,15 +36,15 @@ namespace Mat
 namespace Input
 {
   /// construct list with all materials and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> ValidMaterials();
+  Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> valid_materials();
 
   /// print all known material sections without contents
-  void PrintEmptyMaterialDefinitions(
+  void print_empty_material_definitions(
       std::ostream& stream, std::vector<Teuchos::RCP<Mat::MaterialDefinition>>& matlist);
 }  // namespace Input
 
 /// print empty material sections
-void PrintMaterialDatHeader();
+void print_material_dat_header();
 
 
 FOUR_C_NAMESPACE_CLOSE

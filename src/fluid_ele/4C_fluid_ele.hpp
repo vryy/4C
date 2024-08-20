@@ -149,17 +149,20 @@ namespace Discret
       /*!
       \brief Return number of lines of this element
       */
-      int num_line() const override { return Core::FE::getNumberOfElementLines(distype_); }
+      int num_line() const override { return Core::FE::get_number_of_element_lines(distype_); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(distype_); }
+      int num_surface() const override
+      {
+        return Core::FE::get_number_of_element_surfaces(distype_);
+      }
 
       /*!
       \brief Return number of volumes of this element (always 1)
       */
-      int num_volume() const override { return Core::FE::getNumberOfElementVolumes(distype_); }
+      int num_volume() const override { return Core::FE::get_number_of_element_volumes(distype_); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -232,7 +235,7 @@ namespace Discret
       int num_dof_per_node(const Core::Nodes::Node& node) const override
       {
         // number of Dof's is fluid-specific.
-        const int nsd = Core::FE::getDimension(distype_);
+        const int nsd = Core::FE::get_dimension(distype_);
         if (nsd > 1)
           return nsd + 1;
         else
@@ -490,12 +493,12 @@ namespace Discret
       /*!
       \brief Return number of lines of this element
       */
-      int num_line() const override { return Core::FE::getNumberOfElementLines(shape()); }
+      int num_line() const override { return Core::FE::get_number_of_element_lines(shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(shape()); }
+      int num_surface() const override { return Core::FE::get_number_of_element_surfaces(shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -798,12 +801,12 @@ namespace Discret
       /*!
       \brief Return number of lines of this element
       */
-      int num_line() const override { return Core::FE::getNumberOfElementLines(shape()); }
+      int num_line() const override { return Core::FE::get_number_of_element_lines(shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      int num_surface() const override { return Core::FE::getNumberOfElementSurfaces(shape()); }
+      int num_surface() const override { return Core::FE::get_number_of_element_surfaces(shape()); }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element

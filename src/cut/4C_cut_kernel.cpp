@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned Cut::Kernel::FindNextCornerPoint(const std::vector<Point*>& points,
+unsigned Cut::Kernel::find_next_corner_point(const std::vector<Point*>& points,
     Core::LinAlg::Matrix<3, 1>& x1, Core::LinAlg::Matrix<3, 1>& x2, Core::LinAlg::Matrix<3, 1>& x3,
     Core::LinAlg::Matrix<3, 1>& b1, Core::LinAlg::Matrix<3, 1>& b2, Core::LinAlg::Matrix<3, 1>& b3,
     unsigned i)
@@ -92,21 +92,21 @@ unsigned Cut::Kernel::FindNextCornerPoint(const std::vector<Point*>& points,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Cut::Kernel::IsValidPoint1(const std::vector<Point*>& corner_points)
+bool Cut::Kernel::is_valid_point1(const std::vector<Point*>& corner_points)
 {
   return (corner_points.size() == 1);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Cut::Kernel::IsValidLine2(const std::vector<Point*>& corner_points)
+bool Cut::Kernel::is_valid_line2(const std::vector<Point*>& corner_points)
 {
   return (corner_points.size() == 2);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Cut::Kernel::IsValidQuad4(const std::vector<Point*>& points)
+bool Cut::Kernel::is_valid_quad4(const std::vector<Point*>& points)
 {
   if (points.size() == 4)
   {
@@ -132,7 +132,7 @@ bool Cut::Kernel::IsValidQuad4(const std::vector<Point*>& points)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Cut::Kernel::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts)
+bool Cut::Kernel::is_on_line(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts)
 {
   Core::LinAlg::Matrix<3, 1> x1, x2, x3;
   Core::LinAlg::Matrix<3, 1> pt1pt2, pt1pt3, cross;
@@ -166,7 +166,7 @@ bool Cut::Kernel::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInl
   return new ptr. Intially the polygon is projected into the given plane
                                                                 Sudhakar 04/12
  *----------------------------------------------------------------------------*/
-std::vector<int> Cut::Kernel::CheckConvexity(const std::vector<Point*>& ptlist,
+std::vector<int> Cut::Kernel::check_convexity(const std::vector<Point*>& ptlist,
     Cut::FacetShape& geomType, bool InSplit, bool DeleteInlinePts)
 {
   if (InSplit)  // if this function is called while performing facet splitting
@@ -190,7 +190,7 @@ std::vector<int> Cut::Kernel::CheckConvexity(const std::vector<Point*>& ptlist,
       if (i == 0) ind = ptlist.size() - 1;
       Point* pt1 = ptlist[ind];
 
-      bool isline = IsOnLine(pt1, pt2, pt3);
+      bool isline = is_on_line(pt1, pt2, pt3);
       if (isline)
       {
         Core::IO::cout << "the points are\n";
@@ -206,7 +206,7 @@ std::vector<int> Cut::Kernel::CheckConvexity(const std::vector<Point*>& ptlist,
     }
   }
 
-  bool isClockwise = IsClockwiseOrderedPolygon(ptlist, projPlane);
+  bool isClockwise = is_clockwise_ordered_polygon(ptlist, projPlane);
 
   int ind1 = 0, ind2 = 0;
   if (projPlane == "x")
@@ -390,9 +390,9 @@ points of the polygon
                                                                                           Sudhakar
 04/12
 *------------------------------------------------------------------------------------------------------*/
-std::vector<double> Cut::Kernel::EqnPlane(Point*& pt1, Point*& pt2, Point*& pt3)
+std::vector<double> Cut::Kernel::eqn_plane(Point*& pt1, Point*& pt2, Point*& pt3)
 {
-  bool collinear = IsOnLine(pt1, pt2, pt3);
+  bool collinear = is_on_line(pt1, pt2, pt3);
   if (collinear) FOUR_C_THROW(" 3 points lie on a line. Eqn of plane cannot be computed");
 
   std::vector<double> eqn_plane(4);
@@ -416,7 +416,7 @@ std::vector<double> Cut::Kernel::EqnPlane(Point*& pt1, Point*& pt2, Point*& pt3)
 applicable for convex, concave, and polygons with in-line vertices Does not require deleting of any
 vertices ---> so very general and robust
 *-------------------------------------------------------------------------------------------------------------*/
-std::vector<double> Cut::Kernel::EqnPlaneOfPolygon(const std::vector<Point*>& ptlist)
+std::vector<double> Cut::Kernel::eqn_plane_of_polygon(const std::vector<Point*>& ptlist)
 {
   std::vector<std::vector<double>> vertices(ptlist.size());
 
@@ -428,7 +428,7 @@ std::vector<double> Cut::Kernel::EqnPlaneOfPolygon(const std::vector<Point*>& pt
     vertices[i] = coo;
   }
 
-  return EqnPlaneOfPolygon(vertices);
+  return eqn_plane_of_polygon(vertices);
 }
 
 /*------------------------------------------------------------------------------------------------------------*
@@ -436,7 +436,8 @@ std::vector<double> Cut::Kernel::EqnPlaneOfPolygon(const std::vector<Point*>& pt
 applicable for convex, concave, and polygons with in-line vertices Does not require deleting of any
 vertices ---> so very general and robust
 *-------------------------------------------------------------------------------------------------------------*/
-std::vector<double> Cut::Kernel::EqnPlaneOfPolygon(const std::vector<std::vector<double>>& vertices)
+std::vector<double> Cut::Kernel::eqn_plane_of_polygon(
+    const std::vector<std::vector<double>>& vertices)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut::Kernel::EqnPlaneOfPolygon");
 
@@ -471,7 +472,7 @@ std::vector<double> Cut::Kernel::EqnPlaneOfPolygon(const std::vector<std::vector
            check whether the point "check" is inside the triangle formed by tri sudhakar 05/12 uses
 barycentric coordinates as it is faster
 *-------------------------------------------------------------------------------------------------------------*/
-bool Cut::Kernel::PtInsideTriangle(std::vector<Point*> tri, Point* check, bool DeleteInlinePts)
+bool Cut::Kernel::pt_inside_triangle(std::vector<Point*> tri, Point* check, bool DeleteInlinePts)
 {
   if (tri.size() != 3) FOUR_C_THROW("expecting a triangle");
 
@@ -530,14 +531,14 @@ bool Cut::Kernel::PtInsideTriangle(std::vector<Point*> tri, Point* check, bool D
            Check whether the point "check" is inside the Quad formed by quad               sudhakar
 07/12 Splits Quad into 2 Tri and perform the check on each
 *-------------------------------------------------------------------------------------------------------------*/
-bool Cut::Kernel::PtInsideQuad(std::vector<Point*> quad, Point* check)
+bool Cut::Kernel::pt_inside_quad(std::vector<Point*> quad, Point* check)
 {
   if (quad.size() != 4) FOUR_C_THROW("expecting a Quad");
 
   std::vector<int> concavePts;
   Cut::FacetShape str1;
 
-  concavePts = CheckConvexity(quad, str1);
+  concavePts = check_convexity(quad, str1);
 
   int concsize = concavePts.size();
   if (concsize > 1)
@@ -563,14 +564,14 @@ bool Cut::Kernel::PtInsideQuad(std::vector<Point*> quad, Point* check)
   tri1[1] = quad[(indStart + 1) % 4];
   tri1[2] = quad[(indStart + 2) % 4];
 
-  bool insideTri1 = PtInsideTriangle(tri1, check);
+  bool insideTri1 = pt_inside_triangle(tri1, check);
   if (insideTri1) return true;
 
   tri2[0] = quad[indStart];
   tri2[1] = quad[(indStart + 2) % 4];
   tri2[2] = quad[(indStart + 3) % 4];
 
-  bool insideTri2 = PtInsideTriangle(tri2, check);
+  bool insideTri2 = pt_inside_triangle(tri2, check);
   if (insideTri2) return true;
 
   return false;
@@ -578,16 +579,17 @@ bool Cut::Kernel::PtInsideQuad(std::vector<Point*> quad, Point* check)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Cut::Kernel::IsClockwiseOrderedPolygon(std::vector<Point*> polyPoints, std::string& projPlane)
+bool Cut::Kernel::is_clockwise_ordered_polygon(
+    std::vector<Point*> polyPoints, std::string& projPlane)
 {
   if (polyPoints.size() < 3) FOUR_C_THROW("polygon with less than 3 corner points");
 
   std::vector<double> eqn;
 
-  eqn = EqnPlaneOfPolygon(polyPoints);
+  eqn = eqn_plane_of_polygon(polyPoints);
 
   // projection on the plane which has max normal component - reduce round off error
-  FindProjectionPlane(projPlane, eqn);
+  find_projection_plane(projPlane, eqn);
 
   int ind1 = 0, ind2 = 0;
   if (projPlane == "x")
@@ -624,7 +626,7 @@ bool Cut::Kernel::IsClockwiseOrderedPolygon(std::vector<Point*> polyPoints, std:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Kernel::FindProjectionPlane(std::string& projPlane, const std::vector<double>& eqn)
+void Cut::Kernel::find_projection_plane(std::string& projPlane, const std::vector<double>& eqn)
 {
   if (fabs(eqn[0]) > fabs(eqn[1]) && fabs(eqn[0]) > fabs(eqn[2]))
     projPlane = "x";
@@ -662,7 +664,7 @@ void Cut::Kernel::FindProjectionPlane(std::string& projPlane, const std::vector<
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::Kernel::DeleteInlinePts(std::vector<Point*>& poly)
+void Cut::Kernel::delete_inline_pts(std::vector<Point*>& poly)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Cut::Kernel::DeleteInlinePts" );
 
@@ -678,7 +680,7 @@ void Cut::Kernel::DeleteInlinePts(std::vector<Point*>& poly)
     if (i == 0) ind = num - 1;
     Point* pt3 = poly[ind];  // previous point
 
-    anyInLine = IsOnLine(pt3, pt1, pt2, true);
+    anyInLine = is_on_line(pt3, pt1, pt2, true);
 
     if (anyInLine)
     {
@@ -690,12 +692,12 @@ void Cut::Kernel::DeleteInlinePts(std::vector<Point*>& poly)
   }
   /* this makes sure the procedure is repeated until all the inline points of
    * the facet are deleted */
-  if (anyInLine) DeleteInlinePts(poly);
+  if (anyInLine) delete_inline_pts(poly);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Cut::Kernel::HaveInlinePts(std::vector<Point*>& poly)
+bool Cut::Kernel::have_inline_pts(std::vector<Point*>& poly)
 {
   unsigned num = poly.size();
   for (unsigned i = 0; i < num; i++)
@@ -705,7 +707,7 @@ bool Cut::Kernel::HaveInlinePts(std::vector<Point*>& poly)
     unsigned ind = i - 1;
     if (i == 0) ind = num - 1;
     Point* pt3 = poly[ind];  // previous point
-    if (IsOnLine(pt3, pt1, pt2))
+    if (is_on_line(pt3, pt1, pt2))
     {
       return true;
     }
@@ -715,7 +717,7 @@ bool Cut::Kernel::HaveInlinePts(std::vector<Point*>& poly)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<Cut::Point*> Cut::Kernel::Get3NoncollinearPts(std::vector<Point*>& polyPoints)
+std::vector<Cut::Point*> Cut::Kernel::get3_noncollinear_pts(std::vector<Point*>& polyPoints)
 {
   std::vector<Point*> preparedPoints;
   for (unsigned i = 0; i < polyPoints.size(); i++)
@@ -725,7 +727,7 @@ std::vector<Cut::Point*> Cut::Kernel::Get3NoncollinearPts(std::vector<Point*>& p
     unsigned ind = i - 1;
     if (i == 0) ind = polyPoints.size() - 1;
     Point* pt1 = polyPoints[ind];
-    bool collinear = IsOnLine(pt1, pt2, pt3);
+    bool collinear = is_on_line(pt1, pt2, pt3);
     if (collinear)
     {
       continue;
@@ -741,7 +743,7 @@ std::vector<Cut::Point*> Cut::Kernel::Get3NoncollinearPts(std::vector<Point*>& p
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Cut::Kernel::getAreaTri(
+double Cut::Kernel::get_area_tri(
     const std::vector<Point*>& poly, Core::LinAlg::Matrix<3, 1>* normalvec)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Cut::Kernel::getAreaTri" );
@@ -753,12 +755,12 @@ double Cut::Kernel::getAreaTri(
   poly[1]->coordinates(p1);
   poly[2]->coordinates(p2);
 
-  return getAreaTri(p0, p1, p2, normalvec);
+  return get_area_tri(p0, p1, p2, normalvec);
 }
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-double Cut::Kernel::getAreaTri(const double* p0_ptr, const double* p1_ptr, const double* p2_ptr,
+double Cut::Kernel::get_area_tri(const double* p0_ptr, const double* p1_ptr, const double* p2_ptr,
     Core::LinAlg::Matrix<3, 1>* normalvec)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Cut::Kernel::getAreaTri" );
@@ -843,7 +845,7 @@ double Cut::Kernel::getAreaTri(const double* p0_ptr, const double* p1_ptr, const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Cut::Kernel::getAreaConvexQuad(std::vector<Point*>& poly)
+double Cut::Kernel::get_area_convex_quad(std::vector<Point*>& poly)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Cut::Kernel::getAreaConvexQuad" );
 
@@ -858,17 +860,17 @@ double Cut::Kernel::getAreaConvexQuad(std::vector<Point*>& poly)
   tri2.push_back(poly[2]);
   tri2.push_back(poly[3]);
 
-  double area1 = getAreaTri(tri1);
-  double area2 = getAreaTri(tri2);
+  double area1 = get_area_tri(tri1);
+  double area2 = get_area_tri(tri2);
   return (area1 + area2);
 }
 
 
 
-bool Cut::Kernel::closeToZero(const double a) { return ((a < 1e-30) and (a > -1e-30)); };
+bool Cut::Kernel::close_to_zero(const double a) { return ((a < 1e-30) and (a > -1e-30)); };
 
 
-bool Cut::Kernel::closeToZero(const Core::CLN::ClnWrapper& a)
+bool Cut::Kernel::close_to_zero(const Core::CLN::ClnWrapper& a)
 {
   cln::cl_F lpf = cln::least_positive_float(cln::float_format(a.Value()));
   cln::cl_F lnf = cln::least_negative_float(cln::float_format(a.Value()));

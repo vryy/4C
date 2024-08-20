@@ -58,8 +58,9 @@ namespace XFEM
       Core::LinAlg::SparseOperator* systemmatrix = nullptr);
 
   /// evaluate standard Neumann boundary conditions
-  void EvaluateNeumannStandard(std::multimap<std::string, Core::Conditions::Condition*>& condition,
-      const double time, bool assemblemat, Teuchos::ParameterList& params,
+  void evaluate_neumann_standard(
+      std::multimap<std::string, Core::Conditions::Condition*>& condition, const double time,
+      bool assemblemat, Teuchos::ParameterList& params,
       Teuchos::RCP<Core::FE::Discretization> discret, Epetra_Vector& systemvector,
       Core::LinAlg::SparseOperator* systemmatrix);
 

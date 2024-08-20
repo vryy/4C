@@ -266,11 +266,11 @@ bool Cut::Side::is_touched(Side& other, Point* p)
     if (!on_my_edge || !on_other_edge)
     {
       std::ofstream file("touching_point_between_two_sides_is_not_on_edge.pos");
-      Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
-      Cut::Output::GmshSideDump(file, &other, std::string("OtherSide"));
-      Cut::Output::GmshPointDump(file, p, p->id(), std::string("CutPoint"), false, nullptr);
+      Cut::Output::gmsh_side_dump(file, this, std::string("ThisSide"));
+      Cut::Output::gmsh_side_dump(file, &other, std::string("OtherSide"));
+      Cut::Output::gmsh_point_dump(file, p, p->id(), std::string("CutPoint"), false, nullptr);
       p->dump_connectivity_info();
-      Cut::Output::GmshWriteSection(file, "Edge", p->cut_edges());
+      Cut::Output::gmsh_write_section(file, "Edge", p->cut_edges());
       file.close();
       FOUR_C_THROW(
           "Touching point between two sides does not lie on edge. This case should be analyzed");
@@ -410,7 +410,7 @@ bool Cut::Side::find_parallel_intersection(
         {
           if ((not(*c_it)->nodal_point(e->nodes())) and (not(*c_it)->nodal_point(side.nodes())))
           {
-            Cut::Output::DebugDump_ThreePointsOnEdge(this, &side, e, c[0], cut);
+            Cut::Output::debug_dump_three_points_on_edge(this, &side, e, c[0], cut);
             FOUR_C_THROW(
                 "Uknown case of three intersection point lying on side's edge in side-side "
                 "intersection, this case should be reported");
@@ -557,18 +557,18 @@ bool Cut::Side::find_ambiguous_cut_lines(
         else
         {
           std::ofstream file("more_than_3_points_in_the_parallel_surface.pos");
-          Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
-          Cut::Output::GmshSideDump(file, &side, std::string("OtherSide"));
+          Cut::Output::gmsh_side_dump(file, this, std::string("ThisSide"));
+          Cut::Output::gmsh_side_dump(file, &side, std::string("OtherSide"));
           for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
           {
-            Cut::Output::GmshPointDump(
+            Cut::Output::gmsh_point_dump(
                 file, (*it), (*it)->id(), std::string("CutPoint"), false, nullptr);
           }
           file.close();
           FOUR_C_THROW("This case is not handled yet, generate GMSH output and look into it!");
         }
       }
-      Cut::Output::DebugDump_MultipleCutPointsSpecial(
+      Cut::Output::debug_dump_multiple_cut_points_special(
           this, &side, cut, collected_points, new_lines);
       FOUR_C_THROW("This case should be reported probably");
     }
@@ -875,17 +875,17 @@ bool Cut::Side::create_parallel_cut_surface(Mesh& mesh, Element* element, Side& 
       {
         std::stringstream pname;
         pname << "Point_for_line" << (*it)->id();
-        Cut::Output::GmshPointDump(file, *it, (*it)->id(), pname.str(), false, nullptr);
+        Cut::Output::gmsh_point_dump(file, *it, (*it)->id(), pname.str(), false, nullptr);
       }
       for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
       {
         std::stringstream pname;
         pname << "CutPoint" << (*it)->id();
-        Cut::Output::GmshPointDump(file, *it, (*it)->id(), pname.str(), false, nullptr);
+        Cut::Output::gmsh_point_dump(file, *it, (*it)->id(), pname.str(), false, nullptr);
         (*it)->dump_connectivity_info();
       }
-      Cut::Output::GmshSideDump(file, &other, std::string("OtherSide"));
-      Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
+      Cut::Output::gmsh_side_dump(file, &other, std::string("OtherSide"));
+      Cut::Output::gmsh_side_dump(file, this, std::string("ThisSide"));
       file.close();
       FOUR_C_THROW("Trying to create line between two points, which are the same!");
     }
@@ -930,7 +930,7 @@ void Cut::Side::simplify_mixed_parallel_cut_surface(Mesh& mesh, Element* element
         Point* p_keep = common_points[(std::distance(common_points.begin(), p_delete_it) + 1) %
                                       common_points.size()];
 
-        if (Cut::DistanceBetweenPoints(p_delete, p_keep) > 10.0 * MERGING_TOLERANCE)
+        if (Cut::distance_between_points(p_delete, p_keep) > 10.0 * MERGING_TOLERANCE)
           FOUR_C_THROW("Trying to merge points, that are too far");
 
         std::cout << "WARNING: Perfoming simplification of the parallel surface geometry by "
@@ -1129,9 +1129,9 @@ void Cut::Side::make_internal_facets(
         {
           std::stringstream side_name;
           side_name << "ElementSide" << counter;
-          Cut::Output::GmshSideDump(file, *it, side_name.str());
+          Cut::Output::gmsh_side_dump(file, *it, side_name.str());
         }
-        Cut::Output::GmshSideDump(file, this, std::string("ThisSide"));
+        Cut::Output::gmsh_side_dump(file, this, std::string("ThisSide"));
         file << "//Cycle dump\n";
 
         const std::vector<Facet*> side_facets = s->facets();
@@ -1140,7 +1140,7 @@ void Cut::Side::make_internal_facets(
              ++it, ++counter)
         {
           file << "View \"ThisCycle" << counter << "\" {\n";
-          Cut::Output::GmshFacetDump(file, *it, "lines", true, false, nullptr);
+          Cut::Output::gmsh_facet_dump(file, *it, "lines", true, false, nullptr);
           file << "};\n";
         }
 
@@ -1178,7 +1178,7 @@ void Cut::Side::make_internal_facets(
           Point* first = points()[i];
           Point* next = points()[(i + 1) % points.size()];
           std::cout << "Between" << first->id() << " and " << next->id() << " is "
-                    << Cut::DistanceBetweenPoints(first, next) << std::endl;
+                    << Cut::distance_between_points(first, next) << std::endl;
         }
 
 
@@ -1192,7 +1192,7 @@ void Cut::Side::make_internal_facets(
           {
             Point* cycle_point = *cit;
             std::cout << "Between" << element_point->id() << " and " << cycle_point->id() << " is "
-                      << Cut::DistanceBetweenPoints(element_point, cycle_point) << std::endl;
+                      << Cut::distance_between_points(element_point, cycle_point) << std::endl;
           }
         }
 
@@ -1598,7 +1598,7 @@ bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::is_closer_side(
   /* shrink/perturb the local coordinates around the center point with a given
    * tolerance to obtain points which are next to the corner points however slightly
    * inside */
-  Core::LinAlg::Matrix<dim, 1> rst_center = Core::FE::getLocalCenterPosition<dim>(this->shape());
+  Core::LinAlg::Matrix<dim, 1> rst_center = Core::FE::get_local_center_position<dim>(this->shape());
 
   //-----------------------------
   // get perturbed coordinates
@@ -1879,7 +1879,7 @@ Cut::Side* Cut::SideFactory::create_side(Core::FE::CellType sidetype, int sid,
     default:
     {
       FOUR_C_THROW("Unsupported side type! ( %d | %s )", sidetype,
-          Core::FE::CellTypeToString(sidetype).c_str());
+          Core::FE::cell_type_to_string(sidetype).c_str());
       break;
     }
   }
@@ -1922,7 +1922,7 @@ Cut::Side* Cut::Side::create(const Core::FE::CellType& sidetype, const int& sid,
 Cut::Side* Cut::Side::create(const unsigned& shardskey, const int& sid,
     const std::vector<Node*>& nodes, const std::vector<Edge*>& edges)
 {
-  return create(Core::Elements::ShardsKeyToDisType(shardskey), sid, nodes, edges);
+  return create(Core::Elements::shards_key_to_dis_type(shardskey), sid, nodes, edges);
 }
 
 

@@ -28,7 +28,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
 Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleBoundaryCalc<distype>>(
@@ -71,7 +71,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
     Core::FE::Discretization& discretization)
 {
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
       ele, xyze_);
 
   return 0;
@@ -99,7 +99,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::BoundaryAction action =
-      Core::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
+      Core::UTILS::get_as_enum<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat, elevec);
 
@@ -134,7 +134,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
         lmdisp[inode * (nsd_ + 1) + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_ + 1, nen_>>(*dispnp, edispnp_, lmdisp);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_ + 1, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -270,7 +270,7 @@ double Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shap
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
   double drs(0.0);
-  Core::FE::ComputeMetricTensorForBoundaryEle<distype>(
+  Core::FE::compute_metric_tensor_for_boundary_ele<distype>(
       xyze_, deriv_, metrictensor_, drs, normalvec);
 
   // return the integration factor

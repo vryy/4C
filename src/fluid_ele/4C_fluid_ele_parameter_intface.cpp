@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::FluidEleParameterIntFace* Discret::ELEMENTS::FluidEleParameterIntFace::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterIntFace>(
@@ -104,7 +104,7 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_paramet
 
 
   // set flag for physical type of fluid flow
-  physicaltype_ = Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
   if ((physicaltype_ != Inpar::FLUID::incompressible) and
       (physicaltype_ != Inpar::FLUID::stokes) and (physicaltype_ != Inpar::FLUID::oseen) and
       (physicaltype_ != Inpar::FLUID::poro))
@@ -118,7 +118,7 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_paramet
   // residual-based: for residualbased standard fluid or residual-based XFEM fluid in combination
   // with edge-based ghost penalty stabilization edge-based:     for pure edge-based/ghost-penalty
   // stabilization
-  stabtype_ = Core::UTILS::GetAsEnum<Inpar::FLUID::StabType>(params, "STABTYPE");
+  stabtype_ = Core::UTILS::get_as_enum<Inpar::FLUID::StabType>(params, "STABTYPE");
 
   // --------------------------------
   // edge-based fluid stabilization can be used as standard fluid stabilization or
@@ -129,12 +129,12 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_paramet
 
   Teuchos::ParameterList& stablist_edgebased = params.sublist("EDGE-BASED STABILIZATION");
 
-  EOS_pres_ = Core::UTILS::IntegralValue<Inpar::FLUID::EosPres>(stablist_edgebased, "EOS_PRES");
-  EOS_conv_stream_ = Core::UTILS::IntegralValue<Inpar::FLUID::EosConvStream>(
+  EOS_pres_ = Core::UTILS::integral_value<Inpar::FLUID::EosPres>(stablist_edgebased, "EOS_PRES");
+  EOS_conv_stream_ = Core::UTILS::integral_value<Inpar::FLUID::EosConvStream>(
       stablist_edgebased, "EOS_CONV_STREAM");
   EOS_conv_cross_ =
-      Core::UTILS::IntegralValue<Inpar::FLUID::EosConvCross>(stablist_edgebased, "EOS_CONV_CROSS");
-  EOS_div_ = Core::UTILS::IntegralValue<Inpar::FLUID::EosDiv>(stablist_edgebased, "EOS_DIV");
+      Core::UTILS::integral_value<Inpar::FLUID::EosConvCross>(stablist_edgebased, "EOS_CONV_CROSS");
+  EOS_div_ = Core::UTILS::integral_value<Inpar::FLUID::EosDiv>(stablist_edgebased, "EOS_DIV");
 
   if (physicaltype_ == Inpar::FLUID::stokes and EOS_conv_stream_)
     FOUR_C_THROW("no EOS_CONV_STREAM stabilization required for Stokes problems");
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_paramet
 
   // activate special least-squares condition for pseudo 2D examples where pressure level is
   // determined via Krylov-projection
-  presKrylov2Dz_ = (bool)Core::UTILS::IntegralValue<int>(stablist_edgebased, "PRES_KRYLOV_2Dz");
+  presKrylov2Dz_ = (bool)Core::UTILS::integral_value<int>(stablist_edgebased, "PRES_KRYLOV_2Dz");
 
   // check for reasonable combinations of non-edgebased fluid stabilizations with edge-based
   // stabilizations
@@ -182,9 +182,9 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_paramet
     FOUR_C_THROW(
         "pressure Krylov 2Dz condition only reasonable for full p-EOS: EOS_PRES = std_eos");
 
-  EOS_element_length_ = Core::UTILS::IntegralValue<Inpar::FLUID::EosElementLength>(
+  EOS_element_length_ = Core::UTILS::integral_value<Inpar::FLUID::EosElementLength>(
       stablist_edgebased, "EOS_H_DEFINITION");
-  EOS_whichtau_ = Core::UTILS::IntegralValue<Inpar::FLUID::EosTauType>(
+  EOS_whichtau_ = Core::UTILS::integral_value<Inpar::FLUID::EosTauType>(
       stablist_edgebased, "EOS_DEFINITION_TAU");
 
 
@@ -224,9 +224,9 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_xfem_paramete
   ghost_penalty_visc_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_FAC", 0.0);
   ghost_penalty_trans_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_TRANSIENT_FAC", 0.0);
 
-  ghost_penalty_visc_ = (bool)Core::UTILS::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_STAB");
+  ghost_penalty_visc_ = (bool)Core::UTILS::integral_value<int>(stablist_xfem, "GHOST_PENALTY_STAB");
   ghost_penalty_trans_ =
-      (bool)Core::UTILS::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_TRANSIENT_STAB");
+      (bool)Core::UTILS::integral_value<int>(stablist_xfem, "GHOST_PENALTY_TRANSIENT_STAB");
   ghost_penalty_visc_2nd_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_2nd_FAC", 0.0);
   ghost_penalty_press_2nd_fac_ = stablist_xfem.get<double>("GHOST_PENALTY_PRESSURE_2nd_FAC", 0.0);
 
@@ -235,9 +235,9 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_xfem_paramete
     FOUR_C_THROW("Do not use transient ghost penalties for stationary problems");
 
   ghost_penalty_u_p_2nd_ =
-      (bool)Core::UTILS::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB");
+      (bool)Core::UTILS::integral_value<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB");
   ghost_penalty_u_p_2nd_normal_ =
-      (bool)Core::UTILS::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB_NORMAL");
+      (bool)Core::UTILS::integral_value<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB_NORMAL");
 
   return;
 }

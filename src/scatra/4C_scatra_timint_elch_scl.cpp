@@ -47,13 +47,13 @@ ScaTra::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<Core::FE::Discreti
       matrixtype_elch_scl_ != Core::LinAlg::MatrixType::block_field)
     FOUR_C_THROW("Only sparse and block field matrices supported in SCL computations");
 
-  if (Core::UTILS::IntegralValue<int>(*elchparams_, "INITPOTCALC"))
+  if (Core::UTILS::integral_value<int>(*elchparams_, "INITPOTCALC"))
   {
     FOUR_C_THROW(
         "Must disable INITPOTCALC for a coupled SCL problem. Use INITPOTCALC in the SCL section "
         "instead.");
   }
-  if (!Core::UTILS::IntegralValue<bool>(*params_, "SKIPINITDER"))
+  if (!Core::UTILS::integral_value<bool>(*params_, "SKIPINITDER"))
   {
     FOUR_C_THROW(
         "Must enable SKIPINITDER. Currently, Neumann BCs are not supported in the SCL formulation "
@@ -75,7 +75,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
       Teuchos::rcp(new Teuchos::ParameterList(problem->scalar_transport_dynamic_params()));
 
   std::string initial_field_type;
-  switch (Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(
+  switch (Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(
       elchparams_->sublist("SCL"), "INITIALFIELD"))
   {
     case Inpar::ScaTra::initfield_zero_field:
@@ -116,7 +116,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   setup_coupling();
 
   // setup maps for coupled problem
-  full_map_elch_scl_ = Core::LinAlg::MergeMap(dof_row_map(), micro_scatra_field()->dof_row_map());
+  full_map_elch_scl_ = Core::LinAlg::merge_map(dof_row_map(), micro_scatra_field()->dof_row_map());
   std::vector<Teuchos::RCP<const Epetra_Map>> block_map_vec_scl;
   switch (matrixtype_elch_scl_)
   {
@@ -134,8 +134,8 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
       Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*full_map_elch_scl_, block_map_vec_scl));
 
   // setup matrix, rhs, and increment for coupled problem
-  increment_elch_scl_ = Core::LinAlg::CreateVector(*full_map_elch_scl_, true);
-  residual_elch_scl_ = Core::LinAlg::CreateVector(*full_map_elch_scl_, true);
+  increment_elch_scl_ = Core::LinAlg::create_vector(*full_map_elch_scl_, true);
+  residual_elch_scl_ = Core::LinAlg::create_vector(*full_map_elch_scl_, true);
 
 
   switch (matrixtype_elch_scl_)
@@ -176,7 +176,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   solver_elch_scl_ = Teuchos::rcp(new Core::LinAlg::Solver(
       problem->solver_params(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   switch (matrixtype_elch_scl_)
@@ -275,7 +275,7 @@ void ScaTra::ScaTraTimIntElchSCL::nonlinear_solve()
 
   auto equilibration_method = std::vector<Core::LinAlg::EquilibrationMethod>(
       1, ScaTraTimIntElchSCL::equilibration_method());
-  auto equilibration = Core::LinAlg::BuildEquilibration(
+  auto equilibration = Core::LinAlg::build_equilibration(
       matrixtype_elch_scl_, equilibration_method, full_map_elch_scl_);
 
   // start Newton-Raphson iteration
@@ -445,7 +445,7 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
         const int macro_node_gid = glob_micro_macro_coupled_node_gid.first;
         const int mirco_node_gid = glob_micro_macro_coupled_node_gid.second;
 
-        if (Core::Communication::IsNodeGIDOnThisProc(*discret_, macro_node_gid))
+        if (Core::Communication::is_node_gid_on_this_proc(*discret_, macro_node_gid))
         {
           const auto& macro_coords = discret_->g_node(macro_node_gid)->x();
 
@@ -457,7 +457,7 @@ void ScaTra::ScaTraTimIntElchSCL::write_coupling_to_csv(
           file.close();
         }
 
-        if (Core::Communication::IsNodeGIDOnThisProc(
+        if (Core::Communication::is_node_gid_on_this_proc(
                 *micro_scatra_field()->discretization(), mirco_node_gid))
         {
           const auto& micro_coords =
@@ -612,7 +612,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     for (const int coupling_node_gid : *coupling_condition->get_nodes())
     {
       // is this node owned by this proc?
-      if (!Core::Communication::IsNodeGIDOnThisProc(*discret_, coupling_node_gid)) continue;
+      if (!Core::Communication::is_node_gid_on_this_proc(*discret_, coupling_node_gid)) continue;
 
       switch (coupling_condition->parameters().get<int>("interface side"))
       {
@@ -696,7 +696,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     for (const int micro_node_gid : *micro_coupling_condition->get_nodes())
     {
       // is this node owned by this proc?
-      if (Core::Communication::IsNodeGIDOnThisProc(*microdis, micro_node_gid))
+      if (Core::Communication::is_node_gid_on_this_proc(*microdis, micro_node_gid))
         my_micro_node_gids.emplace_back(micro_node_gid);
     }
   }
@@ -742,13 +742,13 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     const int macro_node_gid = glob_macro_micro_coupled_node_gid.first;
     const int mirco_node_gid = glob_macro_micro_coupled_node_gid.second;
 
-    if (!Core::Communication::IsNodeGIDOnThisProc(*discret_, macro_node_gid)) continue;
+    if (!Core::Communication::is_node_gid_on_this_proc(*discret_, macro_node_gid)) continue;
 
     my_macro_node_gids.emplace_back(macro_node_gid);
     my_micro_permuted_node_gids.emplace_back(mirco_node_gid);
   }
 
-  if (Core::UTILS::IntegralValue<bool>(elchparams_->sublist("SCL"), "COUPLING_OUTPUT"))
+  if (Core::UTILS::integral_value<bool>(elchparams_->sublist("SCL"), "COUPLING_OUTPUT"))
     write_coupling_to_csv(
         glob_macro_micro_coupled_node_gids, glob_macro_slave_node_master_node_gids);
 
@@ -864,10 +864,10 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
   Teuchos::ParameterList condparams;
 
   // scale micro problem with nodal area of macro discretiaztion
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_nodal_size, condparams);
 
-  auto nodal_size_macro = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  auto nodal_size_macro = Core::LinAlg::create_vector(*dof_row_map(), true);
   discret_->evaluate_condition(condparams, Teuchos::null, Teuchos::null, nodal_size_macro,
       Teuchos::null, Teuchos::null, "S2ISCLCoupling");
 
@@ -897,7 +897,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
   const auto glob_nodal_size_micro =
       Core::Communication::broadcast(my_nodal_size_micro, discret_->get_comm());
 
-  auto micro_scale = Core::LinAlg::CreateVector(*micro_scatra_field()->dof_row_map(), true);
+  auto micro_scale = Core::LinAlg::create_vector(*micro_scatra_field()->dof_row_map(), true);
   for (int lid_micro = micro_scatra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;
        --lid_micro)
   {
@@ -919,7 +919,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
   auto micro_residual_on_macro_side =
       macro_micro_coupling_adapter_->slave_to_master(micro_residual);
 
-  auto full_macro_vector = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  auto full_macro_vector = Core::LinAlg::create_vector(*dof_row_map(), true);
   macro_coupling_dofs_->insert_cond_vector(micro_residual_on_macro_side, full_macro_vector);
 
   residual_elch_scl_->PutScalar(0.0);
@@ -940,7 +940,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
     case Core::LinAlg::MatrixType::sparse:
     {
       auto sparse_systemmatrix =
-          Core::LinAlg::CastToSparseMatrixAndCheckSuccess(system_matrix_elch_scl_);
+          Core::LinAlg::cast_to_sparse_matrix_and_check_success(system_matrix_elch_scl_);
 
       sparse_systemmatrix->add(*system_matrix(), false, 1.0, 1.0);
 
@@ -971,7 +971,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
     case Core::LinAlg::MatrixType::block_field:
     {
       auto block_systemmatrix =
-          Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix_elch_scl_);
+          Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(system_matrix_elch_scl_);
 
       block_systemmatrix->matrix(0, 0).add(*system_matrix(), false, 1.0, 1.0);
 
@@ -1008,8 +1008,9 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
   // pseudo DBCs on slave side
   Core::LinAlg::SparseMatrix& micromatrix =
       matrixtype_elch_scl_ == Core::LinAlg::MatrixType::sparse
-          ? *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(system_matrix_elch_scl_)
-          : Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix_elch_scl_)
+          ? *Core::LinAlg::cast_to_sparse_matrix_and_check_success(system_matrix_elch_scl_)
+          : Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(
+                system_matrix_elch_scl_)
                 ->matrix(1, 1);
   auto slavemaps = macro_micro_coupling_adapter_->slave_dof_map();
   const double one = 1.0;
@@ -1091,7 +1092,7 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_loop()
   // call base class routine
   ScaTraTimIntElch::prepare_time_loop();
 
-  if (Core::UTILS::IntegralValue<int>(elchparams_->sublist("SCL"), "INITPOTCALC"))
+  if (Core::UTILS::integral_value<int>(elchparams_->sublist("SCL"), "INITPOTCALC"))
     calc_initial_potential_field();
 }
 
@@ -1156,9 +1157,9 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 
     // apply artificial Dirichlet boundary conditions to system of equations
     // to hold initial concentrations constant when solving for initial potential field
-    auto pseudo_dbc_scl = Core::LinAlg::MergeMap(
+    auto pseudo_dbc_scl = Core::LinAlg::merge_map(
         splitter_->other_map(), micro_scatra_field()->splitter()->other_map());
-    auto pseudo_zeros_scl = Core::LinAlg::CreateVector(*pseudo_dbc_scl, true);
+    auto pseudo_zeros_scl = Core::LinAlg::create_vector(*pseudo_dbc_scl, true);
 
     Core::LinAlg::apply_dirichlet_to_system(*system_matrix_elch_scl_, *increment_elch_scl_,
         *residual_elch_scl_, *pseudo_zeros_scl, *pseudo_dbc_scl);

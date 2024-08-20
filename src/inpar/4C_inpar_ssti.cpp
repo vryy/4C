@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::SSTI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -29,21 +29,21 @@ void Inpar::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& sstidyn = list->sublist(
       "SSTI CONTROL", false, "Control paramters for scatra structure thermo interaction");
 
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "RESTARTEVRYTIME", 0, "write restart possibility every RESTARTEVRY steps", &sstidyn);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &sstidyn);
-  Core::UTILS::IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &sstidyn);
-  Core::UTILS::DoubleParameter("MAXTIME", 1000.0, "total simulation time", &sstidyn);
-  Core::UTILS::DoubleParameter("TIMESTEP", -1, "time step size dt", &sstidyn);
-  Core::UTILS::DoubleParameter("RESULTSEVRYTIME", 0, "increment for writing solution", &sstidyn);
-  Core::UTILS::IntParameter("RESULTSEVRY", 1, "increment for writing solution", &sstidyn);
-  Core::UTILS::IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &sstidyn);
-  Core::UTILS::BoolParameter("SCATRA_FROM_RESTART_FILE", "No",
+  Core::UTILS::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &sstidyn);
+  Core::UTILS::double_parameter("MAXTIME", 1000.0, "total simulation time", &sstidyn);
+  Core::UTILS::double_parameter("TIMESTEP", -1, "time step size dt", &sstidyn);
+  Core::UTILS::double_parameter("RESULTSEVRYTIME", 0, "increment for writing solution", &sstidyn);
+  Core::UTILS::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &sstidyn);
+  Core::UTILS::int_parameter("ITEMAX", 10, "maximum number of iterations over fields", &sstidyn);
+  Core::UTILS::bool_parameter("SCATRA_FROM_RESTART_FILE", "No",
       "read scatra result from restart files (use option 'restartfromfile' during execution of "
       "4C)",
       &sstidyn);
-  Core::UTILS::StringParameter(
+  Core::UTILS::string_parameter(
       "SCATRA_FILENAME", "nil", "Control-file name for reading scatra results in SSTI", &sstidyn);
   setStringToIntegralParameter<SolutionScheme>("COUPALGO", "ssti_Monolithic",
       "Coupling strategies for SSTI solvers", tuple<std::string>("ssti_Monolithic"),
@@ -52,7 +52,7 @@ void Inpar::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "scalar transport time integration type is needed to instantiate correct scalar transport "
       "time integration scheme for ssi problems",
       tuple<std::string>("Elch"), tuple<ScaTraTimIntType>(ScaTraTimIntType::elch), &sstidyn);
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "ADAPTIVE_TIMESTEPPING", "no", "flag for adaptive time stepping", &sstidyn);
 
   /*----------------------------------------------------------------------*/
@@ -61,13 +61,13 @@ void Inpar::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Teuchos::ParameterList& sstidynmono = sstidyn.sublist("MONOLITHIC", false,
       "Monolithic Structure Scalar Interaction\n"
       "Control section for monolithic SSI");
-  Core::UTILS::DoubleParameter("ABSTOLRES", 1.0e-14,
+  Core::UTILS::double_parameter("ABSTOLRES", 1.0e-14,
       "absolute tolerance for deciding if global residual of nonlinear problem is already zero",
       &sstidynmono);
-  Core::UTILS::DoubleParameter("CONVTOL", 1.0e-6,
+  Core::UTILS::double_parameter("CONVTOL", 1.0e-6,
       "tolerance for convergence check of Newton-Raphson iteration within monolithic SSI",
       &sstidynmono);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "LINEAR_SOLVER", -1, "ID of linear solver for global system of equations", &sstidynmono);
   setStringToIntegralParameter<Core::LinAlg::MatrixType>("MATRIXTYPE", "undefined",
       "type of global system matrix in global system of equations",
@@ -116,7 +116,7 @@ void Inpar::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           Core::LinAlg::EquilibrationMethod::rowsandcolumns_maindiag,
           Core::LinAlg::EquilibrationMethod::symmetry),
       &sstidynmono);
-  Core::UTILS::BoolParameter("EQUILIBRATION_INIT_SCATRA", "no",
+  Core::UTILS::bool_parameter("EQUILIBRATION_INIT_SCATRA", "no",
       "use equilibration method of ScaTra to equilibrate initial calculation of potential",
       &sstidynmono);
 
@@ -125,8 +125,9 @@ void Inpar::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& thermodyn =
       sstidyn.sublist("THERMO", false, "Parameters for thermo subproblem");
-  Core::UTILS::IntParameter("INITTHERMOFUNCT", -1, "initial function for thermo field", &thermodyn);
-  Core::UTILS::IntParameter("LINEAR_SOLVER", -1, "linear solver for thermo field", &thermodyn);
+  Core::UTILS::int_parameter(
+      "INITTHERMOFUNCT", -1, "initial function for thermo field", &thermodyn);
+  Core::UTILS::int_parameter("LINEAR_SOLVER", -1, "linear solver for thermo field", &thermodyn);
   setStringToIntegralParameter<Inpar::ScaTra::InitialField>("INITIALFIELD", "field_by_function",
       "defines, how to set the initial field",
       tuple<std::string>("field_by_function", "field_by_condition"),
@@ -138,7 +139,7 @@ void Inpar::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Inpar::SSTI::SetValidConditions(
+void Inpar::SSTI::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

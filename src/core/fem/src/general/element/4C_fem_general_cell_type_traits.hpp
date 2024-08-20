@@ -232,100 +232,100 @@ namespace Core::FE
   template <typename CelltypeSequence = all_physical_celltypes, typename Function,
       typename UnsupportedCellTypeCallable =
           Details::ThrowUnsupportedCellTypeError<CelltypeSequence>>
-  auto CellTypeSwitch(CellType celltype, Function fct,
+  auto cell_type_switch(CellType celltype, Function fct,
       UnsupportedCellTypeCallable unsupported_celltype_callable = {})
   {
     switch (celltype)
     {
       case CellType::dis_none:
-        return Details::CellTypeSwitchItem<CellType::dis_none, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::dis_none, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad4:
-        return Details::CellTypeSwitchItem<CellType::quad4, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::quad4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad6:
-        return Details::CellTypeSwitchItem<CellType::quad6, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::quad6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad8:
-        return Details::CellTypeSwitchItem<CellType::quad8, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::quad8, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad9:
-        return Details::CellTypeSwitchItem<CellType::quad9, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::quad9, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tri3:
-        return Details::CellTypeSwitchItem<CellType::tri3, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::tri3, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tri6:
-        return Details::CellTypeSwitchItem<CellType::tri6, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::tri6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex8:
-        return Details::CellTypeSwitchItem<CellType::hex8, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::hex8, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex16:
-        return Details::CellTypeSwitchItem<CellType::hex16, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::hex16, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex18:
-        return Details::CellTypeSwitchItem<CellType::hex18, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::hex18, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex20:
-        return Details::CellTypeSwitchItem<CellType::hex20, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::hex20, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex27:
-        return Details::CellTypeSwitchItem<CellType::hex27, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::hex27, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tet4:
-        return Details::CellTypeSwitchItem<CellType::tet4, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::tet4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tet10:
-        return Details::CellTypeSwitchItem<CellType::tet10, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::tet10, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::wedge6:
-        return Details::CellTypeSwitchItem<CellType::wedge6, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::wedge6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::wedge15:
-        return Details::CellTypeSwitchItem<CellType::wedge15, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::wedge15, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::pyramid5:
-        return Details::CellTypeSwitchItem<CellType::pyramid5, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::pyramid5, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line2:
-        return Details::CellTypeSwitchItem<CellType::line2, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::line2, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line3:
-        return Details::CellTypeSwitchItem<CellType::line3, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::line3, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line4:
-        return Details::CellTypeSwitchItem<CellType::line4, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::line4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line5:
-        return Details::CellTypeSwitchItem<CellType::line5, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::line5, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line6:
-        return Details::CellTypeSwitchItem<CellType::line6, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::line6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::point1:
-        return Details::CellTypeSwitchItem<CellType::point1, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::point1, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs2:
-        return Details::CellTypeSwitchItem<CellType::nurbs2, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::nurbs2, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs3:
-        return Details::CellTypeSwitchItem<CellType::nurbs3, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::nurbs3, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs4:
-        return Details::CellTypeSwitchItem<CellType::nurbs4, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::nurbs4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs9:
-        return Details::CellTypeSwitchItem<CellType::nurbs9, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::nurbs9, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs8:
-        return Details::CellTypeSwitchItem<CellType::nurbs8, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::nurbs8, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs27:
-        return Details::CellTypeSwitchItem<CellType::nurbs27, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::nurbs27, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::max_distype:
-        return Details::CellTypeSwitchItem<CellType::max_distype, CelltypeSequence>(
+        return Details::cell_type_switch_item<CellType::max_distype, CelltypeSequence>(
             fct, unsupported_celltype_callable);
     }
     FOUR_C_THROW(
@@ -347,13 +347,13 @@ namespace Core::FE
    * @param celltype
    * @return std::string
    */
-  inline std::string CellTypeToString(CellType celltype)
+  inline std::string cell_type_to_string(CellType celltype)
   {
-    return CellTypeSwitch<all_celltypes>(
+    return cell_type_switch<all_celltypes>(
         celltype, [](auto celltype_t) { return celltype_string<celltype_t()>; });
   }
 
-  inline CellType StringToCellType(const std::string& celltype_str)
+  inline CellType string_to_cell_type(const std::string& celltype_str)
   {
     constexpr std::array all_names =
         Details::celltype_sequence_to_string_array<all_celltypes>::value;
@@ -412,7 +412,7 @@ namespace Core::FE
    */
   inline bool is_nurbs_celltype(CellType celltype)
   {
-    return CellTypeSwitch<all_physical_celltypes>(
+    return cell_type_switch<all_physical_celltypes>(
         celltype, [&](auto celltype_t) { return is_nurbs<celltype_t()>; });
   }
 }  // namespace Core::FE

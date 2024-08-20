@@ -22,7 +22,7 @@ using namespace FourC;
 namespace
 {
 
-  void runEnsightVtuFilter(PostProblem& problem)
+  void run_ensight_vtu_filter(PostProblem& problem)
   {
     // each problem type is different and writes different results
     switch (problem.problemtype())
@@ -921,7 +921,7 @@ int main(int argc, char** argv)
     PostProblem problem(My_CLP, argc, argv);
 
     if (filter == "ensight" || filter == "vtu" || filter == "vtu_node_based" || filter == "vti")
-      runEnsightVtuFilter(problem);
+      run_ensight_vtu_filter(problem);
     else
       FOUR_C_THROW("Unknown filter %s given, supported filters: [ensight|vtu|vti]", filter.c_str());
 

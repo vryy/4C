@@ -141,7 +141,7 @@ bool XFEM::LevelSetCoupling::have_matching_nodes(
     diff.scale(-1.0);
     diff += X_B;
 
-    if (Core::LinAlg::Norm2(diff) > 1e-14) return false;
+    if (Core::LinAlg::norm2(diff) > 1e-14) return false;
   }
 
   return true;
@@ -166,7 +166,7 @@ void XFEM::LevelSetCoupling::init_state_vectors_bg()
   // background-dis (fluid) related state vectors
   const Epetra_Map* bg_dofrowmap = bg_dis_->dof_row_map(bg_nds_phi_);
 
-  phinp_ = Core::LinAlg::CreateVector(*bg_dofrowmap, true);
+  phinp_ = Core::LinAlg::create_vector(*bg_dofrowmap, true);
 }
 
 
@@ -182,12 +182,12 @@ void XFEM::LevelSetCoupling::init_state_vectors_cutter()
   const Epetra_Map* cutter_dofcolmap =
       cutter_dis_->dof_col_map(cutter_nds_phi_);  // used for level set field and its derivatives
 
-  cutter_phinp_ = Core::LinAlg::CreateVector(*cutter_dofrowmap, true);
-  cutter_phinp_col_ = Core::LinAlg::CreateVector(*cutter_dofcolmap, true);
-  gradphinp_smoothed_node_ = Core::LinAlg::CreateMultiVector(*cutter_dofrowmap, nsd_, true);
-  gradphinp_smoothed_node_col_ = Core::LinAlg::CreateMultiVector(*cutter_dofcolmap, nsd_, true);
-  curvaturenp_node_ = Core::LinAlg::CreateVector(*cutter_dofrowmap, true);
-  curvaturenp_node_col_ = Core::LinAlg::CreateVector(*cutter_dofcolmap, true);
+  cutter_phinp_ = Core::LinAlg::create_vector(*cutter_dofrowmap, true);
+  cutter_phinp_col_ = Core::LinAlg::create_vector(*cutter_dofcolmap, true);
+  gradphinp_smoothed_node_ = Core::LinAlg::create_multi_vector(*cutter_dofrowmap, nsd_, true);
+  gradphinp_smoothed_node_col_ = Core::LinAlg::create_multi_vector(*cutter_dofcolmap, nsd_, true);
+  curvaturenp_node_ = Core::LinAlg::create_vector(*cutter_dofrowmap, true);
+  curvaturenp_node_col_ = Core::LinAlg::create_vector(*cutter_dofcolmap, true);
 }
 
 
@@ -315,7 +315,7 @@ void XFEM::LevelSetCoupling::gmsh_output(const std::string& filename_base, const
   std::ostringstream filename_base_fsi;
   filename_base_fsi << filename_base << "_levelset";
 
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_fsi.str(), cutter_output_->output()->file_name(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
@@ -326,7 +326,7 @@ void XFEM::LevelSetCoupling::gmsh_output(const std::string& filename_base, const
     gmshfilecontent << "View \" "
                     << "SOLcutter-phi \" {" << std::endl;
     // draw vector field 'force' for every node
-    Core::IO::Gmsh::ScalarFieldDofBasedToGmsh(
+    Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
         cutter_dis_, cutter_phinp_, cutter_nds_phi_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
@@ -335,7 +335,7 @@ void XFEM::LevelSetCoupling::gmsh_output(const std::string& filename_base, const
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
                     << "SOLcutter-smoothedgradphi \" {" << std::endl;
-    Core::IO::Gmsh::VectorFieldMultiVectorDofBasedToGmsh(
+    Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
         cutter_dis_, gradphinp_smoothed_node_, gmshfilecontent, cutter_nds_phi_);
     gmshfilecontent << "};" << std::endl;
   }
@@ -380,7 +380,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 
   // make a copy of last time step
 
-  Teuchos::RCP<Epetra_Vector> delta_phi = Core::LinAlg::CreateVector(cutter_phinp_->Map(), true);
+  Teuchos::RCP<Epetra_Vector> delta_phi = Core::LinAlg::create_vector(cutter_phinp_->Map(), true);
   delta_phi->Update(1.0, *cutter_phinp_, 0.0);
 
   // initializations
@@ -425,7 +425,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
   // TODO: remove this part from this function!!!
 
   // Might make this available for other condition types!
-  const Inpar::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
+  const Inpar::XFEM::EleCouplingCondType cond_type = cond_type_string_to_enum(cond_name_);
 
   if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
   {
@@ -567,7 +567,7 @@ void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
         FOUR_C_THROW("we expect a unique dof per node here!");
 
       std::vector<double> val_source;
-      Core::FE::ExtractMyValues(*source_vec_dofbased, val_source, lm_source);
+      Core::FE::extract_my_values(*source_vec_dofbased, val_source, lm_source);
 
       // set to a dofrowmap based vector!
       const int lid_target = target_vec_dofbased->Map().LID(lm_target[0]);
@@ -584,7 +584,7 @@ void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
 Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_row_vector()
 {
   Teuchos::RCP<Epetra_Vector> bg_phinp_nodemap_ =
-      Core::LinAlg::CreateVector(*bg_dis_->node_row_map(), true);
+      Core::LinAlg::create_vector(*bg_dis_->node_row_map(), true);
 
   // loop the nodes
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); ++lnodeid)
@@ -594,7 +594,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_
     bg_dis_->dof(bg_nds_phi_, node, lm_source);
 
     std::vector<double> val_source;
-    Core::FE::ExtractMyValues(*phinp_, val_source, lm_source);
+    Core::FE::extract_my_values(*phinp_, val_source, lm_source);
 
     if (val_source.size() != 1) FOUR_C_THROW("we expect only one dof");
 
@@ -1300,7 +1300,7 @@ void XFEM::LevelSetCouplingNavierSlip::set_element_specific_conditions(
 
     // get all conditions with given condition name
     std::vector<Core::Conditions::Condition*> mycond;
-    Core::Conditions::FindElementConditions(cutele, cond_name, mycond);
+    Core::Conditions::find_element_conditions(cutele, cond_name, mycond);
 
     std::vector<Core::Conditions::Condition*> mynewcond;
     get_condition_by_robin_id(mycond, robin_id, mynewcond);
@@ -1493,7 +1493,7 @@ void XFEM::LevelSetCouplingNavierSlip::update_configuration_map_gp(
   {
     double stabnit = 0.0;
     double stabadj = 0.0;
-    XFEM::UTILS::GetNavierSlipStabilizationParameters(
+    XFEM::UTILS::get_navier_slip_stabilization_parameters(
         visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
     configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
     configuration_map_[Inpar::XFEM::F_Con_t_Row] =

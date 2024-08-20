@@ -64,9 +64,9 @@ void FS3I::PartFS3I::init()
   // call setup in base class
   FS3I::FS3IBase::init();
 
-  volume_fieldcouplings_.push_back(Core::UTILS::IntegralValue<Inpar::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(Core::UTILS::integral_value<Inpar::FS3I::VolumeCoupling>(
       Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_FIELDCOUPLING"));
-  volume_fieldcouplings_.push_back(Core::UTILS::IntegralValue<Inpar::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(Core::UTILS::integral_value<Inpar::FS3I::VolumeCoupling>(
       Global::Problem::instance()->f_s3_i_dynamic_params(), "STRUCTSCAL_FIELDCOUPLING"));
 
   Global::Problem* problem = Global::Problem::instance();
@@ -99,7 +99,7 @@ void FS3I::PartFS3I::init()
   //---------------------------------------------------------------------
   if (aledis->num_global_nodes() == 0)
   {
-    Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -116,7 +116,7 @@ void FS3I::PartFS3I::init()
 
   // determine type of scalar transport
   const Inpar::ScaTra::ImplType impltype_fluid =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::ImplType>(
+      Core::UTILS::integral_value<Inpar::ScaTra::ImplType>(
           Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
@@ -135,7 +135,7 @@ void FS3I::PartFS3I::init()
           "'volume_matching'!");
 
     // fill fluid-based scatra discretization by cloning fluid discretization
-    Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
+    Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
         fluiddis, fluidscatradis, Global::Problem::instance()->cloning_material_map());
     fluidscatradis->fill_complete();
     // set implementation type of cloned scatra elements to advanced reactions
@@ -189,7 +189,7 @@ void FS3I::PartFS3I::init()
           "'volume_matching'!");
 
     // fill structure-based scatra discretization by cloning structure discretization
-    Core::FE::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(
+    Core::FE::clone_discretization<SSI::ScatraStructureCloneStrategy>(
         structdis, structscatradis, Global::Problem::instance()->cloning_material_map());
     structscatradis->fill_complete();
 
@@ -214,7 +214,7 @@ void FS3I::PartFS3I::init()
     // is the set ImplType for the STRUCTURE Elements reasonable in case they are not cloned?
     for (int i = 0; i < structdis->num_my_col_elements(); ++i)
     {
-      if (Adapter::GetScaTraImplType(structdis->l_col_element(i)) !=
+      if (Adapter::get_sca_tra_impl_type(structdis->l_col_element(i)) !=
           Inpar::ScaTra::impltype_undefined)
       {
         FOUR_C_THROW(
@@ -384,7 +384,7 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
   // setup projection matrices (use default material strategy)
   volume_coupling_object->init(Global::Problem::instance()->n_dim(), masterdis, slavedis);
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 
@@ -445,7 +445,7 @@ void FS3I::PartFS3I::read_restart()
   {
     const Teuchos::ParameterList& fs3idynac = Global::Problem::instance()->f_s3_i_dynamic_params();
     const bool restartfrompartfsi =
-        Core::UTILS::IntegralValue<int>(fs3idynac, "RESTART_FROM_PART_FSI");
+        Core::UTILS::integral_value<int>(fs3idynac, "RESTART_FROM_PART_FSI");
 
     if (not restartfrompartfsi)  // standard restart
     {
@@ -548,7 +548,7 @@ void FS3I::PartFS3I::setup_system()
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->scatra_field()->discretization()->dof_row_map();
-      Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dofrowmap, true);
+      Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
   }
@@ -597,7 +597,7 @@ void FS3I::PartFS3I::setup_system()
   // use coupled scatra solver object
   scatrasolver_ = Teuchos::rcp(new Core::LinAlg::Solver(coupledscatrasolvparams,
       firstscatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // get the solver number used for fluid ScalarTransport solver
@@ -618,12 +618,12 @@ void FS3I::PartFS3I::setup_system()
   scatrasolver_->put_solver_params_to_sub_params("Inverse1",
       Global::Problem::instance()->solver_params(linsolver1number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   scatrasolver_->put_solver_params_to_sub_params("Inverse2",
       Global::Problem::instance()->solver_params(linsolver2number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   (scatravec_[0])
@@ -783,7 +783,7 @@ void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->calculate_wall_shear_stresses();
 
-  if (Core::UTILS::IntegralValue<Inpar::FLUID::WSSType>(
+  if (Core::UTILS::integral_value<Inpar::FLUID::WSSType>(
           Global::Problem::instance()->fluid_dynamic_params(), "WSS_TYPE") !=
       Inpar::FLUID::wss_standard)
     FOUR_C_THROW("WSS_TYPE not supported for FS3I!");
@@ -800,7 +800,7 @@ void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   // insert structure interface entries into vector with full structure length
   Teuchos::RCP<Epetra_Vector> structure =
-      Core::LinAlg::CreateVector(*(fsi_->structure_field()->interface()->full_map()), true);
+      Core::LinAlg::create_vector(*(fsi_->structure_field()->interface()->full_map()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )

@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Inpar::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -29,7 +29,7 @@ void Inpar::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     Teuchos::Array<std::string> name;
     Teuchos::Array<IntegerType> label;
 
-    for (const auto& [prb_name, prb_enum] : StringToProblemTypeMap())
+    for (const auto& [prb_name, prb_enum] : string_to_problem_type_map())
     {
       name.push_back(prb_name);
       label.push_back(static_cast<IntegerType>(prb_enum));
@@ -44,7 +44,7 @@ void Inpar::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     Teuchos::Array<std::string> name;
     Teuchos::Array<IntegerType> label;
 
-    for (const auto& [prb_name, prb_enum] : Core::FE::StringToShapeFunctionTypeMap())
+    for (const auto& [prb_name, prb_enum] : Core::FE::string_to_shape_function_type_map())
     {
       name.push_back(prb_name);
       label.push_back(static_cast<IntegerType>(prb_enum));
@@ -54,13 +54,14 @@ void Inpar::PROBLEMTYPE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Defines the function spaces for the spatial approximation", name, label, &type);
   }
 
-  Core::UTILS::IntParameter("RESTART", 0, "", &type);
-  Core::UTILS::IntParameter("RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
+  Core::UTILS::int_parameter("RESTART", 0, "", &type);
+  Core::UTILS::int_parameter(
+      "RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, Core::ProblemType> Inpar::PROBLEMTYPE::StringToProblemTypeMap()
+std::map<std::string, Core::ProblemType> Inpar::PROBLEMTYPE::string_to_problem_type_map()
 {
   static std::map<std::string, Core::ProblemType> string2prbtype;
 
@@ -120,9 +121,9 @@ std::map<std::string, Core::ProblemType> Inpar::PROBLEMTYPE::StringToProblemType
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::ProblemType Inpar::PROBLEMTYPE::StringToProblemType(std::string name)
+Core::ProblemType Inpar::PROBLEMTYPE::string_to_problem_type(std::string name)
 {
-  std::map<std::string, Core::ProblemType> map = StringToProblemTypeMap();
+  std::map<std::string, Core::ProblemType> map = string_to_problem_type_map();
   std::map<std::string, Core::ProblemType>::const_iterator i = map.find(name);
   if (i != map.end()) return i->second;
   FOUR_C_THROW("unsupported problem name '%s'", name.c_str());

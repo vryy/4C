@@ -57,7 +57,7 @@ void SSI::ContactStrategySparse::apply_contact_to_scatra_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_sparse =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(scatra_scatra_matrix);
 
   const auto& scatra_scatra_sparsematrix =
       nitsche_strategy_ssi()->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra);
@@ -71,7 +71,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_block =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_scatra_matrix);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(scatra_scatra_matrix);
 
   // get scatra-scatra block matrix and complete split matrix
   const auto& scatra_scatra_blockmatrix =
@@ -90,7 +90,7 @@ void SSI::ContactStrategySparse::apply_contact_to_scatra_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_sparse =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(scatra_structure_matrix);
   scatra_structure_matrix_sparse->un_complete();
 
   const auto& scatra_struct_matrix =
@@ -105,7 +105,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_structure(
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_block =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(scatra_structure_matrix);
 
   // get scatra-structure block matrix and complete split matrix
   const auto& scatra_struct_blockmatrix =
@@ -125,7 +125,7 @@ void SSI::ContactStrategySparse::apply_contact_to_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_sparse =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(structure_scatra_matrix);
   structure_scatra_matrix_sparse->un_complete();
 
   const auto& struct_scatra_matrix =
@@ -140,7 +140,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
     Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_block =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(structure_scatra_matrix);
 
   // get structure-scatra block matrix and complete split matrix
   const auto& struct_scatra_blockmatrix =
@@ -155,7 +155,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::ContactStrategyBase> SSI::BuildContactStrategy(
+Teuchos::RCP<SSI::ContactStrategyBase> SSI::build_contact_strategy(
     Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, Core::LinAlg::MatrixType matrixtype_scatra)
 {

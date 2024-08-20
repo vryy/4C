@@ -182,7 +182,7 @@ void Core::LinAlg::SparseMatrixBase::add_other(Core::LinAlg::SparseMatrixBase& B
     const bool transposeA, const double scalarA, const double scalarB) const
 {
   // B.Add(*this, transposeA, scalarA, scalarB);
-  Core::LinAlg::Add(*sysmat_, transposeA, scalarA, B, scalarB);
+  Core::LinAlg::add(*sysmat_, transposeA, scalarA, B, scalarB);
 }
 
 

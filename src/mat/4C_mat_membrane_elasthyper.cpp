@@ -92,7 +92,7 @@ void Mat::MembraneElastHyper::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -135,13 +135,13 @@ void Mat::MembraneElastHyper::evaluate_membrane(const Core::LinAlg::Matrix<3, 3>
   Core::LinAlg::Matrix<3, 1> rcg(true);
   double rcg33;
   Core::LinAlg::Matrix<3, 1> icg(true);
-  MembraneElastHyperEvaluateKinQuant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
+  membrane_elast_hyper_evaluate_kin_quant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
 
   // evaluate isotropic 2nd Piola-Kirchhoff stress and constitutive tensor
   Core::LinAlg::Matrix<3, 1> stress_iso(true);
   Core::LinAlg::Matrix<3, 3> cmat_iso(true);
-  MembraneElastHyperEvaluateIsotropicStressCmat(stress_iso, cmat_iso, id2, id4sharp, rcg, rcg33,
-      icg, gp, eleGID, potsum_, summandProperties_);
+  membrane_elast_hyper_evaluate_isotropic_stress_cmat(stress_iso, cmat_iso, id2, id4sharp, rcg,
+      rcg33, icg, gp, eleGID, potsum_, summandProperties_);
 
   // update 2nd Piola-Kirchhoff stress and constitutive tensor
   stress.update(1.0, stress_iso, 1.0);
@@ -179,7 +179,7 @@ void Mat::MembraneElastHyper::strain_energy(
   Core::LinAlg::Matrix<3, 1> rcg(true);
   double rcg33;
   Core::LinAlg::Matrix<3, 1> icg(true);
-  MembraneElastHyperEvaluateKinQuant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
+  membrane_elast_hyper_evaluate_kin_quant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
 
   // Green-Lagrange strains matrix E = 0.5 * (Cauchy-Green - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -191,7 +191,7 @@ void Mat::MembraneElastHyper::strain_energy(
 
   // principal isotropic invariants
   Core::LinAlg::Matrix<3, 1> prinv_iso(true);
-  MembraneElastHyperInvariantsPrincipal(prinv_iso, rcg, rcg33);
+  membrane_elast_hyper_invariants_principal(prinv_iso, rcg, rcg33);
 
   // loop map of associated potential summands
   for (auto& p : potsum_)

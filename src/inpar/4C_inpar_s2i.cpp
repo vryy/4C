@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-scatra interface coupling   fang 01/16 |
  *------------------------------------------------------------------------*/
-void Inpar::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::S2I::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -46,12 +46,12 @@ void Inpar::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("slave", "master"), tuple<int>(side_slave, side_master), &s2icoupling);
 
   // flag for evaluation of interface linearizations and residuals on slave side only
-  Core::UTILS::BoolParameter("SLAVEONLY", "No",
+  Core::UTILS::bool_parameter("SLAVEONLY", "No",
       "flag for evaluation of interface linearizations and residuals on slave side only",
       &s2icoupling);
 
   // node-to-segment projection tolerance
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "NTSPROJTOL", 0.0, "node-to-segment projection tolerance", &s2icoupling);
 
   // flag for evaluation of scatra-scatra interface coupling involving interface layer growth
@@ -64,35 +64,35 @@ void Inpar::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving
   // interface layer growth
-  Core::UTILS::DoubleParameter("INTLAYERGROWTH_CONVTOL", 1.e-12,
+  Core::UTILS::double_parameter("INTLAYERGROWTH_CONVTOL", 1.e-12,
       "local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving "
       "interface layer growth",
       &s2icoupling);
 
   // maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling
   // involving interface layer growth
-  Core::UTILS::IntParameter("INTLAYERGROWTH_ITEMAX", 5,
+  Core::UTILS::int_parameter("INTLAYERGROWTH_ITEMAX", 5,
       "maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling "
       "involving interface layer growth",
       &s2icoupling);
 
   // ID of linear solver for monolithic scatra-scatra interface coupling involving interface layer
   // growth
-  Core::UTILS::IntParameter("INTLAYERGROWTH_LINEAR_SOLVER", -1,
+  Core::UTILS::int_parameter("INTLAYERGROWTH_LINEAR_SOLVER", -1,
       "ID of linear solver for monolithic scatra-scatra interface coupling involving interface "
       "layer growth",
       &s2icoupling);
 
   // modified time step size for scatra-scatra interface coupling involving interface layer growth
-  Core::UTILS::DoubleParameter("INTLAYERGROWTH_TIMESTEP", -1.,
+  Core::UTILS::double_parameter("INTLAYERGROWTH_TIMESTEP", -1.,
       "modified time step size for scatra-scatra interface coupling involving interface layer "
       "growth",
       &s2icoupling);
 
-  Core::UTILS::BoolParameter("MESHTYING_CONDITIONS_INDEPENDENT_SETUP", "No",
+  Core::UTILS::bool_parameter("MESHTYING_CONDITIONS_INDEPENDENT_SETUP", "No",
       "mesh tying for different conditions should be setup independently", &s2icoupling);
 
-  Core::UTILS::BoolParameter("OUTPUT_INTERFACE_FLUX", "No",
+  Core::UTILS::bool_parameter("OUTPUT_INTERFACE_FLUX", "No",
       "evaluate integral of coupling flux on slave side for each s2i condition and write it to csv "
       "file",
       &s2icoupling);
@@ -102,7 +102,7 @@ void Inpar::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*------------------------------------------------------------------------*
  | set valid conditions for scatra-scatra interface coupling   fang 01/16 |
  *------------------------------------------------------------------------*/
-void Inpar::S2I::SetValidConditions(
+void Inpar::S2I::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

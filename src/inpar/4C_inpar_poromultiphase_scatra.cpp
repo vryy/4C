@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::PoroMultiPhaseScaTra::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -27,19 +27,19 @@ void Inpar::PoroMultiPhaseScaTra::SetValidParameters(Teuchos::RCP<Teuchos::Param
       false, "Control paramters for scatra porous multiphase media coupling");
 
   // Output type
-  Core::UTILS::IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps",
+  Core::UTILS::int_parameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps",
       &poromultiphasescatradyn);
   // Time loop control
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "NUMSTEP", 200, "maximum number of Timesteps", &poromultiphasescatradyn);
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "MAXTIME", 1000.0, "total simulation time", &poromultiphasescatradyn);
-  Core::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poromultiphasescatradyn);
-  Core::UTILS::IntParameter(
+  Core::UTILS::double_parameter("TIMESTEP", 0.05, "time step size dt", &poromultiphasescatradyn);
+  Core::UTILS::int_parameter(
       "RESULTSEVRY", 1, "increment for writing solution", &poromultiphasescatradyn);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "ITEMAX", 10, "maximum number of iterations over fields", &poromultiphasescatradyn);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "ITEMIN", 1, "minimal number of iterations over fields", &poromultiphasescatradyn);
 
   // Coupling strategy for poroscatra solvers
@@ -52,7 +52,7 @@ void Inpar::PoroMultiPhaseScaTra::SetValidParameters(Teuchos::RCP<Teuchos::Param
       &poromultiphasescatradyn);
 
   // coupling with 1D artery network active
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &poromultiphasescatradyn);
 
   // no convergence of coupling scheme
@@ -83,22 +83,22 @@ void Inpar::PoroMultiPhaseScaTra::SetValidParameters(Teuchos::RCP<Teuchos::Param
       &poromultiphasescatradynmono);
 
   // convergence criteria adaptivity --> note ADAPTCONV_BETTER set pretty small
-  Core::UTILS::BoolParameter("ADAPTCONV", "No",
+  Core::UTILS::bool_parameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &poromultiphasescatradynmono);
-  Core::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.001,
+  Core::UTILS::double_parameter("ADAPTCONV_BETTER", 0.001,
       "The linear solver shall be this much better "
       "than the current nonlinear residual in the nonlinear convergence limit",
       &poromultiphasescatradynmono);
 
   // Iterationparameters
-  Core::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
+  Core::UTILS::double_parameter("TOLRES_GLOBAL", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poromultiphasescatradynmono);
-  Core::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
+  Core::UTILS::double_parameter("TOLINC_GLOBAL", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poromultiphasescatradynmono);
 
   // number of linear solver used for poroelasticity
-  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::int_parameter("LINEAR_SOLVER", -1,
       "number of linear solver used for monolithic poroscatra problems",
       &poromultiphasescatradynmono);
 
@@ -129,11 +129,11 @@ void Inpar::PoroMultiPhaseScaTra::SetValidParameters(Teuchos::RCP<Teuchos::Param
       "PARTITIONED", false, "Parameters for partitioned Poro-Multiphase-Scatra Interaction");
 
   // convergence tolerance of outer iteration loop
-  Core::UTILS::DoubleParameter("CONVTOL", 1e-6,
+  Core::UTILS::double_parameter("CONVTOL", 1e-6,
       "tolerance for convergence check of outer iteration", &poromultiphasescatradynpart);
 }
 
-void Inpar::PoroMultiPhaseScaTra::SetValidConditions(
+void Inpar::PoroMultiPhaseScaTra::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

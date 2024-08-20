@@ -80,7 +80,7 @@ void Discret::ELEMENTS::SoHex8PoroP1Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8PoroP1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 int Discret::ELEMENTS::SoHex8PoroP1Type::initialize(Core::FE::Discretization& dis)
@@ -179,7 +179,7 @@ void Discret::ELEMENTS::SoTet4PoroP1Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoTet4PoroP1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 FOUR_C_NAMESPACE_CLOSE

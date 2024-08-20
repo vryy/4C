@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::Coupling2d::Coupling2d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : Mortar::Coupling2d(idiscret, dim, quad, params, sele, mele),
-      stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
 
@@ -81,7 +81,7 @@ bool CONTACT::Coupling2d::integrate_overlap(
 
   // create a CONTACT integrator instance with correct num_gp and Dim
   Teuchos::RCP<CONTACT::Integrator> integrator =
-      CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, slave_element().shape(), get_comm());
+      CONTACT::INTEGRATOR::build_integrator(stype_, imortar_, slave_element().shape(), get_comm());
   // *******************************************************************
   // different options for mortar integration
   // *******************************************************************
@@ -147,7 +147,7 @@ CONTACT::Coupling2dManager::Coupling2dManager(Core::FE::Discretization& idiscret
     bool quad, Teuchos::ParameterList& params, Mortar::Element* sele,
     std::vector<Mortar::Element*> mele)
     : Mortar::Coupling2dManager(idiscret, dim, quad, params, sele, mele),
-      stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
   return;
@@ -169,7 +169,7 @@ bool CONTACT::Coupling2dManager::evaluate_coupling(
 
   // decide which type of coupling should be evaluated
   Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -232,8 +232,8 @@ void CONTACT::Coupling2dManager::integrate_coupling(
     if ((int)master_elements().size() == 0) return;
 
     // create an integrator instance with correct num_gp and Dim
-    Teuchos::RCP<CONTACT::Integrator> integrator =
-        CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, slave_element().shape(), get_comm());
+    Teuchos::RCP<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
+        stype_, imortar_, slave_element().shape(), get_comm());
 
     // *******************************************************************
     // different options for mortar integration
@@ -279,7 +279,7 @@ void CONTACT::Coupling2dManager::integrate_coupling(
       if (int_type() == Inpar::Mortar::inttype_elements_BS and boundary_ele == true)
       {
         // switch, if consistent boundary modification chosen
-        if (Core::UTILS::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == true &&
+        if (Core::UTILS::integral_value<int>(imortar_, "LM_DUAL_CONSISTENT") == true &&
             shape_fcn() != Inpar::Mortar::shape_standard  // so for petrov-Galerkin and dual
         )
         {
@@ -380,7 +380,8 @@ void CONTACT::Coupling2dManager::consist_dual_shape()
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
   Inpar::Mortar::ConsistentDualType consistent =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
+      Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
+          imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
     return;
 
@@ -617,7 +618,7 @@ void CONTACT::Coupling2dManager::consist_dual_shape()
       for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
     // invert bi-ortho matrix melin
-    Core::LinAlg::Inverse(melin);
+    Core::LinAlg::inverse(melin);
 
     // re-inflate inverse of melin to full size
     for (int j = 0; j < nnodeslin; ++j)
@@ -628,7 +629,7 @@ void CONTACT::Coupling2dManager::consist_dual_shape()
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else
-    meinv = Core::LinAlg::InvertAndMultiplyByCholesky(me, de, ae);
+    meinv = Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // build linearization of ae and store in derivdual
   // (this is done according to a quite complex formula, which

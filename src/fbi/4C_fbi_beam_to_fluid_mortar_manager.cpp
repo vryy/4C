@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
        i_node++)
   {
     Core::Nodes::Node const& node = *(discretization_structure_->l_row_node(i_node));
-    if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node)) my_nodes_gid.push_back(node.id());
+    if (BEAMINTERACTION::UTILS::is_beam_centerline_node(node)) my_nodes_gid.push_back(node.id());
   }
 
   // Get the global ids of all beam elements on this rank.
@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
        i_element++)
   {
     Core::Elements::Element const& element = *(discretization_structure_->l_row_element(i_element));
-    if (BEAMINTERACTION::UTILS::IsBeamElement(element)) my_elements_gid.push_back(element.id());
+    if (BEAMINTERACTION::UTILS::is_beam_element(element)) my_elements_gid.push_back(element.id());
   }
 
   // Calculate the local number of centerline nodes, beam elements and Lagrange multiplier DOF.
@@ -207,7 +207,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_global_maps()
        i_node++)
   {
     const Core::Nodes::Node* node = discretization_structure_->l_row_node(i_node);
-    if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
+    if (BEAMINTERACTION::UTILS::is_beam_node(*node))
       discretization_structure_->dof(node, field_dofs[0]);
     else
       FOUR_C_THROW("The given structure element is not a beam element!");
@@ -361,7 +361,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::location_vector(
     for (int i_node = 0; i_node < contact_pair->element1()->num_node(); i_node++)
     {
       const Core::Nodes::Node& node = *(contact_pair->element1()->nodes()[i_node]);
-      if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
+      if (BEAMINTERACTION::UTILS::is_beam_centerline_node(node))
       {
         // Get the global id of the node.
         int node_id = node.id();
@@ -378,7 +378,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::location_vector(
   // Get the global DOFs ids of the element Lagrange multipliers.
   if (n_lambda_element_ > 0)
   {
-    if (BEAMINTERACTION::UTILS::IsBeamElement(*contact_pair->element1()))
+    if (BEAMINTERACTION::UTILS::is_beam_element(*contact_pair->element1()))
     {
       // Get the global id of the element.
       int element_id = contact_pair->element1()->id();
@@ -437,7 +437,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::evaluate_global_dm(
       // use the FEAssembly here, since the contact pairs are not ghosted.
 
       // Assemble the centerline matrix calculated by EvaluateDM into the full element matrix.
-      BEAMINTERACTION::UTILS::AssembleCenterlineDofColMatrixIntoElementColMatrix(
+      BEAMINTERACTION::UTILS::assemble_centerline_dof_col_matrix_into_element_col_matrix(
           *discretization_structure_, elepairptr->element1(), local_D_centerlineDOFs,
           local_D_elementDOFs);
 
@@ -510,17 +510,17 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->complete();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> global_D_scaled =
-      Core::LinAlg::MLMultiply(*kappa_inv_mat, false, *global_d_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*kappa_inv_mat, false, *global_d_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> global_M_scaled =
-      Core::LinAlg::MLMultiply(*kappa_inv_mat, false, *global_m_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*kappa_inv_mat, false, *global_m_, false, false, false, true);
 
   // Calculate the needed submatrices.
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Dt_kappa_D =
-      Core::LinAlg::MLMultiply(*global_d_, true, *global_D_scaled, false, false, false, true);
+      Core::LinAlg::ml_multiply(*global_d_, true, *global_D_scaled, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Dt_kappa_M =
-      Core::LinAlg::MLMultiply(*global_d_, true, *global_M_scaled, false, false, false, true);
+      Core::LinAlg::ml_multiply(*global_d_, true, *global_M_scaled, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Mt_kappa_M =
-      Core::LinAlg::MLMultiply(*global_m_, true, *global_M_scaled, false, false, false, true);
+      Core::LinAlg::ml_multiply(*global_m_, true, *global_M_scaled, false, false, false, true);
 
   if (kff != Teuchos::null) kff->add(*Mt_kappa_M, false, 1.0, 1.0);
 

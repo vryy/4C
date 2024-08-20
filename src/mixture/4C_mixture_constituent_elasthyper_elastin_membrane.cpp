@@ -65,7 +65,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
 
   for (unsigned gp = 0; gp < orthogonal_structural_tensor_.size(); ++gp)
   {
-    orthogonal_structural_tensor_[gp] = Core::LinAlg::IdentityMatrix<3>();
+    orthogonal_structural_tensor_[gp] = Core::LinAlg::identity_matrix<3>();
 
     orthogonal_structural_tensor_[gp].update(-1.0, get_structural_tensor(gp, 0), 1.0);
   }
@@ -279,7 +279,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_elastic_part
   iFin.multiply_nn(iFextin, prestretch_tensor(gp));
 
   // Evaluate 3D elastic part
-  Mat::ElastHyperEvaluateElasticPart(
+  Mat::elast_hyper_evaluate_elastic_part(
       F, iFin, S_stress, cmat, summands(), summand_properties(), gp, eleGID);
 
   // Evaluate Membrane
@@ -295,7 +295,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_membrane_str
     Core::LinAlg::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   Core::LinAlg::Matrix<6, 6> cmat(false);
-  const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
+  const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::identity_matrix<3>();
   Core::LinAlg::Matrix<3, 3> iFin(false);
 
   iFin.multiply_nn(Id, prestretch_tensor(gp));
@@ -309,7 +309,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) const
 {
   static Core::LinAlg::Matrix<3, 3> Ce(false);
-  Mat::EvaluateCe(F, iFin, Ce);
+  Mat::evaluate_ce(F, iFin, Ce);
 
   // Compute structural tensors in grown configuration
   static Core::LinAlg::Matrix<3, 3> Aradgr(false);
@@ -377,7 +377,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::
       iCin.dot(anisotropy_extension_.get_structural_tensor(gp, 0)), FinArad, Fin, 0.0);
 
   // Compute orthogonal (to radial) structural tensor in grown configuration
-  Aorthgr = Core::LinAlg::IdentityMatrix<3>();
+  Aorthgr = Core::LinAlg::identity_matrix<3>();
   Aorthgr.update(-1.0, Aradgr, 1.0);
 }
 

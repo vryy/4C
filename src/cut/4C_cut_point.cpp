@@ -338,8 +338,8 @@ double Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
     if (x.norm2() > (tolerance() + p1->tolerance() + p2->tolerance()))
     {
       std::ofstream file("point_not_on_on_edge.pos");
-      Cut::Output::GmshEdgeDump(file, edge, std::string("Edge"));
-      Cut::Output::GmshPointDump(file, this, this->id(), std::string("Point"), false, nullptr);
+      Cut::Output::gmsh_edge_dump(file, edge, std::string("Edge"));
+      Cut::Output::gmsh_point_dump(file, this, this->id(), std::string("Point"), false, nullptr);
       file.close();
 
       std::stringstream str;
@@ -383,7 +383,7 @@ double Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
           str << "Two points with the same local coordinates on the edge. " << id()
               << "will not be added to a list because of existing " << (*it)->id()
               << " in pointposition list\n";
-          str << "Distance between points is " << Cut::DistanceBetweenPoints(this, *it)
+          str << "Distance between points is " << Cut::distance_between_points(this, *it)
               << std::endl;
           str << this << std::endl;
           str << *it << std::endl;
@@ -396,7 +396,7 @@ double Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& coord)
             str << "Two non end-point have same coordinates\n";
 
           std::ofstream file("t_failed.pos");
-          Cut::Output::GmshEdgeDump(file, edge);
+          Cut::Output::gmsh_edge_dump(file, edge);
           file.close();
           dump_connectivity_info();
           (*it)->dump_connectivity_info();
@@ -523,7 +523,7 @@ void Cut::Point::position(Point::PointPosition pos)
   if (position_ != pos)
   {
     //  safety check, if the position of a facet changes from one side to the other
-    FOUR_C_ASSERT(IsCutPositionUnchanged(position_, pos),
+    FOUR_C_ASSERT(is_cut_position_unchanged(position_, pos),
         "Are you sure that you want to change the point-position from inside to outside or vice "
         "versa?");
 
@@ -1046,7 +1046,7 @@ std::ostream& operator<<(std::ostream& stream, Cut::Point* point)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::FindCommonElements(const std::vector<Point*>& element, plain_element_set& elements)
+void Cut::find_common_elements(const std::vector<Point*>& element, plain_element_set& elements)
 {
   std::vector<Point*>::const_iterator ie = element.begin();
   elements = (*ie)->elements();
@@ -1061,24 +1061,24 @@ void Cut::FindCommonElements(const std::vector<Point*>& element, plain_element_s
   }
 }
 
-double Cut::DistanceBetweenPoints(Point* p1, Point* p2)
+double Cut::distance_between_points(Point* p1, Point* p2)
 {
   Core::LinAlg::Matrix<3, 1> p1_x;
   p1->coordinates(p1_x.data());
   Core::LinAlg::Matrix<3, 1> p2_x;
   p2->coordinates(p2_x.data());
-  return DistanceBetweenPoints(p1_x, p2_x);
+  return distance_between_points(p1_x, p2_x);
 }
 
-double Cut::DistanceBetweenPoints(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b)
+double Cut::distance_between_points(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b)
 {
   Core::LinAlg::Matrix<3, 1> p1_x;
   p1->coordinates(p1_x.data());
-  return DistanceBetweenPoints(p1_x, coord_b);
+  return distance_between_points(p1_x, coord_b);
 }
 
 
-bool Cut::IsCutPositionUnchanged(Point::PointPosition position, Point::PointPosition pos)
+bool Cut::is_cut_position_unchanged(Point::PointPosition position, Point::PointPosition pos)
 {
   if ((position == Point::inside and pos == Point::outside) or
       (position == Point::outside and pos == Point::inside))
@@ -1091,7 +1091,7 @@ template <unsigned prob_dim>
 void Cut::ConcretePoint<prob_dim>::move_point(const double* new_coord)
 {
   Core::LinAlg::Matrix<3, 1> coordm(new_coord, true);
-  if (Cut::DistanceBetweenPoints(this, coordm) > BOXOVERLAP)
+  if (Cut::distance_between_points(this, coordm) > BOXOVERLAP)
     FOUR_C_THROW("The point is not allowed to be moved that much");
 
 #if CUT_CREATION_INFO

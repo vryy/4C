@@ -93,7 +93,7 @@ void CONTACT::NitscheStrategyPoro::set_parent_state(const enum Mortar::StateType
           ele->parent_slave_element()->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          Core::FE::ExtractMyValues(*global, myval, lm);
+          Core::FE::extract_my_values(*global, myval, lm);
 
           std::vector<double> vel;
           std::vector<double> pres;

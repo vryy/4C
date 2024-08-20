@@ -77,7 +77,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   this->geometry_pair_ =
-      GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD<ScalarType, Beam, Surface>(
+      GEOMETRYPAIR::geometry_pair_line_to_surface_factory_fad<ScalarType, Beam, Surface>(
           element1, element2, geometry_evaluation_data_ptr);
 }
 
@@ -93,7 +93,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
 
   // Set the number of (centerline) degrees of freedom for the beam element in the face element
   face_element_->set_number_of_dof_other_element(
-      UTILS::GetNumberOfElementCenterlineDof(this->element1()));
+      UTILS::get_number_of_element_centerline_dof(this->element1()));
 
   // If the solid surface is the surface of a 3D volume we set the face element here. Otherwise we
   // simply set the same element again.
@@ -123,7 +123,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::g
 {
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  UTILS::GetElementCenterlineGIDIndices(discret, this->element1(), beam_centerline_gid);
+  UTILS::get_element_centerline_gid_indices(discret, this->element1(), beam_centerline_gid);
 
   // Get the patch (in this case just the one face element) GIDs.
   const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();

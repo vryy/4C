@@ -88,7 +88,7 @@ namespace Core::IO
   namespace INTERNAL
   {
     template <typename TypeVec>
-    void CheckDimension(const std::vector<TypeVec> &vec, size_t expectedSize)
+    void check_dimension(const std::vector<TypeVec> &vec, size_t expectedSize)
     {
       if (vec.size() != expectedSize)
       {
@@ -97,7 +97,7 @@ namespace Core::IO
     }
 
     template <std::size_t rank, typename TypeArr, std::size_t dim_arr>
-    constexpr char GetSeparatorAtRank(const std::array<TypeArr, dim_arr> &sep_list)
+    constexpr char get_separator_at_rank(const std::array<TypeArr, dim_arr> &sep_list)
     {
       static_assert(rank <= dim_arr,
           "Requesting a separator of too high rank. Your data structure is too deeply nested.");
@@ -127,7 +127,7 @@ namespace Core::IO
      * @brief Recursively determine the max of the list rank of the given types
      */
     template <class... Types>
-    constexpr int MaxListRank()
+    constexpr int max_list_rank()
     {
       return std::max({StringPatternTraits<Types>::list_rank...});
     }
@@ -136,7 +136,7 @@ namespace Core::IO
      * @brief Recursively determine the max of the map rank of the given types
      */
     template <class... Types>
-    constexpr int MaxMapRank()
+    constexpr int max_map_rank()
     {
       return std::max({StringPatternTraits<Types>::map_rank...});
     }
@@ -148,8 +148,8 @@ namespace Core::IO
     template <typename... ContainedTypes>
     struct ListTrait
     {
-      static constexpr int list_rank = 1 + MaxListRank<ContainedTypes...>();
-      static constexpr int map_rank = MaxMapRank<ContainedTypes...>();
+      static constexpr int list_rank = 1 + max_list_rank<ContainedTypes...>();
+      static constexpr int map_rank = max_map_rank<ContainedTypes...>();
       static constexpr bool is_list_compatible = true;
       static constexpr bool is_map_compatible = false;
     };
@@ -161,8 +161,8 @@ namespace Core::IO
     template <typename... ContainedTypes>
     struct MapTrait
     {
-      static constexpr int list_rank = 1 + MaxListRank<ContainedTypes...>();
-      static constexpr int map_rank = 1 + MaxMapRank<ContainedTypes...>();
+      static constexpr int list_rank = 1 + max_list_rank<ContainedTypes...>();
+      static constexpr int map_rank = 1 + max_map_rank<ContainedTypes...>();
       static constexpr bool is_list_compatible = false;
       static constexpr bool is_map_compatible = true;
     };
@@ -225,7 +225,7 @@ namespace Core::IO
      */
     template <class T,
         std::enable_if_t<INTERNAL::StringPatternTraits<T>::is_list_compatible, int> = 0>
-    void ParseSplitString(T &t, const std::vector<std::string> &split_str)
+    void parse_split_string(T &t, const std::vector<std::string> &split_str)
     {
       for (const auto &str : split_str)
         t.insert(t.end(), StringConverter<typename T::value_type>::parse(str));
@@ -237,9 +237,9 @@ namespace Core::IO
      * A check is performed to ensure the number of elements found in the split string is N.
      */
     template <typename ValueType, std::size_t n>
-    void ParseSplitString(std::array<ValueType, n> &t, const std::vector<std::string> &split_str)
+    void parse_split_string(std::array<ValueType, n> &t, const std::vector<std::string> &split_str)
     {
-      CheckDimension(split_str, n);
+      check_dimension(split_str, n);
       for (unsigned int i = 0; i < n; ++i)
         t[i] = Core::IO::StringConverter<ValueType>::parse(split_str[i]);
     }
@@ -250,21 +250,21 @@ namespace Core::IO
      * A check is performed to ensure the number of elements found in the split string is 2.
      */
     template <typename Key, typename Value>
-    void ParseSplitString(std::pair<Key, Value> &t, const std::vector<std::string> &split_str)
+    void parse_split_string(std::pair<Key, Value> &t, const std::vector<std::string> &split_str)
     {
-      CheckDimension(split_str, 2);
+      check_dimension(split_str, 2);
       t = std::make_pair(Core::IO::StringConverter<Key>::parse(split_str[0]),
           StringConverter<Value>::parse(split_str[1]));
     }
 
     template <std::size_t index, typename Tuple>
-    void ParseSplitStringHelper(Tuple &t, const std::vector<std::string> &split_str)
+    void parse_split_string_helper(Tuple &t, const std::vector<std::string> &split_str)
     {
       if constexpr (index < std::tuple_size<Tuple>::value)
       {
         std::get<index>(t) =
             StringConverter<std::decay_t<decltype(std::get<index>(t))>>::parse(split_str[index]);
-        ParseSplitStringHelper<index + 1>(t, split_str);
+        parse_split_string_helper<index + 1>(t, split_str);
       }
     };
 
@@ -275,10 +275,10 @@ namespace Core::IO
      * the tuple size.
      */
     template <typename... Args>
-    void ParseSplitString(std::tuple<Args...> &t, const std::vector<std::string> &split_str)
+    void parse_split_string(std::tuple<Args...> &t, const std::vector<std::string> &split_str)
     {
-      CheckDimension(split_str, sizeof...(Args));
-      ParseSplitStringHelper<0>(t, split_str);
+      check_dimension(split_str, sizeof...(Args));
+      parse_split_string_helper<0>(t, split_str);
     };
   }  // namespace INTERNAL
 
@@ -361,12 +361,12 @@ namespace Core::IO
   {
     static T parse(const std::string &str)
     {
-      const char sep = INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::list_rank>(
+      const char sep = INTERNAL::get_separator_at_rank<INTERNAL::StringPatternTraits<T>::list_rank>(
           INTERNAL::default_list_separator);
-      auto split_str = Core::UTILS::SplitStringList(str, sep);
+      auto split_str = Core::UTILS::split_string_list(str, sep);
 
       T t;
-      INTERNAL::ParseSplitString(t, split_str);
+      INTERNAL::parse_split_string(t, split_str);
       return t;
     }
   };
@@ -388,18 +388,19 @@ namespace Core::IO
     {
       T t;
 
-      const char sep_map = INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::map_rank>(
-          INTERNAL::default_map_separator);
+      const char sep_map =
+          INTERNAL::get_separator_at_rank<INTERNAL::StringPatternTraits<T>::map_rank>(
+              INTERNAL::default_map_separator);
       const char sep_list =
-          INTERNAL::GetSeparatorAtRank<INTERNAL::StringPatternTraits<T>::list_rank>(
+          INTERNAL::get_separator_at_rank<INTERNAL::StringPatternTraits<T>::list_rank>(
               INTERNAL::default_list_separator);
 
-      auto split_str = Core::UTILS::SplitStringList(str, sep_list);
+      auto split_str = Core::UTILS::split_string_list(str, sep_list);
 
       for (const auto &split_str_i : split_str)
       {
-        auto key_val = Core::UTILS::SplitStringList(split_str_i, sep_map);
-        INTERNAL::CheckDimension(key_val, 2);
+        auto key_val = Core::UTILS::split_string_list(split_str_i, sep_map);
+        INTERNAL::check_dimension(key_val, 2);
 
         t.insert(std::make_pair(StringConverter<typename T::key_type>::parse(key_val[0]),
             StringConverter<typename T::mapped_type>::parse(key_val[1])));

@@ -45,11 +45,11 @@ void CONSTRAINTS::ConstraintSolver::setup(Teuchos::RCP<Core::FE::Discretization>
 {
   solver_ = Teuchos::rcp(&solver, false);
 
-  algochoice_ = Core::UTILS::IntegralValue<Inpar::Solid::ConSolveAlgo>(params, "UZAWAALGO");
+  algochoice_ = Core::UTILS::integral_value<Inpar::Solid::ConSolveAlgo>(params, "UZAWAALGO");
 
   // different setup for #adapttol_
   isadapttol_ = true;
-  isadapttol_ = (Core::UTILS::IntegralValue<int>(params, "ADAPTCONV") == 1);
+  isadapttol_ = (Core::UTILS::integral_value<int>(params, "ADAPTCONV") == 1);
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
@@ -124,7 +124,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(dirichtoggle_);
 
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(rhsstand->Map(), true));
   Teuchos::RCP<Epetra_Vector> dirichzeros = dbcmaps_->extract_cond_vector(zeros);
@@ -256,7 +256,7 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::Spar
   Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->row_map()));
   Teuchos::RCP<Epetra_Map> conrowmap = Teuchos::rcp(new Epetra_Map(constr->domain_map()));
   // merge maps to one large map
-  Teuchos::RCP<Epetra_Map> mergedmap = Core::LinAlg::MergeMap(standrowmap, conrowmap, false);
+  Teuchos::RCP<Epetra_Map> mergedmap = Core::LinAlg::merge_map(standrowmap, conrowmap, false);
   // define MapExtractor
   Core::LinAlg::MapExtractor mapext(*mergedmap, standrowmap, conrowmap);
 
@@ -268,7 +268,7 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::Spar
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(dirichtoggle_);
   // fill merged matrix using Add
   mergedmatrix->add(*stiff, false, 1.0, 1.0);
   mergedmatrix->add(*constr, false, 1.0, 1.0);
@@ -302,13 +302,13 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   // row maps (assumed to equal to range map) and extractor
   Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->row_map()));
   Teuchos::RCP<Epetra_Map> conrowmap = Teuchos::rcp(new Epetra_Map(constr->domain_map()));
-  Teuchos::RCP<Epetra_Map> mergedrowmap = Core::LinAlg::MergeMap(standrowmap, conrowmap, false);
+  Teuchos::RCP<Epetra_Map> mergedrowmap = Core::LinAlg::merge_map(standrowmap, conrowmap, false);
   Core::LinAlg::MapExtractor rowmapext(*mergedrowmap, conrowmap, standrowmap);
 
   // domain maps and extractor
   Teuchos::RCP<Epetra_Map> standdommap = Teuchos::rcp(new Epetra_Map(stiff->domain_map()));
   Teuchos::RCP<Epetra_Map> condommap = Teuchos::rcp(new Epetra_Map(constr->domain_map()));
-  Teuchos::RCP<Epetra_Map> mergeddommap = Core::LinAlg::MergeMap(standdommap, condommap, false);
+  Teuchos::RCP<Epetra_Map> mergeddommap = Core::LinAlg::merge_map(standdommap, condommap, false);
   Core::LinAlg::MapExtractor dommapext(*mergeddommap, condommap, standdommap);
 
   // cast constraint operators to matrices and save transpose of constraint matrix
@@ -319,7 +319,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(dirichtoggle_);
 
   // stuff needed for Dirichlet BCs
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(rhsstand->Map(), true));
@@ -348,7 +348,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(
       Global::Problem::instance()->solver_params(linsolvernumber),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter

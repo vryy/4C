@@ -64,7 +64,7 @@ void Adapter::FBIConstraintenforcer::setup(Teuchos::RCP<Adapter::FSIStructureWra
   discretizations_.push_back(structure_->discretization());
   discretizations_.push_back(fluid_->discretization());
 
-  Core::LinAlg::CreateMapExtractorFromDiscretization(
+  Core::LinAlg::create_map_extractor_from_discretization(
       *(fluid_->discretization()), 3, *velocity_pressure_splitter_);
 
   bool meshtying =
@@ -102,7 +102,7 @@ void Adapter::FBIConstraintenforcer::setup(Teuchos::RCP<Adapter::FSIStructureWra
   }
 
   geometrycoupler_->setup(
-      discretizations_, Core::Rebalance::GetColVersionOfRowVector(
+      discretizations_, Core::Rebalance::get_col_version_of_row_vector(
                             structure_->discretization(), structure_->dispnp()));
 }
 
@@ -113,11 +113,11 @@ void Adapter::FBIConstraintenforcer::evaluate()
   // We use the column vectors here, because currently the search is based on neighboring nodes,
   // but the element pairs are created using the elements needing all information on all their
   // DOFs
-  column_structure_displacement_ =
-      Core::Rebalance::GetColVersionOfRowVector(structure_->discretization(), structure_->dispnp());
-  column_structure_velocity_ =
-      Core::Rebalance::GetColVersionOfRowVector(structure_->discretization(), structure_->velnp());
-  column_fluid_velocity_ = Core::Rebalance::GetColVersionOfRowVector(fluid_->discretization(),
+  column_structure_displacement_ = Core::Rebalance::get_col_version_of_row_vector(
+      structure_->discretization(), structure_->dispnp());
+  column_structure_velocity_ = Core::Rebalance::get_col_version_of_row_vector(
+      structure_->discretization(), structure_->velnp());
+  column_fluid_velocity_ = Core::Rebalance::get_col_version_of_row_vector(fluid_->discretization(),
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->velnp());
 
   geometrycoupler_->update_binning(discretizations_[0], column_structure_displacement_);
@@ -199,12 +199,13 @@ void Adapter::FBIConstraintenforcer::create_pairs(
     // pairs can finally be created
     geometrycoupler_->prepare_pair_creation(discretizations_, pairids);
 
-    column_structure_displacement_ = Core::Rebalance::GetColVersionOfRowVector(
+    column_structure_displacement_ = Core::Rebalance::get_col_version_of_row_vector(
         structure_->discretization(), structure_->dispnp());
-    column_structure_velocity_ = Core::Rebalance::GetColVersionOfRowVector(
+    column_structure_velocity_ = Core::Rebalance::get_col_version_of_row_vector(
         structure_->discretization(), structure_->velnp());
-    column_fluid_velocity_ = Core::Rebalance::GetColVersionOfRowVector(fluid_->discretization(),
-        Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->velnp());
+    column_fluid_velocity_ =
+        Core::Rebalance::get_col_version_of_row_vector(fluid_->discretization(),
+            Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->velnp());
   }
 
 
@@ -249,11 +250,11 @@ void Adapter::FBIConstraintenforcer::create_pairs(
 void Adapter::FBIConstraintenforcer::reset_all_pair_states()
 {
   // Get current state
-  column_structure_displacement_ =
-      Core::Rebalance::GetColVersionOfRowVector(structure_->discretization(), structure_->dispnp());
-  column_structure_velocity_ =
-      Core::Rebalance::GetColVersionOfRowVector(structure_->discretization(), structure_->velnp());
-  column_fluid_velocity_ = Core::Rebalance::GetColVersionOfRowVector(fluid_->discretization(),
+  column_structure_displacement_ = Core::Rebalance::get_col_version_of_row_vector(
+      structure_->discretization(), structure_->dispnp());
+  column_structure_velocity_ = Core::Rebalance::get_col_version_of_row_vector(
+      structure_->discretization(), structure_->velnp());
+  column_fluid_velocity_ = Core::Rebalance::get_col_version_of_row_vector(fluid_->discretization(),
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->velnp());
 
   std::vector<Core::Elements::Element const*> ele_ptrs(2);
@@ -282,12 +283,12 @@ void Adapter::FBIConstraintenforcer::extract_current_element_dofs(
   std::vector<double> vel_tmp;
 
   // extract the current position of the beam element from the displacement vector
-  BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->discretization()),
+  BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(*(structure_->discretization()),
       elements[0], column_structure_displacement_,
       beam_dofvec);  // todo get "interface" displacements only for beam
                      // elements
   // extract velocity of the beam element
-  BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
+  BEAMINTERACTION::UTILS::extract_pos_dof_vec_values(
       *(structure_->discretization()), elements[0], column_structure_velocity_, vel_tmp);
 
   for (double val : vel_tmp) beam_dofvec.push_back(val);
@@ -306,7 +307,7 @@ void Adapter::FBIConstraintenforcer::extract_current_element_dofs(
   }
 
   // extract current fluid velocities
-  BEAMINTERACTION::UTILS::GetCurrentElementDis(
+  BEAMINTERACTION::UTILS::get_current_element_dis(
       *(fluid_->discretization()), elements[1], column_fluid_velocity_, vel_tmp);
 
   // todo This is a very crude way to separate the pressure from the velocity dofs.. maybe just

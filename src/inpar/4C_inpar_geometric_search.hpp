@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Inpar::GeometricSearch
 {
   //! set the parameters for the geometric search strategy
-  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
 }  // namespace Inpar::GeometricSearch
 

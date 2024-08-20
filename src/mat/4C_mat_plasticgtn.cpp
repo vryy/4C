@@ -93,7 +93,7 @@ void Mat::PlasticGTN::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   int matid;
   extract_from_pack(position, data, matid);
@@ -319,7 +319,7 @@ void Mat::PlasticGTN::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     epbar_n1 = epbar_n + dlambda;
 
     // update the stress
-    Core::LinAlg::Matrix<3, 3, double> eye = Core::LinAlg::IdentityMatrix<3, double>();
+    Core::LinAlg::Matrix<3, 3, double> eye = Core::LinAlg::identity_matrix<3, double>();
     Core::LinAlg::Matrix<3, 3, double> nhat;
     nhat.update(1.0 / s_trial.norm2(), s_trial);
     stress_n1.update(sqrt(2.0 / 3) * q_n1, nhat, 0.0);

@@ -106,7 +106,7 @@ void CONTACT::IntegratorNitscheSsi::gpts_forces(Mortar::Element& slave_ele,
   double pet = ppt_;
   double nitsche_wgt_slave(0.0), nitsche_wgt_master(0.0);
 
-  CONTACT::UTILS::NitscheWeightsAndScaling(
+  CONTACT::UTILS::nitsche_weights_and_scaling(
       slave_ele, master_ele, nit_wgt_, dt_, nitsche_wgt_slave, nitsche_wgt_master, pen, pet);
 
   double cauchy_nn_weighted_average(0.0);
@@ -192,7 +192,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
 {
   static Core::LinAlg::Matrix<dim, 1> parent_xi(true);
   static Core::LinAlg::Matrix<dim, dim> local_to_parent_trafo(true);
-  CONTACT::UTILS::MapGPtoParent<dim>(
+  CONTACT::UTILS::map_gp_to_parent<dim>(
       mortar_ele, gp_coord, gp_wgt, parent_xi, local_to_parent_trafo);
 
   // cauchy stress tensor contracted with normal and test direction
@@ -300,7 +300,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_test(const double fac, Mortar::Ele
     {
       for (int d = 0; d < dim; ++d)
       {
-        row[Core::FE::getParentNodeNumberFromFaceNodeNumber(
+        row[Core::FE::get_parent_node_number_from_face_node_number(
                 ele.parent_element()->shape(), ele.face_parent_number(), s) *
                 dim +
             d] -= fac * jac * wgt * d_testval_ds.second * normal(d) * shape(s);
@@ -321,8 +321,9 @@ void CONTACT::IntegratorNitscheSsi::setup_gp_concentrations(Mortar::Element& ele
 {
   Core::LinAlg::SerialDenseVector ele_conc(shape_func.length());
   for (int i = 0; i < ele.num_node(); ++i)
-    ele_conc(i) = ele.mo_data().parent_scalar().at(Core::FE::getParentNodeNumberFromFaceNodeNumber(
-        ele.parent_element()->shape(), ele.face_parent_number(), i));
+    ele_conc(i) =
+        ele.mo_data().parent_scalar().at(Core::FE::get_parent_node_number_from_face_node_number(
+            ele.parent_element()->shape(), ele.face_parent_number(), i));
 
   // calculate gp concentration
   gp_conc = shape_func.dot(ele_conc);
@@ -331,8 +332,9 @@ void CONTACT::IntegratorNitscheSsi::setup_gp_concentrations(Mortar::Element& ele
   d_conc_dc.resize(shape_func.length());
   d_conc_dc.clear();
   for (int i = 0; i < ele.num_node(); ++i)
-    d_conc_dc[ele.mo_data().parent_scalar_dof().at(Core::FE::getParentNodeNumberFromFaceNodeNumber(
-        ele.parent_element()->shape(), ele.face_parent_number(), i))] = shape_func(i);
+    d_conc_dc[ele.mo_data().parent_scalar_dof().at(
+        Core::FE::get_parent_node_number_from_face_node_number(
+            ele.parent_element()->shape(), ele.face_parent_number(), i))] = shape_func(i);
 
   // calculate derivative of concentration w.r.t. displacements
   std::size_t deriv_size = 0;
@@ -480,7 +482,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_scatra_test(const double fac, Mort
 
   for (int s = 0; s < ele.num_node(); ++s)
   {
-    *(ele.get_nitsche_container().rhs_s(Core::FE::getParentNodeNumberFromFaceNodeNumber(
+    *(ele.get_nitsche_container().rhs_s(Core::FE::get_parent_node_number_from_face_node_number(
         ele.parent_element()->shape(), ele.face_parent_number(), s))) +=
         time_fac_rhs * val * shape_func(s);
   }
@@ -490,7 +492,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_scatra_test(const double fac, Mort
     double* row = ele.get_nitsche_container().kss(d_testval_ds.first);
     for (int s = 0; s < ele.num_node(); ++s)
     {
-      row[Core::FE::getParentNodeNumberFromFaceNodeNumber(
+      row[Core::FE::get_parent_node_number_from_face_node_number(
           ele.parent_element()->shape(), ele.face_parent_number(), s)] -=
           time_fac * fac * jac * wgt * d_testval_ds.second * shape_func(s);
     }
@@ -506,7 +508,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_scatra_test(const double fac, Mort
   {
     double* row = ele.get_nitsche_container().ksd(dval_dd.first);
     for (int s = 0; s < ele.num_node(); ++s)
-      row[Core::FE::getParentNodeNumberFromFaceNodeNumber(ele.parent_element()->shape(),
+      row[Core::FE::get_parent_node_number_from_face_node_number(ele.parent_element()->shape(),
           ele.face_parent_number(), s)] -= time_fac * dval_dd.second * shape_func(s);
   }
 
@@ -516,7 +518,7 @@ void CONTACT::IntegratorNitscheSsi::integrate_scatra_test(const double fac, Mort
     {
       double* row = ele.get_nitsche_container().ksd(d_xi_dd_e.first);
       for (int s = 0; s < ele.num_node(); ++s)
-        row[Core::FE::getParentNodeNumberFromFaceNodeNumber(ele.parent_element()->shape(),
+        row[Core::FE::get_parent_node_number_from_face_node_number(ele.parent_element()->shape(),
             ele.face_parent_number(), s)] -= time_fac * val * shape_deriv(s, e) * d_xi_dd_e.second;
     }
   }

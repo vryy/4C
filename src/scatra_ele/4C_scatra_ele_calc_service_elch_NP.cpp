@@ -290,7 +290,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
       ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const Inpar::ScaTra::CalcError errortype =
-      Core::UTILS::GetAsEnum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
+      Core::UTILS::get_as_enum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::ScaTra::calcerror_Kwok_Wu:

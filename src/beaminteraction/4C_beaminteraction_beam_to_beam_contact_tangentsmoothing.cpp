@@ -32,7 +32,7 @@ BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const Core::Elements::Element* left_ne
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::B3CNeighbor>
-BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(const Core::Elements::Element* element1)
+BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(const Core::Elements::Element* element1)
 {
   const Core::Elements::Element* left_neighbor = nullptr;
   const Core::Elements::Element* right_neighbor = nullptr;
@@ -127,7 +127,7 @@ BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(const Core::Elements::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int BEAMINTERACTION::Beam3TangentSmoothing::GetBoundaryNode(const int nnode)
+int BEAMINTERACTION::Beam3TangentSmoothing::get_boundary_node(const int nnode)
 {
   if (nnode == 2)
     return 1;
@@ -138,7 +138,7 @@ int BEAMINTERACTION::Beam3TangentSmoothing::GetBoundaryNode(const int nnode)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double BEAMINTERACTION::Beam3TangentSmoothing::GetEleLength(
+double BEAMINTERACTION::Beam3TangentSmoothing::get_ele_length(
     const Core::LinAlg::SerialDenseMatrix& elepos, const int nright)
 {
   double length = 0.0;
@@ -151,19 +151,19 @@ double BEAMINTERACTION::Beam3TangentSmoothing::GetEleLength(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix BEAMINTERACTION::Beam3TangentSmoothing::GetNodalDerivatives(
+Core::LinAlg::SerialDenseMatrix BEAMINTERACTION::Beam3TangentSmoothing::get_nodal_derivatives(
     const int node, const int nnode, const double length, const Core::FE::CellType distype)
 {
   Core::LinAlg::SerialDenseMatrix deriv1(1, nnode);
 
   if (node == nnode)
-    Core::FE::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
+    Core::FE::shape_function_1d_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);
   else
   {
     if (node == 1)
-      Core::FE::shape_function_1D_deriv1(deriv1, -1.0, distype);
+      Core::FE::shape_function_1d_deriv1(deriv1, -1.0, distype);
     else
-      Core::FE::shape_function_1D_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
+      Core::FE::shape_function_1d_deriv1(deriv1, -1.0 + node * 2.0 / (nnode - 1), distype);
   }
 
   for (int i = 0; i < nnode; i++) deriv1(0, i) = 2.0 * deriv1(0, i) / length;

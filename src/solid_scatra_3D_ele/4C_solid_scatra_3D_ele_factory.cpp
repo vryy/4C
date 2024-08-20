@@ -85,7 +85,7 @@ void Discret::ELEMENTS::extract_from_pack(std::size_t& position, const std::vect
   properties.impltype = static_cast<Inpar::ScaTra::ImplType>(
       Core::Communication::ParObject::extract_int(position, data));
 
-  Discret::ELEMENTS::ExtractFromPack(position, data, properties.solid);
+  Discret::ELEMENTS::extract_from_pack(position, data, properties.solid);
 }
 
 Discret::ELEMENTS::SolidScatraCalcVariant
@@ -94,7 +94,7 @@ Discret::ELEMENTS::create_solid_scatra_calculation_interface(Core::FE::CellType 
 {
   // We have 4 different element properties and each combination results in a different element
   // formulation.
-  return Core::FE::CellTypeSwitch<Details::ImplementedSolidScatraCellTypes>(celltype,
+  return Core::FE::cell_type_switch<Details::ImplementedSolidScatraCellTypes>(celltype,
       [&](auto celltype_t)
       {
         return switch_kinematic_type(element_properties.kintype,
@@ -122,7 +122,7 @@ Discret::ELEMENTS::create_solid_scatra_calculation_interface(Core::FE::CellType 
                               " element technology %s and prestress type %s does not exist in the "
                               "solid-scatra context.",
                               Core::FE::celltype_string<celltype_t()>,
-                              Inpar::Solid::KinemTypeString(element_properties.kintype).c_str(),
+                              Inpar::Solid::kinem_type_string(element_properties.kintype).c_str(),
                               element_technology_string(element_properties.element_technology)
                                   .c_str(),
                               prestress_technology_string(element_properties.prestress_technology)

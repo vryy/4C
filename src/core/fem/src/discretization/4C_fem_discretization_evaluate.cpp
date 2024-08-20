@@ -258,7 +258,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
         if (!assemblemat)
         {
           ele->evaluate_neumann(params, *this, *cond, lm, elevector);
-          Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
+          Core::LinAlg::assemble(systemvector, elevector, lm, lmowner);
         }
         else
         {
@@ -268,7 +268,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
           else
             elematrix.putScalar(0.0);
           ele->evaluate_neumann(params, *this, *cond, lm, elevector, &elematrix);
-          Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
+          Core::LinAlg::assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->assemble(ele->id(), lmstride, elematrix, lm, lmowner);
         }
       }
@@ -331,7 +331,7 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
       //-----if no stiffness matrix was given in-------
       else
         currele->evaluate_neumann(params, *this, *cond, lm, elevector);
-      Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
+      Core::LinAlg::assemble(systemvector, elevector, lm, lmowner);
     }
   }
 }

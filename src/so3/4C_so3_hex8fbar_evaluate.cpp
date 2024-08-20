@@ -130,9 +130,9 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -151,9 +151,9 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
       nlnstiffmass(lm, mydisp, nullptr, myres, &myemat, nullptr, &elevec1, nullptr, nullptr,
@@ -180,11 +180,11 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> myacc(lm.size());
-      Core::FE::ExtractMyValues(*acc, myacc, lm);
+      Core::FE::extract_my_values(*acc, myacc, lm);
 
       nlnstiffmass(lm, mydisp, &myacc, myres, &elemat1, &elemat2, &elevec1, &elevec2, nullptr,
           nullptr, nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
@@ -225,13 +225,13 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
         // in case of small strain materials calculate plastic strains for post processing
         plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-        ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "ioplstrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
@@ -239,9 +239,9 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
@@ -282,7 +282,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       update_element(mydisp, params, material());
     }
     break;
@@ -308,7 +308,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // build def gradient for every gauss point
       Core::LinAlg::SerialDenseMatrix gpdefgrd(NUMGPT_SOH8 + 1, 9);
@@ -363,7 +363,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // update element geometry
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
@@ -381,7 +381,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_SOH8 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_SOH8 + 2];
 
-        if (Prestress::IsMulf(pstype_))
+        if (Prestress::is_mulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_SOH8 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_SOH8 + 1];
@@ -397,7 +397,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
       // element coordinate derivatives at centroid
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-      Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+      Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
       {
         // inverse jacobian matrix at centroid
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -407,7 +407,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
         N_XYZ_0.multiply(invJ_0, N_rst_0);
       }
 
-      if (Prestress::IsMulf(pstype_))
+      if (Prestress::is_mulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         // centroid is 9th Gaussian point in storage
@@ -471,7 +471,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(true);
 
-        if (Prestress::IsMulf(pstype_))
+        if (Prestress::is_mulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           Core::LinAlg::Matrix<3, 3> invJdef;
@@ -594,17 +594,17 @@ void Discret::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
     detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (Prestress::IsMulfActive(time_, pstype_, pstime_))
+    if (Prestress::is_mulf_active(time_, pstype_, pstime_))
       if (!(prestress_->is_init()))
         prestress_->matrixto_storage(gp, invJ_[gp], prestress_->j_history());
   }
 
   // init the centroid invJ
-  if (Prestress::IsMulfActive(time_, pstype_, pstime_))
+  if (Prestress::is_mulf_active(time_, pstype_, pstime_))
     if (!(prestress_->is_init()))
     {
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-      Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+      Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
       invJ_0.multiply(N_rst_0, xrefe);
       invJ_0.invert();
@@ -612,7 +612,7 @@ void Discret::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
     }
 
 
-  if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
+  if (Prestress::is_mulf_active(time_, pstype_, pstime_)) prestress_->is_init() = true;
 
   return;
 }
@@ -767,7 +767,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -783,7 +783,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
   // element coordinate derivatives at centroid
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+  Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
   {
     // inverse jacobian matrix at centroid
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -793,7 +793,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     N_XYZ_0.multiply(invJ_0, N_rst_0);
   }
 
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
   {
     // get Jacobian mapping wrt to the stored configuration
     // centroid is 9th Gaussian point in storage
@@ -850,7 +850,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     N_XYZ.multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       Core::LinAlg::Matrix<3, 3> invJdef;
@@ -1006,7 +1006,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         Core::LinAlg::Matrix<3, 3> prstr2(true);  // squared principal stretches
         Core::LinAlg::Matrix<3, 1> prstr(true);   // principal stretch
         Core::LinAlg::Matrix<3, 3> prdir(true);   // principal directions
-        Core::LinAlg::SYEV(cauchygreen, prstr2, prdir);
+        Core::LinAlg::syev(cauchygreen, prstr2, prdir);
 
         // THE principal stretches
         for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
@@ -1463,7 +1463,7 @@ void Discret::ELEMENTS::SoHex8fbar::def_gradient(const std::vector<double>& disp
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid point
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+  Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;  // current  coord. of element
@@ -1525,7 +1525,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-  Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+  Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
 
   // get incremental disp
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
@@ -1614,7 +1614,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
       xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOH8 + 1];
       xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH8 + 2];
 
-      if (Prestress::IsMulf(pstype_))
+      if (Prestress::is_mulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_SOH8 + 0];
         xdisp(i, 1) = disp[i * NODDOF_SOH8 + 1];
@@ -1631,7 +1631,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ_0;
     // element coordinate derivatives at centroid
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-    Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+    Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
     {
       // inverse jacobian matrix at centroid
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
@@ -1641,7 +1641,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
       N_XYZ_0.multiply(invJ_0, N_rst_0);
     }
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       // centroid is 9th Gaussian point in storage
@@ -1709,7 +1709,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
-      if (Prestress::IsMulf(pstype_))
+      if (Prestress::is_mulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
         Core::LinAlg::Matrix<3, 3> invJdef;

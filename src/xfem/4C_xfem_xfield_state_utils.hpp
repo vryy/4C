@@ -29,7 +29,7 @@ namespace XFEM
    *
    *  \author hiermeier
    *  \date 07/16 */
-  inline void DestroyMatrix(
+  inline void destroy_matrix(
       Teuchos::RCP<Core::LinAlg::SparseOperator>& mat, bool throw_exception = true)
   {
     // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
@@ -63,7 +63,7 @@ namespace XFEM
           {
             std::stringstream msg;
             msg << "The given Core::LinAlg::SparseOperator type is not supported! ( "
-                << NOX::Nln::LinSystem::OperatorType2String(optype) << " )";
+                << NOX::Nln::LinSystem::operator_type_to_string(optype) << " )";
             FOUR_C_THROW(msg.str());
             break;
           }
@@ -100,7 +100,7 @@ namespace XFEM
    *
    *  \author schott
    *  \date 01/15 */
-  inline void DestroyMatrix(
+  inline void destroy_matrix(
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat, bool throw_exception = true)
   {
     // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
@@ -141,7 +141,7 @@ namespace XFEM
    *  \author schott
    *  \date 01/15 */
   template <class OBJECT>
-  inline void DestroyRCPObject(Teuchos::RCP<OBJECT>& obj_rcp, bool throw_exception = true)
+  inline void destroy_rcp_object(Teuchos::RCP<OBJECT>& obj_rcp, bool throw_exception = true)
   {
     // reference-counted object can be deleted by setting RCP = Teuchos::null when strong_count() ==
     // 1 given a weak RCP we do not have the permission to delete the reference-counted object given
@@ -182,7 +182,7 @@ namespace XFEM
    *
    *  \author schott
    *  \date 01/15 */
-  inline void ZeroMatrix(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat)
+  inline void zero_matrix(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat)
   {
     if (mat->explicit_dirichlet())
     {

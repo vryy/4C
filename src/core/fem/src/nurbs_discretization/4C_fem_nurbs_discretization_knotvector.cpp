@@ -797,7 +797,7 @@ void Core::FE::Nurbs::Knotvector::unpack(const std::vector<char>& data)
 
   filled_ = false;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract number of patches
   extract_from_pack(position, data, npatches_);

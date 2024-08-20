@@ -84,7 +84,7 @@ namespace Core::Elements
     calc_struct_stiffscalar      //!< calculate coupling term k_dS for monolithic SSI
   };
 
-  static inline enum ActionType String2ActionType(const std::string& action)
+  static inline enum ActionType string_to_action_type(const std::string& action)
   {
     if (action == "none")
       return none;
@@ -149,7 +149,7 @@ namespace Core::Elements
   }
 
   //! Map action type enum to std::string
-  static inline std::string ActionType2String(const enum ActionType& type)
+  static inline std::string action_type_to_string(const enum ActionType& type)
   {
     switch (type)
     {
@@ -238,7 +238,7 @@ namespace Core::Elements
       default:
         return "unknown";
     }
-  };  // ActionType2String
+  };
 
 }  // namespace Core::Elements
 

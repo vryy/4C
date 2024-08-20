@@ -160,10 +160,10 @@ void Wear::Algorithm::create_material_interface()
 
   // get input par.
   Inpar::CONTACT::SolvingStrategy stype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
-  Inpar::Wear::WearLaw wlaw = Core::UTILS::IntegralValue<Inpar::Wear::WearLaw>(cparams, "WEARLAW");
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
+  Inpar::Wear::WearLaw wlaw = Core::UTILS::integral_value<Inpar::Wear::WearLaw>(cparams, "WEARLAW");
   Inpar::CONTACT::ConstraintDirection constr_direction =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::ConstraintDirection>(
+      Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
           cparams, "CONSTRAINT_DIRECTIONS");
 
   bool friplus = false;
@@ -219,7 +219,7 @@ void Wear::Algorithm::create_material_interface()
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
     std::vector<bool> isself(0);
-    CONTACT::UTILS::GetMasterSlaveSideInfo(isslave, isself, currentgroup);
+    CONTACT::UTILS::get_master_slave_side_info(isslave, isself, currentgroup);
     for (const bool is : isself)
       if (is)
       {
@@ -233,7 +233,7 @@ void Wear::Algorithm::create_material_interface()
     bool Check_nonsmooth_selfcontactsurface(false);
     bool Searchele_AllProc(false);
 
-    CONTACT::UTILS::GetInitializationInfo(Two_half_pass, Check_nonsmooth_selfcontactsurface,
+    CONTACT::UTILS::get_initialization_info(Two_half_pass, Check_nonsmooth_selfcontactsurface,
         Searchele_AllProc, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
@@ -241,7 +241,7 @@ void Wear::Algorithm::create_material_interface()
 
     // find out if interface-specific coefficients of friction are given
     Inpar::CONTACT::FrictionType fric =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(cparams, "FRICTION");
+        Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(cparams, "FRICTION");
     if (fric == Inpar::CONTACT::friction_tresca || fric == Inpar::CONTACT::friction_coulomb)
     {
       // read interface COFs
@@ -272,7 +272,7 @@ void Wear::Algorithm::create_material_interface()
 
     // find out if interface-specific coefficients of friction are given
     Inpar::CONTACT::AdhesionType ad =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::AdhesionType>(cparams, "ADHESION");
+        Core::UTILS::integral_value<Inpar::CONTACT::AdhesionType>(cparams, "ADHESION");
     if (ad == Inpar::CONTACT::adhesion_bound)
     {
       // read interface COFs
@@ -354,7 +354,7 @@ void Wear::Algorithm::create_material_interface()
 
         // create Node object or FriNode object in the frictional case
         Inpar::CONTACT::FrictionType ftype =
-            Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(cparams, "FRICTION");
+            Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(cparams, "FRICTION");
 
         // for the boolean variable initactive we use isactive[j]+foundinitialactive,
         // as this is true for BOTH initial active nodes found for the first time

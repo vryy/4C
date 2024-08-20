@@ -35,17 +35,17 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
       cardiovascular0dcond_(0),
       cardiovascular0dstructcoupcond_(0),
       cardiovascular0dtype_(none),
-      atrium_model_(Core::UTILS::IntegralValue<Inpar::Cardiovascular0D::Cardvasc0DAtriumModel>(
+      atrium_model_(Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DAtriumModel>(
           Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
               "SYS-PUL CIRCULATION PARAMETERS"),
           "ATRIUM_MODEL")),
       ventricle_model_(
-          Core::UTILS::IntegralValue<Inpar::Cardiovascular0D::Cardvasc0DVentricleModel>(
+          Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DVentricleModel>(
               Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
                   "SYS-PUL CIRCULATION PARAMETERS"),
               "VENTRICLE_MODEL")),
       respiratory_model_(
-          Core::UTILS::IntegralValue<Inpar::Cardiovascular0D::Cardvasc0DRespiratoryModel>(
+          Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DRespiratoryModel>(
               Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
                   "RESPIRATORY PARAMETERS"),
               "RESPIRATORY_MODEL")),
@@ -344,7 +344,7 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
       Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->get_state("displacement");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*curdispl, mydisp, lm);
+      Core::FE::extract_my_values(*curdispl, mydisp, lm);
 
       for (int j = 0; j < numnode; ++j)
       {
@@ -393,8 +393,8 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
 
         // get shape functions and derivatives in the plane of the element
 
-        Core::FE::shape_function_2D(funct, e(0), e(1), shape);
-        Core::FE::shape_function_2D_deriv1(deriv, e(0), e(1), shape);
+        Core::FE::shape_function_2d(funct, e(0), e(1), shape);
+        Core::FE::shape_function_2d_deriv1(deriv, e(0), e(1), shape);
 
         // stuff to get spatial Neumann
         const int numdim = 3;

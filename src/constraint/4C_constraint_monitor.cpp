@@ -146,7 +146,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
       std::vector<int> constrowner;
       constrlm.push_back(condID - offsetID);
       constrowner.push_back(curr->second->owner());
-      Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
+      Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
     }
   }
 }

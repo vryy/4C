@@ -82,7 +82,7 @@ namespace
     // called in the constructor and thus implicitly tested by all following unittests
   };
 
-  void compareParticleStates(
+  void compare_particle_states(
       PARTICLEENGINE::ParticleStates& particle_reference, PARTICLEENGINE::ParticleStates& particle)
   {
     ASSERT_EQ(particle_reference.size(), particle.size());
@@ -97,7 +97,7 @@ namespace
       for (std::size_t j = 0; j < state_reference.size(); ++j)
         EXPECT_NEAR(state_reference[j], state[j], 1e-14)
             << "state '"
-            << PARTICLEENGINE::EnumToStateName(static_cast<PARTICLEENGINE::ParticleState>(i))
+            << PARTICLEENGINE::enum_to_state_name(static_cast<PARTICLEENGINE::ParticleState>(i))
             << "' j = " << j;
     }
   }
@@ -165,14 +165,14 @@ namespace
     EXPECT_EQ(container_->particles_stored(), 3);
     container_->get_particle(index, globalid, particle);
     EXPECT_EQ(globalid, 1);
-    compareParticleStates(particle_reference, particle);
+    compare_particle_states(particle_reference, particle);
 
     // also replace global id
     container_->replace_particle(index, 4, particle_reference);
     EXPECT_EQ(container_->particles_stored(), 3);
     container_->get_particle(index, globalid, particle);
     EXPECT_EQ(globalid, 4);
-    compareParticleStates(particle_reference, particle);
+    compare_particle_states(particle_reference, particle);
   }
 
   TEST_F(ParticleContainerTest, GetParticle)
@@ -207,7 +207,7 @@ namespace
 
       container_->get_particle(index, globalid, particle);
       EXPECT_EQ(globalid_reference, globalid);
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -241,7 +241,7 @@ namespace
 
       container_->get_particle(index, globalid, particle);
       EXPECT_EQ(globalid_reference, globalid);
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -410,7 +410,7 @@ namespace
 
       container_->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -445,7 +445,7 @@ namespace
 
       container_->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -479,7 +479,7 @@ namespace
     for (int index = 0; index < 3; ++index)
     {
       container_->get_particle(index, globalid, particle);
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -501,7 +501,7 @@ namespace
     for (int index = 0; index < 3; ++index)
     {
       container_->get_particle(index, globalid, particle);
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 

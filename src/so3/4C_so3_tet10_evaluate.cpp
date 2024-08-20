@@ -127,9 +127,9 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -150,9 +150,9 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> myemat(true);
@@ -183,13 +183,13 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      Core::FE::ExtractMyValues(*acc, myacc, lm);
+      Core::FE::extract_my_values(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -214,14 +214,14 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "iostrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -242,11 +242,11 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       }
 
       // output of rotation matrix R with F = U*R
-      if (Core::UTILS::IntegralValue<bool>(
+      if (Core::UTILS::integral_value<bool>(
               Global::Problem::instance()->io_params(), "OUTPUT_ROT") == true)
       {
         Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
-        Discret::ELEMENTS::UTILS::CalcR<Core::FE::CellType::tet10>(this, mydisp, R);
+        Discret::ELEMENTS::UTILS::calc_r<Core::FE::CellType::tet10>(this, mydisp, R);
 
         Teuchos::RCP<std::vector<char>> rotdata =
             params.get<Teuchos::RCP<std::vector<char>>>("rotation", Teuchos::null);
@@ -270,7 +270,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       update_element(mydisp, params, material());
     }
     break;
@@ -281,7 +281,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       switch (pstype_)
       {
@@ -345,15 +345,15 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // update element geometry
       Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-      UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
-      UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(mydisp, xdisp);
-      UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
+      UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
+      UTILS::evaluate_nodal_displacements<Core::FE::CellType::tet10, 3>(mydisp, xdisp);
+      UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
       /* =========================================================================*/
       /* ================================================= Loop over Gauss Points */
@@ -376,7 +376,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * gpweights_4gp[gp];
 
-        if (Prestress::IsMulf(pstype_))
+        if (Prestress::is_mulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
           Core::LinAlg::Matrix<3, 3> invJdef;
@@ -471,14 +471,14 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
         if (gpstrainmap == Teuchos::null)
           FOUR_C_THROW("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::extract_my_values(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        Core::FE::ExtractMyValues(*res, myres, lm);
+        Core::FE::extract_my_values(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
@@ -596,7 +596,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
                       .at(quantity_name);
-              Core::FE::AssembleAveragedElementValues(*global_data, gp_data, *this);
+              Core::FE::assemble_averaged_element_values(*global_data, gp_data, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::nodes:
@@ -612,10 +612,11 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
                        .at(quantity_name);
 
               static auto gauss_integration = Core::FE::IntegrationPoints3D(
-                  Core::FE::NumGaussPointsToGaussRule<Core::FE::CellType::tet10>(NUMGPT_SOTET10));
-              Core::FE::ExtrapolateGPQuantityToNodesAndAssemble<Core::FE::CellType::tet10>(
+                  Core::FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::tet10>(
+                      NUMGPT_SOTET10));
+              Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::tet10>(
                   *this, gp_data, *global_data, false, gauss_integration);
-              Discret::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
+              Discret::ELEMENTS::assemble_nodal_element_count(global_nodal_element_count, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::gauss_points:
@@ -625,7 +626,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
                       .gauss_point_data_output_manager_ptr()
                       ->get_gauss_point_data()
                       .at(quantity_name);
-              Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
+              Discret::ELEMENTS::assemble_gauss_point_values(global_data, gp_data, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::none:
@@ -704,7 +705,7 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
+  UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
 
   /* ================================================= Loop over Gauss Points */
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
@@ -770,7 +771,7 @@ void Discret::ELEMENTS::SoTet10::init_jacobian_mapping()
       so_tet10_11gp_derivs();
 
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
+  UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
 
   // Initialize for stiffness integration with 4 GPs
   invJ_.resize(NUMGPT_SOTET10);
@@ -784,12 +785,12 @@ void Discret::ELEMENTS::SoTet10::init_jacobian_mapping()
     else if (detJ_[gp] < 0.0)
       FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (Prestress::IsMulfActive(time_, pstype_, pstime_))
+    if (Prestress::is_mulf_active(time_, pstype_, pstime_))
       if (!(prestress_->is_init()))
         prestress_->matrixto_storage(gp, invJ_[gp], prestress_->j_history());
   }
 
-  if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
+  if (Prestress::is_mulf_active(time_, pstype_, pstime_)) prestress_->is_init() = true;
 
   // Initialize for mass integration with 10 GPs
 
@@ -841,9 +842,9 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
-  UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
-  UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
+  UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
+  UTILS::evaluate_nodal_displacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
+  UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -864,7 +865,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
     N_XYZ.multiply(invJ_[gp], derivs_4gp[gp]);
     double detJ = detJ_[gp];
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       Core::LinAlg::Matrix<3, 3> invJdef;
@@ -1335,7 +1336,7 @@ Discret::ELEMENTS::SoTet10::so_tet10_4gp_shapefcts()
     const double s = intpoints.qxg[gp][1];
     const double t = intpoints.qxg[gp][2];
 
-    Core::FE::shape_function_3D(shapefcts[gp], r, s, t, Core::FE::CellType::tet10);
+    Core::FE::shape_function_3d(shapefcts[gp], r, s, t, Core::FE::CellType::tet10);
   }
   shapefcts_done = true;
 
@@ -1371,7 +1372,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_derivs(
   const double s = intpoints.qxg[gp][1];
   const double t = intpoints.qxg[gp][2];
 
-  Core::FE::shape_function_3D_deriv1(derivs, r, s, t, Core::FE::CellType::tet10);
+  Core::FE::shape_function_3d_deriv1(derivs, r, s, t, Core::FE::CellType::tet10);
 }
 
 /*----------------------------------------------------------------------*
@@ -1410,7 +1411,7 @@ Discret::ELEMENTS::SoTet10::so_tet10_11gp_shapefcts()
     const double s = intpoints.qxg[gp][1];
     const double t = intpoints.qxg[gp][2];
 
-    Core::FE::shape_function_3D(shapefcts[gp], r, s, t, Core::FE::CellType::tet10);
+    Core::FE::shape_function_3d(shapefcts[gp], r, s, t, Core::FE::CellType::tet10);
   }
   shapefcts_done = true;
 
@@ -1480,7 +1481,7 @@ void Discret::ELEMENTS::SoTet10::def_gradient(const std::vector<double>& disp,
       so_tet10_4gp_derivs();
 
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
+  UTILS::evaluate_nodal_displacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
   // update element geometry
 
   for (int gp = 0; gp < NUMGPT_SOTET10; ++gp)
@@ -1517,7 +1518,7 @@ void Discret::ELEMENTS::SoTet10::update_jacobian_mapping(
 
   // get incremental disp
   Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-  UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
+  UTILS::evaluate_nodal_displacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
 
   Core::LinAlg::Matrix<3, 3> invJhist;
   Core::LinAlg::Matrix<3, 3> invJ;
@@ -1566,9 +1567,9 @@ void Discret::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
     Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
     Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
     Core::LinAlg::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-    UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
-    UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
-    UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
+    UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tet10, 3>(nodes(), xrefe);
+    UTILS::evaluate_nodal_displacements<Core::FE::CellType::tet10, 3>(disp, xdisp);
+    UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::tet10, 3>(xrefe, xdisp, xcurr);
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */

@@ -167,7 +167,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  void RegisterParObjectTypes()
+  void register_par_object_types()
   {
     // Perform a dummy operation for the side-effect of forcing registration.
     std::stringstream s;
@@ -349,18 +349,18 @@ namespace
       << MultiScale::MicroStaticParObjectType::instance().name() << " ";
   }
 
-  void AttachFunctionDefinitions(Core::UTILS::FunctionManager& function_manager)
+  void attach_function_definitions(Core::UTILS::FunctionManager& function_manager)
   {
-    AddValidBuiltinFunctions(function_manager);
-    Solid::AddValidStructureFunctions(function_manager);
-    FLD::AddValidFluidFunctions(function_manager);
-    Discret::UTILS::AddValidCombustFunctions(function_manager);
-    Discret::UTILS::AddValidXfluidFunctions(function_manager);
-    AddValidLibraryFunctions(function_manager);
-    PoroMultiPhaseScaTra::AddValidPoroFunctions(function_manager);
+    add_valid_builtin_functions(function_manager);
+    Solid::add_valid_structure_functions(function_manager);
+    FLD::add_valid_fluid_functions(function_manager);
+    Discret::UTILS::add_valid_combust_functions(function_manager);
+    Discret::UTILS::add_valid_xfluid_functions(function_manager);
+    add_valid_library_functions(function_manager);
+    PoroMultiPhaseScaTra::add_valid_poro_functions(function_manager);
   }
 
-  std::vector<Input::LineDefinition> ValidResultLines()
+  std::vector<Input::LineDefinition> valid_result_lines()
   {
     return {//
         Input::LineDefinition::Builder()
@@ -715,12 +715,12 @@ namespace
 
 }  // namespace
 
-ModuleCallbacks GlobalLegacyModuleCallbacks()
+ModuleCallbacks global_legacy_module_callbacks()
 {
   ModuleCallbacks callbacks;
-  callbacks.RegisterParObjectTypes = RegisterParObjectTypes;
-  callbacks.AttachFunctionDefinitions = AttachFunctionDefinitions;
-  callbacks.valid_result_description_lines = ValidResultLines;
+  callbacks.RegisterParObjectTypes = register_par_object_types;
+  callbacks.AttachFunctionDefinitions = attach_function_definitions;
+  callbacks.valid_result_description_lines = valid_result_lines;
   return callbacks;
 }
 

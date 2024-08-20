@@ -585,7 +585,7 @@ void CONTACT::SelfBinaryTree::init_leaf_nodes_and_map(std::vector<int>& elelist)
 
   // check for non-smooth contact surface
   bool nonsmoothsurface(false);
-  if (Core::UTILS::IntegralValue<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE"))
+  if (Core::UTILS::integral_value<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE"))
     nonsmoothsurface = true;
 
   // build local element list and create leaf nodes
@@ -1616,7 +1616,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   }
   Teuchos::RCP<Epetra_Map> mymap =
       Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, get_comm()));
-  Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::AllreduceEMap(*mymap);
+  Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::allreduce_e_map(*mymap);
   Core::Communication::Exporter ex(*mymap, *redmap, get_comm());
   ex.do_export(contactpairs_);
 

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
-void Inpar::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::STI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -58,16 +58,16 @@ void Inpar::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &stidyn);
 
   // function number for initial temperature field
-  Core::UTILS::IntParameter("THERMO_INITFUNCNO", -1,
+  Core::UTILS::int_parameter("THERMO_INITFUNCNO", -1,
       "function number for initial temperature field for scatra-thermo interaction problems",
       &stidyn);
 
   // ID of linear solver for temperature field
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "THERMO_LINEAR_SOLVER", -1, "ID of linear solver for temperature field", &stidyn);
 
   // flag for double condensation of linear equations associated with temperature field
-  Core::UTILS::BoolParameter("THERMO_CONDENSATION", "No",
+  Core::UTILS::bool_parameter("THERMO_CONDENSATION", "No",
       "flag for double condensation of linear equations associated with temperature field",
       &stidyn);
 
@@ -77,7 +77,7 @@ void Inpar::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "MONOLITHIC", false, "control parameters for monolithic scatra-thermo interaction problems");
 
   // ID of linear solver for global system of equations
-  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::int_parameter("LINEAR_SOLVER", -1,
       "ID of linear solver for global system of equations", &stidyn_monolithic);
 
   // type of global system matrix in global system of equations
@@ -94,10 +94,10 @@ void Inpar::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "control parameters for partitioned scatra-thermo interaction problems");
 
   // relaxation parameter
-  Core::UTILS::DoubleParameter("OMEGA", 1., "relaxation parameter", &stidyn_partitioned);
+  Core::UTILS::double_parameter("OMEGA", 1., "relaxation parameter", &stidyn_partitioned);
 
   // maximum value of Aitken relaxation parameter
-  Core::UTILS::DoubleParameter("OMEGAMAX", 0.,
+  Core::UTILS::double_parameter("OMEGAMAX", 0.,
       "maximum value of Aitken relaxation parameter (0.0 = no constraint)", &stidyn_partitioned);
 
   return;
@@ -107,7 +107,7 @@ void Inpar::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*------------------------------------------------------------------------*
  | set valid conditions for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
-void Inpar::STI::SetValidConditions(
+void Inpar::STI::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

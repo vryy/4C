@@ -55,7 +55,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
 
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   const auto& [n_lambda_node_pos, n_lambda_element_pos] =
-      MortarShapeFunctionsToNumberOfLagrangeValues(
+      mortar_shape_functions_to_number_of_lagrange_values(
           beam_to_solid_params_->get_mortar_shape_function_type(), n_dim);
   n_lambda_node_ = n_lambda_node_pos;
   n_lambda_node_translational_ = n_lambda_node_pos;
@@ -90,7 +90,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
     // beam element.
     const auto& [n_lambda_node_rot, n_lambda_element_rot] =
-        MortarShapeFunctionsToNumberOfLagrangeValues(mortar_shape_function_rotation, n_dim);
+        mortar_shape_functions_to_number_of_lagrange_values(mortar_shape_function_rotation, n_dim);
     n_lambda_node_ += n_lambda_node_rot;
     n_lambda_node_rotational_ = n_lambda_node_rot;
     n_lambda_element_ += n_lambda_element_rot;
@@ -108,7 +108,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
   for (int i_node = 0; i_node < discret_->node_row_map()->NumMyElements(); i_node++)
   {
     Core::Nodes::Node const& node = *(discret_->l_row_node(i_node));
-    if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node)) my_nodes_gid.push_back(node.id());
+    if (BEAMINTERACTION::UTILS::is_beam_centerline_node(node)) my_nodes_gid.push_back(node.id());
   }
 
   // Get the global ids of all beam elements on this rank.
@@ -116,7 +116,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
   for (int i_element = 0; i_element < discret_->element_row_map()->NumMyElements(); i_element++)
   {
     Core::Elements::Element const& element = *(discret_->l_row_element(i_element));
-    if (BEAMINTERACTION::UTILS::IsBeamElement(element)) my_elements_gid.push_back(element.id());
+    if (BEAMINTERACTION::UTILS::is_beam_element(element)) my_elements_gid.push_back(element.id());
   }
 
   // Calculate the local number of centerline nodes, beam elements and Lagrange multiplier DOF.
@@ -171,7 +171,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
   lambda_dof_rowmap_rotations_ = Teuchos::rcp(new Epetra_Map(-1, my_lambda_gid_rotational.size(),
       my_lambda_gid_rotational.data(), 0, discret_->get_comm()));
   lambda_dof_rowmap_ =
-      Core::LinAlg::MergeMap(lambda_dof_rowmap_translations_, lambda_dof_rowmap_rotations_, false);
+      Core::LinAlg::merge_map(lambda_dof_rowmap_translations_, lambda_dof_rowmap_rotations_, false);
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
   // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the
@@ -259,7 +259,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_global_maps()
   for (int i_node = 0; i_node < discret_->node_row_map()->NumMyElements(); i_node++)
   {
     const Core::Nodes::Node* node = discret_->l_row_node(i_node);
-    if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
+    if (BEAMINTERACTION::UTILS::is_beam_node(*node))
       discret_->dof(node, beam_dofs);
     else
       discret_->dof(node, solid_dofs);
@@ -410,7 +410,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::location_vector(
     for (int i_node = 0; i_node < contact_pair.element1()->num_node(); i_node++)
     {
       const Core::Nodes::Node& node = *(contact_pair.element1()->nodes()[i_node]);
-      if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(node))
+      if (BEAMINTERACTION::UTILS::is_beam_centerline_node(node))
       {
         // Get the global id of the node.
         int node_id = node.id();
@@ -435,7 +435,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::location_vector(
   // Get the global DOFs ids of the element Lagrange multipliers.
   if (n_lambda_element_ > 0)
   {
-    if (BEAMINTERACTION::UTILS::IsBeamElement(*contact_pair.element1()))
+    if (BEAMINTERACTION::UTILS::is_beam_element(*contact_pair.element1()))
     {
       // Get the global id of the element.
       int element_id = contact_pair.element1()->id();
@@ -580,10 +580,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<1>(penalty_regularization)));
     penalty_regularization_lin_constaint->complete();
     auto regularized_constraint_lin_beam =
-        Core::LinAlg::MLMultiply(*penalty_regularization_lin_constaint, false,
+        Core::LinAlg::ml_multiply(*penalty_regularization_lin_constaint, false,
             *constraint_lin_beam_, false, false, false, true);
     auto regularized_constraint_lin_solid =
-        Core::LinAlg::MLMultiply(*penalty_regularization_lin_constaint, false,
+        Core::LinAlg::ml_multiply(*penalty_regularization_lin_constaint, false,
             *constraint_lin_solid_, false, false, false, true);
 
     // Penalty regularization linearized w.r.t. the scaling vector
@@ -592,9 +592,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
       auto penalty_regularization_lin_kappa =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<2>(penalty_regularization)));
       penalty_regularization_lin_kappa->complete();
-      const auto kappa_lin_beam_scaled = Core::LinAlg::MLMultiply(
+      const auto kappa_lin_beam_scaled = Core::LinAlg::ml_multiply(
           *penalty_regularization_lin_kappa, false, *kappa_lin_beam_, false, false, false, true);
-      const auto kappa_lin_solid_scaled = Core::LinAlg::MLMultiply(
+      const auto kappa_lin_solid_scaled = Core::LinAlg::ml_multiply(
           *penalty_regularization_lin_kappa, false, *kappa_lin_solid_, false, false, false, true);
       regularized_constraint_lin_beam->add(*kappa_lin_beam_scaled, false, 1.0, 1.0);
       regularized_constraint_lin_solid->add(*kappa_lin_solid_scaled, false, 1.0, 1.0);
@@ -602,17 +602,17 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
 
     // Calculate the needed submatrices
     const auto force_beam_lin_lambda_times_constaint_lin_beam =
-        Core::LinAlg::MLMultiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_beam,
+        Core::LinAlg::ml_multiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_beam,
             false, false, false, true);
     const auto force_beam_lin_lambda_times_constaint_lin_solid =
-        Core::LinAlg::MLMultiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_solid,
+        Core::LinAlg::ml_multiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_solid,
             false, false, false, true);
     const auto force_solid_lin_lambda_times_constaint_lin_beam =
-        Core::LinAlg::MLMultiply(*force_solid_lin_lambda_, false, *regularized_constraint_lin_beam,
+        Core::LinAlg::ml_multiply(*force_solid_lin_lambda_, false, *regularized_constraint_lin_beam,
             false, false, false, true);
     const auto force_solid_lin_lambda_times_constaint_lin_solid =
-        Core::LinAlg::MLMultiply(*force_solid_lin_lambda_, false, *regularized_constraint_lin_solid,
-            false, false, false, true);
+        Core::LinAlg::ml_multiply(*force_solid_lin_lambda_, false,
+            *regularized_constraint_lin_solid, false, false, false, true);
 
     // Add contributions to the global stiffness matrix
     stiff->add(*force_beam_lin_lambda_times_constaint_lin_beam, false, 1.0, 1.0);

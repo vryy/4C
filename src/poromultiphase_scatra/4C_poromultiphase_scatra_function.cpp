@@ -25,7 +25,7 @@ namespace
 {
 
   template <int dim>
-  Teuchos::RCP<Core::UTILS::FunctionOfAnything> CreatePoroFunction(
+  Teuchos::RCP<Core::UTILS::FunctionOfAnything> create_poro_function(
       const std::string& type, const std::vector<std::pair<std::string, double>>& params)
   {
     if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
@@ -66,7 +66,7 @@ namespace
 
 
   template <int dim>
-  Teuchos::RCP<Core::UTILS::FunctionOfAnything> TryCreatePoroFunction(
+  Teuchos::RCP<Core::UTILS::FunctionOfAnything> try_create_poro_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -82,7 +82,7 @@ namespace
       auto params =
           function_lin_def.container().get<std::vector<std::pair<std::string, double>>>("PARAMS");
 
-      return CreatePoroFunction<dim>(type, params);
+      return create_poro_function<dim>(type, params);
     }
     else
     {
@@ -90,16 +90,17 @@ namespace
     }
   }
 
-  auto TryCreatePoroFunctionDispatch(const std::vector<Input::LineDefinition>& function_line_defs)
+  auto try_create_poro_function_dispatch(
+      const std::vector<Input::LineDefinition>& function_line_defs)
   {
     switch (Global::Problem::instance()->n_dim())
     {
       case 1:
-        return TryCreatePoroFunction<1>(function_line_defs);
+        return try_create_poro_function<1>(function_line_defs);
       case 2:
-        return TryCreatePoroFunction<2>(function_line_defs);
+        return try_create_poro_function<2>(function_line_defs);
       case 3:
-        return TryCreatePoroFunction<3>(function_line_defs);
+        return try_create_poro_function<3>(function_line_defs);
       default:
         FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
     }
@@ -116,7 +117,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraFunction<dim>::PoroMultiPhaseScaTraFun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PoroMultiPhaseScaTra::AddValidPoroFunctions(Core::UTILS::FunctionManager& function_manager)
+void PoroMultiPhaseScaTra::add_valid_poro_functions(Core::UTILS::FunctionManager& function_manager)
 {
   function_manager.add_function_definition(
       {Input::LineDefinition::Builder()
@@ -125,7 +126,7 @@ void PoroMultiPhaseScaTra::AddValidPoroFunctions(Core::UTILS::FunctionManager& f
               .add_optional_named_pair_of_string_and_double_vector(
                   "PARAMS", Input::LengthFromIntNamed("NUMPARAMS"))
               .build()},
-      TryCreatePoroFunctionDispatch);
+      try_create_poro_function_dispatch);
 }
 
 /*----------------------------------------------------------------------*/
@@ -852,7 +853,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate(
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<double>(
       Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
 
   // evaluate function
@@ -905,7 +906,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawCont<dim>::evaluate_derivati
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<FAD>(
       Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
   const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
 
@@ -994,7 +995,7 @@ double PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate(
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<double>(
       Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
 
   // evaluate function
@@ -1033,7 +1034,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDisc<dim>::evaluate_derivati
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
   CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter_.CaO2_max));
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<FAD>(
       Pb, CaO2, parameter_.CaO2_max, parameter_.Pb50, parameter_.n, parameter_.alpha_bl_eff);
 
   // evaluate function
@@ -1134,7 +1135,7 @@ double PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::evaluate(
   double P_oB = 0.0;
 
   // Calculate partial pressure of oxygen in blood
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<double>(
       P_oB, CoB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
   // evaluate function
@@ -1194,7 +1195,7 @@ std::vector<double> PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>::evaluate_d
   FAD P_oB = 0.0;
   FAD C_oB_total = oxy_mass_frac_bl * parameter_.rho_bl / parameter_.rho_oxy;
 
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<FAD>(
       P_oB, C_oB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
 
@@ -1316,7 +1317,7 @@ double PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::evaluate(
   double P_O2B = 0.0;
 
   // Calculate partial pressure of oxygen in blood
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<double>(
       P_O2B, CoB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
   // saturation of hemoglobin with oxygen from hill equation
@@ -1394,7 +1395,7 @@ std::vector<double> PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>::eva
   FAD P_O2B = 0.0;
   FAD C_oB_total = O2_mass_frac_bl * parameter_.rho_bl / parameter_.rho_oxy;
 
-  PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+  PoroMultiPhaseScaTra::UTILS::get_oxy_partial_pressure_from_concentration<FAD>(
       P_O2B, C_oB_total, parameter_.NC_Hb, parameter_.P_oB50, parameter_.n, parameter_.alpha_oxy);
 
   // saturation of hemoglobin with oxygen from hill equation

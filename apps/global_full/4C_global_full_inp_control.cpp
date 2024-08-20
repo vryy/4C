@@ -18,7 +18,7 @@
 
 #include <utility>
 
-void SetupParallelOutput(
+void setup_parallel_output(
     std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
 
 /*----------------------------------------------------------------------*
@@ -40,31 +40,31 @@ void ntainp_ccadiscret(
   // and now the actual reading
   Core::IO::DatFileReader reader(inputfile_name, lcomm);
 
-  Global::ReadParameter(*problem, reader);
+  Global::read_parameter(*problem, reader);
 
-  SetupParallelOutput(outputfile_kenner, lcomm, group);
+  setup_parallel_output(outputfile_kenner, lcomm, group);
 
   // create control file for output and read restart data if required
   problem->open_control_file(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
 
   // input of materials
-  Global::ReadMaterials(*problem, reader);
+  Global::read_materials(*problem, reader);
 
   // input of materials
-  Global::ReadContactConstitutiveLaws(*problem, reader);
+  Global::read_contact_constitutive_laws(*problem, reader);
 
   // input of materials of cloned fields (if needed)
-  Global::ReadCloningMaterialMap(*problem, reader);
+  Global::read_cloning_material_map(*problem, reader);
 
   {
     Core::UTILS::FunctionManager function_manager;
-    GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+    global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
     function_manager.read_input(reader);
     problem->set_function_manager(std::move(function_manager));
   }
 
   // input of particles
-  Global::ReadParticles(*problem, reader);
+  Global::read_particles(*problem, reader);
 
   switch (npType)
   {
@@ -72,18 +72,18 @@ void ntainp_ccadiscret(
     case Core::Communication::NestedParallelismType::every_group_read_dat_file:
     case Core::Communication::NestedParallelismType::separate_dat_files:
       // input of fields
-      Global::ReadFields(*problem, reader);
+      Global::read_fields(*problem, reader);
 
       // read result tests
-      Global::ReadResult(*problem, reader);
+      Global::read_result(*problem, reader);
 
       // read all types of geometry related conditions (e.g. boundary conditions)
       // Also read time and space functions and local coord systems
-      Global::ReadConditions(*problem, reader);
+      Global::read_conditions(*problem, reader);
 
       // read all knot information for isogeometric analysis
       // and add it to the (derived) nurbs discretization
-      Global::ReadKnots(*problem, reader);
+      Global::read_knots(*problem, reader);
       break;
     default:
       FOUR_C_THROW("nptype (nested parallelity type) not recognized");
@@ -101,17 +101,18 @@ void ntainp_ccadiscret(
 /*----------------------------------------------------------------------*
   | setup parallel output                                  ghamm 11/12  |
  *----------------------------------------------------------------------*/
-void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group)
+void setup_parallel_output(
+    std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group)
 {
   using namespace FourC;
 
   // configure the parallel output environment
   const Teuchos::ParameterList& io = Global::Problem::instance()->io_params();
-  bool screen = Core::UTILS::IntegralValue<int>(io, "WRITE_TO_SCREEN");
-  bool file = Core::UTILS::IntegralValue<int>(io, "WRITE_TO_FILE");
-  bool preGrpID = Core::UTILS::IntegralValue<int>(io, "PREFIX_GROUP_ID");
+  bool screen = Core::UTILS::integral_value<int>(io, "WRITE_TO_SCREEN");
+  bool file = Core::UTILS::integral_value<int>(io, "WRITE_TO_FILE");
+  bool preGrpID = Core::UTILS::integral_value<int>(io, "PREFIX_GROUP_ID");
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
-  auto level = Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(io, "VERBOSITY");
+  auto level = Core::UTILS::integral_value<Core::IO::Verbositylevel>(io, "VERBOSITY");
 
   Core::IO::cout.setup(
       screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);

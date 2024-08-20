@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::EleMag::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::EleMag::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -26,19 +26,20 @@ void Inpar::EleMag::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "ELECTROMAGNETIC DYNAMIC", false, "control parameters for electromagnetic problems\n");
 
   // general settings for time-integration scheme
-  Core::UTILS::DoubleParameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
-  Core::UTILS::DoubleParameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
-  Core::UTILS::IntParameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
-  Core::UTILS::DoubleParameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
+  Core::UTILS::double_parameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
+  Core::UTILS::double_parameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
+  Core::UTILS::int_parameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
+  Core::UTILS::double_parameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
 
   // additional parameters
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "RESULTSEVRY", 1, "Increment for writing solution", &electromagneticdyn);
-  Core::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
-  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::int_parameter(
+      "RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
+  Core::UTILS::int_parameter("LINEAR_SOLVER", -1,
       "Number of linear solver used for electromagnetic problem", &electromagneticdyn);
-  Core::UTILS::IntParameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
+  Core::UTILS::int_parameter(
       "SOURCEFUNCNO", -1, "Function for source term in volume", &electromagneticdyn);
   // Core::UTILS::BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with
   // float",&electromagneticdyn); Core::UTILS::BoolParameter("ALLELESEQUAL","No","Yes, if all
@@ -87,15 +88,15 @@ void Inpar::EleMag::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         name, label, &electromagneticdyn);
 
     // Error calculation
-    Core::UTILS::BoolParameter(
+    Core::UTILS::bool_parameter(
         "CALCERR", "No", "Calc the error wrt ERRORFUNCNO?", &electromagneticdyn);
 
     // Post process solution?
-    Core::UTILS::BoolParameter(
+    Core::UTILS::bool_parameter(
         "POSTPROCESS", "No", "Postprocess solution? (very slow)", &electromagneticdyn);
   }
 
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "ERRORFUNCNO", -1, "Function for error calculation", &electromagneticdyn);
 
   // flag for equilibration of global system of equations
@@ -118,7 +119,7 @@ void Inpar::EleMag::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 }
 
 /// set specific electromagnetic conditions
-void Inpar::EleMag::SetValidConditions(
+void Inpar::EleMag::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

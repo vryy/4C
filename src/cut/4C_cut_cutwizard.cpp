@@ -384,7 +384,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
   double normalfac = 1.0;
 
   // Get the knots and weights for this element.
-  const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(element,
+  const bool zero_size = Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(element,
       face_element->face_master_number(), face_element->parent_element_id(), *cutterdis.get(),
       mypknots, myknots, weights, normalfac);
   if (zero_size)
@@ -409,7 +409,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
     lm.clear();
     mydisp.clear();
     cutterdis->dof(controlpoint, lm);
-    Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+    Core::FE::extract_my_values(*cutter_disp_col, mydisp, lm);
 
     // Obtain the displacements on control points
     for (int i_dim = 0; i_dim < prob_dim; ++i_dim)
@@ -426,10 +426,10 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
     for (unsigned int i = 0; i < nurbs_dim; i++)
       xi(i) = Core::FE::eleNodeNumbering_quad9_nodes_reference[i_node][i];
 
-    nodal_position = Core::FE::Nurbs::EvalNurbsInterpolation<num_nodes, nurbs_dim, prob_dim>(
+    nodal_position = Core::FE::Nurbs::eval_nurbs_interpolation<num_nodes, nurbs_dim, prob_dim>(
         ref_pos_controlpoints, xi, weights, myknots, element->shape());
 
-    nodal_displacement = Core::FE::Nurbs::EvalNurbsInterpolation<num_nodes, nurbs_dim, prob_dim>(
+    nodal_displacement = Core::FE::Nurbs::eval_nurbs_interpolation<num_nodes, nurbs_dim, prob_dim>(
         displacement_controlpoints, xi, weights, myknots, element->shape());
 
     for (unsigned int i_dim = 0; i_dim < prob_dim; i_dim++)
@@ -469,7 +469,7 @@ void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
     {
       if (lm.size() == 3)  // case for BELE3 boundary elements
       {
-        Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+        Core::FE::extract_my_values(*cutter_disp_col, mydisp, lm);
       }
       else if (lm.size() == 4)  // case for BELE3_4 boundary elements
       {
@@ -479,7 +479,7 @@ void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
         lm_red.clear();
         for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-        Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+        Core::FE::extract_my_values(*cutter_disp_col, mydisp, lm_red);
       }
       else
         FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
@@ -622,7 +622,7 @@ void Cut::CutWizard::add_background_elements_general()
     {
       myphinp.clear();
 
-      Core::FE::ExtractMyNodeBasedValues(element, myphinp, back_mesh_->back_level_set_col());
+      Core::FE::extract_my_node_based_values(element, myphinp, back_mesh_->back_level_set_col());
       add_element(element, current_element_position, myphinp.data(), lsv_only_plus_domain_);
     }
     else
@@ -696,7 +696,7 @@ Core::LinAlg::SerialDenseMatrix Cut::CutWizard::get_current_element_position(
       lm_red.clear();
       for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-      Core::FE::ExtractMyValues(back_mesh_->back_disp_col(), mydisp, lm_red);
+      Core::FE::extract_my_values(back_mesh_->back_disp_col(), mydisp, lm_red);
 
       if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
 
@@ -1050,7 +1050,7 @@ void Cut::CutWizard::update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discreti
       {
         if (lm.size() == 3)  // case for BELE3 boundary elements
         {
-          Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm);
+          Core::FE::extract_my_values(*cutter_disp_col, mydisp, lm);
         }
         else if (lm.size() == 4)  // case for BELE3_4 boundary elements
         {
@@ -1060,7 +1060,7 @@ void Cut::CutWizard::update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discreti
           lm_red.clear();
           for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
 
-          Core::FE::ExtractMyValues(*cutter_disp_col, mydisp, lm_red);
+          Core::FE::extract_my_values(*cutter_disp_col, mydisp, lm_red);
         }
         else
           FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
@@ -1103,7 +1103,7 @@ void Cut::CutWizard::update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discreti
 
             // eval shape function
             Core::LinAlg::Matrix<4, 1> funct;
-            Core::FE::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->shape());
+            Core::FE::shape_function_2d(funct, xsi(0, 0), xsi(1, 0), sh->shape());
 
             Core::LinAlg::Matrix<3, 1> newpos(true);
             newpos.multiply(XYZE, funct);

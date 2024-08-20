@@ -133,7 +133,7 @@ void Mat::ElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
@@ -259,7 +259,7 @@ void Mat::ElastHyper::setup(int numgp, const Core::IO::InputParameterContainer& 
     p->setup(numgp, container);
   }
   summandProperties_.clear();
-  ElastHyperProperties(potsum_, summandProperties_);
+  elast_hyper_properties(potsum_, summandProperties_);
 
   if (summandProperties_.viscoGeneral)
   {
@@ -330,7 +330,7 @@ void Mat::ElastHyper::strain_energy(
   static Core::LinAlg::Matrix<3, 1> modinv(true);
   modinv.clear();
 
-  EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
+  evaluate_right_cauchy_green_strain_like_voigt(glstrain, C_strain);
   Core::LinAlg::Voigt::Strains::invariants_principal(prinv, C_strain);
   invariants_modified(modinv, prinv);
 
@@ -352,7 +352,7 @@ void Mat::ElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 {
   bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_ != 0);
 
-  ElastHyperEvaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID, potsum_,
+  elast_hyper_evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID, potsum_,
       summandProperties_, checkpolyconvexity);
 }
 

@@ -457,7 +457,7 @@ int Arteries::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
   int *pivot;
   pivot = new int[2 * nodes_.size()];
 
-  while (Core::LinAlg::Norm2(f) > 0.000001)
+  while (Core::LinAlg::norm2(f) > 0.000001)
   {
     //--------------------------------------------------------------------
     // Fill the Jacobian matrix

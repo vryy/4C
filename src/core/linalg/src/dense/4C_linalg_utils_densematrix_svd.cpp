@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Core::LinAlg::SVD(const Core::LinAlg::SerialDenseMatrix::Base& A,
+void Core::LinAlg::svd(const Core::LinAlg::SerialDenseMatrix::Base& A,
     Core::LinAlg::SerialDenseMatrix& Q, Core::LinAlg::SerialDenseMatrix& S,
     Core::LinAlg::SerialDenseMatrix& VT)
 {

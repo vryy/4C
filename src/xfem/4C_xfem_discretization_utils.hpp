@@ -48,7 +48,7 @@ namespace XFEM
 {
   namespace UTILS
   {
-    void PrintDiscretizationToStream(Teuchos::RCP<Core::FE::Discretization> dis,
+    void print_discretization_to_stream(Teuchos::RCP<Core::FE::Discretization> dis,
         const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol,
         bool faces, bool facecol, std::ostream& s,
         std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr);

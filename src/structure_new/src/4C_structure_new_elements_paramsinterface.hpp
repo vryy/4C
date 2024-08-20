@@ -62,7 +62,7 @@ namespace Solid
     };
 
     //! Map evaluation error flag to a std::string
-    static inline std::string EvalErrorFlag2String(const enum EvalErrorFlag& errorflag)
+    static inline std::string eval_error_flag_to_string(const enum EvalErrorFlag& errorflag)
     {
       switch (errorflag)
       {

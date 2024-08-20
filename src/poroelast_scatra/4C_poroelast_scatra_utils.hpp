@@ -56,21 +56,21 @@ namespace PoroElastScaTra
   //! poroelasticity-scatra problems
   namespace UTILS
   {
-    Teuchos::RCP<Core::LinAlg::MapExtractor> BuildPoroScatraSplitter(
+    Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_scatra_splitter(
         Teuchos::RCP<Core::FE::Discretization> dis);
 
     //! check if element is a poro-scatra-element
-    bool IsPoroScatraElement(const Core::Elements::Element* actele);
+    bool is_poro_scatra_element(const Core::Elements::Element* actele);
 
     //! check if element is a poro-scatra-p1-element
-    bool IsPoroP1ScatraElement(const Core::Elements::Element* actele);
+    bool is_poro_p1_scatra_element(const Core::Elements::Element* actele);
 
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> BuildPoroSplitter(
+    Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_splitter(
         Teuchos::RCP<Core::FE::Discretization> dis);
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<PoroElast::PoroBase> CreatePoroAlgorithm(
+    Teuchos::RCP<PoroElast::PoroBase> create_poro_algorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm,                   //!< communicator(i)
         bool setup_solve = true  //!< setup linear solver for Poroelastic problem (only required if
@@ -78,13 +78,13 @@ namespace PoroElastScaTra
     );
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<PoroElastScaTra::PoroScatraBase> CreatePoroScatraAlgorithm(
+    Teuchos::RCP<PoroElastScaTra::PoroScatraBase> create_poro_scatra_algorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm                    //!< communicator(i)
     );
 
     //! reset Material pointers after redistribution
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
+    void set_material_pointers_matching_grid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
         Teuchos::RCP<const Core::FE::Discretization> targetdis);
 
     /*!
@@ -116,7 +116,7 @@ namespace PoroElastScaTra
     );
 
     //! Set the slave and master elements of the face element
-    void SetSlaveAndMaster(const Core::FE::Discretization& voldiscret,
+    void set_slave_and_master(const Core::FE::Discretization& voldiscret,
         const Core::FE::Discretization* voldiscret2, const Epetra_Map* elecolmap,
         Core::Elements::FaceElement* faceele);
 
@@ -158,7 +158,7 @@ namespace PoroElastScaTra
     };
   }  // namespace UTILS
 
-  void PrintLogo();
+  void print_logo();
 
 }  // namespace PoroElastScaTra
 

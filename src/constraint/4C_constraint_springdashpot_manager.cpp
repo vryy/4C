@@ -113,8 +113,8 @@ void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::Discretiza
   }
 
   // write spring stress if defined in io-flag
-  if (Core::UTILS::IntegralValue<bool>(Global::Problem::instance()->io_params(), "OUTPUT_SPRING") ==
-      true)
+  if (Core::UTILS::integral_value<bool>(
+          Global::Problem::instance()->io_params(), "OUTPUT_SPRING") == true)
     output->write_vector("springstress", springstress);
 
   return;

@@ -75,7 +75,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unpack(const std::vector
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract scalar transport impltype_
   impltype_ = static_cast<Inpar::ScaTra::ImplType>(So3Ele::extract_int(position, data));
@@ -98,7 +98,7 @@ template <class So3Ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::print(std::ostream& os) const
 {
   os << "So3_Poro_Scatra ";
-  os << Core::FE::CellTypeToString(distype).c_str() << " ";
+  os << Core::FE::cell_type_to_string(distype).c_str() << " ";
   Core::Elements::Element::print(os);
   return;
 }

@@ -107,7 +107,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::unpack(const std::vector<char>& data
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // detJ_
   extract_from_pack(position, data, detJ_);
@@ -156,7 +156,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::unpack(const std::vector<char>& data
 template <Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1Poro>(
+  return Core::Communication::element_boundary_factory<Wall1Line, Wall1Poro>(
       Core::Communication::buildLines, *this);
 }
 

@@ -61,8 +61,8 @@ void BEAMINTERACTION::BeamToSolidParamsBase::set_base_params(
       FOUR_C_THROW("beam-to-volume-meshtying penalty parameter must not be negative!");
 
     // Gauss rule for integration along the beam (segments).
-    gauss_rule_ =
-        Inpar::GEOMETRYPAIR::IntToGaussRule1D(beam_to_solid_params_list.get<int>("GAUSS_POINTS"));
+    gauss_rule_ = Inpar::GEOMETRYPAIR::int_to_gauss_rule1_d(
+        beam_to_solid_params_list.get<int>("GAUSS_POINTS"));
   }
 
   isinit_ = true;

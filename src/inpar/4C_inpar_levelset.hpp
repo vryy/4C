@@ -109,10 +109,10 @@ namespace Inpar
   namespace LevelSet
   {
     /// set the levelset parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific level set conditions
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
   }  // namespace LevelSet
 }  // namespace Inpar

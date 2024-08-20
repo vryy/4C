@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  | delivers a axis-aligned bounding box for a given          peder 07/08|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretization& dis,
+Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_dis(const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   Core::LinAlg::Matrix<3, 2> XAABB(true);
@@ -46,13 +46,13 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretizati
   {
     const Core::Elements::Element* element = dis.l_col_element(j);
     const Core::LinAlg::SerialDenseMatrix xyze_element(
-        Core::Geo::getCurrentNodalPositions(element, currentpositions));
+        Core::Geo::get_current_nodal_positions(element, currentpositions));
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-    Core::Geo::checkRoughGeoType(element, xyze_element, eleGeoType);
+    Core::Geo::check_rough_geo_type(element, xyze_element, eleGeoType);
 
     const Core::LinAlg::Matrix<3, 2> xaabbEle =
-        Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType);
-    XAABB = mergeAABB(XAABB, xaabbEle);
+        Core::Geo::compute_fast_xaabb(element->shape(), xyze_element, eleGeoType);
+    XAABB = merge_aabb(XAABB, xaabbEle);
   }
   return XAABB;
 }
@@ -61,7 +61,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretizati
  | delivers a slightly enlarged axis-aligned bounding box for u.may09/09|
  | given elements with their current postions for sliding ALE           |
  *----------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofEles(
+Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_eles(
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
@@ -82,12 +82,12 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofEles(
   {
     Teuchos::RCP<Core::Elements::Element> currelement = elemiter->second;
     const Core::LinAlg::SerialDenseMatrix xyze_element(
-        Core::Geo::getCurrentNodalPositions(currelement, currentpositions));
+        Core::Geo::get_current_nodal_positions(currelement, currentpositions));
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-    Core::Geo::checkRoughGeoType(currelement, xyze_element, eleGeoType);
+    Core::Geo::check_rough_geo_type(currelement, xyze_element, eleGeoType);
     const Core::LinAlg::Matrix<3, 2> xaabbEle =
-        Core::Geo::computeFastXAABB(currelement->shape(), xyze_element, eleGeoType);
-    XAABB = mergeAABB(XAABB, xaabbEle);
+        Core::Geo::compute_fast_xaabb(currelement->shape(), xyze_element, eleGeoType);
+    XAABB = merge_aabb(XAABB, xaabbEle);
   }
 
   return XAABB;
@@ -97,7 +97,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofEles(
  | delivers a axis-aligned bounding box for a given          peder 07/08|
  | discretization in reference configuration                            |
  *----------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretization& dis)
+Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_dis(const Core::FE::Discretization& dis)
 {
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
 
@@ -111,14 +111,14 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofDis(const Core::FE::Discretizati
     currentpositions[node->id()] = currpos;
   }
 
-  return getXAABBofDis(dis, currentpositions);
+  return get_xaab_bof_dis(dis, currentpositions);
 }
 
 
 /*----------------------------------------------------------------------*
  | delivers an axis-aligned bounding box for coords          ghamm 11/12|
  *----------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofPositions(
+Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_positions(
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   Core::LinAlg::Matrix<3, 2> XAABB(true);
@@ -151,7 +151,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::getXAABBofPositions(
  | compute AABB s for all labeled strutcures in the          u.may 08/08|
  | element list                                                         |
  *----------------------------------------------------------------------*/
-std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::computeXAABBForLabeledStructures(
+std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::compute_xaabb_for_labeled_structures(
     const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList)
@@ -177,12 +177,12 @@ std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::computeXAABBForLabeledStructu
     {
       const Core::Elements::Element* element = dis.g_element(*eleIter);
       const Core::LinAlg::SerialDenseMatrix xyze_element(
-          Core::Geo::getCurrentNodalPositions(element, currentpositions));
+          Core::Geo::get_current_nodal_positions(element, currentpositions));
       Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-      Core::Geo::checkRoughGeoType(element, xyze_element, eleGeoType);
+      Core::Geo::check_rough_geo_type(element, xyze_element, eleGeoType);
       Core::LinAlg::Matrix<3, 2> xaabbEle =
-          Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType);
-      xaabb_label = mergeAABB(xaabb_label, xaabbEle);
+          Core::Geo::compute_fast_xaabb(element->shape(), xyze_element, eleGeoType);
+      xaabb_label = merge_aabb(xaabb_label, xaabbEle);
     }
     XAABBs.push_back(xaabb_label);
   }
@@ -193,7 +193,7 @@ std::vector<Core::LinAlg::Matrix<3, 2>> Core::Geo::computeXAABBForLabeledStructu
  | a set of nodes in a given radius                          u.may 07/08|
  | from a query point                                                   |
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> Core::Geo::getElementsInRadius(const Core::FE::Discretization& dis,
+std::map<int, std::set<int>> Core::Geo::get_elements_in_radius(const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& querypoint, const double radius, const int label,
     std::map<int, std::set<int>>& elementList)
@@ -211,7 +211,7 @@ std::map<int, std::set<int>> Core::Geo::getElementsInRadius(const Core::FE::Disc
            eleIter != (labelIter->second).end(); eleIter++)
       {
         Core::Elements::Element* element = dis.g_element(*eleIter);
-        for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->shape()); i++)
+        for (int i = 0; i < Core::FE::get_number_of_element_corner_nodes(element->shape()); i++)
           nodeList[labelIter->first].insert(element->node_ids()[i]);
       }
     }
@@ -224,7 +224,7 @@ std::map<int, std::set<int>> Core::Geo::getElementsInRadius(const Core::FE::Disc
     {
       double distance = std::numeric_limits<double>::max();
       const Core::Nodes::Node* node = dis.g_node(*nodeIter);
-      Core::Geo::getDistanceToPoint(node, currentpositions, querypoint, distance);
+      Core::Geo::get_distance_to_point(node, currentpositions, querypoint, distance);
 
       if (distance < (radius + Core::Geo::TOL7))
       {
@@ -240,7 +240,7 @@ std::map<int, std::set<int>> Core::Geo::getElementsInRadius(const Core::FE::Disc
  | a vector of intersection elements                         u.may 02/09|
  | for a given query element (CONTACT)                                  | |
  *----------------------------------------------------------------------*/
-void Core::Geo::searchCollisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
+void Core::Geo::search_collisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>& currentBVs,
     const Core::LinAlg::Matrix<3, 2>& queryBV, const int label,
     const std::map<int, std::set<int>>& elementList, std::set<int>& collisions)
 {
@@ -254,7 +254,7 @@ void Core::Geo::searchCollisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
            eleIter != (labelIter->second).end(); eleIter++)
       {
-        if (intersectionOfBVs(queryBV, currentBVs.find(*eleIter)->second))
+        if (intersection_of_b_vs(queryBV, currentBVs.find(*eleIter)->second))
         {
           collisions.insert(*eleIter);
         }
@@ -269,7 +269,7 @@ void Core::Geo::searchCollisions(const std::map<int, Core::LinAlg::Matrix<3, 2>>
  | a vector of intersection elements                         u.may 02/09|
  | for a given query element (CONTACT)                                  | |
  *----------------------------------------------------------------------*/
-void Core::Geo::searchCollisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs,
+void Core::Geo::search_collisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs,
     const Core::LinAlg::Matrix<9, 2>& queryKDOP, const int label,
     const std::map<int, std::set<int>>& elementList, std::set<int>& contactEleIds)
 {
@@ -283,7 +283,7 @@ void Core::Geo::searchCollisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>
       for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
            eleIter != (labelIter->second).end(); eleIter++)
       {
-        if (intersectionOfKDOPs(queryKDOP, currentKDOPs.find(*eleIter)->second))
+        if (intersection_of_kdo_ps(queryKDOP, currentKDOPs.find(*eleIter)->second))
           contactEleIds.insert(*eleIter);
       }
     }
@@ -297,7 +297,7 @@ void Core::Geo::searchCollisions(const std::map<int, Core::LinAlg::Matrix<9, 2>>
  | gives the coords of the nearest point on or in an object in  tk 01/10|
  | tree node; object is either a node or a line                         |
  *----------------------------------------------------------------------*/
-void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretization> dis,
+void Core::Geo::nearest_2d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -320,7 +320,7 @@ void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretizatio
       // not const because otherwise no lines can be obtained
       Core::Elements::Element* element = elements[*eleIter].get();
       pointFound =
-          Core::Geo::getDistanceToLine(element, currentpositions, point, x_surface, distance);
+          Core::Geo::get_distance_to_line(element, currentpositions, point, x_surface, distance);
       if (pointFound && distance < min_distance)
       {
         pointFound = false;
@@ -329,7 +329,7 @@ void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretizatio
       }
 
       // collect nodes
-      for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->shape()); i++)
+      for (int i = 0; i < Core::FE::get_number_of_element_corner_nodes(element->shape()); i++)
         nodeList[labelIter->first].insert(element->node_ids()[i]);
     }
 
@@ -340,7 +340,7 @@ void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretizatio
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
       const Core::Nodes::Node* node = dis->g_node(*nodeIter);
-      Core::Geo::getDistanceToPoint(node, currentpositions, point, distance);
+      Core::Geo::get_distance_to_point(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
@@ -364,7 +364,7 @@ void Core::Geo::nearest2DObjectInNode(const Teuchos::RCP<Core::FE::Discretizatio
  | also surface id of nearest object is returned, in case of a          |
  | line or node, a random adjacent surface id is returned               |
  *----------------------------------------------------------------------*/
-int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization> dis,
+int Core::Geo::nearest_3d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -388,7 +388,7 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
       // not const because otherwise no lines can be obtained
       Core::Elements::Element* element = elements[*eleIter].get();
       pointFound =
-          Core::Geo::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
+          Core::Geo::get_distance_to_surface(element, currentpositions, point, x_surface, distance);
       if (pointFound && distance < min_distance)
       {
         pointFound = false;
@@ -401,7 +401,7 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
       const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = element->lines();
       for (int i = 0; i < element->num_line(); i++)
       {
-        pointFound = Core::Geo::getDistanceToLine(
+        pointFound = Core::Geo::get_distance_to_line(
             eleLines[i].get(), currentpositions, point, x_surface, distance);
         if (pointFound && distance < min_distance)
         {
@@ -412,7 +412,7 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
         }
       }
       // collect nodes
-      for (int i = 0; i < Core::FE::getNumberOfElementCornerNodes(element->shape()); i++)
+      for (int i = 0; i < Core::FE::get_number_of_element_corner_nodes(element->shape()); i++)
         nodeList[labelIter->first].insert(element->node_ids()[i]);
     }
 
@@ -423,7 +423,7 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
       const Core::Nodes::Node* node = dis->g_node(*nodeIter);
-      Core::Geo::getDistanceToPoint(node, currentpositions, point, distance);
+      Core::Geo::get_distance_to_point(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
         min_distance = distance;
@@ -446,7 +446,8 @@ int Core::Geo::nearest3DObjectInNode(const Teuchos::RCP<Core::FE::Discretization
  | gives the coords of the nearest point on a surface        ghamm 09/13|
  | element and return type of nearest object                            |
  *----------------------------------------------------------------------*/
-Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Element* surfaceelement,
+Core::Geo::ObjectType Core::Geo::nearest_3d_object_on_element(
+    Core::Elements::Element* surfaceelement,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& minDistCoords)
 {
@@ -456,8 +457,8 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
   double distance = std::numeric_limits<double>::max();
   Core::LinAlg::Matrix<3, 1> x_surface(true);
 
-  pointFound =
-      Core::Geo::getDistanceToSurface(surfaceelement, currentpositions, point, x_surface, distance);
+  pointFound = Core::Geo::get_distance_to_surface(
+      surfaceelement, currentpositions, point, x_surface, distance);
   if (pointFound && distance <= min_distance)
   {
     pointFound = false;
@@ -469,7 +470,7 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
   const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = surfaceelement->lines();
   for (int i = 0; i < surfaceelement->num_line(); i++)
   {
-    pointFound = Core::Geo::getDistanceToLine(
+    pointFound = Core::Geo::get_distance_to_line(
         eleLines[i].get(), currentpositions, point, x_surface, distance);
     if (pointFound && distance <= min_distance)
     {
@@ -511,7 +512,7 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
  |  computes the normal distance from a point to a           u.may 07/08|
  |  surface element, if it exits                                        |
  *----------------------------------------------------------------------*/
-bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceElement,
+bool Core::Geo::get_distance_to_surface(const Core::Elements::Element* surfaceElement,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& x_surface_phys,
     double& distance)
@@ -522,13 +523,13 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
   Core::LinAlg::Matrix<2, 1> elecoord(true);  // starting value at element center
 
   const Core::LinAlg::SerialDenseMatrix xyze_surfaceElement(
-      Core::Geo::getCurrentNodalPositions(surfaceElement, currentpositions));
-  Core::Geo::CurrentToSurfaceElementCoordinates(
+      Core::Geo::get_current_nodal_positions(surfaceElement, currentpositions));
+  Core::Geo::current_to_surface_element_coordinates(
       surfaceElement->shape(), xyze_surfaceElement, point, elecoord);
 
-  if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->shape()))
+  if (Core::Geo::check_position_within_element_parameter_space(elecoord, surfaceElement->shape()))
   {
-    Core::Geo::elementToCurrentCoordinates(
+    Core::Geo::element_to_current_coordinates(
         surfaceElement->shape(), xyze_surfaceElement, elecoord, x_surface_phys);
     // normal pointing away from the surface towards point
     distance_vector.update(1.0, point, -1.0, x_surface_phys);
@@ -539,25 +540,26 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
 
   // if the element is curved
   Core::Geo::EleGeoType eleGeoType = Core::Geo::HIGHERORDER;
-  checkRoughGeoType(surfaceElement, xyze_surfaceElement, eleGeoType);
+  check_rough_geo_type(surfaceElement, xyze_surfaceElement, eleGeoType);
 
   // TODO fix check if deformed in the linear case
   if (eleGeoType == Core::Geo::HIGHERORDER)
   {
     Core::LinAlg::SerialDenseMatrix eleCoordMatrix =
-        Core::FE::getEleNodeNumbering_nodes_paramspace(surfaceElement->shape());
+        Core::FE::get_ele_node_numbering_nodes_paramspace(surfaceElement->shape());
     for (int i = 0; i < surfaceElement->num_node(); i++)
     {
       // use nodes as starting values
       for (int j = 0; j < 2; j++) elecoord(j) = eleCoordMatrix(j, i);
 
-      Core::Geo::CurrentToSurfaceElementCoordinates(
+      Core::Geo::current_to_surface_element_coordinates(
           surfaceElement->shape(), xyze_surfaceElement, point, elecoord);
 
-      if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, surfaceElement->shape()))
+      if (Core::Geo::check_position_within_element_parameter_space(
+              elecoord, surfaceElement->shape()))
       {
         Core::LinAlg::Matrix<3, 1> physcoord(true);
-        Core::Geo::elementToCurrentCoordinates(
+        Core::Geo::element_to_current_coordinates(
             surfaceElement->shape(), xyze_surfaceElement, elecoord, physcoord);
         // normal pointing away from the surface towards point
         distance_vector.update(1.0, point, -1.0, physcoord);
@@ -578,7 +580,7 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
  |  computes the normal distance from a point to a           u.may 07/08|
  |  line element, if it exits                                           |
  *----------------------------------------------------------------------*/
-bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
+bool Core::Geo::get_distance_to_line(const Core::Elements::Element* lineElement,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& x_line_phys,
     double& distance)
@@ -589,13 +591,13 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
   Core::LinAlg::Matrix<1, 1> elecoord(true);  // starting value at element center
 
   const Core::LinAlg::SerialDenseMatrix xyze_lineElement(
-      Core::Geo::getCurrentNodalPositions(lineElement, currentpositions));
-  Core::Geo::CurrentToLineElementCoordinates(
+      Core::Geo::get_current_nodal_positions(lineElement, currentpositions));
+  Core::Geo::current_to_line_element_coordinates(
       lineElement->shape(), xyze_lineElement, point, elecoord);
 
-  if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, lineElement->shape()))
+  if (Core::Geo::check_position_within_element_parameter_space(elecoord, lineElement->shape()))
   {
-    Core::Geo::elementToCurrentCoordinates(
+    Core::Geo::element_to_current_coordinates(
         lineElement->shape(), xyze_lineElement, elecoord, x_line_phys);
     // normal pointing away from the line towards point
     distance_vector.update(1.0, point, -1.0, x_line_phys);
@@ -606,25 +608,25 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
 
   // if the element is curved
   Core::Geo::EleGeoType eleGeoType = Core::Geo::HIGHERORDER;
-  checkRoughGeoType(lineElement, xyze_lineElement, eleGeoType);
+  check_rough_geo_type(lineElement, xyze_lineElement, eleGeoType);
 
   if (eleGeoType == Core::Geo::HIGHERORDER)
   {
     Core::LinAlg::SerialDenseMatrix eleCoordMatrix =
-        Core::FE::getEleNodeNumbering_nodes_paramspace(lineElement->shape());
+        Core::FE::get_ele_node_numbering_nodes_paramspace(lineElement->shape());
     // use end nodes as starting values in addition
     for (int i = 0; i < 2; i++)
     {
       // use end nodes as starting values in addition
       elecoord(0) = eleCoordMatrix(0, i);
 
-      Core::Geo::CurrentToLineElementCoordinates(
+      Core::Geo::current_to_line_element_coordinates(
           lineElement->shape(), xyze_lineElement, point, elecoord);
 
-      if (Core::Geo::checkPositionWithinElementParameterSpace(elecoord, lineElement->shape()))
+      if (Core::Geo::check_position_within_element_parameter_space(elecoord, lineElement->shape()))
       {
         Core::LinAlg::Matrix<3, 1> physcoord(true);
-        Core::Geo::elementToCurrentCoordinates(
+        Core::Geo::element_to_current_coordinates(
             lineElement->shape(), xyze_lineElement, elecoord, physcoord);
         // normal pointing away from the line towards point
         distance_vector.update(1.0, point, -1.0, physcoord);
@@ -646,7 +648,7 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
  |  computes the distance from a point to a node             u.may 07/08|
  |  of an element                                                       |
  *----------------------------------------------------------------------*/
-void Core::Geo::getDistanceToPoint(const Core::Nodes::Node* node,
+void Core::Geo::get_distance_to_point(const Core::Nodes::Node* node,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const Core::LinAlg::Matrix<3, 1>& point, double& distance)
 {
@@ -665,7 +667,7 @@ void Core::Geo::getDistanceToPoint(const Core::Nodes::Node* node,
  | check s if nearest point found on nearest object          u.may 09/08|
  | lies in a tree node specified by its box                             |
  *----------------------------------------------------------------------*/
-bool Core::Geo::pointInTreeNode(
+bool Core::Geo::point_in_tree_node(
     const Core::LinAlg::Matrix<3, 1>& point, const Core::LinAlg::Matrix<3, 2>& nodeBox)
 {
   for (int dim = 0; dim < 3; dim++)
@@ -679,7 +681,7 @@ bool Core::Geo::pointInTreeNode(
 /*----------------------------------------------------------------------*
  | merge two AABB and deliver the resulting AABB's           peder 07/08|
  *----------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 2> Core::Geo::mergeAABB(
+Core::LinAlg::Matrix<3, 2> Core::Geo::merge_aabb(
     const Core::LinAlg::Matrix<3, 2>& AABB1, const Core::LinAlg::Matrix<3, 2>& AABB2)
 {
   Core::LinAlg::Matrix<3, 2> mergedAABB;
@@ -697,10 +699,10 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::mergeAABB(
  | not for Cartesian elements cjecked because no improvements are       |
  | expected                                                             |
  *----------------------------------------------------------------------*/
-void Core::Geo::checkRoughGeoType(const Core::Elements::Element* element,
+void Core::Geo::check_rough_geo_type(const Core::Elements::Element* element,
     const Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType)
 {
-  const int order = Core::FE::getOrder(element->shape());
+  const int order = Core::FE::get_order(element->shape());
 
   if (order == 1)
     eleGeoType = Core::Geo::LINEAR;  // TODO check for bilinear elements in the tree they count
@@ -718,10 +720,10 @@ void Core::Geo::checkRoughGeoType(const Core::Elements::Element* element,
  | determines the geometry type of an element                 u.may 09/09|
  |  -->needed for Teuchos::RCP on element                                |
  *----------------------------------------------------------------------*/
-void Core::Geo::checkRoughGeoType(const Teuchos::RCP<Core::Elements::Element> element,
+void Core::Geo::check_rough_geo_type(const Teuchos::RCP<Core::Elements::Element> element,
     const Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType)
 {
-  const int order = Core::FE::getOrder(element->shape());
+  const int order = Core::FE::get_order(element->shape());
 
   if (order == 1)
     eleGeoType = Core::Geo::LINEAR;  // TODO check for bilinear elements in the tree they count

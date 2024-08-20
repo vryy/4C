@@ -248,10 +248,10 @@ namespace Inpar
     };
 
     /// set the scatra parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set additional scatra conditions
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace ScaTra

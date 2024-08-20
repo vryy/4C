@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm& comm,
+void PARTICLEENGINE::COMMUNICATION::immediate_recv_blocking_send(const Epetra_Comm& comm,
     std::map<int, std::vector<char>>& sdata, std::map<int, std::vector<char>>& rdata)
 {
   // number of processors

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  inline Core::FE::GaussRule1D Get1DLagrangeBasisLobattoGaussRule(const unsigned int degree)
+  inline Core::FE::GaussRule1D get_1d_lagrange_basis_lobatto_gauss_rule(const unsigned int degree)
   {
     switch (degree)
     {
@@ -54,7 +54,7 @@ namespace Core::FE
   /*!
    \brief generates complete Lagrange basis in 1D for [-1,1]^d elements
    */
-  std::vector<LagrangePolynomial> generateLagrangeBasis1D(const unsigned int degree)
+  std::vector<LagrangePolynomial> generate_lagrange_basis1_d(const unsigned int degree)
   {
     std::vector<LagrangePolynomial> poly1d;
     if (degree == 0)
@@ -63,7 +63,8 @@ namespace Core::FE
       return poly1d;
     }
 
-    Core::FE::IntegrationPoints1D gaussLobattoPoints(Get1DLagrangeBasisLobattoGaussRule(degree));
+    Core::FE::IntegrationPoints1D gaussLobattoPoints(
+        get_1d_lagrange_basis_lobatto_gauss_rule(degree));
     std::vector<double> points(degree);
     for (unsigned int i = 0; i <= degree; ++i)
     {
@@ -86,7 +87,7 @@ namespace Core::FE
    to the usual mathematical definition, we also scale the polynomials such that
    they are actually orthonormal on the unit interval.
    */
-  std::vector<Polynomial> generateLegendreBasis1D(const unsigned int degree)
+  std::vector<Polynomial> generate_legendre_basis1_d(const unsigned int degree)
   {
     // Legendre polynomials are defined recursively by the following scheme:
     // L_0 (x) = 1

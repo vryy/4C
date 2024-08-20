@@ -76,7 +76,7 @@ namespace NOX
         };
 
         //! Map pseudo time step control type stl_string to enum
-        inline enum TSCType string2_tsc_type(const std::string& name)
+        inline enum TSCType string_to_tsc_type(const std::string& name)
         {
           TSCType type = tsc_ser;
           if (name == "SER" || name == "Switched Evolution Relaxation")
@@ -114,7 +114,7 @@ namespace NOX
         };
 
         //! Map build operator type stl_string to enum
-        inline enum BuildOpType string2_build_op_type(const std::string& name)
+        inline enum BuildOpType string_to_build_op_type(const std::string& name)
         {
           BuildOpType type = build_op_everyiter;
           if (name == "every iter")
@@ -133,7 +133,7 @@ namespace NOX
         };
 
         //! Map scaling operator type stl_string to enum
-        inline enum ScaleOpType string2_scale_op_type(const std::string& name)
+        inline enum ScaleOpType string_to_scale_op_type(const std::string& name)
         {
           ScaleOpType type = scale_op_identity;
           if (name == "Identity")

@@ -73,7 +73,7 @@ namespace Discret::ELEMENTS::Shell
    * @param factor (int)  : Scaling factor due to SDC
    */
   template <Core::FE::CellType distype>
-  Discret::ELEMENTS::Shell::NodalCoordinates<distype> EvaluateNodalCoordinates(
+  Discret::ELEMENTS::Shell::NodalCoordinates<distype> evaluate_nodal_coordinates(
       Core::Nodes::Node** nodes, std::vector<double>& disp, const double& thickness,
       const Core::LinAlg::SerialDenseMatrix& a3_reference, const double factor)
   {
@@ -150,7 +150,7 @@ namespace Discret::ELEMENTS::Shell
    * the linearization w.r.t. Green Lagrange strain tensor
    */
   template <int dim>
-  Stress<Mat::NUM_STRESS_3D> EvaluateMaterialStressCartesianSystem(Mat::So3Material& material,
+  Stress<Mat::NUM_STRESS_3D> evaluate_material_stress_cartesian_system(Mat::So3Material& material,
       const Strains& strains, Teuchos::ParameterList& params, int gp, int eleGID)
   {
     if (dim != 3) FOUR_C_THROW("stop: this currently only works for 3D");
@@ -218,7 +218,7 @@ namespace Discret::ELEMENTS::Shell
     U_enh(0, 2) = glstrain_enh(5);
     U_enh(2, 0) = glstrain_enh(5);
 
-    Core::LinAlg::SYEV(U_enh, EW, U_enh);
+    Core::LinAlg::syev(U_enh, EW, U_enh);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
     tmp.multiply(U_enh, EW);
     tmp2.multiply_nt(tmp, U_enh);
@@ -227,7 +227,7 @@ namespace Discret::ELEMENTS::Shell
     // Second step: calculate displacement-based right stretch tensor
     U_disp.multiply_tn(defgrd_disp, defgrd_disp);
 
-    Core::LinAlg::SYEV(U_disp, EW, U_disp);
+    Core::LinAlg::syev(U_disp, EW, U_disp);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
     tmp.multiply(U_disp, EW);
     tmp2.multiply_nt(tmp, U_disp);
@@ -278,12 +278,12 @@ namespace Discret::ELEMENTS::Shell
    * first derivatives evaluated at the respective point in the parameter space
    */
   template <Core::FE::CellType distype>
-  ShapefunctionsAndDerivatives<distype> EvaluateShapefunctionsAndDerivs(
+  ShapefunctionsAndDerivatives<distype> evaluate_shapefunctions_and_derivs(
       const std::array<double, 2>& xi_gp)
   {
     ShapefunctionsAndDerivatives<distype> shapefunctions;
-    Core::FE::shape_function_2D(shapefunctions.shapefunctions_, xi_gp[0], xi_gp[1], distype);
-    Core::FE::shape_function_2D_deriv1(shapefunctions.derivatives_, xi_gp[0], xi_gp[1], distype);
+    Core::FE::shape_function_2d(shapefunctions.shapefunctions_, xi_gp[0], xi_gp[1], distype);
+    Core::FE::shape_function_2d_deriv1(shapefunctions.derivatives_, xi_gp[0], xi_gp[1], distype);
     return shapefunctions;
   }
 
@@ -316,7 +316,7 @@ namespace Discret::ELEMENTS::Shell
    * @return Core::LinAlg::SerialDenseMatrix: B-operator Matrix
    */
   template <Core::FE::CellType distype>
-  Core::LinAlg::SerialDenseMatrix CalcBOperator(
+  Core::LinAlg::SerialDenseMatrix calc_b_operator(
       const Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim>& akov,
       const Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim>& da3kov,
       const Discret::ELEMENTS::Shell::ShapefunctionsAndDerivatives<distype>&
@@ -433,7 +433,7 @@ namespace Discret::ELEMENTS::Shell
    * @param numans (in) : Number of ANS collocation points
    */
   template <Core::FE::CellType distype>
-  void ModifyBOperatorAns(Core::LinAlg::SerialDenseMatrix& Bop,
+  void modify_b_operator_ans(Core::LinAlg::SerialDenseMatrix& Bop,
       const std::vector<double>& shapefunctions_ans,
       const std::vector<ShapefunctionsAndDerivatives<distype>>& shapefunctions_q,
       const std::vector<BasisVectorsAndMetrics<distype>>& metric_currq, const int& numans)
@@ -510,7 +510,7 @@ namespace Discret::ELEMENTS::Shell
    * in the parameter space
    */
   template <Core::FE::CellType distype>
-  double UpdateGaussPointThickness(
+  double update_gauss_point_thickness(
       const Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& a3current,
       const Core::LinAlg::Matrix<DETAIL::num_node<distype>, 1>& shapefunctions)
   {
@@ -540,19 +540,19 @@ namespace Discret::ELEMENTS::Shell
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
   template <Core::FE::CellType distype>
-  void EvaluateMetrics(
+  void evaluate_metrics(
       const Discret::ELEMENTS::Shell::ShapefunctionsAndDerivatives<distype>& shape_functions,
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& basis_and_metrics_reference,
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& basis_and_metrics_current,
       const Discret::ELEMENTS::Shell::NodalCoordinates<distype>& nodal_coordinates,
       const double zeta)
   {
-    EvaluateKovariantVectorsAndMetrics(shape_functions, basis_and_metrics_reference,
+    evaluate_kovariant_vectors_and_metrics(shape_functions, basis_and_metrics_reference,
         nodal_coordinates.x_refe_, nodal_coordinates.a3_refe_, zeta);
-    EvaluateKontravariantVectorsAndMetrics(basis_and_metrics_reference);
-    EvaluateKovariantVectorsAndMetrics(shape_functions, basis_and_metrics_current,
+    evaluate_kontravariant_vectors_and_metrics(basis_and_metrics_reference);
+    evaluate_kovariant_vectors_and_metrics(shape_functions, basis_and_metrics_current,
         nodal_coordinates.x_curr_, nodal_coordinates.a3_curr_, zeta);
-    EvaluateKontravariantVectorsAndMetrics(basis_and_metrics_current);
+    evaluate_kontravariant_vectors_and_metrics(basis_and_metrics_current);
   }
 
   /*!
@@ -568,7 +568,7 @@ namespace Discret::ELEMENTS::Shell
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
   template <Core::FE::CellType distype>
-  void EvaluateKovariantVectorsAndMetrics(
+  void evaluate_kovariant_vectors_and_metrics(
       const Discret::ELEMENTS::Shell::ShapefunctionsAndDerivatives<distype>& shape_functions,
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& basis_and_metrics,
       const Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x,
@@ -610,7 +610,7 @@ namespace Discret::ELEMENTS::Shell
    * @param metrics (in/out) : An object holding the basis vectors and metric tensors of the element
    */
   template <Core::FE::CellType distype>
-  void EvaluateKontravariantVectorsAndMetrics(
+  void evaluate_kontravariant_vectors_and_metrics(
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& metrics)
   {
     // get kontravariant basis vectors g1,g2,g3 (inverse transpose of kov)
@@ -650,7 +650,7 @@ namespace Discret::ELEMENTS::Shell
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
   template <Core::FE::CellType distype>
-  void ModifyKovariantMetricsStandart(
+  void modify_kovariant_metrics_standart(
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_reference,
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_current,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
@@ -746,7 +746,7 @@ namespace Discret::ELEMENTS::Shell
    * @param numansq (in) : Number of ANS collocation points
    */
   template <Core::FE::CellType distype>
-  void ModifyKovariantMetricsAns(
+  void modify_kovariant_metrics_ans(
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_reference,
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_current,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
@@ -851,7 +851,7 @@ namespace Discret::ELEMENTS::Shell
    * @param numansq (in) : Number of ANS collocation points
    */
   template <Core::FE::CellType distype>
-  void ModifyKovariantMetrics(
+  void modify_kovariant_metrics(
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_reference,
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_current,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
@@ -868,12 +868,12 @@ namespace Discret::ELEMENTS::Shell
         {
           if (numansq == 0)
           {
-            ModifyKovariantMetricsStandart(g_reference, g_current, a_reference, a_current, zeta);
+            modify_kovariant_metrics_standart(g_reference, g_current, a_reference, a_current, zeta);
           }
           else
           {
             // modify the current kovariant metric tensor due to transverse shear strain ANS
-            ModifyKovariantMetricsAns(g_reference, g_current, a_reference, a_current, zeta,
+            modify_kovariant_metrics_ans(g_reference, g_current, a_reference, a_current, zeta,
                 shapefunctions_ans, metrics_collocation_reference, metrics_collocation_current,
                 numansq);
           }
@@ -900,7 +900,7 @@ namespace Discret::ELEMENTS::Shell
    * tensors of the shell body
    */
   template <Core::FE::CellType distype>
-  void EvaluateDeformationGradient(Discret::ELEMENTS::Shell::Strains& strains,
+  void evaluate_deformation_gradient(Discret::ELEMENTS::Shell::Strains& strains,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_reference,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_current)
   {
@@ -938,7 +938,7 @@ namespace Discret::ELEMENTS::Shell
     }
     // map gl strains from curvilinear system to global cartesian system
     Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> gl_strain_tensor_cartesian(true);
-    Core::LinAlg::Tensor::InverseTensorRotation<DETAIL::num_dim>(
+    Core::LinAlg::Tensor::inverse_tensor_rotation<DETAIL::num_dim>(
         g_reference.kontravariant_, gl_strain_tensor, gl_strain_tensor_cartesian);
     // GL strain vector glstrain for solid material E={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::Voigt::Strains::matrix_to_vector(gl_strain_tensor_cartesian, strains.gl_strain_);
@@ -961,7 +961,7 @@ namespace Discret::ELEMENTS::Shell
    * tensors of the shell body
    */
   template <Core::FE::CellType distype>
-  void MapMaterialStressToCurvilinearSystem(
+  void map_material_stress_to_curvilinear_system(
       Stress<Mat::NUM_STRESS_3D>& stress, const BasisVectorsAndMetrics<distype>& g_reference)
   {
     // transform Piola-Kirchhoff-stresses from global cartesian coordinate system back to local
@@ -969,7 +969,7 @@ namespace Discret::ELEMENTS::Shell
     Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> stress_tensor(true);
     Core::LinAlg::Voigt::Stresses::vector_to_matrix(stress.pk2_, stress_tensor);
     Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> tmp(true);
-    Core::LinAlg::Tensor::TensorRotation(g_reference.kontravariant_, stress_tensor, tmp);
+    Core::LinAlg::Tensor::tensor_rotation(g_reference.kontravariant_, stress_tensor, tmp);
 
     // re-arrange indices for shell element formulation:
     // PK Stress=[S_{11},S_{12}, S_{13}, S_{22}, S_{23}, S_{33}]^T
@@ -985,7 +985,7 @@ namespace Discret::ELEMENTS::Shell
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> Cmat(true);
     Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> g_metrics_trans(true);
     g_metrics_trans.update_t(g_reference.kontravariant_);
-    Core::LinAlg::Tensor::InverseFourthTensorRotation(g_metrics_trans, stress.cmat_, Cmat);
+    Core::LinAlg::Tensor::inverse_fourth_tensor_rotation(g_metrics_trans, stress.cmat_, Cmat);
 
     // re-arrange indices for shell element formulation
     static constexpr std::array voigt_inconsistent_ = {0, 3, 5, 1, 4, 2};
@@ -1003,7 +1003,7 @@ namespace Discret::ELEMENTS::Shell
    * @return shapefunctions for ANS
    */
   template <Core::FE::CellType distype>
-  static std::vector<double> SetShapefunctionsForAns(const std::array<double, 2>& xi_gp)
+  static std::vector<double> set_shapefunctions_for_ans(const std::array<double, 2>& xi_gp)
   {
     std::vector<double> shapefunctions;
     double r = xi_gp[0];
@@ -1067,7 +1067,7 @@ namespace Discret::ELEMENTS::Shell
    * @return shapefunctions for ANS
    */
   template <Core::FE::CellType distype>
-  std::vector<double> GetShapefunctionsForAns(
+  std::vector<double> get_shapefunctions_for_ans(
       const std::array<double, 2>& xi_gp, const int& num_ans)
   {
     const std::vector<double> shape_functions_ans = std::invoke(
@@ -1079,7 +1079,7 @@ namespace Discret::ELEMENTS::Shell
           }
           else
           {
-            return Shell::SetShapefunctionsForAns<distype>(xi_gp);
+            return Shell::set_shapefunctions_for_ans<distype>(xi_gp);
           }
         });
     return shape_functions_ans;
@@ -1121,7 +1121,7 @@ namespace Discret::ELEMENTS::Shell
    * @param cauchy (in/out) : Cauchy stresses
    */
   template <Core::FE::CellType distype>
-  void Pk2ToCauchy(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& pk2,
+  void pk2_to_cauchy(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& pk2,
       const Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim>& defgrd,
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& cauchy)
   {
@@ -1164,8 +1164,9 @@ namespace Discret::ELEMENTS::Shell
    * @param thickness_weight (in) : Weighting factor to consider thickness integration
    */
   template <Core::FE::CellType distype>
-  void AssembleStrainTypeToMatrixRow(const Strains& strains, Inpar::Solid::StrainType strain_type,
-      Core::LinAlg::SerialDenseMatrix& data, int row, const double thickness_weight)
+  void assemble_strain_type_to_matrix_row(const Strains& strains,
+      Inpar::Solid::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data, int row,
+      const double thickness_weight)
   {
     switch (strain_type)
     {
@@ -1216,7 +1217,7 @@ namespace Discret::ELEMENTS::Shell
       case Inpar::Solid::stress_cauchy:
       {
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cauchy;
-        Pk2ToCauchy<distype>(stress.pk2_, strains.defgrd_, cauchy);
+        pk2_to_cauchy<distype>(stress.pk2_, strains.defgrd_, cauchy);
         assemble_vector_to_matrix_row(cauchy, data, row, thickness_weight);
         return;
       }
@@ -1227,7 +1228,7 @@ namespace Discret::ELEMENTS::Shell
     }
   }
 
-  inline void Serialize(const Core::LinAlg::SerialDenseMatrix& matrix, std::vector<char>& data)
+  inline void serialize(const Core::LinAlg::SerialDenseMatrix& matrix, std::vector<char>& data)
   {
     Core::Communication::PackBuffer packBuffer;
     Core::Communication::ParObject::add_to_pack(packBuffer, matrix);
@@ -1246,7 +1247,8 @@ namespace Discret::ELEMENTS::Shell
    * @params qp (in) :  Index of collocation point
    */
   template <Core::FE::CellType distype>
-  void GetCoordinatesOfAnsCollocationPoints(std::vector<std::array<double, 2>>& collocation_points)
+  void get_coordinates_of_ans_collocation_points(
+      std::vector<std::array<double, 2>>& collocation_points)
   {
     if (distype == Core::FE::CellType::quad4)
     {
@@ -1294,7 +1296,7 @@ namespace Discret::ELEMENTS::Shell
    * @param num_collocation_points (in) : Number of collocation points
    */
   template <Core::FE::CellType distype>
-  void SetupANS(
+  void setup_ans(
       std::vector<Shell::ShapefunctionsAndDerivatives<distype>>& shapefunctions_collocation,
       std::vector<Shell::BasisVectorsAndMetrics<distype>>& metrics_collocation_reference,
       std::vector<Shell::BasisVectorsAndMetrics<distype>>& metrics_collocation_current,
@@ -1302,14 +1304,14 @@ namespace Discret::ELEMENTS::Shell
   {
     // get coordinates of collocations points
     std::vector<std::array<double, 2>> collocation_points;
-    Shell::GetCoordinatesOfAnsCollocationPoints<distype>(collocation_points);
+    Shell::get_coordinates_of_ans_collocation_points<distype>(collocation_points);
     for (int qp = 0; qp < num_collocation_points; ++qp)
     {
       // get shape functions and derivatives for ANS at each collocation point
       shapefunctions_collocation[qp] =
-          Shell::EvaluateShapefunctionsAndDerivs<distype>(collocation_points[qp]);
+          Shell::evaluate_shapefunctions_and_derivs<distype>(collocation_points[qp]);
       //  get basis vectors and metric at collocation points
-      Shell::EvaluateMetrics(shapefunctions_collocation[qp], metrics_collocation_reference[qp],
+      Shell::evaluate_metrics(shapefunctions_collocation[qp], metrics_collocation_reference[qp],
           metrics_collocation_current[qp], nodal_coordinates, 0.0);
     }
   }
@@ -1327,7 +1329,7 @@ namespace Discret::ELEMENTS::Shell
    * to
    */
   template <Core::FE::CellType distype>
-  void ThicknessIntegration(Discret::ELEMENTS::Shell::StressEnhanced& stress_enh,
+  void thickness_integration(Discret::ELEMENTS::Shell::StressEnhanced& stress_enh,
       const Discret::ELEMENTS::Shell::Stress<Mat::NUM_STRESS_3D>& stress,
       const double& integration_factor, const double& zeta)
   {
@@ -1363,12 +1365,12 @@ namespace Discret::ELEMENTS::Shell
    * strain tensor)
    */
   template <Core::FE::CellType distype>
-  Discret::ELEMENTS::Shell::Strains EvaluateStrains(
+  Discret::ELEMENTS::Shell::Strains evaluate_strains(
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_metric_reference,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_metric_current)
   {
     Strains strains;
-    EvaluateDeformationGradient(strains, g_metric_reference, g_metric_current);
+    evaluate_deformation_gradient(strains, g_metric_reference, g_metric_current);
     evaluate_green_lagrange_strain(strains, g_metric_reference, g_metric_current);
     return strains;
   }
@@ -1534,7 +1536,7 @@ namespace Discret::ELEMENTS::Shell
    * @param mass_matrix (in/out) : Mass matrix where the local contribution is added to
    */
   template <Core::FE::CellType distype>
-  void AddMassMatrix(
+  void add_mass_matrix(
       const Discret::ELEMENTS::Shell::ShapefunctionsAndDerivatives<distype>& shapefunctions,
       Discret::ELEMENTS::Shell::MassMatrixVariables& mass_matrix_variables, const double& thickness,
       Core::LinAlg::SerialDenseMatrix& massmatrix)
@@ -1594,7 +1596,7 @@ namespace Discret::ELEMENTS::Shell
    * will be called for each integration point.
    */
   template <Core::FE::CellType distype, typename GaussPointEvaluator>
-  inline void ForEachGaussPoint(
+  inline void for_each_gauss_point(
       Discret::ELEMENTS::Shell::NodalCoordinates<distype>& nodal_coordinates,
       const Core::FE::IntegrationPoints2D& intpoints_, GaussPointEvaluator gp_evaluator)
   {
@@ -1610,13 +1612,13 @@ namespace Discret::ELEMENTS::Shell
 
       // get shape functions and derivatives at gaussian points
       ShapefunctionsAndDerivatives<distype> shapefunctions =
-          EvaluateShapefunctionsAndDerivs<distype>(xi_gp);
+          evaluate_shapefunctions_and_derivs<distype>(xi_gp);
 
       // basis vectors and metric on mid-surface
       BasisVectorsAndMetrics<distype> a_reference;
       BasisVectorsAndMetrics<distype> a_current;
 
-      EvaluateMetrics(shapefunctions, a_reference, a_current, nodal_coordinates, 0.0);
+      evaluate_metrics(shapefunctions, a_reference, a_current, nodal_coordinates, 0.0);
 
       // make h as cross product in ref configuration to get area da on shell mid-surface
       Core::LinAlg::Matrix<DETAIL::num_dim, 1> h(true);

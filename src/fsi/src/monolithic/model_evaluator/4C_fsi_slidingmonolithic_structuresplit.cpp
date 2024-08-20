@@ -231,9 +231,9 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = Core::UTILS::IntegralValue<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = Core::UTILS::integral_value<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -305,7 +305,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
     // -------------------------------------------------------------------------
 
     // enable debugging
-    if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -413,7 +413,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_residual(Epetra_Vector& f)
   Teuchos::RCP<const Epetra_Vector> scv =
       structure_field()->interface()->extract_fsi_cond_vector(sv);
   Teuchos::RCP<Epetra_Vector> fcv =
-      Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+      Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
   mortarp->multiply(true, *scv, *fcv);
   Teuchos::RCP<Epetra_Vector> modfv = fluid_field()->interface()->insert_fsi_cond_vector(fcv);
   modfv->Update(1.0, *fv, (1.0 - ftiparam) / ((1.0 - stiparam) * fluidscale));
@@ -703,7 +703,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
   /* Reset quantities for previous iteration step since they still store values
    * from the last time step */
-  ddiinc_ = Core::LinAlg::CreateVector(*structure_field()->interface()->other_map(), true);
+  ddiinc_ = Core::LinAlg::create_vector(*structure_field()->interface()->other_map(), true);
   disiprev_ = Teuchos::null;
   disgprev_ = Teuchos::null;
   sgicur_ = Teuchos::null;
@@ -782,7 +782,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
 
   // ----------Addressing contribution to block (1,3)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sig =
-      MLMultiply(s->matrix(0, 1), false, *mortarp, false, false, false, true);
+      ml_multiply(s->matrix(0, 1), false, *mortarp, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsig =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(sig->row_map(), 81, false));
 
@@ -793,7 +793,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
 
   // ----------Addressing contribution to block (3,1)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sgi =
-      MLMultiply(*mortarp, true, s->matrix(1, 0), false, false, false, true);
+      ml_multiply(*mortarp, true, s->matrix(1, 0), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsgi =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
 
@@ -804,8 +804,8 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
 
   // ----------Addressing contribution to block (3,3)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sgg =
-      MLMultiply(s->matrix(1, 1), false, *mortarp, false, false, false, true);
-  sgg = MLMultiply(*mortarp, true, *sgg, false, false, false, true);
+      ml_multiply(s->matrix(1, 1), false, *mortarp, false, false, false, true);
+  sgg = ml_multiply(*mortarp, true, *sgg, false, false, false, true);
 
   f->add(*sgg, false, (1. - ftiparam) / ((1. - stiparam) * scale * timescale), 1.0);
   mat.assign(1, 1, Core::LinAlg::View, *f);
@@ -933,7 +933,7 @@ void FSI::SlidingMonolithicStructureSplit::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -985,7 +985,7 @@ void FSI::SlidingMonolithicStructureSplit::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1364,7 +1364,7 @@ void FSI::SlidingMonolithicStructureSplit::extract_field_vectors(
 
   // convert ALE interface displacements to structure interface displacements
   Teuchos::RCP<Epetra_Vector> scx =
-      Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map());
+      Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map());
   acx = ale_to_fluid_interface(acx);
   mortarp->Apply(*acx, *scx);
   scx->Update(-1.0, *ddgpred_, 1.0);

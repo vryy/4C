@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* create auxiliary time integration scheme */
-Teuchos::RCP<Solid::TimAda> Solid::TimAdaCreate(
+Teuchos::RCP<Solid::TimAda> Solid::tim_ada_create(
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& tap,  //!< adaptive input flags
@@ -37,7 +37,7 @@ Teuchos::RCP<Solid::TimAda> Solid::TimAdaCreate(
   Teuchos::RCP<Solid::TimAda> sta = Teuchos::null;
 
   // auxiliary time integrator
-  switch (Core::UTILS::IntegralValue<Inpar::Solid::TimAdaKind>(tap, "KIND"))
+  switch (Core::UTILS::integral_value<Inpar::Solid::TimAdaKind>(tap, "KIND"))
   {
     case Inpar::Solid::timada_kind_none:
       // No adaptivity in time

@@ -115,7 +115,7 @@ namespace
     // -------------------------------------------------------------------
     // create empty right hand side vector
     // -------------------------------------------------------------------
-    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // -------------------------------------------------------------------
     // call elements to calculate massmatrix and righthandside
@@ -268,7 +268,7 @@ namespace
                   gp(rr) = intpoints.qxg[iquad][rr];
                 }
 
-                Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
+                Core::FE::Nurbs::nurbs_get_2d_funct_deriv(
                     funct, deriv, gp, eleknots, weights, distype);
 
                 // get transposed Jacobian matrix and determinant
@@ -389,7 +389,7 @@ namespace
                   gp(rr) = intpoints.qxg[iquad][rr];
                 }
 
-                Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+                Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
                     funct, deriv, gp, eleknots, weights, distype);
 
                 // get transposed Jacobian matrix and determinant
@@ -509,7 +509,7 @@ namespace
 
         int eid = actele->id();
         if (assemblemat) massmatrix->assemble(eid, elemass, lm, lmowner);
-        if (assemblevec) Core::LinAlg::Assemble(*rhs, elerhs, lm, lmowner);
+        if (assemblevec) Core::LinAlg::assemble(*rhs, elerhs, lm, lmowner);
       }  // for (int i=0; i<numcolele; ++i)
     }
 

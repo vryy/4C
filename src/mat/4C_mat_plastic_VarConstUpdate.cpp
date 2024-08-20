@@ -125,7 +125,7 @@ void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover MatParams()
   int matid;
@@ -1062,9 +1062,9 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
 
   Core::LinAlg::Matrix<3, 1> dPI;
   Core::LinAlg::Matrix<6, 1> ddPII;
-  ElastHyperEvaluateInvariantDerivatives(
+  elast_hyper_evaluate_invariant_derivatives(
       prinv, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
-  CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
+  calculate_gamma_delta(gamma, delta, prinv, dPI, ddPII);
 
   // inverse plastic right Cauchy-Green
   Core::LinAlg::Matrix<3, 3> CpiM;

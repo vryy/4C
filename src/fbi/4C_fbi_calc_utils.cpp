@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::GetFBIElementCenterlineDOFIndices(Core::FE::Discretization const& discret,
+void FBI::UTILS::get_fbi_element_centerline_dof_indices(Core::FE::Discretization const& discret,
     const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
     unsigned int& num_dof)
 {
@@ -59,7 +59,7 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(Core::FE::Discretization cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
+void FBI::UTILS::assemble_centerline_dof_force_stiff_into_fbi_element_force_stiff(
     const Core::FE::Discretization& discretization1,
     const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
     std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,
@@ -72,12 +72,12 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
 
   // Get DOFs for beam element
   Core::Elements::Element* ele = discretization1.g_element(elegid[0]);
-  GetFBIElementCenterlineDOFIndices(
+  get_fbi_element_centerline_dof_indices(
       discretization1, ele, ele_centerlinedofindices[0], numdof_ele[0]);
 
   // Get DOFs for fluid element
   ele = discretization2.g_element(elegid[1]);
-  GetFBIElementCenterlineDOFIndices(
+  get_fbi_element_centerline_dof_indices(
       discretization2, ele, ele_centerlinedofindices[1], numdof_ele[1]);
 
 

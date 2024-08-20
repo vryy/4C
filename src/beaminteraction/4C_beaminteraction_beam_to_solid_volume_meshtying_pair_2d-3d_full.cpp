@@ -84,7 +84,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
   {
     for (unsigned int i_dof = 0; i_dof < q_original.num_rows(); i_dof++)
       q_fad(i_dof) = Core::FADUtils::HigherOrderFadValue<scalar_type_pair>::apply(
-          n_dof_fad_, fad_offset + i_dof, Core::FADUtils::CastToDouble(q_original(i_dof)));
+          n_dof_fad_, fad_offset + i_dof, Core::FADUtils::cast_to_double(q_original(i_dof)));
   };
   auto q_beam =
       GEOMETRYPAIR::InitializeElementData<Beam, scalar_type_pair>::initialize(this->element1());
@@ -150,13 +150,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
     // beam has changed compared to the last Gauss point.
     if (std::abs(eta - eta_last_gauss_point) > 1e-10)
     {
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
       beam_jacobian = 0.5 * dr_beam_ref.norm2();
 
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Beam>(H, eta, q_beam.shape_function_data_);
-      GEOMETRYPAIR::EvaluatePosition<Beam>(eta, q_beam, pos_beam);
+      GEOMETRYPAIR::evaluate_shape_function_matrix<Beam>(H, eta, q_beam.shape_function_data_);
+      GEOMETRYPAIR::evaluate_position<Beam>(eta, q_beam, pos_beam);
 
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<GEOMETRYPAIR::t_line3>(
+      GEOMETRYPAIR::evaluate_shape_function_matrix<GEOMETRYPAIR::t_line3>(
           L, eta, q_rot.shape_function_data_);
 
       triad_interpolation_scheme_.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
@@ -169,16 +169,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
       // Get the rotation vector at this Gauss point.
       triad_interpolation_scheme_.get_interpolated_quaternion_at_xi(quaternion_double, eta);
       Core::LargeRotations::quaterniontoangle(quaternion_double, rotation_vector_double);
-      T_beam_double = Core::LargeRotations::Tmatrix(rotation_vector_double);
+      T_beam_double = Core::LargeRotations::tmatrix(rotation_vector_double);
       set_q_fad(rotation_vector_double, rotation_vector_fad, Beam::n_dof_ + Solid::n_dof_);
       Core::LargeRotations::angletoquaternion(rotation_vector_fad, quaternion_fad);
       Core::LargeRotations::quaterniontotriad(quaternion_fad, triad_fad);
     }
 
     // Get the shape function matrices.
-    GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Solid>(
+    GEOMETRYPAIR::evaluate_shape_function_matrix<Solid>(
         N, projected_gauss_point.get_xi(), q_solid.shape_function_data_);
-    GEOMETRYPAIR::EvaluatePosition<Solid>(projected_gauss_point.get_xi(), q_solid, pos_solid);
+    GEOMETRYPAIR::evaluate_position<Solid>(projected_gauss_point.get_xi(), q_solid, pos_solid);
 
     // Get the cross section vector.
     cross_section_vector_ref(0) = 0.0;
@@ -223,7 +223,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
 
     // Add to pair force contributions.
     force_pair_local.scale(integration_factor);
-    force_pair += Core::FADUtils::CastToDouble(force_pair_local);
+    force_pair += Core::FADUtils::cast_to_double(force_pair_local);
 
     // The rotational stiffness contributions have to be handled separately due to the non-additive
     // nature of the rotational DOFs.
@@ -256,7 +256,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
 
   // Beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  UTILS::GetElementCenterlineGIDIndices(*discret, this->element1(), beam_centerline_gid);
+  UTILS::get_element_centerline_gid_indices(*discret, this->element1(), beam_centerline_gid);
   for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
     gid_pair(i_dof_beam) = beam_centerline_gid(i_dof_beam);
 
@@ -289,7 +289,7 @@ template <typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::reset_rotation_state(
     const Core::FE::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
 {
-  GetBeamTriadInterpolationScheme(discret, ia_discolnp, this->element1(),
+  get_beam_triad_interpolation_scheme(discret, ia_discolnp, this->element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);
 }
 

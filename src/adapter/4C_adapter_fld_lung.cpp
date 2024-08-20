@@ -74,10 +74,10 @@ void Adapter::FluidLung::init()
   // build mapextractor for outflow fsi boundary dofs <-> full map
 
   std::vector<int> fsinodes;
-  Core::Conditions::FindConditionedNodes(*discretization(), "FSICoupling", fsinodes);
+  Core::Conditions::find_conditioned_nodes(*discretization(), "FSICoupling", fsinodes);
 
   std::set<int> outflownodes;
-  Core::Conditions::FindConditionedNodes(*discretization(), "StructAleCoupling", outflownodes);
+  Core::Conditions::find_conditioned_nodes(*discretization(), "StructAleCoupling", outflownodes);
 
   std::vector<int> outflowfsinodes;
 
@@ -195,7 +195,7 @@ void Adapter::FluidLung::initialize_vol_con(
       std::vector<int> constrowner;
       constrlm.push_back(condID - offsetID);
       constrowner.push_back(curr->second->owner());
-      Core::LinAlg::Assemble(*initflowrate, elevector3, constrlm, constrowner);
+      Core::LinAlg::assemble(*initflowrate, elevector3, constrlm, constrowner);
     }
   }
 }
@@ -304,13 +304,13 @@ void Adapter::FluidLung::evaluate_vol_con(
 
       // negative sign (for shift to rhs) is already implicitly taken into account!
       elevector1.scale(-lagraval * invresscale);
-      Core::LinAlg::Assemble(*FluidRHS, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(*FluidRHS, elevector1, lm, lmowner);
 
       std::vector<int> constrlm;
       std::vector<int> constrowner;
       constrlm.push_back(gindex);
       constrowner.push_back(curr->second->owner());
-      Core::LinAlg::Assemble(*CurrFlowRates, elevector3, constrlm, constrowner);
+      Core::LinAlg::assemble(*CurrFlowRates, elevector3, constrlm, constrowner);
     }
   }
 
@@ -347,7 +347,7 @@ void Adapter::FluidLung::evaluate_vol_con(
   FluidConstrMatrix->scale(invresscale);
   ConstrFluidMatrix->scale(dttheta);
 
-  Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dof_row_map(), true);
   outflowfsiinterface_->insert_cond_vector(
       outflowfsiinterface_->extract_cond_vector(zeros), FluidRHS);
 }

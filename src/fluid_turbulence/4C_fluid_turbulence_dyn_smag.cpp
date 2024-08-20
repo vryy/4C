@@ -29,7 +29,7 @@ FLD::DynSmagFilter::DynSmagFilter(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   // the default is do nothing
   apply_dynamic_smagorinsky_ = false;
@@ -49,7 +49,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       apply_dynamic_smagorinsky_ = true;
 
       // check, if averaging is desired
-      if (Core::UTILS::IntegralValue<int>(
+      if (Core::UTILS::integral_value<int>(
               params_.sublist("SUBGRID VISCOSITY"), "C_SMAGORINSKY_AVERAGED") == true)
       {
         if (discret_->get_comm().MyPID() == 0)
@@ -82,8 +82,8 @@ FLD::DynSmagFilter::DynSmagFilter(
       // check whether we would like to include a model for the isotropic part
       if (physicaltype_ == Inpar::FLUID::loma)
       {
-        if (Core::UTILS::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") ==
-            true)
+        if (Core::UTILS::integral_value<int>(
+                params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") == true)
         {
           if (discret_->get_comm().MyPID() == 0)
             std::cout << "------->  Ci is included for loma problem" << std::endl;
@@ -793,7 +793,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_turbulent_prandtl_number, calc_turb_prandtl_params);
 
   // hand filtered global vectors down to the element

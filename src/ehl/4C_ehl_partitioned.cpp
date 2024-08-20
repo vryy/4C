@@ -29,9 +29,9 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
     const std::string lubrication_disname)
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
-      preincnp_(Core::LinAlg::CreateVector(
+      preincnp_(Core::LinAlg::create_vector(
           *lubrication_->lubrication_field()->discretization()->dof_row_map(0), true)),
-      dispincnp_(Core::LinAlg::CreateVector(*structure_->dof_row_map(0), true))
+      dispincnp_(Core::LinAlg::create_vector(*structure_->dof_row_map(0), true))
 {
   // call the EHL parameter lists
   const Teuchos::ParameterList& ehlparams =
@@ -39,7 +39,7 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
   const Teuchos::ParameterList& ehlparamspart =
       Global::Problem::instance()->elasto_hydro_dynamic_params().sublist("PARTITIONED");
 
-  if (Core::UTILS::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE"))
+  if (Core::UTILS::integral_value<int>(ehlparams, "DIFFTIMESTEPSIZE"))
   {
     FOUR_C_THROW("Different time stepping for two way coupling not implemented yet.");
   }

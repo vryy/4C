@@ -36,7 +36,7 @@ namespace ParticleRigidBody
      * \author Sebastian Fuchs \date 09/2020
      */
     template <class T>
-    inline void QuaternionClear(T* q)
+    inline void quaternion_clear(T* q)
     {
       q[0] = 0.0;
       q[1] = 0.0;
@@ -50,7 +50,7 @@ namespace ParticleRigidBody
      * \author Sebastian Fuchs \date 09/2020
      */
     template <class T>
-    inline void QuaternionSet(T* q1, const T* q2)
+    inline void quaternion_set(T* q1, const T* q2)
     {
       q1[0] = q2[0];
       q1[1] = q2[1];
@@ -64,7 +64,7 @@ namespace ParticleRigidBody
      * \author Sebastian Fuchs \date 09/2020
      */
     template <class T>
-    inline void QuaternionInvert(T* q1, const T* q2)
+    inline void quaternion_invert(T* q1, const T* q2)
     {
       q1[0] = -q2[0];
       q1[1] = -q2[1];
@@ -80,7 +80,7 @@ namespace ParticleRigidBody
      * \author Sebastian Fuchs \date 09/2020
      */
     template <class T>
-    inline void QuaternionProduct(T* q12, const T* q2, const T* q1)
+    inline void quaternion_product(T* q12, const T* q2, const T* q1)
     {
       q12[0] = q2[3] * q1[0] + q1[3] * q2[0] + q2[1] * q1[2] - q1[1] * q2[2];
       q12[1] = q2[3] * q1[1] + q1[3] * q2[1] + q2[2] * q1[0] - q1[2] * q2[0];
@@ -94,7 +94,7 @@ namespace ParticleRigidBody
      * \author Sebastian Fuchs \date 09/2020
      */
     template <class T>
-    inline void QuaternionFromAngle(T* q, const T* phi)
+    inline void quaternion_from_angle(T* q, const T* phi)
     {
       double absphi = std::sqrt(phi[0] * phi[0] + phi[1] * phi[1] + phi[2] * phi[2]);
 
@@ -108,7 +108,7 @@ namespace ParticleRigidBody
         q[3] = std::cos(0.5 * absphi);
       }
       else
-        QuaternionClear(q);
+        quaternion_clear(q);
     }
 
     /*!
@@ -123,7 +123,7 @@ namespace ParticleRigidBody
      * \author Sebastian Fuchs \date 09/2020
      */
     template <class T>
-    inline void QuaternionRotateVector(T* w, const T* q, const T* v)
+    inline void quaternion_rotate_vector(T* w, const T* q, const T* v)
     {
       double qv[4];
       qv[0] = +q[3] * v[0] + q[1] * v[2] - v[1] * q[2];

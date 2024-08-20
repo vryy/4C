@@ -74,7 +74,7 @@ Cut::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int
   // create middle node
 
   Core::LinAlg::Matrix<4, 1> funct;
-  Core::FE::shape_function_2D(funct, 0.0, 0.0, Core::FE::CellType::quad4);
+  Core::FE::shape_function_2d(funct, 0.0, 0.0, Core::FE::CellType::quad4);
 
   Core::LinAlg::Matrix<3, 1> xyz;
   xyz.multiply(xyze, funct);
@@ -171,7 +171,7 @@ Cut::Quad8SideHandle::Quad8SideHandle(
     // create middle node
 
     Core::LinAlg::Matrix<8, 1> funct;
-    Core::FE::shape_function_2D(funct, 0.0, 0.0, Core::FE::CellType::quad8);
+    Core::FE::shape_function_2d(funct, 0.0, 0.0, Core::FE::CellType::quad8);
 
     Core::LinAlg::Matrix<3, 1> xyz;
     xyz.multiply(xyze, funct);

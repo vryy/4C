@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   template <Core::FE::CellType celltype>
-  Input::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
+  Input::LineDefinition::Builder get_default_line_definition_builder()
   {
     return Input::LineDefinition::Builder()
-        .add_int_vector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
+        .add_int_vector(Core::FE::cell_type_to_string(celltype), Core::FE::num_nodes<celltype>)
         .add_named_int("MAT")
         .add_named_string("KINEM")
         .add_named_string("TYPE")
@@ -50,22 +50,22 @@ void Discret::ELEMENTS::SolidScatraType::setup_element_definition(
 {
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SOLIDSCATRA"];
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex8>()
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex8)] =
+      get_default_line_definition_builder<Core::FE::CellType::hex8>()
           .add_optional_named_string("TECH")
           .build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().build();
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex27)] =
+      get_default_line_definition_builder<Core::FE::CellType::hex27>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().build();
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::tet4)] =
+      get_default_line_definition_builder<Core::FE::CellType::tet4>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().build();
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::tet10)] =
+      get_default_line_definition_builder<Core::FE::CellType::tet10>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::nurbs27)] =
-      GetDefaultLineDefinitionBuilder<Core::FE::CellType::nurbs27>().build();
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::nurbs27)] =
+      get_default_line_definition_builder<Core::FE::CellType::nurbs27>().build();
 }
 
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::create(
@@ -98,7 +98,7 @@ void Discret::ELEMENTS::SolidScatraType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidScatraType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 Discret::ELEMENTS::SolidScatra::SolidScatra(int id, int owner) : Core::Elements::Element(id, owner)
@@ -112,27 +112,27 @@ Core::Elements::Element* Discret::ELEMENTS::SolidScatra::clone() const
 
 int Discret::ELEMENTS::SolidScatra::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(celltype_);
+  return Core::FE::get_number_of_element_lines(celltype_);
 }
 
 int Discret::ELEMENTS::SolidScatra::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(celltype_);
+  return Core::FE::get_number_of_element_surfaces(celltype_);
 }
 
 int Discret::ELEMENTS::SolidScatra::num_volume() const
 {
-  return Core::FE::getNumberOfElementVolumes(celltype_);
+  return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidScatra::lines()
 {
-  return Core::Communication::GetElementLines<StructuralLine, SolidScatra>(*this);
+  return Core::Communication::get_element_lines<StructuralLine, SolidScatra>(*this);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidScatra::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<StructuralSurface, SolidScatra>(*this);
+  return Core::Communication::get_element_surfaces<StructuralSurface, SolidScatra>(*this);
 }
 
 void Discret::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
@@ -155,13 +155,13 @@ bool Discret::ELEMENTS::SolidScatra::read_element(const std::string& eletype,
 {
   // read base element
   // set cell type
-  celltype_ = Core::FE::StringToCellType(celltype);
+  celltype_ = Core::FE::string_to_cell_type(celltype);
 
   // read number of material model
-  set_material(0, Mat::Factory(Solid::UTILS::read_element::read_element_material(container)));
+  set_material(0, Mat::factory(Solid::UTILS::read_element::read_element_material(container)));
 
   // read scalar transport implementation type
-  properties_.impltype = ReadScatraImplType(container);
+  properties_.impltype = read_scatra_impl_type(container);
 
   properties_.solid = Solid::UTILS::read_element::read_solid_element_properties(container);
 

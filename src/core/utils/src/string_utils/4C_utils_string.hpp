@@ -34,12 +34,12 @@ namespace Core::UTILS
    *
    * Note: consecutive whitespaces inside the std::string will be reduced to a single space.
    */
-  std::string Trim(const std::string& line);
+  std::string trim(const std::string& line);
 
   /*!
    * @brief Split the @p input string into multiple substrings between the @p delimiter.
    */
-  std::vector<std::string> Split(const std::string& input, const std::string& delimiter);
+  std::vector<std::string> split(const std::string& input, const std::string& delimiter);
 
   /*!
    * @brief Remove comments, trailing and leading whitespaces
@@ -47,7 +47,7 @@ namespace Core::UTILS
    * @param[in] line arbitrary string
    * @result same string stripped
    */
-  std::string StripComment(const std::string& line);
+  std::string strip_comment(const std::string& line);
 
   /*!
    * @brief Convert all characters in a string into lower case (wrapper to the corresponding routine
@@ -56,7 +56,7 @@ namespace Core::UTILS
    *  @param[in] line arbitrary string
    *  @result same string in all lower case
    */
-  std::string ToLower(const std::string& line);
+  std::string to_lower(const std::string& line);
 
   /*!
    * @brief Split a string into a vector of strings by a given separator
@@ -65,7 +65,7 @@ namespace Core::UTILS
    *  @param[in] separator separator string the string is split by
    *  @result vector of strings
    */
-  std::vector<std::string> SplitStringList(const std::string& str, const std::string& separator);
+  std::vector<std::string> split_string_list(const std::string& str, const std::string& separator);
 
   /*!
    * @brief Split a string into a vector of strings by a given separator
@@ -74,7 +74,7 @@ namespace Core::UTILS
    *  @param[in] separator separator character the string is split by
    *  @result vector of strings
    */
-  std::vector<std::string> SplitStringList(const std::string& str, const char separator);
+  std::vector<std::string> split_string_list(const std::string& str, const char separator);
 }  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE

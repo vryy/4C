@@ -67,7 +67,7 @@ void particle_drt()
 
   // print summary statistics for all timers
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      Core::Communication::toTeuchosComm<int>(comm);
+      Core::Communication::to_teuchos_comm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 }
 

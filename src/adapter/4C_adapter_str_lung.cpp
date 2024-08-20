@@ -113,7 +113,7 @@ Adapter::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
   // find all dofs belonging to enclosing boundary -> volume coupling dofs
   std::vector<int> dofmapvec;
   std::vector<int> nodes;
-  Core::Conditions::FindConditionedNodes(*discretization(), "StructFluidSurfCoupling", nodes);
+  Core::Conditions::find_conditioned_nodes(*discretization(), "StructFluidSurfCoupling", nodes);
   const int numnode = nodes.size();
 
   const int ndim = Global::Problem::instance()->n_dim();
@@ -219,7 +219,7 @@ void Adapter::StructureLung::initialize_vol_con(
         std::vector<int> constrowner;
         constrlm.push_back(condID - offsetID);
         constrowner.push_back(curr->second->owner());
-        Core::LinAlg::Assemble(*initvol, elevector3, constrlm, constrowner);
+        Core::LinAlg::assemble(*initvol, elevector3, constrlm, constrowner);
       }
     }
   }
@@ -365,7 +365,7 @@ void Adapter::StructureLung::evaluate_vol_con(
 
       // "Newton-ready" residual -> already scaled with -1.0
       elevector1.scale(lagraval * sign);
-      Core::LinAlg::Assemble(*StructRHS, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(*StructRHS, elevector1, lm, lmowner);
 
       // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
       // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
@@ -374,7 +374,7 @@ void Adapter::StructureLung::evaluate_vol_con(
       constrlm.push_back(gindex);
       constrowner.push_back(curr->second->owner());
       elevector3.scale(sign);
-      Core::LinAlg::Assemble(*CurrVols, elevector3, constrlm, constrowner);
+      Core::LinAlg::assemble(*CurrVols, elevector3, constrlm, constrowner);
     }
   }
 
@@ -386,11 +386,11 @@ void Adapter::StructureLung::evaluate_vol_con(
   // partition) and corresponding stiffness matrix contributions
   const Teuchos::RCP<const Epetra_Map>& condmap = get_dbc_map_extractor()->cond_map();
   const Teuchos::RCP<const Epetra_Map>& outflowmap = interface()->Map(2);
-  Teuchos::RCP<Epetra_Map> finmap = Core::LinAlg::MergeMap(*condmap, *outflowmap, false);
+  Teuchos::RCP<Epetra_Map> finmap = Core::LinAlg::merge_map(*condmap, *outflowmap, false);
   StructMatrix->apply_dirichlet(*finmap, false);
 
   const Teuchos::RCP<const Epetra_Map>& dispmap = StructMatrix->range_extractor().Map(0);
-  Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dispmap, true);
+  Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dispmap, true);
   get_dbc_map_extractor()->insert_cond_vector(
       get_dbc_map_extractor()->extract_cond_vector(zeros), StructRHS);
   interface()->insert_vector(interface()->extract_vector(zeros, 2), 2, StructRHS);

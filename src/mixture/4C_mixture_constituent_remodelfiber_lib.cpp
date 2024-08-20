@@ -16,8 +16,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-[[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* MIXTURE::PAR::FiberMaterialFactory(
-    int matid)
+[[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>*
+MIXTURE::PAR::fiber_material_factory(int matid)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == Teuchos::null)

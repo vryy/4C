@@ -75,7 +75,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::create(
 void Discret::ELEMENTS::ElemagDiffType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = Core::FE::getDimension(dwele->shape()) - 1;  // 2;  // Bad Luca! Hard coding is not nice!
+  numdf = Core::FE::get_dimension(dwele->shape()) - 1;  // 2;  // Bad Luca! Hard coding is not nice!
   dimns = numdf;
   nv = numdf;
   np = 0;
@@ -176,7 +176,7 @@ void Discret::ELEMENTS::ElemagDiff::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff::lines()
 {
-  return Core::Communication::GetElementLines<ElemagDiffBoundary, ElemagDiff>(*this);
+  return Core::Communication::get_element_lines<ElemagDiffBoundary, ElemagDiff>(*this);
 }
 
 
@@ -185,7 +185,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagDiff::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<ElemagDiffBoundary, ElemagDiff>(*this);
+  return Core::Communication::get_element_surfaces<ElemagDiffBoundary, ElemagDiff>(*this);
 }
 
 
@@ -207,7 +207,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiff::create_face
       dynamic_cast<Discret::ELEMENTS::ElemagDiff*>(parent_slave);
 
   // insert both parent elements
-  return Core::Communication::ElementIntFaceFactory<ElemagDiffIntFace, ElemagDiff>(
+  return Core::Communication::element_int_face_factory<ElemagDiffIntFace, ElemagDiff>(
       -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
@@ -305,7 +305,7 @@ void Discret::ELEMENTS::ElemagDiffBoundary::unpack(const std::vector<char>& data
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

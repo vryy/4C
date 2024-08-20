@@ -95,16 +95,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
 {
   // init stuff
   couplmethod_ =
-      Core::UTILS::IntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+      Core::UTILS::integral_value<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
           couplingparams, "ARTERY_COUPLING_METHOD");
 
   condname_ = condname;
 
   evaluate_in_ref_config_ =
-      Core::UTILS::IntegralValue<int>(fluidcouplingparams, "EVALUATE_IN_REF_CONFIG");
+      Core::UTILS::integral_value<int>(fluidcouplingparams, "EVALUATE_IN_REF_CONFIG");
 
   evaluate_on_lateral_surface_ =
-      Core::UTILS::IntegralValue<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
+      Core::UTILS::integral_value<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
 
   coupling_element_type_ = couplingtype;
 
@@ -537,7 +537,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   if (numdim_ != 3) FOUR_C_THROW("surface-based formulation makes only sense in 3D");
   for (int idim = 0; idim < 3; idim++) tang(idim) = lambda0_(idim);
 
-  Core::Geo::BuildOrthonormalBasisFromUnitVector(tang, unit_rad_1, unit_rad_2);
+  Core::Geo::build_orthonormal_basis_from_unit_vector(tang, unit_rad_1, unit_rad_2);
 
   // get radius
   const int artelematerial = coupltype_ == type_scatra ? 1 : 0;
@@ -742,7 +742,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::delete_unnecessary_g_ps(Teuchos::RCP<Epetra_MultiVector> gp_vector)
+    dim>::delete_unnecessary_gps(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
   const int mylid = element1_->lid();
   n_gp_ = 0;
@@ -801,8 +801,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       variablemanager_->extract_element_and_node_values(*element2_, *contdis, la_cont, ele2pos_, 0);
 
       // get contelephinp_ and artelephinp_
-      Core::FE::ExtractMyValues(*contdis->get_state("phinp_fluid"), contelephinp_, la_cont[0].lm_);
-      Core::FE::ExtractMyValues(
+      Core::FE::extract_my_values(
+          *contdis->get_state("phinp_fluid"), contelephinp_, la_cont[0].lm_);
+      Core::FE::extract_my_values(
           *artdis->get_state("one_d_artery_pressure"), artelephinp_, la_art[0].lm_);
 
       // extract velocity of solid phase
@@ -821,7 +822,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
           eartscalarnp_.clear();
           eartscalarnp_.resize(numscalart_, Core::LinAlg::Matrix<numnodesart_, 1>(true));
           // extract local values of artery-scatra field from global state vector
-          Core::FE::ExtractMyValues<Core::LinAlg::Matrix<numnodesart_, 1>>(
+          Core::FE::extract_my_values<Core::LinAlg::Matrix<numnodesart_, 1>>(
               *artscalarnp, eartscalarnp_, la[ndsartery_scatra_].lm_);
         }
         else
@@ -840,7 +841,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
           econtscalarnp_.clear();
           econtscalarnp_.resize(numscalcont_, Core::LinAlg::Matrix<numnodescont_, 1>(true));
           // extract local values of continuous-scatra field from global state vector
-          Core::FE::ExtractMyValues<Core::LinAlg::Matrix<numnodescont_, 1>>(
+          Core::FE::extract_my_values<Core::LinAlg::Matrix<numnodescont_, 1>>(
               *contscalarnp, econtscalarnp_, la[3].lm_);
         }
         else
@@ -854,8 +855,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       variablemanager_->extract_element_and_node_values(*element2_, *contdis, la_cont, ele2pos_, 2);
 
       // get contelephinp_ and artelephinp_
-      Core::FE::ExtractMyValues(*contdis->get_state("phinp"), contelephinp_, la_cont[0].lm_);
-      Core::FE::ExtractMyValues(
+      Core::FE::extract_my_values(*contdis->get_state("phinp"), contelephinp_, la_cont[0].lm_);
+      Core::FE::extract_my_values(
           *artdis->get_state("one_d_artery_phinp"), artelephinp_, la_art[0].lm_);
 
       // extract artery pressure
@@ -865,7 +866,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       {
         Core::Elements::Element::LocationArray la(artdis->num_dof_sets());
         element1_->location_vector(*artdis, la, false);
-        Core::FE::ExtractMyValues<Core::LinAlg::Matrix<numnodesart_, 1>>(
+        Core::FE::extract_my_values<Core::LinAlg::Matrix<numnodesart_, 1>>(
             *artpressnp, earterypressurenp_, la[ndsscatra_artery_].lm_);
       }
       else
@@ -988,8 +989,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // TODO: for viscosity law blood, viscosity depends on diameter, this linearization is still
   // missing
 
-  Core::LinAlg::Update(prefac, diam_stiffmat11_, 0.0, *stiffmat11);
-  Core::LinAlg::Update(prefac, diam_stiffmat12_, 0.0, *stiffmat12);
+  Core::LinAlg::update(prefac, diam_stiffmat11_, 0.0, *stiffmat11);
+  Core::LinAlg::update(prefac, diam_stiffmat12_, 0.0, *stiffmat12);
 }
 
 /*------------------------------------------------------------------------*
@@ -1101,7 +1102,7 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art,
         lmdisp[inode * numdim_ + idim] = la[1].lm_[inode * numdim_ + idim];
 
     // extract local values of displacement field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<numdim_, numnodescont_>>(
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<numdim_, numnodescont_>>(
         *dispnp, edispnp, lmdisp);
   }
   else
@@ -2096,7 +2097,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       lmdisp[inode * numdim_ + idim] = la[1].lm_[inode * numdim_ + idim];
 
   // extract local values of displacement field from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<numdim_, numnodescont_>>(
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<numdim_, numnodescont_>>(
       *velocity, ele2vel_, lmdisp);
 }
 
@@ -2168,7 +2169,7 @@ FAD PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, di
     // dx/dX = x * N_XYZ^T
     defGrad.multiply_nt(ele2pos, N2_XYZ);
     Ft0.multiply(defGrad, t0);
-    const FAD Ft0Norm = Core::FADUtils::VectorNorm(Ft0);
+    const FAD Ft0Norm = Core::FADUtils::vector_norm(Ft0);
     // finally get the length
     length += Ft0Norm * w_gp * jacobi;
   }
@@ -3308,15 +3309,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     f.clear();
     for (unsigned int i = 0; i < numdim_; i++) f(i) = x2(i) - r1(i);
 
-    residual = Core::FADUtils::VectorNorm(f);
+    residual = Core::FADUtils::vector_norm(f);
     if (iter == 0)
-      first_residual = std::max(first_residual, Core::FADUtils::CastToDouble(residual));
+      first_residual = std::max(first_residual, Core::FADUtils::cast_to_double(residual));
 
     // Reset matrices
     for (unsigned int i = 0; i < numdim_; i++)
       for (unsigned int j = 0; j < numdim_; j++) J(i, j) = x2_xi(i, j);
 
-    const double jacdet = Core::FADUtils::CastToDouble<T, numdim_, numdim_>(J).determinant();
+    const double jacdet = Core::FADUtils::cast_to_double<T, numdim_, numdim_>(J).determinant();
 
     // If det_J = 0 we assume, that the artery element and the surface edge are parallel.
     // These projection is not needed due the fact that the contact interval can also be
@@ -3476,8 +3477,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   const Core::FE::CellType distype = element1_->shape();
 
   // Get values and derivatives of shape functions
-  Core::FE::shape_function_1D(N1, eta, distype);
-  Core::FE::shape_function_1D_deriv1(N1_eta, eta, distype);
+  Core::FE::shape_function_1d(N1, eta, distype);
+  Core::FE::shape_function_1d_deriv1(N1_eta, eta, distype);
 
   return;
 }
@@ -3499,8 +3500,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       // 2D case
     case Core::FE::CellType::quad4:
     {
-      Core::FE::shape_function_2D(N2, xi[0], xi[1], distype_cont);
-      Core::FE::shape_function_2D_deriv1(N2_xi, xi[0], xi[1], distype_cont);
+      Core::FE::shape_function_2d(N2, xi[0], xi[1], distype_cont);
+      Core::FE::shape_function_2d_deriv1(N2_xi, xi[0], xi[1], distype_cont);
       break;
     }
       // 3D case
@@ -3508,8 +3509,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     case Core::FE::CellType::tet4:
     case Core::FE::CellType::tet10:
     {
-      Core::FE::shape_function_3D(N2, xi[0], xi[1], xi[2], distype_cont);
-      Core::FE::shape_function_3D_deriv1(N2_xi, xi[0], xi[1], xi[2], distype_cont);
+      Core::FE::shape_function_3d(N2, xi[0], xi[1], xi[2], distype_cont);
+      Core::FE::shape_function_3d_deriv1(N2_xi, xi[0], xi[1], xi[2], distype_cont);
       break;
     }
     default:

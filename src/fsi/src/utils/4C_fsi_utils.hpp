@@ -54,7 +54,7 @@ namespace FSI
   namespace UTILS
   {
     /// Check whether fluid node numbers and ALE node numbers are equal.
-    bool FluidAleNodesDisjoint(
+    bool fluid_ale_nodes_disjoint(
         Teuchos::RCP<Core::FE::Discretization> fluiddis,  ///< pointer to fluid discretization
         Teuchos::RCP<Core::FE::Discretization> aledis     ///< pointer to ALE discretization
     );

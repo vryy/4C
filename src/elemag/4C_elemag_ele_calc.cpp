@@ -83,7 +83,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::evaluate(Discret::ELEMENTS::Elema
   }
   else
   {
-    action = Core::UTILS::GetAsEnum<EleMag::Action>(params, "action");
+    action = Core::UTILS::get_as_enum<EleMag::Action>(params, "action");
   }
 
   initialize_shapes(ele);
@@ -330,7 +330,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::read_global_vectors(Core::Elemen
   {
     elemagele->elenodeTrace2d_.size(lm.size());
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state("trace");
-    Core::FE::ExtractMyValues(*matrix_state, elemagele->elenodeTrace2d_, lm);
+    Core::FE::extract_my_values(*matrix_state, elemagele->elenodeTrace2d_, lm);
   }
 
   return;
@@ -398,7 +398,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::element_init_from_restart(
 
   Teuchos::RCP<const Epetra_Vector> intVar = discretization.get_state(1, "intVar");
   std::vector<int> localDofs1 = discretization.dof(1, ele);
-  Core::FE::ExtractMyValues(*intVar, interiorVar, localDofs1);
+  Core::FE::extract_my_values(*intVar, interiorVar, localDofs1);
   // now write this in corresponding eleinteriorElectric_ and eleinteriorMagnetic_
   for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
   {
@@ -409,7 +409,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::element_init_from_restart(
   std::vector<double> interiorVarnm(size);
 
   Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.get_state(1, "intVarnm");
-  Core::FE::ExtractMyValues(*intVarnm, interiorVarnm, localDofs1);
+  Core::FE::extract_my_values(*intVarnm, interiorVarnm, localDofs1);
   for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
   {
     elemagele->eleinteriorMagneticnm1_(i) = interiorVarnm[i];
@@ -993,7 +993,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::interpolate_solution_to_nodes(
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
   Core::LinAlg::SerialDenseMatrix locations =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(distype);
+      Core::FE::get_ele_node_numbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
@@ -1043,14 +1043,14 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::interpolate_solution_to_nodes(
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = Core::FE::getEleNodeNumbering_nodes_paramspace(
+  locations = Core::FE::get_ele_node_numbering_nodes_paramspace(
       Core::FE::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = Core::FE::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = Core::FE::get_number_of_face_element_corner_nodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = Core::FE::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = Core::FE::get_number_of_face_element_internal_nodes(distype);
 
   // Cycling the faces of the element
   Core::LinAlg::SerialDenseVector fvalues(shapesface_->nfdofs_);
@@ -1148,7 +1148,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagEleCalc<distype>* Discret::ELEMENTS::ElemagEleCalc<distype>::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::ElemagEleCalc<distype>>(

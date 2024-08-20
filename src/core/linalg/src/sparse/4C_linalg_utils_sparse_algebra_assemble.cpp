@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
+void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -70,7 +70,7 @@ void Core::LinAlg::Assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDense
 /*----------------------------------------------------------------------*
  |  assemble a vector                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
+void Core::LinAlg::assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   const int ldim = (int)lm.size();
@@ -92,7 +92,7 @@ void Core::LinAlg::Assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::LinAlg::AssembleMyVector(
+void Core::LinAlg::assemble_my_vector(
     double scalar_target, Epetra_Vector& target, double scalar_source, const Epetra_Vector& source)
 {
   for (int slid = 0; slid < source.Map().NumMyElements(); ++slid)
@@ -113,11 +113,11 @@ void Core::LinAlg::AssembleMyVector(
 /*----------------------------------------------------------------------*
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Assemble(Epetra_MultiVector& V, const int n,
+void Core::LinAlg::assemble(Epetra_MultiVector& V, const int n,
     const Core::LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
-  Core::LinAlg::Assemble(*(V(n)), Vele, lm, lmowner);
+  Core::LinAlg::assemble(*(V(n)), Vele, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------*
@@ -225,7 +225,7 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Epet
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::ConvertDirichletToggleVectorToMaps(
+Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(
     const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
 {
   const Epetra_BlockMap& fullblockmap = dbctoggle->Map();

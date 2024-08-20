@@ -98,7 +98,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidBoundaryParentInterface*
 Discret::ELEMENTS::FluidBoundaryParent<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidBoundaryParent<distype>>(
@@ -619,7 +619,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
 
     // get local node coordinates
     Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-    Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+    Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
         parent, pxyze);
 
     // get Gaussian integration points
@@ -640,7 +640,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
 
     // get local node coordinates
     Core::LinAlg::Matrix<nsd, biel> bxyze(true);
-    Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
+    Core::Geo::fill_initial_position_array<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
         surfele, bxyze);
 
     // get Gaussian integration points
@@ -671,9 +671,9 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
     // distinguish 2- and 3-D case
     Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, nsd);
     if (nsd == 2)
-      Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+      Core::FE::boundary_gp_to_parent_gp2(pqxg, gps, pdistype, bdistype, bid);
     else if (nsd == 3)
-      Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+      Core::FE::boundary_gp_to_parent_gp3(pqxg, gps, pdistype, bdistype, bid);
 
     //---------------------------------------------------------------------
     // extract parent and boundary values from global distributed vectors
@@ -686,8 +686,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
 
     std::vector<double> mypvelaf(plm.size());
     std::vector<double> mypscaaf(plm.size());
-    Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
-    Core::FE::ExtractMyValues(*scaaf, mypscaaf, plm);
+    Core::FE::extract_my_values(*velaf, mypvelaf, plm);
+    Core::FE::extract_my_values(*scaaf, mypscaaf, plm);
 
     Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
     Core::LinAlg::Matrix<piel, 1> pescaaf(true);
@@ -708,8 +708,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-      Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-      Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+      Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
+      Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
 
       // add parent and boundary displacement at n+1
       for (int idim = 0; idim < nsd; ++idim)
@@ -778,7 +778,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
       // for boundary element
       drs_ = 0.0;
       Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
-      Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+      Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
           bxyze, deriv, metrictensor, drs_, &unitnormal);
 
       // compute integration factor for boundary element
@@ -1279,7 +1279,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+  Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
@@ -1300,7 +1300,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, biel> bxyze(true);
-  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
+  Core::Geo::fill_initial_position_array<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
@@ -1331,9 +1331,9 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
   // distinguish 2- and 3-D case
   Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, nsd);
   if (nsd == 2)
-    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -1343,7 +1343,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+  Core::FE::extract_my_values(*velaf, mypvelaf, plm);
 
   Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
@@ -1356,7 +1356,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
 
   // boundary pressure
   std::vector<double> mybvelaf(blm.size());
-  Core::FE::ExtractMyValues(*velaf, mybvelaf, blm);
+  Core::FE::extract_my_values(*velaf, mybvelaf, blm);
 
   Core::LinAlg::Matrix<1, biel> epressnp(true);
 
@@ -1373,8 +1373,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-    Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-    Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+    Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
+    Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -1448,7 +1448,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
     // for boundary element
     drs_ = 0.0;
     Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
-    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
         bxyze, deriv, metrictensor, drs_, &boundaryNormal);
 
     // compute integration factor for boundary element
@@ -1610,7 +1610,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+  Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
@@ -1631,7 +1631,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, biel> bxyze(true);
-  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
+  Core::Geo::fill_initial_position_array<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
@@ -1665,9 +1665,9 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
   // distinguish 2- and 3-D case
   Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, nsd);
   if (nsd == 2)
-    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -1677,7 +1677,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+  Core::FE::extract_my_values(*velaf, mypvelaf, plm);
 
   Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
@@ -1696,8 +1696,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-    Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-    Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+    Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
+    Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -1773,7 +1773,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
     // for boundary element
     drs_ = 0.0;
     Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
-    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
         bxyze, deriv, metrictensor, drs_, &boundaryNormal);
 
     // compute integration factor for boundary element
@@ -1952,7 +1952,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+  Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
@@ -1973,7 +1973,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, biel> bxyze(true);
-  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
+  Core::Geo::fill_initial_position_array<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
@@ -2004,9 +2004,9 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
   // distinguish 2- and 3-D case
   Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, nsd);
   if (nsd == 2)
-    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -2016,7 +2016,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+  Core::FE::extract_my_values(*velaf, mypvelaf, plm);
 
   Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
@@ -2035,10 +2035,10 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
     if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
-    Core::FE::ExtractMyValues(*velnp, mypvelnp, plm);
+    Core::FE::extract_my_values(*velnp, mypvelnp, plm);
   }
   else
-    Core::FE::ExtractMyValues(*velaf, mypvelnp, plm);
+    Core::FE::extract_my_values(*velaf, mypvelnp, plm);
 
   Core::LinAlg::Matrix<nsd, piel> pevelnp(true);
   Core::LinAlg::Matrix<piel, 1> peprenp(true);
@@ -2059,8 +2059,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-    Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-    Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+    Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
+    Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -2137,7 +2137,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
     // for boundary element
     drs_ = 0.0;
     Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
-    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
         bxyze, deriv, metrictensor, drs_, &unitnormal);
 
     // compute integration factor for boundary element
@@ -3761,7 +3761,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+  Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
@@ -3788,7 +3788,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
   // get local node coordinates
   Core::LinAlg::Matrix<nsd, biel> bxyze(true);
-  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
+  Core::Geo::fill_initial_position_array<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
@@ -3812,9 +3812,9 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
   Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.ip().nquad, nsd);
   if (nsd == 3)
-    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp3(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 2)
-    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::boundary_gp_to_parent_gp2(pqxg, gps, pdistype, bdistype, bid);
   else
     FOUR_C_THROW("only 2D and 3D");
   //---------------------------------------------------------------------
@@ -3831,8 +3831,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
       if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-      Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-      Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+      Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
+      Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
 
       // add parent and boundary displacement at n+1
       for (int idim = 0; idim < nsd; ++idim)
@@ -3905,7 +3905,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
     // for boundary element
     drs_ = 0.0;
     Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
-    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
         bxyze, deriv, metrictensor, drs_, &unitnormal);
 
     // compute integration factor for boundary element
@@ -4273,7 +4273,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
   // Solve the local eigen value problem Ax = lambda Bx. The function GeneralizedEigen
   // returns the maximum Eigenvalue of the problem.
-  const double maxeigenvalue = Core::LinAlg::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
+  const double maxeigenvalue = Core::LinAlg::generalized_eigen(elemat_epetra1, elemat_epetra2);
 
   // fill the map: every side id has it's own parameter beta
   (*params.get<Teuchos::RCP<std::map<int, double>>>(
@@ -4464,8 +4464,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
     std::vector<double> mypvelaf((plm).size());
     std::vector<double> mypvelnp((plm).size());
 
-    Core::FE::ExtractMyValues(*vel, mypvelaf, plm);
-    Core::FE::ExtractMyValues(*velnp, mypvelnp, plm);
+    Core::FE::extract_my_values(*vel, mypvelaf, plm);
+    Core::FE::extract_my_values(*velnp, mypvelnp, plm);
 
     for (int inode = 0; inode < piel; ++inode)
     {
@@ -4497,7 +4497,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
   {
     std::vector<double> mypvel((plm).size());
 
-    Core::FE::ExtractMyValues(*vel, mypvel, plm);
+    Core::FE::extract_my_values(*vel, mypvel, plm);
 
 
     for (int inode = 0; inode < piel; ++inode)
@@ -4521,7 +4521,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
 
     // get local node coordinates
     Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-    Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+    Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
         parent, pxyze);
 
     //--------------------------------------------------
@@ -4777,12 +4777,12 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
 
       // get local node coordinates
       Core::LinAlg::Matrix<nsd, biel> bxyze(true);
-      Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
+      Core::Geo::fill_initial_position_array<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
           surfele, bxyze);
 
       // get local node coordinates
       Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-      Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+      Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
           parent, pxyze);
 
       //--------------------------------------------------
@@ -4814,7 +4814,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
             gps(iquad, idim) = gpcoord[idim];
           }
         }
-        Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->surface_number());
+        Core::FE::boundary_gp_to_parent_gp3(
+            pqxg, gps, pdistype, bdistype, surfele->surface_number());
       }
 
 
@@ -4865,7 +4866,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
         // area element drs for the integration
         Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
 
-        Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+        Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
             bxyze, deriv, metrictensor, drs_, &unitnormal);
 
         // compute integration factor
@@ -5015,7 +5016,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
         // area element drs for the integration
         Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
 
-        Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+        Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
             bxyze, deriv, metrictensor, drs_, &unitnormal);
 
         // compute integration factor
@@ -5075,12 +5076,12 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
 
     // get local node coordinates
     Core::LinAlg::Matrix<nsd, biel> bxyze(true);
-    Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
+    Core::Geo::fill_initial_position_array<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
         surfele, bxyze);
 
     // get local node coordinates
     Core::LinAlg::Matrix<nsd, piel> pxyze(true);
-    Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
+    Core::Geo::fill_initial_position_array<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
         parent, pxyze);
 
     //--------------------------------------------------
@@ -5114,11 +5115,13 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
       }
       if (nsd == 2)
       {
-        Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, surfele->surface_number());
+        Core::FE::boundary_gp_to_parent_gp2(
+            pqxg, gps, pdistype, bdistype, surfele->surface_number());
       }
       else if (nsd == 3)
       {
-        Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->surface_number());
+        Core::FE::boundary_gp_to_parent_gp3(
+            pqxg, gps, pdistype, bdistype, surfele->surface_number());
       }
     }
 
@@ -5170,7 +5173,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
       // area element drs for the integration
       Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
 
-      Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+      Core::FE::compute_metric_tensor_for_boundary_ele<bdistype>(
           bxyze, deriv, metrictensor, drs_, &unitnormal);
 
       // compute integration factor

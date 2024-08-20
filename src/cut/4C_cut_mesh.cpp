@@ -28,7 +28,7 @@ Functions to catch implementation erros in debug mode
 */
 namespace
 {
-  [[maybe_unused]] bool IsUniqueInBoundaryCell(const std::vector<Cut::Point*>& points)
+  [[maybe_unused]] bool is_unique_in_boundary_cell(const std::vector<Cut::Point*>& points)
   {
     Cut::plain_point_set pointtest;
     pointtest.insert(points.begin(), points.end());
@@ -80,7 +80,7 @@ Cut::Element* Cut::Mesh::create_element(
       return create_wedge6(eid, nids);
     default:
       FOUR_C_THROW(
-          "unsupported distype ( distype = %s )", Core::FE::CellTypeToString(distype).c_str());
+          "unsupported distype ( distype = %s )", Core::FE::cell_type_to_string(distype).c_str());
       exit(EXIT_FAILURE);
   }
   return nullptr;
@@ -100,7 +100,7 @@ Cut::Side* Cut::Mesh::create_side(int sid, const std::vector<int>& nids, Core::F
       return create_tri3_side(sid, nids);
     default:
       FOUR_C_THROW(
-          "unsupported distype ( distype = %s )", Core::FE::CellTypeToString(distype).c_str());
+          "unsupported distype ( distype = %s )", Core::FE::cell_type_to_string(distype).c_str());
       exit(EXIT_FAILURE);
   }
   return nullptr;
@@ -417,7 +417,7 @@ Cut::Tri3BoundaryCell* Cut::Mesh::new_tri3_cell(
 {
   if (points.size() != 3) FOUR_C_THROW("expect 3 points");
 
-  FOUR_C_ASSERT(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+  FOUR_C_ASSERT(is_unique_in_boundary_cell(points), "point used more than once in boundary cell");
 
   Core::LinAlg::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i)
@@ -441,7 +441,7 @@ Cut::Quad4BoundaryCell* Cut::Mesh::new_quad4_cell(
 {
   if (points.size() != 4) FOUR_C_THROW("expect 4 points");
 
-  FOUR_C_ASSERT(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+  FOUR_C_ASSERT(is_unique_in_boundary_cell(points), "point used more than once in boundary cell");
 
   Core::LinAlg::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i)
@@ -464,7 +464,7 @@ Cut::ArbitraryBoundaryCell* Cut::Mesh::new_arbitrary_cell(VolumeCell* volume, Fa
     const std::vector<Point*>& points, const Core::FE::GaussIntegration& gaussRule,
     const Core::LinAlg::Matrix<3, 1>& normal)
 {
-  FOUR_C_ASSERT(IsUniqueInBoundaryCell(points), "point used more than once in boundary cell");
+  FOUR_C_ASSERT(is_unique_in_boundary_cell(points), "point used more than once in boundary cell");
 
   Core::LinAlg::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
@@ -1608,7 +1608,7 @@ void Cut::Mesh::test_element_volume(
       if (vec.norm2() > max_norm) max_norm = vec.norm2();
     }
 
-    double ev = Core::Geo::ElementVolume(e.shape(), xyze);
+    double ev = Core::Geo::element_volume(e.shape(), xyze);
 
     [[maybe_unused]] int numgp = 0;
     [[maybe_unused]] int numic = 0;
@@ -1803,7 +1803,7 @@ void Cut::Mesh::print_cell_stats()
   {
     Core::FE::CellType shape = i->first;
     std::vector<int>& nc = i->second;
-    std::cout << Core::FE::CellTypeToString(shape) << "\tcells: ";
+    std::cout << Core::FE::cell_type_to_string(shape) << "\tcells: ";
     // std::copy( nc.begin(), nc.end(), std::ostream_iterator<int>( std::cout, " " ) );
     for (std::vector<int>::iterator i = nc.begin(); i != nc.end(); ++i)
     {
@@ -1854,63 +1854,63 @@ void Cut::Mesh::dump_gmsh(std::string name)
   // ###############write all elements & shadow elements###############
   if (elements_.size() > 0 || shadow_elements_.size() > 0)
   {
-    Cut::Output::GmshNewSection(file, "Elements");
+    Cut::Output::gmsh_new_section(file, "Elements");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          ++i)
-      Cut::Output::GmshElementDump(file, &(*i->second));
+      Cut::Output::gmsh_element_dump(file, &(*i->second));
 
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = shadow_elements_.begin();
          i != shadow_elements_.end(); ++i)
-      Cut::Output::GmshElementDump(file, &(*i->second));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_element_dump(file, &(*i->second));
+    Cut::Output::gmsh_end_section(file);
   }
 
   // ###############write all sides###############
   if (sides_.size() > 0)
   {
-    Cut::Output::GmshNewSection(file, "Sides");
+    Cut::Output::gmsh_new_section(file, "Sides");
     for (std::map<plain_int_set, Teuchos::RCP<Side>>::iterator i = sides_.begin();
          i != sides_.end(); ++i)
-      Cut::Output::GmshSideDump(file, &(*i->second));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_side_dump(file, &(*i->second));
+    Cut::Output::gmsh_end_section(file);
   }
 
   // ###############write all nodes###############
   if (sides_.size() > 0)
   {
-    Cut::Output::GmshNewSection(file, "Nodes");
+    Cut::Output::gmsh_new_section(file, "Nodes");
     for (std::map<int, Teuchos::RCP<Node>>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
-      Cut::Output::GmshNodeDump(file, &(*i->second));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_node_dump(file, &(*i->second));
+    Cut::Output::gmsh_end_section(file);
   }
 
   // ###############write all points in pointpool###############
   if (pp_->get_points().size() > 0)
   {
-    Cut::Output::GmshNewSection(file, "PoolPoints");
+    Cut::Output::gmsh_new_section(file, "PoolPoints");
     const RCPPointSet& points = pp_->get_points();
     for (RCPPointSet::const_iterator i = points.begin(); i != points.end(); ++i)
-      Cut::Output::GmshPointDump(file, &(*(*i)), (*i)->id());
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_point_dump(file, &(*(*i)), (*i)->id());
+    Cut::Output::gmsh_end_section(file);
   }
 
   // ###############write all edges###############
   if (edges_.size() > 0)
   {
-    Cut::Output::GmshNewSection(file, "Edges");
+    Cut::Output::gmsh_new_section(file, "Edges");
     for (std::map<plain_int_set, Teuchos::RCP<Edge>>::iterator i = edges_.begin();
          i != edges_.end(); ++i)
-      Cut::Output::GmshEdgeDump(file, &(*i->second));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_edge_dump(file, &(*i->second));
+    Cut::Output::gmsh_end_section(file);
   }
 
   // ###############write all lines###############
   if (lines_.size() > 0)
   {
-    Cut::Output::GmshNewSection(file, "Lines");
+    Cut::Output::gmsh_new_section(file, "Lines");
     for (std::list<Teuchos::RCP<Line>>::iterator i = lines_.begin(); i != lines_.end(); ++i)
-      Cut::Output::GmshLineDump(file, &(**i));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_line_dump(file, &(**i));
+    Cut::Output::gmsh_end_section(file);
   }
 
   // ###############write all facets (or basically the facet points)###############
@@ -1923,34 +1923,34 @@ void Cut::Mesh::dump_gmsh(std::string name)
     //    Cut::Output::GmshEndSection(file);
 
     // ###############write all facets (or basically the facet lines)###############
-    Cut::Output::GmshNewSection(file, "Facet_Lines");
+    Cut::Output::gmsh_new_section(file, "Facet_Lines");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
-      Cut::Output::GmshFacetDump(file, &(**i), "lines");
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_facet_dump(file, &(**i), "lines");
+    Cut::Output::gmsh_end_section(file);
 
     // ###############write all triangulated facets ###############
-    Cut::Output::GmshNewSection(file, "Facets");
+    Cut::Output::gmsh_new_section(file, "Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
-      Cut::Output::GmshFacetDump(file, &(**i), "sides");
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_facet_dump(file, &(**i), "sides");
+    Cut::Output::gmsh_end_section(file);
 
     // ###############write all cut facets all ###############
-    Cut::Output::GmshNewSection(file, "cut_Facets");
+    Cut::Output::gmsh_new_section(file, "cut_Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
       if ((*i)->parent_side()->is_cut_side())
-        Cut::Output::GmshFacetDump(file, &(**i), "sides", true);
+        Cut::Output::gmsh_facet_dump(file, &(**i), "sides", true);
     }
-    Cut::Output::GmshEndSection(file);
+    Cut::Output::gmsh_end_section(file);
 
     // ###############write all triangulated facets all ###############
-    Cut::Output::GmshNewSection(file, "ele_Facets");
+    Cut::Output::gmsh_new_section(file, "ele_Facets");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
       if (!(*i)->parent_side()->is_cut_side())
-        Cut::Output::GmshFacetDump(file, &(**i), "sides", true);
+        Cut::Output::gmsh_facet_dump(file, &(**i), "sides", true);
     }
-    Cut::Output::GmshEndSection(file);
+    Cut::Output::gmsh_end_section(file);
   }
 
   // #############write level set information from cut if level set side exists ################
@@ -1966,23 +1966,23 @@ void Cut::Mesh::dump_gmsh(std::string name)
 
   if (haslevelsetside)
   {
-    Cut::Output::GmshNewSection(file, "LevelSetValues");
+    Cut::Output::gmsh_new_section(file, "LevelSetValues");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          i++)
-      Cut::Output::GmshLevelSetValueDump(file, &(*i->second));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_level_set_value_dump(file, &(*i->second));
+    Cut::Output::gmsh_end_section(file);
 
-    Cut::Output::GmshNewSection(file, "LevelSetGradient");
+    Cut::Output::gmsh_new_section(file, "LevelSetGradient");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          i++)
-      Cut::Output::GmshLevelSetGradientDump(file, &(*i->second));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_level_set_gradient_dump(file, &(*i->second));
+    Cut::Output::gmsh_end_section(file);
 
-    Cut::Output::GmshNewSection(file, "LevelSetOrientation");
+    Cut::Output::gmsh_new_section(file, "LevelSetOrientation");
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          i++)
-      Cut::Output::GmshLevelSetOrientationDump(file, &(*i->second));
-    Cut::Output::GmshEndSection(file);
+      Cut::Output::gmsh_level_set_orientation_dump(file, &(*i->second));
+    Cut::Output::gmsh_end_section(file);
   }
 }
 
@@ -2102,7 +2102,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
          i++)
     {
       Element* ele = &*i->second;
-      Cut::Output::GmshLevelSetValueDump(file, ele);
+      Cut::Output::gmsh_level_set_value_dump(file, ele);
     }
     file << "};\n";
 
@@ -2111,7 +2111,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
          i++)
     {
       Element* ele = &*i->second;
-      Cut::Output::GmshLevelSetGradientDump(file, ele);
+      Cut::Output::gmsh_level_set_gradient_dump(file, ele);
     }
     file << "};\n";
 
@@ -2120,7 +2120,7 @@ void Cut::Mesh::dump_gmsh_volume_cells(std::string name, bool include_inner)
          i++)
     {
       Element* ele = &*i->second;
-      Cut::Output::GmshLevelSetOrientationDump(file, ele);
+      Cut::Output::gmsh_level_set_orientation_dump(file, ele);
     }
     file << "};\n";
   }
@@ -2152,7 +2152,7 @@ void Cut::Mesh::dump_gmsh_integration_cells(std::string name)
 void Cut::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPosition pos)
 {
   // Write BCs for "pos" VolumeCell:
-  file << "View \"BoundaryCells " << Point::point_position2_string(pos) << "\" {\n";
+  file << "View \"BoundaryCells " << Point::point_position_to_string(pos) << "\" {\n";
   for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* volcell = &**i;
@@ -2169,7 +2169,7 @@ void Cut::Mesh::dump_gmsh_boundary_cells(std::ofstream& file, Point::PointPositi
   file << "};\n";
 
   // write normal for boundary cells
-  file << "View \"BoundaryCellsNormal " << Point::point_position2_string(pos) << "\" {\n";
+  file << "View \"BoundaryCellsNormal " << Point::point_position_to_string(pos) << "\" {\n";
   for (std::list<Teuchos::RCP<VolumeCell>>::iterator i = cells_.begin(); i != cells_.end(); ++i)
   {
     VolumeCell* volcell = &**i;
@@ -2286,7 +2286,7 @@ void Cut::Mesh::debug_dump(Cut::Element* ele, std::string file, int line)
   //  return;
   std::stringstream str;
   str << ".full_debug_cut_output." << myrank_ << "_CUTFAIL.pos";
-  std::string filename(Cut::Output::GenerateGmshOutputFilename(str.str()));
+  std::string filename(Cut::Output::generate_gmsh_output_filename(str.str()));
   dump_gmsh(filename);
 
   ele->debug_dump();

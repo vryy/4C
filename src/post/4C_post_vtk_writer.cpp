@@ -198,7 +198,7 @@ void PostVtkWriter::write_solution_vector(const std::vector<double> &solution,
   if (write_binary_output_)
   {
     file << " format=\"binary\">\n";
-    LibB64::writeCompressedBlock(solution, file);
+    LibB64::write_compressed_block(solution, file);
   }
   else
   {

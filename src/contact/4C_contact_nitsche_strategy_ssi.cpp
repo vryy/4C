@@ -135,7 +135,7 @@ void CONTACT::NitscheStrategySsi::set_parent_state(const enum Mortar::StateType&
             mortar_parent_ele->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          Core::FE::ExtractMyValues(*scatra_dofcolmap, myval, lm);
+          Core::FE::extract_my_values(*scatra_dofcolmap, myval, lm);
 
           mortar_ele->mo_data().parent_scalar() = myval;
           mortar_ele->mo_data().parent_scalar_dof() = lm;
@@ -176,7 +176,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::get_rhs_block_ptr
 
   if (!curr_state_eval_)
     FOUR_C_THROW("you didn't evaluate this contact state for %s first",
-        CONTACT::VecBlockTypeToStr(bp).c_str());
+        CONTACT::vec_block_type_to_str(bp).c_str());
 
   switch (bp)
   {

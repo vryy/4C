@@ -121,7 +121,7 @@ void CONTACT::IntegratorNitschePoro::gpts_forces(Mortar::Element& sele, Mortar::
 
   double ws = 0.;
   double wm = 0.;
-  CONTACT::UTILS::NitscheWeightsAndScaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
+  CONTACT::UTILS::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
   double cauchy_nn_weighted_average = 0.;
   Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
@@ -171,7 +171,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
 {
   Core::LinAlg::Matrix<dim, 1> pxsi(true);
   Core::LinAlg::Matrix<dim, dim> derivtravo_slave;
-  CONTACT::UTILS::MapGPtoParent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
+  CONTACT::UTILS::map_gp_to_parent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   double sigma_nt;
   Core::LinAlg::SerialDenseMatrix dsntdd, dsntdp;
@@ -261,7 +261,7 @@ void CONTACT::IntegratorNitschePoro::integrate_test(const double fac, Mortar::El
     {
       for (int d = 0; d < n_dim(); ++d)
       {
-        row[Core::FE::getParentNodeNumberFromFaceNodeNumber(
+        row[Core::FE::get_parent_node_number_from_face_node_number(
                 ele.parent_element()->shape(), ele.face_parent_number(), s) *
                 dim +
             d] -= fac * jac * wgt * test_dir(d) * p.second * shape(s);
@@ -292,7 +292,7 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
   double srelveln = 0;
   for (int j = 0; j < ele.num_node(); ++j)
   {
-    int pj = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+    int pj = Core::FE::get_parent_node_number_from_face_node_number(
         ele.parent_element()->shape(), ele.face_parent_number(), j);
     spresgp += ele.mo_data().parent_pf_pres()[pj] * shape(j);
     for (int d = 0; d < dim; ++d)
@@ -319,11 +319,11 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
   double val = fac * jac * wgt / dv_dd_;  //*1./dv_dd_;
   for (int i = 0; i < ele.num_node(); ++i)
   {
-    int pi = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+    int pi = Core::FE::get_parent_node_number_from_face_node_number(
         ele.parent_element()->shape(), ele.face_parent_number(), i);
     for (int j = 0; j < ele.num_node(); ++j)
     {
-      int pj = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+      int pj = Core::FE::get_parent_node_number_from_face_node_number(
           ele.parent_element()->shape(), ele.face_parent_number(), j);
       for (int d = 0; d < dim; ++d)
       {
@@ -376,11 +376,11 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
   {
     for (int i = 0; i < ele.num_node(); ++i)
     {
-      int pi = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+      int pi = Core::FE::get_parent_node_number_from_face_node_number(
           ele.parent_element()->shape(), ele.face_parent_number(), i);
       for (int j = 0; j < otherele.num_node(); ++j)
       {
-        int pj = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+        int pj = Core::FE::get_parent_node_number_from_face_node_number(
             otherele.parent_element()->shape(), otherele.face_parent_number(), j);
         for (int d = 0; d < dim; ++d)
         {
@@ -425,7 +425,7 @@ void CONTACT::IntegratorNitschePoro::integrate_poro_no_out_flow(const double fac
     }
     for (int j = 0; j < otherele.num_node(); ++j)
     {
-      int pj = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+      int pj = Core::FE::get_parent_node_number_from_face_node_number(
           otherele.parent_element()->shape(), otherele.face_parent_number(), j);
       for (auto& dJit : sJLin)
       {
@@ -460,7 +460,7 @@ bool CONTACT::IntegratorNitschePoro::get_poro_pressure(Mortar::Element& ele,
   {
     for (int j = 0; j < ele.num_node(); ++j)
     {
-      int pj = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+      int pj = Core::FE::get_parent_node_number_from_face_node_number(
           ele.parent_element()->shape(), ele.face_parent_number(), j);
       poropressure += w1 * ele.mo_data().parent_pf_pres()[pj] * shape(j);
     }
@@ -470,7 +470,7 @@ bool CONTACT::IntegratorNitschePoro::get_poro_pressure(Mortar::Element& ele,
   {
     for (int j = 0; j < otherele.num_node(); ++j)
     {
-      int pj = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+      int pj = Core::FE::get_parent_node_number_from_face_node_number(
           otherele.parent_element()->shape(), otherele.face_parent_number(), j);
       poropressure += w2 * otherele.mo_data().parent_pf_pres()[pj] * othershape(j);
     }

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix         )                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SymmetricInverse(Core::LinAlg::SerialDenseMatrix& A, const int dim)
+void Core::LinAlg::symmetric_inverse(Core::LinAlg::SerialDenseMatrix& A, const int dim)
 {
   if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");
   if (A.numRows() != dim) FOUR_C_THROW("Dimension supplied does not match matrix");
@@ -46,7 +46,7 @@ void Core::LinAlg::SymmetricInverse(Core::LinAlg::SerialDenseMatrix& A, const in
 /*----------------------------------------------------------------------*
  |  Solve soe with me*ae^T = de^T and return me^-1           farah 07/14|
  *----------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Core::LinAlg::InvertAndMultiplyByCholesky(
+Core::LinAlg::SerialDenseMatrix Core::LinAlg::invert_and_multiply_by_cholesky(
     Core::LinAlg::SerialDenseMatrix& me, Core::LinAlg::SerialDenseMatrix& de,
     Core::LinAlg::SerialDenseMatrix& ae)
 {

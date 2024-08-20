@@ -34,7 +34,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-bool PoroElast::UTILS::IsPoroElement(const Core::Elements::Element* actele)
+bool PoroElast::UTILS::is_poro_element(const Core::Elements::Element* actele)
 {
   // all poro elements need to be listed here
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroType::instance() or
@@ -50,10 +50,10 @@ bool PoroElast::UTILS::IsPoroElement(const Core::Elements::Element* actele)
          actele->element_type() == Discret::ELEMENTS::WallQuad9PoroType::instance() or
          actele->element_type() == Discret::ELEMENTS::WallNurbs4PoroType::instance() or
          actele->element_type() == Discret::ELEMENTS::WallNurbs9PoroType::instance() or
-         IsPoroP1Element(actele);
+         is_poro_p1_element(actele);
 }
 
-bool PoroElast::UTILS::IsPoroP1Element(const Core::Elements::Element* actele)
+bool PoroElast::UTILS::is_poro_p1_element(const Core::Elements::Element* actele)
 {
   // all poro-p1 elements need to be listed here
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroP1Type::instance() or
@@ -63,7 +63,7 @@ bool PoroElast::UTILS::IsPoroP1Element(const Core::Elements::Element* actele)
          actele->element_type() == Discret::ELEMENTS::WallQuad9PoroP1Type::instance();
 }
 
-Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::CreatePoroAlgorithm(
+Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::create_poro_algorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
 {
@@ -73,7 +73,7 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::CreatePoroAlgorithm(
   const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
   //  problem->mortar_coupling_params()
-  const auto coupling = Core::UTILS::IntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
+  const auto coupling = Core::UTILS::integral_value<Inpar::PoroElast::SolutionSchemeOverFields>(
       poroelastdyn, "COUPALGO");
 
   // create an empty Poroelast::Algorithm instance
@@ -133,14 +133,14 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::CreatePoroAlgorithm(
 }
 
 
-Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::BuildPoroSplitter(
+Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::build_poro_splitter(
     Teuchos::RCP<Core::FE::Discretization> dis)
 {
   Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
-      dis->my_col_element_range().begin(), dis->my_col_element_range().end(), IsPoroP1Element);
+      dis->my_col_element_range().begin(), dis->my_col_element_range().end(), is_poro_p1_element);
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
@@ -150,13 +150,13 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::BuildPoroSplitter(
   {
     porositysplitter = Teuchos::rcp(new Core::LinAlg::MapExtractor());
     const int ndim = Global::Problem::instance()->n_dim();
-    Core::LinAlg::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
+    Core::LinAlg::create_map_extractor_from_discretization(*dis, ndim, *porositysplitter);
   }
 
   return porositysplitter;
 }
 
-void PoroElast::UTILS::SetMaterialPointersMatchingGrid(
+void PoroElast::UTILS::set_material_pointers_matching_grid(
     Teuchos::RCP<const Core::FE::Discretization> sourcedis,
     Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {
@@ -205,7 +205,7 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
 
     const Epetra_Map* elecolmap = voldi->element_col_map();
     const Teuchos::RCP<Epetra_Map> allredelecolmap =
-        Core::LinAlg::AllreduceEMap(*voldi->element_row_map());
+        Core::LinAlg::allreduce_e_map(*voldi->element_row_map());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
@@ -246,7 +246,7 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
   }
 
   // 2 Material pointers need to be reset after redistribution.
-  PoroElast::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
+  PoroElast::UTILS::set_material_pointers_matching_grid(voldis[0], voldis[1]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
   PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
@@ -273,11 +273,11 @@ void PoroElast::UTILS::reconnect_parent_pointers(Core::FE::Discretization& idisc
     auto* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
 
     if (!faceele) FOUR_C_THROW("Cast to FaceElement failed!");
-    SetSlaveAndMaster(voldiscret, voldiscret2, elecolmap, faceele);
+    set_slave_and_master(voldiscret, voldiscret2, elecolmap, faceele);
   }
 }
 
-void PoroElast::UTILS::SetSlaveAndMaster(const Core::FE::Discretization& voldiscret,
+void PoroElast::UTILS::set_slave_and_master(const Core::FE::Discretization& voldiscret,
     const Core::FE::Discretization* voldiscret2, const Epetra_Map* elecolmap,
     Core::Elements::FaceElement* faceele)
 {
@@ -304,7 +304,7 @@ void PoroElast::UTILS::SetSlaveAndMaster(const Core::FE::Discretization& voldisc
   }
 }
 
-void PoroElast::PrintLogo()
+void PoroElast::print_logo()
 {
   std::cout << "This is a Porous Media problem" << std::endl;
   std::cout << "       .--..--..--..--..--..--. " << std::endl;

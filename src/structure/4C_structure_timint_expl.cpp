@@ -78,7 +78,7 @@ void Solid::TimIntExpl::setup()
   if (have_contact_meshtying())
   {
     Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
             cmtbridge_->get_strategy().params(), "STRATEGY");
     if (soltype != Inpar::CONTACT::solution_penalty &&
         (soltype != Inpar::CONTACT::solution_multiscale))

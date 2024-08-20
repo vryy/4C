@@ -62,7 +62,7 @@ void Discret::ELEMENTS::Torsion3Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Torsion3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::Torsion3Type::setup_element_definition(
@@ -141,7 +141,7 @@ void Discret::ELEMENTS::Torsion3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   std::vector<char> basedata(0);
   extract_from_pack(position, data, basedata);

@@ -35,10 +35,10 @@ Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::VolMortarIntegrator
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = Core::UTILS::IntegralValue<DualQuad>(params, "DUALQUAD");
+  dualquad_ = Core::UTILS::integral_value<DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = Core::UTILS::IntegralValue<Shapefcn>(params, "SHAPEFCN");
+  shape_ = Core::UTILS::integral_value<Shapefcn>(params, "SHAPEFCN");
 }
 
 /*----------------------------------------------------------------------*
@@ -287,14 +287,14 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
     double AuxXi[3] = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::Jacobian<distype_s>(eta, sele);
+    jac = UTILS::jacobian<distype_s>(eta, sele);
 
     // get global Gauss point coordinates
-    UTILS::LocalToGlobal<distype_s>(sele, eta, globgp);
+    UTILS::local_to_global<distype_s>(sele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distype_s>(sele, globgp, Axi);
+    Mortar::UTILS::global_to_local<distype_s>(sele, globgp, Axi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -312,7 +312,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         //************************************************
         case Core::FE::CellType::tri3:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tri3>(sele, Bele, foundeles,
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tri3>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -320,7 +320,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         }
         case Core::FE::CellType::tri6:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tri6>(sele, Bele, foundeles,
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tri6>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -328,25 +328,25 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         }
         case Core::FE::CellType::quad4:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::quad4>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad4>(sele, Bele,
+              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::quad8:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::quad8>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad8>(sele, Bele,
+              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::quad9:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::quad9>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad9>(sele, Bele,
+              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
           break;
         }
         //************************************************
@@ -354,7 +354,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         //************************************************
         case Core::FE::CellType::hex8:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::hex8>(sele, Bele, foundeles,
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex8>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -362,23 +362,23 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         }
         case Core::FE::CellType::hex20:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::hex20>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex20>(sele, Bele,
+              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::hex27:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::hex27>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex27>(sele, Bele,
+              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::tet4:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tet4>(sele, Bele, foundeles,
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tet4>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -386,17 +386,17 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         }
         case Core::FE::CellType::tet10:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tet10>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tet10>(sele, Bele,
+              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::pyramid5:
         {
-          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::pyramid5>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+          proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::pyramid5>(sele, Bele,
+              foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -442,7 +442,7 @@ template class Coupling::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellTy
  |  gp evaluation                                            farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-bool Coupling::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
+bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
     Core::Elements::Element* mele, std::vector<int>& foundeles, int& found, int& gpid, double& jac,
     double& wgt, double& gpdist, double* Axi, double* AuxXi, double* globgp, DualQuad& dq,
     Shapefcn& shape, Core::LinAlg::SparseMatrix& D, Core::LinAlg::SparseMatrix& M,
@@ -465,7 +465,7 @@ bool Coupling::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
   double Bxi[3] = {0.0, 0.0, 0.0};
 
   bool converged = true;
-  Mortar::UTILS::GlobalToLocal<distype_m>(*mele, globgp, Bxi, converged);
+  Mortar::UTILS::global_to_local<distype_m>(*mele, globgp, Bxi, converged);
   if (!converged and found != ((int)foundeles.size() - 1)) return false;
 
   // save distance of gp
@@ -480,7 +480,7 @@ bool Coupling::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
   }
 
   // Check parameter space mapping
-  bool proj = CheckMapping<distype_s, distype_m>(sele, *mele, Axi, Bxi);
+  bool proj = check_mapping<distype_s, distype_m>(sele, *mele, Axi, Bxi);
 
   // if gp outside continue or eval nearest gp
   if (!proj and (found != ((int)foundeles.size() - 1)))
@@ -685,10 +685,10 @@ Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::VolMortarIntegra
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = Core::UTILS::IntegralValue<DualQuad>(params, "DUALQUAD");
+  dualquad_ = Core::UTILS::integral_value<DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = Core::UTILS::IntegralValue<Shapefcn>(params, "SHAPEFCN");
+  shape_ = Core::UTILS::integral_value<Shapefcn>(params, "SHAPEFCN");
 
   // define gp rule
   initialize_gp();
@@ -889,8 +889,8 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     // map gp into slave and master para space
     double sxi[3] = {0.0, 0.0, 0.0};
     double mxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distype_s>(sele, globgp, sxi);
-    Mortar::UTILS::GlobalToLocal<distype_m>(mele, globgp, mxi);
+    Mortar::UTILS::global_to_local<distype_s>(sele, globgp, sxi);
+    Mortar::UTILS::global_to_local<distype_m>(mele, globgp, mxi);
 
     // Check parameter space mapping
     bool proj = check_mapping_2d(sele, mele, sxi, mxi);
@@ -901,7 +901,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     UTILS::shape_function<distype_m>(mval, mxi);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    // UTILS::volmortar_shape_function_2D(lmval, sxi[0],sxi[1],distypeS);
+    // UTILS::volmortar_shape_function_2d(lmval, sxi[0],sxi[1],distypeS);
     UTILS::dual_shape_function<distype_s>(lmval, sxi, sele);
 
     // evaluate the integration cell Jacobian
@@ -1056,8 +1056,8 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
-    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
+    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
+    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     // evaluate the integration cell Jacobian
     double jac = 0.0;
@@ -1193,15 +1193,15 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     double globgp[3] = {0.0, 0.0, 0.0};
 
     if (switched_conf)
-      UTILS::LocalToGlobal<distype_s>(Aele, eta, globgp);
+      UTILS::local_to_global<distype_s>(Aele, eta, globgp);
     else
-      UTILS::LocalToGlobal<distype_m>(Bele, eta, globgp);
+      UTILS::local_to_global<distype_m>(Bele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
-    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
+    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
+    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     //      std::cout << "-------------------------------------" << std::endl;
     //      std::cout << "globgp= " << globgp[0] << "  " << globgp[1] << "  " << globgp[2] <<
@@ -1214,9 +1214,9 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     double jac = 0.0;
 
     if (switched_conf)
-      jac = UTILS::Jacobian<distype_s>(Axi, Aele);
+      jac = UTILS::jacobian<distype_s>(Axi, Aele);
     else
-      jac = UTILS::Jacobian<distype_m>(Bxi, Bele);
+      jac = UTILS::jacobian<distype_m>(Bxi, Bele);
 
     // Check parameter space mapping
     // check_mapping_3d(Aele,Bele,Axi,Bxi);
@@ -1343,14 +1343,14 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     std::array<double, 3> AuxXi = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::Jacobian<distype_s>(eta, Aele);
+    jac = UTILS::jacobian<distype_s>(eta, Aele);
 
     // get global Gauss point coordinates
-    UTILS::LocalToGlobal<distype_s>(Aele, eta, globgp);
+    UTILS::local_to_global<distype_s>(Aele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
+    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -1360,7 +1360,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       double Bxi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
-      Mortar::UTILS::GlobalToLocal<distype_m>(*Bele, globgp, Bxi, converged);
+      Mortar::UTILS::global_to_local<distype_m>(*Bele, globgp, Bxi, converged);
       if (!converged and found != ((int)foundeles.size() - 1)) continue;
 
       // save distance of gp
@@ -1469,14 +1469,14 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     double AuxXi[3] = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::Jacobian<distype_m>(eta, Bele);
+    jac = UTILS::jacobian<distype_m>(eta, Bele);
 
     // get global Gauss point coordinates
-    UTILS::LocalToGlobal<distype_m>(Bele, eta, globgp);
+    UTILS::local_to_global<distype_m>(Bele, eta, globgp);
 
     // map gp into A and B para space
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
+    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -1486,7 +1486,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       double Axi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
-      Mortar::UTILS::GlobalToLocal<distype_s>(*Aele, globgp, Axi, converged);
+      Mortar::UTILS::global_to_local<distype_s>(*Aele, globgp, Axi, converged);
       if (!converged and found != ((int)foundeles.size() - 1)) continue;
 
       // save distance of gp
@@ -1597,18 +1597,18 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     if (domain == 0)
     {
       // evaluate the integration cell Jacobian
-      jac = UTILS::Jacobian<distype_s>(eta, Aele);
+      jac = UTILS::jacobian<distype_s>(eta, Aele);
 
       // get global Gauss point coordinates
-      UTILS::LocalToGlobal<distype_s>(Aele, eta, globgp);
+      UTILS::local_to_global<distype_s>(Aele, eta, globgp);
     }
     else if (domain == 1)
     {
       // evaluate the integration cell Jacobian
-      jac = UTILS::Jacobian<distype_m>(eta, Bele);
+      jac = UTILS::jacobian<distype_m>(eta, Bele);
 
       // get global Gauss point coordinates
-      UTILS::LocalToGlobal<distype_m>(Bele, eta, globgp);
+      UTILS::local_to_global<distype_m>(Bele, eta, globgp);
     }
     else
       FOUR_C_THROW("wrong domain for integration!");
@@ -1617,8 +1617,8 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
-    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
+    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
+    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     // Check parameter space mapping
     check_mapping_3d(Aele, Bele, Axi, Bxi);
@@ -2069,35 +2069,35 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
       // 2D --------------------------------------------
       case Core::FE::CellType::tri3:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::tri3>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::tri3>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tri6:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::tri6>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::tri6>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad4:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::quad4>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::quad4>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad8:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::quad8>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::quad8>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad9:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::quad9>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::quad9>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
@@ -2106,42 +2106,42 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
       // 3D --------------------------------------------
       case Core::FE::CellType::hex8:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::hex8>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::hex8>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::hex20:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::hex20>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::hex20>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::hex27:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::hex27>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::hex27>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tet4:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::tet4>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::tet4>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tet10:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::tet10>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::tet10>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
       }
       case Core::FE::CellType::pyramid5:
       {
-        proj = ConsInterpolatorEval<Core::FE::CellType::pyramid5>(node, ele, pmatrix, nodediscret,
+        proj = cons_interpolator_eval<Core::FE::CellType::pyramid5>(node, ele, pmatrix, nodediscret,
             elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
             P_dofcolmap);
         break;
@@ -2169,7 +2169,7 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
  |  node evaluation                                          farah 02/15|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Coupling::VolMortar::ConsInterpolatorEval(Core::Nodes::Node* node,
+bool Coupling::VolMortar::cons_interpolator_eval(Core::Nodes::Node* node,
     Core::Elements::Element* ele, Core::LinAlg::SparseMatrix& pmatrix,
     Teuchos::RCP<const Core::FE::Discretization> nodediscret,
     Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
@@ -2183,7 +2183,7 @@ bool Coupling::VolMortar::ConsInterpolatorEval(Core::Nodes::Node* node,
   double xi[3] = {0.0, 0.0, 0.0};
   bool converged = true;
 
-  Mortar::UTILS::GlobalToLocal<distype>(*ele, nodepos, xi, converged);
+  Mortar::UTILS::global_to_local<distype>(*ele, nodepos, xi, converged);
 
   // no convergence of local newton?
   if (!converged and found != ((int)foundeles.size() - 1)) return false;
@@ -2200,7 +2200,7 @@ bool Coupling::VolMortar::ConsInterpolatorEval(Core::Nodes::Node* node,
   }
 
   // Check parameter space mapping
-  bool proj = CheckMapping<distype>(*ele, xi);
+  bool proj = check_mapping<distype>(*ele, xi);
 
   // if node outside --> continue or eval nearest gp
   if (!proj and found != ((int)foundeles.size() - 1))

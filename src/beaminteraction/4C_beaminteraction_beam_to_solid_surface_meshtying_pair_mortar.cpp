@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
   evaluate_dm(local_D, local_M, local_kappa, local_constraint);
 
   // Assemble into global matrices.
-  AssembleLocalMortarContributions<Beam, Surface, Mortar>(this, discret, mortar_manager,
+  assemble_local_mortar_contributions<Beam, Surface, Mortar>(this, discret, mortar_manager,
       global_constraint_lin_beam, global_constraint_lin_solid, global_force_beam_lin_lambda,
       global_force_solid_lin_lambda, global_constraint, global_kappa, global_lambda_active, local_D,
       local_M, local_kappa, local_constraint);
@@ -118,7 +118,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
           this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(
           projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -179,16 +179,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
   {
     case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     {
-      beam_coupling_dof = Core::FADUtils::CastToDouble(this->ele1pos_.element_position_);
-      surface_coupling_dof = Core::FADUtils::CastToDouble(
+      beam_coupling_dof = Core::FADUtils::cast_to_double(this->ele1pos_.element_position_);
+      surface_coupling_dof = Core::FADUtils::cast_to_double(
           this->face_element_->get_face_element_data().element_position_);
       break;
     }
     case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement:
     {
-      beam_coupling_dof = Core::FADUtils::CastToDouble(this->ele1pos_.element_position_);
+      beam_coupling_dof = Core::FADUtils::cast_to_double(this->ele1pos_.element_position_);
       beam_coupling_dof -= this->ele1posref_.element_position_;
-      surface_coupling_dof = Core::FADUtils::CastToDouble(
+      surface_coupling_dof = Core::FADUtils::cast_to_double(
           this->face_element_->get_face_element_data().element_position_);
       surface_coupling_dof -=
           this->face_element_->get_face_reference_element_data().element_position_;
@@ -211,7 +211,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Morta
  *
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
+BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
     const Core::FE::CellType surface_shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction)
 {

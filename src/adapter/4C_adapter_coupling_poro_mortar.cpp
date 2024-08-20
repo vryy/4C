@@ -84,8 +84,8 @@ void Adapter::CouplingPoroMortar::read_mortar_condition(
   input.set<double>("porotimefac", porotimefac);
   const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
   input.set<bool>("CONTACTNOPEN",
-      Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
-  if (!Core::UTILS::IntegralValue<int>(porodyn, "CONTACTNOPEN"))
+      Core::UTILS::integral_value<int>(porodyn, "CONTACTNOPEN"));  // used in the integrator
+  if (!Core::UTILS::integral_value<int>(porodyn, "CONTACTNOPEN"))
     FOUR_C_THROW("Set CONTACTNOPEN for Poroelastic meshtying!");
 }
 
@@ -342,7 +342,7 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
   // problem and not a value of 0.5 a proper disctinction is necessary if poro meshtying is expanded
   // to other time integration strategies
 
-  if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(stru, "DYNAMICTYP") ==
+  if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(stru, "DYNAMICTYP") ==
       Inpar::Solid::dyna_statics)
   {
     theta = 1.0;

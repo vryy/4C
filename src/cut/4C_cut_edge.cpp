@@ -33,7 +33,7 @@ Teuchos::RCP<Cut::Edge> Cut::Edge::create(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Cut::Edge> Cut::Edge::create(unsigned shardskey, const std::vector<Node*>& nodes)
 {
-  return Edge::create(Core::Elements::ShardsKeyToDisType(shardskey), nodes);
+  return Edge::create(Core::Elements::shards_key_to_dis_type(shardskey), nodes);
 }
 
 bool Cut::Edge::find_cut_points_level_set(Mesh& mesh, Element* element, Side& side, Side& other)
@@ -100,7 +100,7 @@ bool Cut::Edge::find_cut_points_mesh_cut(
   // this should not be possible
   if (point_stack.size() > 2)
   {
-    Cut::Output::DebugDump_MoreThanTwoIntersectionPoints(this, &other, point_stack);
+    Cut::Output::debug_dump_more_than_two_intersection_points(this, &other, point_stack);
     FOUR_C_THROW("Line x Side has more than 2 intersection points.Namely %u", point_stack.size());
   }
 
@@ -496,7 +496,7 @@ void Cut::Edge::rectify_cut_numerics()
  *------------------------------------------------------------------------*/
 void Cut::Edge::self_cut_position(Point::PointPosition pos)
 {
-  FOUR_C_ASSERT(IsCutPositionUnchanged(selfcutposition_, pos),
+  FOUR_C_ASSERT(is_cut_position_unchanged(selfcutposition_, pos),
       "Are you sure that you want to change the edge-position from inside to outside or vice "
       "versa?");
 
@@ -730,13 +730,13 @@ void Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::get_touch
     {
       Node* edge_node = *jt;
       Point* edge_point = edge_node->point();
-      if (Cut::DistanceBetweenPoints(p, edge_point) < SIDE_DETECTION_TOLERANCE)
+      if (Cut::distance_between_points(p, edge_point) < SIDE_DETECTION_TOLERANCE)
       {
         p->dump_connectivity_info();
         edge_point->dump_connectivity_info();
         std::stringstream err_msg;
         err_msg << "Distance between points is " << std::setprecision(15)
-                << Cut::DistanceBetweenPoints(p, edge_point)
+                << Cut::distance_between_points(p, edge_point)
                 << " This two points should have been merged!";
         FOUR_C_THROW(err_msg.str());
       }
@@ -907,7 +907,7 @@ Teuchos::RCP<Cut::Edge> Cut::EdgeFactory::create_edge(
     default:
     {
       FOUR_C_THROW("Unsupported edge type! ( %d | %s )", edgetype,
-          Core::FE::CellTypeToString(edgetype).c_str());
+          Core::FE::cell_type_to_string(edgetype).c_str());
       break;
     }
   }

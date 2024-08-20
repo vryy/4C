@@ -37,7 +37,7 @@ Core::Conditions::LocsysManager::LocsysManager(Core::FE::Discretization& discret
   const Epetra_Map* noderowmap = discret_.node_row_map();
 
   // create locsys vector and initialize to -1
-  locsystoggle_ = Core::LinAlg::CreateVector(*noderowmap, false);
+  locsystoggle_ = Core::LinAlg::create_vector(*noderowmap, false);
   locsystoggle_->PutScalar(-1.0);
 
   // check for locsys boundary conditions
@@ -218,7 +218,7 @@ void Core::Conditions::LocsysManager::update(const double time,
                   std::vector<double> currDisp;
                   currDisp.resize(lm.size());
 
-                  Core::FE::ExtractMyValues(*dispnp, currDisp, lm);
+                  Core::FE::extract_my_values(*dispnp, currDisp, lm);
 
                   // Calculate current position for node
                   std::vector<double> currPos(n_dim());
@@ -269,7 +269,7 @@ void Core::Conditions::LocsysManager::update(const double time,
 
   // we need to make sure that two nodes sharing the same dofs are not
   // transformed twice. This is a NURBS/periodic boundary feature.
-  Teuchos::RCP<Epetra_Vector> already_processed = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> already_processed = Core::LinAlg::create_vector(*dofrowmap, true);
   already_processed->PutScalar(0.0);
 
   // Perform a check for zero diagonal elements. They will crash the SGS-like preconditioners
@@ -491,7 +491,7 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
 
   // selective multiplication from left
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-      Core::LinAlg::MatrixMultiply(*subtrafo_, false, *sysmat, false, true);
+      Core::LinAlg::matrix_multiply(*subtrafo_, false, *sysmat, false, true);
   // put transformed rows back into global matrix
   sysmat->put(*temp, 1.0, locsysdofmap_);
 }
@@ -504,7 +504,7 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
 {
   // selective multiplication from left
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::MLMultiply(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::ml_multiply(
       *subtrafo_, *sysmat, sysmat->explicit_dirichlet(), sysmat->save_graph(), true);
 
   // put transformed rows back into global matrix
@@ -541,10 +541,10 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(Teuchos::RCP<Epetra
   // We want to keep the SaveGraph() value of sysmat also after transformation.
   // It is not possible to keep ExplicitDirichlet()==true after transformation,
   // so we explicitly set this to false.
-  temp = Core::LinAlg::MatrixMultiply(
+  temp = Core::LinAlg::matrix_multiply(
       *sysmat, false, *trafo_, false, false, sysmat->save_graph(), true);
   temp2 =
-      Core::LinAlg::MatrixMultiply(*trafo_, true, *temp, false, false, sysmat->save_graph(), true);
+      Core::LinAlg::matrix_multiply(*trafo_, true, *temp, false, false, sysmat->save_graph(), true);
 
   // this is a deep copy (expensive!)
   *sysmat = *temp2;
@@ -565,7 +565,7 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(
 void Core::Conditions::LocsysManager::rotate_local_to_global(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 = Core::LinAlg::MatrixMultiply(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 = Core::LinAlg::matrix_multiply(
       *trafo_, true, *sysmat, false, false, sysmat->save_graph(), true);
   *sysmat = *temp2;
 }
@@ -582,7 +582,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   if (time < 0.0)
   {
     Teuchos::RCP<Epetra_Vector> zeroVector =
-        Core::LinAlg::CreateVector(*discret().dof_row_map(), true);
+        Core::LinAlg::create_vector(*discret().dof_row_map(), true);
     discret_.set_state("dispnp", zeroVector);
   }
 

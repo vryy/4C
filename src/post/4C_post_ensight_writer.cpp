@@ -39,7 +39,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   // initialize proc0map_ correctly
   const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->node_row_map();
-  proc0map_ = Core::LinAlg::AllreduceEMap(*noderowmap, 0);
+  proc0map_ = Core::LinAlg::allreduce_e_map(*noderowmap, 0);
 
   // sort proc0map_ so that we can loop it and get nodes in ascending order.
   std::vector<int> sortmap;
@@ -344,7 +344,7 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
   if (myrank_ == 0)
   {
     std::cout << "(computing) coordinates for a ";
-    std::cout << Core::FE::ShapeFunctionTypeToString(distype);
+    std::cout << Core::FE::shape_function_type_to_string(distype);
     std::cout << " approximation\n";
   }
 
@@ -408,7 +408,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
 
     if (myrank_ == 0)
     {
-      std::cout << "writing " << iter->second << " " << Core::FE::CellTypeToString(distypeiter)
+      std::cout << "writing " << iter->second << " " << Core::FE::cell_type_to_string(distypeiter)
                 << " element(s) as " << ne << " " << ensightCellType << " ensight cell(s)..."
                 << std::endl;
       write(geofile, ensightCellType);
@@ -1561,7 +1561,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     //------------------------------------------------------
 
     Teuchos::RCP<Epetra_Map> proc0datamap;
-    proc0datamap = Core::LinAlg::AllreduceEMap(*epetradatamap, 0);
+    proc0datamap = Core::LinAlg::allreduce_e_map(*epetradatamap, 0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -1618,7 +1618,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
       // note: only vector fields with numdf > 1 require checking!
       std::map<int, double> pbcslavenodemap;
       std::map<int, double>::iterator iter;
-      if (numdf > 1) FLD::GetRelevantSlaveNodesOfRotSymPBC(pbcslavenodemap, dis);
+      if (numdf > 1) FLD::get_relevant_slave_nodes_of_rot_sym_pbc(pbcslavenodemap, dis);
 
       double* dofgids = (dofgidpernodelid_proc0->Values());  // columnwise data storage
       for (int idf = 0; idf < numdf; ++idf)
@@ -1642,7 +1642,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
             {
               // this is the desired component of the rotated vector field result
               double value =
-                  FLD::GetComponentOfRotatedVectorField(idf, proc0data, lid, iter->second);
+                  FLD::get_component_of_rotated_vector_field(idf, proc0data, lid, iter->second);
               write(file, static_cast<float>(value));
             }
             else
@@ -1828,7 +1828,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   //------------------------------------------------------
 
   Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = Core::LinAlg::AllreduceEMap(*epetradatamap, 0);
+  proc0datamap = Core::LinAlg::allreduce_e_map(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -1997,7 +1997,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
   //------------------------------------------------------
 
   Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = Core::LinAlg::AllreduceEMap(*epetradatamap, 0);
+  proc0datamap = Core::LinAlg::allreduce_e_map(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -2363,7 +2363,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   }
 
   // put all coordinate information on proc 0
-  proc0map = Core::LinAlg::AllreduceEMap(*nodemap, 0);
+  proc0map = Core::LinAlg::allreduce_e_map(*nodemap, 0);
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *nodemap);

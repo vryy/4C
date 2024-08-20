@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::Coupling3d::Coupling3d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : Mortar::Coupling3d(idiscret, dim, quad, params, sele, mele),
-      stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
 
@@ -94,7 +94,7 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
   /**********************************************************************/
 
   static const Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   // do nothing if there are no cells
   if (cells().size() == 0) return false;
@@ -102,7 +102,7 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
   // create a CONTACT integrator instance with correct num_gp and Dim
   // it is sufficient to do this once as all IntCells are triangles
   Teuchos::RCP<CONTACT::Integrator> integrator =
-      CONTACT::INTEGRATOR::BuildIntegrator(stype_, imortar_, cells()[0]->shape(), get_comm());
+      CONTACT::INTEGRATOR::build_integrator(stype_, imortar_, cells()[0]->shape(), get_comm());
   // loop over all integration cells
   for (int i = 0; i < (int)(cells().size()); ++i)
   {
@@ -1067,7 +1067,7 @@ CONTACT::Coupling3dManager::Coupling3dManager(Core::FE::Discretization& idiscret
       sele_(sele),
       mele_(mele),
       ncells_(0),
-      stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   return;
 }
@@ -1095,7 +1095,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
 {
   // get algorithm
   Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   // prepare linearizations
   if (algo == Inpar::Mortar::algorithm_mortar)
@@ -1163,7 +1163,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
       find_feasible_master_elements(feasible_ma_eles);
 
       // create an integrator instance with correct num_gp and Dim
-      Teuchos::RCP<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::BuildIntegrator(
+      Teuchos::RCP<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
           stype_, imortar_, slave_element().shape(), get_comm());
 
       // Perform integration and linearization
@@ -1248,7 +1248,7 @@ bool CONTACT::Coupling3dManager::evaluate_coupling(
 {
   // decide which type of coupling should be evaluated
   Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1278,7 +1278,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // get algorithm type
-  Inpar::Mortar::AlgorithmType algo = Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(
+  Inpar::Mortar::AlgorithmType algo = Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(
       Mortar::Coupling3dQuadManager::imortar_, "ALGORITHM");
 
   // prepare linearizations
@@ -1359,8 +1359,8 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     if ((int)master_elements().size() == 0) return;
 
     // create an integrator instance with correct num_gp and Dim
-    Teuchos::RCP<CONTACT::Integrator> integrator =
-        CONTACT::INTEGRATOR::BuildIntegrator(stype_, params(), slave_element().shape(), get_comm());
+    Teuchos::RCP<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
+        stype_, params(), slave_element().shape(), get_comm());
 
     bool boundary_ele = false;
     bool proj = false;
@@ -1450,7 +1450,7 @@ bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
 {
   // decide which type of coupling should be evaluated
   Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1474,13 +1474,14 @@ bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
 void CONTACT::Coupling3dManager::consist_dual_shape()
 {
   static const Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
   if (algo != Inpar::Mortar::algorithm_mortar) return;
 
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
   Inpar::Mortar::ConsistentDualType consistent =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
+      Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
+          imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
     return;
 
@@ -1902,7 +1903,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         for (int k = 0; k < 3; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      Core::LinAlg::Inverse(melin);
+      Core::LinAlg::inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 3; ++j)
@@ -1917,7 +1918,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         for (int k = 0; k < 4; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      Core::LinAlg::Inverse(melin);
+      Core::LinAlg::inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 4; ++j)
@@ -1931,7 +1932,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else
-    meinv = Core::LinAlg::InvertAndMultiplyByCholesky(me, de, ae);
+    meinv = Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // build linearization of ae and store in derivdual
   // (this is done according to a quite complex formula, which

@@ -264,7 +264,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShape(
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape(
       const Core::FE::CellType shape);
 
   /**
@@ -278,7 +278,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShapeNoNurbs(
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_shape_no_nurbs(
       const Core::FE::CellType shape);
 
   /**
@@ -296,7 +296,7 @@ namespace BEAMINTERACTION
    */
   template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments,
       typename... BtsMortarShape>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
       const Core::FE::CellType shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
       BtsMortarShape... other_mortar_shape_function);
@@ -310,7 +310,7 @@ namespace BEAMINTERACTION
    * @return The created beam-to-solid pair
    */
   template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments>
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_beam_to_solid_volume_pair_mortar(
       const Core::FE::CellType shape);
 }  // namespace BEAMINTERACTION
 

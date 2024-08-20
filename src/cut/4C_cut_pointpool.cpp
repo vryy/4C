@@ -195,15 +195,15 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
 
         if (cut_side)
         {
-          Cut::Output::GmshNewSection(file, "CurrentIntersectionSide");
-          Cut::Output::GmshSideDump(file, cut_side, false, nullptr);
-          Cut::Output::GmshEndSection(file, false);
+          Cut::Output::gmsh_new_section(file, "CurrentIntersectionSide");
+          Cut::Output::gmsh_side_dump(file, cut_side, false, nullptr);
+          Cut::Output::gmsh_end_section(file, false);
         }
         if (cut_edge)
         {
-          Cut::Output::GmshNewSection(file, "CurrentIntersectionEdge");
-          Cut::Output::GmshEdgeDump(file, cut_edge, false, nullptr);
-          Cut::Output::GmshEndSection(file, false);
+          Cut::Output::gmsh_new_section(file, "CurrentIntersectionEdge");
+          Cut::Output::gmsh_edge_dump(file, cut_edge, false, nullptr);
+          Cut::Output::gmsh_end_section(file, false);
         }
 
         file.close();

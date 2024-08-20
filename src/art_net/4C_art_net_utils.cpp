@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::CreateAlgorithm(
+Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::create_algorithm(
     Inpar::ArtDyn::TimeIntegrationScheme timintscheme, Teuchos::RCP<Core::FE::Discretization> dis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
     const Teuchos::ParameterList& artparams, Teuchos::RCP<Core::IO::DiscretizationWriter> output)
@@ -70,13 +70,13 @@ void Arteries::UTILS::assign_material_pointers(
   Teuchos::RCP<Core::FE::Discretization> arterydis = problem->get_dis(artery_disname);
   Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
-  SetMaterialPointersMatchingGrid(arterydis, scatradis);
+  set_material_pointers_matching_grid(arterydis, scatradis);
 }
 
 /*----------------------------------------------------------------------*
  | reset Material pointers after redistribution        kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void Arteries::UTILS::SetMaterialPointersMatchingGrid(
+void Arteries::UTILS::set_material_pointers_matching_grid(
     Teuchos::RCP<const Core::FE::Discretization> sourcedis,
     Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {

@@ -66,7 +66,7 @@ void NOX::Nln::LinSystem::PrePostOperator::reset(Teuchos::ParameterList& linearS
 // non-member function
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::LinSystem::PrePostOperator::Map& NOX::Nln::LinSystem::PrePostOp::GetMap(
+NOX::Nln::LinSystem::PrePostOperator::Map& NOX::Nln::LinSystem::PrePostOp::get_map(
     Teuchos::ParameterList& p_linsolver)
 {
   Teuchos::RCP<NOX::Nln::LinSystem::PrePostOperator::Map>& mapptr =

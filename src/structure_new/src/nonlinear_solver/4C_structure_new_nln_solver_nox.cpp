@@ -67,24 +67,24 @@ void Solid::Nln::SOLVER::Nox::setup()
   NOX::Nln::LinearSystem::SolverMap linsolvers;
   /* convert the Inpar::Solid::ModelType to a NOX::Nln::SolType
    * and fill the linear solver map. */
-  Solid::Nln::ConvertModelType2SolType(
+  Solid::Nln::convert_model_type2_sol_type(
       soltypes, linsolvers, data_sdyn().get_model_types(), data_sdyn().get_lin_solvers());
 
   // define and initialize the optimization type
-  const NOX::Nln::OptimizationProblemType opttype = Solid::Nln::OptimizationType(soltypes);
+  const NOX::Nln::OptimizationProblemType opttype = Solid::Nln::optimization_type(soltypes);
 
   // map of constraint interfaces, the key is the solution type
   NOX::Nln::CONSTRAINT::ReqInterfaceMap iconstr;
   // set constraint interfaces
-  Solid::Nln::CreateConstraintInterfaces(iconstr, integrator(), soltypes);
+  Solid::Nln::create_constraint_interfaces(iconstr, integrator(), soltypes);
 
   // preconditioner map for constraint problems
   NOX::Nln::CONSTRAINT::PrecInterfaceMap iconstr_prec;
-  Solid::Nln::CreateConstraintPreconditioner(iconstr_prec, integrator(), soltypes);
+  Solid::Nln::create_constraint_preconditioner(iconstr_prec, integrator(), soltypes);
 
   // create object to scale linear system
   Teuchos::RCP<::NOX::Epetra::Scaling> iscale = Teuchos::null;
-  Solid::Nln::CreateScaling(iscale, data_sdyn(), data_global_state());
+  Solid::Nln::create_scaling(iscale, data_sdyn(), data_global_state());
 
   // build the global data container for the nox_nln_solver
   nlnglobaldata_ = Teuchos::rcp(
@@ -139,7 +139,7 @@ void Solid::Nln::SOLVER::Nox::reset()
   // -------------------------------------------------------------------------
   // Create NOX non-linear solver
   // -------------------------------------------------------------------------
-  nlnsolver_ = NOX::Nln::Solver::BuildSolver(group_ptr(), ostatus_, istatus_, nlnglobaldata_);
+  nlnsolver_ = NOX::Nln::Solver::build_solver(group_ptr(), ostatus_, istatus_, nlnglobaldata_);
 }
 
 

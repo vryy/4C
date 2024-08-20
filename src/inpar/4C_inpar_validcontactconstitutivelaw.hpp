@@ -37,20 +37,20 @@ namespace Input
 {
   /// construct list with all contact constitutive laws and documentation
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
-  ValidContactConstitutiveLaws();
+  valid_contact_constitutive_laws();
 
   /** \brief print all known contact constitutive law sections without contents
    *
    * \param[in] contactconstitutivlawlist list of contact constitutive law definitions
    */
-  void PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
+  void print_empty_contact_constitutive_law_definitions(std::ostream& stream,
       std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
           contactconstitutivlawlist);
 
 }  // namespace Input
 
 /// print empty contact constitutivelaw sections
-void PrintContactConstitutiveLawDatHeader();
+void print_contact_constitutive_law_dat_header();
 
 
 FOUR_C_NAMESPACE_CLOSE

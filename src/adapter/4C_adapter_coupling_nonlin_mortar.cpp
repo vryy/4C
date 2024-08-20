@@ -178,11 +178,11 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
     }
 
     // Fill maps based on condition for master side (masterdis == slavedis)
-    Core::Conditions::FindConditionObjects(
+    Core::Conditions::find_condition_objects(
         *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
     // Fill maps based on condition for slave side (masterdis == slavedis)
-    Core::Conditions::FindConditionObjects(
+    Core::Conditions::find_condition_objects(
         *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
@@ -197,7 +197,7 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
 
     // Fill maps based on condition for slave side (masterdis != slavedis)
     if (slavedis != Teuchos::null)
-      Core::Conditions::FindConditionObjects(
+      Core::Conditions::find_condition_objects(
           *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
 
@@ -221,9 +221,9 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
   input.set<int>("DIMENSION", Global::Problem::instance()->n_dim());
 
   // check for invalid parameter values
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
+  if (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
           Inpar::Mortar::shape_dual and
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
           Inpar::Mortar::shape_petrovgalerkin)
     if (myrank_ == 0) FOUR_C_THROW("Mortar coupling adapter only works for dual shape functions");
 
@@ -543,7 +543,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   pslavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_dofs()));
   pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->master_row_dofs()));
   pslavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_nodes()));
-  psmdofrowmap_ = Core::LinAlg::MergeMap(pslavedofrowmap_, pmasterdofrowmap_, false);
+  psmdofrowmap_ = Core::LinAlg::merge_map(pslavedofrowmap_, pmasterdofrowmap_, false);
 
   // print parallel distribution
   interface->print_parallel_distribution();
@@ -573,7 +573,7 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_dofs()));
   masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->master_row_dofs()));
   slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_nodes()));
-  smdofrowmap_ = Core::LinAlg::MergeMap(slavedofrowmap_, masterdofrowmap_, false);
+  smdofrowmap_ = Core::LinAlg::merge_map(slavedofrowmap_, masterdofrowmap_, false);
 
   // store interface
   interface_ = interface;
@@ -633,9 +633,9 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   }
   if (!conds_master.size()) FOUR_C_THROW("Coupling ID not found.");
 
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
   // get mortar coupling parameters
@@ -765,8 +765,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
 
   // interface displacement (=0) has to be merged from slave and master discretization
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      Core::LinAlg::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> dispn = Core::LinAlg::CreateVector(*dofrowmap, true);
+      Core::LinAlg::merge_map(masterdofrowmap_, slavedofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> dispn = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // set displacement state in mortar interface
   interface_->set_state(Mortar::state_new_displacement, *dispn);
@@ -800,7 +800,7 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
   init_matrices();
 
   // set lagrange multiplier and displacement state
-  interface_->set_state(Mortar::String2StateType(statename), *vec);
+  interface_->set_state(Mortar::string_to_state_type(statename), *vec);
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // general interface init: data container etc...
@@ -865,7 +865,7 @@ void Adapter::CouplingNonLinMortar::integrate_lin_dm(const std::string& statenam
   init_matrices();
 
   // set current lm and displ state
-  interface_->set_state(Mortar::String2StateType(statename), *vec);
+  interface_->set_state(Mortar::string_to_state_type(statename), *vec);
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
@@ -940,7 +940,7 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
     // transform gap vector
     if (gap_ != Teuchos::null)
     {
-      Teuchos::RCP<Epetra_Vector> pgap = Core::LinAlg::CreateVector(*pslavenoderowmap_, true);
+      Teuchos::RCP<Epetra_Vector> pgap = Core::LinAlg::create_vector(*pslavenoderowmap_, true);
       Core::LinAlg::export_to(*gap_, *pgap);
       gap_ = pgap;
     }
@@ -964,7 +964,7 @@ void Adapter::CouplingNonLinMortar::integrate_all(const std::string& statename,
   init_matrices();
 
   // set current lm and displ state
-  interface_->set_state(Mortar::String2StateType(statename), *vec);
+  interface_->set_state(Mortar::string_to_state_type(statename), *vec);
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
@@ -1008,7 +1008,7 @@ void Adapter::CouplingNonLinMortar::evaluate_sliding(const std::string& statenam
   init_matrices();
 
   // set current lm and displ state
-  interface_->set_state(Mortar::String2StateType(statename), *vec);
+  interface_->set_state(Mortar::string_to_state_type(statename), *vec);
   interface_->set_state(Mortar::state_lagrange_multiplier, *veclm);
 
   // init internal data
@@ -1055,7 +1055,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   check_setup();
 
   // check
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(
+  if (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(
           interface()->interface_params(), "LM_SHAPEFCN") != Inpar::Mortar::shape_dual)
     FOUR_C_THROW("ERROR: Creation of P operator only for dual shape functions!");
 
@@ -1064,7 +1064,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   /********************************************************************/
   D_->complete();
   Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*slavedofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*slavedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -1093,7 +1093,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   Dinv_->complete();
 
   // do the multiplication P = inv(D) * M
-  P_ = Core::LinAlg::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
+  P_ = Core::LinAlg::ml_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
   P_->complete(*masterdofrowmap_, *slavedofrowmap_);

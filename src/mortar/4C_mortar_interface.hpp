@@ -81,7 +81,7 @@ namespace Mortar
   /*! \brief Map state type enum to std::string
    *
    *  \author hiermeier */
-  static inline std::string StateType2String(const enum StateType& type)
+  static inline std::string state_type_to_string(const enum StateType& type)
   {
     switch (type)
     {
@@ -113,7 +113,7 @@ namespace Mortar
   /*! \brief Map std::string to state type enum
    *
    *  \author hiermeier */
-  static inline enum Mortar::StateType String2StateType(const std::string& name)
+  static inline enum Mortar::StateType string_to_state_type(const std::string& name)
   {
     Mortar::StateType type = state_vague;
     if (name == "displacement")

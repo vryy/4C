@@ -31,7 +31,7 @@ namespace
       test_csv_file_stream << std::to_string(x[i]) << "," << std::to_string(y[i]) << ","
                            << std::to_string(z[i]) << std::endl;
 
-    auto csv_values = Core::IO::ReadCsvAsColumns(3, test_csv_file_stream);
+    auto csv_values = Core::IO::read_csv_as_columns(3, test_csv_file_stream);
 
     EXPECT_EQ(csv_values[0], x);
     EXPECT_EQ(csv_values[1], y);
@@ -55,7 +55,7 @@ namespace
     // close template file
     test_csv_file.close();
 
-    auto csv_values = Core::IO::ReadCsvAsColumns(3, csv_template_file_name);
+    auto csv_values = Core::IO::read_csv_as_columns(3, csv_template_file_name);
 
     EXPECT_EQ(csv_values[0], x);
     EXPECT_EQ(csv_values[1], y);
@@ -71,7 +71,7 @@ namespace
     test_csv_file << "0.30," << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        Core::IO::ReadCsvAsColumns(3, test_csv_file), Core::Exception, "same length");
+        Core::IO::read_csv_as_columns(3, test_csv_file), Core::Exception, "same length");
   }
 
   TEST(CsvReaderTest, TrailingCommaThrows)
@@ -81,7 +81,7 @@ namespace
     test_csv_file << "0.30,4.40," << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        Core::IO::ReadCsvAsColumns(2, test_csv_file), Core::Exception, "trailing comma");
+        Core::IO::read_csv_as_columns(2, test_csv_file), Core::Exception, "trailing comma");
   }
 
   TEST(CsvReaderTest, WrongColumnNumberThrows)
@@ -91,7 +91,7 @@ namespace
     test_csv_file << "0.30,4.40" << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        Core::IO::ReadCsvAsColumns(3, test_csv_file), Core::Exception, "");
+        Core::IO::read_csv_as_columns(3, test_csv_file), Core::Exception, "");
   }
 
   TEST(CsvReaderTest, WrongHeaderStyleThrows)
@@ -101,7 +101,7 @@ namespace
     test_csv_file << "0.30,4.40" << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        Core::IO::ReadCsvAsColumns(2, test_csv_file), Core::Exception, "header");
+        Core::IO::read_csv_as_columns(2, test_csv_file), Core::Exception, "header");
   }
 
   TEST(CsvReaderTest, WrongInputDataTypeThrows)
@@ -111,7 +111,7 @@ namespace
     test_csv_file << "0.30,a" << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        Core::IO::ReadCsvAsColumns(2, test_csv_file), Core::Exception, "numbers");
+        Core::IO::read_csv_as_columns(2, test_csv_file), Core::Exception, "numbers");
   }
 
   TEST(CsvReaderTest, WrongSeparatorThrows)
@@ -121,7 +121,7 @@ namespace
     test_csv_file << "0.30;4.40" << std::endl;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        Core::IO::ReadCsvAsColumns(2, test_csv_file), Core::Exception, "separated by commas");
+        Core::IO::read_csv_as_columns(2, test_csv_file), Core::Exception, "separated by commas");
   }
 
   TEST(ConvertLines, ValidFile)

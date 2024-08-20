@@ -28,7 +28,8 @@ namespace
 {
   /// converts the values of variables from type double to FAD double and returns the modified
   /// vector of name-value-pairs
-  std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>> ConvertVariableValuesToFADObjects(
+  std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>>
+  convert_variable_values_to_fad_objects(
       const std::vector<std::pair<std::string, double>>& variables)
   {
     // prepare return vector
@@ -58,7 +59,7 @@ namespace
 
 
   /// sets the values of the variables in second derivative of expression
-  void SetValuesInExpressionSecondDeriv(
+  void set_values_in_expression_second_deriv(
       const std::vector<Teuchos::RCP<Core::UTILS::FunctionVariable>>& variables, const double* x,
       const double t,
       std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
@@ -105,7 +106,7 @@ namespace
 
 
   /// evaluate an expression and assemble to the result vector
-  std::vector<double> EvaluateAndAssembleExpressionToResultVector(
+  std::vector<double> evaluate_and_assemble_expression_to_result_vector(
       const std::map<std::string, Sacado::Fad::DFad<double>>& variables,
       const std::size_t component,
       std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> expr,
@@ -127,7 +128,7 @@ namespace
   }
 
   /// modifies the component to zero in case the expression is of size one
-  std::size_t FindModifiedComponent(const std::size_t component,
+  std::size_t find_modified_component(const std::size_t component,
       const std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>>& expr)
   {
     return (expr.size() == 1) ? 0 : component;
@@ -135,7 +136,7 @@ namespace
 
   //! throw an error if a constant given in the input file is a primary variables
   template <typename T>
-  void AssertValidInput(const std::map<std::string, T>& variable_values,
+  void assert_valid_input(const std::map<std::string, T>& variable_values,
       const std::vector<std::pair<std::string, double>>& constants_from_input)
   {
     const bool all_constants_from_input_valid =
@@ -163,7 +164,7 @@ namespace
 
 
 
-Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::TryCreateSymbolicFunctionOfAnything(
+Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::try_create_symbolic_function_of_anything(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
@@ -193,7 +194,8 @@ Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::TryCreateSymbolicFunc
 
 
 
-Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
+Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
+Core::UTILS::try_create_symbolic_function_of_space_time(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
@@ -387,7 +389,7 @@ Core::UTILS::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
 double Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate(
     const double* x, const double t, const std::size_t component) const
 {
-  std::size_t component_mod = FindModifiedComponent(component, expr_);
+  std::size_t component_mod = find_modified_component(component, expr_);
 
   if (component_mod >= expr_.size())
     FOUR_C_THROW(
@@ -417,7 +419,7 @@ double Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate(
 std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_spatial_derivative(
     const double* x, const double t, const std::size_t component) const
 {
-  std::size_t component_mod = FindModifiedComponent(component, expr_);
+  std::size_t component_mod = find_modified_component(component, expr_);
 
   if (component_mod >= expr_.size())
     FOUR_C_THROW(
@@ -427,7 +429,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_spatial_d
   // variables
   std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> variable_values;
 
-  SetValuesInExpressionSecondDeriv(variables_, x, t, variable_values);
+  set_values_in_expression_second_deriv(variables_, x, t, variable_values);
 
   // The expression evaluates to an FAD object for up to second derivatives
   SecondDerivativeType fdfad = expr_[component_mod]->second_derivative(variable_values, {});
@@ -442,12 +444,12 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_time_deri
   // result vector
   std::vector<double> res(deg + 1);
 
-  std::size_t component_mod = FindModifiedComponent(component, expr_);
+  std::size_t component_mod = find_modified_component(component, expr_);
 
   // variables
   std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>> variable_values;
 
-  SetValuesInExpressionSecondDeriv(variables_, x, t, variable_values);
+  set_values_in_expression_second_deriv(variables_, x, t, variable_values);
 
   // FAD object for evaluation of derivatives
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> fdfad;
@@ -554,7 +556,7 @@ double Core::UTILS::SymbolicFunctionOfAnything::evaluate(
   if (constants_from_input_.size() != 0)
   {
     // check if constants_from_input are valid
-    AssertValidInput<double>(variable_values, constants_from_input_);
+    assert_valid_input<double>(variable_values, constants_from_input_);
 
     // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
@@ -570,7 +572,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfAnything::evaluate_derivative
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
-  auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
+  auto variables_FAD = convert_variable_values_to_fad_objects(variables);
 
   std::map<std::string, Sacado::Fad::DFad<double>> variable_values;
 
@@ -588,13 +590,13 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfAnything::evaluate_derivative
   if (constants_from_input_.size() != 0)
   {
     // check if constants_from_input are valid
-    AssertValidInput<Sacado::Fad::DFad<double>>(variable_values, constants_from_input_);
+    assert_valid_input<Sacado::Fad::DFad<double>>(variable_values, constants_from_input_);
 
     // add constants from input
     std::copy(constants_from_input_.begin(), constants_from_input_.end(),
         std::inserter(constant_values, constant_values.end()));
   }
-  return EvaluateAndAssembleExpressionToResultVector(
+  return evaluate_and_assemble_expression_to_result_vector(
       variable_values, component, expr_, constant_values);
 }
 

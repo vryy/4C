@@ -33,7 +33,7 @@ namespace Core::Nodes
    * \param gpFiberHolder output of the projected fibers and angles
    */
   template <Core::FE::CellType distype>
-  void ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nodes,
+  void project_fibers_to_gauss_points(const Core::Nodes::Node* const* nodes,
       const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>>& shapefcts,
       NodalFiberHolder& gpFiberHolder);
 
@@ -49,7 +49,7 @@ namespace Core::Nodes
    * @param quantityProjected Output quantity projected with the shape functions
    */
   template <Core::FE::CellType distype, std::size_t dim>
-  void ProjectQuantityWithShapeFunctions(
+  void project_quantity_with_shape_functions(
       const std::array<std::array<double, dim>, Core::FE::num_nodes<distype>> quantity,
       const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>>& shapefcts,
       std::vector<Core::LinAlg::Matrix<dim, 1>>& quantityProjected);
@@ -64,7 +64,7 @@ namespace Core::Nodes
    * @param quantityProjected Output quantity projected with the shape functions
    */
   template <Core::FE::CellType distype>
-  void ProjectQuantityWithShapeFunctions(
+  void project_quantity_with_shape_functions(
       const std::array<double, Core::FE::num_nodes<distype>> quantity,
       const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>>& shapefcts,
       std::vector<double>& quantityProjected);
@@ -78,7 +78,7 @@ namespace Core::Nodes
    * \return false At least one one does not have a fiber
    */
   template <Core::FE::CellType distype>
-  bool HaveNodalFibers(const Core::Nodes::Node* const* nodes);
+  bool have_nodal_fibers(const Core::Nodes::Node* const* nodes);
 }  // namespace Core::Nodes
 
 FOUR_C_NAMESPACE_CLOSE

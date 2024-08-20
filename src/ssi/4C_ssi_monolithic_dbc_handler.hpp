@@ -184,7 +184,7 @@ namespace SSI
    * @param[in] matrixtype_ssi  matrix type of scalar-structure interaction system matrix
    * @return Dirichlet boundary condition handler
    */
-  Teuchos::RCP<SSI::DBCHandlerBase> BuildDBCHandler(bool is_scatra_manifold,
+  Teuchos::RCP<SSI::DBCHandlerBase> build_dbc_handler(bool is_scatra_manifold,
       Core::LinAlg::MatrixType matrixtype_ssi, Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
       Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
       Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,

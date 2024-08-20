@@ -98,7 +98,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
           actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
   actdis->compute_null_space_if_necessary(solver->params());
 
@@ -115,7 +115,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   {
     // FPSI input parameters
     const Teuchos::ParameterList& fpsidyn = Global::Problem::instance()->fpsi_dynamic_params();
-    int coupling = Core::UTILS::IntegralValue<int>(fpsidyn, "COUPALGO");
+    int coupling = Core::UTILS::integral_value<int>(fpsidyn, "COUPALGO");
     if (coupling == partitioned)
     {
       FOUR_C_THROW("partitioned fpsi solution scheme has not been implemented yet.");
@@ -125,7 +125,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
 
   // create the ALE time integrator
   Inpar::ALE::AleDynamic aletype =
-      Core::UTILS::IntegralValue<Inpar::ALE::AleDynamic>(*adyn, "ALE_TYPE");
+      Core::UTILS::integral_value<Inpar::ALE::AleDynamic>(*adyn, "ALE_TYPE");
   Teuchos::RCP<ALE::Ale> ale = Teuchos::null;
   switch (aletype)
   {
@@ -170,7 +170,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Core::ProblemType::biofilm_fsi:
     {
       const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-      int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+      int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_lung_monolithicfluidsplit or
@@ -215,7 +215,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Core::ProblemType::fsi_lung:
     {
       const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-      int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+      int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_lung_monolithicstructuresplit)
       {
@@ -232,7 +232,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Core::ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-      int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+      int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or

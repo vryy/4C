@@ -50,7 +50,7 @@ int Discret::ELEMENTS::ConstraintElement3::evaluate(Teuchos::ParameterList& para
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnod = num_node();
 
       if (numnod == 4)
@@ -92,7 +92,7 @@ int Discret::ELEMENTS::ConstraintElement3::evaluate(Teuchos::ParameterList& para
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnod = num_node();
 
       if (numnod == 4)

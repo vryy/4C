@@ -33,7 +33,7 @@ FLD::XFluidFluidState::XFluidFluidState(
     const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
     const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap)
     : XFluidState(condition_manager, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap),
-      xffluiddofrowmap_(Core::LinAlg::MergeMap(xfluiddofrowmap, embfluiddofrowmap, false)),
+      xffluiddofrowmap_(Core::LinAlg::merge_map(xfluiddofrowmap, embfluiddofrowmap, false)),
       xffluidsplitter_(Teuchos::rcp(new FLD::UTILS::XFluidFluidMapExtractor())),
       xffluidvelpressplitter_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
       embfluiddofrowmap_(embfluiddofrowmap)
@@ -61,11 +61,11 @@ void FLD::XFluidFluidState::init_system_matrix()
 void FLD::XFluidFluidState::init_state_vectors()
 {
   // matrices & vectors for merged background & embedded fluid
-  xffluidresidual_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
-  xffluidincvel_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
-  xffluidvelnp_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
-  xffluidveln_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
-  xffluidzeros_ = Core::LinAlg::CreateVector(*xffluiddofrowmap_, true);
+  xffluidresidual_ = Core::LinAlg::create_vector(*xffluiddofrowmap_, true);
+  xffluidincvel_ = Core::LinAlg::create_vector(*xffluiddofrowmap_, true);
+  xffluidvelnp_ = Core::LinAlg::create_vector(*xffluiddofrowmap_, true);
+  xffluidveln_ = Core::LinAlg::create_vector(*xffluiddofrowmap_, true);
+  xffluidzeros_ = Core::LinAlg::create_vector(*xffluiddofrowmap_, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -132,7 +132,7 @@ void FLD::XFluidFluidState::setup_map_extractors(
   XFluidState::setup_map_extractors(xfluiddiscret, time);
   xffluidsplitter_->setup(*xffluiddofrowmap_, embfluiddofrowmap_, XFluidState::xfluiddofrowmap_);
 
-  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret, Global::Problem::instance()->n_dim(),
+  FLD::UTILS::setup_fluid_fluid_vel_pres_split(*xfluiddiscret, Global::Problem::instance()->n_dim(),
       *embfluiddiscret, *xffluidvelpressplitter_, xffluiddofrowmap_);
 }
 
@@ -146,21 +146,21 @@ bool FLD::XFluidFluidState::destroy()
                "strong RCPs point to the EpetraMatrix. This has to be checked!!!"
             << std::endl;
 
-  XFEM::DestroyRCPObject(xffluidvelnp_);
-  XFEM::DestroyRCPObject(xffluidveln_);
+  XFEM::destroy_rcp_object(xffluidvelnp_);
+  XFEM::destroy_rcp_object(xffluidveln_);
 
-  XFEM::DestroyRCPObject(xffluidresidual_);
+  XFEM::destroy_rcp_object(xffluidresidual_);
 
-  XFEM::DestroyRCPObject(xffluidzeros_);
-  XFEM::DestroyRCPObject(xffluidincvel_);
+  XFEM::destroy_rcp_object(xffluidzeros_);
+  XFEM::destroy_rcp_object(xffluidincvel_);
 
 
-  XFEM::DestroyRCPObject(xffluidsplitter_);
-  XFEM::DestroyRCPObject(xffluidvelpressplitter_);
-  XFEM::DestroyRCPObject(xffluiddbcmaps_);
+  XFEM::destroy_rcp_object(xffluidsplitter_);
+  XFEM::destroy_rcp_object(xffluidvelpressplitter_);
+  XFEM::destroy_rcp_object(xffluiddbcmaps_);
 
   // destroy dofrowmap
-  XFEM::DestroyRCPObject(embfluiddofrowmap_);
+  XFEM::destroy_rcp_object(embfluiddofrowmap_);
 
   // TODO: actually it should be possible to delete the dofrowmap, however this causes problems in
   // xffsi applications! (CHECK THIS!!!)

@@ -49,21 +49,21 @@ void Mortar::MultiFieldCoupling::push_back_coupling(
 void Mortar::MultiFieldCoupling::condense_matrix(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat)
 {
-  Mortar::UTILS::MortarMatrixCondensation(mat, p_);
+  Mortar::UTILS::mortar_matrix_condensation(mat, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 void Mortar::MultiFieldCoupling::condense_rhs(Teuchos::RCP<Epetra_Vector>& rhs)
 {
-  Mortar::UTILS::MortarRhsCondensation(rhs, p_);
+  Mortar::UTILS::mortar_rhs_condensation(rhs, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 void Mortar::MultiFieldCoupling::recover_incr(Teuchos::RCP<Epetra_Vector>& incr)
 {
-  Mortar::UTILS::MortarRecover(incr, p_);
+  Mortar::UTILS::mortar_recover(incr, p_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

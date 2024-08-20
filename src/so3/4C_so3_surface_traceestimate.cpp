@@ -98,7 +98,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
   Core::LinAlg::SerialDenseMatrix surf_red_sd(
       Teuchos::View, surf_red.data(), dim_image, dim_image, dim_image);
 
-  return Core::LinAlg::GeneralizedEigen(surf_red_sd, vol_red_sd);
+  return Core::LinAlg::generalized_eigen(surf_red_sd, vol_red_sd);
 }
 
 template <Core::FE::CellType dt_vol>
@@ -178,7 +178,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     Core::LinAlg::SerialDenseMatrix pqxg(1, 3);
     Core::LinAlg::Matrix<3, 3> derivtrafo;
 
-    Core::FE::BoundaryGPToParentGP<3>(
+    Core::FE::boundary_gp_to_parent_gp<3>(
         pqxg, derivtrafo, intpoints, parent_element()->shape(), shape(), face_parent_number());
 
     Core::LinAlg::Matrix<3, 1> xi;
@@ -209,11 +209,11 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
       Core::LinAlg::Matrix<2, 1> xi_surf;
       xi_surf(0) = ip.ip().qxg[gp][0];
       xi_surf(1) = ip.ip().qxg[gp][1];
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv(
           shapefcn, deriv_surf, xi_surf, boundaryknots, weights, dt_surf);
     }
     else
-      Core::FE::shape_function_2D_deriv1(
+      Core::FE::shape_function_2d_deriv1(
           deriv_surf, ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], shape());
 
     surface_integration(detA, n, xrefe_surf, deriv_surf);
@@ -265,7 +265,7 @@ void Discret::ELEMENTS::StructuralSurface::strains(
     for (int i = 0; i < Core::FE::num_nodes<dt_vol>; ++i)
       weights(i) = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(parent_element()->nodes()[i])->w();
 
-    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
+    Core::FE::Nurbs::nurbs_get_3d_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
   }
   else
     Core::FE::shape_function_deriv1<dt_vol>(xi, deriv);
@@ -367,7 +367,7 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
           for (int k = 0; k < j; ++k) det(k, c) = basis[c](k + off);
           for (int k = j; k < i; ++k) det(k, c) = basis[c](k + 1 + off);
         }
-        basis[i](j + off) = Core::LinAlg::DeterminantLU(det) * sign;
+        basis[i](j + off) = Core::LinAlg::determinant_lu(det) * sign;
         sign *= -1.;
       }
       if (basis[i].norm2() > 1.e-6)
@@ -466,7 +466,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
   Core::LinAlg::SerialDenseMatrix surf_red_sd(
       Teuchos::View, surf_red.data(), dim_image, dim_image, dim_image);
 
-  return Core::LinAlg::GeneralizedEigen(surf_red_sd, vol_red_sd);
+  return Core::LinAlg::generalized_eigen(surf_red_sd, vol_red_sd);
 }
 
 template <Core::FE::CellType dt_vol>
@@ -546,7 +546,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
 
   for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {
-    Core::FE::shape_function_2D_deriv1(deriv_surf, ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], shape());
+    Core::FE::shape_function_2d_deriv1(deriv_surf, ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], shape());
     surface_integration(detA, n, xrefe_surf, deriv_surf);
     n_v.scale(1. / n_v.norm2());
 
@@ -558,7 +558,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
     Core::LinAlg::SerialDenseMatrix pqxg(1, 3);
     Core::LinAlg::Matrix<3, 3> derivtrafo;
 
-    Core::FE::BoundaryGPToParentGP<3>(
+    Core::FE::boundary_gp_to_parent_gp<3>(
         pqxg, derivtrafo, intpoints, parent_element()->shape(), shape(), face_parent_number());
 
     Core::LinAlg::Matrix<3, 1> xi;
@@ -600,7 +600,7 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector_scalar(
         for (int k = 0; k < j; ++k) det(k, c) = basis[c](k);
         for (int k = j; k < i; ++k) det(k, c) = basis[c](k + 1);
       }
-      basis[i](j) = Core::LinAlg::DeterminantLU(det) * sign;
+      basis[i](j) = Core::LinAlg::determinant_lu(det) * sign;
       sign *= -1.;
     }
     basis[i].scale(1. / basis[i].norm2());

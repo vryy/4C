@@ -68,7 +68,7 @@ void Discret::ELEMENTS::LubricationType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::LubricationType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 void Discret::ELEMENTS::LubricationType::setup_element_definition(
@@ -181,7 +181,7 @@ void Discret::ELEMENTS::Lubrication::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::Lubrication::unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Lubrication::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(distype_);
+  return Core::FE::get_number_of_element_lines(distype_);
 }
 
 
@@ -211,7 +211,7 @@ int Discret::ELEMENTS::Lubrication::num_line() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Lubrication::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(distype_);
+  return Core::FE::get_number_of_element_surfaces(distype_);
 }
 
 
@@ -220,7 +220,7 @@ int Discret::ELEMENTS::Lubrication::num_surface() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Lubrication::num_volume() const
 {
-  return Core::FE::getNumberOfElementVolumes(distype_);
+  return Core::FE::get_number_of_element_volumes(distype_);
 }
 
 
@@ -233,7 +233,7 @@ void Discret::ELEMENTS::Lubrication::print(std::ostream& os) const
   os << "Lubrication element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::cell_type_to_string(distype_) << std::endl;
 
   return;
 }
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::Lubrication::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubrication::lines()
 {
-  return Core::Communication::GetElementLines<LubricationBoundary, Lubrication>(*this);
+  return Core::Communication::get_element_lines<LubricationBoundary, Lubrication>(*this);
 }
 
 
@@ -253,7 +253,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubricatio
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Lubrication::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<LubricationBoundary, Lubrication>(*this);
+  return Core::Communication::get_element_surfaces<LubricationBoundary, Lubrication>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -264,10 +264,10 @@ bool Discret::ELEMENTS::Lubrication::read_element(const std::string& eletype,
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // set discretization type
-  set_dis_type(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::string_to_cell_type(distype));
 
   return true;
 }
@@ -318,7 +318,7 @@ Core::Elements::Element* Discret::ELEMENTS::LubricationBoundary::clone() const
  *----------------------------------------------------------------------*/
 Core::FE::CellType Discret::ELEMENTS::LubricationBoundary::shape() const
 {
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_element()->shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -350,7 +350,7 @@ void Discret::ELEMENTS::LubricationBoundary::print(std::ostream& os) const
   os << "LubricationBoundary element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::cell_type_to_string(shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -360,7 +360,7 @@ void Discret::ELEMENTS::LubricationBoundary::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::LubricationBoundary::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(shape());
+  return Core::FE::get_number_of_element_lines(shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -368,7 +368,7 @@ int Discret::ELEMENTS::LubricationBoundary::num_line() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::LubricationBoundary::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(shape());
+  return Core::FE::get_number_of_element_surfaces(shape());
 }
 
 /*----------------------------------------------------------------------*

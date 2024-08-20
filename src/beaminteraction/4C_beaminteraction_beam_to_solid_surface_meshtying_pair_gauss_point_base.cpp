@@ -37,7 +37,7 @@ template <typename ScalarType, typename Beam, typename Surface>
 double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
     Surface>::get_energy() const
 {
-  return Core::FADUtils::CastToDouble(get_penalty_potential());
+  return Core::FADUtils::cast_to_double(get_penalty_potential());
 }
 
 /**
@@ -79,7 +79,7 @@ ScalarType BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<Scalar
           this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(
           projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.

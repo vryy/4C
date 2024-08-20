@@ -30,7 +30,7 @@
 #define PRECISION24
 // #define GMSH_OUTPUT_LSNOLOC_CUT_TEST
 
-Core::LinAlg::SerialDenseMatrix GetLocalHex8Coords()
+Core::LinAlg::SerialDenseMatrix get_local_hex8_coords()
 {
   Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
@@ -70,7 +70,7 @@ Core::LinAlg::SerialDenseMatrix GetLocalHex8Coords()
 }
 
 
-Cut::CombIntersection Cut_With_Tesselation(std::vector<int> nids, std::vector<double> lsvs,
+Cut::CombIntersection cut_with_tesselation(std::vector<int> nids, std::vector<double> lsvs,
     Core::LinAlg::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
@@ -99,7 +99,7 @@ Cut::CombIntersection Cut_With_Tesselation(std::vector<int> nids, std::vector<do
   return ci;
 }
 
-Cut::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids, std::vector<double> lsvs,
+Cut::CombIntersection cut_with_direct_divergence(std::vector<int> nids, std::vector<double> lsvs,
     Core::LinAlg::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
@@ -129,7 +129,7 @@ Cut::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids, std::vect
 }
 
 
-void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<double> lsvs,
+void test_level_set_cut_tesselation_and_dd(std::vector<int> nids, std::vector<double> lsvs,
     Core::LinAlg::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
@@ -230,10 +230,10 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 }
 
 
-void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vector<double> lsvs,
+void test_level_set_cut_tesselation_and_dd_same_vc(std::vector<int> nids, std::vector<double> lsvs,
     Core::LinAlg::SerialDenseMatrix xyze, std::string testname)
 {
-  Cut::CombIntersection ci = Cut_With_Tesselation(nids, lsvs, xyze, testname);
+  Cut::CombIntersection ci = cut_with_tesselation(nids, lsvs, xyze, testname);
 
   // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
   // ###########################################################
@@ -426,7 +426,7 @@ void test_ls_hex8_magnus1()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else
-  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
+  test_level_set_cut_tesselation_and_dd_same_vc(nids, lsvs, xyze, testname);
 #endif
 }
 
@@ -537,7 +537,7 @@ void test_ls_hex8_magnus2()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else
-  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
+  test_level_set_cut_tesselation_and_dd_same_vc(nids, lsvs, xyze, testname);
 #endif
 }
 
@@ -649,7 +649,7 @@ void test_ls_hex8_magnus3()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else
-  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
+  test_level_set_cut_tesselation_and_dd_same_vc(nids, lsvs, xyze, testname);
 #endif
 }
 
@@ -761,7 +761,7 @@ void test_ls_hex8_magnus4()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else
-  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
+  test_level_set_cut_tesselation_and_dd_same_vc(nids, lsvs, xyze, testname);
 #endif
 }
 
@@ -872,7 +872,7 @@ void test_ls_hex8_magnus5()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else
-  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
+  test_level_set_cut_tesselation_and_dd_same_vc(nids, lsvs, xyze, testname);
 #endif
 }
 
@@ -1149,7 +1149,7 @@ void test_ls_hex8_magnus6()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else
-  Test_LevelSetCut_Tesselation_and_DD(nids, lsvs, xyze, testname);
+  test_level_set_cut_tesselation_and_dd(nids, lsvs, xyze, testname);
 #endif
 }
 
@@ -1222,7 +1222,7 @@ void test_ls_hex8_tes_dd_simple()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else
-  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
+  test_level_set_cut_tesselation_and_dd_same_vc(nids, lsvs, xyze, testname);
 #endif
 }
 
@@ -1265,7 +1265,7 @@ void test_ls_mesh_hex8_simple()
   }
 
   // CUT WITH MESH
-  intersection.add_element(1, nids, GetLocalHex8Coords(), Core::FE::CellType::hex8);
+  intersection.add_element(1, nids, get_local_hex8_coords(), Core::FE::CellType::hex8);
   intersection.cut_test_cut(true, Cut::VCellGaussPts_Tessellation);
 
   std::vector<double> tessVol, dirDivVol;
@@ -1322,7 +1322,7 @@ void test_ls_mesh_hex8_simple()
 #ifdef LOCAL_COORDS
   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
 #else  // So far no Global Coord test.
-  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+  test_level_set_cut_tesselation_and_dd_same_vc(nids, lsvs, get_local_hex8_coords(), testname);
 #endif
 }
 
@@ -1499,7 +1499,7 @@ void test_ls_hex8_magnus7()
 
   // Test_LevelSetCut_Tesselation_and_DD(nids, lsvs, hex8_xyze, testname);
 
-  Cut_With_DirectDivergence(nids, lsvs, hex8_xyze, testname);
+  cut_with_direct_divergence(nids, lsvs, hex8_xyze, testname);
 }
 
 // void test_ls_hex8_magnus4()

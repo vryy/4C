@@ -104,7 +104,7 @@ Mat::StructPoro::StructPoro(Mat::PAR::StructPoro* params)
       surf_porosity_(Teuchos::null),
       is_initialized_(false)
 {
-  mat_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->matid_));
+  mat_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->matid_));
   if (mat_ == Teuchos::null)
     FOUR_C_THROW("Mat::StructPoro: underlying material should be of type Mat::So3Material");
 }
@@ -176,7 +176,7 @@ void Mat::StructPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid
   int matid;
@@ -228,7 +228,7 @@ void Mat::StructPoro::unpack(const std::vector<char>& data)
   if (datamat.size() > 0)
   {
     Core::Communication::ParObject* o =
-        Core::Communication::Factory(datamat);  // Unpack is done here
+        Core::Communication::factory(datamat);  // Unpack is done here
     auto* mat = dynamic_cast<Mat::So3Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     mat_ = Teuchos::rcp(mat);

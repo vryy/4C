@@ -235,7 +235,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaled_gauss_elimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
@@ -306,7 +306,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaled_gauss_elimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at pbc inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
@@ -395,7 +395,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaled_gauss_elimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at boundary node");
 
           // patch-recovery interpolation for boundary point
@@ -537,7 +537,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaled_gauss_elimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at pbc boundary node");
 
           // patch-recovery interpolation for boundary point

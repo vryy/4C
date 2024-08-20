@@ -67,7 +67,7 @@ void Discret::ELEMENTS::SoHex18Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex18Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::SoHex18Type::setup_element_definition(
@@ -103,7 +103,7 @@ Discret::ELEMENTS::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::SoHex18::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::SoHex18::print(std::ostream& os) const
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
 }
 
@@ -211,7 +211,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::s
 *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
 }
 
@@ -245,7 +245,7 @@ bool Discret::ELEMENTS::SoHex18::read_element(const std::string& eletype,
   // read number of material model
   int material_id = container.get<int>("MAT");
 
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   // set up of materials with GP data (e.g., history variables)
 
@@ -362,9 +362,9 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -384,9 +384,9 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> myemat(true);
 
@@ -410,9 +410,9 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
 
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
           Inpar::Solid::stress_none, Inpar::Solid::strain_none);
@@ -439,14 +439,14 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
         if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
         if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::extract_my_values(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        Core::FE::ExtractMyValues(*res, myres, lm);
+        Core::FE::extract_my_values(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
 
         nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain, params,
@@ -494,7 +494,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       recover(myres);
     }
     break;

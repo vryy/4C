@@ -22,7 +22,7 @@ namespace
 {
   using namespace FourC;
 
-  void CreateMaterialInGlobalProblem()
+  void create_material_in_global_problem()
   {
     Core::IO::InputParameterContainer mat_stvenant;
     mat_stvenant.add("YOUNG", 1.0);
@@ -47,7 +47,7 @@ namespace
    protected:
     void SetUp() override
     {
-      CreateMaterialInGlobalProblem();
+      create_material_in_global_problem();
       comm_ = Teuchos::rcp(new Epetra_SerialComm);
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
       testdis_ = Teuchos::rcp(new Core::FE::Discretization("dummy", comm_, 3));
@@ -67,7 +67,7 @@ namespace
     inputData_.distype_ = "HEX8";
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
-    Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    Core::IO::GridGenerator::create_rectangular_cuboid_discretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 
@@ -89,7 +89,7 @@ namespace
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
     inputData_.rotation_angle_ = std::array<double, 3>{30.0, 10.0, 7.0};
 
-    Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    Core::IO::GridGenerator::create_rectangular_cuboid_discretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 
@@ -110,7 +110,7 @@ namespace
     inputData_.distype_ = "HEX27";
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
-    Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    Core::IO::GridGenerator::create_rectangular_cuboid_discretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 
@@ -132,7 +132,7 @@ namespace
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
     inputData_.autopartition_ = true;
 
-    Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
+    Core::IO::GridGenerator::create_rectangular_cuboid_discretization(*testdis_, inputData_, true);
 
     testdis_->fill_complete(false, false, false);
 

@@ -121,7 +121,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseFactory::provide_impl(
     }
     default:
       FOUR_C_THROW("Element shape %s not activated. Just do it.",
-          Core::FE::CellTypeToString(distype).c_str());
+          Core::FE::cell_type_to_string(distype).c_str());
       break;
   }
   return nullptr;

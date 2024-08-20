@@ -105,7 +105,7 @@ void Solid::Dbc::setup()
       Teuchos::ParameterList& p_linsolver = const_cast<Teuchos::ParameterList&>(
           pnox.sublist("Direction").sublist("Newton").sublist("Linear Solver"));
       NOX::Nln::LinSystem::PrePostOperator::Map& prepostlinsystem_map =
-          NOX::Nln::LinSystem::PrePostOp::GetMap(p_linsolver);
+          NOX::Nln::LinSystem::PrePostOp::get_map(p_linsolver);
       // create the new pre/post operator for the nox nln linear system
       Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepostdbc_ptr =
           Teuchos::rcp(new NOX::Nln::LinSystem::PrePostOp::Dbc(Teuchos::rcp(this, false)));
@@ -315,11 +315,11 @@ bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v, bo
   if (g_state().max_block_number() > 1)
   {
     Epetra_Vector v_displ(*g_state().dof_row_map_view());
-    Core::LinAlg::ExtractMyVector(*v, v_displ);
+    Core::LinAlg::extract_my_vector(*v, v_displ);
 
     locsysman_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(v_displ), offset);
 
-    Core::LinAlg::AssembleMyVector(0.0, *v, 1.0, v_displ);
+    Core::LinAlg::assemble_my_vector(0.0, *v, 1.0, v_displ);
   }
   else
     locsysman_ptr_->rotate_global_to_local(v, offset);
@@ -363,11 +363,11 @@ bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v, bo
   if (g_state().max_block_number() > 1)
   {
     Epetra_Vector v_displ(*g_state().dof_row_map_view());
-    Core::LinAlg::ExtractMyVector(*v, v_displ);
+    Core::LinAlg::extract_my_vector(*v, v_displ);
 
     locsysman_ptr_->rotate_local_to_global(Teuchos::rcpFromRef(v_displ), offset);
 
-    Core::LinAlg::AssembleMyVector(0.0, *v, 1.0, v_displ);
+    Core::LinAlg::assemble_my_vector(0.0, *v, 1.0, v_displ);
   }
   else
     locsysman_ptr_->rotate_local_to_global(v, offset);
@@ -392,7 +392,7 @@ void Solid::Dbc::extract_freact(Teuchos::RCP<Epetra_Vector>& b) const
 {
   check_init_setup();
 
-  Core::LinAlg::ExtractMyVector(*b, freact());
+  Core::LinAlg::extract_my_vector(*b, freact());
   freact().Scale(-1.0);
 
   // put zeros on all non-DBC dofs

@@ -409,7 +409,7 @@ namespace FLD
     };
 
 
-    void SetupFluidFluidVelPresSplit(const Core::FE::Discretization& fluiddis, int ndim,
+    void setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization& fluiddis, int ndim,
         const Core::FE::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
         Teuchos::RCP<Epetra_Map> fullmap);
 
@@ -437,8 +437,8 @@ namespace FLD
           \author chfoe
       \date 11/07
      */
-    void LiftDrag(const Teuchos::RCP<const Core::FE::Discretization>
-                      dis,  //! fluid discretization (node distribution, conditions)
+    void lift_drag(const Teuchos::RCP<const Core::FE::Discretization>
+                       dis,  //! fluid discretization (node distribution, conditions)
         const Teuchos::RCP<const Epetra_Vector> trueresidual,  //! vector of nodalforces
         const Teuchos::RCP<const Epetra_Vector>
             dispnp,      ///< solution vector with velocities (and pressure)
@@ -454,8 +454,8 @@ namespace FLD
      * \author axel
      * \date 02/09
      */
-    void WriteLiftDragToFile(const double time,  ///< current real time
-        const int step,                          ///< time step
+    void write_lift_drag_to_file(const double time,  ///< current real time
+        const int step,                              ///< time step
         const std::map<int, std::vector<double>>&
             liftdragvals  ///< the computed values for lift and drag in an array
     );
@@ -492,7 +492,7 @@ namespace FLD
       \author Ursula Mayer
       \date 10/08
      */
-    std::map<int, double> ComputeFlowRates(
+    std::map<int, double> compute_flow_rates(
         Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,                      ///< solution vector with velocities (and pressure)
@@ -500,7 +500,7 @@ namespace FLD
         const Inpar::FLUID::PhysicalType physicaltype  ///< physical type of flow
     );
 
-    std::map<int, double> ComputeFlowRates(
+    std::map<int, double> compute_flow_rates(
         Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,  ///< solution vector with velocities (and pressure)
@@ -527,18 +527,18 @@ namespace FLD
      * \author mayer
      * \date 01/10
      */
-    void WriteDoublesToFile(const double time, const int step, const std::map<int, double>& data,
+    void write_doubles_to_file(const double time, const int step, const std::map<int, double>& data,
         const std::string& name);
 
 
-    void WriteVolumeToFile(
+    void write_volume_to_file(
         const double time, const int step, const std::map<int, double>& flowrates);
 
     /*!
     \brief Project gradient and store vector in param list
 
     */
-    void ProjectGradientAndSetParam(Teuchos::RCP<Core::FE::Discretization> discret,
+    void project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretization> discret,
         Teuchos::ParameterList& eleparams, Teuchos::RCP<const Epetra_Vector> vel,
         const std::string paraname, bool alefluid);
 
@@ -546,8 +546,9 @@ namespace FLD
     \brief Project velocity gradient, depends on time integrator used
 
     */
-    Teuchos::RCP<Epetra_MultiVector> ProjectGradient(Teuchos::RCP<Core::FE::Discretization> discret,
-        Teuchos::RCP<const Epetra_Vector> vel, bool alefluid);
+    Teuchos::RCP<Epetra_MultiVector> project_gradient(
+        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel,
+        bool alefluid);
 
     /*!
       \brief integrate impulse rate over surfaces
@@ -563,7 +564,7 @@ namespace FLD
       \author Axel Gerstenberger
       \date 10/08
      */
-    std::map<int, Core::LinAlg::Matrix<3, 1>> ComputeSurfaceImpulsRates(
+    std::map<int, Core::LinAlg::Matrix<3, 1>> compute_surface_impuls_rates(
         Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector> velnp  ///< solution vector with velocities and pressure
                                                  ///< (only velocities are used)

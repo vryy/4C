@@ -32,7 +32,7 @@ namespace Discret::ELEMENTS::Shell::EAS
    * @return Core::LinAlg::SerialDenseMatrix : Transformation matrix T0inv
    */
   template <Core::FE::CellType distype>
-  Core::LinAlg::SerialDenseMatrix EvaluateT0inv(
+  Core::LinAlg::SerialDenseMatrix evaluate_t0inv(
       const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::DETAIL::num_dim,
           Discret::ELEMENTS::Shell::DETAIL::num_dim>& akov,
       const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::DETAIL::num_dim,
@@ -615,7 +615,7 @@ namespace Discret::ELEMENTS::Shell::EAS
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
   template <Core::FE::CellType distype>
-  void UpdateCurrentMetricsEAS(Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g,
+  void update_current_metrics_eas(Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g,
       const Core::LinAlg::SerialDenseVector& strain, const double& zeta)
   {
     // update kovariant metric tensor
@@ -661,14 +661,14 @@ namespace Discret::ELEMENTS::Shell::EAS
    * @return Core::LinAlg::SerialDenseMatrix : EAS shapefunction matrix M
    */
   template <Core::FE::CellType distype>
-  Core::LinAlg::SerialDenseMatrix MapEasShapeFunctionsToGaussPoint(const int& neas,
+  Core::LinAlg::SerialDenseMatrix map_eas_shape_functions_to_gauss_point(const int& neas,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& metrics_centroid_reference,
       Core::LinAlg::SerialDenseMatrix& M)
   {
     // get transformation matrix T0^-1 to map M from midpoint to gaussian point
     Core::LinAlg::SerialDenseMatrix T0inv =
-        EvaluateT0inv<distype>(a_reference.kovariant_, metrics_centroid_reference.kontravariant_);
+        evaluate_t0inv<distype>(a_reference.kovariant_, metrics_centroid_reference.kontravariant_);
     // transform basis of M-matrix to gaussian point: M_gp = detJ0/ detJ * T0^-T * M
     Core::LinAlg::SerialDenseMatrix M_gp(
         Discret::ELEMENTS::Shell::DETAIL::num_internal_variables, neas);
@@ -680,21 +680,21 @@ namespace Discret::ELEMENTS::Shell::EAS
 
   // Evaluates M_gp by setting up M and mapping M to M_gp via T0^{-T}
   template <Core::FE::CellType distype>
-  Core::LinAlg::SerialDenseMatrix EvaluateEasShapeFunctions(const std::array<double, 2>& xi_gp,
+  Core::LinAlg::SerialDenseMatrix evaluate_eas_shape_functions(const std::array<double, 2>& xi_gp,
       const Solid::ELEMENTS::ShellLockingTypes& locking_types,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& metrics_centroid_reference)
   {
     Core::LinAlg::SerialDenseMatrix M =
         EAS::evaluate_eas_shape_functions_parameter_space<distype>(xi_gp, locking_types);
-    Core::LinAlg::SerialDenseMatrix M_gp = MapEasShapeFunctionsToGaussPoint(
+    Core::LinAlg::SerialDenseMatrix M_gp = map_eas_shape_functions_to_gauss_point(
         locking_types.total, a_reference, metrics_centroid_reference, M);
     return M_gp;
   }
 
 
   // Evaluate enhanced EAS strains
-  void EvaluateEasStrains(Core::LinAlg::SerialDenseVector& strain_enh,
+  void evaluate_eas_strains(Core::LinAlg::SerialDenseVector& strain_enh,
       const Core::LinAlg::SerialDenseMatrix& alpha, Core::LinAlg::SerialDenseMatrix& M)
   {
     // evaluate enhanced strains = M * alpha to "unlock" element

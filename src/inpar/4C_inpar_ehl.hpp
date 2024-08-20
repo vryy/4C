@@ -67,7 +67,7 @@ namespace Inpar
     };
 
     //! Map solution technique enum to std::string
-    static inline std::string NlnSolTechString(const enum NlnSolTech name  //!< enum to convert
+    static inline std::string nln_sol_tech_string(const enum NlnSolTech name  //!< enum to convert
     )
     {
       switch (name)
@@ -94,10 +94,10 @@ namespace Inpar
 
 
     /// set the ehl parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set specific ehl conditions
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace EHL

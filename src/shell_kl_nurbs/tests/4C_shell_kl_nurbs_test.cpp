@@ -26,9 +26,9 @@ namespace
 
     // Integration rule
     const auto intpoints_xi = Core::FE::IntegrationPoints1D(
-        Core::FE::NumGaussPointsToGaussRule<Core::FE::CellType::line2>(4));
+        Core::FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::line2>(4));
     const auto intpoints_eta = Core::FE::IntegrationPoints1D(
-        Core::FE::NumGaussPointsToGaussRule<Core::FE::CellType::line2>(3));
+        Core::FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::line2>(3));
 
     // NURBS stuff
     std::vector<Core::LinAlg::SerialDenseVector> knots(2);

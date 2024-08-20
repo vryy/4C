@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::UTILS::FluidAleNodesDisjoint(
+bool FSI::UTILS::fluid_ale_nodes_disjoint(
     Teuchos::RCP<Core::FE::Discretization> fluiddis, Teuchos::RCP<Core::FE::Discretization> aledis)
 {
   // flag indicating whether fluid and ALE node numbers have are non-overlapping or not
@@ -104,11 +104,11 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
   std::map<int, std::map<int, Core::Nodes::Node*>> structgnodes;  // complete map of strucutre nodes
 
   // initialize struct objects in interface
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *structdis, dummy2, structgnodes, structelements, "FSICoupling");
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *structdis, dummy1, structmnodes, structmelements, "FSICouplingNoSlide");
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *structdis, dummy1, structdnodes, structdelements, "FSICouplingCenterDisp");
   istructdispnodes_ = structdnodes;
   istructdispeles_ = structdelements;
@@ -152,9 +152,9 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
   std::map<int, Core::Nodes::Node*> fluidmnodes;  // partial map of sticking fluid nodes
 
   // initialize struct objects in interface
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *fluiddis, fluidnodes, dummy2, fluidelements, "FSICoupling");
-  Core::Conditions::FindConditionObjects(
+  Core::Conditions::find_condition_objects(
       *fluiddis, fluidmnodes, dummy1, fluidmelements, "FSICouplingNoSlide");
   ifluidconfnodes_ = fluidmnodes;
   ifluidslidnodes_ = fluidnodes;
@@ -195,8 +195,8 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
   }
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      Core::LinAlg::MergeMap(*structdofrowmap_, *fluiddofrowmap_, true);
-  idispms_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+      Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
+  idispms_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   iprojhist_ = Teuchos::rcp(new Epetra_Vector(*fluiddofrowmap_, true));
 
@@ -258,7 +258,7 @@ void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
   idispms_->PutScalar(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      Core::LinAlg::MergeMap(*structdofrowmap_, *fluiddofrowmap_, true);
+      Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
   Teuchos::RCP<Epetra_Import> msimpo =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *structdofrowmap_));
   Teuchos::RCP<Epetra_Import> slimpo =
@@ -281,7 +281,7 @@ void FSI::UTILS::SlideAleUtils::evaluate_mortar(Teuchos::RCP<Epetra_Vector> idis
   idispms_->PutScalar(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      Core::LinAlg::MergeMap(*structdofrowmap_, *fluiddofrowmap_, true);
+      Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
   Teuchos::RCP<Epetra_Import> master_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *structdofrowmap_));
   Teuchos::RCP<Epetra_Import> slave_importer =
@@ -333,10 +333,10 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
   const int dim = Global::Problem::instance()->n_dim();
   // get structure and fluid discretizations  and set stated for element evaluation
   const Teuchos::RCP<Epetra_Vector> idisptotalcol =
-      Core::LinAlg::CreateVector(*structdis->dof_col_map(), true);
+      Core::LinAlg::create_vector(*structdis->dof_col_map(), true);
   Core::LinAlg::export_to(*idisptotal, *idisptotalcol);
   const Teuchos::RCP<Epetra_Vector> idispstepcol =
-      Core::LinAlg::CreateVector(*structdis->dof_col_map(), true);
+      Core::LinAlg::create_vector(*structdis->dof_col_map(), true);
   Core::LinAlg::export_to(*idispstep, *idispstepcol);
 
   structdis->set_state("displacementtotal", idisptotalcol);
@@ -430,7 +430,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
         std::vector<double> mydisp(3);
         Core::LinAlg::Matrix<3, 1> currpos;
 
-        Core::FE::ExtractMyValues(*reddisp, mydisp, lm);
+        Core::FE::extract_my_values(*reddisp, mydisp, lm);
 
         for (int a = 0; a < 3; a++)
         {
@@ -463,7 +463,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
   // Redistribute displacement of structnodes on the interface to all processors.
   Teuchos::RCP<Epetra_Import> interimpo =
       Teuchos::rcp(new Epetra_Import(*structfullnodemap_, *structdofrowmap_));
-  Teuchos::RCP<Epetra_Vector> reddisp = Core::LinAlg::CreateVector(*structfullnodemap_, true);
+  Teuchos::RCP<Epetra_Vector> reddisp = Core::LinAlg::create_vector(*structfullnodemap_, true);
   reddisp->Import(*idispnp, *interimpo, Add);
 
   Core::FE::Discretization& interfacedis = coupsf.interface()->discret();
@@ -475,7 +475,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
   // calculate structural interface center of gravity
   std::vector<double> centerdisp_v = centerdisp(structure, comm);
 
-  Teuchos::RCP<Epetra_Vector> frotfull = Core::LinAlg::CreateVector(*fluiddofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> frotfull = Core::LinAlg::create_vector(*fluiddofrowmap_, true);
   if (aletype_ == Inpar::FSI::ALEprojection_rot_z ||
       aletype_ == Inpar::FSI::ALEprojection_rot_zsphere)
   {
@@ -494,7 +494,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
       // init of search tree
       Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::rcp(new Core::Geo::SearchTree(5));
       const Core::LinAlg::Matrix<3, 2> rootBox =
-          Core::Geo::getXAABBofEles(structreduelements_[mnit->first], currentpositions);
+          Core::Geo::get_xaab_bof_eles(structreduelements_[mnit->first], currentpositions);
 
       if (dim == 2)
         searchTree->initialize_tree_slide_ale(
@@ -566,7 +566,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
       Core::LinAlg::Matrix<3, 1> minDistCoords;
       if (dim == 2)
       {
-        Core::Geo::nearest2DObjectInNode(Teuchos::rcp(&interfacedis, false),
+        Core::Geo::nearest_2d_object_in_node(Teuchos::rcp(&interfacedis, false),
             structreduelements_[mnit->first], currentpositions, closeeles, alenodecurr,
             minDistCoords);
         finaldxyz[0] = minDistCoords(0, 0) - node->x()[0];
@@ -574,7 +574,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
       }
       else
       {
-        Core::Geo::nearest3DObjectInNode(Teuchos::rcp(&interfacedis, false),
+        Core::Geo::nearest_3d_object_in_node(Teuchos::rcp(&interfacedis, false),
             structreduelements_[mnit->first], currentpositions, closeeles, alenodecurr,
             minDistCoords);
         finaldxyz[0] = minDistCoords(0, 0) - node->x()[0];
@@ -600,19 +600,19 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
   int foffset = 0;
   if (structcoupmaster_)
   {
-    structfullnodemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->master_row_dofs()));
-    structfullelemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->master_row_elements()));
-    fluidfullnodemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->slave_row_dofs()));
-    fluidfullelemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->slave_row_elements()));
+    structfullnodemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->master_row_dofs()));
+    structfullelemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->master_row_elements()));
+    fluidfullnodemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->slave_row_dofs()));
+    fluidfullelemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->slave_row_elements()));
     soffset = 0;
     foffset = fluidfullelemap_->MinMyGID();
   }
   else
   {
-    fluidfullnodemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->master_row_dofs()));
-    fluidfullelemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->master_row_elements()));
-    structfullnodemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->slave_row_dofs()));
-    structfullelemap_ = Core::LinAlg::AllreduceEMap(*(coupsf.interface()->slave_row_elements()));
+    fluidfullnodemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->master_row_dofs()));
+    fluidfullelemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->master_row_elements()));
+    structfullnodemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->slave_row_dofs()));
+    structfullelemap_ = Core::LinAlg::allreduce_e_map(*(coupsf.interface()->slave_row_elements()));
     soffset = structfullelemap_->MinMyGID();
     foffset = 0;
   }
@@ -642,7 +642,7 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
     // map with ele ids
     Epetra_Map mstruslideleids(globsum, vstruslideleids.size(), vstruslideleids.data(), 0, comm);
     // redundant version of it
-    Epetra_Map redmstruslideleids(*Core::LinAlg::AllreduceEMap(mstruslideleids));
+    Epetra_Map redmstruslideleids(*Core::LinAlg::allreduce_e_map(mstruslideleids));
 
     for (int eleind = 0; eleind < redmstruslideleids.NumMyElements(); eleind++)
     {
@@ -695,15 +695,15 @@ void FSI::UTILS::SlideAleUtils::rotation(
     Teuchos::RCP<Epetra_Vector> rotfull  ///< vector of full displacements in tangential directions
 )
 {
-  Teuchos::RCP<Epetra_Vector> idispstep = Core::LinAlg::CreateVector(*fluiddofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> idispstep = Core::LinAlg::create_vector(*fluiddofrowmap_, false);
   idispstep->Update(1.0, *idispale, -1.0, *iprojhist_, 0.0);
 
   // get structure and fluid discretizations  and set state for element evaluation
   const Teuchos::RCP<Epetra_Vector> idispstepcol =
-      Core::LinAlg::CreateVector(*mtrdis.dof_col_map(), false);
+      Core::LinAlg::create_vector(*mtrdis.dof_col_map(), false);
   Core::LinAlg::export_to(*idispstep, *idispstepcol);
   const Teuchos::RCP<Epetra_Vector> idispnpcol =
-      Core::LinAlg::CreateVector(*mtrdis.dof_col_map(), false);
+      Core::LinAlg::create_vector(*mtrdis.dof_col_map(), false);
   Core::LinAlg::export_to(*idispale, *idispnpcol);
 
   mtrdis.set_state("displacementnp", idispnpcol);
@@ -789,7 +789,7 @@ void FSI::UTILS::SlideAleUtils::rotation(
           params, mtrdis, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err) FOUR_C_THROW("error while evaluating elements");
 
-      Core::LinAlg::Assemble(*rotfull, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(*rotfull, elevector1, lm, lmowner);
     }
   }
   mtrdis.clear_state();

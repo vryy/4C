@@ -72,7 +72,7 @@ void MultiScale::np_support_drt()
 
     // every element needs one micromaterial
     if (dummymaterials[eleID] == Teuchos::null)
-      dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::Factory(1));
+      dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::factory(1));
 
     // check what is the next task of the supporting procs
     switch (whattodo)
@@ -155,7 +155,7 @@ void MultiScale::np_support_drt()
 
         // new dummy material is created if necessary
         if (dummymaterials[eleID] == Teuchos::null)
-          dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::Factory(1));
+          dummymaterials[eleID] = Teuchos::rcp_static_cast<Mat::MicroMaterial>(Mat::factory(1));
 
         // dummy material is used to restart the micro material
         dummymaterials[eleID]->read_restart(gp, eleID, eleowner, microdisnum, V0);

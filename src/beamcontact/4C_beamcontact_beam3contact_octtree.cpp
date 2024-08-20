@@ -62,10 +62,10 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
   {
     // octree specs
     bboxtype_input =
-        Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE");
+        Core::UTILS::integral_value<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE");
 
     // additive or multiplicative extrusion of bounding boxes
-    if (Core::UTILS::IntegralValue<int>(params, "BEAMS_ADDITEXT"))
+    if (Core::UTILS::integral_value<int>(params, "BEAMS_ADDITEXT"))
       additiveextrusion_ = true;
     else
       additiveextrusion_ = false;
@@ -86,12 +86,12 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
     // max number of bounding boxes per leaf octant
     minbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT", 8);
 
-    btsol_ = Core::UTILS::IntegralValue<int>(params, "BEAMS_BTSOL");
+    btsol_ = Core::UTILS::integral_value<int>(params, "BEAMS_BTSOL");
   }
   else if (params.name() == "DAT FILE->BEAM POTENTIAL")
   {
     bboxtype_input =
-        Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMPOT_OCTREE");
+        Core::UTILS::integral_value<Inpar::BEAMCONTACT::OctreeType>(params, "BEAMPOT_OCTREE");
 
     additiveextrusion_ = true;
     extrusionvalue_->push_back(Teuchos::getDoubleParameter(params, "CUTOFFRADIUS"));
@@ -99,7 +99,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
     // max number of bounding boxes per leaf octant
     minbboxesinoctant_ = params.get<int>("BEAMPOT_BOXESINOCT", 8);
 
-    btsol_ = Core::UTILS::IntegralValue<int>(params, "BEAMPOT_BTSOL");
+    btsol_ = Core::UTILS::integral_value<int>(params, "BEAMPOT_BTSOL");
   }
   else
   {
@@ -446,8 +446,8 @@ void Beam3ContactOctTree::initialize_octree_search()
           (*diameter_)[i] =
               2.0 * (dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(element))->radius();
         // If we have a solid element, we don't need its diameter and can it set to zero:
-        else if (!BEAMINTERACTION::UTILS::IsBeamElement(*element) and
-                 !BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
+        else if (!BEAMINTERACTION::UTILS::is_beam_element(*element) and
+                 !BEAMINTERACTION::UTILS::is_rigid_sphere_element(*element))
           (*diameter_)[i] = 0.0;
         // feasibility check
         if ((*diameter_)[i] < 0.0) FOUR_C_THROW("ERROR: Did not receive feasible element radius.");
@@ -497,7 +497,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
       // store nodal positions into matrix coords
       Core::LinAlg::SerialDenseMatrix coord(3, 2, true);
 
-      if (BEAMINTERACTION::UTILS::IsBeamElement(*element))
+      if (BEAMINTERACTION::UTILS::is_beam_element(*element))
       {
         for (int i = 0; i < 2; i++)
         {
@@ -506,7 +506,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
           for (int j = 0; j < 3; j++) coord(j, i) = coord_aux(j);
         }
       }
-      else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
+      else if (BEAMINTERACTION::UTILS::is_rigid_sphere_element(*element))
       {
         int gid = element->nodes()[0]->id();
         Core::LinAlg::Matrix<3, 1> coord_aux = currentpositions[gid];
@@ -829,7 +829,7 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
   Core::Elements::Element* element = searchdis_.l_col_element(elecolid);
   double diameter = 0.0;
 
-  if (BEAMINTERACTION::UTILS::IsBeamElement(*element))
+  if (BEAMINTERACTION::UTILS::is_beam_element(*element))
   {
     if (coord.numRows() == 3 and coord.numCols() == 2)
     {
@@ -840,7 +840,7 @@ void Beam3ContactOctTree::create_spbb(Core::LinAlg::SerialDenseMatrix& coord, co
     else
       FOUR_C_THROW("coord matrix of nodal positions has wrong dimensions here!");
   }
-  else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*element))
+  else if (BEAMINTERACTION::UTILS::is_rigid_sphere_element(*element))
   {
     diameter = (*diameter_)[elecolid];
   }
@@ -1484,7 +1484,7 @@ void Beam3ContactOctTree::bounding_box_intersection(
           // should not get into contact. In contrary to a former criterion based on filament
           // numbers (which forbids self contact), this method works for arbitrary element types and
           // still allows for self contact!!!
-          if (BEAMINTERACTION::ElementsShareNode(*element1, *element2)) considerpair = false;
+          if (BEAMINTERACTION::elements_share_node(*element1, *element2)) considerpair = false;
         }
         if (considerpair)
         {
@@ -1709,9 +1709,9 @@ bool Beam3ContactOctTree::intersection_cobb(
       }
 
       //      double t_02 = Teuchos::Time::wallTime();
-      t1 = Core::FADUtils::DiffVector(r1_b, r1_a);
-      t2 = Core::FADUtils::DiffVector(r2_b, r2_a);
-      double angle = BEAMINTERACTION::CalcAngle(t1, t2);
+      t1 = Core::FADUtils::diff_vector(r1_b, r1_a);
+      t2 = Core::FADUtils::diff_vector(r2_b, r2_a);
+      double angle = BEAMINTERACTION::calc_angle(t1, t2);
       //      std::cout<<"(i,j) = "<<i<<", "<<j<<",  Angle Calc : "<<
       //      Teuchos::Time::wallTime()-t_02<<std::endl;
 
@@ -1721,7 +1721,7 @@ bool Beam3ContactOctTree::intersection_cobb(
       {
         std::pair<double, double> closestpoints(std::make_pair(0.0, 0.0));
         bool etaset = false;
-        intersection = BEAMINTERACTION::IntersectArbitraryCylinders(
+        intersection = BEAMINTERACTION::intersect_arbitrary_cylinders(
             r1_a, r1_b, r2_a, r2_b, distancelimit, closestpoints, etaset);
         //        std::cout<<"(i,j) = "<<i<<", "<<j<<",  Isec nonpar: "<<
         //        Teuchos::Time::wallTime()-t_03<<std::endl;
@@ -1729,7 +1729,7 @@ bool Beam3ContactOctTree::intersection_cobb(
       else  // parallel case
       {
         intersection =
-            BEAMINTERACTION::IntersectParallelCylinders(r1_a, r1_b, r2_a, r2_b, distancelimit);
+            BEAMINTERACTION::intersect_parallel_cylinders(r1_a, r1_b, r2_a, r2_b, distancelimit);
         //        std::cout<<"(i,j) = "<<i<<", "<<j<<",  Isec par   : "<<
         //        Teuchos::Time::wallTime()-t_03<<std::endl;
       }

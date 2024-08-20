@@ -22,9 +22,9 @@ bool Discret::ELEMENTS::Ale3::read_element(const std::string& eletype, const std
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
-  Core::FE::CellType shape = Core::FE::StringToCellType(distype);
+  Core::FE::CellType shape = Core::FE::string_to_cell_type(distype);
 
   std::cout << " distype " << distype << std::endl;
 

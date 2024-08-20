@@ -276,7 +276,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_c
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   {
-    Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::CreateVector(*dis->dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dis->dof_row_map(), true);
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", 0.0);

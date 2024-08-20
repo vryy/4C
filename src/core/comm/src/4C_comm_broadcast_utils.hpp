@@ -69,7 +69,7 @@ namespace Core::Communication::DETAIL
 {
   //! Broadcast a map or vector<pair>
   template <typename T, typename U, typename M>
-  void BroadcastMapLikeToVetors(
+  void broadcast_map_like_to_vetors(
       const M& map_in, std::vector<T>& vec_out1, std::vector<U>& vec_out2, const Epetra_Comm& comm)
   {
     // split map or std::vector<std::pair> into two vectors
@@ -103,7 +103,7 @@ std::map<T, U> Core::Communication::broadcast(const std::map<T, U>& map_in, cons
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  DETAIL::BroadcastMapLikeToVetors<T, U>(map_in, vec1, vec2, comm);
+  DETAIL::broadcast_map_like_to_vetors<T, U>(map_in, vec1, vec2, comm);
   std::map<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -117,7 +117,7 @@ std::unordered_map<T, U> Core::Communication::broadcast(
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  DETAIL::BroadcastMapLikeToVetors<T, U>(map_in, vec1, vec2, comm);
+  DETAIL::broadcast_map_like_to_vetors<T, U>(map_in, vec1, vec2, comm);
   std::unordered_map<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -131,7 +131,7 @@ std::unordered_multimap<T, U> Core::Communication::broadcast(
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  DETAIL::BroadcastMapLikeToVetors<T, U>(map_in, vec1, vec2, comm);
+  DETAIL::broadcast_map_like_to_vetors<T, U>(map_in, vec1, vec2, comm);
   std::unordered_multimap<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -145,7 +145,7 @@ std::vector<std::pair<T, U>> Core::Communication::broadcast(
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  DETAIL::BroadcastMapLikeToVetors<T, U>(pairs_in, vec1, vec2, comm);
+  DETAIL::broadcast_map_like_to_vetors<T, U>(pairs_in, vec1, vec2, comm);
   std::vector<std::pair<T, U>> pairs_out;
   for (unsigned i = 0; i < vec1.size(); ++i)
     pairs_out.emplace_back(std::make_pair(vec1[i], vec2[i]));

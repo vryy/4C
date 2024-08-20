@@ -45,7 +45,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::build_id_sets(
 {
   // Set the IDs of the line elements.
   std::vector<int> line_ids;
-  ConditionToElementIds(condition_line_, line_ids);
+  condition_to_element_ids(condition_line_, line_ids);
   line_ids_ = std::set<int>(line_ids.begin(), line_ids.end());
 }
 
@@ -78,7 +78,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
 
   // Get all available interaction types.
   std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions> interaction_types;
-  Inpar::BEAMINTERACTION::BeamInteractionConditionsGetAll(interaction_types);
+  Inpar::BEAMINTERACTION::beam_interaction_conditions_get_all(interaction_types);
 
   // Loop over interaction types.
   for (const auto& interaction_type : interaction_types)
@@ -147,7 +147,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
 
       // Get the names for the conditions of this type.
       std::array<std::string, 2> condition_names;
-      Inpar::BeamToSolid::BeamToSolidInteractionGetString(interaction_type, condition_names);
+      Inpar::BeamToSolid::beam_to_solid_interaction_get_string(interaction_type, condition_names);
 
       // Get the conditions from the discretization.
       std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_line;
@@ -317,7 +317,7 @@ void BEAMINTERACTION::BeamInteractionConditions::create_indirect_assembly_manage
 /**
  *
  */
-void BEAMINTERACTION::ConditionToElementIds(
+void BEAMINTERACTION::condition_to_element_ids(
     const Teuchos::RCP<const Core::Conditions::Condition>& condition, std::vector<int>& element_ids)
 {
   // Loop over the elements in the condition and get the "real" element by comparing the node IDs.

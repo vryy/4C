@@ -164,7 +164,7 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
     //                      --> PoroFluid (inside + FSI-Interface)
     //                      --> PoroFluid FPSI-Interface
 
-    Teuchos::RCP<const Epetra_Map> s_other_map = Core::LinAlg::MergeMap(
+    Teuchos::RCP<const Epetra_Map> s_other_map = Core::LinAlg::merge_map(
         poro_field()->structure_field()->interface()->Map(Solid::MapExtractor::cond_other),
         poro_field()->structure_field()->interface()->Map(Solid::MapExtractor::cond_fsi));
     vecSpaces.push_back(s_other_map);  // other map
@@ -250,7 +250,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
   Inpar::FPSI::PartitionedCouplingMethod method =
-      Core::UTILS::IntegralValue<Inpar::FPSI::PartitionedCouplingMethod>(
+      Core::UTILS::integral_value<Inpar::FPSI::PartitionedCouplingMethod>(
           fpsidynparams, "PARTITIONED");
 
   if (method != Inpar::FPSI::nocoupling)

@@ -31,7 +31,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
 Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(
@@ -59,7 +59,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = Core::UTILS::GetAsEnum<FLD::BoundaryAction>(params, "action");
+  const auto act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {
@@ -330,9 +330,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_n_);
 
   // get element location vector and ownerships
@@ -415,8 +415,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   if (displacements_np != Teuchos::null)
   {
     my_displacements_np.resize(lm.size());
-    Core::FE::ExtractMyValues(*displacements_np, my_displacements_np, lm);
-    Core::FE::ExtractMyValues(*displacements_np, my_parentdisp_np, plm);
+    Core::FE::extract_my_values(*displacements_np, my_displacements_np, lm);
+    Core::FE::extract_my_values(*displacements_np, my_parentdisp_np, plm);
   }
   FOUR_C_ASSERT(my_displacements_np.size() != 0, "no displacement values for boundary element");
   FOUR_C_ASSERT(my_parentdisp_np.size() != 0, "no displacement values for parent element");
@@ -424,8 +424,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   if (displacements_n != Teuchos::null)
   {
     my_displacements_n.resize(lm.size());
-    Core::FE::ExtractMyValues(*displacements_n, my_displacements_n, lm);
-    Core::FE::ExtractMyValues(*displacements_n, my_parentdisp_n, plm);
+    Core::FE::extract_my_values(*displacements_n, my_displacements_n, lm);
+    Core::FE::extract_my_values(*displacements_n, my_parentdisp_n, plm);
   }
   FOUR_C_ASSERT(
       my_displacements_n.size() != 0, "no displacement values for boundary element at time step n");
@@ -461,15 +461,15 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
   // extract local values from the global vectors
   std::vector<double> my_fluidvelocity_np(lm.size());
-  Core::FE::ExtractMyValues(*fluidvelocity_np, my_fluidvelocity_np, lm);
+  Core::FE::extract_my_values(*fluidvelocity_np, my_fluidvelocity_np, lm);
   std::vector<double> my_fluidvelocity_n(lm.size());  // at previous time step n
-  Core::FE::ExtractMyValues(*fluidvelocity_n, my_fluidvelocity_n, lm);
+  Core::FE::extract_my_values(*fluidvelocity_n, my_fluidvelocity_n, lm);
   std::vector<double> my_gridvelocity(lm.size());
-  Core::FE::ExtractMyValues(*gridvelocity, my_gridvelocity, lm);
+  Core::FE::extract_my_values(*gridvelocity, my_gridvelocity, lm);
   std::vector<double> my_parentfluidvelocity_np(plm.size());
-  Core::FE::ExtractMyValues(*fluidvelocity_np, my_parentfluidvelocity_np, plm);
+  Core::FE::extract_my_values(*fluidvelocity_np, my_parentfluidvelocity_np, plm);
   std::vector<double> my_parentfluidvelocity_n(plm.size());  // at previous time step n
-  Core::FE::ExtractMyValues(*fluidvelocity_n, my_parentfluidvelocity_n, plm);
+  Core::FE::extract_my_values(*fluidvelocity_n, my_parentfluidvelocity_n, plm);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -542,7 +542,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   Core::LinAlg::SerialDenseMatrix pqxg(intpoints.ip().nquad, nsd_);
   Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  Core::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::boundary_gp_to_parent_gp<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->surface_number());
 
   // //////////////////////////////////////////////////////////////////////////
@@ -648,12 +648,12 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 #endif
 
     // evaluate Base::unitnormal_ , Base::deriv_, ...
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_n_, Base::drs_, Base::xsi_, Base::xyze_n_, intpoints, gpid, nullptr,
         nullptr, Core::FE::is_nurbs<distype>);
 
     // evaluate Base::unitnormal_ , Base::deriv_, ...
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         Core::FE::is_nurbs<distype>);
 
@@ -1826,7 +1826,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -1838,8 +1838,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
-    Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+    Core::FE::extract_my_values(*dispnp, mydispnp, lm);
+    Core::FE::extract_my_values(*dispnp, parentdispnp, plm);
   }
   FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
   FOUR_C_ASSERT(parentdispnp.size() != 0, "no displacement values for parent element");
@@ -1874,9 +1874,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
-  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::extract_my_values(*velnp, myvelnp, lm);
   std::vector<double> mygridvel(lm.size());
-  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::extract_my_values(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -1904,7 +1904,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   Core::LinAlg::SerialDenseMatrix pqxg(intpoints.ip().nquad, nsd_);
   Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  Core::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::boundary_gp_to_parent_gp<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->surface_number());
 
 
@@ -1923,8 +1923,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   // element and surface element, get weights
   if (Core::FE::is_nurbs<distype>)
   {
-    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
-        ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
+    bool zero_size =
+        Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary_and_parent(pele, ele,
+            ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
     {
@@ -1978,7 +1979,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         Core::FE::is_nurbs<distype>);
 
@@ -2064,7 +2065,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2075,7 +2076,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+    Core::FE::extract_my_values(*dispnp, mydispnp, lm);
   }
   FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2093,7 +2094,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
   else
   {
     mycondVector.resize(lm.size());
-    Core::FE::ExtractMyValues(*condVector, mycondVector, lm);
+    Core::FE::extract_my_values(*condVector, mycondVector, lm);
   }
   FOUR_C_ASSERT(mycondVector.size() != 0, "no condition IDs values for boundary element");
 
@@ -2107,7 +2108,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         Core::FE::is_nurbs<distype>);
 
@@ -2158,9 +2159,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
     std::vector<double> myvelnp(lm.size());
-    Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+    Core::FE::extract_my_values(*velnp, myvelnp, lm);
     std::vector<double> mygridvel(lm.size());
-    Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+    Core::FE::extract_my_values(*gridvel, mygridvel, lm);
 
     // allocate velocity vectors
     Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -2184,7 +2185,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points is not activated here Computation of nurb specific stuff is not activated here
-      Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+      Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
           Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
           Core::FE::is_nurbs<distype>);
 
@@ -2296,7 +2297,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2309,7 +2310,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2330,7 +2331,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, nullptr, nullptr,
         Core::FE::is_nurbs<distype>);
 
@@ -2535,7 +2536,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2547,8 +2548,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   if (dispnp != Teuchos::null)
   {
     mydispnp.resize(lm.size());
-    Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
-    Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+    Core::FE::extract_my_values(*dispnp, mydispnp, lm);
+    Core::FE::extract_my_values(*dispnp, parentdispnp, plm);
   }
   FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
   FOUR_C_ASSERT(parentdispnp.size() != 0, "no displacement values for parent element");
@@ -2583,11 +2584,11 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
-  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::extract_my_values(*velnp, myvelnp, lm);
   std::vector<double> mygridvel(lm.size());
-  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::extract_my_values(*gridvel, mygridvel, lm);
   std::vector<double> myscaaf(lm.size());
-  Core::FE::ExtractMyValues(*scaaf, myscaaf, lm);
+  Core::FE::extract_my_values(*scaaf, myscaaf, lm);
 
   // allocate velocity vectors
   Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -2616,7 +2617,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   Core::LinAlg::SerialDenseMatrix pqxg(intpoints.ip().nquad, nsd_);
   Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  Core::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::boundary_gp_to_parent_gp<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->surface_number());
 
   // --------------------------------------------------
@@ -2634,8 +2635,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   // element and surface element, get weights
   if (Core::FE::is_nurbs<distype>)
   {
-    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
-        ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
+    bool zero_size =
+        Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary_and_parent(pele, ele,
+            ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
     {
@@ -2690,7 +2692,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         Core::FE::is_nurbs<distype>);
 
@@ -2888,7 +2890,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -2901,7 +2903,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -2921,7 +2923,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::extract_my_values(*velnp, myvelnp, lm);
 
   // allocate velocity vectors
   Core::LinAlg::Matrix<Base::bdrynen_, 1> epressnp(true);
@@ -2947,7 +2949,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
   if (Core::FE::is_nurbs<distype>)
   {
     bool zero_size =
-        Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(ele, ele->surface_number(),
+        Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(ele, ele->surface_number(),
             ele->parent_element()->id(), discretization, mypknots, myknots, weights, normalfac);
     if (zero_size)
     {
@@ -2961,7 +2963,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         Core::FE::is_nurbs<distype>);
 
@@ -3204,7 +3206,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -3217,7 +3219,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -3238,10 +3240,10 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::extract_my_values(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::extract_my_values(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -3279,7 +3281,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   pele->Core::Elements::Element::location_vector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::extract_my_values(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -3298,7 +3300,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   }
 
   std::vector<double> pvelnp(plm.size());
-  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::extract_my_values(*velnp, pvelnp, plm);
 
   // allocate vectors
   Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
@@ -3313,7 +3315,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   Core::LinAlg::SerialDenseMatrix pqxg(intpoints.ip().nquad, nsd_);
   Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  Core::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::boundary_gp_to_parent_gp<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->surface_number());
 
   // coordinates of gauss points of parent element
@@ -3336,8 +3338,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   // element and surface element, get weights
   if (Core::FE::is_nurbs<distype>)
   {
-    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
-        ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
+    bool zero_size =
+        Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary_and_parent(pele, ele,
+            ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
     {
@@ -3355,7 +3358,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         Core::FE::is_nurbs<distype>);
 
@@ -3571,7 +3574,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // get timescale parameter from parameter list (depends on time integration scheme)
@@ -3591,7 +3594,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -3612,10 +3615,10 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::extract_my_values(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::extract_my_values(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -3636,7 +3639,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   if (glambda == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'lambda'");
 
   std::vector<double> mylambda(lm.size());
-  Core::FE::ExtractMyValues(*glambda, mylambda, lm);
+  Core::FE::extract_my_values(*glambda, mylambda, lm);
 
   Core::LinAlg::Matrix<nsd_, Base::bdrynen_> elambda(true);
 
@@ -3672,7 +3675,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   pele->Core::Elements::Element::location_vector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::extract_my_values(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -3691,7 +3694,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   }
 
   std::vector<double> pvelnp(plm.size());
-  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::extract_my_values(*velnp, pvelnp, plm);
 
   // allocate vectors
   Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
@@ -3706,7 +3709,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   Core::LinAlg::SerialDenseMatrix pqxg(intpoints.ip().nquad, nsd_);
   Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  Core::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::boundary_gp_to_parent_gp<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->surface_number());
 
   // coordinates of gauss points of parent element
@@ -3729,8 +3732,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // element and surface element, get weights
   if (Core::FE::is_nurbs<distype>)
   {
-    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
-        ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
+    bool zero_size =
+        Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary_and_parent(pele, ele,
+            ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
     {
@@ -3754,7 +3758,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         Core::FE::is_nurbs<distype>);
 
@@ -4185,7 +4189,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -4198,7 +4202,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -4219,10 +4223,10 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::extract_my_values(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::extract_my_values(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -4261,7 +4265,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   pele->Core::Elements::Element::location_vector(discretization, plm, plmowner, plmstride);
 
   std::vector<double> parentdispnp;
-  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::extract_my_values(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -4280,7 +4284,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   }
 
   std::vector<double> pvelnp(plm.size());
-  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::extract_my_values(*velnp, pvelnp, plm);
 
   // allocate vectors
   Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
@@ -4295,7 +4299,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   Core::LinAlg::SerialDenseMatrix pqxg(intpoints.ip().nquad, nsd_);
   Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  Core::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::boundary_gp_to_parent_gp<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->surface_number());
 
   // coordinates of gauss points of parent element
@@ -4318,8 +4322,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // element and surface element, get weights
   if (Core::FE::is_nurbs<distype>)
   {
-    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
-        ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
+    bool zero_size =
+        Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary_and_parent(pele, ele,
+            ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
     {
@@ -4335,7 +4340,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         Core::FE::is_nurbs<distype>);
 
@@ -4552,7 +4557,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
   // FluidBoundary element!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, Base::bdrynen_>>(
       ele, Base::xyze_);
 
   // displacements
@@ -4565,7 +4570,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     if (dispnp != Teuchos::null)
     {
       mydispnp.resize(lm.size());
-      Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+      Core::FE::extract_my_values(*dispnp, mydispnp, lm);
     }
     FOUR_C_ASSERT(mydispnp.size() != 0, "no displacement values for boundary element");
 
@@ -4586,10 +4591,10 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   std::vector<double> myvelnp(lm.size());
-  Core::FE::ExtractMyValues(*velnp, myvelnp, lm);
+  Core::FE::extract_my_values(*velnp, myvelnp, lm);
 
   std::vector<double> mygridvel(lm.size());
-  Core::FE::ExtractMyValues(*gridvel, mygridvel, lm);
+  Core::FE::extract_my_values(*gridvel, mygridvel, lm);
 
   // allocate velocity vectors
   Core::LinAlg::Matrix<nsd_, Base::bdrynen_> evelnp(true);
@@ -4622,7 +4627,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   std::vector<double> parentdispnp;
-  Core::FE::ExtractMyValues(*dispnp, parentdispnp, plm);
+  Core::FE::extract_my_values(*dispnp, parentdispnp, plm);
 
   // update element geometry of parent element
   Core::LinAlg::Matrix<nsd_, nenparent> xrefe;  // material coord. of parent element
@@ -4641,7 +4646,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   }
 
   std::vector<double> pvelnp(plm.size());
-  Core::FE::ExtractMyValues(*velnp, pvelnp, plm);
+  Core::FE::extract_my_values(*velnp, pvelnp, plm);
 
   // allocate vectors
   Core::LinAlg::Matrix<nenparent, 1> pepressnp(true);
@@ -4656,7 +4661,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   Core::LinAlg::SerialDenseMatrix pqxg(intpoints.ip().nquad, nsd_);
   Core::LinAlg::Matrix<nsd_, nsd_> derivtrafo(true);
 
-  Core::FE::BoundaryGPToParentGP<nsd_>(
+  Core::FE::boundary_gp_to_parent_gp<nsd_>(
       pqxg, derivtrafo, intpoints, pdistype, distype, ele->surface_number());
 
   // coordinates of gauss points of parent element
@@ -4680,8 +4685,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // element and surface element, get weights
   if (Core::FE::is_nurbs<distype>)
   {
-    bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(pele, ele,
-        ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
+    bool zero_size =
+        Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary_and_parent(pele, ele,
+            ele->surface_number(), discretization, mypknots, myknots, pweights, weights, normalfac);
 
     if (zero_size)
     {
@@ -4694,7 +4700,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
-    Core::FE::EvalShapeFuncAtBouIntPoint<distype>(Base::funct_, Base::deriv_, Base::fac_,
+    Core::FE::eval_shape_func_at_bou_int_point<distype>(Base::funct_, Base::deriv_, Base::fac_,
         Base::unitnormal_, Base::drs_, Base::xsi_, Base::xyze_, intpoints, gpid, &myknots, &weights,
         Core::FE::is_nurbs<distype>);
 

@@ -104,7 +104,7 @@ namespace Cut
 
 #endif
 
-  inline void DumpDoubles(std::ostream& stream, const double* data, int length)
+  inline void dump_doubles(std::ostream& stream, const double* data, int length)
   {
     std::vector<int> c(length * sizeof(double) / sizeof(int));
     std::memcpy(c.data(), data, c.size() * sizeof(int));
@@ -142,7 +142,7 @@ namespace Cut
   template <unsigned probdim, Core::FE::CellType distype, typename Valtype,
       unsigned num_nodes_element = Core::FE::num_nodes<distype>,
       unsigned dim = Core::FE::dim<distype>>
-  Valtype EvalDerivsInParameterSpace(
+  Valtype eval_derivs_in_parameter_space(
       const Core::LinAlg::Matrix<probdim, num_nodes_element, Valtype>& xyze,
       const Core::LinAlg::Matrix<dim, 1, Valtype>& rst,
       Core::LinAlg::Matrix<probdim, num_nodes_element, Valtype>& deriv1,
@@ -188,7 +188,7 @@ namespace Cut
       // optional-1 : get unit normal at integration point as well
       /* optional-2 : the throw_error flag is off, if the the normal is not going
        *              to be normalized. */
-      Core::FE::ComputeMetricTensorForBoundaryEle<distype, probdim>(
+      Core::FE::compute_metric_tensor_for_boundary_ele<distype, probdim>(
           xyze, deriv1_red, metrictensor, det, unit_normal, normalvec1, unit_normal);
 
       /* transform the derivatives and Jacobians to the higher dimensional
@@ -258,7 +258,7 @@ namespace Cut
   template <unsigned probdim, Core::FE::CellType distype, typename Valtype,
       unsigned num_nodes_element = Core::FE::num_nodes<distype>,
       unsigned dim = Core::FE::dim<distype>>
-  inline Valtype EvalDerivsInParameterSpace(
+  inline Valtype eval_derivs_in_parameter_space(
       const Core::LinAlg::Matrix<probdim, num_nodes_element, Valtype>& xyze,
       const Core::LinAlg::Matrix<dim, 1, Valtype>& rst,
       Core::LinAlg::Matrix<probdim, num_nodes_element, Valtype>& deriv1,
@@ -268,7 +268,7 @@ namespace Cut
       Core::LinAlg::Matrix<probdim, 1, Valtype>* normalvec2, bool unit_normal)
   {
     Core::LinAlg::Matrix<dim, dim, Valtype> metrictensor;
-    return EvalDerivsInParameterSpace<probdim, distype, Valtype>(
+    return eval_derivs_in_parameter_space<probdim, distype, Valtype>(
         xyze, rst, deriv1, metrictensor, xjm, xij, normalvec1, normalvec2, unit_normal);
   }
 
@@ -290,7 +290,7 @@ namespace Cut
    *
    *  \author hiermeier */
   template <unsigned probdim, class T>
-  void GetElementScale(const T& xyze, double& scale)
+  void get_element_scale(const T& xyze, double& scale)
   {
     scale = 0;
     const int numNodes = xyze.n();
@@ -326,7 +326,7 @@ namespace Cut
    *
    *  \author hiermeier */
   template <unsigned probdim, class T>
-  void GetElementShift(const T& xyze, Core::LinAlg::Matrix<probdim, 1>& shift)
+  void get_element_shift(const T& xyze, Core::LinAlg::Matrix<probdim, 1>& shift)
   {
     shift = 0.0;
     const unsigned numNodes = static_cast<unsigned>(xyze.n());
@@ -356,7 +356,7 @@ namespace Cut
    *
    *  \author hiermeier \date 11/16 */
   template <class T1, class T2>
-  void FixMatrixShape(const T1& wrong_shape, T2& correct_shape)
+  void fix_matrix_shape(const T1& wrong_shape, T2& correct_shape)
   {
     if (static_cast<unsigned>(wrong_shape.num_rows()) <
             static_cast<unsigned>(correct_shape.num_rows()) or
@@ -383,7 +383,7 @@ namespace Cut
   template <unsigned probdim, Core::FE::CellType distype, class T1, class T2, class T3,
       unsigned num_nodes_element = Core::FE::num_nodes<distype>,
       unsigned dim = Core::FE::dim<distype>>
-  void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr,
+  void eval_normal_vectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr,
       bool unit_normal = true)
   {
     if (dim >= probdim) FOUR_C_THROW("This function is only meaningful for the embedded case!");
@@ -396,7 +396,7 @@ namespace Cut
     if (xyze.numRows() == probdim and xyze.numCols() == num_nodes_element)
       xyze_linalg.set_view(xyze.values());
     else
-      FixMatrixShape(xyze, xyze_linalg);
+      fix_matrix_shape(xyze, xyze_linalg);
 
     if (static_cast<unsigned>(rst.m()) < dim)
       FOUR_C_THROW("The local coordinates have the wrong dimension!");
@@ -411,14 +411,14 @@ namespace Cut
     if (normalvec2)
     {
       Core::LinAlg::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).data(), true);
-      EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
+      eval_derivs_in_parameter_space<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
           nullptr, &normalvec1_linalg, &normalvec2_linalg, unit_normal);
 
       std::fill(normalvec2->data() + probdim, normalvec2->data() + normalvec2->m(), 0.0);
     }
     else
     {
-      EvalDerivsInParameterSpace<probdim, distype, double>(
+      eval_derivs_in_parameter_space<probdim, distype, double>(
           xyze_linalg, rst_linalg, deriv1, xjm, nullptr, &normalvec1_linalg, nullptr, unit_normal);
     }
     std::fill(normalvec1.data() + probdim, normalvec1.data() + normalvec1.m(), 0.0);
@@ -438,26 +438,26 @@ namespace Cut
    *
    *  \author hiermeier \date 12/16 */
   template <unsigned probdim, class T1, class T2, class T3>
-  void EvalNormalVectors(Core::FE::CellType distype, const T1& xyze, const T2& rst, T3& normalvec1,
-      T3* normalvec2 = nullptr, bool unit_normal = true)
+  void eval_normal_vectors(Core::FE::CellType distype, const T1& xyze, const T2& rst,
+      T3& normalvec1, T3* normalvec2 = nullptr, bool unit_normal = true)
   {
     switch (distype)
     {
       case Core::FE::CellType::line2:
-        EvalNormalVectors<probdim, Core::FE::CellType::line2>(
+        eval_normal_vectors<probdim, Core::FE::CellType::line2>(
             xyze, rst, normalvec1, normalvec2, unit_normal);
         break;
       case Core::FE::CellType::tri3:
-        EvalNormalVectors<probdim, Core::FE::CellType::tri3>(
+        eval_normal_vectors<probdim, Core::FE::CellType::tri3>(
             xyze, rst, normalvec1, normalvec2, unit_normal);
         break;
       case Core::FE::CellType::quad4:
-        EvalNormalVectors<probdim, Core::FE::CellType::quad4>(
+        eval_normal_vectors<probdim, Core::FE::CellType::quad4>(
             xyze, rst, normalvec1, normalvec2, unit_normal);
         break;
       default:
         FOUR_C_THROW("Currently unsupported discretization type: %s",
-            Core::FE::CellTypeToString(distype).c_str());
+            Core::FE::cell_type_to_string(distype).c_str());
         exit(EXIT_FAILURE);
     }
   }

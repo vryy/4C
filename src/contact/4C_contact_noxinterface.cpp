@@ -92,7 +92,7 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Epetra_Vector& F,
     {
       // create vector with redistributed slave dof row map in normal direction
       Teuchos::RCP<Epetra_Vector> nConstrRhs =
-          Core::LinAlg::ExtractMyVector(*constrRhs_red, strategy().slave_n_dof_row_map(true));
+          Core::LinAlg::extract_my_vector(*constrRhs_red, strategy().slave_n_dof_row_map(true));
 
 
       constrRhs_nox =
@@ -103,7 +103,7 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Epetra_Vector& F,
     {
       // create vector with redistributed slave dof row map in tangential directions
       Teuchos::RCP<Epetra_Vector> tConstrRhs =
-          Core::LinAlg::ExtractMyVector(*constrRhs_red, strategy().slave_t_dof_row_map(true));
+          Core::LinAlg::extract_my_vector(*constrRhs_red, strategy().slave_t_dof_row_map(true));
 
       constrRhs_nox =
           Teuchos::rcp(new ::NOX::Epetra::Vector(tConstrRhs, ::NOX::Epetra::Vector::CreateView));
@@ -139,9 +139,9 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_rms(const Epetra_Ve
     case NOX::Nln::StatusTest::quantity_contact_normal:
     {
       // extract vectors with redistributed slave dof row map in normal direction
-      z_ptr = Core::LinAlg::ExtractMyVector(
+      z_ptr = Core::LinAlg::extract_my_vector(
           *strategy().lagrange_multiplier_np(true), strategy().slave_n_dof_row_map(true));
-      zincr_ptr = Core::LinAlg::ExtractMyVector(
+      zincr_ptr = Core::LinAlg::extract_my_vector(
           *strategy().lagrange_multiplier_increment(), strategy().slave_n_dof_row_map(true));
 
       break;
@@ -149,9 +149,9 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_rms(const Epetra_Ve
     case NOX::Nln::StatusTest::quantity_contact_friction:
     {
       // extract vectors with redistributed slave dof row map in tangential directions
-      z_ptr = Core::LinAlg::ExtractMyVector(
+      z_ptr = Core::LinAlg::extract_my_vector(
           *strategy().lagrange_multiplier_np(true), strategy().slave_t_dof_row_map(true));
-      zincr_ptr = Core::LinAlg::ExtractMyVector(
+      zincr_ptr = Core::LinAlg::extract_my_vector(
           *strategy().lagrange_multiplier_increment(), strategy().slave_t_dof_row_map(true));
 
       break;
@@ -188,14 +188,14 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_norms(const Epetra_
     case NOX::Nln::StatusTest::quantity_contact_normal:
     {
       // extract vector with redistributed slave dof row map in normal direction
-      zincr_ptr = Core::LinAlg::ExtractMyVector(
+      zincr_ptr = Core::LinAlg::extract_my_vector(
           *strategy().lagrange_multiplier_increment(), strategy().slave_n_dof_row_map(true));
       break;
     }
     case NOX::Nln::StatusTest::quantity_contact_friction:
     {
       // extract vector with redistributed slave dof row map in tangential directions
-      zincr_ptr = Core::LinAlg::ExtractMyVector(
+      zincr_ptr = Core::LinAlg::extract_my_vector(
           *strategy().lagrange_multiplier_increment(), strategy().slave_t_dof_row_map(true));
 
       break;
@@ -242,7 +242,7 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(const Epetr
     case NOX::Nln::StatusTest::quantity_contact_normal:
     {
       Teuchos::RCP<Epetra_Vector> znold_ptr =
-          Core::LinAlg::ExtractMyVector(*zold_ptr, strategy().slave_n_dof_row_map(true));
+          Core::LinAlg::extract_my_vector(*zold_ptr, strategy().slave_n_dof_row_map(true));
 
       zold_nox_ptr =
           Teuchos::rcp(new ::NOX::Epetra::Vector(znold_ptr, ::NOX::Epetra::Vector::CreateView));
@@ -251,7 +251,7 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(const Epetr
     case NOX::Nln::StatusTest::quantity_contact_friction:
     {
       Teuchos::RCP<Epetra_Vector> ztold_ptr =
-          Core::LinAlg::ExtractMyVector(*zold_ptr, strategy().slave_t_dof_row_map(true));
+          Core::LinAlg::extract_my_vector(*zold_ptr, strategy().slave_t_dof_row_map(true));
 
       zold_nox_ptr =
           Teuchos::rcp(new ::NOX::Epetra::Vector(ztold_ptr, ::NOX::Epetra::Vector::CreateView));
@@ -279,7 +279,7 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(const Epetr
 enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::get_active_set_info(
     NOX::Nln::StatusTest::QuantityType checkQuantity, int& activesetsize) const
 {
-  bool semismooth = Core::UTILS::IntegralValue<int>(strategy().params(), "SEMI_SMOOTH_NEWTON");
+  bool semismooth = Core::UTILS::integral_value<int>(strategy().params(), "SEMI_SMOOTH_NEWTON");
   if (not semismooth) FOUR_C_THROW("Currently we support only the semi-smooth Newton case!");
   // ---------------------------------------------------------------------------
   // get the number of active nodes for the given active set type

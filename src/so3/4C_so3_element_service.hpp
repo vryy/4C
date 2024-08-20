@@ -31,7 +31,7 @@ namespace Discret
      * \param global_count Add a 1 to all nodes belonging to this element
      * \param ele element
      */
-    void AssembleNodalElementCount(
+    void assemble_nodal_element_count(
         Epetra_IntVector& global_count, const Core::Elements::Element& ele);
 
     /*!
@@ -41,7 +41,7 @@ namespace Discret
      * \param gp_data (numgp x size) matrix of the Gauss point data
      * \param ele element
      */
-    void AssembleGaussPointValues(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
+    void assemble_gauss_point_values(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
         const Core::LinAlg::SerialDenseMatrix& gp_data, const Core::Elements::Element& ele);
 
     /*!
@@ -54,7 +54,7 @@ namespace Discret
      * @return quantities projected to position xi
      */
     template <Core::FE::CellType distype>
-    std::vector<double> ProjectNodalQuantityToXi(
+    std::vector<double> project_nodal_quantity_to_xi(
         const Core::LinAlg::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
   }  // namespace ELEMENTS
 }  // namespace Discret

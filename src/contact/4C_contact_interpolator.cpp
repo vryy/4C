@@ -31,15 +31,15 @@ FOUR_C_NAMESPACE_OPEN
 NTS::Interpolator::Interpolator(Teuchos::ParameterList& params, const int& dim)
     : iparams_(params),
       dim_(dim),
-      pwslip_(Core::UTILS::IntegralValue<int>(iparams_, "GP_SLIP_INCR")),
-      wearlaw_(Core::UTILS::IntegralValue<Inpar::Wear::WearLaw>(iparams_, "WEARLAW")),
+      pwslip_(Core::UTILS::integral_value<int>(iparams_, "GP_SLIP_INCR")),
+      wearlaw_(Core::UTILS::integral_value<Inpar::Wear::WearLaw>(iparams_, "WEARLAW")),
       wearimpl_(false),
       wearside_(Inpar::Wear::wear_slave),
       weartype_(Inpar::Wear::wear_intstate),
       wearshapefcn_(Inpar::Wear::wear_shape_standard),
       wearcoeff_(-1.0),
       wearcoeffm_(-1.0),
-      sswear_(Core::UTILS::IntegralValue<int>(iparams_, "SSWEAR")),
+      sswear_(Core::UTILS::integral_value<int>(iparams_, "SSWEAR")),
       ssslip_(iparams_.get<double>("SSSLIP"))
 {
   // wear specific
@@ -47,17 +47,17 @@ NTS::Interpolator::Interpolator(Teuchos::ParameterList& params, const int& dim)
   {
     // wear time integration
     Inpar::Wear::WearTimInt wtimint =
-        Core::UTILS::IntegralValue<Inpar::Wear::WearTimInt>(params, "WEARTIMINT");
+        Core::UTILS::integral_value<Inpar::Wear::WearTimInt>(params, "WEARTIMINT");
     if (wtimint == Inpar::Wear::wear_impl) wearimpl_ = true;
 
     // wear surface
-    wearside_ = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(iparams_, "BOTH_SIDED_WEAR");
+    wearside_ = Core::UTILS::integral_value<Inpar::Wear::WearSide>(iparams_, "BOTH_SIDED_WEAR");
 
     // wear algorithm
-    weartype_ = Core::UTILS::IntegralValue<Inpar::Wear::WearType>(iparams_, "WEARTYPE");
+    weartype_ = Core::UTILS::integral_value<Inpar::Wear::WearType>(iparams_, "WEARTYPE");
 
     // wear shape function
-    wearshapefcn_ = Core::UTILS::IntegralValue<Inpar::Wear::WearShape>(iparams_, "WEAR_SHAPEFCN");
+    wearshapefcn_ = Core::UTILS::integral_value<Inpar::Wear::WearShape>(iparams_, "WEAR_SHAPEFCN");
 
     // wear coefficient
     wearcoeff_ = iparams_.get<double>("WEARCOEFF");
@@ -1794,7 +1794,7 @@ template <Core::FE::CellType distype_m>
 NTS::MTInterpolatorCalc<distype_m>* NTS::MTInterpolatorCalc<distype_m>::instance(
     Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<NTS::MTInterpolatorCalc<distype_m>>(
@@ -1859,7 +1859,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_2d(
       snode.has_proj() = true;
 
       static Core::LinAlg::Matrix<nm_, 1> mval;
-      Mortar::UTILS::EvaluateShape_Displ(mxi, mval, *meles[nummaster], false);
+      Mortar::UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
       // node-wise M value
       for (int k = 0; k < nm_; ++k)
@@ -2048,7 +2048,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_3d(
       snode.has_proj() = true;
 
       static Core::LinAlg::Matrix<nm_, 1> mval;
-      Mortar::UTILS::EvaluateShape_Displ(mxi, mval, *meles[nummaster], false);
+      Mortar::UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
       // node-wise M value
       for (int k = 0; k < nm_; ++k)

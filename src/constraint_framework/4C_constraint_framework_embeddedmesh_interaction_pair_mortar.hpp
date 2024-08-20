@@ -127,7 +127,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
       GEOMETRYPAIR::ElementData<ElementType, double>& element_data_surface)
   {
     Core::LinAlg::SerialDenseMatrix nodal_coordinates =
-        Core::FE::getEleNodeNumbering_nodes_paramspace(ElementType::discretization_);
+        Core::FE::get_ele_node_numbering_nodes_paramspace(ElementType::discretization_);
     Core::LinAlg::Matrix<3, 1, double> xi(true);
     Core::LinAlg::Matrix<3, 1, double> temp_normal;
     Core::LinAlg::Matrix<ElementType::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, double>> normals;
@@ -136,14 +136,14 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     {
       for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
         xi(i_dim) = nodal_coordinates(i_dim, iter_node);
-      GEOMETRYPAIR::EvaluateFaceNormal<ElementType>(xi, element_data_surface, temp_normal);
+      GEOMETRYPAIR::evaluate_face_normal<ElementType>(xi, element_data_surface, temp_normal);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         normals(iter_node)(i_dim) += temp_normal(i_dim);
     }
 
     for (size_t iter_node = 0; iter_node < ElementType::n_nodes_; iter_node++)
     {
-      normals(iter_node).scale(1.0 / Core::FADUtils::VectorNorm(normals(iter_node)));
+      normals(iter_node).scale(1.0 / Core::FADUtils::vector_norm(normals(iter_node)));
       element_data_surface.nodal_normals_(0 + 3 * iter_node) = normals(iter_node)(0);
       element_data_surface.nodal_normals_(1 + 3 * iter_node) = normals(iter_node)(1);
       element_data_surface.nodal_normals_(2 + 3 * iter_node) = normals(iter_node)(2);

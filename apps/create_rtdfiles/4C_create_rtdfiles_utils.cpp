@@ -136,7 +136,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteLinktarget(std::ostream &stream, const std::string &line)
+  void write_linktarget(std::ostream &stream, const std::string &line)
   {
     stream << ".. _" << line << ":\n\n";
   }
@@ -156,7 +156,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteParagraph(std::ostream &stream, std::string paragraph, size_t indent)
+  void write_paragraph(std::ostream &stream, std::string paragraph, size_t indent)
   {
     size_t mathstartpos = paragraph.find("\f$");
     size_t mathendpos = 0;
@@ -178,7 +178,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteCode(std::ostream &stream, const std::vector<std::string> &lines)
+  void write_code(std::ostream &stream, const std::vector<std::string> &lines)
   {
     stream << "::\n\n";
     for (const auto &line : lines)
@@ -189,7 +189,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteNote(std::ostream &stream, const std::string &paragraph)
+  void write_note(std::ostream &stream, const std::string &paragraph)
   {
     stream << ".. note::\n\n";
     stream << "   " << paragraph << "\n\n";
@@ -205,41 +205,41 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteCelltypeReference(std::ostream &stream)
+  void write_celltype_reference(std::ostream &stream)
   {
-    WriteLinktarget(stream, "celltypes");
+    write_linktarget(stream, "celltypes");
     write_header(stream, 1, "Cell types");
 
     // We run the loop over the cell types four times to sort the cell types after their dimension
     for (unsigned outputdim = 0; outputdim < 4; ++outputdim)
     {
-      WriteLinktarget(stream, boost::str(boost::format("%1dD_cell_types") % outputdim));
+      write_linktarget(stream, boost::str(boost::format("%1dD_cell_types") % outputdim));
       write_header(stream, 2, boost::str(boost::format("%1dD cell types") % outputdim));
 
       for (auto celltype : Core::FE::celltype_array<Core::FE::all_physical_celltypes>)
       {
-        std::string celltypename = Core::FE::CellTypeToString(celltype);
+        std::string celltypename = Core::FE::cell_type_to_string(celltype);
         // Skip the cell type if it has not the desired dimension
-        const unsigned celldimension = Core::FE::getDimension(celltype);
+        const unsigned celldimension = Core::FE::get_dimension(celltype);
         if (celldimension != outputdim) continue;
 
         std::string celltypelinkname = boost::algorithm::to_lower_copy(celltypename);
-        WriteLinktarget(stream, celltypelinkname);
+        write_linktarget(stream, celltypelinkname);
         write_header(stream, 3, celltypename);
 
         std::stringstream celltypeinfostream;
-        celltypeinfostream << "- Nodes: " << Core::FE::getNumberOfElementNodes(celltype)
+        celltypeinfostream << "- Nodes: " << Core::FE::get_number_of_element_nodes(celltype)
                            << std::endl;
         celltypeinfostream << "- Dimension: " << celldimension << std::endl;
-        if (Core::FE::getOrder(celltype, -1) >= 0)
+        if (Core::FE::get_order(celltype, -1) >= 0)
         {
           celltypeinfostream << "- Shape function order (element): "
-                             << Core::FE::getDegree(celltype) << std::endl;
-          celltypeinfostream << "- Shape function order (edges): " << Core::FE::getOrder(celltype)
+                             << Core::FE::get_degree(celltype) << std::endl;
+          celltypeinfostream << "- Shape function order (edges): " << Core::FE::get_order(celltype)
                              << std::endl;
         }
         std::string celltypeinformation = celltypeinfostream.str();
-        WriteParagraph(stream, celltypeinformation);
+        write_paragraph(stream, celltypeinformation);
 
         if (celldimension >= 2)
         {
@@ -255,7 +255,7 @@ namespace RTD
           figureincludestring += (outputdim == 3) ? "100%" : "50%";
           figureincludestring += "\n\n";
           figureincludestring += "    " + captionstring;
-          WriteParagraph(stream, figureincludestring);
+          write_paragraph(stream, figureincludestring);
         }
       }
     }
@@ -263,24 +263,24 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteMaterialReference(
+  void write_material_reference(
       std::ostream &stream, const std::vector<Teuchos::RCP<Mat::MaterialDefinition>> &matlist)
   {
-    WriteLinktarget(stream, "materialsreference");
+    write_linktarget(stream, "materialsreference");
     write_header(stream, 0, "Material reference");
 
     std::vector<std::string> materialsectionstring{std::string(58, '-') + "MATERIALS"};
-    WriteCode(stream, materialsectionstring);
+    write_code(stream, materialsectionstring);
 
     for (auto &material : matlist)
     {
-      WriteSingleMaterialReadTheDocs(stream, material);
+      write_single_material_read_the_docs(stream, material);
     }
     //
     // adding the section for the CLONING MATERIAL MAP
-    WriteLinktarget(stream, "cloningmaterialsreference");
+    write_linktarget(stream, "cloningmaterialsreference");
     write_header(stream, 0, "Cloning material reference");
-    WriteParagraph(stream,
+    write_paragraph(stream,
         "This section is used for multi physics simulations, where one wants to discretize two "
         "different fields on the same mesh. "
         "Instead of creating the same mesh twice, the user only needs to create it once. "
@@ -293,13 +293,13 @@ namespace RTD
     std::stringstream cloningMatStream;
     Core::IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
     const std::vector<std::string> cloningMatList =
-        Core::UTILS::Split(cloningMatStream.str(), "\n");
+        Core::UTILS::split(cloningMatStream.str(), "\n");
 
-    WriteCode(stream, cloningMatList);
+    write_code(stream, cloningMatList);
   }
 
 
-  void WriteSingleMaterialReadTheDocs(
+  void write_single_material_read_the_docs(
       std::ostream &stream, const Teuchos::RCP<Mat::MaterialDefinition> material)
   {
     /* Each entry consists of a number of fields:
@@ -309,12 +309,12 @@ namespace RTD
     - parameter description */
 
     // the Material title
-    WriteLinktarget(stream, material->name());
+    write_linktarget(stream, material->name());
     write_header(stream, 1, material->name());
 
     // the description of the material
     std::string materialDescription = material->description();
-    WriteParagraph(stream, materialDescription);
+    write_paragraph(stream, materialDescription);
 
     // the material line as it occurs in the dat file
     std::string parameter = "   MAT <matID>  " + material->name();
@@ -346,7 +346,7 @@ namespace RTD
       parameter += " " + parameterstream.str();
     }
     materialcode.push_back(parameter);
-    WriteCode(stream, materialcode);
+    write_code(stream, materialcode);
     //
     // Now printing the parameter table
     parametertable.set_widths({10, 10, 50});
@@ -363,7 +363,7 @@ namespace RTD
   }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteHeaderReference(
+  void write_header_reference(
       std::ostream &stream, const Teuchos::ParameterList &list, std::string parentname)
   {
     // prevent invalid ordering of parameters caused by alphabetical output:
@@ -392,41 +392,41 @@ namespace RTD
         }
         fullname += name;
         std::string linktarget = boost::algorithm::replace_all_copy(fullname, "/", "_");
-        linktarget = Teuchos::StrUtils::removeAllSpaces(Core::UTILS::ToLower(linktarget));
+        linktarget = Teuchos::StrUtils::removeAllSpaces(Core::UTILS::to_lower(linktarget));
 
         if (entry.isList())  // it is a section header
         {
           unsigned l = fullname.length();
           // write link:
-          WriteLinktarget(stream, "SEC" + linktarget);
+          write_linktarget(stream, "SEC" + linktarget);
           // write section header
           unsigned level = (issubsection) ? 2 : 1;
           write_header(stream, level, fullname);
 
-          WriteParagraph(stream, doc);
+          write_paragraph(stream, doc);
 
           std::vector<std::string> codelines;
           codelines.push_back("--" + std::string(std::max<int>(65 - l, 0), '-') + fullname);
-          WriteCode(stream, codelines);
+          write_code(stream, codelines);
 
-          if (Input::NeedToPrintEqualSign(list.sublist(name)))
+          if (Input::need_to_print_equal_sign(list.sublist(name)))
           {
-            WriteNote(stream,
+            write_note(stream,
                 "   The parameters in this section need an equal sign (=) "
                 "between the parameter name and its value!");
           }
 
-          WriteHeaderReference(stream, list.sublist(name), fullname);
+          write_header_reference(stream, list.sublist(name), fullname);
         }
         else  // it is a parameter entry
         {
-          WriteLinktarget(stream, linktarget);
+          write_linktarget(stream, linktarget);
 
           const Teuchos::any &v = entry.getAny(false);
           boost::format parstring = boost::format{"**%s** | *default:* %s |break| %s"} % name %
                                     Teuchos::toString(v) % doc;
           std::string s = parstring.str();
-          WriteParagraph(stream, s);
+          write_paragraph(stream, s);
           if (validator != Teuchos::null)  // it can only take specific values
           {
             Teuchos::RCP<const Teuchos::Array<std::string>> values = validator->validStringValues();
@@ -444,20 +444,20 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteConditionsReference(std::ostream &stream,
+  void write_conditions_reference(std::ostream &stream,
       const std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>> &condlist)
   {
-    WriteLinktarget(stream, "prescribedconditionreference");
+    write_linktarget(stream, "prescribedconditionreference");
     write_header(stream, 0, "Prescribed Condition Reference");
 
     for (auto &condition : condlist)
     {
-      WriteSingleConditionReadTheDocs(stream, condition);
+      write_single_condition_read_the_docs(stream, condition);
     }
   }
 
 
-  void WriteSingleConditionReadTheDocs(
+  void write_single_condition_read_the_docs(
       std::ostream &stream, const Teuchos::RCP<Core::Conditions::ConditionDefinition> condition)
   {
     /* Each entry consists of a number of fields:
@@ -472,7 +472,7 @@ namespace RTD
 
     std::string sectionname = condition->section_name();
     const std::string sectionlinktarget =
-        Teuchos::StrUtils::removeAllSpaces(Core::UTILS::ToLower(sectionname));
+        Teuchos::StrUtils::removeAllSpaces(Core::UTILS::to_lower(sectionname));
     //
     // boundary condition header
     //
@@ -480,7 +480,7 @@ namespace RTD
      * Boundary condition header (incl. link target)
      */
     // link target line
-    WriteLinktarget(stream, sectionlinktarget);
+    write_linktarget(stream, sectionlinktarget);
     // condition name as section header
     write_header(stream, 1, sectionname);
 
@@ -489,7 +489,7 @@ namespace RTD
      */
     std::string descriptionline =
         (condition->description() == "") ? "no description yet" : condition->description();
-    WriteParagraph(stream, descriptionline);
+    write_paragraph(stream, descriptionline);
 
     /*------ PART 3 -------------------------
      * boundary condition input lines
@@ -574,7 +574,7 @@ namespace RTD
     }
     // Now write the complete code of this condition to the readthedocs file
     conditioncode.push_back(conditioncodeline);
-    WriteCode(stream, conditioncode);
+    write_code(stream, conditioncode);
 
     /*------ PART 4 -------------------------
      * Now write a table for the options of the string variables, if any have been stored above
@@ -582,7 +582,7 @@ namespace RTD
     if (parametertable.get_rows() > 1)
     {
       std::string optionheaderstring("**String options:**");
-      WriteParagraph(stream, optionheaderstring);
+      write_paragraph(stream, optionheaderstring);
       // table header for the options in string parameters
       parametertable.set_widths({0, 0, 50});
       parametertable.add_directive("header-rows", "1");
@@ -597,40 +597,40 @@ namespace RTD
     {
       std::string optionheaderstring =
           "The following parameter sets are possible for `<" + condCompName + ">`:";
-      WriteParagraph(stream, optionheaderstring);
+      write_paragraph(stream, optionheaderstring);
       conditioncode.clear();
       for (auto &condCompString : condCompStrings)
       {
         conditioncode.push_back(condCompString);
       }
-      WriteCode(stream, conditioncode);
+      write_code(stream, conditioncode);
     }
     return;
   }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteContactLawReference(std::ostream &stream,
+  void write_contact_law_reference(std::ostream &stream,
       const std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>> &coconstlawlist)
   {
-    WriteLinktarget(stream, "contactconstitutivelawreference");
+    write_linktarget(stream, "contactconstitutivelawreference");
     write_header(stream, 0, "Contact Constitutive Law Reference");
 
 
     std::vector<std::string> contactlawsectionstring{
         std::string(43, '-') + "CONTACT CONSTITUTIVE LAW"};
-    WriteCode(stream, contactlawsectionstring);
+    write_code(stream, contactlawsectionstring);
 
     for (auto &contactlaw : coconstlawlist)
     {
-      WriteSingleContactLawReadTheDocs(stream, contactlaw);
+      write_single_contact_law_read_the_docs(stream, contactlaw);
     }
   }
 
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteSingleContactLawReadTheDocs(
+  void write_single_contact_law_read_the_docs(
       std::ostream &stream, const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw)
   {
     /* Each entry consists of a number of fields:
@@ -640,12 +640,12 @@ namespace RTD
     - parameter description */
 
     // the Law title
-    WriteLinktarget(stream, contactlaw->name());
+    write_linktarget(stream, contactlaw->name());
     write_header(stream, 1, contactlaw->name());
 
     // the description of the contact law
     std::string contactDescription = contactlaw->description();
-    WriteParagraph(stream, contactDescription);
+    write_paragraph(stream, contactDescription);
 
     // the material line as it occurs in the dat file
     std::string parameter = "LAW <lawID>   " + contactlaw->name();
@@ -677,7 +677,7 @@ namespace RTD
       parameter += " " + parameterstream.str();
     }
     contactlawCode.push_back(parameter);
-    WriteCode(stream, contactlawCode);
+    write_code(stream, contactlawCode);
     //
     // Now printing the parameter table
     parametertable.set_widths({10, 10, 50});
@@ -695,57 +695,57 @@ namespace RTD
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void WriteVariousReference(std::ostream &stream)
+  void write_various_reference(std::ostream &stream)
   {
     //
     // adding the sections for the RESULT DESCRIPTION
     {
-      WriteLinktarget(stream, "restultdescriptionreference");
+      write_linktarget(stream, "restultdescriptionreference");
       write_header(stream, 0, "Result description reference");
 
       std::vector<Input::LineDefinition> lines =
-          GlobalLegacyModuleCallbacks().valid_result_description_lines();
-      WriteParagraph(stream,
+          global_legacy_module_callbacks().valid_result_description_lines();
+      write_paragraph(stream,
           "The result of the simulation with respect to specific quantities at concrete points "
           "can be tested against particular values with a given tolerance.");
       std::stringstream resultDescriptionStream;
       Core::IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
       const std::vector<std::string> resultDescriptionList =
-          Core::UTILS::Split(resultDescriptionStream.str(), "\n");
-      WriteCode(stream, resultDescriptionList);
+          Core::UTILS::split(resultDescriptionStream.str(), "\n");
+      write_code(stream, resultDescriptionList);
     }
     //
     // adding the sections for the FUNCTION
     {
-      WriteLinktarget(stream, "functionreference");
+      write_linktarget(stream, "functionreference");
       write_header(stream, 0, "Functions reference");
       Core::UTILS::FunctionManager function_manager;
-      GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+      global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
 
       const auto lines = function_manager.valid_function_lines();
 
-      WriteParagraph(
+      write_paragraph(
           stream, "Definition of functions for various cases, mainly boundary conditions");
       std::stringstream functionStream;
       Core::IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
-      const std::vector<std::string> functionList = Core::UTILS::Split(functionStream.str(), "\n");
-      WriteCode(stream, functionList);
+      const std::vector<std::string> functionList = Core::UTILS::split(functionStream.str(), "\n");
+      write_code(stream, functionList);
     }
   }
   void write_yaml_cell_type_information(std::ostream &yamlfile)
   {
     for (auto celltype : Core::FE::celltype_array<Core::FE::all_physical_celltypes>)
     {
-      std::string celltypename = Core::FE::CellTypeToString(celltype);
+      std::string celltypename = Core::FE::cell_type_to_string(celltype);
       std::string yamlcelltypestring = celltypename + ":\n";
       // 0. information: dimension of the element
       yamlcelltypestring +=
-          "  dimension: " + std::to_string(Core::FE::getDimension(celltype)) + "\n";
+          "  dimension: " + std::to_string(Core::FE::get_dimension(celltype)) + "\n";
       // 1. information: nodal coordinates
       Core::LinAlg::SerialDenseMatrix coordmap;
       try
       {
-        coordmap = Core::FE::getEleNodeNumbering_nodes_paramspace(celltype);
+        coordmap = Core::FE::get_ele_node_numbering_nodes_paramspace(celltype);
       }
       catch (...)
       {
@@ -769,7 +769,7 @@ namespace RTD
       std::vector<std::vector<int>> linevector;
       try
       {
-        linevector = Core::FE::getEleNodeNumberingLines(celltype);
+        linevector = Core::FE::get_ele_node_numbering_lines(celltype);
       }
       catch (...)
       {
@@ -794,12 +794,12 @@ namespace RTD
         continue;
       }
       // 3. information: surface vectors of internal node numbers (for 3D elements)
-      if (Core::FE::getDimension(celltype) == 3)
+      if (Core::FE::get_dimension(celltype) == 3)
       {
         std::vector<std::vector<int>> surfacevector;
         try
         {
-          surfacevector = Core::FE::getEleNodeNumberingSurfaces(celltype);
+          surfacevector = Core::FE::get_ele_node_numbering_surfaces(celltype);
         }
         catch (...)
         {
@@ -827,7 +827,7 @@ namespace RTD
         std::vector<int> surfacecorners;
         try
         {
-          surfacecorners = Core::FE::getNumberOfFaceElementCornerNodes(celltype);
+          surfacecorners = Core::FE::get_number_of_face_element_corner_nodes(celltype);
         }
         catch (...)
         {

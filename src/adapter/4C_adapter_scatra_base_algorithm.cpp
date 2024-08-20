@@ -78,7 +78,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -> no default paramter possible any more
   auto solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, discret->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // -------------------------------------------------------------------
@@ -123,7 +123,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
           "CONVFORM", prbdyn.get<std::string>("STRUCTSCAL_CONVFORM"));
 
       // scatra2 get's in initial functions from FS3I DYNAMICS
-      switch (Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(
+      switch (Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(
           prbdyn, "STRUCTSCAL_INITIALFIELD"))
       {
         case Inpar::ScaTra::initfield_zero_field:
@@ -170,7 +170,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
 
   // ------------------------------------get electromagnetic parameters
   extraparams->set<bool>("ELECTROMAGNETICDIFFUSION",
-      Core::UTILS::IntegralValue<int>(scatradyn, "ELECTROMAGNETICDIFFUSION"));
+      Core::UTILS::integral_value<int>(scatradyn, "ELECTROMAGNETICDIFFUSION"));
   extraparams->set<int>("EMDSOURCE", scatradyn.get<int>("EMDSOURCE"));
 
   // -------------------------------------------------------------------
@@ -178,7 +178,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   auto timintscheme =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+      Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
 
   // low Mach number flow
   if (probtype == Core::ProblemType::loma or probtype == Core::ProblemType::thermo_fsi)
@@ -223,7 +223,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     {
       case Inpar::ScaTra::timeint_one_step_theta:
       {
-        if (Core::UTILS::IntegralValue<bool>(
+        if (Core::UTILS::integral_value<bool>(
                 elchparams->sublist("SCL"), "ADD_MICRO_MACRO_COUPLING"))
         {
           if (disname == "scatra")
@@ -549,7 +549,7 @@ void Adapter::ScaTraBaseAlgorithm::setup()
         new Teuchos::ParameterList(Global::Problem::instance()->elch_control_params()));
 
     // create a 2nd solver for block-preconditioning if chosen from input
-    if (Core::UTILS::IntegralValue<int>(*elchparams, "BLOCKPRECOND"))
+    if (Core::UTILS::integral_value<int>(*elchparams, "BLOCKPRECOND"))
     {
       const auto& solver = scatra_->solver();
 

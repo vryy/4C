@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr,
+double Discret::ELEMENTS::calculate_growth_exchange_mass_flux_density(const double kr,
     const double alpha_a, const double c_el, const int kinetic_model,
     const Core::Conditions::ConditionType& s2i_condition_type)
 {
@@ -39,7 +39,7 @@ double Discret::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, const double frt,
+void Discret::ELEMENTS::calculate_s2_i_growth_elch_linearizations(const double j0, const double frt,
     const double epdderiv, const double eta, const double resistance, const double regfac,
     const double emasterphiint, const double eslavephiint, const double cmax,
     const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
@@ -125,7 +125,7 @@ void Discret::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::CalculateS2IElchGrowthLinearizations(const double j0, const double j,
+double Discret::ELEMENTS::calculate_s2_i_elch_growth_linearizations(const double j0, const double j,
     const double frt, const double resistivity, const double resistance, const double regfac,
     const double regfacderiv, const double expterm1, const double expterm2,
     const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
@@ -182,7 +182,7 @@ double Discret::ELEMENTS::CalculateS2IElchGrowthLinearizations(const double j0, 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const double frt,
+double Discret::ELEMENTS::calculate_growth_mass_flux_density(const double j0, const double frt,
     const double pot_ed, const double pot_el, const double epd, const double resistance,
     const double thickness, const double faraday,
     const Discret::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
@@ -206,7 +206,7 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
     // compute initial guess of Butler-Volmer current density, neglecting overpotential due to
     // scatra-scatra interface layer resistance
     double eta = pot_ed - pot_el - epd;
-    double regfac = GetRegularizationFactor(thickness, eta, scatraeleparamsboundary);
+    double regfac = get_regularization_factor(thickness, eta, scatraeleparamsboundary);
     i = (scatraeleparamsboundary->regularization_type() ==
             Inpar::S2I::RegularizationType::regularization_hein)
             ? i0 * (regfac * std::exp(alphaa * frt * eta) - std::exp(-alphac * frt * eta))
@@ -224,7 +224,7 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
 
       // compute current Newton-Raphson residual
       eta = pot_ed - pot_el - epd - resistance * i;
-      regfac = GetRegularizationFactor(thickness, eta, scatraeleparamsboundary);
+      regfac = get_regularization_factor(thickness, eta, scatraeleparamsboundary);
       const double expterm1 = std::exp(alphaa * frt * eta);
       const double expterm2 = std::exp(-alphac * frt * eta);
       const double residual = (scatraeleparamsboundary->regularization_type() ==
@@ -262,7 +262,7 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::GetRegularizationFactor(const double thickness, const double eta,
+double Discret::ELEMENTS::get_regularization_factor(const double thickness, const double eta,
     const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
   // initialize regularization factor
@@ -337,7 +337,7 @@ double Discret::ELEMENTS::GetRegularizationFactor(const double thickness, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::GetRegularizationFactorDerivative(const double thickness,
+double Discret::ELEMENTS::get_regularization_factor_derivative(const double thickness,
     const double eta,
     const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {

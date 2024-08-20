@@ -61,27 +61,27 @@ ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
       zeros_(Teuchos::null),
       eledetjac_(Teuchos::null),
       elequality_(Teuchos::null),
-      elequalityyesno_(Core::UTILS::IntegralValue<bool>(*params, "ASSESSMESHQUALITY")),
-      aletype_(Core::UTILS::IntegralValue<Inpar::ALE::AleDynamic>(*params, "ALE_TYPE")),
+      elequalityyesno_(Core::UTILS::integral_value<bool>(*params, "ASSESSMESHQUALITY")),
+      aletype_(Core::UTILS::integral_value<Inpar::ALE::AleDynamic>(*params, "ALE_TYPE")),
       maxiter_(params->get<int>("MAXITER")),
       tolres_(params->get<double>("TOLRES")),
       toldisp_(params->get<double>("TOLDISP")),
-      divercont_(Core::UTILS::IntegralValue<Inpar::ALE::DivContAct>(*params, "DIVERCONT")),
-      msht_(Core::UTILS::IntegralValue<Inpar::ALE::MeshTying>(*params, "MESHTYING")),
-      initialdisp_(Core::UTILS::IntegralValue<Inpar::ALE::InitialDisp>(*params, "INITIALDISP")),
+      divercont_(Core::UTILS::integral_value<Inpar::ALE::DivContAct>(*params, "DIVERCONT")),
+      msht_(Core::UTILS::integral_value<Inpar::ALE::MeshTying>(*params, "MESHTYING")),
+      initialdisp_(Core::UTILS::integral_value<Inpar::ALE::InitialDisp>(*params, "INITIALDISP")),
       startfuncno_(params->get<int>("STARTFUNCNO"))
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  dispn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  dispnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  disi_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  rhs_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  dispn_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  dispnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  disi_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  residual_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  eledetjac_ = Core::LinAlg::CreateVector(*discretization()->element_row_map(), true);
-  elequality_ = Core::LinAlg::CreateVector(*discretization()->element_row_map(), true);
+  eledetjac_ = Core::LinAlg::create_vector(*discretization()->element_row_map(), true);
+  elequality_ = Core::LinAlg::create_vector(*discretization()->element_row_map(), true);
 
   // -------------------------------------------------------------------
   // set initial displacement
@@ -256,7 +256,7 @@ void ALE::Ale::evaluate(
     if (get_loc_sys_trafo() != Teuchos::null)
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(sysmat_), *disi_, *residual_,
+          *Core::LinAlg::cast_to_sparse_matrix_and_check_success(sysmat_), *disi_, *residual_,
           *get_loc_sys_trafo(), *dispnp_local, *(dbcmaps_[dbc_type]->cond_map()));
     }
     else
@@ -729,8 +729,8 @@ void ALE::Ale::reset()
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  dispnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  dispn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  dispnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  dispn_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   return;
 }
@@ -856,7 +856,7 @@ ALE::AleLinear::AleLinear(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : Ale(actdis, solver, params_in, output), validsysmat_(false), updateeverystep_(false)
 {
-  updateeverystep_ = Core::UTILS::IntegralValue<bool>(params(), "UPDATEMATRIX");
+  updateeverystep_ = Core::UTILS::integral_value<bool>(params(), "UPDATEMATRIX");
 }
 
 /*----------------------------------------------------------------------------*/

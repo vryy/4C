@@ -39,11 +39,11 @@ void Adapter::FluidFluidFSI::init()
 {
   // determine the type of monolithic approach
   const Teuchos::ParameterList& xfluiddyn = params_->sublist("XFLUID DYNAMIC/GENERAL");
-  monolithic_approach_ = Core::UTILS::IntegralValue<Inpar::XFEM::MonolithicXffsiApproach>(
+  monolithic_approach_ = Core::UTILS::integral_value<Inpar::XFEM::MonolithicXffsiApproach>(
       xfluiddyn, "MONOLITHIC_XFFSI_APPROACH");
 
   // should ALE-relaxation be carried out?
-  relaxing_ale_ = (bool)Core::UTILS::IntegralValue<int>(xfluiddyn, "RELAXING_ALE");
+  relaxing_ale_ = (bool)Core::UTILS::integral_value<int>(xfluiddyn, "RELAXING_ALE");
 
   // get no. of timesteps, after which ALE-mesh should be relaxed
   relaxing_ale_every_ = xfluiddyn.get<int>("RELAXING_ALE_EVERY");

@@ -21,7 +21,7 @@ Functions to catch implementation erros in debug mode
 */
 namespace
 {
-  [[maybe_unused]] bool IsCutPositionUnchanged(
+  [[maybe_unused]] bool is_cut_position_unchanged(
       Cut::Point::PointPosition cutposition, Cut::Point::PointPosition pos)
   {
     if ((cutposition == Cut::Point::inside and pos == Cut::Point::outside) or
@@ -205,7 +205,7 @@ void Cut::NodalDofSet::print()
 {
   std::cout << "Cut::NodalDofSet:\n"
             << "STD dofset = " << (this->is_standard_dof_set() ? "TRUE\n" : "FALSE\n")
-            << "Position   = " << Point::point_position2_string(this->position()) << std::endl;
+            << "Position   = " << Point::point_position_to_string(this->position()) << std::endl;
 }
 
 
@@ -216,7 +216,7 @@ void Cut::CompositeNodalDofSet::print()
   std::cout << "Cut::CompositeNodalDofSet which contains " << nodal_dofsets_.size()
             << " combined Cut::NodalDofSet:\n "
             << "STD dofset = " << (this->is_standard_dof_set() ? "TRUE\n" : "FALSE\n")
-            << "Position   = " << Point::point_position2_string(this->position()) << std::endl;
+            << "Position   = " << Point::point_position_to_string(this->position()) << std::endl;
 }
 
 
@@ -715,7 +715,7 @@ void Cut::Node::self_cut_position(Point::PointPosition pos)
 {
   if (selfcutposition_ != pos)
   {
-    FOUR_C_ASSERT(IsCutPositionUnchanged(selfcutposition_, pos),
+    FOUR_C_ASSERT(is_cut_position_unchanged(selfcutposition_, pos),
         "Are you sure that you want to change the selfcut-node-position from inside to outside "
         "or vice versa?");
 
@@ -864,7 +864,7 @@ bool Cut::NodalDofSetCmp::operator()(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::FindCommonElements(const std::vector<Node*>& nelement, plain_element_set& elements)
+void Cut::find_common_elements(const std::vector<Node*>& nelement, plain_element_set& elements)
 {
   // find the element defined by the given nodes
   std::vector<Cut::Point*> pelement;
@@ -873,7 +873,7 @@ void Cut::FindCommonElements(const std::vector<Node*>& nelement, plain_element_s
   for (std::vector<Cut::Node*>::const_iterator cit = nelement.begin(); cit != nelement.end(); ++cit)
     pelement.push_back((*cit)->point());
 
-  FindCommonElements(pelement, elements);
+  find_common_elements(pelement, elements);
 }
 
 FOUR_C_NAMESPACE_CLOSE

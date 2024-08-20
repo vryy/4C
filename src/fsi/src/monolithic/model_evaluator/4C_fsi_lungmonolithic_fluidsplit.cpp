@@ -327,7 +327,7 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   mat.matrix(1, 1).add(fGG, false, 1.0, 1.0);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::CreateIdentityMatrix(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::create_identity_matrix(*fluid_field()->interface()->fsi_cond_map());
   mat.matrix(1, 1).add(*eye, false, 1.0, 1.0);
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->shape_derivatives();

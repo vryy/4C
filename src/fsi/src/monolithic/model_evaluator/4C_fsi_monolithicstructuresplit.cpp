@@ -230,7 +230,7 @@ void FSI::MonolithicStructureSplit::setup_system()
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -268,7 +268,7 @@ void FSI::MonolithicStructureSplit::setup_system()
   // ---------------------------------------------------------------------------
 
   // enable debugging
-  if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+  if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
   {
     pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
   }
@@ -283,7 +283,7 @@ void FSI::MonolithicStructureSplit::setup_system()
   if (restart)
   {
     const bool restartfrompartfsi =
-        Core::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+        Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       Teuchos::RCP<Epetra_Vector> lambdafullfluid =
@@ -645,10 +645,10 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
   // Reset quantities for previous iteration step since they still store values from the last time
   // step
-  ddiinc_ = Core::LinAlg::CreateVector(*structure_field()->interface()->other_map(), true);
+  ddiinc_ = Core::LinAlg::create_vector(*structure_field()->interface()->other_map(), true);
   soliprev_ = Teuchos::null;
-  ddginc_ = Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
-  duginc_ = Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+  ddginc_ = Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
+  duginc_ = Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
   disgprev_ = Teuchos::null;
   sgicur_ = Teuchos::null;
   sggcur_ = Teuchos::null;
@@ -814,7 +814,7 @@ void FSI::MonolithicStructureSplit::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -866,7 +866,7 @@ void FSI::MonolithicStructureSplit::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1289,7 +1289,7 @@ void FSI::MonolithicStructureSplit::update()
 void FSI::MonolithicStructureSplit::read_restart(int step)
 {
   const bool restartfrompartfsi =
-      Core::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+      Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
 
   // read Lagrange multiplier
   if (not restartfrompartfsi)  // standard restart

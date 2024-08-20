@@ -86,7 +86,7 @@ Teuchos::RCP<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build_li
         break;
       default:
         FOUR_C_THROW("No idea which solver to use for the given model type %s",
-            ModelTypeString(*mt_iter).c_str());
+            model_type_string(*mt_iter).c_str());
         break;
     }
   }
@@ -114,7 +114,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
 
   Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::rcp(new Core::LinAlg::Solver(
       linsolverparams, actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   const auto azprectype =
@@ -140,7 +140,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
       {
         Core::Elements::Element* element = actdis.l_row_element(i);
 
-        if (BEAMINTERACTION::UTILS::IsBeamElement(*element) &&
+        if (BEAMINTERACTION::UTILS::is_beam_element(*element) &&
             (element->element_type() != Discret::ELEMENTS::Beam3ebType::instance()))
           FOUR_C_THROW("Only beam3eb elements are currently allowed!");
       }
@@ -149,7 +149,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
       {
         const Core::Nodes::Node* node = actdis.l_row_node(i);
 
-        if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
+        if (BEAMINTERACTION::UTILS::is_beam_node(*node))
           actdis.dof(node, beamDofs);
         else
           actdis.dof(node, solidDofs);
@@ -162,7 +162,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
 
       linsolver->put_solver_params_to_sub_params("Inverse1", linsolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
       linsolver->params()
           .sublist("Inverse1")
@@ -171,7 +171,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
 
       linsolver->put_solver_params_to_sub_params("Inverse2", linsolverparams,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
       linsolver->params()
           .sublist("Inverse2")
@@ -197,10 +197,10 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
 
   const enum Inpar::CONTACT::SolvingStrategy sol_type =
       static_cast<Inpar::CONTACT::SolvingStrategy>(
-          Core::UTILS::IntegralValue<int>(mcparams, "STRATEGY"));
+          Core::UTILS::integral_value<int>(mcparams, "STRATEGY"));
 
   const enum Inpar::CONTACT::SystemType sys_type =
-      static_cast<Inpar::CONTACT::SystemType>(Core::UTILS::IntegralValue<int>(mcparams, "SYSTEM"));
+      static_cast<Inpar::CONTACT::SystemType>(Core::UTILS::integral_value<int>(mcparams, "SYSTEM"));
 
   const int lin_solver_id = mcparams.get<int>("LINEAR_SOLVER");
 
@@ -266,7 +266,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
       linsolver = Teuchos::rcp(
           new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(lin_solver_id),
               actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY")));
 
       actdis.compute_null_space_if_necessary(linsolver->params());
@@ -309,7 +309,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
       linsolver = Teuchos::rcp(
           new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(lin_solver_id),
               actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY")));
       actdis.compute_null_space_if_necessary(linsolver->params());
     }
@@ -333,7 +333,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
 
   // solution algorithm - direct, simple or Uzawa
   Inpar::Solid::ConSolveAlgo algochoice =
-      Core::UTILS::IntegralValue<Inpar::Solid::ConSolveAlgo>(strparams, "UZAWAALGO");
+      Core::UTILS::integral_value<Inpar::Solid::ConSolveAlgo>(strparams, "UZAWAALGO");
 
   switch (algochoice)
   {
@@ -345,13 +345,13 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
       linsolver = Teuchos::rcp(
           new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
               actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY")));
 
       linsolver->params() = Core::LinAlg::Solver::translate_solver_parameters(
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
     }
     break;
@@ -363,13 +363,13 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
       linsolver = Teuchos::rcp(
           new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
               actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY")));
 
       linsolver->params() = Core::LinAlg::Solver::translate_solver_parameters(
           Global::Problem::instance()->solver_params(linsolvernumber),
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       if (!linsolver->params().isSublist("Belos Parameters"))
@@ -435,18 +435,18 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
   linsolver = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
           actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   linsolver->params() = Core::LinAlg::Solver::translate_solver_parameters(
       Global::Problem::instance()->solver_params(linsolvernumber),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   // solution algorithm - direct or simple
   Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo algochoice =
-      Core::UTILS::IntegralValue<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
+      Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
           cardvasc0dstructparams, "SOLALGORITHM");
 
   switch (algochoice)
@@ -483,14 +483,14 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
           linsolver->put_solver_params_to_sub_params("Inverse1",
               Global::Problem::instance()->solver_params(linsolvernumber),
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse1"), true);
 
           linsolver->put_solver_params_to_sub_params("Inverse2",
               Global::Problem::instance()->solver_params(linsolvernumber),
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse2"), true);
         }

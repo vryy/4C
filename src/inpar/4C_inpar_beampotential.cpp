@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -52,7 +52,7 @@ void Inpar::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
           strategy_singlelengthspec_smallsepapprox_simple),
       &beampotential);
 
-  Core::UTILS::DoubleParameter("CUTOFF_RADIUS", -1.0,
+  Core::UTILS::double_parameter("CUTOFF_RADIUS", -1.0,
       "Neglect all potential contributions at separation larger"
       "than this cutoff radius",
       &beampotential);
@@ -64,18 +64,18 @@ void Inpar::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
           regularization_linear, regularization_constant, regularization_none, regularization_none),
       &beampotential);
 
-  Core::UTILS::DoubleParameter("REGULARIZATION_SEPARATION", -1.0,
+  Core::UTILS::double_parameter("REGULARIZATION_SEPARATION", -1.0,
       "Use regularization of force law at separations "
       "smaller than this separation",
       &beampotential);
 
-  Core::UTILS::IntParameter("NUM_INTEGRATION_SEGMENTS", 1,
+  Core::UTILS::int_parameter("NUM_INTEGRATION_SEGMENTS", 1,
       "Number of integration segments used per beam element", &beampotential);
 
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "NUM_GAUSSPOINTS", 10, "Number of Gauss points used per integration segment", &beampotential);
 
-  Core::UTILS::BoolParameter("AUTOMATIC_DIFFERENTIATION", "No",
+  Core::UTILS::bool_parameter("AUTOMATIC_DIFFERENTIATION", "No",
       "apply automatic differentiation via FAD?", &beampotential);
 
   setStringToIntegralParameter<MasterSlaveChoice>("CHOICE_MASTER_SLAVE", "smaller_eleGID_is_slave",
@@ -85,11 +85,11 @@ void Inpar::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
           MasterSlaveChoice::smaller_eleGID_is_slave, MasterSlaveChoice::higher_eleGID_is_slave),
       &beampotential);
 
-  Core::UTILS::BoolParameter("BEAMPOT_BTSOL", "No",
+  Core::UTILS::bool_parameter("BEAMPOT_BTSOL", "No",
       "decide, whether potential-based interaction between beams and solids is considered",
       &beampotential);
 
-  Core::UTILS::BoolParameter("BEAMPOT_BTSPH", "No",
+  Core::UTILS::bool_parameter("BEAMPOT_BTSPH", "No",
       "decide, whether potential-based interaction between beams and spheres is considered",
       &beampotential);
 
@@ -103,12 +103,12 @@ void Inpar::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
           Inpar::BEAMCONTACT::boct_spbb),
       &beampotential);
 
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "BEAMPOT_TREEDEPTH", 6, "max, tree depth of the octree", &beampotential);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "BEAMPOT_BOXESINOCT", 8, "max number of bounding boxes in any leaf octant", &beampotential);
 
-  Core::UTILS::DoubleParameter("POTENTIAL_REDUCTION_LENGTH", -1.0,
+  Core::UTILS::double_parameter("POTENTIAL_REDUCTION_LENGTH", -1.0,
       "Within this length of the master beam end point the potential is smoothly reduced to one "
       "half to account for infinitely long master beam surrogates.",
       &beampotential);
@@ -121,33 +121,33 @@ void Inpar::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
 
   // whether to write visualization output for beam contact
-  Core::UTILS::BoolParameter("VTK_OUTPUT_BEAM_POTENTIAL", "No",
+  Core::UTILS::bool_parameter("VTK_OUTPUT_BEAM_POTENTIAL", "No",
       "write visualization output for potential-based beam interactions",
       &beampotential_output_sublist);
 
   // output interval regarding steps: write output every INTERVAL_STEPS steps
-  Core::UTILS::IntParameter("INTERVAL_STEPS", -1,
+  Core::UTILS::int_parameter("INTERVAL_STEPS", -1,
       "write output at runtime every INTERVAL_STEPS steps", &beampotential_output_sublist);
 
   // whether to write output in every iteration of the nonlinear solver
-  Core::UTILS::BoolParameter("EVERY_ITERATION", "No",
+  Core::UTILS::bool_parameter("EVERY_ITERATION", "No",
       "write output in every iteration of the nonlinear solver", &beampotential_output_sublist);
 
   // whether to write visualization output for forces
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "FORCES", "No", "write visualization output for forces", &beampotential_output_sublist);
 
   // whether to write visualization output for moments
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "MOMENTS", "No", "write visualization output for moments", &beampotential_output_sublist);
 
   // whether to write visualization output for forces/moments separately for each element pair
-  Core::UTILS::BoolParameter("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR", "No",
+  Core::UTILS::bool_parameter("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR", "No",
       "write visualization output for forces/moments separately for each element pair",
       &beampotential_output_sublist);
 }
 
-void Inpar::BEAMPOTENTIAL::SetValidConditions(
+void Inpar::BEAMPOTENTIAL::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

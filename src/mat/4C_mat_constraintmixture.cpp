@@ -182,7 +182,7 @@ void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
@@ -3100,7 +3100,7 @@ bool Mat::ConstraintMixture::vis_data(
  }
  just works with strtimint!
  don't forget to include constraintmixture.H */
-void Mat::ConstraintMixtureOutputToGmsh(
+void Mat::constraint_mixture_output_to_gmsh(
     const Teuchos::RCP<Core::FE::Discretization> dis, const int timestep, const int iter)
 {
   const std::string filebase = Global::Problem::instance()->output_control_file()->file_name();
@@ -3134,7 +3134,7 @@ void Mat::ConstraintMixtureOutputToGmsh(
     actele->location_vector(*dis, lm, lmowner, lmstride);
     Teuchos::RCP<const Epetra_Vector> disp = dis->get_state("displacement");
     std::vector<double> mydisp(lm.size(), 0);
-    Core::FE::ExtractMyValues(*disp, mydisp, lm);
+    Core::FE::extract_my_values(*disp, mydisp, lm);
 
     Teuchos::RCP<Core::Mat::Material> mat = actele->material();
     Mat::ConstraintMixture* grow = static_cast<Mat::ConstraintMixture*>(mat.get());
@@ -3186,7 +3186,7 @@ void Mat::ConstraintMixtureOutputToGmsh(
 
     for (int gp = 0; gp < ngp; ++gp)
     {
-      Core::FE::shape_function_3D(
+      Core::FE::shape_function_3d(
           funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
       Core::LinAlg::SerialDenseMatrix point(1, 3);
       Core::LinAlg::multiply_tn(point, funct, xcurr);

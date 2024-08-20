@@ -54,12 +54,12 @@ void ScaTra::TimIntBDF2::setup()
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // state vector for solution at time t_{n-1}
-  phinm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  phinm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // fine-scale vector at time n+1
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
       turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
-    fsphinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    fsphinp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -88,7 +88,7 @@ void ScaTra::TimIntBDF2::setup()
       homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
-          Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
+          Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
 }
@@ -99,7 +99,7 @@ void ScaTra::TimIntBDF2::set_element_time_parameter(bool forcedincrementalsolver
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);

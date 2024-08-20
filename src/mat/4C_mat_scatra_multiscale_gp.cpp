@@ -79,11 +79,11 @@ void Mat::ScatraMultiScaleGP::init()
   Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis(microdisname.str());
 
   // instantiate and initialize micro-scale state vectors
-  phin_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
-  phinp_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
-  phidtn_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
-  phidtnp_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
-  hist_ = Core::LinAlg::CreateVector(*microdis->dof_row_map(), true);
+  phin_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
+  phinp_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
+  phidtn_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
+  phidtnp_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
+  hist_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
 
   // set up micro-scale time integrator for micro-scale problem if not already done
   if (microdisnum_microtimint_map_.find(microdisnum_) == microdisnum_microtimint_map_.end() or
@@ -104,17 +104,17 @@ void Mat::ScatraMultiScaleGP::init()
           "Must have one-dimensional micro scale in multi-scale simulations of scalar transport "
           "problems!");
     }
-    if (Core::UTILS::IntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(
+    if (Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(
             sdyn_macro, "TIMEINTEGR") != Inpar::ScaTra::timeint_one_step_theta or
-        Core::UTILS::IntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(
+        Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(
             *sdyn_micro, "TIMEINTEGR") != Inpar::ScaTra::timeint_one_step_theta)
     {
       FOUR_C_THROW(
           "Multi-scale calculations for scalar transport only implemented for one-step-theta time "
           "integration scheme!");
     }
-    if (Core::UTILS::IntegralValue<bool>(sdyn_macro, "SKIPINITDER") !=
-        Core::UTILS::IntegralValue<bool>(*sdyn_micro, "SKIPINITDER"))
+    if (Core::UTILS::integral_value<bool>(sdyn_macro, "SKIPINITDER") !=
+        Core::UTILS::integral_value<bool>(*sdyn_micro, "SKIPINITDER"))
       FOUR_C_THROW("Flag SKIPINITDER in input file must be equal on macro and micro scales!");
     if (sdyn_macro.get<double>("TIMESTEP") != sdyn_micro->get<double>("TIMESTEP"))
       FOUR_C_THROW("Must have identical time step size on macro and micro scales!");
@@ -195,7 +195,7 @@ void Mat::ScatraMultiScaleGP::init()
     Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
         Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber),
         microdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     // provide solver with null space information if necessary
@@ -319,7 +319,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -352,7 +352,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() co
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mean_scalar_time_derivatives, eleparams);
 
   // initialize result vector: first component = integral of concentration time derivative, second
@@ -431,7 +431,7 @@ void Mat::ScatraMultiScaleGP::new_result_file()
         microdis->get_comm(), "Scalar_Transport", microproblem->spatial_approximation_type(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         Global::Problem::instance(microdisnum_)->io_params().get<int>("FILESTEPS"),
-        Core::UTILS::IntegralValue<bool>(
+        Core::UTILS::integral_value<bool>(
             Global::Problem::instance(microdisnum_)->io_params(), "OUTPUT_BIN"),
         adaptname));
 
@@ -443,7 +443,7 @@ void Mat::ScatraMultiScaleGP::new_result_file()
 
     micro_visualization_writer_ = std::make_shared<Core::IO::DiscretizationVisualizationWriterMesh>(
         microdis,
-        Core::IO::VisualizationParametersFactory(
+        Core::IO::visualization_parameters_factory(
             Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"), *microcontrol,
             Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time()));
   }

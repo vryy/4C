@@ -23,10 +23,10 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::IntCell::compute_physical_center_position(
     const Core::FE::CellType& distype, const Core::LinAlg::SerialDenseMatrix& xyze) const
 {
   // center in local coordinates
-  const Core::LinAlg::Matrix<3, 1> localcenterpos(Core::FE::getLocalCenterPosition<3>(distype));
+  const Core::LinAlg::Matrix<3, 1> localcenterpos(Core::FE::get_local_center_position<3>(distype));
   // center in physical coordinates
   static Core::LinAlg::Matrix<3, 1> pyhsicalcenterpos;
-  Core::Geo::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
+  Core::Geo::element_to_current_coordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
   return pyhsicalcenterpos;
 }
 

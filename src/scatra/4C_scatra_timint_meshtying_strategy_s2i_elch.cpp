@@ -60,7 +60,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     Teuchos::ParameterList condparams;
 
     // action for elements
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
         "action", ScaTra::BoundaryAction::calc_elch_minmax_overpotential, condparams);
 
     // initialize results
@@ -146,7 +146,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
 void ScaTra::MeshtyingStrategyS2IElch::evaluate_meshtying()
 {
   // safety check
-  if (Core::UTILS::IntegralValue<int>(*(elch_tim_int()->elch_parameter_list()), "BLOCKPRECOND"))
+  if (Core::UTILS::integral_value<int>(*(elch_tim_int()->elch_parameter_list()), "BLOCKPRECOND"))
     FOUR_C_THROW("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
   // call base class routine
@@ -259,7 +259,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
-        const double fac = Core::UTILS::IntegralValue<bool>(
+        const double fac = Core::UTILS::integral_value<bool>(
                                *scatratimint_->scatra_parameter_list(), "SPHERICALCOORDS")
                                ? *slave_node->x().data() * *slave_node->x().data() * four_pi
                                : 1.0;
@@ -304,9 +304,9 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
         // define flux linearization terms
         double dj_ded_conc(0.0), dj_del_conc(0.0), dj_ded_pot(0.0), dj_del_pot(0.0);
         // calculate flux linearizations
-        Discret::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv,
-            alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc, ed_conc,
-            cmax, eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
+        Discret::ELEMENTS::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
+            epdderiv, alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc,
+            ed_conc, cmax, eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
 
         // assemble concentration residuals
         auto residual = scatratimint_->residual();
@@ -548,7 +548,7 @@ ScaTra::MortarCellCalcElch<distype_s, distype_m>::instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -725,7 +725,7 @@ ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -781,7 +781,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate(
 )
 {
   // extract and evaluate action
-  switch (Core::UTILS::GetAsEnum<Inpar::S2I::EvaluationActions>(params, "action"))
+  switch (Core::UTILS::get_as_enum<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble off-diagonal interface linearizations
     case Inpar::S2I::evaluate_condition_od:
@@ -937,7 +937,7 @@ ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -994,7 +994,7 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate(
 )
 {
   // extract and evaluate action
-  switch (Core::UTILS::GetAsEnum<Inpar::S2I::EvaluationActions>(params, "action"))
+  switch (Core::UTILS::get_as_enum<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble interface linearizations and residuals
     case Inpar::S2I::evaluate_condition:
@@ -1228,13 +1228,13 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
     {
       case Inpar::S2I::side_slave:
       {
-        Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+        Core::Communication::add_owned_node_gid_from_list(*scatratimint_->discretization(),
             *s2imeshtying_condition->get_nodes(), islavenodegidset);
         break;
       }
       case Inpar::S2I::side_master:
       {
-        Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+        Core::Communication::add_owned_node_gid_from_list(*scatratimint_->discretization(),
             *s2imeshtying_condition->get_nodes(), imasternodegidset);
         break;
       }

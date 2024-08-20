@@ -32,7 +32,7 @@ namespace Discret
   namespace UTILS
   {
     /// add valid xfluid-specific function lines
-    void AddValidXfluidFunctions(Core::UTILS::FunctionManager& function_manager);
+    void add_valid_xfluid_functions(Core::UTILS::FunctionManager& function_manager);
 
     /// special implementation level set cut utilizing xfluid
     class GerstenbergerForwardfacingStep : public Core::UTILS::FunctionOfSpaceTime

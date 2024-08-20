@@ -376,7 +376,7 @@ void Solid::TimeInt::Base::initialize_energy_file_stream_and_write_headers()
   for (const auto& energy_data : evaldata.get_energy_data())
   {
     dataio_->get_energy_output_stream()
-        << std::setw(36) << Solid::EnergyType2String(energy_data.first) + ",";
+        << std::setw(36) << Solid::energy_type_to_string(energy_data.first) + ",";
   }
 
   dataio_->get_energy_output_stream() << std::setw(24) << "total_energy" << std::endl;
@@ -880,7 +880,7 @@ void Solid::TimeInt::Base::write_gmsh_struc_output_step()
   if (!dataio_->is_gmsh()) return;
 
   const std::string filename =
-      Core::IO::Gmsh::GetFileName("struct", disc_writer()->output()->file_name(),
+      Core::IO::Gmsh::get_file_name("struct", disc_writer()->output()->file_name(),
           dataglobalstate_->get_step_np(), false, dataglobalstate_->get_my_rank());
   std::ofstream gmshfilecontent(filename.c_str());
 
@@ -888,7 +888,8 @@ void Solid::TimeInt::Base::write_gmsh_struc_output_step()
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  Core::IO::Gmsh::VectorFieldDofBasedToGmsh(discretization(), dispn(), gmshfilecontent, 0, true);
+  Core::IO::Gmsh::vector_field_dof_based_to_gmsh(
+      discretization(), dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 

@@ -187,7 +187,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
   // values are padded. The runtime output is written when the time step is already set to the next
   // step.
   auto [output_time, output_step] =
-      Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+      Core::IO::get_time_and_time_step_index_for_output(visualization_params_,
           beam_contact->g_state().get_time_n(), beam_contact->g_state().get_step_n());
   write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
 }
@@ -202,7 +202,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
 
   if (output_params_ptr_->get_output_every_iteration())
   {
-    auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
+    auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
         visualization_params_, beam_contact->g_state().get_time_n(),
         beam_contact->g_state().get_step_n(), i_iteration);
     write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
@@ -246,7 +246,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
           beam_to_surface_condition->get_other_condition()->parameters().get<int>("COUPLING_ID");
 
       // Create the output for the averaged normal field.
-      AddAveragedNodalNormals(visualization_averaged_normals,
+      add_averaged_nodal_normals(visualization_averaged_normals,
           surface_evaluation_data->get_face_elements(), coupling_id,
           output_params_ptr_->get_write_unique_i_ds_flag());
     }
@@ -258,7 +258,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> nodal_force_visualization =
       output_writer_base_ptr_->get_visualization_writer("btssc-nodal-forces");
   if (nodal_force_visualization != Teuchos::null)
-    AddBeamInteractionNodalForces(nodal_force_visualization, beam_contact->discret_ptr(),
+    add_beam_interaction_nodal_forces(nodal_force_visualization, beam_contact->discret_ptr(),
         beam_contact->beam_interaction_data_state().get_dis_np(),
         beam_contact->beam_interaction_data_state().get_force_np(),
         output_params_ptr_->get_write_unique_i_ds_flag());
@@ -317,7 +317,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
         // represents the forces, the second one the moments.
         Core::LinAlg::Matrix<3, 2, double> beam_resultant(true);
         Core::LinAlg::Matrix<3, 2, double> solid_resultant(true);
-        GetGlobalCouplingForceResultants(beam_contact->discret(),
+        get_global_coupling_force_resultants(beam_contact->discret(),
             *(beam_contact->beam_interaction_data_state().get_force_np()),
             *(beam_contact->beam_interaction_data_state().get_dis_np()), beam_resultant,
             solid_resultant);

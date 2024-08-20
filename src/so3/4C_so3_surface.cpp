@@ -141,7 +141,7 @@ void Discret::ELEMENTS::StructuralSurface::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
@@ -174,7 +174,7 @@ void Discret::ELEMENTS::StructuralSurface::print(std::ostream& os) const
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::StructuralSurface::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Discret::ELEMENTS::StructuralLine,
+  return Core::Communication::element_boundary_factory<Discret::ELEMENTS::StructuralLine,
       Discret::ELEMENTS::StructuralSurface>(Core::Communication::buildLines, *this);
 }
 
@@ -182,7 +182,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Structural
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::StructuralSurface::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(shape());
+  return Core::FE::get_number_of_element_lines(shape());
 }
 
 /*------------------------------------------------------------------------*

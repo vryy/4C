@@ -69,7 +69,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
           std::vector<double> mytemp(1);
           std::vector<int> lm(1, node->dofs()[0]);
 
-          Core::FE::ExtractMyValues(*global, mytemp, lm);
+          Core::FE::extract_my_values(*global, mytemp, lm);
           if (node->has_tsi_data())  // in case the interface has not been initialized yet
             node->tsi_data().temp() = mytemp[0];
         }
@@ -91,7 +91,7 @@ void CONTACT::LagrangeStrategyTsi::set_state(
           CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscr.l_col_node(i));
           std::vector<int> lm(1, node->dofs()[0]);
           std::vector<double> myThermoLM(1, 0.);
-          Core::FE::ExtractMyValues(*global, myThermoLM, lm);
+          Core::FE::extract_my_values(*global, myThermoLM, lm);
           node->tsi_data().thermo_lm() = myThermoLM[0];
         }
       }
@@ -125,7 +125,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   set_state(Mortar::state_temperature, *temp2);
 
   // error checks
-  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM") !=
+  if (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM") !=
       Inpar::CONTACT::system_condensed)
     FOUR_C_THROW("only condensed system implemented");
 
@@ -158,12 +158,12 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdLMc = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  Teuchos::RCP<Epetra_Vector> rcsa = Core::LinAlg::CreateVector(*gactivedofs_, true);
+  Teuchos::RCP<Epetra_Vector> rcsa = Core::LinAlg::create_vector(*gactivedofs_, true);
   Teuchos::RCP<Epetra_Vector> g_all;
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-    g_all = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+    g_all = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   else
-    g_all = Core::LinAlg::CreateVector(*gsnoderowmap_, true);
+    g_all = Core::LinAlg::create_vector(*gsnoderowmap_, true);
 
   // assemble linearization of heat conduction (thermal contact)
   Core::LinAlg::SparseMatrix dcTdd(
@@ -174,7 +174,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   Core::LinAlg::SparseMatrix dcTdLMt(
       *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
-  Teuchos::RCP<Epetra_Vector> rcTa = Core::LinAlg::CreateVector(*gactivedofs_, true);
+  Teuchos::RCP<Epetra_Vector> rcTa = Core::LinAlg::create_vector(*gactivedofs_, true);
 
   // D and M matrix for the active nodes
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dInv =
@@ -256,12 +256,12 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   Teuchos::RCP<Epetra_Vector> gact;
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
-    gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
+    gact = Core::LinAlg::create_vector(*gactivedofs_, true);
     if (gact->GlobalLength()) Core::LinAlg::export_to(*g_all, *gact);
   }
   else
   {
-    gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
+    gact = Core::LinAlg::create_vector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
       Core::LinAlg::export_to(*g_all, *gact);
@@ -322,8 +322,8 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   }
 
   // map containing the inactive and non-contact structural dofs
-  Teuchos::RCP<Epetra_Map> str_gni_dofs =
-      Core::LinAlg::SplitMap(*Core::LinAlg::SplitMap(*gdisprowmap_, *gmdofrowmap_), *gactivedofs_);
+  Teuchos::RCP<Epetra_Map> str_gni_dofs = Core::LinAlg::split_map(
+      *Core::LinAlg::split_map(*gdisprowmap_, *gmdofrowmap_), *gactivedofs_);
   // map containing the inactive and non-contact thermal dofs
   Teuchos::RCP<Epetra_Map> thr_gni_dofs = coupST->master_to_slave_map(str_gni_dofs);
 
@@ -367,7 +367,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // split kss block*************************************
   // ****************************************************
   // split first row
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       kss, str_gni_dofs, dummy_map1, gdisprowmap_, dummy_map2, kss_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -382,7 +382,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       tmp, gmdofrowmap_, dummy_map1, gdisprowmap_, dummy_map2, kss_m, dummy1, kss_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -404,7 +404,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // split kst block*************************************
   // ****************************************************
   // split first row
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       kst, str_gni_dofs, dummy_map1, thr_all_dofs, dummy_map2, kst_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -419,7 +419,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       tmp, gmdofrowmap_, dummy_map1, thr_all_dofs, dummy_map2, kst_m, dummy1, kst_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -441,7 +441,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // split kts block*************************************
   // ****************************************************
   // split first row
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       kts, thr_gni_dofs, dummy_map1, gdisprowmap_, dummy_map2, kts_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -456,7 +456,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       tmp, thr_m_dofs, dummy_map1, gdisprowmap_, dummy_map2, kts_m, dummy1, kts_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -478,7 +478,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // split ktt block*************************************
   // ****************************************************
   // split first row
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       ktt, thr_gni_dofs, dummy_map1, thr_all_dofs, dummy_map2, ktt_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -493,7 +493,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       tmp, thr_m_dofs, dummy_map1, thr_all_dofs, dummy_map2, ktt_m, dummy1, ktt_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -541,11 +541,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       dmatrix_, gactivedofs_, dummy_map1, gactivedofs_, dummy_map2, dInvA, dummy1, dummy2, dummy3);
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       mmatrix_, gactivedofs_, dummy_map1, gmdofrowmap_, dummy_map2, mA, dummy1, dummy2, dummy3);
 
   // now we have added the additional linearizations.
@@ -581,7 +581,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> a2;
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       a1, gactivedofs_, dummy_map1, gactivedofs_, dummy_map2, a2, dummy1, dummy2, dummy3);
   dcTdLMt = *a2;
 
@@ -628,7 +628,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // get dinv * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvMa =
-      Core::LinAlg::MLMultiply(*dInvA, false, *mA, false, false, false, true);
+      Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
 
   // get dinv * M on the thermal dofs
   Core::LinAlg::SparseMatrix dInvMaThr(
@@ -645,15 +645,15 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
     pgsdirichtoggle_->Norm1(&haveDBC);
     if (haveDBC > 0.)
     {
-      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*gactivedofs_, true);
+      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*gactivedofs_, true);
       dInvA->extract_diagonal_copy(*diag);
-      Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gactivedofs_, true);
+      Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::create_vector(*gactivedofs_, true);
       Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
-      Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gactivedofs_, true);
+      Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*gactivedofs_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
       dInvA->replace_diagonal_values(*diag);
-      dInvMa = Core::LinAlg::MLMultiply(*dInvA, false, *mA, false, false, false, true);
+      dInvMa = Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
     }
   }
 
@@ -715,9 +715,9 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   // (3) condensed parts
   // second row
   kss_new.add(
-      *Core::LinAlg::MLMultiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::ml_multiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
   kst_new.add(
-      *Core::LinAlg::MLMultiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::ml_multiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   dInvMa->multiply(true, *rsa, *tmpv);
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
@@ -725,10 +725,10 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // third row
   Teuchos::RCP<Core::LinAlg::SparseMatrix> wDinv =
-      Core::LinAlg::MLMultiply(*dcsdLMc, false, *dInvA, true, false, false, true);
-  kss_new.add(*Core::LinAlg::MLMultiply(*wDinv, false, *kss_a, false, false, false, true), false,
+      Core::LinAlg::ml_multiply(*dcsdLMc, false, *dInvA, true, false, false, true);
+  kss_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kss_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
-  kst_new.add(*Core::LinAlg::MLMultiply(*wDinv, false, *kst_a, false, false, false, true), false,
+  kst_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kst_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   wDinv->multiply(false, *rsa, *tmpv);
@@ -741,11 +741,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // fifth row
   tmp = Teuchos::null;
-  tmp =
-      Core::LinAlg::MLMultiply(m_LinDissContactLM_thrRow, false, *dInvA, false, false, false, true);
-  kts_new.add(*Core::LinAlg::MLMultiply(*tmp, false, *kss_a, false, false, false, true), false,
+  tmp = Core::LinAlg::ml_multiply(
+      m_LinDissContactLM_thrRow, false, *dInvA, false, false, false, true);
+  kts_new.add(*Core::LinAlg::ml_multiply(*tmp, false, *kss_a, false, false, false, true), false,
       -tsi_alpha_ / (1. - alphaf_), 1.);
-  ktt_new.add(*Core::LinAlg::MLMultiply(*tmp, false, *kst_a, false, false, false, true), false,
+  ktt_new.add(*Core::LinAlg::ml_multiply(*tmp, false, *kst_a, false, false, false, true), false,
       -tsi_alpha_ / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   tmp->multiply(false, *rsa, *tmpv);
@@ -753,10 +753,10 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
-  kts_new.add(
-      *Core::LinAlg::MLMultiply(dInvMaThr, true, *kts_a, false, false, false, true), false, 1., 1.);
-  ktt_new.add(
-      *Core::LinAlg::MLMultiply(dInvMaThr, true, *ktt_a, false, false, false, true), false, 1., 1.);
+  kts_new.add(*Core::LinAlg::ml_multiply(dInvMaThr, true, *kts_a, false, false, false, true), false,
+      1., 1.);
+  ktt_new.add(*Core::LinAlg::ml_multiply(dInvMaThr, true, *ktt_a, false, false, false, true), false,
+      1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   dInvMaThr.multiply(true, *rta, *tmpv);
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
@@ -764,10 +764,10 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // sixth row
   Teuchos::RCP<Core::LinAlg::SparseMatrix> yDinv =
-      Core::LinAlg::MLMultiply(dcTdLMc_thr, false, *dInvA, false, false, false, true);
-  kts_new.add(*Core::LinAlg::MLMultiply(*yDinv, false, *kss_a, false, false, false, true), false,
+      Core::LinAlg::ml_multiply(dcTdLMc_thr, false, *dInvA, false, false, false, true);
+  kts_new.add(*Core::LinAlg::ml_multiply(*yDinv, false, *kss_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
-  ktt_new.add(*Core::LinAlg::MLMultiply(*yDinv, false, *kst_a, false, false, false, true), false,
+  ktt_new.add(*Core::LinAlg::ml_multiply(*yDinv, false, *kst_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   yDinv->multiply(false, *rsa, *tmpv);
@@ -776,10 +776,10 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   tmpv = Teuchos::null;
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> gDinv =
-      Core::LinAlg::MLMultiply(dcTdLMt_thr, false, *dInvaThr, false, false, false, true);
-  kts_new.add(*Core::LinAlg::MLMultiply(*gDinv, false, *kts_a, false, false, false, true), false,
+      Core::LinAlg::ml_multiply(dcTdLMt_thr, false, *dInvaThr, false, false, false, true);
+  kts_new.add(*Core::LinAlg::ml_multiply(*gDinv, false, *kts_a, false, false, false, true), false,
       -1. / (tsi_alpha_), 1.);
-  ktt_new.add(*Core::LinAlg::MLMultiply(*gDinv, false, *ktt_a, false, false, false, true), false,
+  ktt_new.add(*Core::LinAlg::ml_multiply(*gDinv, false, *ktt_a, false, false, false, true), false,
       -1. / (tsi_alpha_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   gDinv->multiply(false, *rta, *tmpv);
@@ -995,7 +995,7 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Epetra_Vector> dis)
 void CONTACT::LagrangeStrategyTsi::set_alphaf_thermo(const Teuchos::ParameterList& tdyn)
 {
   Inpar::Thermo::DynamicType dyn_type =
-      Core::UTILS::IntegralValue<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP");
+      Core::UTILS::integral_value<Inpar::Thermo::DynamicType>(tdyn, "DYNAMICTYP");
   switch (dyn_type)
   {
     case Inpar::Thermo::dyna_genalpha:
@@ -1041,7 +1041,7 @@ void CONTACT::LagrangeStrategyTsi::do_write_restart(
 void CONTACT::LagrangeStrategyTsi::do_read_restart(Core::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
-  bool restartwithcontact = Core::UTILS::IntegralValue<int>(params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = Core::UTILS::integral_value<int>(params(), "RESTART_WITH_CONTACT");
 
   CONTACT::AbstractStrategy::do_read_restart(reader, dis);
   fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));

@@ -92,15 +92,16 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
           this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(
           projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and fluid.
-      GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.get_eta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<Fluid>(
+      GEOMETRYPAIR::evaluate_position<Beam>(
+          projected_gauss_point.get_eta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::evaluate_position<Fluid>(
           projected_gauss_point.get_xi(), this->ele2pos_, r_fluid);
 
       N_beam.clear();
@@ -179,11 +180,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
         for (unsigned int i_dof2 = 0; i_dof2 < Beam::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) +=
               (*stiffmat11)(i_dof1, i_dof2) *
-              Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
+              Core::FADUtils::cast_to_double(this->ele1vel_.element_position_(i_dof2));
         for (unsigned int i_dof2 = 0; i_dof2 < Fluid::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) -=
               (*stiffmat12)(i_dof1, i_dof2) *
-              Core::FADUtils::CastToDouble(this->ele2vel_.element_position_(i_dof2));
+              Core::FADUtils::cast_to_double(this->ele2vel_.element_position_(i_dof2));
       }
     }
 
@@ -199,11 +200,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
           for (unsigned int i_dof2 = 0; i_dof2 < Fluid::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) +=
                 (*stiffmat22)(i_dof1, i_dof2) *
-                Core::FADUtils::CastToDouble(this->ele2vel_.element_position_(i_dof2));
+                Core::FADUtils::cast_to_double(this->ele2vel_.element_position_(i_dof2));
           for (unsigned int i_dof2 = 0; i_dof2 < Beam::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) -=
                 (*stiffmat21)(i_dof1, i_dof2) *
-                Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
+                Core::FADUtils::cast_to_double(this->ele1vel_.element_position_(i_dof2));
         }
       }
       else
@@ -213,7 +214,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
           for (unsigned int i_dof2 = 0; i_dof2 < Beam::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) -=
                 (*stiffmat21)(i_dof1, i_dof2) *
-                Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
+                Core::FADUtils::cast_to_double(this->ele1vel_.element_position_(i_dof2));
         }
     }
   }

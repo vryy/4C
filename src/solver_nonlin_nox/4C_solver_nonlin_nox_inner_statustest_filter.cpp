@@ -351,7 +351,7 @@ bool NOX::Nln::Inner::StatusTest::Filter::Point::is_sufficiently_reduced_compare
  *----------------------------------------------------------------------------*/
 void NOX::Nln::Inner::StatusTest::Filter::Point::set_norm()
 {
-  norm_ = Core::LinAlg::Norm2(coords_);
+  norm_ = Core::LinAlg::norm2(coords_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -600,7 +600,7 @@ void NOX::Nln::Inner::StatusTest::Filter::execute_check_status(
       FOUR_C_THROW(
           "Unexpected filter status type: "
           "The filer %s.",
-          filter_status2_string(filter_status_).c_str());
+          filter_status_to_string(filter_status_).c_str());
     }
   }
 }
@@ -766,7 +766,7 @@ void NOX::Nln::Inner::StatusTest::Filter::throw_if_step_too_short(
         "amin = %1.6e. This indicates that we can't find a feasible solution "
         "in the current search direction and we decide to stop here. (active-set status = %s)",
         step, gamma_alpha_ * amin_,
-        NOX::Nln::StatusTest::StatusType2String(active_set_status).c_str());
+        NOX::Nln::StatusTest::status_type_to_string(active_set_status).c_str());
 }
 
 /*----------------------------------------------------------------------------*
@@ -784,7 +784,7 @@ NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::execute(
   NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(mutable_grp);
   curr_type_ = which_type(solver);
 
-  filter_.utils_.out() << "SOC-type       = " << CorrectionType2String(curr_type_) << "\n";
+  filter_.utils_.out() << "SOC-type       = " << correction_type_to_string(curr_type_) << "\n";
 
   {
     const double t_start = Teuchos::Time::wallTime();
@@ -819,7 +819,7 @@ NOX::Nln::CorrectionType NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrect
       FOUR_C_THROW(
           "Unsupported Second Order Correction type detected. "
           "Given type = \"%s\"",
-          CorrectionType2String(user_type_).c_str());
+          correction_type_to_string(user_type_).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -932,10 +932,10 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::print(std::ostr
 {
   os << "\n" << ::NOX::Utils::fill(46, '=') << "\n";
   os << "Performed a Second Order Correction (SOC) step\n";
-  os << "User SOC-type  = " << CorrectionType2String(user_type_) << "\n";
-  os << "SOC-type       = " << CorrectionType2String(curr_type_) << "\n";
+  os << "User SOC-type  = " << correction_type_to_string(user_type_) << "\n";
+  os << "SOC-type       = " << correction_type_to_string(curr_type_) << "\n";
   os << "Execution time = " << time_exe_ << " sec.\n";
-  os << "New status     = " << StatusType2String(soc_status_) << "\n";
+  os << "New status     = " << status_type_to_string(soc_status_) << "\n";
   if (soc_status_ != status_converged) os << "Recover time   = " << time_recover_ << " sec.\n";
   os << ::NOX::Utils::fill(46, '=') << "\n";
 }
@@ -1543,7 +1543,7 @@ std::ostream& NOX::Nln::Inner::StatusTest::Filter::print(std::ostream& stream, i
   par_indent += indent_str;
   const int par_length = par_indent.size();
 
-  stream << indent_str << "The filter " << filter_status2_string(filter_status_) << ".\n";
+  stream << indent_str << "The filter " << filter_status_to_string(filter_status_) << ".\n";
   // Skip the remaining output if the filter check has not been evaluated.
   if (status_ == status_unevaluated) return stream;
 

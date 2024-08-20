@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  bool IsNear(const double value1, const double value2, const double epsilon = 1e-15)
+  bool is_near(const double value1, const double value2, const double epsilon = 1e-15)
   {
     if (std::abs(value1 - value2) <= epsilon) return true;
     return std::abs(value1 - value2) <= epsilon * std::max(std::abs(value1), std::abs(value2));
   }
 
   template <typename Number>
-  static inline Number ComputeAbsoluteErrorWhenSkippingSnapshot(
+  static inline Number compute_absolute_error_when_skipping_snapshot(
       std::size_t i, const std::vector<std::tuple<double, Number>>& evaluated_integrand)
   {
     FOUR_C_ASSERT(i > 0,
@@ -46,18 +46,18 @@ namespace
         "integrated with a Simpson's rule if we remove point i (0 < i < size-2)");
 
     Number full_integration =
-        Core::UTILS::IntegrateSimpsonStep<std::tuple<double, Number>>(
+        Core::UTILS::integrate_simpson_step<std::tuple<double, Number>>(
             evaluated_integrand[i - 1], evaluated_integrand[i], evaluated_integrand[i + 1]) +
-        Core::UTILS::IntegrateSimpsonStepBC<std::tuple<double, Number>>(
+        Core::UTILS::integrate_simpson_step_bc<std::tuple<double, Number>>(
             evaluated_integrand[i + 0], evaluated_integrand[i + 1], evaluated_integrand[i + 2]);
-    Number skipped_integration = Core::UTILS::IntegrateSimpsonStep<std::tuple<double, Number>>(
+    Number skipped_integration = Core::UTILS::integrate_simpson_step<std::tuple<double, Number>>(
         evaluated_integrand[i - 1], evaluated_integrand[i + 1], evaluated_integrand[i + 2]);
 
     return std::abs(full_integration - skipped_integration);
   }
 
   template <typename Number>
-  static inline std::vector<bool> GetEraseItemsBasedOnRelativeError(
+  static inline std::vector<bool> get_erase_items_based_on_relative_error(
       const std::vector<Number>& rel_error, Number tolerance)
   {
     std::vector<std::size_t> unit(rel_error.size() - 3);
@@ -85,13 +85,13 @@ namespace
   }
 
   template <typename Number, typename Integrand>
-  static inline Number IntegrateOverDepositionHistory(
+  static inline Number integrate_over_deposition_history(
       const MIXTURE::DepositionHistory<Number>& history, Integrand integrand)
   {
     Number integration_result = 0;
     for (const auto& interval : history)
     {
-      integration_result += Core::UTILS::IntegrateSimpsonTrapezoidal(interval.timesteps,
+      integration_result += Core::UTILS::integrate_simpson_trapezoidal(interval.timesteps,
           [&](const MIXTURE::MassIncrement<Number>& increment)
           { return std::make_tuple(increment.deposition_time, integrand(increment)); });
     }
@@ -100,7 +100,7 @@ namespace
   }
 
   template <typename Number, typename Integrand>
-  static inline std::tuple<Number, Number> IntegrateLastTimestepWithDerivative(
+  static inline std::tuple<Number, Number> integrate_last_timestep_with_derivative(
       const MIXTURE::DepositionHistoryInterval<Number>& interval,
       const MIXTURE::MassIncrement<Number>& current_increment, Integrand integrand,
       Number history_integration)
@@ -111,14 +111,15 @@ namespace
     {
       // can only apply trapezoidal rule
       const auto [integration, derivative] =
-          Core::UTILS::IntegrateTrapezoidalStepAndReturnDerivativeB<std::tuple<double, Number>>(
+          Core::UTILS::integrate_trapezoidal_step_and_return_derivative_b<
+              std::tuple<double, Number>>(
               {interval.timesteps[0].deposition_time, integrand(interval.timesteps[0])},
               {current_increment.deposition_time, integrand(current_increment)});
       return std::make_tuple(integration + history_integration, derivative);
     }
 
     const auto [integration, derivative] =
-        Core::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC<std::tuple<double, Number>>(
+        Core::UTILS::integrate_simpson_step_bc_and_return_derivative_c<std::tuple<double, Number>>(
             {interval.timesteps[size - 2].deposition_time, integrand(interval.timesteps[size - 2])},
             {interval.timesteps[size - 1].deposition_time, integrand(interval.timesteps[size - 1])},
             {current_increment.deposition_time, integrand(current_increment)});
@@ -133,13 +134,13 @@ namespace
   }
 
   template <typename Number>
-  static inline Number EvaluateDI4DlLambdaESq(Number lambda_e)
+  static inline Number evaluate_d_i4_dl_lambda_e_sq(Number lambda_e)
   {
     return 1.0;
   }
 
   template <typename Number>
-  static inline Number EvaluateFiberMaterialCauchyStress(
+  static inline Number evaluate_fiber_material_cauchy_stress(
       const MIXTURE::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
   {
     const Number I4 = evaluate_i4(lambda_e);
@@ -147,16 +148,16 @@ namespace
   }
 
   template <typename Number>
-  static inline Number EvaluateDFiberMaterialCauchyStressDLambdaESq(
+  static inline Number evaluate_d_fiber_material_cauchy_stress_d_lambda_e_sq(
       const MIXTURE::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
   {
     const Number I4 = evaluate_i4(lambda_e);
-    const Number DI4DLambdaESq = EvaluateDI4DlLambdaESq(lambda_e);
+    const Number DI4DLambdaESq = evaluate_d_i4_dl_lambda_e_sq(lambda_e);
     return fiber_material.get_d_cauchy_stress_d_i4(I4) * DI4DLambdaESq;
   }
 
   template <typename Number>
-  static inline void ReinitializeState(
+  static inline void reinitialize_state(
       MIXTURE::FullConstrainedMixtureFiber<Number>& fiber, const Number lambda_f, const double time)
   {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -167,7 +168,7 @@ namespace
   }
 
   template <typename Number>
-  void UpdateBaseDeltaTime(
+  void update_base_delta_time(
       MIXTURE::DepositionHistoryInterval<Number>& deposition_history_inverval, const double dt)
   {
     if (deposition_history_inverval.base_dt <= 0)
@@ -177,7 +178,7 @@ namespace
       return;
     }
 
-    if (!IsNear(deposition_history_inverval.base_dt, dt))
+    if (!is_near(deposition_history_inverval.base_dt, dt))
     {
       FOUR_C_THROW(
           "The timestep is not constant within the interval. The interval currently relies on a "
@@ -189,7 +190,7 @@ namespace
   }
 
   template <typename Number>
-  Number IntegrateBooleStep(const std::array<std::tuple<double, Number>, 5>& data)
+  Number integrate_boole_step(const std::array<std::tuple<double, Number>, 5>& data)
   {
     const double interval_size = std::get<0>(data[4]) - std::get<0>(data[0]);
 
@@ -212,7 +213,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
       current_time_(0),
       computed_growth_scalar_(1.0)
 {
-  sig_h_ = EvaluateFiberMaterialCauchyStress<Number>(*fiber_material_, lambda_pre_);
+  sig_h_ = evaluate_fiber_material_cauchy_stress<Number>(*fiber_material_, lambda_pre_);
   computed_sigma_ = sig_h_;
 }
 
@@ -313,7 +314,7 @@ template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::recompute_state(
     const Number lambda_f, const double time, const double dt)
 {
-  ReinitializeState(*this, lambda_f, time);
+  reinitialize_state(*this, lambda_f, time);
 
   if (!enable_growth_)
   {
@@ -324,7 +325,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::recompute_state(
     current_time_shift_ = 0.0;
   }
 
-  if (enable_growth_ && history_.size() > 0) UpdateBaseDeltaTime(history_.back(), dt);
+  if (enable_growth_ && history_.size() > 0) update_base_delta_time(history_.back(), dt);
   compute_internal_variables();
 }
 
@@ -352,8 +353,8 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::compute_history_cauchy_stre
 
   const Number scaled_cauchy_stress_history =
       growth_evolution_.evaluate_survival_function(time) *
-          EvaluateFiberMaterialCauchyStress<Number>(*fiber_material_, lambda_pre_ * lambda_f) +
-      IntegrateOverDepositionHistory<Number>(history_, current_scaled_cauchy_stress_integrand);
+          evaluate_fiber_material_cauchy_stress<Number>(*fiber_material_, lambda_pre_ * lambda_f) +
+      integrate_over_deposition_history<Number>(history_, current_scaled_cauchy_stress_integrand);
 
   return scaled_cauchy_stress_history / growth_scalar;
 }
@@ -389,7 +390,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::scaled_cauchy_stress_integr
 {
   return mass_increment.growth_scalar_production_rate * mass_increment.growth_scalar *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time) *
-         EvaluateFiberMaterialCauchyStress<Number>(
+         evaluate_fiber_material_cauchy_stress<Number>(
              *fiber_material_, mass_increment.reference_stretch * current_lambda_f);
 }
 
@@ -402,7 +403,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time) *
-         EvaluateFiberMaterialCauchyStress<Number>(
+         evaluate_fiber_material_cauchy_stress<Number>(
              *fiber_material_, mass_increment.reference_stretch * current_lambda_f);
 }
 
@@ -415,7 +416,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar_production_rate *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time) *
-         EvaluateFiberMaterialCauchyStress<Number>(
+         evaluate_fiber_material_cauchy_stress<Number>(
              *fiber_material_, mass_increment.reference_stretch * current_lambda_f);
 }
 
@@ -427,7 +428,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_inte
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar_production_rate * mass_increment.growth_scalar *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time) *
-         EvaluateDFiberMaterialCauchyStressDLambdaESq<Number>(
+         evaluate_d_fiber_material_cauchy_stress_d_lambda_e_sq<Number>(
              *fiber_material_, mass_increment.reference_stretch * current_lambda_f) *
          mass_increment.reference_stretch * mass_increment.reference_stretch;
 }
@@ -441,7 +442,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   return mass_increment.growth_scalar_production_rate * mass_increment.growth_scalar *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time) *
-         EvaluateDFiberMaterialCauchyStressDLambdaESq<Number>(
+         evaluate_d_fiber_material_cauchy_stress_d_lambda_e_sq<Number>(
              *fiber_material_, mass_increment.reference_stretch * current_lambda_f) *
          current_lambda_f * current_lambda_f;
 }
@@ -491,13 +492,13 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
   // stress)
   const Number growth_scalar_history =
       growth_evolution_.evaluate_survival_function(current_time_ - reference_time_) +
-      IntegrateOverDepositionHistory<Number>(history_, current_growth_scalar_integrand);
+      integrate_over_deposition_history<Number>(history_, current_growth_scalar_integrand);
 
   const Number scaled_cauchy_stress_history =
       growth_evolution_.evaluate_survival_function(current_time_ - reference_time_) *
-          EvaluateFiberMaterialCauchyStress<Number>(
+          evaluate_fiber_material_cauchy_stress<Number>(
               *fiber_material_, lambda_pre_ * current_state_.lambda_f) +
-      IntegrateOverDepositionHistory<Number>(history_, current_scaled_cauchy_stress_integrand);
+      integrate_over_deposition_history<Number>(history_, current_scaled_cauchy_stress_integrand);
 
   return [=](const Core::LinAlg::Matrix<2, 1, Number>& growth_scalar_and_cauchy_stress)
   {
@@ -512,7 +513,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
             (cauchy_stress - sig_h_) / sig_h_) /
         sig_h_;
     const auto [my_growth_scalar, dmy_growth_scalar_dintegrand] =
-        IntegrateLastTimestepWithDerivative<Number>(history_.back(), current_increment,
+        integrate_last_timestep_with_derivative<Number>(history_.back(), current_increment,
             current_growth_scalar_integrand, growth_scalar_history);
 
     const Number dmy_growth_scalar_dsig =
@@ -524,7 +525,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
         current_dgrowth_scalar_integrand_dgrowth_scalar(current_increment);
 
     const auto [my_scaled_cauchy_stress, dmy_scaled_cauchy_stress_dintegrand] =
-        IntegrateLastTimestepWithDerivative<Number>(history_.back(), current_increment,
+        integrate_last_timestep_with_derivative<Number>(history_.back(), current_increment,
             current_scaled_cauchy_stress_integrand, scaled_cauchy_stress_history);
 
 
@@ -579,10 +580,10 @@ Number MIXTURE::FullConstrainedMixtureFiber<
   };
   const Number Dscaled_cauchy_stress_D_lambda_f_sq_history =
       growth_evolution_.evaluate_survival_function(current_time_ - reference_time_) *
-          EvaluateDFiberMaterialCauchyStressDLambdaESq<Number>(
+          evaluate_d_fiber_material_cauchy_stress_d_lambda_e_sq<Number>(
               *fiber_material_, lambda_pre_ * current_state_.lambda_f) *
           std::pow(lambda_pre_, 2) +
-      IntegrateOverDepositionHistory<Number>(
+      integrate_over_deposition_history<Number>(
           history_, dscaled_cauchy_stress_integrand_d_lambda_f_sq);
 
   const MassIncrement<Number> current_increment =
@@ -590,7 +591,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<
 
   const auto [dscaled_cauchy_stress_lambda_f_sq,
       ddscaled_cauchy_stress_integrand_d_lambda_f_sq_d_integrand] =
-      IntegrateLastTimestepWithDerivative(history_.back(), current_increment,
+      integrate_last_timestep_with_derivative(history_.back(), current_increment,
           dscaled_cauchy_stress_integrand_d_lambda_f_sq,
           Dscaled_cauchy_stress_D_lambda_f_sq_history);
 
@@ -647,13 +648,13 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
     computed_growth_scalar_ =
         growth_evolution_.evaluate_survival_function(
             current_time_ + current_time_shift_ - reference_time_) +
-        IntegrateOverDepositionHistory<Number>(history_, current_growth_scalar_integrand);
+        integrate_over_deposition_history<Number>(history_, current_growth_scalar_integrand);
 
     computed_sigma_ = (growth_evolution_.evaluate_survival_function(
                            current_time_ + current_time_shift_ - reference_time_) *
-                              EvaluateFiberMaterialCauchyStress<Number>(
+                              evaluate_fiber_material_cauchy_stress<Number>(
                                   *fiber_material_, lambda_pre_ * current_state_.lambda_f) +
-                          IntegrateOverDepositionHistory<Number>(
+                          integrate_over_deposition_history<Number>(
                               history_, current_scaled_cauchy_stress_integrand)) /
                       computed_growth_scalar_;
 
@@ -661,10 +662,10 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
     computed_dsigma_dlambda_f_sq_ =
         (growth_evolution_.evaluate_survival_function(
              current_time_ + current_time_shift_ - reference_time_) *
-                EvaluateDFiberMaterialCauchyStressDLambdaESq<Number>(
+                evaluate_d_fiber_material_cauchy_stress_d_lambda_e_sq<Number>(
                     *fiber_material_, lambda_pre_ * current_state_.lambda_f) *
                 std::pow(lambda_pre_, 2) +
-            IntegrateOverDepositionHistory<Number>(
+            integrate_over_deposition_history<Number>(
                 history_, current_dscaled_cauchy_stress_integrand_d_lambda_f_sq)) /
         computed_growth_scalar_;
 
@@ -702,7 +703,7 @@ template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::reinitialize_history(
     const Number lambda_f, const double time)
 {
-  ReinitializeState(*this, lambda_f, time);
+  reinitialize_state(*this, lambda_f, time);
 
   const Number dsig = std::invoke(
       [&]()
@@ -746,7 +747,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::reinitialize_history(
     return;
   }
 
-  if (!IsNear(mass_increment.deposition_time, last_mass_increment.deposition_time))
+  if (!is_near(mass_increment.deposition_time, last_mass_increment.deposition_time))
   {
     FOUR_C_THROW(
         "The history is not empty, but you reinitialized the fiber with a different deposition "
@@ -862,8 +863,8 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::update()
                           }
 
                           return std::abs(
-                              Core::UTILS::IntegrateSimpsonStep(values[0], values[2], values[4]) -
-                              IntegrateBooleStep(values));
+                              Core::UTILS::integrate_simpson_step(values[0], values[2], values[4]) -
+                              integrate_boole_step(values));
                         };
 
                         auto current_growth_scalar_integrand =
@@ -954,7 +955,7 @@ template <typename Number>
 void MIXTURE::FullConstrainedMixtureFiber<Number>::set_deposition_stretch(double lambda_pre)
 {
   lambda_pre_ = lambda_pre;
-  sig_h_ = EvaluateFiberMaterialCauchyStress<Number>(*fiber_material_, lambda_pre_);
+  sig_h_ = evaluate_fiber_material_cauchy_stress<Number>(*fiber_material_, lambda_pre_);
 }
 
 template <typename Number>

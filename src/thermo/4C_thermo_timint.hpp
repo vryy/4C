@@ -361,7 +361,7 @@ namespace Thermo
     virtual enum Inpar::Thermo::DynamicType method_name() const = 0;
 
     //! Provide title
-    std::string method_title() const { return Inpar::Thermo::DynamicTypeString(method_name()); }
+    std::string method_title() const { return Inpar::Thermo::dynamic_type_string(method_name()); }
 
     //! Return true, if time integrator is implicit
     virtual bool method_implicit() = 0;

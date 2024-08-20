@@ -27,9 +27,9 @@ namespace Discret::ELEMENTS
   struct MulfHistoryData
   {
     Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> inverse_jacobian =
-        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
+        Core::LinAlg::identity_matrix<Core::FE::dim<celltype>>();
     Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> deformation_gradient =
-        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
+        Core::LinAlg::identity_matrix<Core::FE::dim<celltype>>();
     bool is_setup = false;
   };
 
@@ -49,7 +49,7 @@ namespace Discret::ELEMENTS
     N_xyz.multiply(mulf_history_data.inverse_jacobian, shape_functions.derivatives_);
 
     Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> defgrd =
-        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
+        Core::LinAlg::identity_matrix<Core::FE::dim<celltype>>();
 
     defgrd.multiply_tt(1.0, nodal_displacements, N_xyz, 1.0);
 

@@ -35,7 +35,7 @@ namespace
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& FindSublist(std::string name, Teuchos::ParameterList& list)
+  Teuchos::ParameterList& find_sublist(std::string name, Teuchos::ParameterList& list)
   {
     Teuchos::ParameterList* sublist = &list;
 
@@ -116,7 +116,7 @@ namespace Core::IO
     // The section name is desired from outside. Thus, we consider it as valid
     knownsections_[name] = true;
 
-    Teuchos::ParameterList& sublist = FindSublist(name.substr(2), list);
+    Teuchos::ParameterList& sublist = find_sublist(name.substr(2), list);
 
     if (positions_.find(name) == positions_.end()) return false;
 
@@ -131,7 +131,7 @@ namespace Core::IO
         break;
       }
 
-      const auto& [key, value] = ReadKeyValue(line);
+      const auto& [key, value] = read_key_value(line);
 
       add_entry(key, value, sublist);
     }
@@ -281,7 +281,7 @@ namespace Core::IO
                 {
                   // remove comments, trailing and leading whitespaces
                   // compact internal whitespaces
-                  line = Core::UTILS::StripComment(line);
+                  line = Core::UTILS::strip_comment(line);
 
                   // line is now empty
                   if (line.size() == 0) continue;
@@ -394,7 +394,7 @@ namespace Core::IO
                 (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
               dnodes.insert(node->id());
           }
-          Core::LinAlg::GatherAll(dnodes, *comm_);
+          Core::LinAlg::gather_all(dnodes, *comm_);
           topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
         }
 
@@ -957,7 +957,7 @@ namespace Core::IO
       {
         // remove comments, trailing and leading whitespaces
         // compact internal whitespaces
-        line = Core::UTILS::StripComment(line);
+        line = Core::UTILS::strip_comment(line);
 
         // line is now empty
         if (line.size() == 0) continue;
@@ -1182,7 +1182,7 @@ namespace Core::IO
     return printout;
   }
 
-  std::pair<std::string, std::string> ReadKeyValue(const std::string& line)
+  std::pair<std::string, std::string> read_key_value(const std::string& line)
   {
     std::string::size_type separator_index = line.find('=');
     // The equals sign is only treated as a separator when surrounded by whitespace.
@@ -1199,8 +1199,8 @@ namespace Core::IO
         FOUR_C_THROW("Line '%s' with just one word in parameter section", line.c_str());
     }
 
-    std::string key = Core::UTILS::Trim(line.substr(0, separator_index));
-    std::string value = Core::UTILS::Trim(line.substr(separator_index + 1));
+    std::string key = Core::UTILS::trim(line.substr(0, separator_index));
+    std::string value = Core::UTILS::trim(line.substr(separator_index + 1));
 
     if (key.empty()) FOUR_C_THROW("Cannot get key from line '%s'", line.c_str());
     if (value.empty()) FOUR_C_THROW("Cannot get value from line '%s'", line.c_str());

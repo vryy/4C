@@ -33,8 +33,8 @@ namespace Core::LinAlg
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
-  void SymmetricEigenValues(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
-      const bool postproc = false);
+  void symmetric_eigen_values(Core::LinAlg::SerialDenseMatrix& A,
+      Core::LinAlg::SerialDenseVector& L, const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
@@ -46,8 +46,8 @@ namespace Core::LinAlg
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
-  void SymmetricEigenProblem(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
-      const bool postproc = false);
+  void symmetric_eigen_problem(Core::LinAlg::SerialDenseMatrix& A,
+      Core::LinAlg::SerialDenseVector& L, const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues and, optionally, eigenvectors
@@ -60,7 +60,7 @@ namespace Core::LinAlg
    routine for postprocessing only (in that
    case FOUR_C_THROW is replaced with a warning)
    */
-  void SymmetricEigen(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
+  void symmetric_eigen(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L,
       bool eval_eigenvectors, bool postproc = false);
 
   /*!
@@ -72,7 +72,7 @@ namespace Core::LinAlg
    \param B (in):    B Matrix
 
    */
-  double GeneralizedEigen(
+  double generalized_eigen(
       Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix::Base& B);
 
   /*!
@@ -85,7 +85,7 @@ namespace Core::LinAlg
    eigenvalues \param V (out):       M-by-M orthonormal matrix of eigenvectors
    */
   template <unsigned int dim>
-  void SYEV(Core::LinAlg::Matrix<dim, dim>& A, Core::LinAlg::Matrix<dim, dim>& S,
+  void syev(Core::LinAlg::Matrix<dim, dim>& A, Core::LinAlg::Matrix<dim, dim>& S,
       Core::LinAlg::Matrix<dim, dim>& V)
   {
     const char jobz = 'V';                  // Compute eigenvalues and eigenvectors.

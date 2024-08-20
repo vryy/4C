@@ -73,7 +73,7 @@ void Discret::ELEMENTS::Ale3Type::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Ale3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ void Discret::ELEMENTS::Ale3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -207,7 +207,7 @@ void Discret::ELEMENTS::Ale3::print(std::ostream& os) const
 /*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale3::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<Ale3Surface, Ale3>(
+  return Core::Communication::element_boundary_factory<Ale3Surface, Ale3>(
       Core::Communication::buildSurfaces, *this);
 }
 

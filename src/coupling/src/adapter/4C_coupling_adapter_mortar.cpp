@@ -89,11 +89,11 @@ void Coupling::Adapter::CouplingMortar::setup(
     }
 
     // Fill maps based on condition for master side (masterdis == slavedis)
-    Core::Conditions::FindConditionObjects(
+    Core::Conditions::find_condition_objects(
         *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
     // Fill maps based on condition for slave side (masterdis == slavedis)
-    Core::Conditions::FindConditionObjects(
+    Core::Conditions::find_condition_objects(
         *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
@@ -102,11 +102,11 @@ void Coupling::Adapter::CouplingMortar::setup(
   else
   {
     // Fill maps based on condition for master side (masterdis != slavedis)
-    Core::Conditions::FindConditionObjects(
+    Core::Conditions::find_condition_objects(
         *masterdis, masternodes, mastergnodes, masterelements, couplingcond);
 
     // Fill maps based on condition for slave side (masterdis != slavedis)
-    Core::Conditions::FindConditionObjects(
+    Core::Conditions::find_condition_objects(
         *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
 
@@ -133,8 +133,8 @@ void Coupling::Adapter::CouplingMortar::setup(
 
   // interface displacement (=0) has to be merged from slave and master discretization
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      Core::LinAlg::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> dispn = Core::LinAlg::CreateVector(*dofrowmap, true);
+      Core::LinAlg::merge_map(masterdofrowmap_, slavedofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> dispn = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // set displacement state in mortar interface
   interface_->set_state(Mortar::state_new_displacement, *dispn);
@@ -159,7 +159,7 @@ void Coupling::Adapter::CouplingMortar::setup(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
+  if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
       Inpar::Mortar::relocation_initial)
   {
     // Warning:
@@ -213,7 +213,7 @@ void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
   p.set("total time", 0.0);
   p.set<const Core::UTILS::FunctionManager*>("function_manager", &function_manager);
   Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps = Teuchos::rcp(new Core::LinAlg::MapExtractor());
-  Teuchos::RCP<Epetra_Vector> temp = Core::LinAlg::CreateVector(*(slavedis->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> temp = Core::LinAlg::create_vector(*(slavedis->dof_row_map()), true);
   slavedis->evaluate_dirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
 
   // loop over all slave row nodes of the interface
@@ -515,8 +515,8 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   // (0) check constraints in reference configuration
   //**********************************************************************
   // build global vectors of slave and master coordinates
-  Teuchos::RCP<Epetra_Vector> xs = Core::LinAlg::CreateVector(*slavedofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> xm = Core::LinAlg::CreateVector(*masterdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> xs = Core::LinAlg::create_vector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> xm = Core::LinAlg::create_vector(*masterdofrowmap, true);
 
   // loop over all slave row nodes
   for (int j = 0; j < interface_->slave_row_nodes()->NumMyElements(); ++j)
@@ -555,7 +555,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
     }
 
     // do assembly
-    Core::LinAlg::Assemble(*xs, val, lm, lmowner);
+    Core::LinAlg::assemble(*xs, val, lm, lmowner);
   }
 
   // loop over all master row nodes
@@ -594,7 +594,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
     }
 
     // do assembly
-    Core::LinAlg::Assemble(*xm, val, lm, lmowner);
+    Core::LinAlg::assemble(*xm, val, lm, lmowner);
   }
 
   // compute g-vector at global level
@@ -602,7 +602,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   D_->multiply(false, *xs, *Dxs);
   Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   M_->multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Epetra_Vector> gold = Core::LinAlg::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> gold = Core::LinAlg::create_vector(*slavedofrowmap, true);
   gold->Update(1.0, *Dxs, 1.0);
   gold->Update(-1.0, *Mxm, 1.0);
   double gnorm = 0.0;
@@ -663,7 +663,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Epetra_Vector> Xmaster = Core::LinAlg::CreateVector(*masterdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> Xmaster = Core::LinAlg::create_vector(*masterdofrowmap, true);
 
   // loop over all master row nodes on the current interface
   for (int j = 0; j < interface_->master_row_nodes()->NumMyElements(); ++j)
@@ -692,7 +692,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // relocate modified slave positions
-  Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::create_vector(*slavedofrowmap, true);
 
   // this is trivial for dual Lagrange multipliers
   P_->multiply(false, *Xmaster, *Xslavemod);
@@ -702,9 +702,10 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   // (3) perform mesh relocation node by node
   //**********************************************************************
   // export Xslavemod to fully overlapping column map for current interface
-  Teuchos::RCP<Epetra_Map> fullsdofs = Core::LinAlg::AllreduceEMap(*(interface_->slave_row_dofs()));
+  Teuchos::RCP<Epetra_Map> fullsdofs =
+      Core::LinAlg::allreduce_e_map(*(interface_->slave_row_dofs()));
   Teuchos::RCP<Epetra_Map> fullsnodes =
-      Core::LinAlg::AllreduceEMap(*(interface_->slave_row_nodes()));
+      Core::LinAlg::allreduce_e_map(*(interface_->slave_row_nodes()));
   Epetra_Vector Xslavemodcol(*fullsdofs, false);
   Core::LinAlg::export_to(*Xslavemod, Xslavemodcol);
 
@@ -818,7 +819,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
     // const_cast to force modifed X() into pnode
     // const_cast to force modifed X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
-    if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+    if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
             mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_initial)
     {
       for (int k = 0; k < dim; ++k)
@@ -838,7 +839,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
           const_cast<double&>(alenode->x()[k]) = Xnewglobal[k];
       }
     }
-    else if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+    else if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
                  mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
     {
       // modification of ALE displacements
@@ -877,8 +878,8 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   // (4) re-evaluate constraints in reference configuration
   //**********************************************************************
   // build global vectors of slave and master coordinates
-  xs = Core::LinAlg::CreateVector(*slavedofrowmap, true);
-  xm = Core::LinAlg::CreateVector(*masterdofrowmap, true);
+  xs = Core::LinAlg::create_vector(*slavedofrowmap, true);
+  xm = Core::LinAlg::create_vector(*masterdofrowmap, true);
 
   // loop over all slave row nodes
   for (int j = 0; j < interface_->slave_row_nodes()->NumMyElements(); ++j)
@@ -913,7 +914,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
     }
 
     // do assembly
-    Core::LinAlg::Assemble(*xs, val, lm, lmowner);
+    Core::LinAlg::assemble(*xs, val, lm, lmowner);
   }
 
   // loop over all master row nodes
@@ -949,7 +950,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
     }
 
     // do assembly
-    Core::LinAlg::Assemble(*xm, val, lm, lmowner);
+    Core::LinAlg::assemble(*xm, val, lm, lmowner);
   }
 
   // compute g-vector at global level
@@ -957,7 +958,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   D_->multiply(false, *xs, *Dxs);
   Mxm = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   M_->multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Epetra_Vector> gnew = Core::LinAlg::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> gnew = Core::LinAlg::create_vector(*slavedofrowmap, true);
   gnew->Update(1.0, *Dxs, 1.0);
   gnew->Update(-1.0, *Mxm, 1.0);
   gnew->Norm2(&gnorm);
@@ -1001,7 +1002,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   check_setup();
 
   // check
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(
+  if (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(
           interface()->interface_params(), "LM_SHAPEFCN") != Inpar::Mortar::shape_dual)
     FOUR_C_THROW("Creation of P operator only for dual shape functions!");
 
@@ -1010,7 +1011,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   /********************************************************************/
   D_->complete();
   Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*slavedofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*slavedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -1039,7 +1040,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   Dinv_->complete();
 
   // do the multiplication P = inv(D) * M
-  P_ = Core::LinAlg::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
+  P_ = Core::LinAlg::ml_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
   P_->complete(*masterdofrowmap_, *slavedofrowmap_);
@@ -1081,7 +1082,7 @@ void Coupling::Adapter::CouplingMortar::evaluate(
   idispsl->ReplaceMap(*slavedofrowmap_);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      Core::LinAlg::MergeMap(*pmasterdofrowmap_, *pslavedofrowmap_, false);
+      Core::LinAlg::merge_map(*pmasterdofrowmap_, *pslavedofrowmap_, false);
   Teuchos::RCP<Epetra_Import> master_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *pmasterdofrowmap_));
   Teuchos::RCP<Epetra_Import> slaveImporter =
@@ -1089,7 +1090,7 @@ void Coupling::Adapter::CouplingMortar::evaluate(
 
   // Import master and slave displacements into a single vector
   int err = 0;
-  Teuchos::RCP<Epetra_Vector> idisp_master_slave = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> idisp_master_slave = Core::LinAlg::create_vector(*dofrowmap, true);
   err = idisp_master_slave->Import(*idispma, *master_importer, Add);
   if (err != 0)
     FOUR_C_THROW("Import failed with error code %d. See Epetra source code for details.", err);
@@ -1225,7 +1226,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
 
   // extract diagonal of invd into diag
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*slavedofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*slavedofrowmap_, true);
   Dinv_->extract_diagonal_copy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -1236,7 +1237,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   diag->Reciprocal(*diag);
   Dinv_->replace_diagonal_values(*diag);
   Dinv_->complete(D_->range_map(), D_->domain_map());
-  P_ = MLMultiply(*Dinv_, *M_, false, false, true);
+  P_ = ml_multiply(*Dinv_, *M_, false, false, true);
 
   // mesh relocation if required:
   // For curved internal or fsi coupling interfaces, a mesh relocation is critical,
@@ -1245,7 +1246,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+  if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
           mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
     mesh_relocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 
@@ -1477,8 +1478,8 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_mas
 void Coupling::Adapter::CouplingMortar::mortar_condensation(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& rhs) const
 {
-  Mortar::UTILS::MortarMatrixCondensation(k, P_, P_);
-  Mortar::UTILS::MortarRhsCondensation(rhs, P_);
+  Mortar::UTILS::mortar_matrix_condensation(k, P_, P_);
+  Mortar::UTILS::mortar_rhs_condensation(rhs, P_);
 
   return;
 }
@@ -1489,7 +1490,7 @@ void Coupling::Adapter::CouplingMortar::mortar_condensation(
 void Coupling::Adapter::CouplingMortar::mortar_recover(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& inc) const
 {
-  Mortar::UTILS::MortarRecover(inc, P_);
+  Mortar::UTILS::mortar_recover(inc, P_);
   return;
 }
 

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmodel,
+void Discret::ELEMENTS::calculate_butler_volmer_elch_linearizations(const int kineticmodel,
     const double j0, const double frt, const double epdderiv, const double alphaa,
     const double alphac, const double resistance, const double expterm1, const double expterm2,
     const double kr, const double faraday, const double emasterphiint, const double eslavephiint,
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::CalculateButlerVolmerTempLinearizations(const double alphaa,
+void Discret::ELEMENTS::calculate_butler_volmer_temp_linearizations(const double alphaa,
     const double alphac, const double depddT, const double eta, const double etempint,
     const double faraday, const double frt, const double gasconstant, const double j0,
     double& dj_dT_slave)
@@ -150,13 +150,13 @@ void Discret::ELEMENTS::CalculateButlerVolmerTempLinearizations(const double alp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::CalculateButlerVolmerDispLinearizations(const int kineticmodel,
+void Discret::ELEMENTS::calculate_butler_volmer_disp_linearizations(const int kineticmodel,
     const double alphaa, const double alphac, const double frt, const double j0, const double eta,
     const double depd_ddetF, double& dj_dsqrtdetg, double& dj_ddetF)
 {
   double dj_depd;
 
-  if (IsButlerVolmerLinearized(kineticmodel))
+  if (is_butler_volmer_linearized(kineticmodel))
   {
     dj_dsqrtdetg = j0 * frt * eta;
     dj_depd = -j0 * frt;
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::CalculateButlerVolmerDispLinearizations(const int kineti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const double kr,
+double Discret::ELEMENTS::calculate_butler_volmer_exchange_mass_flux_density(const double kr,
     const double alpha_a, const double alpha_c, const double c_max, const double c_ed,
     const double c_el, const int kinetic_model,
     const Core::Conditions::ConditionType& s2i_condition_type)
@@ -185,7 +185,7 @@ double Discret::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const dou
   FOUR_C_ASSERT(s2i_condition_type == Core::Conditions::S2IKinetics,
       "This method is called with the wrong condition type. Check the implementation!");
 
-  if (IsReducedButlerVolmer(kinetic_model))
+  if (is_reduced_butler_volmer(kinetic_model))
   {
     return kr;
   }
@@ -197,7 +197,7 @@ double Discret::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const dou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::CalculateModifiedButlerVolmerMassFluxDensity(const double j0,
+double Discret::ELEMENTS::calculate_modified_butler_volmer_mass_flux_density(const double j0,
     const double alphaa, const double alphac, const double frt, const double pot_ed,
     const double pot_el, const double epd, const double resistance, const double itemax,
     const double convtol, const double faraday)
@@ -254,7 +254,7 @@ double Discret::ELEMENTS::CalculateModifiedButlerVolmerMassFluxDensity(const dou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::IsButlerVolmerLinearized(const int kineticmodel)
+bool Discret::ELEMENTS::is_butler_volmer_linearized(const int kineticmodel)
 {
   return (kineticmodel == Inpar::S2I::kinetics_butlervolmerlinearized or
           kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedlinearized);
@@ -262,7 +262,7 @@ bool Discret::ELEMENTS::IsButlerVolmerLinearized(const int kineticmodel)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::IsReducedButlerVolmer(const int kineticmodel)
+bool Discret::ELEMENTS::is_reduced_butler_volmer(const int kineticmodel)
 {
   return (kineticmodel == Inpar::S2I::kinetics_butlervolmerreduced or
           kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedlinearized or

@@ -54,7 +54,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshsliding::setup(
 {
   Teuchos::RCP<Core::LinAlg::SparseOperator> mat = Meshtying::setup(coupleddof, dispnp);
 
-  lm_ = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  lm_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   return mat;
 }
@@ -188,7 +188,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute modification for block mn       (+ P^T * A_sn)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Amn_mod =
-      MLMultiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
+      ml_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
 
   // Add modification block to mn
   sysmatnew->matrix(1, 0).un_complete();  // sonst kann ich auf den Block nichts neues draufaddieren
@@ -196,7 +196,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute modification for block mm       (+ P^T * A_sm)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Amm_mod =
-      MLMultiply(*P, true, sysmatnew->matrix(2, 1), false, false, false, true);
+      ml_multiply(*P, true, sysmatnew->matrix(2, 1), false, false, false, true);
 
   // Add modification block to mm
   sysmatnew->matrix(1, 1).un_complete();
@@ -204,7 +204,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute modification for block ms       (+ P^T * A_ss)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Ams_mod =
-      MLMultiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
+      ml_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
 
   // Add modification block to ms
   sysmatnew->matrix(1, 2).un_complete();
@@ -214,9 +214,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute replacement for block sn      - (T * D^(-1) * A_sn)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asn_mod_interm =
-      MLMultiply(*d_inv_, false, sysmatnew->matrix(2, 0), false, false, false, true);
+      ml_multiply(*d_inv_, false, sysmatnew->matrix(2, 0), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asn_mod =
-      MLMultiply(*T, false, *Asn_mod_interm, false, false, false, true);
+      ml_multiply(*T, false, *Asn_mod_interm, false, false, false, true);
 
   // Replace sn block with (negative) modification block
   sysmatnew->matrix(2, 0).un_complete();
@@ -224,9 +224,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute replacement for block sm      - (T * D^(-1) * A_sm)   +  N_m
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asm_mod_interm =
-      MLMultiply(*d_inv_, false, sysmatnew->matrix(2, 1), false, false, false, true);
+      ml_multiply(*d_inv_, false, sysmatnew->matrix(2, 1), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asm_mod =
-      MLMultiply(*T, false, *Asm_mod_interm, false, false, false, true);
+      ml_multiply(*T, false, *Asm_mod_interm, false, false, false, true);
 
   // Replace sm block with (negative) modification block
   sysmatnew->matrix(2, 1).un_complete();
@@ -235,9 +235,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute replacement for block ss      (- T * D^(-1) *A_ss)   +  H  +  N_s
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_mod_interm =
-      MLMultiply(*d_inv_, false, sysmatnew->matrix(2, 2), false, false, false, true);
+      ml_multiply(*d_inv_, false, sysmatnew->matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_mod =
-      MLMultiply(*T, false, *Ass_mod_interm, false, false, false, true);
+      ml_multiply(*T, false, *Ass_mod_interm, false, false, false, true);
 
   // Replace ss block with (negative) modification block
   sysmatnew->matrix(2, 2).un_complete();
@@ -332,7 +332,7 @@ void ALE::Meshsliding::split_mortar_matrix(Teuchos::RCP<Core::LinAlg::SparseMatr
   Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp_const_cast<Epetra_Map>(dofrowmapconst);
 
   // split matrix operation
-  bool suc = Core::LinAlg::SplitMatrix2x2(MortarMatrix, dofrowmap, dummy, gmdofrowmap, gsdofrowmap,
+  bool suc = Core::LinAlg::split_matrix2x2(MortarMatrix, dofrowmap, dummy, gmdofrowmap, gsdofrowmap,
       MasterMatrix, SlaveMatrix, temp21, temp22);
 
   if (!suc) FOUR_C_THROW("\nCould not split Mortar Matriz!\n");

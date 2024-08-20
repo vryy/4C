@@ -43,7 +43,7 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<Key>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcPresBased<distype>>(
@@ -142,7 +142,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
 
   // extract local values of pressure field from global state vector
   Core::LinAlg::Matrix<my::iel_, 1> mypress(true);
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = calculate_ele_length(ele, discretization, la);
@@ -188,7 +188,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     const double fac = prefac * wgt;
 
     // shape functions and their derivatives
-    Core::FE::shape_function_1D_deriv1(my::deriv_, xi, distype);
+    Core::FE::shape_function_1d_deriv1(my::deriv_, xi, distype);
 
     for (int inode = 0; inode < numnode; inode++)
       for (int jnode = 0; jnode < numnode; jnode++)
@@ -219,7 +219,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* e
 
   // extract local values of pressure field from global state vector
   Core::LinAlg::Matrix<my::iel_, 1> mypress(true);
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = calculate_ele_length(ele, discretization, la);
@@ -258,7 +258,7 @@ double Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
         discretization.get_state(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
-    Core::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
+    Core::FE::extract_my_values(*curr_seg_lengths, seglengths, la[1].lm_);
 
     length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
   }

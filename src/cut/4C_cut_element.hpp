@@ -403,7 +403,7 @@ namespace Cut
 
     /*!
     \brief Transform the scalar variable either from local coordinates to the global coordinates
-    or the other way specified by TransformType which can be "LocalToGlobal" or "GlobalToLocal".
+    or the other way specified by TransformType which can be "local_to_global" or "GlobalToLocal".
     If set shadow = true, then the mapping is done w.r to the parent Quad element from which this
     shadow element is derived
      */
@@ -439,14 +439,14 @@ namespace Cut
       {
         Core::LinAlg::Matrix<dim, dim> metrictensor;
         const double throw_error_if_negative_determinant(true);
-        Core::FE::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
+        Core::FE::compute_metric_tensor_for_boundary_ele<distype, probdim, double>(
             xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
       }
       else
         FOUR_C_THROW(
             "The element dimension is larger than the problem dimension! (%d > %d)", dim, probdim);
       double VarReturn = 0.0;
-      if (transformType == "LocalToGlobal")
+      if (transformType == "local_to_global")
         VarReturn = scalar * det;
       else if (transformType == "GlobalToLocal")
         VarReturn = scalar / det;
@@ -754,7 +754,8 @@ namespace Cut
     void element_center(Core::LinAlg::Matrix<probdim, 1>& midpoint)
     {
       // get the element center in the parameter coordinates (dim)
-      Core::LinAlg::Matrix<dim, 1> center_rst(Core::FE::getLocalCenterPosition<dim>(elementtype));
+      Core::LinAlg::Matrix<dim, 1> center_rst(
+          Core::FE::get_local_center_position<dim>(elementtype));
       point_at(center_rst, midpoint);
     }
 
@@ -845,7 +846,7 @@ namespace Cut
       Core::LinAlg::Matrix<probdim, 1> normalvec1;
       Core::LinAlg::Matrix<probdim, 1> normalvec2;
 
-      EvalDerivsInParameterSpace<probdim, elementtype>(
+      eval_derivs_in_parameter_space<probdim, elementtype>(
           xyze, rst, deriv1, metrictensor, xjm, &xij, &normalvec1, &normalvec2, true);
 
       // compute global first derivates

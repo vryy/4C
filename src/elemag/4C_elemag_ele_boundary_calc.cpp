@@ -80,7 +80,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagBoundaryImpl<distype>*
 Discret::ELEMENTS::ElemagBoundaryImpl<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::ElemagBoundaryImpl<distype>>(
@@ -137,7 +137,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::
    * unknowns we build K with G as summand. Hence, we can just add the terms
    * resulting from this boundary condition to K (and hence G)
    */
-  const EleMag::Action action = Core::UTILS::GetAsEnum<EleMag::Action>(params, "action");
+  const EleMag::Action action = Core::UTILS::get_as_enum<EleMag::Action>(params, "action");
   switch (action)
   {
     case EleMag::calc_abc:

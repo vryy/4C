@@ -32,7 +32,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcLoma<distype, probdim>>(
@@ -127,7 +127,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   std::vector<double> myconvel(lmvel.size());
 
   // extract local values of the global vectors
-  Core::FE::ExtractMyValues(*convel, myconvel, lmvel);
+  Core::FE::extract_my_values(*convel, myconvel, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   my::rotsymmpbc_->rotate_my_values_if_necessary(myconvel);
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr<Teuchos::RCP<Epetra_MultiVector>>(name);
   // check: field has been set and is not of type Teuchos::null
   if (f != nullptr)
-    Core::FE::ExtractMyNodeBasedValues(peleptr, eflux, *f, 3);
+    Core::FE::extract_my_node_based_values(peleptr, eflux, *f, 3);
   else
     FOUR_C_THROW("MultiVector %s has not been found!", name.c_str());
 

@@ -77,7 +77,7 @@ void NOX::Nln::LineSearch::Factory::inner_status_test_is_required(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::BuildLineSearch(
+Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::build_line_search(
     const Teuchos::RCP<::NOX::GlobalData>& gd,
     const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
     const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,

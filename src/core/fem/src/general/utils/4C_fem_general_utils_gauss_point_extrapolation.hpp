@@ -47,18 +47,18 @@ namespace Core::FE
    * @return Core::LinAlg::SerialDenseMatrix
    */
   template <Core::FE::CellType distype, class GaussIntegration>
-  Core::LinAlg::SerialDenseMatrix EvaluateGaussPointsToNodesExtrapolationMatrix(
+  Core::LinAlg::SerialDenseMatrix evaluate_gauss_points_to_nodes_extrapolation_matrix(
       const GaussIntegration& intpoints);
 
   /*!
    * @brief Evaluates the linear operator that extrapolates quantities from the Gauss points to
    * the knots for NURBS-based elements.
    *
-   * This method follows the same steps as EvaluateGaussPointsToNodesExtrapolationMatrix(...)
+   * This method follows the same steps as evaluate_gauss_points_to_nodes_extrapolation_matrix(...)
    * but is adapted for NURBS elements. The main difference is that for the evaluation of the
-   * shape functions (step 2) of EvaluateGaussPointsToNodesExtrapolationMatrix(...)), the element
-   * knot span and the weights of its control points must be obtained, which are stored
-   * in the discretization related to the element.
+   * shape functions (step 2) of evaluate_gauss_points_to_nodes_extrapolation_matrix(...)), the
+   * element knot span and the weights of its control points must be obtained, which are stored in
+   * the discretization related to the element.
    *
    * @note This method is not thread-safe and must not be called in a multi-threaded environment.
    *
@@ -69,7 +69,7 @@ namespace Core::FE
    * @return Core::LinAlg::SerialDenseMatrix
    */
   template <Core::FE::CellType distype, class GaussIntegration>
-  Core::LinAlg::SerialDenseMatrix EvaluateGaussPointsToNURBSKnotsExtrapolationMatrix(
+  Core::LinAlg::SerialDenseMatrix evaluate_gauss_points_to_nurbs_knots_extrapolation_matrix(
       const Core::FE::Discretization& dis, const Core::Elements::Element& ele,
       const GaussIntegration& intpoints);
 
@@ -87,7 +87,7 @@ namespace Core::FE
    * @param integration (in) : Container that holds the integration points
    */
   template <Core::FE::CellType distype, class GaussIntegration>
-  void ExtrapolateGPQuantityToNodesAndAssemble(const Core::Elements::Element& ele,
+  void extrapolate_gp_quantity_to_nodes_and_assemble(const Core::Elements::Element& ele,
       const Core::LinAlg::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
       bool nodal_average, const GaussIntegration& integration);
 
@@ -109,7 +109,7 @@ namespace Core::FE
    * @param integration (in) : Container that holds the integration points
    */
   template <Core::FE::CellType distype, class GaussIntegration>
-  void ExtrapolateGPQuantityToNURBSKnotsAndAssemble(const Core::FE::Discretization& dis,
+  void extrapolate_gp_quantity_to_nurbs_knots_and_assemble(const Core::FE::Discretization& dis,
       const Core::Elements::Element& ele, const LinAlg::SerialDenseMatrix& gp_data,
       Epetra_MultiVector& global_data, bool nodal_average, const GaussIntegration& integration);
 }  // namespace Core::FE

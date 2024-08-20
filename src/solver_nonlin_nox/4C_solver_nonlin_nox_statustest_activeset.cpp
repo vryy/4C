@@ -113,7 +113,7 @@ std::ostream& NOX::Nln::StatusTest::ActiveSet::print(std::ostream& stream, int i
 
   stream << indent_string;
   stream << status_;
-  stream << QuantityType2String(qtype_) << "-";
+  stream << quantity_type_to_string(qtype_) << "-";
   stream << "Active-Set-Size = " << activesetsize_;
   stream << std::endl;
   // optional output

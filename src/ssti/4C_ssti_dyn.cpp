@@ -28,8 +28,8 @@ void ssti_drt()
 
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
-  auto ssti = SSTI::BuildSSTI(Teuchos::getIntegralValue<Inpar::SSTI::SolutionScheme>(
-                                  problem->ssti_control_params(), "COUPALGO"),
+  auto ssti = SSTI::build_ssti(Teuchos::getIntegralValue<Inpar::SSTI::SolutionScheme>(
+                                   problem->ssti_control_params(), "COUPALGO"),
       comm, problem->ssti_control_params());
 
   ssti->init(comm, problem->ssti_control_params(), problem->scalar_transport_dynamic_params(),

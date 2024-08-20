@@ -162,7 +162,7 @@ namespace Core::FE
     This is the actual evaluation method.
 
     */
-    void DoInitialField(const Core::UTILS::FunctionManager& function_manager,
+    void do_initial_field(const Core::UTILS::FunctionManager& function_manager,
         const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
         Epetra_Vector& fieldvector, const std::vector<int>& locids);
 
@@ -170,7 +170,7 @@ namespace Core::FE
      *
      *  The Dbc object is build in dependency of the given discretization.
      */
-    Teuchos::RCP<const Dbc> BuildDbc(const Core::FE::Discretization* discret_ptr);
+    Teuchos::RCP<const Dbc> build_dbc(const Core::FE::Discretization* discret_ptr);
 
     /** \brief Default Dirchilet boundary condition evaluation class
      */

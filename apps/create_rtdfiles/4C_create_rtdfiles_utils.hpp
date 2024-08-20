@@ -116,7 +116,7 @@ namespace RTD
     \param[in] line: The link target to be printed
 
   */
-  void WriteLinktarget(std::ostream& stream, const std::string& line);
+  void write_linktarget(std::ostream& stream, const std::string& line);
 
   /*!
    * \brief Create a yaml file containing the cell type information about
@@ -149,7 +149,7 @@ namespace RTD
    * \param[in] indent: Optional indentation of the paragraph (default 0)
    *
    */
-  void WriteParagraph(std::ostream& stream, std::string paragraph, size_t indent = 0);
+  void write_paragraph(std::ostream& stream, std::string paragraph, size_t indent = 0);
   /*----------------------------------------------------------------------*/
   /*!
    * \brief Write a code block to the restructuredText stream
@@ -158,7 +158,7 @@ namespace RTD
    * \param[in] lines: A vector of strings that make up the code
    *
    */
-  void WriteCode(std::ostream& stream, const std::vector<std::string>& lines);
+  void write_code(std::ostream& stream, const std::vector<std::string>& lines);
   /*----------------------------------------------------------------------*/
   /*!
    * \brief Write a note block to the restructuredText stream
@@ -167,14 +167,14 @@ namespace RTD
    * \param[in] line: The link target to be printed
    *
    */
-  void WriteNote(std::ostream& stream, const std::string& paragraph);
+  void write_note(std::ostream& stream, const std::string& paragraph);
 
   /*!
    *  \brief write the information for all available cell types for readthedocs
    *
    *  \param[in] stream: stream for the restructuredText file
    */
-  void WriteCelltypeReference(std::ostream& stream);
+  void write_celltype_reference(std::ostream& stream);
 
   /*!
    *  \brief write all known material sections for readthedocs
@@ -182,7 +182,7 @@ namespace RTD
    *  \param[in] stream: stream for the restructuredText file
    *  \param[in] matlist: vector containing all material definitions
    */
-  void WriteMaterialReference(
+  void write_material_reference(
       std::ostream& stream, const std::vector<Teuchos::RCP<Mat::MaterialDefinition>>& matlist);
 
   /*!
@@ -191,7 +191,7 @@ namespace RTD
    *  \param[in] stream: stream for the restructuredText file
    *  \param[in] material: single material definition
    */
-  void WriteSingleMaterialReadTheDocs(
+  void write_single_material_read_the_docs(
       std::ostream& stream, const Teuchos::RCP<Mat::MaterialDefinition> material);
   /*!
    *  \brief write all parameters of the header sections for readthedocs
@@ -201,7 +201,7 @@ namespace RTD
    *  \param[in] parentname: name of the parent section (initially empty string)
    */
   /// print flag sections of dat file with given list
-  void WriteHeaderReference(
+  void write_header_reference(
       std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname = "");
 
   /*!
@@ -211,7 +211,7 @@ namespace RTD
    *  @param[in] stream restructuredText file for prescribed conditions.
    *  @param[in] condlist List of prescribed conditions to be written to that file
    */
-  void WriteConditionsReference(std::ostream& stream,
+  void write_conditions_reference(std::ostream& stream,
       const std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   /*!
@@ -221,7 +221,7 @@ namespace RTD
    *  @param[in] stream restructuredText file for prescribed conditions.
    *  @param[in] condition Single prescribed condition to be written to that file
    */
-  void WriteSingleConditionReadTheDocs(
+  void write_single_condition_read_the_docs(
       std::ostream& stream, const Teuchos::RCP<Core::Conditions::ConditionDefinition> condition);
 
   /*!
@@ -231,7 +231,7 @@ namespace RTD
    *  @param[in] stream restructuredText file for prescribed contact law.
    *  @param[in] coconstlaw Single contact law to be written to that file
    */
-  void WriteSingleContactLawReadTheDocs(
+  void write_single_contact_law_read_the_docs(
       std::ostream& stream, const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> contactlaw);
 
   /*!
@@ -240,7 +240,7 @@ namespace RTD
    *
    *  @param[in] stream restructuredText file for prescribed contact law.
    */
-  void WriteContactLawReference(std::ostream& stream,
+  void write_contact_law_reference(std::ostream& stream,
       const std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist);
   /*!
    *  write various other parameters including explanations (if available) to a .rst file for
@@ -248,7 +248,7 @@ namespace RTD
    *
    *  @param[in] stream restructuredText file for functions.
    */
-  void WriteVariousReference(std::ostream& stream);
+  void write_various_reference(std::ostream& stream);
 }  // namespace RTD
 
 std::ostream& operator<<(std::ostream& os, const RTD::Table& table);

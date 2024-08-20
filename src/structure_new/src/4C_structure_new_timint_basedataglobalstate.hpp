@@ -595,7 +595,7 @@ namespace Solid
           FOUR_C_THROW(
               "There is no block map for the given "
               "modeltype \"%s\".",
-              Inpar::Solid::ModelTypeString(mt).c_str());
+              Inpar::Solid::model_type_string(mt).c_str());
 
         return *(model_maps_.at(mt));
       };

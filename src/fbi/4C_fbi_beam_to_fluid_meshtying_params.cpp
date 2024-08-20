@@ -66,7 +66,7 @@ void FBI::BeamToFluidMeshtyingParams::init()
     FOUR_C_THROW("beam-to-volume-meshtying penalty parameter must not be negative!");
 
   // Gauss rule for integration along the beam (segments).
-  gauss_rule_ = Inpar::GEOMETRYPAIR::IntToGaussRule1D(
+  gauss_rule_ = Inpar::GEOMETRYPAIR::int_to_gauss_rule1_d(
       beam_to_fluid_meshtying_params_list.sublist("BEAM TO FLUID MESHTYING")
           .get<int>("GAUSS_POINTS"));
   isinit_ = true;

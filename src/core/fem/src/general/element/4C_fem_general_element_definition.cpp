@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 //! Print function
 /*----------------------------------------------------------------------*/
-void PrintElementDatHeader()
+void print_element_dat_header()
 {
   Core::Elements::ElementDefinition ed;
   ed.print_element_dat_header_to_stream(std::cout);

@@ -37,24 +37,24 @@ namespace Core::Nodes
 namespace FLD
 {
   //! return specific component of rotated global vector result
-  double GetComponentOfRotatedVectorField(const int idf,  ///< the component id 0,1 (and 2)
-      const Teuchos::RCP<const Epetra_Vector> proc0data,  ///< the data vector
+  double get_component_of_rotated_vector_field(const int idf,  ///< the component id 0,1 (and 2)
+      const Teuchos::RCP<const Epetra_Vector> proc0data,       ///< the data vector
       const int lid,         ///< local dof id (w.r.t proc0data) of component idf
       const double rotangle  ///< angle of rotation (RAD)
   );
 
   //! Is given node a slave node of rotationally symmetric periodic boundary conditions?
-  bool IsSlaveNodeOfRotSymPBC(const Core::Nodes::Node* node,  ///< the node
+  bool is_slave_node_of_rot_sym_pbc(const Core::Nodes::Node* node,  ///< the node
       double& rotangle  ///< the angle of slave plane rotation (RAD)
   );
 
   //! Access angle of rotation and convert it to RAD
-  inline double GetRotAngleFromCondition(
+  inline double get_rot_angle_from_condition(
       const Core::Conditions::Condition* cond  ///< pointer to desired periodic boundary condition
   );
 
   //! Get all relevant slave nodes of rotationally symmetric periodic bc's
-  void GetRelevantSlaveNodesOfRotSymPBC(
+  void get_relevant_slave_nodes_of_rot_sym_pbc(
       std::map<int, double>&
           pbcslavenodemap,  ///< map to be filled with node gids and rotation angles
       Teuchos::RCP<Core::FE::Discretization> dis);  ///< discretization

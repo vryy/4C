@@ -701,7 +701,7 @@ namespace Cut
           break;
         default:
           FOUR_C_THROW("Unknown sidetype! (%d | %s)\n", sidetype,
-              Core::FE::CellTypeToString(sidetype).c_str());
+              Core::FE::cell_type_to_string(sidetype).c_str());
           break;
       }
       exit(EXIT_FAILURE);
@@ -879,7 +879,7 @@ namespace Cut
     void basis_at_center(Core::LinAlg::Matrix<probdim, 1>& t1, Core::LinAlg::Matrix<probdim, 1>& t2,
         Core::LinAlg::Matrix<probdim, 1>& n)
     {
-      Core::LinAlg::Matrix<dim, 1> center_rs(Core::FE::getLocalCenterPosition<dim>(sidetype));
+      Core::LinAlg::Matrix<dim, 1> center_rs(Core::FE::get_local_center_position<dim>(sidetype));
       basis(center_rs, t1, t2, n);
     }
 

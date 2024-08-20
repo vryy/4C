@@ -233,7 +233,7 @@ namespace Discret::ELEMENTS
     const double& get_kappa_max() const { return kappa_max_; }
 
     //! \brief Get material cross-section deformation measures, i.e. strain resultants
-    inline void get_material_strain_resultants_at_all_g_ps(std::vector<double>& axial_strain_GPs,
+    inline void get_material_strain_resultants_at_all_gps(std::vector<double>& axial_strain_GPs,
         std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
         std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
         std::vector<double>& curvature_3_GPs) const override
@@ -251,7 +251,7 @@ namespace Discret::ELEMENTS
     }
 
     //! \brief Get material cross-section stress resultants
-    inline void get_material_stress_resultants_at_all_g_ps(std::vector<double>& axial_force_GPs,
+    inline void get_material_stress_resultants_at_all_gps(std::vector<double>& axial_force_GPs,
         std::vector<double>& shear_force_2_GPs, std::vector<double>& shear_force_3_GPs,
         std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
         std::vector<double>& bending_moment_3_GPs) const override

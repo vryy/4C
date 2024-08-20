@@ -24,7 +24,7 @@ namespace Discret::ELEMENTS
    * @param container
    * @return Inpar::ScaTra::ImplType
    */
-  Inpar::ScaTra::ImplType ReadScatraImplType(const Core::IO::InputParameterContainer& container);
+  Inpar::ScaTra::ImplType read_scatra_impl_type(const Core::IO::InputParameterContainer& container);
 }  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE

@@ -30,7 +30,7 @@ std::vector<double> Cut::FacetIntegration::equation_plane(
 {
   // TODO: use references for return!!!
   // Newell's method of determining equation of plane
-  std::vector<double> eqn_plane = Kernel::EqnPlaneOfPolygon(cornersLocal);
+  std::vector<double> eqn_plane = Kernel::eqn_plane_of_polygon(cornersLocal);
 
   return eqn_plane;
 }
@@ -913,7 +913,7 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
         }
         default:
           FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-              Core::FE::CellTypeToString(bcell->shape()).c_str());
+              Core::FE::cell_type_to_string(bcell->shape()).c_str());
           exit(EXIT_FAILURE);
       }
       double wei = iquad.weight() * drs * normalX;

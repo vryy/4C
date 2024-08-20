@@ -984,8 +984,8 @@ void CONTACT::Interface::visualize_gmsh(
 void CONTACT::Interface::fd_check_normal_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
@@ -1249,8 +1249,8 @@ void CONTACT::Interface::fd_check_normal_deriv()
 void CONTACT::Interface::fd_check_normal_cpp_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
@@ -1738,8 +1738,8 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
 void CONTACT::Interface::fd_check_mortar_d_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
@@ -2008,8 +2008,8 @@ void CONTACT::Interface::fd_check_mortar_d_deriv()
 void CONTACT::Interface::fd_check_mortar_m_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for M-Matrix entries
@@ -2276,8 +2276,8 @@ void CONTACT::Interface::fd_check_mortar_m_deriv()
 void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -2509,8 +2509,8 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -2743,8 +2743,8 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 void CONTACT::Interface::fd_check_alpha_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -3116,8 +3116,8 @@ void CONTACT::Interface::fd_check_alpha_deriv()
 void CONTACT::Interface::fd_check_gap_deriv_ltl()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -3498,8 +3498,8 @@ void CONTACT::Interface::fd_check_gap_deriv_ltl()
 void CONTACT::Interface::fd_check_jump_deriv_ltl()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -3879,8 +3879,8 @@ void CONTACT::Interface::fd_check_jump_deriv_ltl()
 void CONTACT::Interface::fd_check_gap_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -4249,8 +4249,8 @@ void CONTACT::Interface::fd_check_gap_deriv()
 void CONTACT::Interface::fd_check_tang_lm_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for tangential LM values
@@ -4819,8 +4819,8 @@ void CONTACT::Interface::fd_check_stick_deriv(
   std::ostringstream oss;
 
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
@@ -4889,7 +4889,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->fri_data().jump_var()[0];
         jumpteta = 0.0;
@@ -5011,7 +5011,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -5225,7 +5225,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
         }  //  loop over master nodes
         // gp-wise slip !!!!!!!
 
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -5350,13 +5350,13 @@ void CONTACT::Interface::fd_check_slip_deriv(
     Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frbound = interface_params().get<double>("FRBOUND");
   double frcoeff = interface_params().get<double>("FRCOEFF");
   double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
@@ -5436,7 +5436,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       }  //  loop over master nodes
 
       // gp-wise slip !!!!!!!
-      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         jumptxi = cnode->fri_data().jump_var()[0];
         jumpteta = 0.0;
@@ -5566,7 +5566,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -5802,7 +5802,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -6041,7 +6041,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
         }  //  loop over master nodes
 
         // gp-wise slip !!!!!!!
-        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
         {
           jumptxi = kcnode->fri_data().jump_var()[0];
           jumpteta = 0.0;
@@ -6187,8 +6187,8 @@ void CONTACT::Interface::fd_check_slip_deriv(
 void CONTACT::Interface::fd_check_penalty_trac_nor()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   std::cout << std::setprecision(14);
@@ -6473,8 +6473,8 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
 void CONTACT::Interface::fd_check_penalty_trac_fric()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
@@ -6561,9 +6561,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     Core::LinAlg::SerialDenseMatrix lmuzawatan(dim, 1);
     Core::LinAlg::multiply(lmuzawatan, tanplane, lmuzawa);
 
-    if ((Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+    if ((Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
              interface_params(), "STRATEGY") == Inpar::CONTACT::solution_penalty) ||
-        (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
              interface_params(), "STRATEGY") == Inpar::CONTACT::solution_multiscale))
     {
       for (int j = 0; j < dim; j++)
@@ -6718,9 +6718,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       Core::LinAlg::SerialDenseMatrix lmuzawatan(dim, 1);
       Core::LinAlg::multiply(lmuzawatan, tanplane, lmuzawa);
 
-      if ((Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      if ((Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
                interface_params(), "STRATEGY") == Inpar::CONTACT::solution_penalty) ||
-          (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+          (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
                interface_params(), "STRATEGY") == Inpar::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)
@@ -6936,9 +6936,9 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
       Core::LinAlg::SerialDenseMatrix lmuzawatan(dim, 1);
       Core::LinAlg::multiply(lmuzawatan, tanplane, lmuzawa);
 
-      if ((Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      if ((Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
                interface_params(), "STRATEGY") == Inpar::CONTACT::solution_penalty) ||
-          (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+          (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
                interface_params(), "STRATEGY") == Inpar::CONTACT::solution_multiscale))
       {
         for (int j = 0; j < dim; j++)

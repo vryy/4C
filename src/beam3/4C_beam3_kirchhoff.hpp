@@ -327,7 +327,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      inline void get_material_strain_resultants_at_all_g_ps(std::vector<double>& axial_strain_GPs,
+      inline void get_material_strain_resultants_at_all_gps(std::vector<double>& axial_strain_GPs,
           std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
           std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
           std::vector<double>& curvature_3_GPs) const override
@@ -346,7 +346,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      inline void get_material_stress_resultants_at_all_g_ps(std::vector<double>& axial_force_GPs,
+      inline void get_material_stress_resultants_at_all_gps(std::vector<double>& axial_force_GPs,
           std::vector<double>& shear_force_2_GPs, std::vector<double>& shear_force_3_GPs,
           std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
           std::vector<double>& bending_moment_3_GPs) const override
@@ -1124,7 +1124,7 @@ namespace Discret
       void computestrain(const Core::LinAlg::Matrix<3, 1, T>& theta,
           const Core::LinAlg::Matrix<3, 1, T>& theta_deriv, Core::LinAlg::Matrix<3, 1, T>& K) const
       {
-        Core::LinAlg::Matrix<3, 3, T> Tinv = Core::LargeRotations::Tinvmatrix(theta);
+        Core::LinAlg::Matrix<3, 3, T> Tinv = Core::LargeRotations::tinvmatrix(theta);
 
         K.clear();
         K.multiply_tn(Tinv, theta_deriv);
@@ -1145,10 +1145,10 @@ namespace Discret
         Core::LinAlg::Matrix<3, 3, T> triad_bar(true);
 
         // Compute triad_bar via SR mapping from triad_ref onto r_s
-        Core::LargeRotations::CalculateSRTriads<T>(r_s, triad_ref, triad_bar);
+        Core::LargeRotations::calculate_sr_triads<T>(r_s, triad_ref, triad_bar);
 
         // Compute triad via relative rotation of triad_bar
-        Core::LargeRotations::RotateTriad<T>(triad_bar, phi, triad);
+        Core::LargeRotations::rotate_triad<T>(triad_bar, phi, triad);
       }
 
       template <typename T1, typename T2>

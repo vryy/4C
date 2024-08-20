@@ -41,7 +41,7 @@ namespace PARTICLEALGORITHM
      * \param[out] typetovalmap map relating particle types to specific values
      */
     template <typename Valtype>
-    void ReadParamsTypesRelatedToValues(const Teuchos::ParameterList& params,
+    void read_params_types_related_to_values(const Teuchos::ParameterList& params,
         const std::string& name, std::map<PARTICLEENGINE::TypeEnum, Valtype>& typetovalmap);
 
   }  // namespace UTILS

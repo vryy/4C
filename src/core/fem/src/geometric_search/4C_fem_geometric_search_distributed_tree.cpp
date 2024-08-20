@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::GeometricSearch
 {
-  std::vector<GlobalCollisionSearchResult> GlobalCollisionSearch(
+  std::vector<GlobalCollisionSearchResult> global_collision_search(
       const std::vector<std::pair<int, BoundingVolume>>& primitives,
       const std::vector<std::pair<int, BoundingVolume>>& predicates, const Epetra_Comm& comm,
       const Core::IO::Verbositylevel verbosity)
@@ -92,7 +92,7 @@ namespace Core::GeometricSearch
     {
       Core::GeometricSearch::GeometricSearchInfo info = {static_cast<int>(primitives.size()),
           static_cast<int>(predicates.size()), static_cast<int>(indices_ranks_full.size())};
-      Core::GeometricSearch::PrintGeometricSearchDetails(comm, info);
+      Core::GeometricSearch::print_geometric_search_details(comm, info);
     }
 
     return pairs;

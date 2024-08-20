@@ -42,13 +42,13 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
   if (!arterydis_->filled()) arterydis_->fill_complete();
 
   Inpar::ArtDyn::TimeIntegrationScheme timintscheme =
-      Core::UTILS::IntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+      Core::UTILS::integral_value<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   Teuchos::RCP<Core::IO::DiscretizationWriter> artery_output = arterydis_->writer();
   artery_output->write_mesh(0, 0.0);
 
   // build art net time integrator
-  artnettimint_ = Arteries::UTILS::CreateAlgorithm(timintscheme, arterydis_,
+  artnettimint_ = Arteries::UTILS::create_algorithm(timintscheme, arterydis_,
       artdyn.get<int>("LINEAR_SOLVER"), probparams, artdyn, artery_output);
 
   // set to false
@@ -66,13 +66,13 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
   }
 
-  const bool evaluate_on_lateral_surface = Core::UTILS::IntegralValue<int>(
+  const bool evaluate_on_lateral_surface = Core::UTILS::integral_value<int>(
       poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
 
   const std::string couplingcondname = std::invoke(
       [&]()
       {
-        if (Core::UTILS::IntegralValue<
+        if (Core::UTILS::integral_value<
                 Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
                 Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params().sublist(
                     "ARTERY COUPLING"),
@@ -88,7 +88,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
       });
 
   // initialize mesh tying object
-  arttoporofluidcoupling_ = PoroMultiPhaseScaTra::UTILS::CreateAndInitArteryCouplingStrategy(
+  arttoporofluidcoupling_ = PoroMultiPhaseScaTra::UTILS::create_and_init_artery_coupling_strategy(
       arterydis_, porofluidmultitimint->discretization(), poroparams.sublist("ARTERY COUPLING"),
       couplingcondname, "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO", evaluate_on_lateral_surface);
 

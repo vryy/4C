@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  static void SendToNextProc(const int p, Core::Communication::Exporter& exporter,
+  static void send_to_next_proc(const int p, Core::Communication::Exporter& exporter,
       const std::vector<int>& mysize, const std::vector<char>& mydata,
       std::vector<int>& receivedsize, std::vector<char>& receiveddata)
   {
@@ -84,7 +84,7 @@ namespace
   }
 
   template <typename T>
-  static void UnpackReceivedBlock(const std::vector<char>& receiveddata, T& collected_data)
+  static void unpack_received_block(const std::vector<char>& receiveddata, T& collected_data)
   {
     std::vector<char>::size_type index = 0;
     while (index < receiveddata.size())
@@ -103,7 +103,7 @@ namespace
   }
 
   template <typename T>
-  static void RoundRobinLoop(
+  static void round_robin_loop(
       const Epetra_Comm& comm, Core::Communication::PackBuffer& pack_data, T& collected_data)
   {
     // collect the information over all procs
@@ -133,14 +133,14 @@ namespace
         }
         default:
         {
-          SendToNextProc(p, exporter, mysize, mydata, receivedsize, receiveddata);
+          send_to_next_proc(p, exporter, mysize, mydata, receivedsize, receiveddata);
 
           break;
         }
       }
 
       // unpack received block
-      UnpackReceivedBlock(receiveddata, collected_data);
+      unpack_received_block(receiveddata, collected_data);
 
       // the received data will be sent to the next proc
       std::swap(receivedsize, mysize);
@@ -153,13 +153,13 @@ namespace
   }
 
   template <typename T>
-  static void CollectData(const Epetra_Comm& comm, const T& my_data, T& collected_data)
+  static void collect_data(const Epetra_Comm& comm, const T& my_data, T& collected_data)
   {
     Core::Communication::PackBuffer pack_data;
 
     Core::Communication::ParObject::add_to_pack(pack_data, my_data);
 
-    RoundRobinLoop(comm, pack_data, collected_data);
+    round_robin_loop(comm, pack_data, collected_data);
   }
 
 
@@ -310,13 +310,13 @@ void Solid::ModelEvaluator::Data::fill_norm_type_maps()
         double atol = NOX::Nln::Aux::get_norm_wrms_class_variable(ostatus, *qiter, "ATOL");
         if (atol < 0.0)
           FOUR_C_THROW("The absolute wrms tolerance of the quantity %s is missing.",
-              NOX::Nln::StatusTest::QuantityType2String(*qiter).c_str());
+              NOX::Nln::StatusTest::quantity_type_to_string(*qiter).c_str());
         else
           atol_wrms_[*qiter] = atol;
         double rtol = NOX::Nln::Aux::get_norm_wrms_class_variable(ostatus, *qiter, "RTOL");
         if (rtol < 0.0)
           FOUR_C_THROW("The relative wrms tolerance of the quantity %s is missing.",
-              NOX::Nln::StatusTest::QuantityType2String(*qiter).c_str());
+              NOX::Nln::StatusTest::quantity_type_to_string(*qiter).c_str());
         else
           rtol_wrms_[*qiter] = rtol;
       }
@@ -344,7 +344,7 @@ void Solid::ModelEvaluator::Data::collect_norm_types_over_all_procs(
 
   const quantity_norm_type_map mynormtypes(normtypes);
   quantity_norm_type_map& gnormtypes = const_cast<quantity_norm_type_map&>(normtypes);
-  CollectData(*comm_ptr_, mynormtypes, gnormtypes);
+  collect_data(*comm_ptr_, mynormtypes, gnormtypes);
 }
 
 /*----------------------------------------------------------------------------*
@@ -670,8 +670,8 @@ double Solid::ModelEvaluator::Data::get_energy_data(enum Solid::EnergyType type)
 {
   auto check = get_energy_data().find(type);
   if (check == get_energy_data().cend())
-    FOUR_C_THROW(
-        "Couldn't find the energy contribution: \"%s\".", Solid::EnergyType2String(type).c_str());
+    FOUR_C_THROW("Couldn't find the energy contribution: \"%s\".",
+        Solid::energy_type_to_string(type).c_str());
 
   return check->second;
 }
@@ -687,7 +687,7 @@ double Solid::ModelEvaluator::Data::get_energy_data(const std::string type) cons
     return total_energy;
   }
   else
-    return get_energy_data(Solid::String2EnergyType(type));
+    return get_energy_data(Solid::string_to_energy_type(type));
 }
 
 /*----------------------------------------------------------------------------*

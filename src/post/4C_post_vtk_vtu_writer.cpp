@@ -141,7 +141,7 @@ void PostVtuWriter::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LibB64::writeCompressedBlock(coordinates, currentout_);
+    LibB64::write_compressed_block(coordinates, currentout_);
   }
   else
   {
@@ -182,7 +182,7 @@ void PostVtuWriter::write_geo()
     connectivity.reserve(outNodeId);
     for (int i = 0; i < outNodeId; ++i) connectivity.push_back(i);
     if (write_binary_output_)
-      LibB64::writeCompressedBlock(connectivity, currentout_);
+      LibB64::write_compressed_block(connectivity, currentout_);
     else
     {
       for (std::vector<int32_t>::const_iterator it = connectivity.begin(); it != connectivity.end();
@@ -197,7 +197,7 @@ void PostVtuWriter::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LibB64::writeCompressedBlock(celloffset, currentout_);
+    LibB64::write_compressed_block(celloffset, currentout_);
   }
   else
   {
@@ -213,7 +213,7 @@ void PostVtuWriter::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LibB64::writeCompressedBlock(celltypes, currentout_);
+    LibB64::write_compressed_block(celltypes, currentout_);
   }
   else
   {
@@ -269,10 +269,10 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
-    Teuchos::RCP<Epetra_Vector> dofvec = Core::LinAlg::CreateVector(*rowmap, false);
+    Teuchos::RCP<Epetra_Vector> dofvec = Core::LinAlg::create_vector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
-    ghostedData = Core::LinAlg::CreateVector(*colmap, true);
+    ghostedData = Core::LinAlg::create_vector(*colmap, true);
     Core::LinAlg::export_to(*dofvec, *ghostedData);
   }
 
@@ -623,7 +623,7 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
     Core::LinAlg::Matrix<DIM, NUMNODES> deriv;  // dummy
     Core::LinAlg::Matrix<3, 1> gpa;
 
-    gpa = Core::FE::GetNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = Core::FE::get_node_coordinates(numbering[n], mapped_dis_type);
 
     Core::FE::Nurbs::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
@@ -790,7 +790,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
     Core::LinAlg::Matrix<DIM, NUMNODES> deriv;
     Core::LinAlg::Matrix<3, 1> gpa;
 
-    gpa = Core::FE::GetNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = Core::FE::get_node_coordinates(numbering[n], mapped_dis_type);
 
     Core::FE::Nurbs::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
@@ -978,7 +978,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
     Core::LinAlg::Matrix<DIM, NUMNODES> deriv;
     Core::LinAlg::Matrix<3, 1> gpa;
 
-    gpa = Core::FE::GetNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = Core::FE::get_node_coordinates(numbering[n], mapped_dis_type);
 
     Core::FE::Nurbs::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 

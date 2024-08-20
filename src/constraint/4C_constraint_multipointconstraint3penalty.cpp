@@ -57,7 +57,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
     {
       Teuchos::RCP<Epetra_Map> newcolnodemap =
-          Core::Rebalance::ComputeNodeColMap(actdisc_, discriter->second);
+          Core::Rebalance::compute_node_col_map(actdisc_, discriter->second);
       actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
       Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
           Teuchos::rcp(new Core::DOFSets::TransparentDofSet(actdisc_));
@@ -74,7 +74,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     }
     // initialize maps and importer
     errormap_ = Teuchos::rcp(new Epetra_Map(numele, nummyele, 0, actdisc_->get_comm()));
-    rederrormap_ = Core::LinAlg::AllreduceEMap(*errormap_);
+    rederrormap_ = Core::LinAlg::allreduce_e_map(*errormap_);
     errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_, *errormap_));
     errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_, *errormap_));
     acterror_ = Teuchos::rcp(new Epetra_Vector(*rederrormap_));
@@ -291,7 +291,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
       if (myrank == 0)
       {
         Teuchos::RCP<Core::Elements::Element> constraintele =
-            Core::Communication::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
+            Core::Communication::factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->set_node_ids(ngid_ele.size(), ngid_ele.data());
         // add constraint element
@@ -425,7 +425,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
 
       systemmatrix1->assemble(eid, lmstride, elematrix1, lm, lmowner);
       elevector1.scale(2. * penalties_[condID] * diff);
-      Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(*systemvector1, elevector1, lm, lmowner);
     }
   }
 }  // end of evaluate_condition
@@ -483,7 +483,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
     std::vector<int> constrowner;
     constrlm.push_back(eid);
     constrowner.push_back(actele->owner());
-    Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
+    Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
 
     activecons_.find(condID)->second = true;
 

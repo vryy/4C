@@ -33,7 +33,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>*
 Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcPoro<distype>>(
@@ -157,7 +157,7 @@ int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Element
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       extract_element_and_node_values_poro(ele, params, discretization, la);
 
@@ -236,7 +236,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
       lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_];
 
     // extract local values of pressure field from global state vector
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*convel, my::eprenp_, lmpre);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*convel, my::eprenp_, lmpre);
   }
 
   // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
@@ -253,7 +253,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
     if (disp != Teuchos::null)
     {
       std::vector<double> mydisp(la[ndsdisp].lm_.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
+      Core::FE::extract_my_values(*disp, mydisp, la[ndsdisp].lm_);
 
       for (unsigned inode = 0; inode < nen_; ++inode)  // number of nodes
         eporosity_(inode, 0) = mydisp[nsd_ + (inode * (nsd_ + 1))];

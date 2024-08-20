@@ -139,7 +139,7 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
   cutter_dis_->replace_dof_set(newdofset);  // do not call this with true!!
 
   // create node and element distribution with elements and nodes ghosted on all processors
-  Core::Rebalance::GhostDiscretizationOnAllProcs(cutter_dis_);
+  Core::Rebalance::ghost_discretization_on_all_procs(cutter_dis_);
   cutter_dis_->fill_complete();
 }
 
@@ -152,8 +152,8 @@ void XFEM::MeshCoupling::gmsh_output_discretization(std::ostream& gmshfileconten
 
   // output of cutting discretization
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
-  XFEM::UTILS::PrintDiscretizationToStream(cutter_dis_, cutter_dis_->name(), true, true, true, true,
-      false, false, gmshfilecontent, &currinterfacepositions);
+  XFEM::UTILS::print_discretization_to_stream(cutter_dis_, cutter_dis_->name(), true, true, true,
+      true, false, false, gmshfilecontent, &currinterfacepositions);
 }
 
 /*--------------------------------------------------------------------------*
@@ -201,13 +201,13 @@ void XFEM::MeshCoupling::init_state_vectors()
 
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
 
-  ivelnp_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
-  iveln_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
-  ivelnm_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  ivelnp_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
+  iveln_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
+  ivelnm_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
 
-  idispnp_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
-  idispn_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
-  idispnpi_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  idispnp_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
+  idispn_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
+  idispnpi_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
 }
 
 /*--------------------------------------------------------------------------*
@@ -273,7 +273,7 @@ Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::get_cutter_disp_col()
 {
   // export cut-discretization mesh displacements
   Teuchos::RCP<Epetra_Vector> idispcol =
-      Core::LinAlg::CreateVector(*cutter_dis_->dof_col_map(), true);
+      Core::LinAlg::create_vector(*cutter_dis_->dof_col_map(), true);
   Core::LinAlg::export_to(*idispnp_, *idispcol);
 
   return idispcol;
@@ -327,7 +327,7 @@ void XFEM::MeshVolCoupling::init()
     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
 
     trace_estimate_eigenvalue_update_ =
-        Core::UTILS::IntegralValue<Inpar::XFEM::TraceEstimateEigenvalueUpdate>(
+        Core::UTILS::integral_value<Inpar::XFEM::TraceEstimateEigenvalueUpdate>(
             Global::Problem::instance()->x_fluid_dynamic_params().sublist("STABILIZATION"),
             "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
   }
@@ -417,8 +417,8 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
 
   // create the final column maps
   {
-    Core::LinAlg::GatherAll(full_ele_nodes_col, cond_dis_->get_comm());
-    Core::LinAlg::GatherAll(full_eles_col, cond_dis_->get_comm());
+    Core::LinAlg::gather_all(full_ele_nodes_col, cond_dis_->get_comm());
+    Core::LinAlg::gather_all(full_eles_col, cond_dis_->get_comm());
 
     std::vector<int> full_nodes(full_ele_nodes_col.begin(), full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(), full_eles_col.end());
@@ -1560,7 +1560,7 @@ void XFEM::MeshCouplingNavierSlip::update_configuration_map_gp(
   {
     double stabnit = 0.0;
     double stabadj = 0.0;
-    XFEM::UTILS::GetNavierSlipStabilizationParameters(
+    XFEM::UTILS::get_navier_slip_stabilization_parameters(
         visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
     configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
     configuration_map_[Inpar::XFEM::F_Con_t_Row] =
@@ -1612,8 +1612,8 @@ void XFEM::MeshCouplingFSI::init_state_vectors()
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->dof_col_map();
 
-  itrueresidual_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
-  iforcecol_ = Core::LinAlg::CreateVector(*cutterdofcolmap, true);
+  itrueresidual_ = Core::LinAlg::create_vector(*cutterdofrowmap, true);
+  iforcecol_ = Core::LinAlg::create_vector(*cutterdofcolmap, true);
 }
 
 
@@ -1706,7 +1706,7 @@ void XFEM::MeshCouplingFSI::gmsh_output(const std::string& filename_base, const 
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
-  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
       filename_base_fsi.str(), cutter_dis_->writer()->output()->file_name(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
@@ -1717,7 +1717,7 @@ void XFEM::MeshCouplingFSI::gmsh_output(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "iforce \" {" << std::endl;
     // draw vector field 'force' for every node
-    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
         cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1727,7 +1727,7 @@ void XFEM::MeshCouplingFSI::gmsh_output(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "idispnp \" {" << std::endl;
     // draw vector field 'idispnp' for every node
-    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
         cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1737,7 +1737,7 @@ void XFEM::MeshCouplingFSI::gmsh_output(const std::string& filename_base, const 
     gmshfilecontent << "View \" "
                     << "ivelnp \" {" << std::endl;
     // draw vector field 'ivelnp' for every node
-    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
         cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1757,12 +1757,12 @@ void XFEM::MeshCouplingFSI::gmsh_output_discretization(std::ostream& gmshfilecon
 
   // write dis with zero solid displacements here!
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
-      Core::LinAlg::CreateVector(*cond_dis_->dof_row_map(), true);
+      Core::LinAlg::create_vector(*cond_dis_->dof_row_map(), true);
 
   XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
 
-  XFEM::UTILS::PrintDiscretizationToStream(cond_dis_, cond_dis_->name(), true, false, true, false,
-      false, false, gmshfilecontent, &currsolidpositions);
+  XFEM::UTILS::print_discretization_to_stream(cond_dis_, cond_dis_->name(), true, false, true,
+      false, false, false, gmshfilecontent, &currsolidpositions);
 }
 
 void XFEM::MeshCouplingFSI::output(const int step, const double time, const bool write_restart_data)
@@ -1831,9 +1831,9 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
       if (fluid_ele->shape() == Core::FE::CellType::hex8)
       {
         Core::LinAlg::Matrix<3, 8> xyze(true);
-        Core::Geo::fillInitialPositionArray(fluid_ele, xyze);
-        double vol = XFEM::UTILS::EvalElementVolume<Core::FE::CellType::hex8>(xyze);
-        hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
+        Core::Geo::fill_initial_position_array(fluid_ele, xyze);
+        double vol = XFEM::UTILS::eval_element_volume<Core::FE::CellType::hex8>(xyze);
+        hmax = std::max(hmax, XFEM::UTILS::compute_vol_eq_diameter(vol));
       }
       else
         FOUR_C_THROW("Element type != hex8, add it here!");
@@ -1889,7 +1889,7 @@ void XFEM::MeshCouplingFSI::lift_drag(const int step, const double time) const
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Epetra_Vector> iforcecol =
-      Core::Rebalance::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
+      Core::Rebalance::get_col_version_of_row_vector(cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
   {
@@ -2144,7 +2144,7 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp(double& kappa_m,  //< fl
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double stabnit = 0.0;
       double stabadj = 0.0;
-      XFEM::UTILS::GetNavierSlipStabilizationParameters(
+      XFEM::UTILS::get_navier_slip_stabilization_parameters(
           visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
 
       configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
@@ -2254,7 +2254,7 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
   double stabnit = 0.0;
   double stabadj = 0.0;
-  XFEM::UTILS::GetNavierSlipStabilizationParameters(
+  XFEM::UTILS::get_navier_slip_stabilization_parameters(
       visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);  // sliplength is input for this
 
 #ifdef WRITE_GMSH
@@ -2435,7 +2435,7 @@ void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(Core::Elements
   Teuchos::RCP<const Epetra_Vector> dispnp = coupl_dis_->get_state("dispnp");
   if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-  Core::FE::ExtractMyValues(*dispnp, eledisp, la[0].lm_);
+  Core::FE::extract_my_values(*dispnp, eledisp, la[0].lm_);
   (*ele_to_max_eigenvalue_)[ele->id()] =
       solidfaceele->estimate_nitsche_trace_max_eigenvalue_combined(
           eledisp);  // this is (E/h) ...basically :-)

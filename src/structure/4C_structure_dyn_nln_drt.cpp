@@ -40,7 +40,7 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
-  switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     case Inpar::Solid::dyna_statics:
     case Inpar::Solid::dyna_genalpha:
@@ -88,7 +88,7 @@ void dyn_nlnstructural_drt()
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
   const enum Inpar::Solid::IntegrationStrategy intstrat =
-      Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+      Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
   switch (intstrat)
   {
     // -------------------------------------------------------------------
@@ -117,9 +117,9 @@ void dyn_nlnstructural_drt()
     }
   }
 
-  const bool write_initial_state = Core::UTILS::IntegralValue<int>(
+  const bool write_initial_state = Core::UTILS::integral_value<int>(
       Global::Problem::instance()->io_params(), "WRITE_INITIAL_STATE");
-  const bool write_final_state = Core::UTILS::IntegralValue<int>(
+  const bool write_final_state = Core::UTILS::integral_value<int>(
       Global::Problem::instance()->io_params(), "WRITE_FINAL_STATE");
 
   // do restart
@@ -158,7 +158,7 @@ void dyn_nlnstructural_drt()
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      Core::Communication::toTeuchosComm<int>(structdis->get_comm());
+      Core::Communication::to_teuchos_comm<int>(structdis->get_comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
 
   // time to go home...

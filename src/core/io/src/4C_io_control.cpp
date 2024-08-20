@@ -301,7 +301,7 @@ void Core::IO::OutputControl::write_header(
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
                  << "spatial_approximation = \""
-                 << Core::FE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
+                 << Core::FE::shape_function_type_to_string(spatial_approx) << "\"\n"
                  << "ndim = " << ndim_ << "\n"
                  << "\n";
 

@@ -128,7 +128,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
         throw_error("compute", "sum(c) equals zero");
       }
 
-      Core::LinAlg::Update(1 / sc, c, 0.0, gamma);
+      Core::LinAlg::update(1 / sc, c, 0.0, gamma);
       res = r(k, k) * fabs(gamma(k));
 
       if (utils_->isPrintType(::NOX::Utils::InnerIteration))

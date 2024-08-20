@@ -20,7 +20,7 @@ bool Discret::ELEMENTS::SoSh8::read_element(const std::string& eletype, const st
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   solid_material()->setup(NUMGPT_SOH8, container);
 

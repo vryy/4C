@@ -79,7 +79,7 @@ void CONTACT::NitscheStrategy::do_read_restart(Core::IO::DiscretizationReader& r
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = Core::UTILS::IntegralValue<int>(params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = Core::UTILS::integral_value<int>(params(), "RESTART_WITH_CONTACT");
   if (restartwithcontact) FOUR_C_THROW("not supported for nitsche contact");
 
   // set restart displacement state
@@ -99,7 +99,7 @@ void CONTACT::NitscheStrategy::do_read_restart(Core::IO::DiscretizationReader& r
     store_to_old(Mortar::StrategyBase::n_old);
   }
 
-  if (Core::UTILS::IntegralValue<int>(params(), "NITSCHE_PENALTY_ADAPTIVE"))
+  if (Core::UTILS::integral_value<int>(params(), "NITSCHE_PENALTY_ADAPTIVE"))
     update_trace_ineq_etimates();
 }
 
@@ -170,7 +170,7 @@ void CONTACT::NitscheStrategy::set_parent_state(const enum Mortar::StateType& st
         ele->parent_element()->location_vector(dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
-        Core::FE::ExtractMyValues(*global, myval, lm);
+        Core::FE::extract_my_values(*global, myval, lm);
 
         switch (statename)
         {
@@ -287,7 +287,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::get_rhs_block_ptr(
 {
   if (!curr_state_eval_)
     FOUR_C_THROW("you didn't evaluate this contact state for %s first",
-        CONTACT::VecBlockTypeToStr(bt).c_str());
+        CONTACT::vec_block_type_to_str(bt).c_str());
 
   switch (bt)
   {
@@ -390,7 +390,7 @@ void CONTACT::NitscheStrategy::setup(bool redistributed, bool init)
 void CONTACT::NitscheStrategy::update_trace_ineq_etimates()
 {
   auto NitWgt =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
+      Core::UTILS::integral_value<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
   for (const auto& interface : interface_)
   {
     for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
@@ -406,7 +406,7 @@ void CONTACT::NitscheStrategy::update_trace_ineq_etimates()
 
 void CONTACT::NitscheStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
 {
-  if (Core::UTILS::IntegralValue<int>(params(), "NITSCHE_PENALTY_ADAPTIVE"))
+  if (Core::UTILS::integral_value<int>(params(), "NITSCHE_PENALTY_ADAPTIVE"))
     update_trace_ineq_etimates();
   if (friction_)
   {

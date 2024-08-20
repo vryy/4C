@@ -21,7 +21,7 @@ namespace
     int maxElement = 0;
     double meanOfAllElements = 0;
 
-    Mortar::InterfaceUtils::ComputeParallelDistributionStatistics(
+    Mortar::InterfaceUtils::compute_parallel_distribution_statistics(
         quantityAcrossAllRanks, minElement, maxElement, meanOfAllElements);
 
     EXPECT_EQ(minElement, 1);

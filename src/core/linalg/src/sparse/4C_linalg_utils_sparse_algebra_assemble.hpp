@@ -48,7 +48,7 @@ namespace Core::LinAlg
    \param lmrowowner (in) : vector with owner procs of row gids
    \param lmcol (in)      : vector with column gids
    */
-  void Assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
+  void assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
 
@@ -65,7 +65,7 @@ namespace Core::LinAlg
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
+  void assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*!
@@ -82,7 +82,7 @@ namespace Core::LinAlg
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_MultiVector& V, const int n, const Core::LinAlg::SerialDenseVector& Vele,
+  void assemble(Epetra_MultiVector& V, const int n, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*! \brief Assemble a source Epetra_Vector into a target Epetra_Vector
@@ -102,7 +102,7 @@ namespace Core::LinAlg
    *  \param source        (in) : source vector
    *
    *  \author hiermeier \date 03/17 */
-  void AssembleMyVector(double scalar_target, Epetra_Vector& target, double scalar_source,
+  void assemble_my_vector(double scalar_target, Epetra_Vector& target, double scalar_source,
       const Epetra_Vector& source);
 
   /*!
@@ -263,7 +263,7 @@ namespace Core::LinAlg
    \author bborn
    \date 10/08
    */
-  Teuchos::RCP<Core::LinAlg::MapExtractor> ConvertDirichletToggleVectorToMaps(
+  Teuchos::RCP<Core::LinAlg::MapExtractor> convert_dirichlet_toggle_vector_to_maps(
       const Teuchos::RCP<const Epetra_Vector>& dbctoggle);
 
 }  // namespace Core::LinAlg

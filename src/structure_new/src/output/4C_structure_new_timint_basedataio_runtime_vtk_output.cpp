@@ -30,10 +30,10 @@ void Solid::TimeInt::ParamsRuntimeOutput::init(
   output_interval_steps_ = IO_vtk_structure_paramslist.get<int>("INTERVAL_STEPS");
   output_step_offset_ = IO_vtk_structure_paramslist.get<int>("STEP_OFFSET");
   output_every_iteration_ =
-      (bool)Core::UTILS::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
+      (bool)Core::UTILS::integral_value<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
 
   // check for output of structure discretization which is to be handled by an own writer object
-  output_structure_ = (bool)Core::UTILS::IntegralValue<int>(
+  output_structure_ = (bool)Core::UTILS::integral_value<int>(
       IO_vtk_structure_paramslist.sublist("STRUCTURE"), "OUTPUT_STRUCTURE");
 
   // create and initialize parameter container object for structure specific runtime output
@@ -48,7 +48,7 @@ void Solid::TimeInt::ParamsRuntimeOutput::init(
 
 
   // check for special beam output which is to be handled by an own writer object
-  output_beams_ = (bool)Core::UTILS::IntegralValue<int>(
+  output_beams_ = (bool)Core::UTILS::integral_value<int>(
       IO_vtk_structure_paramslist.sublist("BEAMS"), "OUTPUT_BEAMS");
 
   // create and initialize parameter container object for beam specific runtime output

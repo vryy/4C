@@ -36,7 +36,7 @@ void Solid::TimIntGenAlpha::calc_coeff()
   coeffs.alpham_ = alpham_;
   coeffs.rhoinf_ = rho_inf_;
 
-  ComputeGeneralizedAlphaParameters(coeffs);
+  compute_generalized_alpha_parameters(coeffs);
 
   beta_ = coeffs.beta_;
   gamma_ = coeffs.gamma_;
@@ -81,7 +81,7 @@ void Solid::TimIntGenAlpha::verify_coeff()
   if (midavg_ != Inpar::Solid::midavg_trlike)
     FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
   else
-    std::cout << "   midavg = " << Inpar::Solid::MidAverageString(midavg_) << '\n';
+    std::cout << "   midavg = " << Inpar::Solid::mid_average_string(midavg_) << '\n';
 }
 
 /*----------------------------------------------------------------------*/
@@ -92,7 +92,7 @@ Solid::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      midavg_(Core::UTILS::IntegralValue<Inpar::Solid::MidAverageEnum>(
+      midavg_(Core::UTILS::integral_value<Inpar::Solid::MidAverageEnum>(
           sdynparams.sublist("GENALPHA"), "GENAVG")),
       beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
       gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),
@@ -171,43 +171,43 @@ void Solid::TimIntGenAlpha::setup()
   // create state vectors
 
   // mid-displacements
-  dism_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  dism_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // mid-velocities
-  velm_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  velm_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // mid-accelerations
-  accm_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  accm_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fint_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // internal mid-force vector F_{int;n+1-alpha_f}
-  fintm_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fintm_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fintn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // external force vector F_ext at last times
-  fext_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fext_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // external mid-force vector F_{ext;n+1-alpha_f}
-  fextm_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fextm_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fextn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // set initial external force vector
   apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
-  finert_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  finert_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // inertial mid-force vector F_{int;n+1-alpha_f}
-  finertm_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  finertm_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // inertial force vector F_{int;n+1} at new time
-  finertn_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  finertn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // viscous mid-point force vector F_visc
-  fviscm_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+  fviscm_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // structural rhs for newton line search
   if (fresn_str_ != Teuchos::null)
-    fint_str_ = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    fint_str_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // create parameter list
   Teuchos::ParameterList params;
@@ -807,13 +807,13 @@ void Solid::TimIntGenAlpha::update_step_element()
     discret_->set_state("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
-    update_disp = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    update_disp = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
     Teuchos::RCP<Epetra_Vector> update_vel;
-    update_vel = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    update_vel = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
     Teuchos::RCP<Epetra_Vector> update_acc;
-    update_acc = Core::LinAlg::CreateVector(*dof_row_map_view(), true);
+    update_acc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
 
     discret_->evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);

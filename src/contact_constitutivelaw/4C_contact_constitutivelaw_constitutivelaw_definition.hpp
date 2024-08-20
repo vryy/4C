@@ -128,7 +128,7 @@ namespace CONTACT
      * \param[in] def contact constitutive law definition to add to the list
      *
      */
-    void AppendCoConstLawComponentDefinition(
+    void append_co_const_law_component_definition(
         std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& list,
         Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> def);
 

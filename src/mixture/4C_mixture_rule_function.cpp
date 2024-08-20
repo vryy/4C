@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<const Core::UTILS::FunctionOfSpaceTime*> CreateFunctionsFromFunctionIds(
+  std::vector<const Core::UTILS::FunctionOfSpaceTime*> create_functions_from_function_ids(
       const std::vector<int>& funct_ids)
   {
     std::vector<const Core::UTILS::FunctionOfSpaceTime*> functions;
@@ -71,7 +71,8 @@ void MIXTURE::FunctionMixtureRule::setup(Teuchos::ParameterList& params, const i
 {
   MixtureRule::setup(params, eleGID);
 
-  mass_fractions_functions_ = CreateFunctionsFromFunctionIds(params_->mass_fractions_funct_ids_);
+  mass_fractions_functions_ =
+      create_functions_from_function_ids(params_->mass_fractions_funct_ids_);
 }
 
 void MIXTURE::FunctionMixtureRule::unpack_mixture_rule(
@@ -79,7 +80,8 @@ void MIXTURE::FunctionMixtureRule::unpack_mixture_rule(
 {
   MIXTURE::MixtureRule::unpack_mixture_rule(position, data);
 
-  mass_fractions_functions_ = CreateFunctionsFromFunctionIds(params_->mass_fractions_funct_ids_);
+  mass_fractions_functions_ =
+      create_functions_from_function_ids(params_->mass_fractions_funct_ids_);
 }
 
 void MIXTURE::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,

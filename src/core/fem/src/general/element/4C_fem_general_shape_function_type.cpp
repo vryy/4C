@@ -24,7 +24,7 @@ namespace Core::FE
   }  // namespace
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  ShapeFunctionType StringToShapeFunctionType(std::string name)
+  ShapeFunctionType string_to_shape_function_type(std::string name)
   {
     const auto it = string2shapefuntype.find(name);
     if (it != string2shapefuntype.end()) return it->second;
@@ -36,7 +36,7 @@ namespace Core::FE
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::string ShapeFunctionTypeToString(ShapeFunctionType shapefunctiontype)
+  std::string shape_function_type_to_string(ShapeFunctionType shapefunctiontype)
   {
     const auto it = std::find_if(string2shapefuntype.begin(), string2shapefuntype.end(),
         [&](const auto& kv) { return kv.second == shapefunctiontype; });
@@ -48,7 +48,7 @@ namespace Core::FE
         "undefined.");
   }
 
-  const std::map<std::string, ShapeFunctionType>& StringToShapeFunctionTypeMap()
+  const std::map<std::string, ShapeFunctionType>& string_to_shape_function_type_map()
   {
     return string2shapefuntype;
   }

@@ -218,7 +218,7 @@ void FSI::MonolithicFluidSplit::setup_system()
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -243,7 +243,7 @@ void FSI::MonolithicFluidSplit::setup_system()
   // ---------------------------------------------------------------------------
 
   // enable debugging
-  if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+  if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
   {
     pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
   }
@@ -571,9 +571,9 @@ void FSI::MonolithicFluidSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
   // Reset quantities of previous iteration step since they still store values from the last time
   // step
-  ddginc_ = Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
-  duiinc_ = Core::LinAlg::CreateVector(*fluid_field()->interface()->other_map(), true);
-  ddialeinc_ = Core::LinAlg::CreateVector(*ale_field()->interface()->other_map(), true);
+  ddginc_ = Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
+  duiinc_ = Core::LinAlg::create_vector(*fluid_field()->interface()->other_map(), true);
+  ddialeinc_ = Core::LinAlg::create_vector(*ale_field()->interface()->other_map(), true);
   soliprev_ = Teuchos::null;
   solgprev_ = Teuchos::null;
   fgicur_ = Teuchos::null;
@@ -660,7 +660,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
   lfgi->complete(fgi.domain_map(), s->range_map());
 
   if (stcalgo == Inpar::Solid::stc_currsym)
-    lfgi = Core::LinAlg::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
+    lfgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfgi, false, true, true, true);
 
   mat.matrix(0, 1).un_complete();
   mat.matrix(0, 1).add(*lfgi, false, 1., 0.0);
@@ -681,7 +681,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
     lfig->complete(s->domain_map(), fig.range_map());
 
-    lfig = Core::LinAlg::MLMultiply(*lfig, false, *stcmat, false, false, false, true);
+    lfig = Core::LinAlg::ml_multiply(*lfig, false, *stcmat, false, false, false, true);
 
     mat.matrix(1, 0).un_complete();
     mat.matrix(1, 0).add(*lfig, false, 1., 0.0);
@@ -689,7 +689,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
   mat.matrix(1, 1).add(fii, false, 1., 0.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::CreateIdentityMatrix(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::create_identity_matrix(*fluid_field()->interface()->fsi_cond_map());
   mat.matrix(1, 1).add(*eye, false, 1., 1.0);
 
   if (stcalgo == Inpar::Solid::stc_none)
@@ -708,7 +708,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
     if (stcalgo != Inpar::Solid::stc_none)
     {
-      laig = Core::LinAlg::MLMultiply(*laig, false, *stcmat, false, false, false, true);
+      laig = Core::LinAlg::ml_multiply(*laig, false, *stcmat, false, false, false, true);
     }
 
     mat.assign(2, 0, Core::LinAlg::View, *laig);
@@ -747,7 +747,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
       if (stcalgo != Inpar::Solid::stc_none)
       {
-        lfmig = Core::LinAlg::MLMultiply(*lfmig, false, *stcmat, false, false, false, true);
+        lfmig = Core::LinAlg::ml_multiply(*lfmig, false, *stcmat, false, false, false, true);
       }
 
       mat.matrix(1, 0).add(*lfmig, false, 1.0, 1.0);
@@ -772,7 +772,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
       lfmgi->complete(aii.domain_map(), s->range_map());
 
       if (stcalgo == Inpar::Solid::stc_currsym)
-        lfmgi = Core::LinAlg::MLMultiply(*stcmat, true, *lfmgi, false, true, true, true);
+        lfmgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfmgi, false, true, true, true);
 
       mat.matrix(0, 2).un_complete();
       mat.matrix(0, 2).add(*lfmgi, false, 1., 0.0);
@@ -787,9 +787,9 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
   }
   else  // apply STC matrix on block (0,0) if STC is used
   {
-    s = Core::LinAlg::MLMultiply(*s, false, *stcmat, false, true, true, true);
+    s = Core::LinAlg::ml_multiply(*s, false, *stcmat, false, true, true, true);
     if (stcalgo == Inpar::Solid::stc_currsym)
-      s = Core::LinAlg::MLMultiply(*stcmat, true, *s, false, true, true, false);
+      s = Core::LinAlg::ml_multiply(*stcmat, true, *s, false, true, true, false);
   }
 
   // finally assign structure block
@@ -825,7 +825,7 @@ void FSI::MonolithicFluidSplit::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -876,7 +876,7 @@ void FSI::MonolithicFluidSplit::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1459,7 +1459,7 @@ void FSI::MonolithicFluidSplit::recover_lagrange_multiplier()
      */
 
     // extract inner velocity DOFs after calling AleToFluid()
-    Teuchos::RCP<Epetra_Map> velothermap = Core::LinAlg::SplitMap(
+    Teuchos::RCP<Epetra_Map> velothermap = Core::LinAlg::split_map(
         *fluid_field()->velocity_row_map(), *interface_fluid_ale_coupling().master_dof_map());
     Core::LinAlg::MapExtractor velothermapext =
         Core::LinAlg::MapExtractor(*fluid_field()->velocity_row_map(), velothermap, false);

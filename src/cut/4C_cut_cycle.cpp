@@ -200,9 +200,9 @@ void Cut::Cycle::gmsh_dump(std::ofstream& file) const
     Point* p2 = points_[(i + 1) % points_.size()];
     std::stringstream section_name;
     section_name << "Line" << i;
-    Cut::Output::GmshNewSection(file, section_name.str());
-    Cut::Output::GmshLineDump(file, p1, p2, p1->id(), p2->id(), false, nullptr);
-    Cut::Output::GmshEndSection(file, false);
+    Cut::Output::gmsh_new_section(file, section_name.str());
+    Cut::Output::gmsh_line_dump(file, p1, p2, p1->id(), p2->id(), false, nullptr);
+    Cut::Output::gmsh_end_section(file, false);
   }
 }
 

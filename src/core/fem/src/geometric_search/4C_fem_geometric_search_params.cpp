@@ -32,9 +32,9 @@ Core::GeometricSearch::GeometricSearchParams::GeometricSearchParams(
   FOUR_C_ASSERT(!std::signbit(sphere_radius_extension_factor_),
       "Sphere radius extension factor needs to be positive!");
 
-  verbosity_ = Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(io_params, "VERBOSITY");
+  verbosity_ = Core::UTILS::integral_value<Core::IO::Verbositylevel>(io_params, "VERBOSITY");
 
-  write_visualization_ = Core::UTILS::IntegralValue<int>(
+  write_visualization_ = Core::UTILS::integral_value<int>(
       geometric_search_params, "WRITE_GEOMETRIC_SEARCH_VISUALIZATION");
 }
 FOUR_C_NAMESPACE_CLOSE

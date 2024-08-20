@@ -34,7 +34,7 @@ namespace Discret
   namespace UTILS
   {
     /// add valid combustion-specific function lines
-    void AddValidCombustFunctions(Core::UTILS::FunctionManager& function_manager);
+    void add_valid_combust_functions(Core::UTILS::FunctionManager& function_manager);
 
     /// special implementation for a level set test function "Zalesak's disk"
     class ZalesaksDiskFunction : public Core::UTILS::FunctionOfSpaceTime

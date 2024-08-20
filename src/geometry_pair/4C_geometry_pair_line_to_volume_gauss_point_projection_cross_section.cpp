@@ -102,10 +102,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
     if (line_triad_interpolation != nullptr)
       line_triad_interpolation->get_interpolated_triad_at_xi(triad, eta);
     else
-      GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<Line>(eta, element_data_line, triad);
+      GEOMETRYPAIR::evaluate_triad_at_plane_curve<Line>(eta, element_data_line, triad);
 
     // Get the position on the line.
-    GEOMETRYPAIR::EvaluatePosition<Line>(eta, element_data_line, r_line);
+    GEOMETRYPAIR::evaluate_position<Line>(eta, element_data_line, r_line);
 
     for (unsigned int index_gp_circ = 0; index_gp_circ < n_integration_points_circ; index_gp_circ++)
     {

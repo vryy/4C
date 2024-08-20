@@ -16,7 +16,7 @@ namespace
 {
   using namespace FourC;
 
-  Core::LinAlg::Matrix<3, 3> GetF()
+  Core::LinAlg::Matrix<3, 3> get_f()
   {
     Core::LinAlg::Matrix<3, 3> F(true);
     F(0, 0) = 1.1;
@@ -38,7 +38,7 @@ namespace
         std::array<double, 6>{0.11605, 0.26, 0.515, 0.398, 0.72, 0.657}.data());
 
     Core::LinAlg::Matrix<6, 1> euler_almansi_strain =
-        Solid::UTILS::green_lagrange_to_euler_almansi(green_lagrange_strain, GetF());
+        Solid::UTILS::green_lagrange_to_euler_almansi(green_lagrange_strain, get_f());
 
     Core::LinAlg::Matrix<6, 1> euler_almansi_strain_ref(
         std::array<double, 6>{0.055233442151184, 0.101134166403205, 0.104112596224498,
@@ -71,7 +71,7 @@ namespace
                                        .data());
 
     Core::LinAlg::Matrix<6, 1> cauchy(true);
-    Solid::UTILS::pk2_to_cauchy(pk2, GetF(), cauchy);
+    Solid::UTILS::pk2_to_cauchy(pk2, get_f(), cauchy);
 
     Core::LinAlg::Matrix<6, 1> cauchy_ref(
         std::array<double, 6>{504.0646185061422, 317.85764952017706, 302.4131750725638,

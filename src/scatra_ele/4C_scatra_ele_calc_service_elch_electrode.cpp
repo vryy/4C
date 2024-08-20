@@ -157,9 +157,9 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
 
   // extract local nodal values from global state vectors
-  Core::FE::ExtractMyValues(*phinp, my::ephinp_, la[0].lm_);
+  Core::FE::extract_my_values(*phinp, my::ephinp_, la[0].lm_);
   static std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(2);
-  Core::FE::ExtractMyValues(*phidtnp, ephidtnp, la[0].lm_);
+  Core::FE::extract_my_values(*phidtnp, ephidtnp, la[0].lm_);
 
   // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.);
@@ -211,7 +211,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     const Teuchos::RCP<const Epetra_Vector> vel =
         discretization.get_state(ndsvel, "velocity field");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"velocity field\"!");
-    Core::FE::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
+    Core::FE::extract_my_values(*vel, my::evelnp_, la[ndsvel].lm_);
 
     // initialize additional variables for integrals related to velocity divergence
     double intdivv(0.);

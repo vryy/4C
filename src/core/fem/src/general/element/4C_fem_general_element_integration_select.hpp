@@ -472,7 +472,7 @@ namespace Discret
     //! provide parameter m_k for each distype required for certain stabilization parameter
     //! definitions
     template <Core::FE::CellType distype>
-    inline double MK()
+    inline double mk()
     {
       switch (distype)
       {

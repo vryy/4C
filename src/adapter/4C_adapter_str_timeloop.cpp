@@ -64,7 +64,7 @@ int Adapter::StructureTimeLoop::integrate()
       print_step();
     }
     // todo: remove this as soon as old structure time integration is gone
-    else if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
+    else if (Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(
                  Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") ==
              Inpar::Solid::int_old)
     {

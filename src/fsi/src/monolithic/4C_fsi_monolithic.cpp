@@ -59,7 +59,7 @@ FSI::MonolithicBase::MonolithicBase(
       isadastructure_(false),
       isadafluid_(false),
       isadasolver_(false),
-      verbosity_(Core::UTILS::IntegralValue<Inpar::FSI::Verbosity>(
+      verbosity_(Core::UTILS::integral_value<Inpar::FSI::Verbosity>(
           Global::Problem::instance()->fsi_dynamic_params(), "VERBOSITY"))
 {
   // access the discretizations
@@ -332,7 +332,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
 
   // enable debugging
-  if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
+  if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
@@ -344,7 +344,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
-  if (Core::UTILS::IntegralValue<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
+  if (Core::UTILS::integral_value<int>(fsidyn.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
     std::string fileiter2 = Global::Problem::instance()->output_control_file()->file_name();
     fileiter2.append(".fsienergy");
@@ -358,7 +358,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // time step size adaptivity
   //-------------------------------------------------------------------------
   const bool timeadapton =
-      Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::integral_value<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (timeadapton)
   {
@@ -425,7 +425,7 @@ void FSI::Monolithic::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Requ
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const bool timeadapton =
-      Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::integral_value<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   // Run time loop with constant or adaptive time step size (depending on the user's will)
   if (not timeadapton)
@@ -693,7 +693,7 @@ void FSI::Monolithic::update()
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   bool timeadapton =
-      Core::UTILS::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::integral_value<int>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (not timeadapton)
     structure_field()->update();  // constant dt
@@ -730,7 +730,7 @@ void FSI::Monolithic::non_lin_error_check()
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
 
   // get the user's will
-  const Inpar::FSI::DivContAct divcontype = Core::UTILS::IntegralValue<Inpar::FSI::DivContAct>(
+  const Inpar::FSI::DivContAct divcontype = Core::UTILS::integral_value<Inpar::FSI::DivContAct>(
       fsidyn.sublist("TIMEADAPTIVITY"), ("DIVERCONT"));
 
   if (nox_status() != ::NOX::StatusTest::Converged)
@@ -767,7 +767,7 @@ void FSI::Monolithic::non_lin_error_check()
         erroraction_ = erroraction_halve_step;
 
         const bool timeadapton =
-            Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+            Core::UTILS::integral_value<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
           FOUR_C_THROW(
@@ -790,7 +790,7 @@ void FSI::Monolithic::non_lin_error_check()
         erroraction_ = erroraction_revert_dt;
 
         const bool timeadapton =
-            Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+            Core::UTILS::integral_value<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
         if (not timeadapton)
         {
           FOUR_C_THROW(
@@ -1144,7 +1144,7 @@ void FSI::BlockMonolithic::prepare_time_step_preconditioner()
   const Teuchos::ParameterList& fsimono =
       Global::Problem::instance()->fsi_dynamic_params().sublist("MONOLITHIC SOLVER");
 
-  if (Core::UTILS::IntegralValue<int>(fsimono, "REBUILDPRECEVERYSTEP")) precondreusecount_ = 0;
+  if (Core::UTILS::integral_value<int>(fsimono, "REBUILDPRECEVERYSTEP")) precondreusecount_ = 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1207,7 +1207,7 @@ void FSI::BlockMonolithic::create_system_matrix(
   }
 
   Inpar::FSI::LinearBlockSolver linearsolverstrategy =
-      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   // create block system matrix
   switch (linearsolverstrategy)
@@ -1216,9 +1216,9 @@ void FSI::BlockMonolithic::create_system_matrix(
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
-          Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
+          Core::UTILS::integral_value<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
           pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
-          Core::UTILS::IntegralValue<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
+          Core::UTILS::integral_value<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
           verbosity_));
       break;
     }
@@ -1258,7 +1258,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   Inpar::FSI::LinearBlockSolver linearsolverstrategy =
-      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   switch (linearsolverstrategy)
   {
@@ -1281,7 +1281,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
 
       auto solver = Teuchos::rcp(new Core::LinAlg::Solver(fsisolverparams, get_comm(),
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
       const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
@@ -1294,7 +1294,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
         {
           solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams,
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           structure_field()->discretization()->compute_null_space_if_necessary(
               solver->params().sublist("Inverse1"));
@@ -1305,7 +1305,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
 
           solver->put_solver_params_to_sub_params("Inverse2", fsisolverparams,
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           fluid_field()->discretization()->compute_null_space_if_necessary(
               solver->params().sublist("Inverse2"));
@@ -1316,7 +1316,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
 
           solver->put_solver_params_to_sub_params("Inverse3", fsisolverparams,
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           const_cast<Core::FE::Discretization&>(*(ale_field()->discretization()))
               .compute_null_space_if_necessary(solver->params().sublist("Inverse3"));

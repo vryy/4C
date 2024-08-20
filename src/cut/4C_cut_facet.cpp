@@ -91,7 +91,7 @@ void Cut::Facet::register_entity(VolumeCell* cell)
     }
 
     // write details of volume cells
-    Output::GmshVolumeCellsOnly(cells_);
+    Output::gmsh_volume_cells_only(cells_);
 
     std::ostringstream ostr;
     ostr << "Too many volume cells at facet! ( num cells = " << cells_.size() << " )";
@@ -179,8 +179,8 @@ void Cut::Facet::add_hole(Facet* hole)
   double dot = 1.0;
   while (dot > 0)
   {
-    std::vector<double> eqn_plane_hole = Kernel::EqnPlaneOfPolygon(hole->points_);
-    std::vector<double> eqn_plane_facet = Kernel::EqnPlaneOfPolygon(corner_points_);
+    std::vector<double> eqn_plane_hole = Kernel::eqn_plane_of_polygon(hole->points_);
+    std::vector<double> eqn_plane_facet = Kernel::eqn_plane_of_polygon(corner_points_);
     dot = 0.0;
     for (unsigned int dim = 0; dim < 3; ++dim) dot += eqn_plane_hole[dim] * eqn_plane_facet[dim];
     if (dot >
@@ -269,7 +269,7 @@ bool Cut::Facet::is_planar(Mesh& mesh, const std::vector<Point*>& points)
     Core::LinAlg::Matrix<3, 3> B;
     B = A;
     x2 = 0;
-    double det = Core::LinAlg::gaussElimination<true, 3, double>(B, x3, x2);
+    double det = Core::LinAlg::gauss_elimination<true, 3, double>(B, x3, x2);
     if (fabs(det) < LINSOLVETOL)
     {
       FOUR_C_THROW("failed to find point position");
@@ -332,7 +332,7 @@ void Cut::Facet::create_triangulation(Mesh& mesh, const std::vector<Point*>& poi
   // This procedure seems to give better result even if the facet is concave in such cases
   // Also we assume that the levelset facet never contains a hole --> May be in future changes?
   Cut::FacetShape geoType;
-  std::vector<int> concave_ids = Kernel::CheckConvexity(corner_points_, geoType, false, false);
+  std::vector<int> concave_ids = Kernel::check_convexity(corner_points_, geoType, false, false);
   if (((geoType == Cut::Convex) or belongs_to_level_set_side()) and (not has_holes()))
   {
     std::vector<Point*> pts(points);
@@ -502,7 +502,7 @@ bool Cut::Facet::is_cut_side(Side* side)
  *----------------------------------------------------------------------------*/
 void Cut::Facet::position(Point::PointPosition pos)
 {
-  FOUR_C_ASSERT(IsCutPositionUnchanged(position_, pos),
+  FOUR_C_ASSERT(is_cut_position_unchanged(position_, pos),
       "Are you sure that you want to change the facet-position from inside to outside or vice "
       "versa?");
 
@@ -949,16 +949,16 @@ bool Cut::Facet::equals(Core::FE::CellType distype)
     switch (distype)
     {
       case Core::FE::CellType::point1:
-        return Kernel::IsValidPoint1(corner_points_);
+        return Kernel::is_valid_point1(corner_points_);
         break;
       case Core::FE::CellType::line2:
-        return Kernel::IsValidLine2(corner_points_);
+        return Kernel::is_valid_line2(corner_points_);
         break;
       case Core::FE::CellType::quad4:
-        return Kernel::IsValidQuad4(corner_points_);
+        return Kernel::is_valid_quad4(corner_points_);
         break;
       case Core::FE::CellType::tri3:
-        return Kernel::IsValidTri3(corner_points_);
+        return Kernel::is_valid_tri3(corner_points_);
         break;
       default:
         FOUR_C_THROW("unsupported distype requested");
@@ -1371,7 +1371,7 @@ bool Cut::Facet::is_convex()
   if (this->has_holes()) return false;
 
   Cut::FacetShape geoType;
-  std::vector<int> ptConcavity = Kernel::CheckConvexity(corner_points_, geoType, false, false);
+  std::vector<int> ptConcavity = Kernel::check_convexity(corner_points_, geoType, false, false);
 
   if (geoType == Cut::Convex) return true;
 

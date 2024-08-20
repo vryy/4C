@@ -51,7 +51,7 @@ void FPSI::FpsiBase::redistribute_interface()
         "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.
-    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::set_material_pointers_matching_grid(
         problem->get_dis("structure"), problem->get_dis("porofluid"));
   }
 

@@ -607,7 +607,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
 )
 {
   // If Saftey check is passed, both elements contain the same material and with the same settings
-  XFEM::UTILS::SafetyCheckMaterials(material_m, material_s);
+  XFEM::UTILS::safety_check_materials(material_m, material_s);
 
   //======================================================================================
   // call the internal faces stabilization routine for the current side/surface

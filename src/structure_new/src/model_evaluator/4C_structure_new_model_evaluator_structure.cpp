@@ -93,7 +93,7 @@ void Solid::ModelEvaluator::Structure::setup()
   {
     if (global_in_output().get_runtime_output_params() != Teuchos::null)
     {
-      visualization_params_ = Core::IO::VisualizationParametersFactory(
+      visualization_params_ = Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), global_state().get_time_n());
 
@@ -242,13 +242,13 @@ bool Solid::ModelEvaluator::Structure::evaluate_force_stiff()
 bool Solid::ModelEvaluator::Structure::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, fext_np());
-  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, fint_np());
+  Core::LinAlg::assemble_my_vector(1.0, f, -timefac_np, fext_np());
+  Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, fint_np());
 
   // add the scaled force contributions of the old time step
   // structural dofs of the right-hand-side vector at t_{n+timefac_n} (read-only)
   Teuchos::RCP<const Epetra_Vector> fstructold_ptr = global_state().get_fstructure_old();
-  Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fstructold_ptr);
+  Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fstructold_ptr);
 
   // add the visco and mass contributions
   integrator().add_visco_mass_contributions(f);
@@ -660,7 +660,7 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_structure(
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::export_to(*global_state().get_vel_n(), *veln_col);
 
-  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
       visualization_params_, global_state().get_time_n(), global_state().get_step_n());
   write_output_runtime_structure(disn_col, veln_col, output_step, output_time);
 }
@@ -681,8 +681,8 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_structure(
   Core::LinAlg::export_to(*global_state().get_vel_np(), *velnp_col);
 
   auto [output_time, output_step] =
-      Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, global_state().get_time_n(),
-          global_state().get_step_n(), eval_data().get_nln_iter());
+      Core::IO::get_time_and_time_step_index_for_output(visualization_params_,
+          global_state().get_time_n(), global_state().get_step_n(), eval_data().get_nln_iter());
   write_output_runtime_structure(disnp_col, velnp_col, output_step, output_time);
 }
 
@@ -921,7 +921,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
           [&](Core::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
-              Core::FE::ExtrapolateGaussPointQuantityToNodes(
+              Core::FE::extrapolate_gauss_point_quantity_to_nodes(
                   ele, *map_data.at(ele.id()), discret(), assembled_data);
           });
     };
@@ -934,7 +934,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
           [&](Core::Elements::Element& ele)
           {
             if (DoPostprocessingOnElement(ele))
-              Core::FE::EvaluateGaussPointQuantityAtElementCenter(
+              Core::FE::evaluate_gauss_point_quantity_at_element_center(
                   ele, *map_data.at(ele.id()), assembled_data);
           });
     };
@@ -1056,7 +1056,7 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_beams() co
       Teuchos::rcp(new Epetra_Vector(*discret.dof_col_map(), true));
   Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
 
-  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
       visualization_params_, global_state().get_time_n(), global_state().get_step_n());
   write_output_runtime_beams(disn_col, output_step, output_time);
 }
@@ -1074,8 +1074,8 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_beams() co
   Core::LinAlg::export_to(*global_state().get_dis_np(), *disnp_col);
 
   auto [output_time, output_step] =
-      Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, global_state().get_time_n(),
-          global_state().get_step_n(), eval_data().get_nln_iter());
+      Core::IO::get_time_and_time_step_index_for_output(visualization_params_,
+          global_state().get_time_n(), global_state().get_step_n(), eval_data().get_nln_iter());
   write_output_runtime_beams(disnp_col, output_step, output_time);
 }
 
@@ -1581,7 +1581,7 @@ void Solid::ModelEvaluator::Structure::determine_energy(
     double kinetic_energy_times2 = 0.0;
 
     Teuchos::RCP<Epetra_Vector> linear_momentum =
-        Core::LinAlg::CreateVector(*global_state().dof_row_map_view(), true);
+        Core::LinAlg::create_vector(*global_state().dof_row_map_view(), true);
 
     mass().multiply(false, *velnp, *linear_momentum);
 

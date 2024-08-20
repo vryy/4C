@@ -80,7 +80,7 @@ std::vector<std::array<double, 3>> Core::Binstrategy::DefaultRelevantPoints::ope
     const auto& corrected_node = correct_node(*nodes[j]);
 
     double currpos[3] = {0.0, 0.0, 0.0};
-    Utils::GetCurrentNodePos(discret, &corrected_node, disnp, currpos);
+    Utils::get_current_node_pos(discret, &corrected_node, disnp, currpos);
     relevant_points.push_back({currpos[0], currpos[1], currpos[2]});
   }
   return relevant_points;
@@ -97,7 +97,7 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
     : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
       deforming_simulation_domain_handler_(Teuchos::null),
-      writebinstype_(Core::UTILS::IntegralValue<WriteBins>(binning_params, ("WRITEBINS"))),
+      writebinstype_(Core::UTILS::integral_value<WriteBins>(binning_params, ("WRITEBINS"))),
       myrank_(my_rank),
       comm_(comm.Clone()),
       determine_relevant_points_(
@@ -729,7 +729,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
     // assign nodes to elements
     Teuchos::RCP<Core::Elements::Element> newele =
-        Core::Communication::Factory("VELE3", "Polynomial", ele->id(), myrank_);
+        Core::Communication::factory("VELE3", "Polynomial", ele->id(), myrank_);
     newele->set_node_ids(nids.size(), nids.data());
     visbindis_->add_element(newele);
   }
@@ -777,7 +777,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
       // assign nodes to elements
       Teuchos::RCP<Core::Elements::Element> newele =
-          Core::Communication::Factory("VELE3", "Polynomial", newelegid, myrank_);
+          Core::Communication::factory("VELE3", "Polynomial", newelegid, myrank_);
       newele->set_node_ids(nids.size(), nids.data());
       visbindis_->add_element(newele);
     }
@@ -791,7 +791,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
   // create vector that shows ghosting
   Teuchos::RCP<Epetra_Vector> ownedghostsvec =
-      Core::LinAlg::CreateVector(*visbindis_->element_row_map(), true);
+      Core::LinAlg::create_vector(*visbindis_->element_row_map(), true);
   for (int i = 0; i < visbindis_->num_my_row_elements(); ++i)
   {
     Core::Elements::Element* ele = visbindis_->l_row_element(i);
@@ -830,8 +830,8 @@ void Core::Binstrategy::BinningStrategy::distribute_bins_recurs_coord_bisection(
   sublist.set("RCB_OUTPUT_LEVEL", "0");
   sublist.set("RCB_RECTILINEAR_BLOCKS", "1");
 
-  std::tie(bincenters, binweights) =
-      Core::Rebalance::RebalanceCoordinates(*bincenters.getConst(), params, *binweights.getConst());
+  std::tie(bincenters, binweights) = Core::Rebalance::rebalance_coordinates(
+      *bincenters.getConst(), params, *binweights.getConst());
 
   // create bin row map
   binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
@@ -846,7 +846,7 @@ void Core::Binstrategy::BinningStrategy::fill_bins_into_bin_discretization(
   {
     const int gid = rowbins->GID(i);
     Teuchos::RCP<Core::Elements::Element> bin =
-        Core::Communication::Factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
+        Core::Communication::factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
     bindis_->add_element(bin);
   }
 }
@@ -999,7 +999,7 @@ void Core::Binstrategy::BinningStrategy::distribute_row_nodes_to_bins(
     Core::Nodes::Node* node = discret->l_row_node(lid);
     const auto& corrected_node = correct_node_(*node);
 
-    Utils::GetCurrentNodePos(*discret, &corrected_node, disnp, currpos);
+    Utils::get_current_node_pos(*discret, &corrected_node, disnp, currpos);
 
     const double* coords = currpos;
     int ijk[3];
@@ -1176,7 +1176,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
 
   // Now we're going to create a Epetra_Vector with vertex/node weights to be
   // used for the partitioning operation (weights must be at least one for zoltan)
-  Teuchos::RCP<Epetra_Vector> vweights = Core::LinAlg::CreateVector(*rowbins, true);
+  Teuchos::RCP<Epetra_Vector> vweights = Core::LinAlg::create_vector(*rowbins, true);
 
   // set weights of bins related to the number of nodes of discrets that are contained
   // empty bins have weight of 1
@@ -1245,7 +1245,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
     sublist.set("LB_APPROACH", "PARTITION");
 
   Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph =
-      Core::Rebalance::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
+      Core::Rebalance::rebalance_graph(*bingraph.getConst(), paramlist, vweights);
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();
@@ -1318,7 +1318,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_col_
             bin_to_row_ele_map_to_lookup_requests[binids[i]].end());
     }
 
-    Core::LinAlg::Gather<int>(sdata, rdata, 1, &iproc, *comm_);
+    Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, *comm_);
 
     // proc i has to store the received data
     if (iproc == myrank_)
@@ -1360,7 +1360,7 @@ void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretizati
   if (bincolmap->NumGlobalElements() == 1 && bindis_->get_comm().NumProc() > 1)
     FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
-  Utils::ExtendDiscretizationGhosting(bindis_, bincolmap, assigndegreesoffreedom, false, true);
+  Utils::extend_discretization_ghosting(bindis_, bincolmap, assigndegreesoffreedom, false, true);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether each proc has only particles that are within bins on this proc
@@ -1463,7 +1463,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
     discret->fill_complete(true, false, false);
     Teuchos::RCP<Epetra_Vector> old;
     old = disnp;
-    disnp = Core::LinAlg::CreateVector(*discret->dof_row_map(), true);
+    disnp = Core::LinAlg::create_vector(*discret->dof_row_map(), true);
     Core::LinAlg::export_to(*old, *disnp);
   }
 
@@ -1518,7 +1518,7 @@ void Core::Binstrategy::BinningStrategy::
     }
 
     // iprocs gathers all this information from other procs
-    Core::LinAlg::Gather<int>(sdata, rdata, 1, &iproc, rowbins->Comm());
+    Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, rowbins->Comm());
 
     // iproc has to store the received data
     if (iproc == myrank_)
@@ -1770,7 +1770,7 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
     // get current node and position
     Core::Nodes::Node* currnode = discret->l_col_node(i);
     const auto& corrected_node = correct_node_(*currnode);
-    Utils::GetCurrentNodePos(*discret, &corrected_node, disnp, currpos);
+    Utils::get_current_node_pos(*discret, &corrected_node, disnp, currpos);
 
     int const gidofbin = convert_pos_to_gid(currpos);
 
@@ -1844,9 +1844,9 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
 
   // todo: send in one package
   // send and receive elements
-  Utils::CommunicateElements(discret, toranktosendeles);
+  Utils::communicate_elements(discret, toranktosendeles);
   // send and receive new elements to bin relation, like this no fillcomplete call necessary here
-  Utils::CommunicateDistributionOfTransferredElementsToBins(
+  Utils::communicate_distribution_of_transferred_elements_to_bins(
       discret, toranktosendbinids, bintorowelemap);
 }
 

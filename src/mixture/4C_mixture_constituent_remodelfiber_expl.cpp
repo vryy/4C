@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] Core::LinAlg::Matrix<3, 3> EvaluateC(const Core::LinAlg::Matrix<3, 3>& F)
+  [[nodiscard]] Core::LinAlg::Matrix<3, 3> evaluate_c(const Core::LinAlg::Matrix<3, 3>& F)
   {
     Core::LinAlg::Matrix<3, 3> C(false);
     C.multiply_tn(F, F);
     return C;
   }
 
-  [[nodiscard]] Core::LinAlg::Matrix<3, 3> EvaluateiCext(const Core::LinAlg::Matrix<3, 3>& iFext)
+  [[nodiscard]] Core::LinAlg::Matrix<3, 3> evaluatei_cext(const Core::LinAlg::Matrix<3, 3>& iFext)
   {
     Core::LinAlg::Matrix<3, 3> iCext(false);
     iCext.multiply_nt(iFext, iFext);
@@ -50,7 +50,7 @@ MIXTURE::PAR::MixtureConstituentRemodelFiberExpl::MixtureConstituentRemodelFiber
       init_(matdata.parameters.get<int>("INIT")),
       gamma_(matdata.parameters.get<double>("GAMMA")),
       fiber_material_id_(matdata.parameters.get<int>("FIBER_MATERIAL_ID")),
-      fiber_material_(FiberMaterialFactory(fiber_material_id_)),
+      fiber_material_(fiber_material_factory(fiber_material_id_)),
       enable_growth_(matdata.parameters.get<bool>("ENABLE_GROWTH")),
       enable_basal_mass_production_(matdata.parameters.get<bool>("ENABLE_BASAL_MASS_PRODUCTION")),
       poisson_decay_time_(matdata.parameters.get<double>("DECAY_TIME")),
@@ -153,7 +153,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update_elastic_part(
         "inelastic growth. You have to set INELASTIC_GROWTH to true or use a different growth "
         "rule.");
   }
-  const double lambda_f = evaluate_lambdaf(EvaluateC(F), gp, eleGID);
+  const double lambda_f = evaluate_lambdaf(evaluate_c(F), gp, eleGID);
   const double lambda_ext = evaluate_lambda_ext(iFext, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
   remodel_fiber_[gp].update();
@@ -176,7 +176,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update(const Core::LinAlg::Mat
   if (!params_->inelastic_external_deformation_)
   {
     // Update state
-    const double lambda_f = evaluate_lambdaf(EvaluateC(F), gp, eleGID);
+    const double lambda_f = evaluate_lambdaf(evaluate_c(F), gp, eleGID);
     remodel_fiber_[gp].set_state(lambda_f, 1.0);
     remodel_fiber_[gp].update();
 
@@ -274,7 +274,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate(const Core::LinAlg::M
         "rule.");
   }
 
-  Core::LinAlg::Matrix<3, 3> C = EvaluateC(F);
+  Core::LinAlg::Matrix<3, 3> C = evaluate_c(F);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, 1.0);
@@ -297,7 +297,7 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_elastic_part(
         "rule.");
   }
 
-  Core::LinAlg::Matrix<3, 3> C = EvaluateC(FM);
+  Core::LinAlg::Matrix<3, 3> C = evaluate_c(FM);
 
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   const double lambda_ext = evaluate_lambda_ext(iFextin, gp, eleGID);
@@ -358,6 +358,6 @@ double MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_lambda_ext(
     const Core::LinAlg::Matrix<3, 3>& iFext, const int gp, const int eleGID) const
 {
   return 1.0 /
-         std::sqrt(EvaluateiCext(iFext).dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
+         std::sqrt(evaluatei_cext(iFext).dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 FOUR_C_NAMESPACE_CLOSE

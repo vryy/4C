@@ -32,13 +32,13 @@ void pasi_dyn()
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print pasi logo to screen
-  if (comm.MyPID() == 0) PaSI::UTILS::Logo();
+  if (comm.MyPID() == 0) PaSI::UTILS::logo();
 
   // get parameter list
   const Teuchos::ParameterList& params = problem->pasi_dynamic_params();
 
   // modification of time parameters of subproblems
-  PaSI::UTILS::ChangeTimeParameter(comm, params,
+  PaSI::UTILS::change_time_parameter(comm, params,
       const_cast<Teuchos::ParameterList&>(problem->particle_params()),
       const_cast<Teuchos::ParameterList&>(problem->structural_dynamic_params()));
 
@@ -46,7 +46,7 @@ void pasi_dyn()
   Teuchos::RCP<PaSI::PartitionedAlgo> algo = Teuchos::null;
 
   // get type of partitioned coupling
-  int coupling = Core::UTILS::IntegralValue<int>(params, "COUPLING");
+  int coupling = Core::UTILS::integral_value<int>(params, "COUPLING");
 
   // query algorithm
   switch (coupling)
@@ -96,7 +96,7 @@ void pasi_dyn()
 
   // print summary statistics for all timers
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      Core::Communication::toTeuchosComm<int>(comm);
+      Core::Communication::to_teuchos_comm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 }
 

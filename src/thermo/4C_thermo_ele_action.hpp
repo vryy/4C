@@ -58,7 +58,7 @@ namespace Thermo
   /*!
    * \brief translate to string for screen output
    */
-  inline std::string ActionToString(const Action action)
+  inline std::string action_to_string(const Action action)
   {
     switch (action)
     {
@@ -91,7 +91,7 @@ namespace Thermo
     };
   }
 
-  inline std::string BoundaryActionToString(const BoundaryAction baction)
+  inline std::string boundary_action_to_string(const BoundaryAction baction)
   {
     switch (baction)
     {

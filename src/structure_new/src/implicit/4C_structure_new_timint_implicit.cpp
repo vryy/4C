@@ -517,7 +517,7 @@ void Solid::TimeInt::Implicit::print_jacobian_in_matlab_format(
     {
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> sparse_matrix =
           Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseMatrix>(jac_ptr, true);
-      Core::LinAlg::PrintMatrixInMatlabFormat(
+      Core::LinAlg::print_matrix_in_matlab_format(
           filename.str().c_str(), *sparse_matrix->epetra_matrix());
 
       break;
@@ -526,14 +526,14 @@ void Solid::TimeInt::Implicit::print_jacobian_in_matlab_format(
     {
       Teuchos::RCP<const LinalgBlockSparseMatrix> block_matrix =
           Teuchos::rcp_dynamic_cast<const LinalgBlockSparseMatrix>(jac_ptr, true);
-      Core::LinAlg::PrintBlockMatrixInMatlabFormat(filename.str(), *block_matrix);
+      Core::LinAlg::print_block_matrix_in_matlab_format(filename.str(), *block_matrix);
 
       break;
     }
     default:
     {
       FOUR_C_THROW("Unsupported NOX::Nln::LinSystem::OperatorType: \"%s\"",
-          NOX::Nln::LinSystem::OperatorType2String(jac_type).c_str());
+          NOX::Nln::LinSystem::operator_type_to_string(jac_type).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -567,9 +567,9 @@ void Solid::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& g
     case Inpar::Solid::ConditionNumber::inf_norm:
     {
       const NOX::Nln::LinSystem::ConditionNumber nox_cond_type =
-          Solid::Nln::Convert2NoxConditionNumberType(cond_type);
+          Solid::Nln::convert2_nox_condition_number_type(cond_type);
       const std::string nox_cond_type_str(
-          NOX::Nln::LinSystem::ConditionNumber2String(nox_cond_type));
+          NOX::Nln::LinSystem::condition_number_to_string(nox_cond_type));
 
       const_cast<NOX::Nln::Group&>(grp).compute_serial_jacobian_condition_number(
           nox_cond_type, true);

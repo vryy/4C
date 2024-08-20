@@ -39,7 +39,7 @@ Mat::PAR::ElchMat::ElchMat(const Core::Mat::PAR::Parameter::Data& matdata)
     for (n = phaseids_.begin(); n != phaseids_.end(); ++n)
     {
       const int phaseid = *n;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(phaseid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(phaseid);
       mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(phaseid, mat));
     }
   }
@@ -95,7 +95,7 @@ void Mat::ElchMat::setup_mat_map()
   for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); ++n)
   {
     const int phaseid = *n;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(phaseid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(phaseid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(phaseid, mat));
   }
@@ -147,7 +147,7 @@ void Mat::ElchMat::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid(-1);
@@ -173,7 +173,7 @@ void Mat::ElchMat::unpack(const std::vector<char>& data)
     for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); n++)
     {
       const int actphaseid = *n;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(actphaseid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(actphaseid);
       if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
       mat_.insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(actphaseid, mat));
     }

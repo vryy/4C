@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::Geo::PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> const& r_slave,
+bool BEAMINTERACTION::Geo::point_to_curve_projection(Core::LinAlg::Matrix<3, 1, T> const& r_slave,
     T& xi_master, double const& xi_master_initial_guess,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T>& master_centerline_dof_values,
     const Core::FE::CellType& master_distype, double master_ele_ref_length)
@@ -54,26 +54,26 @@ bool BEAMINTERACTION::Geo::PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> 
   for (unsigned int iter = 0; iter < POINT_TO_CURVE_PROJECTION_MAX_NUM_ITER; ++iter)
   {
     // update shape functions and their derivatives
-    Discret::UTILS::Beam::EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi<numnodes, numnodalvalues,
-        T>(xi_master, N_i, N_i_xi, N_i_xixi, master_distype, master_ele_ref_length);
+    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_and2nd_derivs_at_xi<numnodes,
+        numnodalvalues, T>(xi_master, N_i, N_i_xi, N_i_xixi, master_distype, master_ele_ref_length);
 
     // update coordinates and derivatives of contact points
-    Discret::UTILS::Beam::CalcInterpolation<numnodes, numnodalvalues, 3, T, T>(
+    Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
         master_centerline_dof_values, N_i, r_master);
-    Discret::UTILS::Beam::CalcInterpolation<numnodes, numnodalvalues, 3, T, T>(
+    Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
         master_centerline_dof_values, N_i_xi, r_xi_master);
-    Discret::UTILS::Beam::CalcInterpolation<numnodes, numnodalvalues, 3, T, T>(
+    Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
         master_centerline_dof_values, N_i_xixi, r_xixi_master);
 
     // use delta_r = r1-r2 as auxiliary quantity
-    delta_r = Core::FADUtils::DiffVector(r_slave, r_master);
+    delta_r = Core::FADUtils::diff_vector(r_slave, r_master);
 
     // compute norm of difference vector to scale the equations
     // (this yields better conditioning)
     /* Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
      * double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
      * linearized! */
-    double norm_delta_r = Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm(delta_r));
+    double norm_delta_r = Core::FADUtils::cast_to_double(Core::FADUtils::vector_norm(delta_r));
 
     /* The closer the beams get, the smaller is norm_delta_r, but
      * norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -85,19 +85,19 @@ bool BEAMINTERACTION::Geo::PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> 
 
 
     // evaluate f at current eta1, eta2
-    EvaluatePointToCurveOrthogonalityCondition(f, delta_r, norm_delta_r, r_xi_master);
+    evaluate_point_to_curve_orthogonality_condition(f, delta_r, norm_delta_r, r_xi_master);
 
     // compute the scalar residuum
     /* The residual is scaled with 1/element_length of the beam element representing the curve
      * since r_xi scales with the element_length */
-    residual = std::abs(Core::FADUtils::CastToDouble(f / master_ele_ref_length));
+    residual = std::abs(Core::FADUtils::cast_to_double(f / master_ele_ref_length));
 
     // store initial residual
     if (iter == 0) residual0 = residual;
 
     // check if Newton iteration has converged
-    if (Core::FADUtils::CastToDouble(residual) < POINT_TO_CURVE_PROJECTION_TOLERANCE_RESIDUUM and
-        std::abs(xi_master_previous_iteration - Core::FADUtils::CastToDouble(xi_master)) <
+    if (Core::FADUtils::cast_to_double(residual) < POINT_TO_CURVE_PROJECTION_TOLERANCE_RESIDUUM and
+        std::abs(xi_master_previous_iteration - Core::FADUtils::cast_to_double(xi_master)) <
             POINT_TO_CURVE_PROJECTION_TOLERANCE_INCREMENT)
     {
       Core::IO::cout(Core::IO::debug)
@@ -109,7 +109,7 @@ bool BEAMINTERACTION::Geo::PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> 
 
     // evaluate Jacobian of f at current point
     // Note: It has to be checked, if the linearization is equal to zero;
-    bool validlinearization = EvaluateLinearizationPointToCurveOrthogonalityCondition(
+    bool validlinearization = evaluate_linearization_point_to_curve_orthogonality_condition(
         df, delta_r, norm_delta_r, r_xi_master, r_xixi_master);
 
     if (not validlinearization)
@@ -117,7 +117,7 @@ bool BEAMINTERACTION::Geo::PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> 
           "Linearization of point to line projection is zero, i.e. the minimal distance "
           "problem seems to be non-unique!");
 
-    xi_master_previous_iteration = Core::FADUtils::CastToDouble(xi_master);
+    xi_master_previous_iteration = Core::FADUtils::cast_to_double(xi_master);
 
     // update master element coordinate of closest point
     xi_master += -f / df;
@@ -129,7 +129,7 @@ bool BEAMINTERACTION::Geo::PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> 
                                   << " iterations!" << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << "residual in first iteration: " << residual0 << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << "residual: " << residual << Core::IO::endl;
-  Core::IO::cout(Core::IO::debug) << "xi_master: " << Core::FADUtils::CastToDouble(xi_master)
+  Core::IO::cout(Core::IO::debug) << "xi_master: " << Core::FADUtils::cast_to_double(xi_master)
                                   << Core::IO::endl;
   Core::IO::cout(Core::IO::debug) << "xi_master_previous_iteration: "
                                   << xi_master_previous_iteration << Core::IO::endl;
@@ -140,7 +140,7 @@ bool BEAMINTERACTION::Geo::PointToCurveProjection(Core::LinAlg::Matrix<3, 1, T> 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::EvaluatePointToCurveOrthogonalityCondition(T& f,
+void BEAMINTERACTION::Geo::evaluate_point_to_curve_orthogonality_condition(T& f,
     const Core::LinAlg::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
     const Core::LinAlg::Matrix<3, 1, T>& r_xi_master)
 {
@@ -157,7 +157,7 @@ void BEAMINTERACTION::Geo::EvaluatePointToCurveOrthogonalityCondition(T& f,
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-bool BEAMINTERACTION::Geo::EvaluateLinearizationPointToCurveOrthogonalityCondition(T& df,
+bool BEAMINTERACTION::Geo::evaluate_linearization_point_to_curve_orthogonality_condition(T& df,
     const Core::LinAlg::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
     const Core::LinAlg::Matrix<3, 1, T>& r_xi_master,
     const Core::LinAlg::Matrix<3, 1, T>& r_xixi_master)
@@ -174,7 +174,7 @@ bool BEAMINTERACTION::Geo::EvaluateLinearizationPointToCurveOrthogonalityConditi
   /* check for df==0.0, i.e. non-uniqueness of the minimal distance problem
    * This can happen e.g. when the curve describes a circle geometry and
    * the projecting slave point coincides with the center of the circle */
-  if (std::abs(Core::FADUtils::CastToDouble(df)) <
+  if (std::abs(Core::FADUtils::cast_to_double(df)) <
       POINT_TO_CURVE_PROJECTION_NONUNIQUE_MINIMAL_DISTANCE_TOLERANCE)
     return false;
   else
@@ -184,7 +184,7 @@ bool BEAMINTERACTION::Geo::EvaluateLinearizationPointToCurveOrthogonalityConditi
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster(
+void BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master(
     Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_slaveDofs,
     Core::LinAlg::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_masterDofs,
     const Core::LinAlg::Matrix<3, 1, T>& delta_r, const Core::LinAlg::Matrix<3, 1, T>& r_xi_master,
@@ -200,24 +200,24 @@ void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoord
    * master xi_master */
   T orthogon_condition_partial_xi_master = 0.0;
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_parameter_coord_master(
       orthogon_condition_partial_xi_master, delta_r, r_xi_master, r_xixi_master);
 
   /* partial derivative of the orthogonality condition with respect to primary Dofs defining
    * slave point and master curve */
   Core::LinAlg::Matrix<1, 3, T> orthogon_condition_partial_r_slave(true);
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_slave(
       orthogon_condition_partial_r_slave, r_xi_master);
 
   Core::LinAlg::Matrix<1, 3, T> orthogon_condition_partial_r_master(true);
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_master(
       orthogon_condition_partial_r_master, r_xi_master);
 
   Core::LinAlg::Matrix<1, 3, T> orthogon_condition_partial_r_xi_master(true);
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_cl_tangent_master(
       orthogon_condition_partial_r_xi_master, delta_r);
 
 
@@ -247,7 +247,7 @@ void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoord
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs(
+void BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial_derivs(
     Core::LinAlg::Matrix<1, 3, T>& xi_master_partial_r_slave,
     Core::LinAlg::Matrix<1, 3, T>& xi_master_partial_r_master,
     Core::LinAlg::Matrix<1, 3, T>& xi_master_partial_r_xi_master,
@@ -258,24 +258,24 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
    * master xi_master */
   T orthogon_condition_partial_xi_master = 0.0;
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_parameter_coord_master(
       orthogon_condition_partial_xi_master, delta_r, r_xi_master, r_xixi_master);
 
   /* partial derivative of the orthogonality condition with respect to primary Dofs defining
    * slave point and master curve */
   Core::LinAlg::Matrix<1, 3, T> orthogon_condition_partial_r_slave(true);
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_slave(
       orthogon_condition_partial_r_slave, r_xi_master);
 
   Core::LinAlg::Matrix<1, 3, T> orthogon_condition_partial_r_master(true);
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_master(
       orthogon_condition_partial_r_master, r_xi_master);
 
   Core::LinAlg::Matrix<1, 3, T> orthogon_condition_partial_r_xi_master(true);
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_cl_tangent_master(
       orthogon_condition_partial_r_xi_master, delta_r);
 
   // finally compute the partial/directional derivatives
@@ -292,7 +292,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
+void BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial2nd_derivs(
     Core::LinAlg::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_slave,
     Core::LinAlg::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_master,
     Core::LinAlg::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xi_master,
@@ -324,7 +324,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
    * master xi_master */
   T orthogon_condition_partial_xi_master = 0.0;
 
-  CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
+  calc_ptc_projection_orthogonality_condition_partial_deriv_parameter_coord_master(
       orthogon_condition_partial_xi_master, delta_r, r_xi_master, r_xixi_master);
 
   T orthogon_condition_partial_xi_master_inverse = 1.0 / orthogon_condition_partial_xi_master;
@@ -592,14 +592,15 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
-    T& orthogon_condition_partial_xi_master, const Core::LinAlg::Matrix<3, 1, T>& delta_r,
-    const Core::LinAlg::Matrix<3, 1, T>& r_xi_master,
-    const Core::LinAlg::Matrix<3, 1, T>& r_xixi_master)
+void BEAMINTERACTION::Geo::
+    calc_ptc_projection_orthogonality_condition_partial_deriv_parameter_coord_master(
+        T& orthogon_condition_partial_xi_master, const Core::LinAlg::Matrix<3, 1, T>& delta_r,
+        const Core::LinAlg::Matrix<3, 1, T>& r_xi_master,
+        const Core::LinAlg::Matrix<3, 1, T>& r_xixi_master)
 {
   orthogon_condition_partial_xi_master = -r_xi_master.dot(r_xi_master) + delta_r.dot(r_xixi_master);
 
-  if (std::abs(Core::FADUtils::CastToDouble(orthogon_condition_partial_xi_master)) <
+  if (std::abs(Core::FADUtils::cast_to_double(orthogon_condition_partial_xi_master)) <
       POINT_TO_CURVE_PROJECTION_NONUNIQUE_MINIMAL_DISTANCE_TOLERANCE)
     FOUR_C_THROW(
         "Linearization of point to line projection is zero, i.e. the minimal distance "
@@ -609,7 +610,7 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivPa
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
+void BEAMINTERACTION::Geo::calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_slave(
     Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_slave,
     const Core::LinAlg::Matrix<3, 1, T>& r_xi_master)
 {
@@ -619,7 +620,7 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
+void BEAMINTERACTION::Geo::calc_ptc_projection_orthogonality_condition_partial_deriv_cl_pos_master(
     Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_master,
     const Core::LinAlg::Matrix<3, 1, T>& r_xi_master)
 {
@@ -629,9 +630,10 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
-    Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_xi_master,
-    const Core::LinAlg::Matrix<3, 1, T>& delta_r)
+void BEAMINTERACTION::Geo::
+    calc_ptc_projection_orthogonality_condition_partial_deriv_cl_tangent_master(
+        Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_xi_master,
+        const Core::LinAlg::Matrix<3, 1, T>& delta_r)
 {
   orthogon_condition_partial_r_xi_master.update_t(delta_r);
 }
@@ -639,14 +641,14 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::Geo::CalcEnclosedAngle(T& angle, T& cosine_angle,
+void BEAMINTERACTION::Geo::calc_enclosed_angle(T& angle, T& cosine_angle,
     const Core::LinAlg::Matrix<3, 1, T>& a, const Core::LinAlg::Matrix<3, 1, T>& b)
 {
-  if (Core::FADUtils::VectorNorm(a) < 1.0e-12 or Core::FADUtils::VectorNorm(b) < 1.0e-12)
+  if (Core::FADUtils::vector_norm(a) < 1.0e-12 or Core::FADUtils::vector_norm(b) < 1.0e-12)
     FOUR_C_THROW("Cannot determine angle for zero vector!");
 
-  cosine_angle = Core::FADUtils::Norm<T>(
-      a.dot(b) / (Core::FADUtils::VectorNorm(a) * Core::FADUtils::VectorNorm(b)));
+  cosine_angle = Core::FADUtils::norm<T>(
+      a.dot(b) / (Core::FADUtils::vector_norm(a) * Core::FADUtils::vector_norm(b)));
 
   if (cosine_angle < 1.0)
   {
@@ -667,69 +669,75 @@ void BEAMINTERACTION::Geo::CalcEnclosedAngle(T& angle, T& cosine_angle,
 
 
 // explicit template instantiations
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<2, 1, double>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<2, 1, double>(
     Core::LinAlg::Matrix<3, 1, double> const&, double&, double const&,
     const Core::LinAlg::Matrix<6, 1, double>&, const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<3, 1, double>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<3, 1, double>(
     Core::LinAlg::Matrix<3, 1, double> const&, double&, double const&,
     const Core::LinAlg::Matrix<9, 1, double>&, const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<4, 1, double>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<4, 1, double>(
     Core::LinAlg::Matrix<3, 1, double> const&, double&, double const&,
     const Core::LinAlg::Matrix<12, 1, double>&, const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<5, 1, double>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<5, 1, double>(
     Core::LinAlg::Matrix<3, 1, double> const&, double&, double const&,
     const Core::LinAlg::Matrix<15, 1, double>&, const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<2, 2, double>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<2, 2, double>(
     Core::LinAlg::Matrix<3, 1, double> const&, double&, double const&,
     const Core::LinAlg::Matrix<12, 1, double>&, const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<2, 1, Sacado::Fad::DFad<double>>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<2, 1, Sacado::Fad::DFad<double>>(
     Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const Core::LinAlg::Matrix<6, 1, Sacado::Fad::DFad<double>>&,
     const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<3, 1, Sacado::Fad::DFad<double>>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<3, 1, Sacado::Fad::DFad<double>>(
     Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const Core::LinAlg::Matrix<9, 1, Sacado::Fad::DFad<double>>&,
     const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<4, 1, Sacado::Fad::DFad<double>>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<4, 1, Sacado::Fad::DFad<double>>(
     Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const Core::LinAlg::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
     const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<5, 1, Sacado::Fad::DFad<double>>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<5, 1, Sacado::Fad::DFad<double>>(
     Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const Core::LinAlg::Matrix<15, 1, Sacado::Fad::DFad<double>>&,
     const Core::FE::CellType&, double);
-template bool BEAMINTERACTION::Geo::PointToCurveProjection<2, 2, Sacado::Fad::DFad<double>>(
+template bool BEAMINTERACTION::Geo::point_to_curve_projection<2, 2, Sacado::Fad::DFad<double>>(
     Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
     double const&, const Core::LinAlg::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
     const Core::FE::CellType&, double);
 
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    1, double>(Core::LinAlg::Matrix<1, 6, double>&, Core::LinAlg::Matrix<1, 6, double>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<2, 1,
+    double>(Core::LinAlg::Matrix<1, 6, double>&, Core::LinAlg::Matrix<1, 6, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 6, double>&,
     const Core::LinAlg::Matrix<3, 6, double>&, const Core::LinAlg::Matrix<3, 6, double>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<3,
-    1, double>(Core::LinAlg::Matrix<1, 9, double>&, Core::LinAlg::Matrix<1, 9, double>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<3, 1,
+    double>(Core::LinAlg::Matrix<1, 9, double>&, Core::LinAlg::Matrix<1, 9, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 9, double>&,
     const Core::LinAlg::Matrix<3, 9, double>&, const Core::LinAlg::Matrix<3, 9, double>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<4,
-    1, double>(Core::LinAlg::Matrix<1, 12, double>&, Core::LinAlg::Matrix<1, 12, double>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<4, 1,
+    double>(Core::LinAlg::Matrix<1, 12, double>&, Core::LinAlg::Matrix<1, 12, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 12, double>&,
     const Core::LinAlg::Matrix<3, 12, double>&, const Core::LinAlg::Matrix<3, 12, double>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<5,
-    1, double>(Core::LinAlg::Matrix<1, 15, double>&, Core::LinAlg::Matrix<1, 15, double>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<5, 1,
+    double>(Core::LinAlg::Matrix<1, 15, double>&, Core::LinAlg::Matrix<1, 15, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 15, double>&,
     const Core::LinAlg::Matrix<3, 15, double>&, const Core::LinAlg::Matrix<3, 15, double>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    2, double>(Core::LinAlg::Matrix<1, 12, double>&, Core::LinAlg::Matrix<1, 12, double>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<2, 2,
+    double>(Core::LinAlg::Matrix<1, 12, double>&, Core::LinAlg::Matrix<1, 12, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 12, double>&,
     const Core::LinAlg::Matrix<3, 12, double>&, const Core::LinAlg::Matrix<3, 12, double>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    1, Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 6, Sacado::Fad::DFad<double>>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<2, 1,
+    Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 6, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<1, 6, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
@@ -737,8 +745,9 @@ template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParam
     const Core::LinAlg::Matrix<3, 6, double>&,
     const Core::LinAlg::Matrix<3, 6, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 6, Sacado::Fad::DFad<double>>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<3,
-    1, Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 9, Sacado::Fad::DFad<double>>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<3, 1,
+    Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 9, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<1, 9, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
@@ -746,8 +755,9 @@ template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParam
     const Core::LinAlg::Matrix<3, 9, double>&,
     const Core::LinAlg::Matrix<3, 9, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 9, Sacado::Fad::DFad<double>>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<4,
-    1, Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<4, 1,
+    Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
@@ -755,8 +765,9 @@ template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParam
     const Core::LinAlg::Matrix<3, 12, double>&,
     const Core::LinAlg::Matrix<3, 12, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 12, Sacado::Fad::DFad<double>>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<5,
-    1, Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 15, Sacado::Fad::DFad<double>>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<5, 1,
+    Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 15, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<1, 15, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
@@ -764,8 +775,9 @@ template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParam
     const Core::LinAlg::Matrix<3, 15, double>&,
     const Core::LinAlg::Matrix<3, 15, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 15, Sacado::Fad::DFad<double>>&);
-template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    2, Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
+template void
+BEAMINTERACTION::Geo::calc_linearization_point_to_curve_projection_parameter_coord_master<2, 2,
+    Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
@@ -775,34 +787,36 @@ template void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParam
     const Core::LinAlg::Matrix<3, 12, Sacado::Fad::DFad<double>>&);
 
 template void
-BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs<double>(
+BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial_derivs<double>(
     Core::LinAlg::Matrix<1, 3, double>&, Core::LinAlg::Matrix<1, 3, double>&,
     Core::LinAlg::Matrix<1, 3, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&);
-template void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs<
-    Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    Core::LinAlg::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    Core::LinAlg::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
+template void BEAMINTERACTION::Geo::
+    calc_point_to_curve_projection_parameter_coord_master_partial_derivs<Sacado::Fad::DFad<double>>(
+        Core::LinAlg::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+        Core::LinAlg::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+        Core::LinAlg::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+        const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+        const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+        const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
 
+template void BEAMINTERACTION::Geo::
+    calc_point_to_curve_projection_parameter_coord_master_partial2nd_derivs<double>(
+        Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
+        Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
+        Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
+        Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
+        Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
+        Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
+        Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
+        Core::LinAlg::Matrix<3, 3, double>&, const Core::LinAlg::Matrix<1, 3, double>&,
+        const Core::LinAlg::Matrix<1, 3, double>&, const Core::LinAlg::Matrix<1, 3, double>&,
+        const Core::LinAlg::Matrix<3, 3, double>&, const Core::LinAlg::Matrix<3, 3, double>&,
+        const Core::LinAlg::Matrix<3, 3, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
+        const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
+        const Core::LinAlg::Matrix<3, 1, double>&);
 template void
-BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<double>(
-    Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
-    Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
-    Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
-    Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
-    Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
-    Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
-    Core::LinAlg::Matrix<3, 3, double>&, Core::LinAlg::Matrix<3, 3, double>&,
-    Core::LinAlg::Matrix<3, 3, double>&, const Core::LinAlg::Matrix<1, 3, double>&,
-    const Core::LinAlg::Matrix<1, 3, double>&, const Core::LinAlg::Matrix<1, 3, double>&,
-    const Core::LinAlg::Matrix<3, 3, double>&, const Core::LinAlg::Matrix<3, 3, double>&,
-    const Core::LinAlg::Matrix<3, 3, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
-    const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&,
-    const Core::LinAlg::Matrix<3, 1, double>&);
-template void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<
+BEAMINTERACTION::Geo::calc_point_to_curve_projection_parameter_coord_master_partial2nd_derivs<
     Sacado::Fad::DFad<double>>(Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
@@ -829,9 +843,9 @@ template void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMast
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
 
-template void BEAMINTERACTION::Geo::CalcEnclosedAngle<double>(double&, double&,
+template void BEAMINTERACTION::Geo::calc_enclosed_angle<double>(double&, double&,
     const Core::LinAlg::Matrix<3, 1, double>&, const Core::LinAlg::Matrix<3, 1, double>&);
-template void BEAMINTERACTION::Geo::CalcEnclosedAngle<Sacado::Fad::DFad<double>>(
+template void BEAMINTERACTION::Geo::calc_enclosed_angle<Sacado::Fad::DFad<double>>(
     Sacado::Fad::DFad<double>&, Sacado::Fad::DFad<double>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&);

@@ -1116,7 +1116,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::handle_fluid_dof_map_change_in_ne
   if (get_comm().MyPID() == 0) Core::IO::cout << "New Map!" << Core::IO::endl;
 
   //  Save old sum of increments
-  Teuchos::RCP<Epetra_Vector> x_sum_n = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> x_sum_n = Core::LinAlg::create_vector(*dof_row_map(), true);
   *x_sum_n = *x_sum_;
   //  Extract structural increment sum
   Teuchos::RCP<const Epetra_Vector> sx_n;
@@ -1132,10 +1132,10 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::handle_fluid_dof_map_change_in_ne
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           extractor(), extractor(), 81, false, true));
 
-  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  rhs_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
-  x_sum_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+  rhs_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
+  x_sum_ = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   //  Set the new increment sum x_sum_ together
 

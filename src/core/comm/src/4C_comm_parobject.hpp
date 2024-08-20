@@ -915,7 +915,7 @@ namespace Core::Communication
    * \param[in] data Data vector where type id is extracted from
    * \param[in] desired_type_id Id of the desired type
    */
-  int ExtractAndAssertId(std::vector<char>::size_type& position, const std::vector<char>& data,
+  int extract_and_assert_id(std::vector<char>::size_type& position, const std::vector<char>& data,
       const int desired_type_id);
 }  // namespace Core::Communication
 

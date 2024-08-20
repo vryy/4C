@@ -86,8 +86,8 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->assign_eles_to_bins(
-      discretizations[0], bintoelemap_, BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
+  binstrategy_->assign_eles_to_bins(discretizations[0], bintoelemap_,
+      BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::update_binning(
@@ -102,7 +102,7 @@ void FBI::FBIBinningGeometryCoupler::update_binning(
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
   binstrategy_->assign_eles_to_bins(structure_discretization, bintoelemap_,
-      BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
+      BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 }
 /*----------------------------------------------------------------------*/
 void FBI::FBIBinningGeometryCoupler::setup(
@@ -175,7 +175,7 @@ void FBI::FBIBinningGeometryCoupler::compute_current_positions(Core::FE::Discret
         // get the DOF numbers of the current node
         dis.dof(node, 0, src_dofs);
         // get the current displacements
-        Core::FE::ExtractMyValues(*disp, mydisp, src_dofs);
+        Core::FE::extract_my_values(*disp, mydisp, src_dofs);
 
         for (int d = 0; d < 3; ++d) (*positions)[node->id()](d) = node->x()[d] + mydisp.at(d);
       }

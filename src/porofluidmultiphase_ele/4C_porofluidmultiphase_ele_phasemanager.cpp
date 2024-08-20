@@ -324,7 +324,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::setup(
   {
     // get the single phase material
     const Mat::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSinglePhaseMatFromMaterial(material, iphase);
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_material(material, iphase);
     invbulkmodulifluid_[iphase] = singlephasemat.inv_bulkmodulus();
 
     // get density
@@ -335,7 +335,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::setup(
   {
     // get the single phase material
     const Mat::FluidPoroSingleVolFrac& singlevolfracmat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSingleVolFracMatFromMaterial(
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_vol_frac_mat_from_material(
             material, ivolfrac + numfluidphases_);
 
     // get constant values
@@ -1130,7 +1130,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::setup(
   {
     // get the single phase material
     Mat::FluidPoroSingleReaction& singlephasemat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSingleReactionMatFromMultiReactionsMaterial(
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_reaction_mat_from_multi_reactions_material(
             multiphasemat, ireac);
 
     for (int iphase = 0; iphase < totalnumdof; iphase++)
@@ -1198,7 +1198,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::evaluate_gp_stat
   {
     // get the single phase material
     Mat::FluidPoroSingleReaction& singlephasemat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSingleReactionMatFromMultiReactionsMaterial(
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_reaction_mat_from_multi_reactions_material(
             multiphasemat, ireac);
 
     // evaluate the reaction
@@ -1379,7 +1379,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
   {
     // get the single phase material
     const Mat::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSinglePhaseMatFromMaterial(material, iphase);
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_material(material, iphase);
     constrelpermeability_[iphase] = singlephasemat.has_constant_rel_permeability();
     constdynviscosity_[iphase] = singlephasemat.has_constant_viscosity();
 
@@ -1394,7 +1394,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
   {
     // get the volfrac pressure material
     const Mat::FluidPoroVolFracPressure& volfracpressmat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetVolFracPressureMatFromMaterial(
+        POROFLUIDMULTIPHASE::ElementUtils::get_vol_frac_pressure_mat_from_material(
             material, ivolfrac + numvolfrac + numfluidphases);
 
     constdynviscosityvolfracpress_[ivolfrac] = volfracpressmat.has_constant_viscosity();
@@ -1443,7 +1443,8 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::evaluate_g
   {
     // get the single phase material
     const Mat::FluidPoroSinglePhase& singlephasemat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSinglePhaseMatFromMaterial(multiphasemat, iphase);
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_material(
+            multiphasemat, iphase);
 
     // evaluate relative permeabilities
     relpermeabilities_[iphase] = singlephasemat.rel_permeability(phasemanager_->saturation(iphase));
@@ -1550,7 +1551,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_visc
 {
   // get the single phase material
   const Mat::FluidPoroSinglePhase& singlephasemat =
-      POROFLUIDMULTIPHASE::ElementUtils::GetSinglePhaseMatFromMaterial(material, phasenum);
+      POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_material(material, phasenum);
 
   return singlephasemat.viscosity(abspressgrad);
 }
@@ -1576,7 +1577,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_visc
 {
   // get the single phase material
   const Mat::FluidPoroSinglePhase& singlephasemat =
-      POROFLUIDMULTIPHASE::ElementUtils::GetSinglePhaseMatFromMaterial(material, phasenum);
+      POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_material(material, phasenum);
 
   return singlephasemat.viscosity_deriv(abspressgrad);
 }
@@ -1617,7 +1618,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_v
 {
   // get the single phase material
   const Mat::FluidPoroVolFracPressure& volfracpressmat =
-      POROFLUIDMULTIPHASE::ElementUtils::GetVolFracPressureMatFromMaterial(material,
+      POROFLUIDMULTIPHASE::ElementUtils::get_vol_frac_pressure_mat_from_material(material,
           volfracpressnum + phasemanager_->num_fluid_phases() + phasemanager_->num_vol_frac());
 
   return volfracpressmat.viscosity(abspressgrad);
@@ -1646,7 +1647,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
 {
   // get the single phase material
   const Mat::FluidPoroVolFracPressure& volfracpressmat =
-      POROFLUIDMULTIPHASE::ElementUtils::GetVolFracPressureMatFromMaterial(material,
+      POROFLUIDMULTIPHASE::ElementUtils::get_vol_frac_pressure_mat_from_material(material,
           volfracpressnum + phasemanager_->num_fluid_phases() + phasemanager_->num_vol_frac());
 
   return volfracpressmat.viscosity_deriv(abspressgrad);
@@ -1711,7 +1712,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::setup(
   {
     // get the single phase material
     const Mat::FluidPoroSingleVolFrac& singlevolfracmat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSingleVolFracMatFromMaterial(
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_vol_frac_mat_from_material(
             material, ivolfrac + numfluidphases);
 
     // clear
@@ -1762,7 +1763,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::evaluate_gp_
   {
     // get the single phase material
     const Mat::FluidPoroSingleVolFrac& singlevolfracmat =
-        POROFLUIDMULTIPHASE::ElementUtils::GetSingleVolFracMatFromMaterial(
+        POROFLUIDMULTIPHASE::ElementUtils::get_single_vol_frac_mat_from_material(
             material, ivolfrac + numfluidphases);
 
     if (this->has_add_scalar_dependent_flux(ivolfrac))

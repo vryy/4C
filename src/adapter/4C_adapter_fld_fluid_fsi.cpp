@@ -98,11 +98,11 @@ void Adapter::FluidFSI::init()
   // time step size adaptivity in monolithic FSI
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const bool timeadapton =
-      Core::UTILS::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::integral_value<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
   if (timeadapton)
   {
     // extract the type of auxiliary integrator from the input parameter list
-    auxintegrator_ = Core::UTILS::IntegralValue<Inpar::FSI::FluidMethod>(
+    auxintegrator_ = Core::UTILS::integral_value<Inpar::FSI::FluidMethod>(
         fsidyn.sublist("TIMEADAPTIVITY"), "AUXINTEGRATORFLUID");
 
     if (auxintegrator_ != Inpar::FSI::timada_fld_none)
@@ -180,7 +180,7 @@ void Adapter::FluidFSI::update()
 Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::relaxation_solve(Teuchos::RCP<Epetra_Vector> ivel)
 {
   const Epetra_Map* dofrowmap = discretization()->dof_row_map();
-  Teuchos::RCP<Epetra_Vector> relax = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> relax = Core::LinAlg::create_vector(*dofrowmap, true);
   interface()->insert_fsi_cond_vector(ivel, relax);
   fluidimpl_->linear_relaxation_solve(relax);
   return extract_interface_forces();
@@ -234,7 +234,7 @@ void Adapter::FluidFSI::apply_interface_velocities(Teuchos::RCP<Epetra_Vector> i
 
   const Teuchos::ParameterList& fsipart =
       Global::Problem::instance()->fsi_dynamic_params().sublist("PARTITIONED SOLVER");
-  if (Core::UTILS::IntegralValue<int>(fsipart, "DIVPROJECTION"))
+  if (Core::UTILS::integral_value<int>(fsipart, "DIVPROJECTION"))
   {
     // project the velocity field into a divergence free subspace
     // (might enhance the linear solver, but we are still not sure.)
@@ -289,7 +289,7 @@ void Adapter::FluidFSI::apply_mesh_velocity(Teuchos::RCP<const Epetra_Vector> gr
 void Adapter::FluidFSI::set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
   meshmap_->setup(*dis_->dof_row_map(nds_master), mm,
-      Core::LinAlg::SplitMap(*dis_->dof_row_map(nds_master), *mm));
+      Core::LinAlg::split_map(*dis_->dof_row_map(nds_master), *mm));
 }
 
 /*----------------------------------------------------------------------*/
@@ -493,7 +493,7 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
 
   // Compute the projection operator
   Teuchos::RCP<Core::LinAlg::SparseMatrix> BTB =
-      Core::LinAlg::MatrixMultiply(*B, true, *B, false, true);
+      Core::LinAlg::matrix_multiply(*B, true, *B, false, true);
 
   Teuchos::RCP<Epetra_Vector> BTvR = Teuchos::rcp(new Epetra_Vector(*domainmap));
   B->multiply(true, *velnp(), *BTvR);
@@ -513,7 +513,7 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(simplersolvernumber),
           discretization()->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   if (solver->params().isSublist("ML Parameters"))

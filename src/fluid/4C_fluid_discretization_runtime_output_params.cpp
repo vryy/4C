@@ -26,17 +26,17 @@ void Discret::ELEMENTS::FluidRuntimeOutputParams::init(
 
   // initialize the parameter values
 
-  output_velocity_state_ = Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "VELOCITY");
-  output_pressure_state_ = Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "PRESSURE");
+  output_velocity_state_ = Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "VELOCITY");
+  output_pressure_state_ = Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "PRESSURE");
   output_acceleration_state_ =
-      Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "ACCELERATION");
+      Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "ACCELERATION");
   output_displacement_state_ =
-      Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "DISPLACEMENT");
+      Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "DISPLACEMENT");
   output_gridvelocity_state_ =
-      Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "GRIDVELOCITY");
-  output_element_owner_ = Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "ELEMENT_OWNER");
-  output_element_gid_ = Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "ELEMENT_GID");
-  output_node_gid_ = Core::UTILS::IntegralValue<bool>(IO_fluid_paramslist, "NODE_GID");
+      Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "GRIDVELOCITY");
+  output_element_owner_ = Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "ELEMENT_OWNER");
+  output_element_gid_ = Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "ELEMENT_GID");
+  output_node_gid_ = Core::UTILS::integral_value<bool>(IO_fluid_paramslist, "NODE_GID");
 
   isinit_ = true;
 }

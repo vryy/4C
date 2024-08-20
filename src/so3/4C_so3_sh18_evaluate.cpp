@@ -1102,7 +1102,7 @@ void Discret::ELEMENTS::SoSh18::calc_consistent_defgrd(
   U_mod(0, 2) = glstrain_mod(5);
   U_mod(2, 0) = glstrain_mod(5);
 
-  Core::LinAlg::SYEV(U_mod, EW, U_mod);
+  Core::LinAlg::syev(U_mod, EW, U_mod);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.multiply(U_mod, EW);
   tmp2.multiply_nt(tmp, U_mod);
@@ -1113,7 +1113,7 @@ void Discret::ELEMENTS::SoSh18::calc_consistent_defgrd(
   // ******************************************************************
   U_disp.multiply_tn(defgrd_disp, defgrd_disp);
 
-  Core::LinAlg::SYEV(U_disp, EW, U_disp);
+  Core::LinAlg::syev(U_disp, EW, U_disp);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.multiply(U_disp, EW);
   tmp2.multiply_nt(tmp, U_disp);

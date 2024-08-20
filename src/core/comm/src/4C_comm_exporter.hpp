@@ -557,7 +557,7 @@ namespace Core::Communication
         std::vector<char> data;
         ParObject::extract_from_pack(index, recvblock, data);
 
-        ParObject* o = Factory(data);
+        ParObject* o = factory(data);
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
           FOUR_C_THROW("typename T in template does not implement ParObject (dynamic_cast failed)");

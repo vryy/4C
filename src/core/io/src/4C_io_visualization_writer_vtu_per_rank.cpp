@@ -23,7 +23,7 @@ Core::IO::VisualizationWriterVtuPerRank::VisualizationWriterVtuPerRank(
     std::string visualization_data_name)
     : VisualizationWriterBase(parameters, comm, std::move(visualization_data_name)),
       vtu_writer_(comm.MyPID(), comm.NumProc(),
-          std::pow(10, Core::IO::GetTotalDigitsToReserveInTimeStep(parameters)),
+          std::pow(10, Core::IO::get_total_digits_to_reserve_in_time_step(parameters)),
           parameters.directory_name_, (parameters.file_name_prefix_ + "-vtk-files"),
           visualization_data_name_, parameters.restart_from_name_, parameters.restart_time_,
           parameters.data_format_ == OutputDataFormat::binary)

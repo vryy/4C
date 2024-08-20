@@ -83,7 +83,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);
     const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
     std::vector<double> lambda_pair;
-    Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
+    Core::FE::extract_my_values(*lambda, lambda_pair, lambda_row_pos);
     for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
@@ -120,23 +120,23 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
         for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
         {
           // Get the local coordinate of this node.
-          xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, Mortar::discretization_);
+          xi_mortar_node = Core::FE::get_node_coordinates(i_node, Mortar::discretization_);
 
           // Get position and displacement of the mortar node.
-          GEOMETRYPAIR::EvaluatePosition<Beam>(xi_mortar_node(0), this->ele1pos_, r);
-          GEOMETRYPAIR::EvaluatePosition<Beam>(xi_mortar_node(0), this->ele1posref_, X);
+          GEOMETRYPAIR::evaluate_position<Beam>(xi_mortar_node(0), this->ele1pos_, r);
+          GEOMETRYPAIR::evaluate_position<Beam>(xi_mortar_node(0), this->ele1posref_, X);
           u = r;
           u -= X;
 
           // Get the discrete Lagrangian multiplier.
-          GEOMETRYPAIR::EvaluatePosition<Mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+          GEOMETRYPAIR::evaluate_position<Mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
-            displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
-            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::cast_to_double(X(dim)));
+            displacement.push_back(Core::FADUtils::cast_to_double(u(dim)));
+            lambda_vis.push_back(Core::FADUtils::cast_to_double(lambda_discret(dim)));
           }
 
           if (write_unique_ids)
@@ -189,18 +189,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
           xi = segment.get_etadata() + i_curve_segment *
                                            (segment.get_eta_b() - segment.get_etadata()) /
                                            (double)mortar_segments;
-          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1pos_, r);
-          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1posref_, X);
+          GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1pos_, r);
+          GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1posref_, X);
           u = r;
           u -= X;
-          GEOMETRYPAIR::EvaluatePosition<Mortar>(xi, q_lambda, lambda_discret);
+          GEOMETRYPAIR::evaluate_position<Mortar>(xi, q_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
-            displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
-            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::cast_to_double(X(dim)));
+            displacement.push_back(Core::FADUtils::cast_to_double(u(dim)));
+            lambda_vis.push_back(Core::FADUtils::cast_to_double(lambda_discret(dim)));
           }
         }
 
@@ -258,18 +258,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
               this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
           // Get the jacobian in the reference configuration.
-          GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
+          GEOMETRYPAIR::evaluate_position_derivative1<Beam>(
               projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
           // Jacobian including the segment length.
           segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
           // Evaluate the coupling load at this point.
-          GEOMETRYPAIR::EvaluatePosition<Mortar>(
+          GEOMETRYPAIR::evaluate_position<Mortar>(
               projected_gauss_point.get_eta(), q_lambda, lambda_gauss_point);
 
           // Get the position at this Gauss point.
-          GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.get_eta(),
+          GEOMETRYPAIR::evaluate_position<Beam>(projected_gauss_point.get_eta(),
               GEOMETRYPAIR::ElementDataToDouble<Beam>::to_double(this->ele1pos_), r_gauss_point);
 
           // Calculate moment around origin.

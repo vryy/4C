@@ -27,7 +27,7 @@ namespace Core::LinAlg
    * @return determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const Core::LinAlg::Matrix<2, 2, T>& A)
+  T determinant(const Core::LinAlg::Matrix<2, 2, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -44,7 +44,7 @@ namespace Core::LinAlg
    * @return determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const Core::LinAlg::Matrix<3, 3, T>& A)
+  T determinant(const Core::LinAlg::Matrix<3, 3, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -69,7 +69,7 @@ namespace Core::LinAlg
    * @return determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const Core::LinAlg::Matrix<4, 4, T>& A)
+  T determinant(const Core::LinAlg::Matrix<4, 4, T>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -107,7 +107,7 @@ namespace Core::LinAlg
 
   \return the determinant of the matrix A
   */
-  double DeterminantLU(const Core::LinAlg::SerialDenseMatrix& A);
+  double determinant_lu(const Core::LinAlg::SerialDenseMatrix& A);
 
 }  // namespace Core::LinAlg
 

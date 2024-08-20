@@ -365,7 +365,7 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::Group::get_rhs_norms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormF\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]) << ")"
           << std::endl;
       throw_error("get_rhs_norms", msg.str());
     }
@@ -398,7 +398,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_solution_update_rms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormWRMS\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]) << ")"
           << std::endl;
       throw_error("get_solution_update_rms", msg.str());
     }
@@ -467,7 +467,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_solution_update_norms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormIncr\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]) << ")"
           << std::endl;
       throw_error("get_solution_update_norms", msg.str());
     }
@@ -505,7 +505,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_previous_solution_norms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormUpdate\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]) << ")"
           << std::endl;
       throw_error("get_previous_solution_norms", msg.str());
     }

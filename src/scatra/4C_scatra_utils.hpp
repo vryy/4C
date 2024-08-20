@@ -21,21 +21,21 @@ FOUR_C_NAMESPACE_OPEN
 namespace ScaTra::ScaTraUtils
 {
   //! check, if s2i condition definition is consistent
-  void CheckConsistencyOfS2IConditions(Teuchos::RCP<Core::FE::Discretization> discretization);
+  void check_consistency_of_s2_i_conditions(Teuchos::RCP<Core::FE::Discretization> discretization);
 
   //! check, if nodes of input conditions equal s2i kinetics condition
-  void CheckConsistencyWithS2IKineticsCondition(const std::string& condition_to_be_tested,
+  void check_consistency_with_s2_i_kinetics_condition(const std::string& condition_to_be_tested,
       Teuchos::RCP<Core::FE::Discretization> discretization);
 
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
   template <const int dim>
-  Teuchos::RCP<Epetra_MultiVector> ComputeGradientAtNodesMeanAverage(
+  Teuchos::RCP<Epetra_MultiVector> compute_gradient_at_nodes_mean_average(
       Teuchos::RCP<Core::FE::Discretization> discret, const Teuchos::RCP<const Epetra_Vector> state,
       const int scatra_dofid);
 
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
   template <const int dim, Core::FE::CellType distype>
-  Core::LinAlg::Matrix<dim, 1> DoMeanValueAveragingOfElementGradientNode(
+  Core::LinAlg::Matrix<dim, 1> do_mean_value_averaging_of_element_gradient_node(
       Teuchos::RCP<Core::FE::Discretization> discret,
       std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
       const int nodegid, const int scatra_dofid);

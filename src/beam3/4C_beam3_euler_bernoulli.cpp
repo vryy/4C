@@ -378,7 +378,7 @@ void Discret::ELEMENTS::Beam3eb::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -474,7 +474,7 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
       // instead of Hermite polynomials used to calculate the reference geometry. Since the
       // reference geometry for this beam element must always be a straight line there is no
       // difference between theses to types of interpolation functions.
-      Core::FE::shape_function_1D_deriv1(shapefuncderiv, xi, distype);
+      Core::FE::shape_function_1d_deriv1(shapefuncderiv, xi, distype);
 
       Tref_[numgp].clear();
 

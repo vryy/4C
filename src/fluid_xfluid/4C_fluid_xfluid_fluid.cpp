@@ -94,7 +94,7 @@ void FLD::XFluidFluid::create_initial_state()
   // base class CreateInitialState
   XFluid::create_initial_state();
 
-  if (Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
+  if (Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
       Inpar::FLUID::no_error_calculation)
   {
     mc_xff_->redistribute_for_error_calculation();
@@ -102,7 +102,7 @@ void FLD::XFluidFluid::create_initial_state()
 
   // recreate internal faces of DiscretizationFaces (as the distribution of the embedded
   // discretization may have changed)
-  if (Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
+  if (Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
           Inpar::FLUID::no_error_calculation ||
       mc_xff_->get_averaging_strategy() == Inpar::XFEM::Embedded_Sided ||
       mc_xff_->get_averaging_strategy() == Inpar::XFEM::Mean)
@@ -114,7 +114,7 @@ void FLD::XFluidFluid::create_initial_state()
   // domain
   {
     Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-    if (xff_eos_pres_emb_layer_ && Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(*stabparams,
+    if (xff_eos_pres_emb_layer_ && Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams,
                                        "STABTYPE") == Inpar::FLUID::stabtype_residualbased)
     {
       Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
@@ -159,17 +159,17 @@ void FLD::XFluidFluid::set_x_fluid_fluid_params()
   // additional eos pressure stabilization on the elements of the embedded discretization,
   // that contribute to the interface
   xff_eos_pres_emb_layer_ =
-      Core::UTILS::IntegralValue<bool>(params_xf_stab, "XFF_EOS_PRES_EMB_LAYER");
+      Core::UTILS::integral_value<bool>(params_xf_stab, "XFF_EOS_PRES_EMB_LAYER");
 
   // whether an eigenvalue problem has to be solved to estimate Nitsche's parameter
   nitsche_evp_ =
-      (Core::UTILS::IntegralValue<Inpar::XFEM::ViscStabTraceEstimate>(params_xf_stab,
+      (Core::UTILS::integral_value<Inpar::XFEM::ViscStabTraceEstimate>(params_xf_stab,
            "VISC_STAB_TRACE_ESTIMATE") == Inpar::XFEM::ViscStab_TraceEstimate_eigenvalue);
 
   // get general XFEM/XFFSI specific parameters
-  monolithic_approach_ = Core::UTILS::IntegralValue<Inpar::XFEM::MonolithicXffsiApproach>(
+  monolithic_approach_ = Core::UTILS::integral_value<Inpar::XFEM::MonolithicXffsiApproach>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "MONOLITHIC_XFFSI_APPROACH");
-  xfem_timeintapproach_ = Core::UTILS::IntegralValue<Inpar::XFEM::XFluidFluidTimeInt>(
+  xfem_timeintapproach_ = Core::UTILS::integral_value<Inpar::XFEM::XFluidFluidTimeInt>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUIDFLUID_TIMEINT");
 
   // get information about active shape derivatives
@@ -286,11 +286,11 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FLD::XFluidFluid::block_system
   // F_{II}, F_{I\Gamma}, F_{\GammaI}, F_{\Gamma\Gamma}
   Teuchos::RCP<Core::LinAlg::SparseMatrix> fii, fig, fgi, fgg;
   // Split sparse system matrix into blocks according to the given maps
-  Core::LinAlg::SplitMatrix2x2(
+  Core::LinAlg::split_matrix2x2(
       sparsesysmat, innermap, condmap, innermap, condmap, fii, fig, fgi, fgg);
   // create a new block matrix out of the 4 blocks
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockmat =
-      Core::LinAlg::BlockMatrix2x2(*fii, *fig, *fgi, *fgg);
+      Core::LinAlg::block_matrix2x2(*fii, *fig, *fgi, *fgg);
 
   if (blockmat == Teuchos::null) FOUR_C_THROW("Creation of fluid-fluid block matrix failed.");
 
@@ -340,7 +340,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::get_new_state()
   // increment vector for merged background & embedded fluid
   // (not the classical Newton increment but the difference to
   // the value at the last time step)
-  stepinc_ = Core::LinAlg::CreateVector(*state->xffluiddofrowmap_, true);
+  stepinc_ = Core::LinAlg::create_vector(*state->xffluiddofrowmap_, true);
 
   // build a merged map from fluid-fluid dbc-maps
   state->create_merged_dbc_map_extractor(embedded_fluid_->get_dbc_map_extractor());
@@ -508,7 +508,7 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
 
   //------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> residual_col =
-      Core::LinAlg::CreateVector(*xdiscret->dof_col_map(), true);
+      Core::LinAlg::create_vector(*xdiscret->dof_col_map(), true);
 
   //------------------------------------------------------------
   const Epetra_Map* rmap = nullptr;
@@ -569,9 +569,9 @@ bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
 {
   std::vector<Teuchos::RCP<const Epetra_Vector>> oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = Core::Rebalance::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> velncol = Core::Rebalance::get_col_version_of_row_vector(
       embedded_fluid_->discretization(), embedded_fluid_->veln());
-  Teuchos::RCP<const Epetra_Vector> accncol = Core::Rebalance::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> accncol = Core::Rebalance::get_col_version_of_row_vector(
       embedded_fluid_->discretization(), embedded_fluid_->accn());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
@@ -580,8 +580,8 @@ bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
   std::map<int, std::set<int>>& projection_nodeToDof =
       xfluid_timeint->get_node_to_dof_map_for_reconstr(Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
-  Teuchos::RCP<const Epetra_Vector> disp =
-      Core::Rebalance::GetColVersionOfRowVector(embedded_fluid_->discretization(), dispnpoldstate_);
+  Teuchos::RCP<const Epetra_Vector> disp = Core::Rebalance::get_col_version_of_row_vector(
+      embedded_fluid_->discretization(), dispnpoldstate_);
   projector_->set_source_position_vector(disp);
   projector_->set_source_state_vectors(oldStateVectors);
 
@@ -654,19 +654,19 @@ void FLD::XFluidFluid::interpolate_embedded_state_vectors()
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = Core::Rebalance::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> velncol = Core::Rebalance::get_col_version_of_row_vector(
       embedded_fluid_->discretization(), embedded_fluid_->velnp());
-  Teuchos::RCP<const Epetra_Vector> accncol = Core::Rebalance::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> accncol = Core::Rebalance::get_col_version_of_row_vector(
       embedded_fluid_->discretization(), embedded_fluid_->accnp());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
-  Teuchos::RCP<const Epetra_Vector> srcdisp =
-      Core::Rebalance::GetColVersionOfRowVector(embedded_fluid_->discretization(), dispnpoldstate_);
+  Teuchos::RCP<const Epetra_Vector> srcdisp = Core::Rebalance::get_col_version_of_row_vector(
+      embedded_fluid_->discretization(), dispnpoldstate_);
   embedded_projector.set_source_position_vector(srcdisp);
   embedded_projector.set_source_state_vectors(oldStateVectors);
 
-  Teuchos::RCP<const Epetra_Vector> tardisp = Core::Rebalance::GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> tardisp = Core::Rebalance::get_col_version_of_row_vector(
       embedded_fluid_->discretization(), embedded_fluid_->dispnp());
 
   embedded_projector.project_in_full_target_discretization(newRowStateVectors, tardisp);
@@ -686,7 +686,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   // file
 
   Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   if (calcerr == Inpar::FLUID::no_error_calculation) return Teuchos::null;
   // set the time to evaluate errors
@@ -958,7 +958,8 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
       std::cout.precision(8);
       Core::IO::cout << Core::IO::endl
                      << "---- error norm for analytical solution Nr. "
-                     << Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error")
+                     << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
+                            *params_, "calculate error")
                      << " ----------" << Core::IO::endl;
       Core::IO::cout << "-------------- domain error norms (background)------------"
                      << Core::IO::endl;

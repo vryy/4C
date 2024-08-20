@@ -264,7 +264,7 @@ void FLD::XFluid::init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   // load GMSH output flags
-  if (Core::UTILS::IntegralValue<int>(Global::Problem::instance()->io_params(), "OUTPUT_GMSH"))
+  if (Core::UTILS::integral_value<int>(Global::Problem::instance()->io_params(), "OUTPUT_GMSH"))
   {
     output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(
         params_->sublist("XFEM"), xdiscret_, condition_manager_, include_inner_));
@@ -277,7 +277,7 @@ void FLD::XFluid::init(bool createinitialstate)
   // -------------------------------------------------------------------
   // Create velpresssplitter for uncut discretization.
   velpressplitter_std_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
-  Core::LinAlg::CreateMapExtractorFromDiscretization(
+  Core::LinAlg::create_map_extractor_from_discretization(
       *discret_, xdiscret_->initial_dof_set(), numdim_, *velpressplitter_std_);
 
   // -------------------------------------------------------------------
@@ -286,11 +286,11 @@ void FLD::XFluid::init(bool createinitialstate)
 
   if (alefluid_)
   {
-    dispnp_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
-    dispn_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
-    dispnm_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
-    gridvnp_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
-    gridvn_ = Core::LinAlg::CreateVector(*xdiscret_->initial_dof_row_map(), true);
+    dispnp_ = Core::LinAlg::create_vector(*xdiscret_->initial_dof_row_map(), true);
+    dispn_ = Core::LinAlg::create_vector(*xdiscret_->initial_dof_row_map(), true);
+    dispnm_ = Core::LinAlg::create_vector(*xdiscret_->initial_dof_row_map(), true);
+    gridvnp_ = Core::LinAlg::create_vector(*xdiscret_->initial_dof_row_map(), true);
+    gridvn_ = Core::LinAlg::create_vector(*xdiscret_->initial_dof_row_map(), true);
   }
 
 
@@ -347,12 +347,12 @@ void FLD::XFluid::set_x_fluid_params()
   // get the maximal number of dofsets that are possible to use
   maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
-  xfluid_timintapproach_ =
-      Core::UTILS::IntegralValue<Inpar::XFEM::XFluidTimeIntScheme>(params_xf_gen, "XFLUID_TIMEINT");
+  xfluid_timintapproach_ = Core::UTILS::integral_value<Inpar::XFEM::XFluidTimeIntScheme>(
+      params_xf_gen, "XFLUID_TIMEINT");
   xfluid_timint_check_interfacetips_ =
-      (bool)Core::UTILS::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_INTERFACETIPS");
-  xfluid_timint_check_sliding_on_surface_ =
-      (bool)Core::UTILS::IntegralValue<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
+      (bool)Core::UTILS::integral_value<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_INTERFACETIPS");
+  xfluid_timint_check_sliding_on_surface_ = (bool)Core::UTILS::integral_value<int>(
+      params_xf_gen, "XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
 
   // for monolithic problems with xfluid (varying dofrowmaps)
   permutation_map_ = Teuchos::rcp(new std::map<int, int>);
@@ -360,7 +360,7 @@ void FLD::XFluid::set_x_fluid_params()
 
   // get interface stabilization specific parameters
   coupling_method_ =
-      Core::UTILS::IntegralValue<Inpar::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
+      Core::UTILS::integral_value<Inpar::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   {
@@ -377,16 +377,16 @@ void FLD::XFluid::set_x_fluid_params()
     // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to
     // Nitsche's method has to be integrated
     bool ghost_penalty =
-        ((bool)Core::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_STAB") or
+        ((bool)Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_STAB") or
             (bool)
-                Core::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_TRANSIENT_STAB") or
-            (bool) Core::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_2nd_STAB"));
+                Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_TRANSIENT_STAB") or
+            (bool) Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_2nd_STAB"));
 
     // determine, whether face-based stabilizing terms are active
     eval_eos_ = edge_based || ghost_penalty;
 
     ghost_penalty_add_inner_faces_ =
-        (bool)Core::UTILS::IntegralValue<int>(params_xf_stab, "GHOST_PENALTY_ADD_INNER_FACES");
+        (bool)Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_ADD_INNER_FACES");
   }
 
   if (myrank_ == 0)
@@ -474,7 +474,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
     faceparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
     faceparams.set<int>(
-        "STABTYPE", Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(
+        "STABTYPE", Core::UTILS::integral_value<Inpar::FLUID::StabType>(
                         params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
     faceparams.set<int>("Physical Type", physicaltype_);
@@ -709,7 +709,7 @@ void FLD::XFluid::extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> di
     std::vector<int> lm;
     dis->initial_dof(node, lm);  // initial dofs!
     std::vector<double> mydisp;
-    Core::FE::ExtractMyValues(*dispnp_col, mydisp, lm);
+    Core::FE::extract_my_values(*dispnp_col, mydisp, lm);
     if (mydisp.size() < 3) FOUR_C_THROW("we need at least 3 dofs here");
 
     Core::LinAlg::Matrix<3, 1> currpos;
@@ -1197,7 +1197,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
               // assemble rhC_s_col = rhC_ui_col
               Core::LinAlg::SerialDenseVector rhC_s_eptvec(
                   Teuchos::View, couplingmatrices[2].values(), patchlm.size());
-              Core::LinAlg::Assemble(
+              Core::LinAlg::assemble(
                   *(coup_state->rhC_s_col_), rhC_s_eptvec, patchlm, mypatchlmowner);
             }
 
@@ -1229,7 +1229,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
         // assembled do not exclude non-row nodes (modify the real owner to myowner) after assembly
         // the col vector it has to be exported to the row residual_ vector using the 'Add' flag to
         // get the right value for shared nodes
-        Core::LinAlg::Assemble(
+        Core::LinAlg::assemble(
             *strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
 
         set_counter += 1;
@@ -1279,7 +1279,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
       // assembled do not exclude non-row nodes (modify the real owner to myowner) after assembly
       // the col vector it has to be exported to the row residual_ vector using the 'Add' flag to
       // get the right value for shared nodes
-      Core::LinAlg::Assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
+      Core::LinAlg::assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
     }
   }  // loop row elements
 
@@ -1322,7 +1322,7 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
           dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
       if (face_ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
 
-      bool gmsh_EOS_out(Core::UTILS::IntegralValue<int>(params_->sublist("XFEM"), "GMSH_EOS_OUT"));
+      bool gmsh_EOS_out(Core::UTILS::integral_value<int>(params_->sublist("XFEM"), "GMSH_EOS_OUT"));
       edgestab_->evaluate_edge_stab_ghost_penalty(faceparams, discret_, face_ele, sysmat,
           residual_col, wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
     }
@@ -1339,7 +1339,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::integrate_shape_function");
 
   // create an column vector for assembly over row elements that has to be communicated at the end
-  Teuchos::RCP<Epetra_Vector> w_col = Core::LinAlg::CreateVector(*discret.dof_col_map(), true);
+  Teuchos::RCP<Epetra_Vector> w_col = Core::LinAlg::create_vector(*discret.dof_col_map(), true);
 
 
   //----------------------------------------------------------------------
@@ -1462,7 +1462,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
         // assembled do not exclude non-row nodes (modify the real owner to myowner) after assembly
         // the col vector it has to be exported to the row residual_ vector using the 'Add' flag to
         // get the right value for shared nodes
-        Core::LinAlg::Assemble(
+        Core::LinAlg::assemble(
             *strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
 
         set_counter += 1;
@@ -1508,7 +1508,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
       // assembled do not exclude non-row nodes (modify the real owner to myowner) after assembly
       // the col vector it has to be exported to the row w_ vector using the 'Add' flag to get the
       // right value for shared nodes
-      Core::LinAlg::Assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
+      Core::LinAlg::assemble(*strategy.systemvector1(), strategy.elevector1(), la[0].lm_, myowner);
     }
   }
 
@@ -1544,7 +1544,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
 
   residual_gp->PutScalar(0.0);
   Teuchos::RCP<Epetra_Vector> residual_gp_col =
-      Core::LinAlg::CreateVector(*state_->xfluiddofcolmap_, true);
+      Core::LinAlg::create_vector(*state_->xfluiddofcolmap_, true);
 
   //----------------------------------------------------------------------
   // set general vector values needed by elements
@@ -1650,7 +1650,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
 
   // how is the analytical solution available (implemented of via function?)
   Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   if (calcerr != Inpar::FLUID::no_error_calculation)
   {
@@ -1784,7 +1784,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
         std::cout.precision(8);
         Core::IO::cout << Core::IO::endl
                        << "---- error norm for analytical solution Nr. "
-                       << Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(
+                       << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
                               *params_, "calculate error")
                        << " ----------" << Core::IO::endl;
         Core::IO::cout << "-------------- domain error norms -----------------------"
@@ -2106,7 +2106,7 @@ void FLD::XFluid::check_x_fluid_params() const
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   if (ghost_penalty_add_inner_faces_ &&
-      !(Core::UTILS::IntegralValue<Cut::NodalDofSetStrategy>(params_xfem,
+      !(Core::UTILS::integral_value<Cut::NodalDofSetStrategy>(params_xfem,
             "NODAL_DOFSET_STRATEGY") == Cut::NDS_Strategy_OneDofset_PerNodeAndPosition))
     FOUR_C_THROW(
         "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
@@ -2883,7 +2883,7 @@ void FLD::XFluid::update_krylov_space_projection()
 
   // construct c by setting all pressure values to 1.0 and export to c
   presmode->PutScalar(1.0);
-  Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
   Core::LinAlg::export_to(*presmode, *tmpc);
   Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
   Core::LinAlg::export_to(*tmpkspc, *c0);
@@ -2973,7 +2973,7 @@ void FLD::XFluid::update_by_increments(
     //   the DBCs are set again in velnp
 
     Teuchos::RCP<Epetra_Vector> velnp_tmp =
-        Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+        Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
     state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
     state_->incvel_->Update(1.0, *state_->veln_, 1.0);
@@ -4137,7 +4137,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
   Teuchos::RCP<Core::LinAlg::Solver> solver_gp = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
       discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"),
       false));
 
@@ -4173,11 +4173,11 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
 
   Teuchos::RCP<Epetra_Vector> zeros_gp =
-      Core::LinAlg::CreateVector(*state_->xfluiddofrowmap_, true);
+      Core::LinAlg::create_vector(*state_->xfluiddofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> residual_gp =
-      Core::LinAlg::CreateVector(*state_->xfluiddofrowmap_, true);
+      Core::LinAlg::create_vector(*state_->xfluiddofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> incvel_gp =
-      Core::LinAlg::CreateVector(*state_->xfluiddofrowmap_, true);
+      Core::LinAlg::create_vector(*state_->xfluiddofrowmap_, true);
 
   dtsolve_ = 0.0;
   dtele_ = 0.0;
@@ -4970,7 +4970,8 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   state_->incvel_->PutScalar(0.0);
 
   // for solution increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc =
+      Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   // copy last converged solution
   dbcinc->Update(1.0, *state_->veln_, 0.0);
@@ -5010,7 +5011,8 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
 
   // add linear reaction forces to residual
   // linear reactions
-  Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> freact =
+      Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
   state_->sysmat_->multiply(false, *dbcinc, *freact);
 
   // add linear reaction forces due to prescribed Dirichlet BCs
@@ -5069,7 +5071,8 @@ void FLD::XFluid::update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> ve
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::CreateVector(*(discret_->dof_row_map(0)), true);
+    Teuchos::RCP<Epetra_Vector> aux =
+        Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
     aux->Update(1.0, *state_->velnp_, 1.0, *vel, 0.0);
     //    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), velnp_);
     state_->dbcmaps_->insert_cond_vector(
@@ -5279,7 +5282,7 @@ void FLD::XFluid::update_gridv()
   // from input file data
   const Teuchos::ParameterList& fluiddynparams =
       Global::Problem::instance()->fluid_dynamic_params();
-  const int order = Core::UTILS::IntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+  const int order = Core::UTILS::integral_value<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   Teuchos::RCP<Epetra_Vector> gridv = Teuchos::rcp(new Epetra_Vector(dispnp_->Map(), true));
 

@@ -22,7 +22,7 @@ namespace
    */
 
   template <unsigned int n>
-  void AssertIsUnitaryMatrix(const Core::LinAlg::Matrix<n, n>& M)
+  void assert_is_unitary_matrix(const Core::LinAlg::Matrix<n, n>& M)
   {
     Core::LinAlg::Matrix<n, n> MHM(false);
     MHM.multiply_tn(M, M);
@@ -31,7 +31,7 @@ namespace
       for (unsigned int j = 0; j < n; ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
   }
 
-  void AssertIsUnitaryMatrix(const Core::LinAlg::SerialDenseMatrix& M)
+  void assert_is_unitary_matrix(const Core::LinAlg::SerialDenseMatrix& M)
   {
     Core::LinAlg::SerialDenseMatrix MHM(M.numRows(), M.numCols(), false);
 
@@ -42,7 +42,7 @@ namespace
   }
 
   template <unsigned int rows, unsigned int cols, size_t length>
-  void AssertSVDResult(const Core::LinAlg::Matrix<rows, cols>& A,
+  void assert_svd_result(const Core::LinAlg::Matrix<rows, cols>& A,
       const Core::LinAlg::Matrix<rows, rows>& Q, const Core::LinAlg::Matrix<rows, cols>& S,
       const Core::LinAlg::Matrix<cols, cols>& VT, const std::array<double, length>& singularValues)
   {
@@ -65,12 +65,12 @@ namespace
       }
 
     // check Q and VT are unitary matrices
-    AssertIsUnitaryMatrix(Q);
-    AssertIsUnitaryMatrix(VT);
+    assert_is_unitary_matrix(Q);
+    assert_is_unitary_matrix(VT);
   }
 
   template <size_t length>
-  void AssertSVDResult(const Core::LinAlg::SerialDenseMatrix& A,
+  void assert_svd_result(const Core::LinAlg::SerialDenseMatrix& A,
       const Core::LinAlg::SerialDenseMatrix& Q, const Core::LinAlg::SerialDenseMatrix& S,
       const Core::LinAlg::SerialDenseMatrix& VT, const std::array<double, length>& singularValues)
   {
@@ -95,8 +95,8 @@ namespace
       }
 
     // check Q and VT are unitary matrices
-    AssertIsUnitaryMatrix(Q);
-    AssertIsUnitaryMatrix(VT);
+    assert_is_unitary_matrix(Q);
+    assert_is_unitary_matrix(VT);
   }
 
 
@@ -121,9 +121,9 @@ namespace
 
     Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD2x2SerialDenseMatrix)
@@ -144,9 +144,9 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD3x3Matrix)
@@ -172,9 +172,9 @@ namespace
 
     Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD3x3SerialDenseMatrix)
@@ -200,9 +200,9 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD4x4Matrix)
@@ -236,9 +236,9 @@ namespace
 
     Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD4x4SerialDenseMatrix)
@@ -272,9 +272,9 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD3x2Matrix)
@@ -297,9 +297,9 @@ namespace
 
     Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD3x2SerialDenseMatrix)
@@ -322,9 +322,9 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD2x3Matrix)
@@ -347,9 +347,9 @@ namespace
 
     Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD2x3SerialDenseMatrix)
@@ -372,9 +372,9 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD1x3Matrix)
@@ -394,9 +394,9 @@ namespace
 
     Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD1x3SerialDenseMatrix)
@@ -416,9 +416,9 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD3x1Matrix)
@@ -438,9 +438,9 @@ namespace
 
     Core::LinAlg::Matrix<cols, cols, double> VT;
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 
   TEST(LinalgDenseMatrixSVDTest, SVD3x1SerialDenseMatrix)
@@ -460,9 +460,9 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix VT(cols, cols, false);
 
-    Core::LinAlg::SVD(A, Q, S, VT);
+    Core::LinAlg::svd(A, Q, S, VT);
 
-    AssertSVDResult(A, Q, S, VT, singular_values);
+    assert_svd_result(A, Q, S, VT, singular_values);
   }
 }  // namespace
 

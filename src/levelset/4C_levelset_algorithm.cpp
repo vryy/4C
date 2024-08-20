@@ -104,7 +104,7 @@ void ScaTra::LevelSetAlgorithm::setup()
   //         initialize reinitialization
   // -------------------------------------------------------------------
   // get reinitialization strategy
-  reinitaction_ = Core::UTILS::IntegralValue<Inpar::ScaTra::ReInitialAction>(
+  reinitaction_ = Core::UTILS::integral_value<Inpar::ScaTra::ReInitialAction>(
       levelsetparams_->sublist("REINITIALIZATION"), "REINITIALIZATION");
 
   if (reinitaction_ != Inpar::ScaTra::reinitaction_none)
@@ -120,7 +120,7 @@ void ScaTra::LevelSetAlgorithm::setup()
     if (reinitaction_ == Inpar::ScaTra::reinitaction_signeddistancefunction)
     {
       // reinitialization within band around interface only
-      reinitband_ = Core::UTILS::IntegralValue<int>(
+      reinitband_ = Core::UTILS::integral_value<int>(
           levelsetparams_->sublist("REINITIALIZATION"), "REINITBAND");
     }
 
@@ -128,7 +128,7 @@ void ScaTra::LevelSetAlgorithm::setup()
     if (reinitaction_ == Inpar::ScaTra::reinitaction_sussman)
     {
       // vector for initial phi (solution of level-set equation) of reinitialization process
-      initialphireinit_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+      initialphireinit_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
       // get pseudo-time step size
       dtau_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("TIMESTEPREINIT");
@@ -143,11 +143,11 @@ void ScaTra::LevelSetAlgorithm::setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // flag to activate corrector step
-      reinitcorrector_ = Core::UTILS::IntegralValue<int>(
+      reinitcorrector_ = Core::UTILS::integral_value<int>(
           levelsetparams_->sublist("REINITIALIZATION"), "CORRECTOR_STEP");
 
       // flag to activate calculation of node-based velocity
-      useprojectedreinitvel_ = Core::UTILS::IntegralValue<Inpar::ScaTra::VelReinit>(
+      useprojectedreinitvel_ = Core::UTILS::integral_value<Inpar::ScaTra::VelReinit>(
           levelsetparams_->sublist("REINITIALIZATION"), "VELREINIT");
 
       if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based)
@@ -160,7 +160,7 @@ void ScaTra::LevelSetAlgorithm::setup()
       }
 
       // get dimension
-      lsdim_ = Core::UTILS::IntegralValue<Inpar::ScaTra::LSDim>(
+      lsdim_ = Core::UTILS::integral_value<Inpar::ScaTra::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
     }
 
@@ -173,11 +173,11 @@ void ScaTra::LevelSetAlgorithm::setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // get dimension
-      lsdim_ = Core::UTILS::IntegralValue<Inpar::ScaTra::LSDim>(
+      lsdim_ = Core::UTILS::integral_value<Inpar::ScaTra::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
 
       // use L2-projection of grad phi and related quantities
-      projection_ = Core::UTILS::IntegralValue<int>(
+      projection_ = Core::UTILS::integral_value<int>(
           levelsetparams_->sublist("REINITIALIZATION"), "PROJECTION");
       if (projection_ == true)
       {
@@ -190,11 +190,11 @@ void ScaTra::LevelSetAlgorithm::setup()
     }
 
     // flag to correct volume after reinitialization
-    reinitvolcorrection_ = Core::UTILS::IntegralValue<int>(
+    reinitvolcorrection_ = Core::UTILS::integral_value<int>(
         levelsetparams_->sublist("REINITIALIZATION"), "REINITVOLCORRECTION");
 
     // initialize level-set to signed distance function if required
-    if (Core::UTILS::IntegralValue<int>(
+    if (Core::UTILS::integral_value<int>(
             levelsetparams_->sublist("REINITIALIZATION"), "REINIT_INITIAL"))
     {
       reinitialization();
@@ -214,7 +214,7 @@ void ScaTra::LevelSetAlgorithm::setup()
   // -------------------------------------------------------------------
   // set potential extraction of interface velocity
   extract_interface_vel_ =
-      Core::UTILS::IntegralValue<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
+      Core::UTILS::integral_value<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
   if (extract_interface_vel_)
   {
     // set number of element layers around interface where velocity field form Navier-Stokes is kept

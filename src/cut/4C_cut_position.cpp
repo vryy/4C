@@ -50,7 +50,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::Matrix<rdi
 {
   const PositionFactory factory;
   const unsigned probdim = factory.n_prob_dim();
-  const unsigned num_nodes_ele = Core::FE::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = Core::FE::get_number_of_element_nodes(distype);
 
   if (rdim < probdim or cdim != num_nodes_ele)
     FOUR_C_THROW(
@@ -64,7 +64,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::Matrix<rdi
   if (rdim > probdim)
   {
     xyze_eptra.shape(probdim, num_nodes_ele);
-    FixMatrixShape(xyze, xyze_eptra);
+    fix_matrix_shape(xyze, xyze_eptra);
     xyze_ptr = xyze_eptra.values();
   }
 
@@ -87,7 +87,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::SerialDens
 {
   const PositionFactory factory;
   const unsigned probdim = factory.n_prob_dim();
-  const unsigned num_nodes_ele = Core::FE::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = Core::FE::get_number_of_element_nodes(distype);
 
   if (static_cast<unsigned>(xyze.numRows()) < probdim or
       static_cast<unsigned>(xyze.numCols()) != num_nodes_ele)
@@ -102,7 +102,7 @@ Teuchos::RCP<Cut::Position> Cut::Position::create(const Core::LinAlg::SerialDens
   if (static_cast<unsigned>(xyze.numRows()) > probdim)
   {
     xyze_eptra.shape(probdim, num_nodes_ele);
-    FixMatrixShape(xyze, xyze_eptra);
+    fix_matrix_shape(xyze, xyze_eptra);
     xyze_ptr = xyze_eptra.values();
   }
 
@@ -308,7 +308,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
     case Core::FE::CellType::wedge6:
       return create_concrete_position<Core::FE::CellType::wedge6>(element, point, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::cell_type_to_string(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -347,7 +347,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
     case Core::FE::CellType::wedge6:
       return create_concrete_position<Core::FE::CellType::wedge6>(element, xyz, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::cell_type_to_string(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -384,7 +384,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(const double* 
     case Core::FE::CellType::wedge6:
       return create_concrete_position<Core::FE::CellType::wedge6>(xyze, xyz, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::cell_type_to_string(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -400,7 +400,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
   if (distype == Core::FE::CellType::dis_none)
   {
     plain_element_set elements;
-    FindCommonElements(nodes, elements);
+    find_common_elements(nodes, elements);
     if (elements.size() != 1)
       FOUR_C_THROW("Couldn't find a unique element corresponding to the given nodes.");
 
@@ -432,7 +432,7 @@ Teuchos::RCP<Cut::Position> Cut::PositionFactory::create_position(
     case Core::FE::CellType::wedge6:
       return create_concrete_position<Core::FE::CellType::wedge6>(nodes, xyz, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::cell_type_to_string(distype).c_str());
       exit(EXIT_FAILURE);
   }
 

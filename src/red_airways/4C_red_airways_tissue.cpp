@@ -150,7 +150,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
 
   // Dynamic relaxation type
   relaxtype_ =
-      Core::UTILS::IntegralValue<Inpar::ArteryNetwork::Relaxtype3D0D>(rawtisdyn, "RELAXTYPE");
+      Core::UTILS::integral_value<Inpar::ArteryNetwork::Relaxtype3D0D>(rawtisdyn, "RELAXTYPE");
 
   // Get normal direction
   // -> if normal == 1.0 : the pressure will be implemented from inside the element to the outside
@@ -490,7 +490,7 @@ void Airway::RedAirwayTissue::setup_red_airways()
   std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->params());
 

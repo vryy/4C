@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string CONTACT::VecBlockTypeToStr(const CONTACT::VecBlockType bt)
+std::string CONTACT::vec_block_type_to_str(const CONTACT::VecBlockType bt)
 {
   switch (bt)
   {
@@ -43,7 +43,7 @@ std::string CONTACT::VecBlockTypeToStr(const CONTACT::VecBlockType bt)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::UTILS::GetContactConditions(
+int CONTACT::UTILS::get_contact_conditions(
     std::vector<Core::Conditions::Condition*>& contact_conditions,
     const std::vector<Core::Conditions::Condition*>& beamandsolidcontactconditions,
     const bool& throw_error)
@@ -81,7 +81,7 @@ int CONTACT::UTILS::GetContactConditions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::UTILS::GetContactConditionGroups(
+int CONTACT::UTILS::get_contact_condition_groups(
     std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
     const Core::FE::Discretization& discret, const bool& throw_error)
 {
@@ -91,16 +91,16 @@ int CONTACT::UTILS::GetContactConditionGroups(
 
   std::vector<Core::Conditions::Condition*> cconds(0);
   int err =
-      CONTACT::UTILS::GetContactConditions(cconds, beamandsolidcontactconditions, throw_error);
+      CONTACT::UTILS::get_contact_conditions(cconds, beamandsolidcontactconditions, throw_error);
   // direct return, if an error occurred
   if (err) return err;
-  CONTACT::UTILS::GetContactConditionGroups(ccond_grps, cconds);
+  CONTACT::UTILS::get_contact_condition_groups(ccond_grps, cconds);
   return 0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::GetContactConditionGroups(
+void CONTACT::UTILS::get_contact_condition_groups(
     std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
     const std::vector<Core::Conditions::Condition*>& cconds)
 {
@@ -163,8 +163,8 @@ void CONTACT::UTILS::GetContactConditionGroups(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vector<bool>& isself,
-    const std::vector<Core::Conditions::Condition*>& cond_grp)
+void CONTACT::UTILS::get_master_slave_side_info(std::vector<bool>& isslave,
+    std::vector<bool>& isself, const std::vector<Core::Conditions::Condition*>& cond_grp)
 {
   bool hasslave = false;
   bool hasmaster = false;
@@ -225,7 +225,7 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
 /*----------------------------------------------------------------------------*
  | gather initialization information                            schmidt 11/18 |
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
+void CONTACT::UTILS::get_initialization_info(bool& Two_half_pass,
     bool& Check_nonsmooth_selfcontactsurface, bool& Searchele_AllProc, std::vector<bool>& isactive,
     std::vector<bool>& isslave, std::vector<bool>& isself,
     const std::vector<Core::Conditions::Condition*>& cond_grp)
@@ -327,10 +327,10 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
         (problemtype != Core::ProblemType::fpsi_xfem) and (problemtype != Core::ProblemType::ssi))
       FOUR_C_THROW(
           "two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
-    if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+    if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         Inpar::CONTACT::solution_nitsche)
       FOUR_C_THROW("two half pass algorithm only with nitsche contact formulation");
-    if (Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(
+    if (Core::UTILS::integral_value<Inpar::CONTACT::NitscheWeighting>(
             contact, "NITSCHE_WEIGHTING") != Inpar::CONTACT::NitWgt_harmonic)
       FOUR_C_THROW("two half pass algorithm only with harmonic weighting");
   }
@@ -346,7 +346,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
         "approach so far!");
   }
 
-  if (Two_half_pass && (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(
+  if (Two_half_pass && (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(
                             mortar, "ALGORITHM") != Inpar::Mortar::algorithm_gpts))
   {
     FOUR_C_THROW(
@@ -356,7 +356,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
 
   if (Check_nonsmooth_selfcontactsurface &&
-      (!Core::UTILS::IntegralValue<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
+      (!Core::UTILS::integral_value<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
   {
     FOUR_C_THROW(
         "ERROR: You activated the self contact condition reference configuration check for "
@@ -367,7 +367,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int interface_id,
+void CONTACT::UTILS::write_conservation_data_to_file(const int mypid, const int interface_id,
     const int nln_iter, const Core::LinAlg::SerialDenseMatrix& conservation_data,
     const std::string& ofile_path, const std::string& prefix)
 {
@@ -375,10 +375,10 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 
   static std::vector<std::string> done_prefixes;
 
-  const std::string path(Core::IO::ExtractPath(ofile_path));
+  const std::string path(Core::IO::extract_path(ofile_path));
   const std::string dir_name(
-      Core::IO::RemoveRestartStepFromFileName(
-          Core::IO::ExtractFileName(ofile_path), Global::Problem::instance()->restart()) +
+      Core::IO::remove_restart_step_from_file_name(
+          Core::IO::extract_file_name(ofile_path), Global::Problem::instance()->restart()) +
       "_conservation");
 
   std::string full_filepath(path + dir_name);
@@ -445,7 +445,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
   {
     std::vector<bool> isslave;
     std::vector<bool> isself;
-    CONTACT::UTILS::GetMasterSlaveSideInfo(isslave, isself, ccond_grp);
+    CONTACT::UTILS::get_master_slave_side_info(isslave, isself, ccond_grp);
 
     for (unsigned i = 0; i < ccond_grp.size(); ++i)
     {

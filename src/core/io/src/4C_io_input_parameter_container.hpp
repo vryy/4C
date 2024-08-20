@@ -33,7 +33,7 @@ namespace Core::IO
   namespace INTERNAL
   {
     template <typename T>
-    const T* TryGetAnyData(const std::string& name, const std::any& data)
+    const T* try_get_any_data(const std::string& name, const std::any& data)
     {
       if (typeid(T) == data.type())
       {
@@ -46,8 +46,8 @@ namespace Core::IO
         FOUR_C_THROW(
             "You tried to get the data named %s from the container as type '%s'.\n"
             "Actually, it has type '%s'.",
-            name.c_str(), Core::UTILS::TryDemangle(typeid(T).name()).c_str(),
-            Core::UTILS::TryDemangle(data.type().name()).c_str());
+            name.c_str(), Core::UTILS::try_demangle(typeid(T).name()).c_str(),
+            Core::UTILS::try_demangle(data.type().name()).c_str());
       }
     }
   }  // namespace INTERNAL
@@ -166,7 +166,7 @@ namespace Core::IO
         const auto it = map.find(name);
         if (it != map.end())
         {
-          return INTERNAL::TryGetAnyData<T>(name, it->second);
+          return INTERNAL::try_get_any_data<T>(name, it->second);
         }
         else
         {

@@ -11,7 +11,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
-  Core::LinAlg::SerialDenseMatrix ComputeFluidNullSpace(
+  Core::LinAlg::SerialDenseMatrix compute_fluid_null_space(
       const Core::Nodes::Node& node, const int numdof, const int dimnsp)
   {
     /* the rigid body modes for fluids are:

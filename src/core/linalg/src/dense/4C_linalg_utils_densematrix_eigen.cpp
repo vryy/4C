@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SymmetricEigenValues(
+void Core::LinAlg::symmetric_eigen_values(
     Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L, const bool postproc)
 {
-  Core::LinAlg::SymmetricEigen(A, L, 'N', postproc);
+  Core::LinAlg::symmetric_eigen(A, L, 'N', postproc);
 }
 
 /*----------------------------------------------------------------------*
@@ -29,17 +29,17 @@ void Core::LinAlg::SymmetricEigenValues(
  |  matrix A (eigenvectors are stored in A, i.e. original matrix        |
  |  is destroyed!!!)                                            lw 04/08|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SymmetricEigenProblem(
+void Core::LinAlg::symmetric_eigen_problem(
     Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L, const bool postproc)
 {
-  Core::LinAlg::SymmetricEigen(A, L, 'V', postproc);
+  Core::LinAlg::symmetric_eigen(A, L, 'V', postproc);
 }
 
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A                  maf 06/07|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SymmetricEigen(Core::LinAlg::SerialDenseMatrix& A,
+void Core::LinAlg::symmetric_eigen(Core::LinAlg::SerialDenseMatrix& A,
     Core::LinAlg::SerialDenseVector& L, const bool eval_eigenvectors, const bool postproc)
 {
   if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");
@@ -93,7 +93,7 @@ void Core::LinAlg::SymmetricEigen(Core::LinAlg::SerialDenseMatrix& A,
  |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
-double Core::LinAlg::GeneralizedEigen(
+double Core::LinAlg::generalized_eigen(
     Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix::Base& B)
 {
   Core::LinAlg::SerialDenseMatrix::Base tmpA(A);

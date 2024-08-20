@@ -26,7 +26,7 @@ bool Discret::ELEMENTS::Beam3k::read_element(const std::string& eletype, const s
 {
   // read number of material model and cross-sections specs
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   const auto mat_type = material()->parameter()->type();
   FOUR_C_THROW_UNLESS(mat_type == Core::Materials::m_beam_kirchhoff_elast_hyper ||

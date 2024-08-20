@@ -106,7 +106,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     }
     Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
     // fill scatra discretization by cloning artery discretization
-    Core::FE::CloneDiscretization<Arteries::ArteryScatraCloneStrategy>(
+    Core::FE::clone_discretization<Arteries::ArteryScatraCloneStrategy>(
         actdis, scatradis, Global::Problem::instance()->cloning_material_map());
     scatradis->fill_complete();
 
@@ -143,10 +143,10 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   Inpar::ArtDyn::TimeIntegrationScheme timintscheme =
-      Core::UTILS::IntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+      Core::UTILS::integral_value<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   // build art net time integrator
-  Teuchos::RCP<Adapter::ArtNet> artnettimint = Arteries::UTILS::CreateAlgorithm(
+  Teuchos::RCP<Adapter::ArtNet> artnettimint = Arteries::UTILS::create_algorithm(
       timintscheme, actdis, linsolvernumber, artdyn, artdyn, output);
 
   // initialize

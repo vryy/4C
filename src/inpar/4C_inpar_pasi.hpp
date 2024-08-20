@@ -39,7 +39,7 @@ namespace Inpar
     };
 
     //! set valid parameters for particle structure interaction
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace PaSI
 

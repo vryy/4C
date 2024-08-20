@@ -1236,7 +1236,7 @@ namespace Discret
       //
       //    // extract local values of the global vectors
       //    std::vector<double> mymatrix(lm.size());
-      //    Core::FE::ExtractMyValues(*matrix_state,mymatrix,lm);
+      //    Core::FE::extract_my_values(*matrix_state,mymatrix,lm);
       //
       //    // rotate the vector field in the case of rotationally symmetric boundary conditions
       //    if(matrixtofill != nullptr)

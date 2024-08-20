@@ -40,9 +40,9 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
     : AlgorithmBase(comm, globaltimeparams),
       structure_(Teuchos::null),
       lubrication_(Teuchos::null),
-      fieldcoupling_(Core::UTILS::IntegralValue<Inpar::EHL::FieldCoupling>(
+      fieldcoupling_(Core::UTILS::integral_value<Inpar::EHL::FieldCoupling>(
           Global::Problem::instance()->elasto_hydro_dynamic_params(), "FIELDCOUPLING")),
-      dry_contact_(Core::UTILS::IntegralValue<bool>(
+      dry_contact_(Core::UTILS::integral_value<bool>(
           Global::Problem::instance()->elasto_hydro_dynamic_params(), "DRY_CONTACT_MODEL"))
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -69,7 +69,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   // by the problem section (e.g. ehl or cell dynamic)
   const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
   const Teuchos::ParameterList* lubricationtimeparams = &globaltimeparams;
-  if (Core::UTILS::IntegralValue<int>(
+  if (Core::UTILS::integral_value<int>(
           Global::Problem::instance()->elasto_hydro_dynamic_params(), "DIFFTIMESTEPSIZE"))
   {
     structtimeparams = &structparams;
@@ -87,7 +87,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   mortaradapter_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
 
   // Structure displacement at the lubricated interface
-  Teuchos::RCP<Epetra_Vector> disp = Core::LinAlg::CreateVector(*(structdis->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> disp = Core::LinAlg::create_vector(*(structdis->dof_row_map()), true);
 
   mortaradapter_->integrate(disp, dt());
   // the film thickness initialization for very first time step
@@ -452,7 +452,7 @@ void EHL::Base::set_height_field()
 {
   //  const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortardinv = mortaradapter_->GetDinvMatrix();
   Teuchos::RCP<Epetra_Vector> discretegap =
-      Core::LinAlg::CreateVector(*(slaverowmapextr_->Map(0)), true);
+      Core::LinAlg::create_vector(*(slaverowmapextr_->Map(0)), true);
 
   // get the weighted gap and store it in slave dof map (for each node, the scalar value is stored
   // in the 0th dof)
@@ -478,7 +478,7 @@ void EHL::Base::set_height_dot()
   heightdot->Update(-1.0 / dt(), *heightold_, 1.0 / dt());
 
   Teuchos::RCP<Epetra_Vector> discretegap =
-      Core::LinAlg::CreateVector(*(slaverowmapextr_->Map(0)), true);
+      Core::LinAlg::create_vector(*(slaverowmapextr_->Map(0)), true);
   // get the weighted heightdot and store it in slave dof map (for each node, the scalar value is
   // stored in the 0th dof)
   int err = slavemaptransform_->multiply(false, *heightdot, *discretegap);
@@ -496,7 +496,7 @@ void EHL::Base::set_height_dot()
 void EHL::Base::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
 {
   // Extract the structure displacement at the slave-side interface
-  Teuchos::RCP<Epetra_Vector> slaveidisp = Core::LinAlg::CreateVector(
+  Teuchos::RCP<Epetra_Vector> slaveidisp = Core::LinAlg::create_vector(
       *(slaverowmapextr_->Map(0)), true);  // Structure displacement at the lubricated interface
   slaverowmapextr_->extract_vector(disp, 0, slaveidisp);
 
@@ -513,7 +513,7 @@ void EHL::Base::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
  *----------------------------------------------------------------------*/
 void EHL::Base::setup_unprojectable_dbc()
 {
-  if (not Core::UTILS::IntegralValue<int>(
+  if (not Core::UTILS::integral_value<int>(
           ((Global::Problem::instance()->elasto_hydro_dynamic_params())), "UNPROJ_ZERO_DBC"))
     return;
 
@@ -613,12 +613,12 @@ void EHL::Base::setup_field_coupling(
       Global::Problem::instance()->spatial_approximation_type()));
   mortaradapter_->setup(structdis, structdis, coupleddof, "EHLCoupling");
 
-  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+  if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
           mortaradapter_->interface()->interface_params(), "STRATEGY") !=
       Inpar::CONTACT::solution_ehl)
     FOUR_C_THROW("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");
 
-  Teuchos::RCP<Epetra_Vector> idisp = Core::LinAlg::CreateVector(
+  Teuchos::RCP<Epetra_Vector> idisp = Core::LinAlg::create_vector(
       *(structdis->dof_row_map()), true);  // Structure displacement at the lubricated interface
   mortaradapter_->interface()->initialize();
   mortaradapter_->interface()->set_state(Mortar::state_old_displacement, *idisp);
@@ -634,7 +634,7 @@ void EHL::Base::setup_field_coupling(
   Teuchos::RCP<Epetra_Map> masterdofrowmap = mortaradapter_->interface()->master_row_dofs();
   Teuchos::RCP<Epetra_Map> slavedofrowmap = mortaradapter_->interface()->slave_row_dofs();
   Teuchos::RCP<Epetra_Map> mergeddofrowmap =
-      Core::LinAlg::MergeMap(masterdofrowmap, slavedofrowmap, false);
+      Core::LinAlg::merge_map(masterdofrowmap, slavedofrowmap, false);
 
   // Map extractors with the structure dofs as full maps and local interface maps
   slaverowmapextr_ = Teuchos::rcp(
@@ -777,7 +777,7 @@ void EHL::Base::output(bool forced_writerestart)
   // Addtitional output on the lubrication field
   {
     Teuchos::RCP<Epetra_Vector> discretegap =
-        Core::LinAlg::CreateVector(*(slaverowmapextr_->Map(0)), true);
+        Core::LinAlg::create_vector(*(slaverowmapextr_->Map(0)), true);
 
     // get the weighted gap and store it in slave dof map (for each node, the scalar value is stored
     // in the 0th dof)

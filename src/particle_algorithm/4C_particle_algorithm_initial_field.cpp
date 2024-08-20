@@ -51,7 +51,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::init()
         statetotypetofunctidmap_[stateIt.second];
 
     // read parameters relating particle types to values
-    PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
+    PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
         params_conditions, stateIt.first, currentstatetypetofunctidmap);
   }
 }
@@ -112,7 +112,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::set_initial_fields()
       if (static_cast<std::size_t>(statedim) != function.number_components())
         FOUR_C_THROW(
             "dimensions of function defining initial field and of state '%s' not matching!",
-            PARTICLEENGINE::EnumToStateName(particleState).c_str());
+            PARTICLEENGINE::enum_to_state_name(particleState).c_str());
 
       // iterate over owned particles of current type
       for (int i = 0; i < particlestored; ++i)

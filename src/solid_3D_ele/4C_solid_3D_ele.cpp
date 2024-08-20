@@ -31,7 +31,7 @@ namespace
   Input::LineDefinition::Builder get_default_line_definition_builder()
   {
     return Input::LineDefinition::Builder()
-        .add_int_vector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
+        .add_int_vector(Core::FE::cell_type_to_string(celltype), Core::FE::num_nodes<celltype>)
         .add_named_int("MAT")
         .add_named_string("KINEM")
         .add_optional_named_string("PRESTRESS_TECH")
@@ -53,30 +53,30 @@ void Discret::ELEMENTS::SolidType::setup_element_definition(
 {
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SOLID"];
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex8)] =
       get_default_line_definition_builder<Core::FE::CellType::hex8>()
           .add_optional_named_string("TECH")
           .build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex18)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex18)] =
       get_default_line_definition_builder<Core::FE::CellType::hex18>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex20)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex20)] =
       get_default_line_definition_builder<Core::FE::CellType::hex20>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex27)] =
       get_default_line_definition_builder<Core::FE::CellType::hex27>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::tet4)] =
       get_default_line_definition_builder<Core::FE::CellType::tet4>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::tet10)] =
       get_default_line_definition_builder<Core::FE::CellType::tet10>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::wedge6)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::wedge6)] =
       get_default_line_definition_builder<Core::FE::CellType::wedge6>().build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::pyramid5)] =
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::pyramid5)] =
       get_default_line_definition_builder<Core::FE::CellType::pyramid5>()
           .add_optional_named_string("TECH")
           .build();
@@ -122,9 +122,9 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidType::compute_null_space
   switch (numdof)
   {
     case 3:
-      return ComputeSolid3DNullSpace(node, x0);
+      return compute_solid_3d_null_space(node, x0);
     case 2:
-      return ComputeSolid2DNullSpace(node, x0);
+      return compute_solid_2d_null_space(node, x0);
     default:
       FOUR_C_THROW(
           "The null space computation of a solid element of dimension %d is not yet implemented",
@@ -140,27 +140,27 @@ Core::Elements::Element* Discret::ELEMENTS::Solid::clone() const { return new So
 
 int Discret::ELEMENTS::Solid::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(celltype_);
+  return Core::FE::get_number_of_element_lines(celltype_);
 }
 
 int Discret::ELEMENTS::Solid::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(celltype_);
+  return Core::FE::get_number_of_element_surfaces(celltype_);
 }
 
 int Discret::ELEMENTS::Solid::num_volume() const
 {
-  return Core::FE::getNumberOfElementVolumes(celltype_);
+  return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::lines()
 {
-  return Core::Communication::GetElementLines<StructuralLine, Solid>(*this);
+  return Core::Communication::get_element_lines<StructuralLine, Solid>(*this);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<StructuralSurface, Solid>(*this);
+  return Core::Communication::get_element_surfaces<StructuralSurface, Solid>(*this);
 }
 
 void Discret::ELEMENTS::Solid::pack(Core::Communication::PackBuffer& data) const
@@ -195,7 +195,7 @@ void Discret::ELEMENTS::Solid::unpack(const std::vector<char>& data)
 
   celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
-  Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
+  Discret::ELEMENTS::extract_from_pack(position, data, solid_ele_property_);
 
   Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
 
@@ -223,11 +223,11 @@ bool Discret::ELEMENTS::Solid::read_element(const std::string& eletype, const st
     const Core::IO::InputParameterContainer& container)
 {
   // set cell type
-  celltype_ = Core::FE::StringToCellType(celltype);
+  celltype_ = Core::FE::string_to_cell_type(celltype);
 
   // read number of material model
   set_material(
-      0, Mat::Factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
+      0, Mat::factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
 
   // kinematic type
   set_kinematic_type(FourC::Solid::UTILS::read_element::read_element_kinematic_type(container));

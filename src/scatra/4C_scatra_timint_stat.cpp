@@ -52,7 +52,7 @@ void ScaTra::TimIntStationary::init()
 
   // fine-scale vector
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no)
-    fsphinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    fsphinp_ = Core::LinAlg::create_vector(*dofrowmap, true);
   if (turbmodel_ != Inpar::FLUID::no_model) FOUR_C_THROW("Turbulence is not stationary problem!");
 
   // -------------------------------------------------------------------
@@ -69,7 +69,7 @@ void ScaTra::TimIntStationary::init()
   prepare_krylov_projection();
 
   // safety check
-  if (static_cast<bool>(Core::UTILS::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
+  if (static_cast<bool>(Core::UTILS::integral_value<int>(*params_, "NATURAL_CONVECTION")))
     FOUR_C_THROW("Natural convection for stationary time integration scheme is not implemented!");
 }
 
@@ -82,7 +82,7 @@ void ScaTra::TimIntStationary::set_element_time_parameter(bool forcedincremental
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);

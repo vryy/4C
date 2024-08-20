@@ -21,7 +21,7 @@ namespace Core::IO
    *
    */
   template <unsigned int n_dim>
-  void AppendPolyhedronToVisualizationData(VisualizationData& visualization_data,
+  void append_polyhedron_to_visualization_data(VisualizationData& visualization_data,
       const std::vector<Core::LinAlg::Matrix<n_dim, 1>>& point_coordinates,
       const std::vector<std::vector<int>>& face_connectivity)
   {
@@ -66,7 +66,7 @@ namespace Core::IO
   }
 
   //! Explicit template definition
-  template void AppendPolyhedronToVisualizationData(VisualizationData&,
+  template void append_polyhedron_to_visualization_data(VisualizationData&,
       const std::vector<Core::LinAlg::Matrix<3, 1>>&, const std::vector<std::vector<int>>&);
 
 }  // namespace Core::IO

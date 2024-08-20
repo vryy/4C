@@ -30,16 +30,16 @@ FOUR_C_NAMESPACE_OPEN
 namespace Input
 {
   /// construct list with all conditions and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> ValidConditions();
+  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> valid_conditions();
 
   /// print all known condition sections without contents
-  void PrintEmptyConditionDefinitions(std::ostream& stream,
+  void print_empty_condition_definitions(std::ostream& stream,
       std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
 }  // namespace Input
 
 /// print empty condition sections
-void PrintConditionDatHeader();
+void print_condition_dat_header();
 
 FOUR_C_NAMESPACE_CLOSE
 

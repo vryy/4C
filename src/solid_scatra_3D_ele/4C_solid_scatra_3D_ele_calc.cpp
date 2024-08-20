@@ -48,7 +48,7 @@ namespace
   inline static constexpr int num_str = Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2;
 
   template <Core::FE::CellType celltype>
-  Core::LinAlg::Matrix<num_str<celltype>, 1> EvaluateDMaterialStressDScalar(
+  Core::LinAlg::Matrix<num_str<celltype>, 1> evaluate_d_material_stress_d_scalar(
       Mat::So3Material& solid_material,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           deformation_gradient,
@@ -163,7 +163,7 @@ namespace
       FOUR_C_THROW("Cannot get state vector '%s' ", field_name.c_str());
 
     auto my_quantities = std::vector<double>(la[*field_index].lm_.size(), 0.0);
-    Core::FE::ExtractMyValues(*quantitites_np, my_quantities, la[*field_index].lm_);
+    Core::FE::extract_my_values(*quantitites_np, my_quantities, la[*field_index].lm_);
 
     return get_element_quantities<celltype, is_scalar>(num_scalars, my_quantities);
   }
@@ -199,7 +199,7 @@ namespace
 
 
   template <Core::FE::CellType celltype, typename SolidFormulation>
-  double EvaluateCauchyNDirAtXi(Mat::So3Material& mat,
+  double evaluate_cauchy_n_dir_at_xi(Mat::So3Material& mat,
       Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype> shape_functions,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           deformation_gradient,
@@ -306,11 +306,11 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
   const PreparationData<SolidFormulation> preparation_data =
-      Prepare(ele, nodal_coordinates, history_data_);
+      prepare(ele, nodal_coordinates, history_data_);
 
   double element_mass = 0.0;
   double element_volume = 0.0;
-  ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+  for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -363,7 +363,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
   {
     // integrate mass matrix
     FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
-    ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
+    for_each_gauss_point<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp) {
@@ -407,12 +407,12 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
   const PreparationData<SolidFormulation> preparation_data =
-      Prepare(ele, nodal_coordinates, history_data_);
+      prepare(ele, nodal_coordinates, history_data_);
 
   // Check for negative Jacobian determinants
   ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
 
-  ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+  for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -430,7 +430,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
                     deformation_gradient,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
-              Core::LinAlg::Matrix<6, 1> dSdc = EvaluateDMaterialStressDScalar<celltype>(
+              Core::LinAlg::Matrix<6, 1> dSdc = evaluate_d_material_stress_d_scalar<celltype>(
                   solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
               // linear B-opeartor
@@ -491,9 +491,9 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::update(
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
   const PreparationData<SolidFormulation> preparation_data =
-      Prepare(ele, nodal_coordinates, history_data_);
+      prepare(ele, nodal_coordinates, history_data_);
 
-  Discret::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -538,10 +538,10 @@ double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
   const PreparationData<SolidFormulation> preparation_data =
-      Prepare(ele, nodal_coordinates, history_data_);
+      prepare(ele, nodal_coordinates, history_data_);
 
   double intenergy = 0;
-  Discret::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -595,9 +595,9 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
   evaluate_centroid_coordinates_and_add_to_parameter_list(nodal_coordinates, params);
 
   const PreparationData<SolidFormulation> preparation_data =
-      Prepare(ele, nodal_coordinates, history_data_);
+      prepare(ele, nodal_coordinates, history_data_);
 
-  Discret::ELEMENTS::ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -642,7 +642,7 @@ Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
     FOUR_C_THROW(
         "Cannot evaluate the Cauchy stress at xi with an element formulation with Gauss point "
         "history. The element formulation is %s.",
-        Core::UTILS::TryDemangle(typeid(SolidFormulation).name()).c_str());
+        Core::UTILS::try_demangle(typeid(SolidFormulation).name()).c_str());
   }
   else
   {
@@ -652,19 +652,19 @@ Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
         {
           if (!scalars.has_value()) return std::nullopt;
 
-          return Discret::ELEMENTS::ProjectNodalQuantityToXi<celltype>(xi, *scalars);
+          return Discret::ELEMENTS::project_nodal_quantity_to_xi<celltype>(xi, *scalars);
         });
 
     ElementNodes<celltype> element_nodes = evaluate_element_nodes<celltype>(ele, disp);
 
     const ShapeFunctionsAndDerivatives<celltype> shape_functions =
-        EvaluateShapeFunctionsAndDerivs<celltype>(xi, element_nodes);
+        evaluate_shape_functions_and_derivs<celltype>(xi, element_nodes);
 
     const JacobianMapping<celltype> jacobian_mapping =
-        EvaluateJacobianMapping(shape_functions, element_nodes);
+        evaluate_jacobian_mapping(shape_functions, element_nodes);
 
     const PreparationData<SolidFormulation> preparation_data =
-        Prepare(ele, element_nodes, history_data_);
+        prepare(ele, element_nodes, history_data_);
 
     return evaluate(ele, element_nodes, xi, shape_functions, jacobian_mapping, preparation_data,
         history_data_,
@@ -676,7 +676,7 @@ Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
               element_nodes, xi, shape_functions, jacobian_mapping, deformation_gradient,
               preparation_data, history_data_);
 
-          return EvaluateCauchyNDirAtXi<celltype>(solid_material, shape_functions,
+          return evaluate_cauchy_n_dir_at_xi<celltype>(solid_material, shape_functions,
               deformation_gradient, scalar_values_at_xi, n, dir, ele.id(), evaluator,
               linearizations);
         });
@@ -697,7 +697,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::material
   Teuchos::ParameterList params{};
 
   // Check if element has fiber nodes, if so interpolate fibers to Gauss Points and add to params
-  InterpolateFibersToGaussPointsAndAddToParameterList<celltype>(
+  interpolate_fibers_to_gauss_points_and_add_to_parameter_list<celltype>(
       stiffness_matrix_integration_, ele, params);
 
   // Call post_setup of material

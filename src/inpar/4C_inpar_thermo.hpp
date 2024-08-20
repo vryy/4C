@@ -46,7 +46,7 @@ namespace Inpar
     };                    // DynamicType()
 
     //! Map time integrator to std::string
-    static inline std::string DynamicTypeString(const enum DynamicType name  //!< enum to convert
+    static inline std::string dynamic_type_string(const enum DynamicType name  //!< enum to convert
     )
     {
       switch (name)
@@ -102,7 +102,8 @@ namespace Inpar
     };                   // MidAverageEnum()
 
     /// Map mid-averaging to std::string
-    static inline std::string MidAverageString(const enum MidAverageEnum name  ///< enum to convert
+    static inline std::string mid_average_string(
+        const enum MidAverageEnum name  ///< enum to convert
     )
     {
       switch (name)
@@ -134,7 +135,7 @@ namespace Inpar
     };
 
     //! Map solution technique enum to std::string
-    static inline std::string NonlinSolTechString(
+    static inline std::string nonlin_sol_tech_string(
         const enum NonlinSolTech name  //!< enum to convert
     )
     {
@@ -174,7 +175,7 @@ namespace Inpar
 
 
     /// Map  enum to string
-    static inline std::string DivContActString(const enum DivContAct name  ///< enum to convert
+    static inline std::string div_cont_act_string(const enum DivContAct name  ///< enum to convert
     )
     {
       switch (name)
@@ -214,7 +215,7 @@ namespace Inpar
     };
 
     //! Map predictor enum term to std::string
-    static inline std::string PredEnumString(const PredEnum name  //!< identifier
+    static inline std::string pred_enum_string(const PredEnum name  //!< identifier
     )
     {
       switch (name)
@@ -267,7 +268,7 @@ namespace Inpar
     };
 
     //! Map predictor enum term to std::string
-    static inline std::string HeatFluxString(const HeatFluxType& name  //!< identifier
+    static inline std::string heat_flux_string(const HeatFluxType& name  //!< identifier
     )
     {
       switch (name)
@@ -297,7 +298,7 @@ namespace Inpar
     };
 
     //! Map predictor enum term to std::string
-    static inline std::string TempGradString(const TempGradType& name  //!< identifier
+    static inline std::string temp_grad_string(const TempGradType& name  //!< identifier
     )
     {
       switch (name)
@@ -333,7 +334,7 @@ namespace Inpar
     };
 
     //! map enum term to std::string
-    static inline std::string VectorNormString(const enum VectorNorm norm  //!< input enum term
+    static inline std::string vector_norm_string(const enum VectorNorm norm  //!< input enum term
     )
     {
       switch (norm)
@@ -369,10 +370,10 @@ namespace Inpar
     };
 
     /// set the thermo parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set thermo specific conditions
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace Thermo

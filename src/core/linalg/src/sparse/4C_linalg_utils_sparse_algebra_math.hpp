@@ -52,7 +52,7 @@ namespace Core::LinAlg
    \param B          (in/out) : Matrix to be added to (must have Filled()==false)
    \param scalarB    (in)     : scaling factor for B
    */
-  void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+  void add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
       Epetra_CrsMatrix& B, const double scalarB);
 
   /*!
@@ -83,10 +83,10 @@ namespace Core::LinAlg
    \param B          (in/out) : Matrix to be added to (must have Filled()==false)
    \param scalarB    (in)     : scaling factor for B
    */
-  inline void Add(const Teuchos::RCP<Epetra_CrsMatrix> A, const bool transposeA,
+  inline void add(const Teuchos::RCP<Epetra_CrsMatrix> A, const bool transposeA,
       const double scalarA, Teuchos::RCP<Epetra_CrsMatrix> B, const double scalarB)
   {
-    Core::LinAlg::Add(*A, transposeA, scalarA, *B, scalarB);
+    Core::LinAlg::add(*A, transposeA, scalarA, *B, scalarB);
   }
 
   /*!
@@ -113,7 +113,7 @@ namespace Core::LinAlg
    \param B          (in/out) : Matrix to be added to (must have Filled()==false)
    \param scalarB    (in)     : scaling factor for B
    */
-  void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+  void add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
       Core::LinAlg::SparseMatrixBase& B, const double scalarB);
 
   /*!
@@ -134,7 +134,7 @@ namespace Core::LinAlg
                             exit, (defaults to true)
    \return Matrix product A(^T)*B(^T)
    */
-  Teuchos::RCP<SparseMatrix> MatrixMultiply(
+  Teuchos::RCP<SparseMatrix> matrix_multiply(
       const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete = true);
 
   /*!
@@ -161,7 +161,7 @@ namespace Core::LinAlg
                                    exit, (defaults to true)
    \return Matrix product A(^T)*B(^T)
    */
-  Teuchos::RCP<SparseMatrix> MatrixMultiply(const SparseMatrix& A, bool transA,
+  Teuchos::RCP<SparseMatrix> matrix_multiply(const SparseMatrix& A, bool transA,
       const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
       bool complete = true);
 

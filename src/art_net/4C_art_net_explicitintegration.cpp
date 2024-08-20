@@ -82,7 +82,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // and only one cpu
   // -------------------------------------------------------------------
   // reduce the node row map into processor 0
-  const Epetra_Map noderowmap_1_proc = *Core::LinAlg::AllreduceEMap(*discret_->node_row_map(), 0);
+  const Epetra_Map noderowmap_1_proc = *Core::LinAlg::allreduce_e_map(*discret_->node_row_map(), 0);
   // update the discetization by redistributing the new row map
   discret_->redistribute(noderowmap_1_proc, noderowmap_1_proc);
 
@@ -122,37 +122,37 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // Vectors passed to the element
   // -----------------------------
   // Volumetric flow rate at time n+1, n and n-1
-  qanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  qan_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  qanm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  qanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  qan_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  qanm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  qan_3D_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  qan_3D_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // Vectors associated to boundary conditions
   // -----------------------------------------
-  Wfo_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  Wbo_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  Wfnp_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  Wfn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  Wfnm_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  Wbnp_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  Wbn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  Wbnm_ = Core::LinAlg::CreateVector(*noderowmap, true);
+  Wfo_ = Core::LinAlg::create_vector(*noderowmap, true);
+  Wbo_ = Core::LinAlg::create_vector(*noderowmap, true);
+  Wfnp_ = Core::LinAlg::create_vector(*noderowmap, true);
+  Wfn_ = Core::LinAlg::create_vector(*noderowmap, true);
+  Wfnm_ = Core::LinAlg::create_vector(*noderowmap, true);
+  Wbnp_ = Core::LinAlg::create_vector(*noderowmap, true);
+  Wbn_ = Core::LinAlg::create_vector(*noderowmap, true);
+  Wbnm_ = Core::LinAlg::create_vector(*noderowmap, true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
-  bcval_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  dbctog_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  bcval_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  dbctog_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // Vectors used for postporcesing visualization
   // --------------------------------------------
-  qn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  pn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  an_ = Core::LinAlg::CreateVector(*noderowmap, true);
-  nodeIds_ = Core::LinAlg::CreateVector(*noderowmap, true);
+  qn_ = Core::LinAlg::create_vector(*noderowmap, true);
+  pn_ = Core::LinAlg::create_vector(*noderowmap, true);
+  an_ = Core::LinAlg::create_vector(*noderowmap, true);
+  nodeIds_ = Core::LinAlg::create_vector(*noderowmap, true);
 
   // right hand side vector and right hand side corrector
-  rhs_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
   // create the junction boundary conditions
   Teuchos::ParameterList junparams;
 
@@ -239,29 +239,29 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
     // initialize scatra system matrix
     scatra_sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 6, false, true));
     // right hand side vector and right hand side corrector
-    scatra_rhs_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    scatra_rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // Scalar transport vector of O2 and CO2
-    export_scatra_ = Core::LinAlg::CreateVector(*noderowmap, true);
-    scatraO2nm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    scatraO2n_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    scatraO2np_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    scatraO2wfn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-    scatraO2wfnp_ = Core::LinAlg::CreateVector(*noderowmap, true);
-    scatraO2wbn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-    scatraO2wbnp_ = Core::LinAlg::CreateVector(*noderowmap, true);
+    export_scatra_ = Core::LinAlg::create_vector(*noderowmap, true);
+    scatraO2nm_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    scatraO2n_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    scatraO2np_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    scatraO2wfn_ = Core::LinAlg::create_vector(*noderowmap, true);
+    scatraO2wfnp_ = Core::LinAlg::create_vector(*noderowmap, true);
+    scatraO2wbn_ = Core::LinAlg::create_vector(*noderowmap, true);
+    scatraO2wbnp_ = Core::LinAlg::create_vector(*noderowmap, true);
 
-    scatraCO2n_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    scatraCO2np_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    scatraCO2wfn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-    scatraCO2wfnp_ = Core::LinAlg::CreateVector(*noderowmap, true);
-    scatraCO2wbn_ = Core::LinAlg::CreateVector(*noderowmap, true);
-    scatraCO2wbnp_ = Core::LinAlg::CreateVector(*noderowmap, true);
+    scatraCO2n_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    scatraCO2np_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    scatraCO2wfn_ = Core::LinAlg::create_vector(*noderowmap, true);
+    scatraCO2wfnp_ = Core::LinAlg::create_vector(*noderowmap, true);
+    scatraCO2wbn_ = Core::LinAlg::create_vector(*noderowmap, true);
+    scatraCO2wbnp_ = Core::LinAlg::create_vector(*noderowmap, true);
 
     // a vector of zeros to be used to enforce zero dirichlet boundary conditions
     // This part might be optimized later
-    scatra_bcval_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    scatra_dbctog_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    scatra_bcval_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    scatra_dbctog_ = Core::LinAlg::create_vector(*dofrowmap, true);
   }
 
 }  // ArtNetExplicitTimeInt::Init
@@ -530,23 +530,23 @@ void Arteries::ArtNetExplicitTimeInt::init_save_state()
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Volumetric Flow rate/Cross-sectional area of this step become most recent
-  saved_qanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  saved_qan_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  saved_qanm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  saved_qanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  saved_qan_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  saved_qanm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  saved_Wfnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  saved_Wfn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  saved_Wfnm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  saved_Wfnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  saved_Wfn_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  saved_Wfnm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  saved_Wbnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  saved_Wbn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  saved_Wbnm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  saved_Wbnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  saved_Wbn_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  saved_Wbnm_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   if (solvescatra_)
   {
-    saved_scatraO2np_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    saved_scatraO2n_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-    saved_scatraO2nm_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    saved_scatraO2np_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    saved_scatraO2n_ = Core::LinAlg::create_vector(*dofrowmap, true);
+    saved_scatraO2nm_ = Core::LinAlg::create_vector(*dofrowmap, true);
   }
 
   return;

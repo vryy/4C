@@ -31,7 +31,7 @@ namespace Core::UTILS
 namespace Solid
 {
   /// add valid structure-specific function lines
-  void AddValidStructureFunctions(Core::UTILS::FunctionManager& function_manager);
+  void add_valid_structure_functions(Core::UTILS::FunctionManager& function_manager);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
   class WeaklyCompressibleEtienneFSIStructureFunction : public Core::UTILS::FunctionOfSpaceTime

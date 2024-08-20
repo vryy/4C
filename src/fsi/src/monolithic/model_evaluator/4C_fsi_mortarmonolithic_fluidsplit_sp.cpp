@@ -251,7 +251,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
     // -------------------------------------------------------------------------#
 
     // enable debugging
-    if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -265,7 +265,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
   if (restart)
   {
     const bool restartfrompartfsi =
-        Core::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+        Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       if (comm_.MyPID() == 0)
@@ -619,13 +619,13 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Epetra_Vector&
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_m =
       coupling_solid_fluid_mortar_->get_mortar_matrix_m();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_m_transf =
-      Mortar::MatrixRowTransformGIDs(mortar_m, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_m, lag_mult_dof_map_);
 
   // get the mortar fluid to structure coupling matrix D
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_d =
       coupling_solid_fluid_mortar_->get_mortar_matrix_d();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_d_transf =
-      Mortar::MatrixRowTransformGIDs(mortar_d, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_d, lag_mult_dof_map_);
 
   Teuchos::RCP<Epetra_Vector> lag_mult_step_increment =
       Teuchos::rcp(new Epetra_Vector(*lag_mult_dof_map_, true));
@@ -689,13 +689,13 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Epetra_Vect
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_m =
       coupling_solid_fluid_mortar_->get_mortar_matrix_m();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_m_transf =
-      Mortar::MatrixRowTransformGIDs(mortar_m, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_m, lag_mult_dof_map_);
 
   // get the mortar fluid to structure coupling matrix D
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_d =
       coupling_solid_fluid_mortar_->get_mortar_matrix_d();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_d_transf =
-      Mortar::MatrixRowTransformGIDs(mortar_d, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_d, lag_mult_dof_map_);
 
   // get fluid shape derivatives matrix
   const Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase> fluid_shape_deriv =
@@ -888,13 +888,13 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
 
   // ---------Addressing contribution to block (6,2)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux_mortar_m =
-      Mortar::MatrixRowTransformGIDs(mortar_m, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_m, lag_mult_dof_map_);
   aux_mortar_m->complete(solidblock->domain_map(), *lag_mult_dof_map_, true);
 
   mat.assign(3, 0, Core::LinAlg::View, *aux_mortar_m);
 
   // ---------Addressing contribution to block (2,6)
-  aux_mortar_m = Mortar::MatrixRowTransformGIDs(mortar_m, lag_mult_dof_map_);
+  aux_mortar_m = Mortar::matrix_row_transform_gids(mortar_m, lag_mult_dof_map_);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux_mortar_m_trans =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(solidblock->row_map(), 81, false));
   aux_mortar_m_trans->add(*aux_mortar_m, true, -1.0 * (1.0 - solid_time_int_param), 0.0);
@@ -904,7 +904,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
 
   // ---------Addressing contribution to block (6,4)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux_mortar_d =
-      Mortar::MatrixRowTransformGIDs(mortar_d, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_d, lag_mult_dof_map_);
 
   aux_mortar_d->scale(-1.0 / fluid_timescale);
   aux_mortar_d->complete(fluidblock->full_domain_map(), *lag_mult_dof_map_, true);
@@ -912,7 +912,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
   mat.assign(3, 1, Core::LinAlg::View, *aux_mortar_d);
 
   // ---------Addressing contribution to block (4,6)
-  aux_mortar_d = Mortar::MatrixRowTransformGIDs(mortar_d, lag_mult_dof_map_);
+  aux_mortar_d = Mortar::matrix_row_transform_gids(mortar_d, lag_mult_dof_map_);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux_mortar_d_trans =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(fluidblock->full_row_map(), 81, false));
   aux_mortar_d_trans->add(
@@ -978,7 +978,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm =
-      static_cast<bool>(Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING"));
+      static_cast<bool>(Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING"));
 
   if (scaling_infnorm)
   {
@@ -1033,7 +1033,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   const bool scaling_infnorm =
-      static_cast<bool>(Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING"));
+      static_cast<bool>(Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING"));
 
   if (scaling_infnorm)
   {
@@ -1201,13 +1201,13 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::extract_field_vectors(
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_m =
       coupling_solid_fluid_mortar_->get_mortar_matrix_m();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_m_transf =
-      Mortar::MatrixRowTransformGIDs(mortar_m, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_m, lag_mult_dof_map_);
 
   // get the mortar fluid to structure coupling matrix D
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_d =
       coupling_solid_fluid_mortar_->get_mortar_matrix_d();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_d_transf =
-      Mortar::MatrixRowTransformGIDs(mortar_d, lag_mult_dof_map_);
+      Mortar::matrix_row_transform_gids(mortar_d, lag_mult_dof_map_);
 
   // ---------------------------------------------------------------------------
   // process structure unknowns

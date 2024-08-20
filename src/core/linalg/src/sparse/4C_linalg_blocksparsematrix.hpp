@@ -408,18 +408,19 @@ namespace Core::LinAlg
   //////////////////////////////////
   /// helper functions
 
-  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> BlockMatrix2x2(
+  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> block_matrix2x2(
       SparseMatrix& A00, SparseMatrix& A01, SparseMatrix& A10, SparseMatrix& A11);
 
   //! Cast matrix of type SparseOperator to BlockSparseMatrixBase and check in debug mode if cast
   //! was successful
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> CastToBlockSparseMatrixBaseAndCheckSuccess(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+  cast_to_block_sparse_matrix_base_and_check_success(
       Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix);
 
   //! Cast matrix of type SparseOperator to const BlockSparseMatrixBase and check in debug mode if
   //! cast was successful
   Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase>
-  CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+  cast_to_const_block_sparse_matrix_base_and_check_success(
       Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix);
 
   //////////////////////////////////

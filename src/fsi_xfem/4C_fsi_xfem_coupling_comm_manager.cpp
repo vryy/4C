@@ -262,13 +262,13 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
     {
       Teuchos::RCP<Coupling::Adapter::Coupling> coup = get_coupling(dit->first, dit->first + 1);
       me->setup(*dit->second->dof_row_map(), coup->master_dof_map(),
-          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->master_dof_map()));
+          Core::LinAlg::split_map(*dit->second->dof_row_map(), *coup->master_dof_map()));
     }
     else
     {
       Teuchos::RCP<Coupling::Adapter::Coupling> coup = get_coupling(dit->first - 1, dit->first);
       me->setup(*dit->second->dof_row_map(), coup->slave_dof_map(),
-          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->slave_dof_map()));
+          Core::LinAlg::split_map(*dit->second->dof_row_map(), *coup->slave_dof_map()));
     }
     mme_[dit->first] = me;
   }

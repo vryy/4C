@@ -44,7 +44,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
       statistics_outfilename_(statistics_outfilename),
       subgrid_dissipation_(subgrid_dissipation),
       inflowchannel_(
-          Core::UTILS::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+          Core::UTILS::integral_value<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       dens_(1.0),
       visc_(1.0),
@@ -82,7 +82,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   // switches, control parameters, material parameters
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  physicaltype_ = Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
 
   // get the plane normal direction from the parameterlist
   {
@@ -203,15 +203,15 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  meanvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  meanvelnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
   // this vector is only necessary for low-Mach-number flow or
   // turbulent passive scalar transport
-  meanscanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  meanscanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  toggleu_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglev_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // ---------------------------------------------------------------------
   // compute all planes for sampling
@@ -513,7 +513,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
             uv(0) = -1.0;
             uv(1) = -1.0;
             uv(2) = -1.0;
-            Core::FE::Nurbs::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3d_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -544,7 +544,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
             {
               uv(1) += 2.0 / (numsubdivisions_ - 1);
 
-              Core::FE::Nurbs::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3d_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -566,7 +566,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
               uv(0) = 1.0;
               uv(1) = 1.0;
               uv(2) = 1.0;
-              Core::FE::Nurbs::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3d_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -724,7 +724,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   // arrays for point based averaging
   // --------------------------------
 
-  pointsquaredvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  pointsquaredvelnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // first order moments
   pointsumu_ = Teuchos::rcp(new std::vector<double>);
@@ -3052,14 +3052,14 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
 
     // add velafgrad
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-    if (Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
+    if (Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der"))
     {
       for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
            state != statevecs.end(); ++state)
       {
         if (state->first == "velaf")
         {  // ProjectGradientAndSetParam decides, if we want to project something or not
-          FLD::UTILS::ProjectGradientAndSetParam(
+          FLD::UTILS::project_gradient_and_set_param(
               discret_, eleparams_, state->second, "velafgrad", alefluid_);
           break;
         }
@@ -3092,12 +3092,12 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       // add dissipation and residuals of scalar field
 
       // set action for elements
-      Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_dissipation, scatraeleparams_);
       // set parameters required for evaluation of residuals, etc.
       scatraeleparams_.set<double>("time-step length", scatraparams_->get<double>("TIMESTEP"));
       scatraeleparams_.set<int>("fs subgrid diffusivity",
-          Core::UTILS::IntegralValue<Inpar::ScaTra::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
+          Core::UTILS::integral_value<Inpar::ScaTra::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
       scatraeleparams_.sublist("TURBULENCE MODEL") =
           scatraextraparams_->sublist("TURBULENCE MODEL");
       scatraeleparams_.sublist("SUBGRID VISCOSITY") =

@@ -15,7 +15,7 @@ Discret::ELEMENTS::SolidPoroPressureBasedCalcVariant
 Discret::ELEMENTS::create_solid_poro_pressure_based_calculation_interface(
     Core::FE::CellType celltype)
 {
-  return Core::FE::CellTypeSwitch<Discret::ELEMENTS::Details::ImplementedSolidPoroCellTypes>(
+  return Core::FE::cell_type_switch<Discret::ELEMENTS::Details::ImplementedSolidPoroCellTypes>(
       celltype, [&](auto celltype_t)
       { return create_solid_poro_pressure_based_calculation_interface<celltype_t()>(); });
 }
@@ -31,7 +31,7 @@ Discret::ELEMENTS::SolidPoroPressureVelocityBasedCalcVariant
 Discret::ELEMENTS::create_solid_poro_pressure_velocity_based_calculation_interface(
     Core::FE::CellType celltype)
 {
-  return Core::FE::CellTypeSwitch<
+  return Core::FE::cell_type_switch<
       Discret::ELEMENTS::Details::ImplementedSolidPoroPressureVelocityBasedCellTypes>(celltype,
       [&](auto celltype_t)
       { return create_solid_poro_pressure_velocity_based_calculation_interface<celltype_t()>(); });

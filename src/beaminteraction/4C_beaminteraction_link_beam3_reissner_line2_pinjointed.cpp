@@ -226,7 +226,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
   linkele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3r(-1, 0));
 
   // set material
-  linkele_->set_material(0, Mat::Factory(matnum));
+  linkele_->set_material(0, Mat::factory(matnum));
 
   // Todo @grill: safety check for proper material type (done on element anyway, but do it here as
   // well)?!
@@ -287,7 +287,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(const std::vector<ch
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
@@ -300,7 +300,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(const std::vector<ch
   if (dataele.size() > 0)
   {
     Core::Communication::ParObject* object =
-        Core::Communication::Factory(dataele);  // Unpack is done here
+        Core::Communication::factory(dataele);  // Unpack is done here
     Discret::ELEMENTS::Beam3r* linkele = dynamic_cast<Discret::ELEMENTS::Beam3r*>(object);
     if (linkele == nullptr)
       FOUR_C_THROW("failed to unpack Beam3r object within BeamLinkBeam3rLine2PinJointed");

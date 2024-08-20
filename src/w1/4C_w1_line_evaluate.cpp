@@ -125,7 +125,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
     Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
-    Core::FE::ExtractMyValues(*disp, mydisp, lm);
+    Core::FE::extract_my_values(*disp, mydisp, lm);
 
     for (int i = 0; i < numnod; ++i)
     {
@@ -144,7 +144,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
     Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
     std::vector<double> mydisp(lm.size());
-    Core::FE::ExtractMyValues(*disp, mydisp, lm);
+    Core::FE::extract_my_values(*disp, mydisp, lm);
 
     for (int i = 0; i < numnod; ++i)
     {
@@ -161,8 +161,8 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
     // get shape functions and derivatives in the line
     if (distype == Core::FE::CellType::line2 || distype == Core::FE::CellType::line3)
     {
-      Core::FE::shape_function_1D(shapefcts, e1, distype);
-      Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
+      Core::FE::shape_function_1d(shapefcts, e1, distype);
+      Core::FE::shape_function_1d_deriv1(deriv, e1, distype);
     }
     else if (distype == Core::FE::CellType::nurbs2 || distype == Core::FE::CellType::nurbs3)
     {
@@ -187,7 +187,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
         weights(inode) = cp->w();
       }
 
-      Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_1d_funct_deriv(
           shapefcts, deriv, e1, boundknots[0], weights, distype);
     }
     else
@@ -368,8 +368,8 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
           const double e1 = intpoints.qxg[gpid][0];
 
           // get shape functions and derivatives in the line
-          Core::FE::shape_function_1D(shapefcts, e1, distype);
-          Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
+          Core::FE::shape_function_1d(shapefcts, e1, distype);
+          Core::FE::shape_function_1d_deriv1(deriv, e1, distype);
           double ortho_value = (*val)[0];
 
           // outward normal vector (unit vector)
@@ -535,7 +535,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::extract_my_values(*disp, mydisp, lm);
         const int numnod = num_node();
         Core::LinAlg::SerialDenseMatrix xsrefe(
             numnod, Wall1::numdim_);  // material coord. of element
@@ -563,7 +563,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disptotal = discretization.get_state("displacementtotal");
         if (disptotal == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disptotal, mydisp, lm);
+        Core::FE::extract_my_values(*disptotal, mydisp, lm);
         const int numnod = num_node();
         Core::LinAlg::SerialDenseMatrix xsrefe(
             Wall1::numdim_, numnod);  // material coord. of element
@@ -592,7 +592,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.get_state("displacementincr");
         std::vector<double> edispincr(lm.size());
-        Core::FE::ExtractMyValues(*dispincr, edispincr, lm);
+        Core::FE::extract_my_values(*dispincr, edispincr, lm);
 
         elevector2[0] = 0;
 
@@ -601,8 +601,8 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gpid][0];  // coordinate of GP
 
           // get values of shape functions and derivatives in the line at specific GP
-          Core::FE::shape_function_1D(funct, e1, distype);
-          Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
+          Core::FE::shape_function_1d(funct, e1, distype);
+          Core::FE::shape_function_1d_deriv1(deriv, e1, distype);
 
           double dr = w1_substitution(xscurr, deriv, nullptr, numnod);
 
@@ -634,7 +634,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
         FOUR_C_THROW("Cannot get state vector 'displacement'");
       }
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numnod = num_node();
       Core::LinAlg::SerialDenseMatrix xsrefe(numnod, Wall1::numdim_);  // material coord. of element
       Core::LinAlg::SerialDenseMatrix xscurr(numnod, Wall1::numdim_);  // material coord. of element
@@ -722,7 +722,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lmpar.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lmpar);
+      Core::FE::extract_my_values(*disp, mydisp, lmpar);
 
       // update element geometry
       Core::LinAlg::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
@@ -746,7 +746,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvel'");
       // extract local values of the global vectors
       std::vector<double> myvelpres(la[1].lm_.size());
-      Core::FE::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
+      Core::FE::extract_my_values(*velnp, myvelpres, la[1].lm_);
 
       Core::LinAlg::SerialDenseVector mypres(numnode);
       for (int inode = 0; inode < numnode; ++inode)  // number of nodes
@@ -757,7 +757,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::SerialDenseMatrix pqxg;
       Core::LinAlg::SerialDenseMatrix derivtrafo;
 
-      Core::FE::BoundaryGPToParentGP<2>(
+      Core::FE::boundary_gp_to_parent_gp<2>(
           pqxg, derivtrafo, intpoints, parentele->shape(), distype, face_parent_number());
 
       for (int gp = 0; gp < ngp; ++gp)
@@ -765,11 +765,11 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
         // get shape functions and derivatives in the plane of the element
         Core::LinAlg::SerialDenseVector funct(nenparent);
         Core::LinAlg::SerialDenseMatrix deriv(2, nenparent);
-        Core::FE::shape_function_2D(funct, pqxg(gp, 0), pqxg(gp, 1), parentele->shape());
-        Core::FE::shape_function_2D_deriv1(deriv, pqxg(gp, 0), pqxg(gp, 1), parentele->shape());
+        Core::FE::shape_function_2d(funct, pqxg(gp, 0), pqxg(gp, 1), parentele->shape());
+        Core::FE::shape_function_2d_deriv1(deriv, pqxg(gp, 0), pqxg(gp, 1), parentele->shape());
 
         Core::LinAlg::SerialDenseVector funct1D(numnode);
-        Core::FE::shape_function_1D(funct1D, intpoints.ip().qxg[gp][0], shape());
+        Core::FE::shape_function_1d(funct1D, intpoints.ip().qxg[gp][0], shape());
 
         // pressure at integration point
         double press = funct1D.dot(mypres);

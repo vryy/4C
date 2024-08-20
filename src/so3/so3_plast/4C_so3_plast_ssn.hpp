@@ -1072,7 +1072,7 @@ namespace Discret
       {
         // element coordinate derivatives at centroid
         static Core::LinAlg::Matrix<nsd_, nen_> N_rst_0(false);
-        Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+        Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
 
         // inverse jacobian matrix at centroid
         set_jac_0().multiply(N_rst_0, xrefe());
@@ -1125,7 +1125,7 @@ namespace Discret
       inline void evaluate_shape(const Core::LinAlg::Matrix<3, 1>& xi)
       {
         if (distype == Core::FE::CellType::nurbs27)
-          Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+          Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
               set_shape_function(), set_deriv_shape_function(), xi, knots(), weights(), distype);
         else
           Core::FE::shape_function<distype>(xi, set_shape_function());
@@ -1134,7 +1134,7 @@ namespace Discret
       inline void evaluate_shape_deriv(const Core::LinAlg::Matrix<3, 1>& xi)
       {
         if (distype == Core::FE::CellType::nurbs27)
-          Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+          Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
               set_shape_function(), set_deriv_shape_function(), xi, knots(), weights(), distype);
         else
           Core::FE::shape_function_deriv1<distype>(xi, set_deriv_shape_function());
@@ -1175,7 +1175,7 @@ namespace Discret
       static constexpr int neas = 0;
     };
 
-    int PlastEasTypeToNumEasV(Discret::ELEMENTS::So3PlastEasType et);
+    int plast_eas_type_to_num_eas_v(Discret::ELEMENTS::So3PlastEasType et);
 
   }  // namespace ELEMENTS
 }  // namespace Discret

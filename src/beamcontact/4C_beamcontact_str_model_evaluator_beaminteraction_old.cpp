@@ -144,7 +144,7 @@ bool Solid::ModelEvaluator::BeamInteractionOld::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // Todo take care of the minus sign in front of timefac_np
-  Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, *f_beaminteract_np_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, -timefac_np, *f_beaminteract_np_ptr_);
   return true;
 }
 

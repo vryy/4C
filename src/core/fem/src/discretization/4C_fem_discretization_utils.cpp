@@ -53,7 +53,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
       if (initfieldcondition->type() != type) continue;
       const std::string condstring = initfieldcondition->parameters().get<std::string>("Field");
       if (condstring != fieldstring) continue;
-      DoInitialField(function_manager, discret, *initfieldcondition, *fieldvector, locids);
+      do_initial_field(function_manager, discret, *initfieldcondition, *fieldvector, locids);
     }
   }
 }
@@ -61,7 +61,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::DoInitialField(const Core::UTILS::FunctionManager& function_manager,
+void Core::FE::UTILS::do_initial_field(const Core::UTILS::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
     Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {

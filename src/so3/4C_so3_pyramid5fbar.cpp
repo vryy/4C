@@ -71,7 +71,7 @@ void Discret::ELEMENTS::SoPyramid5fbarType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoPyramid5fbarType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::SoPyramid5fbarType::setup_element_definition(
@@ -105,11 +105,11 @@ Discret::ELEMENTS::SoPyramid5fbar::SoPyramid5fbar(int id, int owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
-  if (Prestress::IsMulf(pstype_))
+  if (Prestress::is_mulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
 }
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class So_pyramid5 Element
   std::vector<char> basedata(0);

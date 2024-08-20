@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double Mat::PAR::DetermineShearModulus(const Core::Mat::PAR::Parameter::Data& matdata)
+double Mat::PAR::determine_shear_modulus(const Core::Mat::PAR::Parameter::Data& matdata)
 {
   double shearmodulus = 0.0;
   double poissonratio = 0.0;
@@ -58,7 +58,8 @@ double Mat::PAR::DetermineShearModulus(const Core::Mat::PAR::Parameter::Data& ma
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double Mat::PAR::DetermineDefaultInteractionRadius(const Core::Mat::PAR::Parameter::Data& matdata)
+double Mat::PAR::determine_default_interaction_radius(
+    const Core::Mat::PAR::Parameter::Data& matdata)
 {
   double radius = matdata.parameters.get<double>("INTERACTIONRADIUS");
 
@@ -74,7 +75,7 @@ double Mat::PAR::DetermineDefaultInteractionRadius(const Core::Mat::PAR::Paramet
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double Mat::PAR::DetermineDefaultInteractionRadiusIsotropic(
+double Mat::PAR::determine_default_interaction_radius_isotropic(
     const Core::Mat::PAR::Parameter::Data& matdata)
 {
   double radius = matdata.parameters.get<double>("INTERACTIONRADIUS");
@@ -126,14 +127,14 @@ Mat::PAR::BeamReissnerElastHyperMaterialParams::BeamReissnerElastHyperMaterialPa
     const Core::Mat::PAR::Parameter::Data& matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       youngs_modulus_(matdata.parameters.get<double>("YOUNG")),
-      shear_modulus_(DetermineShearModulus(matdata)),
+      shear_modulus_(determine_shear_modulus(matdata)),
       density_(matdata.parameters.get<double>("DENS")),
       cross_section_area_(matdata.parameters.get<double>("CROSSAREA")),
       shear_correction_factor_(matdata.parameters.get<double>("SHEARCORR")),
       area_moment_inertia_polar_(matdata.parameters.get<double>("MOMINPOL")),
       area_moment_inertia_2_(matdata.parameters.get<double>("MOMIN2")),
       area_moment_inertia_3_(matdata.parameters.get<double>("MOMIN3")),
-      radius_interaction_(DetermineDefaultInteractionRadius(matdata))
+      radius_interaction_(determine_default_interaction_radius(matdata))
 {
   if (youngs_modulus_ <= 0.0) FOUR_C_THROW("Young's modulus must be positive value");
 
@@ -218,13 +219,13 @@ Mat::PAR::BeamKirchhoffElastHyperMaterialParams::BeamKirchhoffElastHyperMaterial
     const Core::Mat::PAR::Parameter::Data& matdata)
     : BeamElastHyperMaterialParameterGeneric(matdata),
       youngs_modulus_(matdata.parameters.get<double>("YOUNG")),
-      shear_modulus_(DetermineShearModulus(matdata)),
+      shear_modulus_(determine_shear_modulus(matdata)),
       density_(matdata.parameters.get<double>("DENS")),
       cross_section_area_(matdata.parameters.get<double>("CROSSAREA")),
       area_moment_inertia_polar_(matdata.parameters.get<double>("MOMINPOL")),
       area_moment_inertia_2_(matdata.parameters.get<double>("MOMIN2")),
       area_moment_inertia_3_(matdata.parameters.get<double>("MOMIN3")),
-      radius_interaction_(DetermineDefaultInteractionRadius(matdata))
+      radius_interaction_(determine_default_interaction_radius(matdata))
 {
   if (youngs_modulus_ <= 0.0) FOUR_C_THROW("Young's modulus must be positive value");
 
@@ -304,7 +305,7 @@ Mat::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams::
       density_(matdata.parameters.get<double>("DENS")),
       cross_section_area_(matdata.parameters.get<double>("CROSSAREA")),
       area_moment_inertia_(matdata.parameters.get<double>("MOMIN")),
-      radius_interaction_(DetermineDefaultInteractionRadiusIsotropic(matdata))
+      radius_interaction_(determine_default_interaction_radius_isotropic(matdata))
 {
   if (youngs_modulus_ <= 0.0) FOUR_C_THROW("Young's modulus must be positive value");
 

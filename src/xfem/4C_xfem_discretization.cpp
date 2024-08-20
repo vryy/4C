@@ -241,7 +241,7 @@ void XFEM::DiscretizationXFEM::set_initial_state(
           name.c_str());
     }
 #endif
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*colmap, false);
+    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
     Core::LinAlg::export_to(*state, *tmp);
     state_[nds][name] = tmp;
   }

@@ -32,7 +32,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
       FOUR_C_THROW("Call evaluate_coupling_terms() first.");
 
     // evaluate the stiffness contribution of this sme:
-    auto sme_stiff_ptr = Core::LinAlg::MatrixMultiply(*Q_dL_, false, *Q_Ld_, false, false);
+    auto sme_stiff_ptr = Core::LinAlg::matrix_multiply(*Q_dL_, false, *Q_Ld_, false, false);
     sme_stiff_ptr->scale(penalty_parameter_);
     sme_stiff_ptr->add(*Q_dd_, false, 1.0, 1.0);
     sme_stiff_ptr->complete();
@@ -47,7 +47,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
     Teuchos::RCP<Epetra_Vector> r_pen =
         Teuchos::rcp(new Epetra_Vector(stiff_ptr_->row_map(), true));
     Q_Ld_->multiply(true, *constraint_vector_, *r_pen);
-    Core::LinAlg::AssembleMyVector(1.0, *me_force_ptr, penalty_parameter_, *r_pen);
+    Core::LinAlg::assemble_my_vector(1.0, *me_force_ptr, penalty_parameter_, *r_pen);
   }
   return true;
 }

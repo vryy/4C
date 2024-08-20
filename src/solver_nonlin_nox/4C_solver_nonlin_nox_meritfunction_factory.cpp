@@ -107,7 +107,7 @@ NOX::Nln::MeritFunction::Factory::build_constrained_merit_function(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::BuildMeritFunction(
+Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::build_merit_function(
     const NOX::Nln::GlobalData& noxNlnGlobalData)
 {
   const Factory factory;

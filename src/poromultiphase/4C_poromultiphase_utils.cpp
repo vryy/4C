@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
+std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_field_coupling(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname,
     int& nds_disp, int& nds_vel, int& nds_solidpressure)
 {
@@ -49,12 +49,12 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
 
     // get coupling method
     auto arterycoupl =
-        Core::UTILS::IntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+        Core::UTILS::integral_value<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
             problem->poro_fluid_multi_phase_dynamic_params().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
 
     // lateral surface coupling active?
-    const bool evaluate_on_lateral_surface = Core::UTILS::IntegralValue<int>(
+    const bool evaluate_on_lateral_surface = Core::UTILS::integral_value<int>(
         problem->poro_fluid_multi_phase_dynamic_params().sublist("ARTERY COUPLING"),
         "LATERAL_SURFACE_COUPLING");
 
@@ -77,7 +77,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
       case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
       {
         // perform extended ghosting on artery discretization
-        nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
+        nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::extended_ghosting_artery_discretization(
             structdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
         break;
       }
@@ -96,7 +96,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
   if (fluiddis->num_global_nodes() == 0)
   {
     // fill poro fluid discretization by cloning structure discretization
-    Core::FE::CloneDiscretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
+    Core::FE::clone_discretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
         structdis, fluiddis, Global::Problem::instance()->cloning_material_map());
   }
   else
@@ -145,13 +145,14 @@ void POROMULTIPHASE::UTILS::assign_material_pointers(
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
   Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
 
-  PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis, fluiddis);
+  PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
 }
 
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(
+Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase>
+POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
     Inpar::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
@@ -168,7 +169,7 @@ Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMu
     }
     case Inpar::POROMULTIPHASE::solscheme_twoway_monolithic:
     {
-      const bool artery_coupl = Core::UTILS::IntegralValue<int>(timeparams, "ARTERY_COUPLING");
+      const bool artery_coupl = Core::UTILS::integral_value<int>(timeparams, "ARTERY_COUPLING");
       if (!artery_coupl)
       {
         // call constructor
@@ -245,7 +246,7 @@ double POROMULTIPHASE::UTILS::calculate_vector_norm(
 /*----------------------------------------------------------------------*
  |                                                    kremheller 03/17  |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PrintLogo()
+void POROMULTIPHASE::print_logo()
 {
   std::cout << "This is a Porous Media problem with multiphase flow and deformation" << std::endl;
   std::cout << "" << std::endl;

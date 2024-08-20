@@ -152,7 +152,7 @@ namespace NOX
         /*! Returns the inherent pre/post operator std::map of the "Group Options" sublist.
          *  If the corresponding parameter called "User Defined Pre/Post Operator" is not yet
          *  defined, a empty std::map is generated and set into the parameter list first. */
-        NOX::Nln::GROUP::PrePostOperator::Map& GetMap(Teuchos::ParameterList& p_grp_opt);
+        NOX::Nln::GROUP::PrePostOperator::Map& get_map(Teuchos::ParameterList& p_grp_opt);
       }  // namespace PrePostOp
     }    // namespace GROUP
   }      // namespace Nln

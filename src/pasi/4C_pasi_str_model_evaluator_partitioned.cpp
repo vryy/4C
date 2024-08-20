@@ -63,7 +63,7 @@ Solid::ModelEvaluator::PartitionedPASI::get_last_time_step_solution_ptr() const
 bool Solid::ModelEvaluator::PartitionedPASI::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, -timefac_np, *interface_force_np_ptr_);
 
   return true;
 }

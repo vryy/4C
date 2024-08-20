@@ -72,13 +72,13 @@ std::vector<double> Cut::DirectDivergenceGlobalRefplane::get_reference_plane()
     {
       std::stringstream str;
       str << ".no_refplane_" << refplaneattempt << "_CUTFAIL.pos";
-      std::string filename(Cut::Output::GenerateGmshOutputFilename(str.str()));
+      std::string filename(Cut::Output::generate_gmsh_output_filename(str.str()));
       std::ofstream file(filename.c_str());
 
-      Cut::Output::GmshCompleteCutElement(file, elem1_);
-      Cut::Output::GmshNewSection(file, "VolumeCell");
-      Cut::Output::GmshVolumecellDump(file, volcell_);
-      Cut::Output::GmshEndSection(file, true);
+      Cut::Output::gmsh_complete_cut_element(file, elem1_);
+      Cut::Output::gmsh_new_section(file, "VolumeCell");
+      Cut::Output::gmsh_volumecell_dump(file, volcell_);
+      Cut::Output::gmsh_end_section(file, true);
     }
 
     if (!refplaneattempt)
@@ -155,7 +155,7 @@ bool Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
        itd++)
   {
     std::vector<Point*> ptl = *itd;
-    std::vector<double> RefPlaneTemp = Kernel::EqnPlaneOfPolygon(ptl);
+    std::vector<double> RefPlaneTemp = Kernel::eqn_plane_of_polygon(ptl);
 
     scale_equation_of_plane(RefPlaneTemp);
 
@@ -210,7 +210,7 @@ bool Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
       facet_data;
   for (plain_facet_set::const_iterator it = allfacets.begin(); it != allfacets.end(); it++)
   {
-    std::vector<double> RefPlaneTemp = Kernel::EqnPlaneOfPolygon((*it)->points());
+    std::vector<double> RefPlaneTemp = Kernel::eqn_plane_of_polygon((*it)->points());
     scale_equation_of_plane(RefPlaneTemp);
     if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 
@@ -302,7 +302,7 @@ bool Cut::DirectDivergenceGlobalRefplane::side_based_ref(
       else
         FOUR_C_THROW("Side with another number of nodes than 3 or 4?");
 
-      std::vector<double> RefPlaneTemp = Kernel::EqnPlaneOfPolygon(ptside);
+      std::vector<double> RefPlaneTemp = Kernel::eqn_plane_of_polygon(ptside);
       scale_equation_of_plane(RefPlaneTemp);
       if (fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV) continue;
 

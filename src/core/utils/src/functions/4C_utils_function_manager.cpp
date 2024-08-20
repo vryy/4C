@@ -31,7 +31,7 @@ namespace
    * return an empty std::any instead.
    */
   template <typename T>
-  TypeErasedFunctionCreator WrapFunction(FunctionCreator<T> fun)
+  TypeErasedFunctionCreator wrap_function(FunctionCreator<T> fun)
   {
     return [fun](const LineDefinitionVector& linedefs) -> std::any
     {
@@ -49,9 +49,9 @@ namespace
     // List all known TryCreate functions in a vector, so they can be called with a unified
     // syntax below. Also, erase their exact return type, since we can only store std::any.
     std::vector<TypeErasedFunctionCreator> try_create_function_vector{
-        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfAnything),
-        WrapFunction(Core::UTILS::TryCreateSymbolicFunctionOfSpaceTime),
-        WrapFunction(Core::UTILS::TryCreateFunctionOfTime)};
+        wrap_function(Core::UTILS::try_create_symbolic_function_of_anything),
+        wrap_function(Core::UTILS::try_create_symbolic_function_of_space_time),
+        wrap_function(Core::UTILS::try_create_function_of_time)};
 
     for (const auto& try_create_function : try_create_function_vector)
     {
@@ -65,7 +65,7 @@ namespace
 }  // namespace
 
 
-void Core::UTILS::AddValidBuiltinFunctions(Core::UTILS::FunctionManager& function_manager)
+void Core::UTILS::add_valid_builtin_functions(Core::UTILS::FunctionManager& function_manager)
 {
   using namespace Input;
 

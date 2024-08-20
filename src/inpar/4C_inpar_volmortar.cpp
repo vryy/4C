@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::VolMortar::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::VolMortar::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -66,10 +66,10 @@ void Inpar::VolMortar::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
           Coupling::VolMortar::dualquad_quad_mod, Coupling::VolMortar::dualquad_quad_mod),
       &volmortar);
 
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "MESH_INIT", "No", "If chosen, mesh initialization procedure is performed", &volmortar);
 
-  Core::UTILS::BoolParameter("KEEP_EXTENDEDGHOSTING", "Yes",
+  Core::UTILS::bool_parameter("KEEP_EXTENDEDGHOSTING", "Yes",
       "If chosen, extended ghosting is kept for simulation", &volmortar);
 }
 

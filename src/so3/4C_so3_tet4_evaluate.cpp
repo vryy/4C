@@ -154,9 +154,9 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       //      Core::LinAlg::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* matptr = nullptr;
       //      if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -178,9 +178,9 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> myemat(true);  // to zero
@@ -208,13 +208,13 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      Core::FE::ExtractMyValues(*acc, myacc, lm);
+      Core::FE::extract_my_values(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -240,14 +240,14 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> stress(true);  // set to zero
       Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> strain(true);
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "iostrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -278,7 +278,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       switch (pstype_)
       {
@@ -336,7 +336,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       /* ============================================================================*/
       // element geometry
@@ -402,7 +402,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ * gpweights[gp];
 
-        if (Prestress::IsMulf(pstype_))
+        if (Prestress::is_mulf(pstype_))
         {
           // get derivatives wrt to last spatial configuration
           Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -509,7 +509,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (Prestress::IsAny(pstype_))
+      if (Prestress::is_any(pstype_))
       {
       }
 
@@ -528,7 +528,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       // due to the multiplicativity and futility to redo prestress steps
       // other than the last one, no need to store/recover anything
       // ... but keep in mind
-      if (Prestress::IsAny(pstype_))
+      if (Prestress::is_any(pstype_))
       {
       }
 
@@ -543,7 +543,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       if (solid_material()->uses_extended_update())
       {
@@ -621,14 +621,14 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
         if (gpstrainmap == Teuchos::null)
           FOUR_C_THROW("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::extract_my_values(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        Core::FE::ExtractMyValues(*res, myres, lm);
+        Core::FE::extract_my_values(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iostress", Inpar::Solid::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+        auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "iostrain", Inpar::Solid::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
@@ -908,7 +908,7 @@ void Discret::ELEMENTS::SoTet4::init_jacobian_mapping()
     **             [    dX       dY       dZ    ]
     */
 
-    if (Prestress::IsMulfActive(time_, pstype_, pstime_))
+    if (Prestress::is_mulf_active(time_, pstype_, pstime_))
     {
       if (!(prestress_->is_init()))
         prestress_->matrixto_storage(gp, nxyz_, prestress_->j_history());
@@ -916,7 +916,7 @@ void Discret::ELEMENTS::SoTet4::init_jacobian_mapping()
 
   }  // for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
 
-  if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
+  if (Prestress::is_mulf_active(time_, pstype_, pstime_)) prestress_->is_init() = true;
 }
 
 
@@ -1159,7 +1159,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         Core::LinAlg::Matrix<3, 3> prstr2(true);  // squared principal stretches
         Core::LinAlg::Matrix<3, 1> prstr(true);   // principal stretch
         Core::LinAlg::Matrix<3, 3> prdir(true);   // principal directions
-        Core::LinAlg::SYEV(cauchygreen, prstr2, prdir);
+        Core::LinAlg::syev(cauchygreen, prstr2, prdir);
 
         // THE principal stretches
         for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
@@ -1914,7 +1914,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
       // size is 3x3
       Core::LinAlg::Matrix<3, 3> defgrd(false);
 
-      if (Prestress::IsMulf(pstype_))
+      if (Prestress::is_mulf(pstype_))
       {
         // get derivatives wrt to last spatial configuration
         Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -1988,7 +1988,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
       // evaluate eigenproblem based on stress of previous step
       Core::LinAlg::Matrix<3, 3> lambda(true);
       Core::LinAlg::Matrix<3, 3> locsys(true);
-      Core::LinAlg::SYEV(cauchystress, lambda, locsys);
+      Core::LinAlg::syev(cauchystress, lambda, locsys);
 
       if (mat->material_type() == Core::Materials::m_constraintmixture)
       {
@@ -2009,7 +2009,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
         // evaluate eigenproblem based on stress of previous step
         Core::LinAlg::Matrix<3, 3> lambda(true);
         Core::LinAlg::Matrix<3, 3> locsys(true);
-        Core::LinAlg::SYEV(avg_stress, lambda, locsys);
+        Core::LinAlg::syev(avg_stress, lambda, locsys);
 
         // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
         double newgamma = atan2(lambda(1, 1), lambda(2, 2));

@@ -107,7 +107,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     nodaltangentssmooth2_(i) = 0.0;
   }
 
-  smoothing_ = Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Smoothing>(
+  smoothing_ = Core::UTILS::integral_value<Inpar::BEAMCONTACT::Smoothing>(
       beamcontactparams, "BEAMS_SMOOTHING");
 
   const Core::Elements::ElementType& eot1 = element1_->element_type();
@@ -121,8 +121,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   // for tangent smoothing but also in order to determine the vector normalold_ of the neighbor,
   // which is needed to perform sliding contact (with changing active pairs) for slender beams.
   {
-    neighbors1_ = BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(element1);
-    neighbors2_ = BEAMINTERACTION::Beam3TangentSmoothing::DetermineNeigbors(element2);
+    neighbors1_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element1);
+    neighbors2_ = BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(element2);
   }
 
   // Calculate initial length of beam elements (approximation for initially curved elements!)
@@ -159,22 +159,22 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   radius2_ = MANIPULATERADIUS * beamele2->get_circular_cross_section_radius_for_interactions();
 
 
-  if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::OctreeType>(
+  if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::OctreeType>(
           beamcontactparams, "BEAMS_OCTREE") != Inpar::BEAMCONTACT::boct_none)
   {
     // TODO: Here we need a warning in case we have no additive bounding box extrusion value!
   }
 
-  searchboxinc_ = BEAMINTERACTION::DetermineSearchboxInc(beamcontactparams);
+  searchboxinc_ = BEAMINTERACTION::determine_searchbox_inc(beamcontactparams);
 
   if (searchboxinc_ < 0.0)
     FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
-  if (Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_NEWGAP") and
-      !Core::UTILS::IntegralValue<int>(beamcontactparams, "BEAMS_ADDITEXT"))
+  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_NEWGAP") and
+      !Core::UTILS::integral_value<int>(beamcontactparams, "BEAMS_ADDITEXT"))
     FOUR_C_THROW("New gap function only possible when the flag BEAMS_ADDITEXT is set true!");
 
-  int penaltylaw = Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+  int penaltylaw = Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
       beamcontactparams, "BEAMS_PENALTYLAW");
   if (penaltylaw != Inpar::BEAMCONTACT::pl_lp and penaltylaw != Inpar::BEAMCONTACT::pl_qp)
   {
@@ -185,8 +185,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
           "Regularized penalty law chosen, but not all regularization parameters are set!");
   }
 
-  if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Damping>(beamcontactparams, "BEAMS_DAMPING") !=
-      Inpar::BEAMCONTACT::bd_no)
+  if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::Damping>(
+          beamcontactparams, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
   {
     if (beamcontactparams.get<double>("BEAMS_DAMPINGPARAM", -1.0) == -1.0 or
         beamcontactparams.get<double>("BEAMS_DAMPREGPARAM1", -1.0) == -1.0 or
@@ -269,8 +269,8 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate(
 
   // Check if the CPP found for this contact pair is really on the considered element, i.e. xi \in
   // [-1;1]
-  if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(xi1_)) < (1.0 + XIETATOL) &&
-      Core::FADUtils::CastToDouble(Core::FADUtils::Norm(xi2_)) < (1.0 + XIETATOL))
+  if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(xi1_)) < (1.0 + XIETATOL) &&
+      Core::FADUtils::cast_to_double(Core::FADUtils::norm(xi2_)) < (1.0 + XIETATOL))
   {
     // update shape functions and their derivatives
     get_shape_functions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, xi1_, xi2_);
@@ -281,8 +281,9 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate(
     // update coordinates and derivatives of current contact points at last time step
     compute_old_coords_and_derivs(r1_old_, r2_old_, r1_xi_old_, r2_xi_old_, N1, N2, N1_xi, N2_xi);
 
-    tangentproduct_ = Core::FADUtils::Norm(Core::FADUtils::ScalarProduct(r1_xi, r2_xi)) /
-                      (Core::FADUtils::VectorNorm<3>(r1_xi) * Core::FADUtils::VectorNorm<3>(r2_xi));
+    tangentproduct_ =
+        Core::FADUtils::norm(Core::FADUtils::scalar_product(r1_xi, r2_xi)) /
+        (Core::FADUtils::vector_norm<3>(r1_xi) * Core::FADUtils::vector_norm<3>(r2_xi));
 
     // In Case, the contact happend on the neighbor element pair in the last time step, we have not
     // calculated normal_old for this element in the last time step. In this case, we take
@@ -471,7 +472,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_fc_contact(con
   //**********************************************************************
   // evaluate damping forces for active pairs
   //**********************************************************************
-  if (Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no and
+  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no and
       dampingcontactflag_)
   {
     DoNotAssemble = false;
@@ -519,15 +520,15 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_fc_contact(con
   {
     for (int i = 0; i < dim1; ++i)
     {
-      fcontact1[i] = Core::FADUtils::CastToDouble(fc1(i));
+      fcontact1[i] = Core::FADUtils::cast_to_double(fc1(i));
     }
     for (int i = 0; i < dim2; ++i)
     {
-      fcontact2[i] = Core::FADUtils::CastToDouble(fc2(i));
+      fcontact2[i] = Core::FADUtils::cast_to_double(fc2(i));
     }
     // assemble fc1 and fc2 into global contact force vector
-    Core::LinAlg::Assemble(*fint, fcontact1, lm1, lmowner1);
-    Core::LinAlg::Assemble(*fint, fcontact2, lm2, lmowner2);
+    Core::LinAlg::assemble(*fint, fcontact1, lm1, lmowner1);
+    Core::LinAlg::assemble(*fint, fcontact2, lm2, lmowner2);
   }
 
   return;
@@ -577,7 +578,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
   // if the bool inactivestiff is true, the contact stiffness will always be applied in the first
   // Newton steps for pair which have been active in the last time step (even when they are
   // currentely not active) -> This makes the algorithm more robust.
-  bool inactivestiff = Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_INACTIVESTIFF");
+  bool inactivestiff = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_INACTIVESTIFF");
 
   // In order to accelerate convergence, we only apply the basic stiffness part in case of very
   // large gaps!
@@ -846,7 +847,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     //*************End of standard linearization of penalty contact forces****************
 
     //*************Begin of standard linearization of damping contact forces**************
-    if (Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no and
+    if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") !=
+            Inpar::BEAMCONTACT::bd_no and
         dampingcontactflag_)
     {
       //*************Begin of standard linearization**************************
@@ -1063,17 +1065,17 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     for (int j = 0; j < dim1 + dim2; j++)
     {
       for (int i = 0; i < dim1; i++)
-        stiffcontact1(i, j) = -Core::FADUtils::CastToDouble(stiffc1(i, j));
+        stiffcontact1(i, j) = -Core::FADUtils::cast_to_double(stiffc1(i, j));
       for (int i = 0; i < dim2; i++)
-        stiffcontact2(i, j) = -Core::FADUtils::CastToDouble(stiffc2(i, j));
+        stiffcontact2(i, j) = -Core::FADUtils::cast_to_double(stiffc2(i, j));
     }
 #else
     for (int j = 0; j < dim1 + dim2; j++)
     {
       for (int i = 0; i < dim1; i++)
-        stiffcontact1(i, j) = -Core::FADUtils::CastToDouble(stiffc1_FAD(i, j));
+        stiffcontact1(i, j) = -Core::FADUtils::cast_to_double(stiffc1_FAD(i, j));
       for (int i = 0; i < dim2; i++)
-        stiffcontact2(i, j) = -Core::FADUtils::CastToDouble(stiffc2_FAD(i, j));
+        stiffcontact2(i, j) = -Core::FADUtils::cast_to_double(stiffc2_FAD(i, j));
     }
 #endif
 
@@ -1285,15 +1287,15 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_fo
   {
     for (int i = 0; i < dim1; ++i)
     {
-      fcontact1[i] = Core::FADUtils::CastToDouble(fc1(i));
+      fcontact1[i] = Core::FADUtils::cast_to_double(fc1(i));
     }
     for (int i = 0; i < dim2; ++i)
     {
-      fcontact2[i] = Core::FADUtils::CastToDouble(fc2(i));
+      fcontact2[i] = Core::FADUtils::cast_to_double(fc2(i));
     }
     // assemble fc1 and fc2 into global contact force vector
-    Core::LinAlg::Assemble(*fint, fcontact1, lm1, lmowner1);
-    Core::LinAlg::Assemble(*fint, fcontact2, lm2, lmowner2);
+    Core::LinAlg::assemble(*fint, fcontact1, lm1, lmowner1);
+    Core::LinAlg::assemble(*fint, fcontact2, lm2, lmowner2);
   }
 
   return;
@@ -1836,17 +1838,17 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_st
     for (int j = 0; j < dim1 + dim2; j++)
     {
       for (int i = 0; i < dim1; i++)
-        stiffcontact1(i, j) = -Core::FADUtils::CastToDouble(stiffc1(i, j));
+        stiffcontact1(i, j) = -Core::FADUtils::cast_to_double(stiffc1(i, j));
       for (int i = 0; i < dim2; i++)
-        stiffcontact2(i, j) = -Core::FADUtils::CastToDouble(stiffc2(i, j));
+        stiffcontact2(i, j) = -Core::FADUtils::cast_to_double(stiffc2(i, j));
     }
 #else
     for (int j = 0; j < dim1 + dim2; j++)
     {
       for (int i = 0; i < dim1; i++)
-        stiffcontact1(i, j) = -Core::FADUtils::CastToDouble(stiffc1_FAD(i, j));
+        stiffcontact1(i, j) = -Core::FADUtils::cast_to_double(stiffc1_FAD(i, j));
       for (int i = 0; i < dim2; i++)
-        stiffcontact2(i, j) = -Core::FADUtils::CastToDouble(stiffc2_FAD(i, j));
+        stiffcontact2(i, j) = -Core::FADUtils::cast_to_double(stiffc2_FAD(i, j));
     }
 #endif
 
@@ -1899,16 +1901,16 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_lin_xi_and_lin_
   Core::LinAlg::Matrix<2, dim1 + dim2, TYPE> D(true);
 
   // compute L elementwise
-  L(0, 0) =
-      Core::FADUtils::ScalarProduct(r1_xi, r1_xi) + Core::FADUtils::ScalarProduct(delta_r, r1_xixi);
-  L(1, 1) = -Core::FADUtils::ScalarProduct(r2_xi, r2_xi) +
-            Core::FADUtils::ScalarProduct(delta_r, r2_xixi);
-  L(0, 1) = -Core::FADUtils::ScalarProduct(r2_xi, r1_xi);
+  L(0, 0) = Core::FADUtils::scalar_product(r1_xi, r1_xi) +
+            Core::FADUtils::scalar_product(delta_r, r1_xixi);
+  L(1, 1) = -Core::FADUtils::scalar_product(r2_xi, r2_xi) +
+            Core::FADUtils::scalar_product(delta_r, r2_xixi);
+  L(0, 1) = -Core::FADUtils::scalar_product(r2_xi, r1_xi);
   L(1, 0) = -L(0, 1);
 
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
-  if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(det_L)) < DETERMINANTTOL)
+  if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(det_L)) < DETERMINANTTOL)
     FOUR_C_THROW("ERROR: determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
@@ -2204,28 +2206,28 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
   }
 
   TYPE denom =
-      ((Core::FADUtils::ScalarProduct(t_2, t_2) * Core::FADUtils::ScalarProduct(t_1, t_1) -
-           Core::FADUtils::ScalarProduct(t_2, t_1) * Core::FADUtils::ScalarProduct(t_2, t_1)) /
-          (Core::FADUtils::ScalarProduct(t_2, t_2) * Core::FADUtils::ScalarProduct(t_1, t_1)));
+      ((Core::FADUtils::scalar_product(t_2, t_2) * Core::FADUtils::scalar_product(t_1, t_1) -
+           Core::FADUtils::scalar_product(t_2, t_1) * Core::FADUtils::scalar_product(t_2, t_1)) /
+          (Core::FADUtils::scalar_product(t_2, t_2) * Core::FADUtils::scalar_product(t_1, t_1)));
 
   if (denom > PARALLELTOL)
   {
     // local variables for element coordinates
-    TYPE aux1 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_1, b_2), t_2);
-    aux1 = aux1 * Core::FADUtils::ScalarProduct(t_1, t_2);
-    TYPE aux2 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_2, b_1), t_1);
-    aux2 = aux2 * Core::FADUtils::ScalarProduct(t_2, t_2);
+    TYPE aux1 = Core::FADUtils::scalar_product(Core::FADUtils::diff_vector(b_1, b_2), t_2);
+    aux1 = aux1 * Core::FADUtils::scalar_product(t_1, t_2);
+    TYPE aux2 = Core::FADUtils::scalar_product(Core::FADUtils::diff_vector(b_2, b_1), t_1);
+    aux2 = aux2 * Core::FADUtils::scalar_product(t_2, t_2);
     eta1 = (aux1 + aux2) /
-           (Core::FADUtils::ScalarProduct(t_2, t_2) * Core::FADUtils::ScalarProduct(t_1, t_1) -
-               Core::FADUtils::ScalarProduct(t_2, t_1) * Core::FADUtils::ScalarProduct(t_2, t_1));
+           (Core::FADUtils::scalar_product(t_2, t_2) * Core::FADUtils::scalar_product(t_1, t_1) -
+               Core::FADUtils::scalar_product(t_2, t_1) * Core::FADUtils::scalar_product(t_2, t_1));
 
-    aux1 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_2, b_1), t_1);
-    aux1 = aux1 * Core::FADUtils::ScalarProduct(t_1, t_2);
-    aux2 = Core::FADUtils::ScalarProduct(Core::FADUtils::DiffVector(b_1, b_2), t_2);
-    aux2 = aux2 * Core::FADUtils::ScalarProduct(t_1, t_1);
+    aux1 = Core::FADUtils::scalar_product(Core::FADUtils::diff_vector(b_2, b_1), t_1);
+    aux1 = aux1 * Core::FADUtils::scalar_product(t_1, t_2);
+    aux2 = Core::FADUtils::scalar_product(Core::FADUtils::diff_vector(b_1, b_2), t_2);
+    aux2 = aux2 * Core::FADUtils::scalar_product(t_1, t_1);
     eta2 = (aux1 + aux2) /
-           (Core::FADUtils::ScalarProduct(t_2, t_2) * Core::FADUtils::ScalarProduct(t_1, t_1) -
-               Core::FADUtils::ScalarProduct(t_2, t_1) * Core::FADUtils::ScalarProduct(t_2, t_1));
+           (Core::FADUtils::scalar_product(t_2, t_2) * Core::FADUtils::scalar_product(t_1, t_1) -
+               Core::FADUtils::scalar_product(t_2, t_1) * Core::FADUtils::scalar_product(t_2, t_1));
   }
 
   // vectors for shape functions and their derivatives
@@ -2296,7 +2298,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
     // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
     // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
     // linearized!
-    double norm_delta_r = Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(delta_r));
+    double norm_delta_r = Core::FADUtils::cast_to_double(Core::FADUtils::vector_norm<3>(delta_r));
 
     // The closer the beams get, the smaller is norm_delta_r, but
     // norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -2307,8 +2309,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
     if (norm_delta_r < NORMTOL)
     {
       // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element
-      if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(eta1)) +
-              Core::FADUtils::CastToDouble(Core::FADUtils::Norm(eta2)) <
+      if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta1)) +
+              Core::FADUtils::cast_to_double(Core::FADUtils::norm(eta2)) <
           NEIGHBORTOL)
       {
         std::cout << "Warning! pair " << element1_->id() << " / " << element2_->id()
@@ -2333,9 +2335,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
 
     // Evaluate nodal tangents in each case. However, they are used only if
     // smoothing_=Inpar::BEAMCONTACT::bsm_cpp
-    BEAMINTERACTION::Beam3TangentSmoothing::ComputeTangentsAndDerivs<numnodes, numnodalvalues>(
+    BEAMINTERACTION::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes, numnodalvalues>(
         t1, t1_xi, nodaltangentssmooth1_, N1, N1_xi);
-    BEAMINTERACTION::Beam3TangentSmoothing::ComputeTangentsAndDerivs<numnodes, numnodalvalues>(
+    BEAMINTERACTION::Beam3TangentSmoothing::compute_tangents_and_derivs<numnodes, numnodalvalues>(
         t2, t2_xi, nodaltangentssmooth2_, N2, N2_xi);
 
     // evaluate f at current eta1, eta2
@@ -2355,7 +2357,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::closest_point_projectio
     if (iter == 1) residual0 = residual;
 
     // check if Newton iteration has converged
-    if (Core::FADUtils::CastToDouble(residual) < BEAMCONTACTTOL) break;
+    if (Core::FADUtils::cast_to_double(residual) < BEAMCONTACTTOL) break;
 
     // evaluate Jacobian of f at current eta1, eta2
     // Note: Parallel elements can not be handled with this beam contact formulation; such pairs
@@ -2433,7 +2435,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
   // if the bool inactivestiff is true, the contact stiffness will always be applied in the first
   // Newton steps for pair which have been active in the last time step (even when they are
   // currentely not active) -> This makes the algorithm more robust.
-  bool inactivestiff = Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_INACTIVESTIFF");
+  bool inactivestiff = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_INACTIVESTIFF");
 
   if (contactflag_ or (iter_ == 0 and inactivestiff and oldcontactflag_))
   {
@@ -2441,7 +2443,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
     double g0 = bcparams_.get<double>("BEAMS_PENREGPARAM_G0", -1.0);
 
     switch (
-        Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW"))
+        Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW"))
     {
       case Inpar::BEAMCONTACT::pl_lp:  // linear penalty force law
       {
@@ -2649,7 +2651,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_damping_law()
 {
-  if (Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_DAMPING") == Inpar::BEAMCONTACT::bd_no)
+  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") == Inpar::BEAMCONTACT::bd_no)
     return;
 
   // Damping force parameter
@@ -2698,7 +2700,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_damping_law()
       }
     }
     TYPE g_t =
-        Core::FADUtils::ScalarProduct(normal_, vc1) - Core::FADUtils::ScalarProduct(normal_, vc2);
+        Core::FADUtils::scalar_product(normal_, vc1) - Core::FADUtils::scalar_product(normal_, vc2);
     fd_ = -g_t;
     dfd_ = -1.0;
 
@@ -2775,12 +2777,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_shape_functions(
   if (numnodalvalues == 1)
   {
     // get values and derivatives of shape functions
-    Core::FE::shape_function_1D(N1_i, eta1, distype1);
-    Core::FE::shape_function_1D(N2_i, eta2, distype2);
-    Core::FE::shape_function_1D_deriv1(N1_i_xi, eta1, distype1);
-    Core::FE::shape_function_1D_deriv1(N2_i_xi, eta2, distype2);
-    Core::FE::shape_function_1D_deriv2(N1_i_xixi, eta1, distype1);
-    Core::FE::shape_function_1D_deriv2(N2_i_xixi, eta2, distype2);
+    Core::FE::shape_function_1d(N1_i, eta1, distype1);
+    Core::FE::shape_function_1d(N2_i, eta2, distype2);
+    Core::FE::shape_function_1d_deriv1(N1_i_xi, eta1, distype1);
+    Core::FE::shape_function_1d_deriv1(N2_i_xi, eta2, distype2);
+    Core::FE::shape_function_1d_deriv2(N1_i_xixi, eta1, distype1);
+    Core::FE::shape_function_1d_deriv2(N2_i_xixi, eta2, distype2);
   }
   else if (numnodalvalues == 2)
   {
@@ -2794,12 +2796,12 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_shape_functions(
     double length2 = 2 * (static_cast<Discret::ELEMENTS::Beam3eb*>(element2_))->jacobi();
 
     // get values and derivatives of shape functions
-    Core::FE::shape_function_hermite_1D(N1_i, eta1, length1, distype1);
-    Core::FE::shape_function_hermite_1D(N2_i, eta2, length2, distype2);
-    Core::FE::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1);
-    Core::FE::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2);
-    Core::FE::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1);
-    Core::FE::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
+    Core::FE::shape_function_hermite_1d(N1_i, eta1, length1, distype1);
+    Core::FE::shape_function_hermite_1d(N2_i, eta2, length2, distype2);
+    Core::FE::shape_function_hermite_1d_deriv1(N1_i_xi, eta1, length1, distype1);
+    Core::FE::shape_function_hermite_1d_deriv1(N2_i_xi, eta2, length2, distype2);
+    Core::FE::shape_function_hermite_1d_deriv2(N1_i_xixi, eta1, length1, distype1);
+    Core::FE::shape_function_hermite_1d_deriv2(N2_i_xixi, eta2, length2, distype2);
   }
   else
     FOUR_C_THROW(
@@ -3069,7 +3071,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_lin_orthogonal
   //********************************************************************
 
   // singular df
-  if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(det_df)) < COLINEARTOL)
+  if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(det_df)) < COLINEARTOL)
   {
     // sort out
     elementscolinear_ = true;
@@ -3105,9 +3107,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_normal(
   for (int i = 0; i < 3; i++) delta_r(i) = r1_(i) - r2_(i);
 
   // compute length of normal
-  norm_delta_r = Core::FADUtils::VectorNorm<3>(delta_r);
+  norm_delta_r = Core::FADUtils::vector_norm<3>(delta_r);
 
-  if (Core::FADUtils::CastToDouble(norm_delta_r) < NORMTOL)
+  if (Core::FADUtils::cast_to_double(norm_delta_r) < NORMTOL)
     FOUR_C_THROW("ERROR: Normal of length zero! --> change time step!");
 
   // compute unit normal
@@ -3122,8 +3124,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_normal(
   // neighbor element (get_neighbor_normal_old), this is not allowed. Otherwise we would overwrite
   // the vector normal_old_ which has already been calcualted via the neighbor element. (For this
   // reason we check with the norm of normal_old_ and not with the variable firstcall_).
-  if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(
-          Core::FADUtils::ScalarProduct(normal_old_, normal_old_))) < NORMALTOL)
+  if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(
+          Core::FADUtils::scalar_product(normal_old_, normal_old_))) < NORMALTOL)
   {
     for (int i = 0; i < 3; i++) normal_old_(i) = normal_(i);
   }
@@ -3131,17 +3133,17 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_normal(
   TYPE gap = 0.0;
   sgn_ = 1.0;
 
-  if (Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_NEWGAP"))
+  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_NEWGAP"))
   {
-    if (Core::FADUtils::CastToDouble(
-            Core::FADUtils::Norm(Core::FADUtils::ScalarProduct(normal_, normal_old_))) < NORMALTOL)
+    if (Core::FADUtils::cast_to_double(
+            Core::FADUtils::norm(Core::FADUtils::scalar_product(normal_, normal_old_))) < NORMALTOL)
       FOUR_C_THROW("ERROR: Rotation too large! --> Choose smaller Time step!");
 
-    gap =
-        Core::FADUtils::Signum(Core::FADUtils::ScalarProduct(normal_, normal_old_)) * norm_delta_r -
-        radius1_ - radius2_;
-    sgn_ = Core::FADUtils::CastToDouble(
-        Core::FADUtils::Signum(Core::FADUtils::ScalarProduct(normal_, normal_old_)));
+    gap = Core::FADUtils::signum(Core::FADUtils::scalar_product(normal_, normal_old_)) *
+              norm_delta_r -
+          radius1_ - radius2_;
+    sgn_ = Core::FADUtils::cast_to_double(
+        Core::FADUtils::signum(Core::FADUtils::scalar_product(normal_, normal_old_)));
   }
   else
   {
@@ -3171,7 +3173,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_contact_status(co
   double g0 = bcparams_.get<double>("BEAMS_PENREGPARAM_G0", -1.0);
 
   int penaltylaw =
-      Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
+      Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
 
   if (penaltylaw == Inpar::BEAMCONTACT::pl_lp)
   {
@@ -3224,7 +3226,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_contact_status(co
       contactflag_ = false;
   }
 
-  if (Core::UTILS::IntegralValue<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
+  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
   {
     // First parameter for contact force regularization
     double gd1 = bcparams_.get<double>("BEAMS_DAMPREGPARAM1", -1000.0);
@@ -3309,18 +3311,18 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_class_variables_
   double ele2_delta_pos2 = 0.0;
   for (int i = 0; i < 3; i++)
   {
-    ele1_delta_pos1 += (ele1pos_old_(i) - Core::FADUtils::CastToDouble(ele1pos_(i))) *
-                       (ele1pos_old_(i) - Core::FADUtils::CastToDouble(ele1pos_(i)));
+    ele1_delta_pos1 += (ele1pos_old_(i) - Core::FADUtils::cast_to_double(ele1pos_(i))) *
+                       (ele1pos_old_(i) - Core::FADUtils::cast_to_double(ele1pos_(i)));
     ele1_delta_pos2 += (ele1pos_old_(3 * numnodalvalues + i) -
-                           Core::FADUtils::CastToDouble(ele1pos_(3 * numnodalvalues + i))) *
+                           Core::FADUtils::cast_to_double(ele1pos_(3 * numnodalvalues + i))) *
                        (ele1pos_old_(3 * numnodalvalues + i) -
-                           Core::FADUtils::CastToDouble(ele1pos_(3 * numnodalvalues + i)));
-    ele2_delta_pos1 += (ele2pos_old_(i) - Core::FADUtils::CastToDouble(ele2pos_(i))) *
-                       (ele2pos_old_(i) - Core::FADUtils::CastToDouble(ele2pos_(i)));
+                           Core::FADUtils::cast_to_double(ele1pos_(3 * numnodalvalues + i)));
+    ele2_delta_pos1 += (ele2pos_old_(i) - Core::FADUtils::cast_to_double(ele2pos_(i))) *
+                       (ele2pos_old_(i) - Core::FADUtils::cast_to_double(ele2pos_(i)));
     ele2_delta_pos2 += (ele2pos_old_(3 * numnodalvalues + i) -
-                           Core::FADUtils::CastToDouble(ele2pos_(3 * numnodalvalues + i))) *
+                           Core::FADUtils::cast_to_double(ele2pos_(3 * numnodalvalues + i))) *
                        (ele2pos_old_(3 * numnodalvalues + i) -
-                           Core::FADUtils::CastToDouble(ele2pos_(3 * numnodalvalues + i)));
+                           Core::FADUtils::cast_to_double(ele2pos_(3 * numnodalvalues + i)));
   }
   ele1_delta_pos1 = sqrt(ele1_delta_pos1);
   ele1_delta_pos2 = sqrt(ele1_delta_pos2);
@@ -3374,13 +3376,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_class_variables_
     for (int i = 0; i < 3; i++)
     {
       midpos1(i) =
-          0.5 * Core::FADUtils::CastToDouble(ele1pos_(i) + ele1pos_(3 * numnodalvalues + i));
+          0.5 * Core::FADUtils::cast_to_double(ele1pos_(i) + ele1pos_(3 * numnodalvalues + i));
       midpos2(i) =
-          0.5 * Core::FADUtils::CastToDouble(ele2pos_(i) + ele2pos_(3 * numnodalvalues + i));
+          0.5 * Core::FADUtils::cast_to_double(ele2pos_(i) + ele2pos_(3 * numnodalvalues + i));
       nodedistance1(i) =
-          Core::FADUtils::CastToDouble(ele1pos_(i) - ele1pos_(3 * numnodalvalues + i));
+          Core::FADUtils::cast_to_double(ele1pos_(i) - ele1pos_(3 * numnodalvalues + i));
       nodedistance2(i) =
-          Core::FADUtils::CastToDouble(ele2pos_(i) - ele2pos_(3 * numnodalvalues + i));
+          Core::FADUtils::cast_to_double(ele2pos_(i) - ele2pos_(3 * numnodalvalues + i));
       diffvector(i) = midpos1(i) - midpos2(i);
     }
   }
@@ -3389,13 +3391,13 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_class_variables_
   // Update all history variables!
   for (int j = 0; j < 3; j++) normal_old_(j) = normal_(j);
 
-  xi1_old_ = Core::FADUtils::CastToDouble(xi1_);
-  xi2_old_ = Core::FADUtils::CastToDouble(xi2_);
+  xi1_old_ = Core::FADUtils::cast_to_double(xi1_);
+  xi2_old_ = Core::FADUtils::cast_to_double(xi2_);
 
   for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
   {
-    ele1pos_old_(i) = Core::FADUtils::CastToDouble(ele1pos_(i));
-    ele2pos_old_(i) = Core::FADUtils::CastToDouble(ele2pos_(i));
+    ele1pos_old_(i) = Core::FADUtils::cast_to_double(ele1pos_(i));
+    ele2pos_old_(i) = Core::FADUtils::cast_to_double(ele2pos_(i));
   }
 
   // Reset of class variables
@@ -3419,8 +3421,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_class_variables_
 {
   for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
   {
-    ele1pos_lastiter_(i) = Core::FADUtils::CastToDouble(ele1pos_(i));
-    ele2pos_lastiter_(i) = Core::FADUtils::CastToDouble(ele2pos_(i));
+    ele1pos_lastiter_(i) = Core::FADUtils::cast_to_double(ele1pos_(i));
+    ele2pos_lastiter_(i) = Core::FADUtils::cast_to_double(ele2pos_(i));
   }
 }
 /*----------------------------------------------------------------------*
@@ -3480,8 +3482,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::set_class_variables(
   {
     for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
     {
-      ele1pos_old_(i) = Core::FADUtils::CastToDouble(ele1pos_(i));
-      ele2pos_old_(i) = Core::FADUtils::CastToDouble(ele2pos_(i));
+      ele1pos_old_(i) = Core::FADUtils::cast_to_double(ele1pos_(i));
+      ele2pos_old_(i) = Core::FADUtils::cast_to_double(ele2pos_(i));
     }
   }
 
@@ -3490,8 +3492,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::set_class_variables(
   {
     for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
     {
-      ele1pos_lastiter_(i) = Core::FADUtils::CastToDouble(ele1pos_(i));
-      ele2pos_lastiter_(i) = Core::FADUtils::CastToDouble(ele2pos_(i));
+      ele1pos_lastiter_(i) = Core::FADUtils::cast_to_double(ele1pos_(i));
+      ele2pos_lastiter_(i) = Core::FADUtils::cast_to_double(ele2pos_(i));
     }
     firstcallofstep_ = false;
   }
@@ -3508,7 +3510,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_new_gap_status()
 {
   TYPE gap_diff = gap_ - gap_original_;
 
-  if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(gap_diff)) < GAPTOL)
+  if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(gap_diff)) < GAPTOL)
     return false;
 
   else
@@ -3554,17 +3556,21 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_smooth_tange
 
   Core::LinAlg::Matrix<3 * numnodes, 1> elepos_aux(true);
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
-  for (int i = 0; i < 3 * numnodes; i++) elepos_aux(i) = Core::FADUtils::CastToDouble(ele1pos_(i));
+  for (int i = 0; i < 3 * numnodes; i++)
+    elepos_aux(i) = Core::FADUtils::cast_to_double(ele1pos_(i));
 
-  nodaltangentssmooth1_ = BEAMINTERACTION::Beam3TangentSmoothing::CalculateNodalTangents<numnodes>(
-      currentpositions, elepos_aux, element1_, neighbors1_);
+  nodaltangentssmooth1_ =
+      BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
+          currentpositions, elepos_aux, element1_, neighbors1_);
 
   elepos_aux.clear();
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
-  for (int i = 0; i < 3 * numnodes; i++) elepos_aux(i) = Core::FADUtils::CastToDouble(ele2pos_(i));
+  for (int i = 0; i < 3 * numnodes; i++)
+    elepos_aux(i) = Core::FADUtils::cast_to_double(ele2pos_(i));
 
-  nodaltangentssmooth2_ = BEAMINTERACTION::Beam3TangentSmoothing::CalculateNodalTangents<numnodes>(
-      currentpositions, elepos_aux, element2_, neighbors2_);
+  nodaltangentssmooth2_ =
+      BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
+          currentpositions, elepos_aux, element2_, neighbors2_);
 }
 /*----------------------------------------------------------------------*
  |  end: Update nodal coordinates (public)
@@ -3626,7 +3632,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
   Core::LinAlg::Matrix<3, 1> delta_r(true);
 
   // compute non-unit normal
-  for (int i = 0; i < 3; i++) delta_r(i) = Core::FADUtils::CastToDouble(r1_(i) - r2_(i));
+  for (int i = 0; i < 3; i++) delta_r(i) = Core::FADUtils::cast_to_double(r1_(i) - r2_(i));
 
   bool beamsclose = false;
 
@@ -3708,8 +3714,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
 
           // If the neighbor pair had a valid cpp solution at last time step the value
           // ||normal_old_=0|| should not be possible!
-          if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(
-                  Core::FADUtils::ScalarProduct(normal_old_, normal_old_))) < NORMALTOL and
+          if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(
+                  Core::FADUtils::scalar_product(normal_old_, normal_old_))) < NORMALTOL and
               beamsclose)
           {
             std::cout << "pair: " << element1_->id() << " / " << element2_->id() << ":"
@@ -3758,8 +3764,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
 
           // If the neighbor pair had a valid cpp solution at last time step the value
           // ||normal_old_=0|| should not be possible!
-          if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(
-                  Core::FADUtils::ScalarProduct(normal_old_, normal_old_))) < NORMALTOL and
+          if (Core::FADUtils::cast_to_double(Core::FADUtils::norm(
+                  Core::FADUtils::scalar_product(normal_old_, normal_old_))) < NORMALTOL and
               beamsclose)
           {
             std::cout << "pair: " << element1_->id() << " / " << element2_->id() << ":"
@@ -3799,8 +3805,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
     for (int i = 0; i < 3; i++) normal_old_ = 0.0;
 
   if (beamsclose and
-      (Core::FADUtils::Norm(xi1_ - xi1_old_) > MAXDELTAXIETA or
-          Core::FADUtils::Norm(xi2_ - xi2_old_) > MAXDELTAXIETA) and
+      (Core::FADUtils::norm(xi1_ - xi1_old_) > MAXDELTAXIETA or
+          Core::FADUtils::norm(xi2_ - xi2_old_) > MAXDELTAXIETA) and
       tangentproduct_ < PARALLEL_DEACTIVATION_VAL)
   {
     std::cout << "Pair: " << element1_->id() << " / " << element2_->id() << std::endl;
@@ -3890,7 +3896,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::fad_check_lin_xi_and_li
   // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
   // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
   // linearized!
-  double norm_delta_r = Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(delta_r));
+  double norm_delta_r = Core::FADUtils::cast_to_double(Core::FADUtils::vector_norm<3>(delta_r));
 
   // evaluate f of CCP condition
   // see Wriggers, Computational Contact Mechanics, equation (12.5)
@@ -3931,7 +3937,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::fad_check_lin_xi_and_li
 
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
-  if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(det_L)) < DETERMINANTTOL)
+  if (Core::FADUtils::cast_to_double(Core::FADUtils::Norm(det_L)) < DETERMINANTTOL)
     FOUR_C_THROW("ERROR: Determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
@@ -3972,7 +3978,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::fad_check_lin_orthogona
   // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
   // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
   // linearized!
-  double norm_delta_r = Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(delta_r));
+  double norm_delta_r = Core::FADUtils::cast_to_double(Core::FADUtils::vector_norm<3>(delta_r));
 
   // evaluate f of CCP condition
   // see Wriggers, Computational Contact Mechanics, equation (12.5)

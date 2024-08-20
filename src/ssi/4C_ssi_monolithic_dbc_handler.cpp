@@ -138,7 +138,7 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
     Teuchos::RCP<const Core::Conditions::LocsysManager> locsysmanager_structure)
 
 {
-  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(system_matrix);
+  auto systemmatrix_sparse = Core::LinAlg::cast_to_sparse_matrix_and_check_success(system_matrix);
 
   // structure dof row map
   const auto& dofrowmap_structure = structure_field()->dof_row_map();
@@ -167,7 +167,8 @@ void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_m
     const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
     Teuchos::RCP<const Core::Conditions::LocsysManager> locsysmanager_structure)
 {
-  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix);
+  auto systemmatrix_block =
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(system_matrix);
 
   // apply structure Dirichlet conditions
   for (int iblock = 0; iblock < systemmatrix_block->cols(); ++iblock)
@@ -184,7 +185,7 @@ void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_m
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::DBCHandlerBase> SSI::BuildDBCHandler(const bool is_scatra_manifold,
+Teuchos::RCP<SSI::DBCHandlerBase> SSI::build_dbc_handler(const bool is_scatra_manifold,
     Core::LinAlg::MatrixType matrixtype_ssi, Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,

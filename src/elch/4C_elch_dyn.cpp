@@ -55,7 +55,7 @@ void elch_dyn(int restart)
   // access the scalar transport parameter list
   const auto& scatradyn = problem->scalar_transport_dynamic_params();
   const auto veltype =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+      Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   // choose algorithm depending on velocity field type
   switch (veltype)
@@ -131,12 +131,12 @@ void elch_dyn(int restart)
       if (scatradis->num_global_nodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
-        Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
+        Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
             fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
         scatradis->fill_complete();
         // determine implementation type of cloned scatra elements
         Inpar::ScaTra::ImplType impltype = Inpar::ScaTra::impltype_undefined;
-        if (Core::UTILS::IntegralValue<int>(elchcontrol, "DIFFCOND_FORMULATION"))
+        if (Core::UTILS::integral_value<int>(elchcontrol, "DIFFCOND_FORMULATION"))
           impltype = Inpar::ScaTra::impltype_elch_diffcond;
         else
           impltype = Inpar::ScaTra::impltype_elch_NP;
@@ -161,7 +161,7 @@ void elch_dyn(int restart)
       Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
       if (!aledis->filled()) aledis->fill_complete(false, false, false);
       // is ALE needed or not?
-      const auto withale = Core::UTILS::IntegralValue<Inpar::ElCh::ElchMovingBoundary>(
+      const auto withale = Core::UTILS::integral_value<Inpar::ElCh::ElchMovingBoundary>(
           elchcontrol, "MOVINGBOUNDARY");
 
       if (withale != Inpar::ElCh::elch_mov_bndry_no)
@@ -170,7 +170,7 @@ void elch_dyn(int restart)
         if (aledis->num_global_nodes() == 0)
         {
           // clone ALE discretization from fluid discretization
-          Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+          Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
               fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
 
           aledis->fill_complete(true, true, false);

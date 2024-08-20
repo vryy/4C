@@ -221,7 +221,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_upper_bound_test(
 
   const std::string& quantity_type_string = p.get("Quantity Type", "???");
   const NOX::Nln::StatusTest::QuantityType qtype =
-      NOX::Nln::StatusTest::String2QuantityType(quantity_type_string);
+      NOX::Nln::StatusTest::string_to_quantity_type(quantity_type_string);
   if (qtype == NOX::Nln::StatusTest::quantity_unknown)
   {
     std::ostringstream msg;

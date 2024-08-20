@@ -27,17 +27,17 @@ void poroelast_drt()
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print Logo to screen
-  if (comm.MyPID() == 0) PoroElast::PrintLogo();
+  if (comm.MyPID() == 0) PoroElast::print_logo();
 
   // setup of the discretizations, including clone strategy
-  PoroElast::UTILS::SetupPoro<PoroElast::UTILS::PoroelastCloneStrategy>();
+  PoroElast::UTILS::setup_poro<PoroElast::UTILS::PoroelastCloneStrategy>();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
   // choose algorithm depending on solution type
   Teuchos::RCP<PoroElast::PoroBase> poroalgo =
-      PoroElast::UTILS::CreatePoroAlgorithm(poroelastdyn, comm);
+      PoroElast::UTILS::create_poro_algorithm(poroelastdyn, comm);
 
   // read the restart information, set vectors and variables
   const int restart = problem->restart();

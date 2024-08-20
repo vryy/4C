@@ -178,7 +178,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
       Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
       // Pass on the raw data to the factory that selects the specialized implementation based on
       // the unique id stored as first entry.
-      Core::Communication::ParObject* object = Core::Communication::Factory(data);
+      Core::Communication::ParObject* object = Core::Communication::factory(data);
       Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->set_owner(myrank);
@@ -283,7 +283,7 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
     {
       std::vector<char> data;
       Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
-      Core::Communication::ParObject* object = Core::Communication::Factory(data);
+      Core::Communication::ParObject* object = Core::Communication::factory(data);
       Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");
       node->set_owner(myrank);
@@ -716,7 +716,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
   {
     // communicate all master and slave pairs
     // caution: we build redundant maps here, containing all master nodes
-    Core::LinAlg::GatherAll(pbcmap, *comm_);
+    Core::LinAlg::gather_all(pbcmap, *comm_);
 
     // and build slave master pairs
     for (std::map<int, std::set<int>>::iterator curr = pbcmap.begin(); curr != pbcmap.end(); ++curr)

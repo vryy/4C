@@ -51,8 +51,9 @@ namespace Core::GeometricSearch
     {
       for (const auto& bounding_volume : bounding_volumes)
       {
-        const auto& [points, polygons] = GetKDopPolyhedronRepresentation(bounding_volume.second);
-        IO::AppendPolyhedronToVisualizationData(visualization_data, points, polygons);
+        const auto& [points, polygons] =
+            get_k_dop_polyhedron_representation(bounding_volume.second);
+        IO::append_polyhedron_to_visualization_data(visualization_data, points, polygons);
         visualization_data.get_cell_data<int>("element_id").push_back(bounding_volume.first);
         visualization_data.get_cell_data<int>("element_created_on_rank").push_back(my_rank_);
         visualization_data.get_cell_data<int>("primitive_predicate_flag")

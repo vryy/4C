@@ -81,7 +81,8 @@ void Core::FE::ShapeValues<distype>::evaluate(
     const Core::Elements::Element& ele, const std::vector<double>& aleDis)
 {
   FOUR_C_ASSERT(ele.shape() == distype, "Internal error");
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(&ele, xyze);
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+      &ele, xyze);
 
   // update nodal coordinates
   if (!(aleDis.empty()))
@@ -149,9 +150,9 @@ Core::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
     : params_(params), degree_(params.degree_)
 {
   if (nsd_ == 2)
-    faceNodeOrder = Core::FE::getEleNodeNumberingLines(distype);
+    faceNodeOrder = Core::FE::get_ele_node_numbering_lines(distype);
   else if (nsd_ == 3)
-    faceNodeOrder = Core::FE::getEleNodeNumberingSurfaces(distype);
+    faceNodeOrder = Core::FE::get_ele_node_numbering_surfaces(distype);
   else
     FOUR_C_THROW("Not implemented for dim != 2, 3");
 
@@ -203,7 +204,7 @@ void Core::FE::ShapeValuesFace<distype>::evaluate_face(
   FOUR_C_ASSERT(faceNodeOrder[face].size() == nfn_, "Internal error");
 
   Core::LinAlg::Matrix<nsd_, nen_> xyzeElement;
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       &ele, xyzeElement);
 
   // update nodal coordinates
@@ -238,7 +239,7 @@ void Core::FE::ShapeValuesFace<distype>::evaluate_face(
 
     Core::FE::shape_function_deriv1<facedis>(xsi, deriv);
     double jacdet = 0.0;
-    Core::FE::ComputeMetricTensorForBoundaryEle<facedis>(
+    Core::FE::compute_metric_tensor_for_boundary_ele<facedis>(
         xyze, deriv, metricTensor, jacdet, &normal);
     for (unsigned int d = 0; d < nsd_; ++d) normals(d, q) = normal(d);
     jfac(q) = jacdet * quadrature_->weight(q);
@@ -464,8 +465,8 @@ void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
           }
         }
         else
-          FOUR_C_THROW(
-              "Shape type %s not yet implemented", (Core::FE::CellTypeToString(distype)).c_str());
+          FOUR_C_THROW("Shape type %s not yet implemented",
+              (Core::FE::cell_type_to_string(distype)).c_str());
         break;
       default:
         FOUR_C_THROW("Only implemented in 2D and 3D");
@@ -496,7 +497,7 @@ void Core::FE::ShapeValuesFace<distype>::compute_face_reference_system(
 
     // Core::LinAlg::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
     Core::LinAlg::Matrix<nsd_, nen_> xyzeMasterElement;
-    Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+    Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
         &ele, xyzeMasterElement);
 
     // Compute the reference system from the master side
@@ -601,7 +602,7 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::create(ShapeValuesFaceParams 
       Core::FE::PolynomialSpaceCache<nsd>::instance().create(polyparams);
   Core::LinAlg::SerialDenseVector(polySpace->size());
   Teuchos::RCP<Core::FE::GaussPoints> quadrature = Core::FE::GaussPointCache::instance().create(
-      Core::FE::getEleFaceShapeType(distype, params.face_), params.quadraturedegree_);
+      Core::FE::get_ele_face_shape_type(distype, params.face_), params.quadraturedegree_);
 
   Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::rcp(new ShapeValuesInteriorOnFace());
   container->shape(polySpace->size(), quadrature->num_points());
@@ -609,8 +610,8 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::create(ShapeValuesFaceParams 
   Core::LinAlg::Matrix<nsd, nsd> trafo;
   Core::LinAlg::Matrix<nsd, 1> xsi;
   Core::LinAlg::SerialDenseMatrix faceQPoints;
-  Core::FE::BoundaryGPToParentGP<nsd>(faceQPoints, trafo, *quadrature, distype,
-      Core::FE::getEleFaceShapeType(distype, params.face_), params.face_);
+  Core::FE::boundary_gp_to_parent_gp<nsd>(faceQPoints, trafo, *quadrature, distype,
+      Core::FE::get_ele_face_shape_type(distype, params.face_), params.face_);
   Core::LinAlg::SerialDenseVector faceValues(polySpace->size());
   for (int q = 0; q < quadrature->num_points(); ++q)
   {

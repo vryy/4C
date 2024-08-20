@@ -48,7 +48,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::project_p
     const ElementData<Volume, ScalarType>& element_data_volume,
     Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result) const
 {
-  GEOMETRYPAIR::ProjectPointToVolume<ScalarType, Volume>(
+  GEOMETRYPAIR::project_point_to_volume<ScalarType, Volume>(
       point, element_data_volume, xi, projection_result);
 }
 
@@ -102,8 +102,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::intersect
     while (counter < Constants::local_newton_iter_max)
     {
       // Get the point coordinates on the line and volume.
-      EvaluatePosition<Line>(eta, element_data_line, r_line);
-      EvaluatePosition<Volume>(xi, element_data_volume, r_volume);
+      evaluate_position<Line>(eta, element_data_line, r_line);
+      evaluate_position<Volume>(xi, element_data_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$ and $xi(i) - value = R_{surf}$
       J_J_inv.put_scalar(0.);
@@ -132,7 +132,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::intersect
           delta_xi.norm2() < Constants::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
-        if (ValidParameter1D(eta) && ValidParameter3D<Volume>(xi))
+        if (valid_parameter1_d(eta) && valid_parameter3_d<Volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -143,8 +143,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::intersect
       if (residuum.norm2() > Constants::local_newton_res_max) break;
 
       // Get the positional derivatives.
-      EvaluatePositionDerivative1<Line>(eta, element_data_line, dr_line);
-      EvaluatePositionDerivative1<Volume>(xi, element_data_volume, dr_volume);
+      evaluate_position_derivative1<Line>(eta, element_data_line, dr_line);
+      evaluate_position_derivative1<Volume>(xi, element_data_volume, dr_volume);
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -157,7 +157,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::intersect
       }
 
       // Solve the linearized system.
-      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+      if (Core::LinAlg::solve_linear_system_do_not_throw_error_on_zero_determinant_scaled(
               J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
@@ -238,7 +238,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::intersect
  *
  */
 template <typename ScalarType, typename Volume>
-void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+void GEOMETRYPAIR::project_point_to_volume(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
     const ElementData<Volume, ScalarType>& element_data_volume,
     Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result)
 {
@@ -265,7 +265,7 @@ void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, ScalarT
     while (counter < Constants::local_newton_iter_max)
     {
       // Get the point coordinates on the volume.
-      GEOMETRYPAIR::EvaluatePosition<Volume>(xi, element_data_volume, r_volume);
+      GEOMETRYPAIR::evaluate_position<Volume>(xi, element_data_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$
       residuum = r_volume;
@@ -275,7 +275,7 @@ void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, ScalarT
       if (residuum.norm2() < Constants::local_newton_res_tol &&
           delta_xi.norm2() < Constants::projection_xi_eta_tol)
       {
-        if (ValidParameter3D<Volume>(xi))
+        if (valid_parameter3_d<Volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -286,10 +286,10 @@ void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, ScalarT
       if (residuum.norm2() > Constants::local_newton_res_max) break;
 
       // Get the jacobian.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Volume>(xi, element_data_volume, J_J_inv);
+      GEOMETRYPAIR::evaluate_position_derivative1<Volume>(xi, element_data_volume, J_J_inv);
 
       // Solve the linearized system.
-      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+      if (Core::LinAlg::solve_linear_system_do_not_throw_error_on_zero_determinant_scaled(
               J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.

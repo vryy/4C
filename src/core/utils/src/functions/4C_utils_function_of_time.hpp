@@ -88,7 +88,7 @@ namespace Core::UTILS
   };
 
   //! create a vector function of time from multiple expressions
-  Teuchos::RCP<FunctionOfTime> TryCreateFunctionOfTime(
+  Teuchos::RCP<FunctionOfTime> try_create_function_of_time(
       const std::vector<Input::LineDefinition>& function_line_defs);
 
 }  // namespace Core::UTILS

@@ -85,7 +85,7 @@ void Discret::ELEMENTS::TransportType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::TransportType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
+  return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
 void Discret::ELEMENTS::TransportType::setup_element_definition(
@@ -526,7 +526,7 @@ void Discret::ELEMENTS::Transport::set_material(
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Transport::set_material(int matnum, Core::Elements::Element* oldele)
 {
-  set_material(0, Mat::Factory(matnum));
+  set_material(0, Mat::factory(matnum));
 
   Teuchos::RCP<Core::Mat::Material> mat = material();
 
@@ -584,7 +584,7 @@ void Discret::ELEMENTS::Transport::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -607,7 +607,7 @@ void Discret::ELEMENTS::Transport::unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Transport::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(distype_);
+  return Core::FE::get_number_of_element_lines(distype_);
 }
 
 
@@ -616,7 +616,7 @@ int Discret::ELEMENTS::Transport::num_line() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Transport::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(distype_);
+  return Core::FE::get_number_of_element_surfaces(distype_);
 }
 
 
@@ -625,7 +625,7 @@ int Discret::ELEMENTS::Transport::num_surface() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Transport::num_volume() const
 {
-  return Core::FE::getNumberOfElementVolumes(distype_);
+  return Core::FE::get_number_of_element_volumes(distype_);
 }
 
 
@@ -638,11 +638,11 @@ void Discret::ELEMENTS::Transport::print(std::ostream& os) const
   os << "Transport element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::cell_type_to_string(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
-  std::cout << "Type of scalar transport: " << ScaTra::ImplTypeToString(impltype_) << std::endl;
+  std::cout << "Type of scalar transport: " << ScaTra::impl_type_to_string(impltype_) << std::endl;
   std::cout << std::endl;
 }
 
@@ -652,7 +652,7 @@ void Discret::ELEMENTS::Transport::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::lines()
 {
-  return Core::Communication::GetElementLines<TransportBoundary, Transport>(*this);
+  return Core::Communication::get_element_lines<TransportBoundary, Transport>(*this);
 }
 
 
@@ -661,7 +661,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport:
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<TransportBoundary, Transport>(*this);
+  return Core::Communication::get_element_surfaces<TransportBoundary, Transport>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -758,7 +758,7 @@ Core::Elements::Element* Discret::ELEMENTS::TransportBoundary::clone() const
  *----------------------------------------------------------------------*/
 Core::FE::CellType Discret::ELEMENTS::TransportBoundary::shape() const
 {
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_element()->shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -790,7 +790,7 @@ void Discret::ELEMENTS::TransportBoundary::print(std::ostream& os) const
   os << "TransportBoundary element";
   Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(shape()) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::cell_type_to_string(shape()) << std::endl;
   std::cout << std::endl;
   return;
 }
@@ -800,7 +800,7 @@ void Discret::ELEMENTS::TransportBoundary::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::TransportBoundary::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(shape());
+  return Core::FE::get_number_of_element_lines(shape());
 }
 
 /*----------------------------------------------------------------------*
@@ -808,7 +808,7 @@ int Discret::ELEMENTS::TransportBoundary::num_line() const
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::TransportBoundary::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(shape());
+  return Core::FE::get_number_of_element_surfaces(shape());
 }
 
 /*----------------------------------------------------------------------*

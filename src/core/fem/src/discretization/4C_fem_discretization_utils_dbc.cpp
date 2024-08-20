@@ -27,13 +27,13 @@ void Core::FE::UTILS::evaluate_dirichlet(const Core::FE::Discretization& discret
     const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor)
 {
   // create const version
-  const Teuchos::RCP<const Core::FE::UTILS::Dbc> dbc = BuildDbc(&discret);
+  const Teuchos::RCP<const Core::FE::UTILS::Dbc> dbc = build_dbc(&discret);
   (*dbc)(discret, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::UTILS::Dbc> Core::FE::UTILS::BuildDbc(
+Teuchos::RCP<const Core::FE::UTILS::Dbc> Core::FE::UTILS::build_dbc(
     const Core::FE::Discretization* discret_ptr)
 {
   // HDG discretization

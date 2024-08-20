@@ -85,12 +85,12 @@ namespace Inpar
     };
 
     /// set the beam contact parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /**
      * \brief Set beam beam-to-beam specific conditions.
      */
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
   }  // namespace BEAMCONTACT
 

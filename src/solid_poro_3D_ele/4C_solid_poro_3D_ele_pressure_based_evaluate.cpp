@@ -39,7 +39,7 @@ int Discret::ELEMENTS::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
         if (is_params_interface())
           return params_interface().get_action_type();
         else
-          return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
+          return Core::Elements::string_to_action_type(params.get<std::string>("action", "none"));
       });
 
   switch (action)
@@ -136,7 +136,7 @@ int Discret::ELEMENTS::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
                 discretization, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
           },
           solid_calc_variant_);
-      Discret::ELEMENTS::LumpMatrix(elemat2);
+      Discret::ELEMENTS::lump_matrix(elemat2);
       return 0;
     }
     case Core::Elements::struct_poro_calc_scatracoupling:
@@ -228,7 +228,7 @@ int Discret::ELEMENTS::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
     }
     default:
       FOUR_C_THROW("The element action %s is not yet implemented for the new solid elements",
-          ActionType2String(action).c_str());
+          action_type_to_string(action).c_str());
       return 0;
   }
 }

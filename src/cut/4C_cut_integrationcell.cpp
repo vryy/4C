@@ -64,12 +64,12 @@ bool Cut::IntegrationCell::contains(Core::LinAlg::Matrix<probdim, 1>& x)
  *----------------------------------------------------------------------------*/
 void Cut::IntegrationCell::dump_gmsh(std::ofstream& file, int* value)
 {
-  Output::GmshCellDump(file, shape(), xyz_, &position_, value);
+  Output::gmsh_cell_dump(file, shape(), xyz_, &position_, value);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Cut::IntegrationCell::volume() const { return Core::Geo::ElementVolume(shape(), xyz_); }
+double Cut::IntegrationCell::volume() const { return Core::Geo::element_volume(shape(), xyz_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -159,8 +159,8 @@ int Cut::Pyramid5IntegrationCell::cubature_degree(Core::FE::CellType elementshap
 void Cut::IntegrationCell::print(std::ostream& stream) const
 {
   stream << "--- integration cell ( address: " << std::setw(10) << this << " )\n";
-  stream << "pos = " << Point::point_position2_string(position()) << " "
-         << "shape = " << Core::FE::CellTypeToString(shape()) << " "
+  stream << "pos = " << Point::point_position_to_string(position()) << " "
+         << "shape = " << Core::FE::cell_type_to_string(shape()) << " "
          << "volume = " << volume() << "\n";
   for (unsigned i = 0; i < points_.size(); ++i)
   {

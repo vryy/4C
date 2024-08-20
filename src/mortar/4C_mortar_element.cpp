@@ -236,7 +236,7 @@ void Mortar::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
@@ -1297,14 +1297,14 @@ double Mortar::Element::compute_area_deriv(Core::Gen::Pairedvector<int, double>&
 bool Mortar::Element::local_to_global(const double* xi, double* globcoord, int inttype)
 {
   // check input
-  if (!xi) FOUR_C_THROW("LocalToGlobal called with xi=nullptr");
-  if (!globcoord) FOUR_C_THROW("LocalToGlobal called with globcoord=nullptr");
+  if (!xi) FOUR_C_THROW("local_to_global called with xi=nullptr");
+  if (!globcoord) FOUR_C_THROW("local_to_global called with globcoord=nullptr");
 
   // collect fundamental data
   const int nnodes = num_node();
 
   Core::Nodes::Node** mynodes = nodes();
-  if (!mynodes) FOUR_C_THROW("LocalToGlobal: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("local_to_global: Null pointer!");
   Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
   Core::LinAlg::SerialDenseVector val(nnodes);
   Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
@@ -1505,7 +1505,7 @@ double Mortar::Element::min_edge_size()
     default:
     {
       FOUR_C_THROW("%s is not implemented for discretization type '%s' of Mortar::Element.",
-          __PRETTY_FUNCTION__, Core::FE::CellTypeToString(shape()).c_str());
+          __PRETTY_FUNCTION__, Core::FE::cell_type_to_string(shape()).c_str());
       break;
     }
   }
@@ -1580,7 +1580,7 @@ double Mortar::Element::max_edge_size()
     default:
     {
       FOUR_C_THROW("%s is not implemented for discretization type '%s' of Mortar::Element.",
-          __PRETTY_FUNCTION__, Core::FE::CellTypeToString(shape()).c_str());
+          __PRETTY_FUNCTION__, Core::FE::cell_type_to_string(shape()).c_str());
       break;
     }
   }

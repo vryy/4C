@@ -214,7 +214,7 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty() || strategy().is_condensed_system())
   {
@@ -223,7 +223,7 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else
   {
@@ -231,7 +231,7 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
-    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *block_vec_ptr);
 
     // --- constr. - block --------------------------------------------------
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::constraint);
@@ -254,7 +254,7 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
-  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty())
   {
@@ -637,7 +637,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Contact::get_block_dof_row
   else
   {
     enum Inpar::CONTACT::SystemType systype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+        Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
             problem->contact_dynamic_params(), "SYSTEM");
 
     if (systype == Inpar::CONTACT::system_saddlepoint)
@@ -653,7 +653,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::Contact::get_current_so
 {
   // TODO: this should be removed!
   Global::Problem* problem = Global::Problem::instance();
-  enum Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+  enum Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
       problem->contact_dynamic_params(), "SYSTEM");
   if (systype == Inpar::CONTACT::system_condensed) return Teuchos::null;
 
@@ -677,7 +677,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::Contact::get_last_time_
     const
 {
   Global::Problem* problem = Global::Problem::instance();
-  enum Inpar::CONTACT::SystemType systype = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+  enum Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
       problem->contact_dynamic_params(), "SYSTEM");
   if (systype == Inpar::CONTACT::system_condensed) return Teuchos::null;
 

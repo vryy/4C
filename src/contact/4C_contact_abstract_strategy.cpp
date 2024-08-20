@@ -115,22 +115,22 @@ CONTACT::AbstractStrategy::AbstractStrategy(
 {
   // set data container pointer (only PRIVATE direct access!)
   data_ptr_->sol_type() =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params_in, "STRATEGY");
-  data_ptr_->constr_direction() = Core::UTILS::IntegralValue<Inpar::CONTACT::ConstraintDirection>(
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params_in, "STRATEGY");
+  data_ptr_->constr_direction() = Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
       params_in, "CONSTRAINT_DIRECTIONS");
   data_ptr_->par_type() = Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
       params_in.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
 
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
 
   // set frictional contact status
   if (ftype != Inpar::CONTACT::friction_none) friction_ = true;
 
   // set nonsmooth contact status
-  if (Core::UTILS::IntegralValue<int>(params(), "NONSMOOTH_GEOMETRIES")) nonSmoothContact_ = true;
+  if (Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES")) nonSmoothContact_ = true;
 
-  if (Core::UTILS::IntegralValue<Inpar::CONTACT::Regularization>(
+  if (Core::UTILS::integral_value<Inpar::CONTACT::Regularization>(
           params(), "CONTACT_REGULARIZATION") != Inpar::CONTACT::reg_none)
     regularized_ = true;
 
@@ -308,7 +308,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact(
 {
   bool redistributed = false;
 
-  if (CONTACT::UTILS::UseSafeRedistributeAndGhosting(params()))
+  if (CONTACT::UTILS::use_safe_redistribute_and_ghosting(params()))
     redistributed = redistribute_with_safe_ghosting(*dis, *vel);
   else
   {
@@ -486,7 +486,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   }
 
   // initialize vertex, edge and surface maps for nonsmooth case
-  if (Core::UTILS::IntegralValue<int>(params(), "NONSMOOTH_GEOMETRIES"))
+  if (Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES"))
   {
     gsdofVertex_ = Teuchos::null;
     gsdofEdge_ = Teuchos::null;
@@ -507,7 +507,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       Interface& inter = *interfaces()[i];
       Teuchos::RCP<const Epetra_Map> refdofrowmap = Teuchos::null;
       if (inter.self_contact())
-        refdofrowmap = Core::LinAlg::MergeMap(inter.slave_row_dofs(), inter.master_row_dofs());
+        refdofrowmap = Core::LinAlg::merge_map(inter.slave_row_dofs(), inter.master_row_dofs());
       else
         refdofrowmap = inter.slave_row_dofs();
 
@@ -517,8 +517,8 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       Teuchos::RCP<Epetra_Map>& gsc_refdofmap_ptr =
           data().global_self_contact_ref_dof_row_map_ptr();
       Teuchos::RCP<Epetra_Map>& gsc_lmdofmap_ptr = data().global_self_contact_lm_dof_row_map_ptr();
-      gsc_lmdofmap_ptr = Core::LinAlg::MergeMap(selfcontact_lmmap, gsc_lmdofmap_ptr);
-      gsc_refdofmap_ptr = Core::LinAlg::MergeMap(refdofrowmap, gsc_refdofmap_ptr);
+      gsc_lmdofmap_ptr = Core::LinAlg::merge_map(selfcontact_lmmap, gsc_lmdofmap_ptr);
+      gsc_refdofmap_ptr = Core::LinAlg::merge_map(refdofrowmap, gsc_refdofmap_ptr);
 
       const int loffset_interface = selfcontact_lmmap->NumGlobalElements();
       if (loffset_interface > 0) offset_if += loffset_interface;
@@ -532,26 +532,26 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
 
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ =
-        Core::LinAlg::MergeMap(slave_row_nodes_ptr(), interfaces()[i]->slave_row_nodes());
+        Core::LinAlg::merge_map(slave_row_nodes_ptr(), interfaces()[i]->slave_row_nodes());
     gmnoderowmap_ =
-        Core::LinAlg::MergeMap(master_row_nodes_ptr(), interfaces()[i]->master_row_nodes());
+        Core::LinAlg::merge_map(master_row_nodes_ptr(), interfaces()[i]->master_row_nodes());
     gsdofrowmap_ =
-        Core::LinAlg::MergeMap(slave_dof_row_map_ptr(true), interfaces()[i]->slave_row_dofs());
-    gmdofrowmap_ = Core::LinAlg::MergeMap(gmdofrowmap_, interfaces()[i]->master_row_dofs());
+        Core::LinAlg::merge_map(slave_dof_row_map_ptr(true), interfaces()[i]->slave_row_dofs());
+    gmdofrowmap_ = Core::LinAlg::merge_map(gmdofrowmap_, interfaces()[i]->master_row_dofs());
 
     // merge active sets and slip sets of all interfaces
     // (these maps are NOT allowed to be overlapping !!!)
     interfaces()[i]->build_active_set(init);
-    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interfaces()[i]->active_nodes(), false);
-    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interfaces()[i]->active_dofs(), false);
+    gactivenodes_ = Core::LinAlg::merge_map(gactivenodes_, interfaces()[i]->active_nodes(), false);
+    gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interfaces()[i]->active_dofs(), false);
 
     ginactivenodes_ =
-        Core::LinAlg::MergeMap(ginactivenodes_, interfaces()[i]->in_active_nodes(), false);
+        Core::LinAlg::merge_map(ginactivenodes_, interfaces()[i]->in_active_nodes(), false);
     ginactivedofs_ =
-        Core::LinAlg::MergeMap(ginactivedofs_, interfaces()[i]->in_active_dofs(), false);
+        Core::LinAlg::merge_map(ginactivedofs_, interfaces()[i]->in_active_dofs(), false);
 
-    gactiven_ = Core::LinAlg::MergeMap(gactiven_, interfaces()[i]->active_n_dofs(), false);
-    gactivet_ = Core::LinAlg::MergeMap(gactivet_, interfaces()[i]->active_t_dofs(), false);
+    gactiven_ = Core::LinAlg::merge_map(gactiven_, interfaces()[i]->active_n_dofs(), false);
+    gactivet_ = Core::LinAlg::merge_map(gactivet_, interfaces()[i]->active_t_dofs(), false);
 
     // store initial element col map for binning strategy
     initial_elecolmap_.push_back(
@@ -562,17 +562,17 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     // ****************************************************
     if (friction_)
     {
-      gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interfaces()[i]->slip_nodes(), false);
-      gslipdofs_ = Core::LinAlg::MergeMap(gslipdofs_, interfaces()[i]->slip_dofs(), false);
-      gslipt_ = Core::LinAlg::MergeMap(gslipt_, interfaces()[i]->slip_t_dofs(), false);
+      gslipnodes_ = Core::LinAlg::merge_map(gslipnodes_, interfaces()[i]->slip_nodes(), false);
+      gslipdofs_ = Core::LinAlg::merge_map(gslipdofs_, interfaces()[i]->slip_dofs(), false);
+      gslipt_ = Core::LinAlg::merge_map(gslipt_, interfaces()[i]->slip_t_dofs(), false);
     }
 
     // define maps for nonsmooth case
-    if (Core::UTILS::IntegralValue<int>(params(), "NONSMOOTH_GEOMETRIES"))
+    if (Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES"))
     {
-      gsdofVertex_ = Core::LinAlg::MergeMap(gsdofVertex_, interfaces()[i]->sdof_vertex_rowmap());
-      gsdofEdge_ = Core::LinAlg::MergeMap(gsdofEdge_, interfaces()[i]->sdof_edge_rowmap());
-      gsdofSurf_ = Core::LinAlg::MergeMap(gsdofSurf_, interfaces()[i]->sdof_surf_rowmap());
+      gsdofVertex_ = Core::LinAlg::merge_map(gsdofVertex_, interfaces()[i]->sdof_vertex_rowmap());
+      gsdofEdge_ = Core::LinAlg::merge_map(gsdofEdge_, interfaces()[i]->sdof_edge_rowmap());
+      gsdofSurf_ = Core::LinAlg::merge_map(gsdofSurf_, interfaces()[i]->sdof_surf_rowmap());
     }
   }
 
@@ -584,14 +584,14 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   // (no need to rebuild this map after redistribution)
   if (!redistributed)
   {
-    gndofrowmap_ = Core::LinAlg::SplitMap(*(problem_dofs()), slave_dof_row_map(true));
-    gndofrowmap_ = Core::LinAlg::SplitMap(*gndofrowmap_, *gmdofrowmap_);
+    gndofrowmap_ = Core::LinAlg::split_map(*(problem_dofs()), slave_dof_row_map(true));
+    gndofrowmap_ = Core::LinAlg::split_map(*gndofrowmap_, *gmdofrowmap_);
   }
 
   // setup combined global slave and master dof map
   // setup global displacement dof map
-  gsmdofrowmap_ = Core::LinAlg::MergeMap(slave_dof_row_map(true), *gmdofrowmap_, false);
-  gdisprowmap_ = Core::LinAlg::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
+  gsmdofrowmap_ = Core::LinAlg::merge_map(slave_dof_row_map(true), *gmdofrowmap_, false);
+  gdisprowmap_ = Core::LinAlg::merge_map(*gndofrowmap_, *gsmdofrowmap_, false);
 
   // TODO: check if necessary!
   // due to boundary modification we have to extend master map to slave dofs
@@ -719,9 +719,9 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
   Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if ((shapefcn == Inpar::Mortar::shape_dual || shapefcn == Inpar::Mortar::shape_petrovgalerkin) &&
       (n_dim() == 3 || (n_dim() == 2 && lagmultquad == Inpar::Mortar::lagmult_lin)))
     for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -856,7 +856,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector
 
   // Create timing reports?
   bool doAccurateTimeMeasurements =
-      Core::UTILS::IntegralValue<bool>(data().s_contact(), "TIMING_DETAILS");
+      Core::UTILS::integral_value<bool>(data().s_contact(), "TIMING_DETAILS");
 
   if (doAccurateTimeMeasurements)
   {
@@ -985,8 +985,8 @@ void CONTACT::AbstractStrategy::set_state(
     }
     default:
     {
-      FOUR_C_THROW(
-          "Unsupported state type! (state type = %s)", Mortar::StateType2String(statetype).c_str());
+      FOUR_C_THROW("Unsupported state type! (state type = %s)",
+          Mortar::state_type_to_string(statetype).c_str());
       break;
     }
   }
@@ -1019,16 +1019,16 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
     glmdofrowmap_ =
-        Core::LinAlg::MergeMap(lm_dof_row_map_ptr(true), interfaces()[i]->lag_mult_dofs());
+        Core::LinAlg::merge_map(lm_dof_row_map_ptr(true), interfaces()[i]->lag_mult_dofs());
     offset_if = lm_dof_row_map(true).NumGlobalElements();
     if (offset_if < 0) offset_if = 0;
 
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ =
-        Core::LinAlg::MergeMap(slave_row_nodes_ptr(), interfaces()[i]->slave_row_nodes());
+        Core::LinAlg::merge_map(slave_row_nodes_ptr(), interfaces()[i]->slave_row_nodes());
     gsdofrowmap_ =
-        Core::LinAlg::MergeMap(slave_dof_row_map_ptr(true), interfaces()[i]->slave_row_dofs());
-    gmdofrowmap_ = Core::LinAlg::MergeMap(gmdofrowmap_, interfaces()[i]->master_row_dofs());
+        Core::LinAlg::merge_map(slave_dof_row_map_ptr(true), interfaces()[i]->slave_row_dofs());
+    gmdofrowmap_ = Core::LinAlg::merge_map(gmdofrowmap_, interfaces()[i]->master_row_dofs());
   }
 
   Teuchos::RCP<Epetra_Vector> tmp_ptr = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
@@ -1337,9 +1337,9 @@ void CONTACT::AbstractStrategy::initialize_mortar()
   mmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100));
 
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-    wgap_ = Core::LinAlg::CreateVector(slave_dof_row_map(true), true);
+    wgap_ = Core::LinAlg::create_vector(slave_dof_row_map(true), true);
   else if (constr_direction_ == Inpar::CONTACT::constr_ntt)
-    wgap_ = Core::LinAlg::CreateVector(slave_row_nodes(), true);
+    wgap_ = Core::LinAlg::create_vector(slave_row_nodes(), true);
   else
     FOUR_C_THROW("unknown contact constraint direction");
 
@@ -1409,7 +1409,7 @@ void CONTACT::AbstractStrategy::assemble_mortar()
 void CONTACT::AbstractStrategy::evaluate_reference_state()
 {
   // flag for initialization of contact with nodal gaps
-  bool initcontactbygap = Core::UTILS::IntegralValue<int>(params(), "INITCONTACTBYGAP");
+  bool initcontactbygap = Core::UTILS::integral_value<int>(params(), "INITCONTACTBYGAP");
 
   // only do something for frictional case
   // or for initialization of initial contact set with nodal gap
@@ -1430,16 +1430,16 @@ void CONTACT::AbstractStrategy::evaluate_reference_state()
       // merge active sets and slip sets of all interfaces
       // (these maps are NOT allowed to be overlapping !!!)
       interface->build_active_set(true);
-      gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interface->active_nodes(), false);
-      gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interface->active_dofs(), false);
-      gactiven_ = Core::LinAlg::MergeMap(gactiven_, interface->active_n_dofs(), false);
-      gactivet_ = Core::LinAlg::MergeMap(gactivet_, interface->active_t_dofs(), false);
+      gactivenodes_ = Core::LinAlg::merge_map(gactivenodes_, interface->active_nodes(), false);
+      gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interface->active_dofs(), false);
+      gactiven_ = Core::LinAlg::merge_map(gactiven_, interface->active_n_dofs(), false);
+      gactivet_ = Core::LinAlg::merge_map(gactivet_, interface->active_t_dofs(), false);
 
       if (friction_)
       {
-        gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interface->slip_nodes(), false);
-        gslipdofs_ = Core::LinAlg::MergeMap(gslipdofs_, interface->slip_dofs(), false);
-        gslipt_ = Core::LinAlg::MergeMap(gslipt_, interface->slip_t_dofs(), false);
+        gslipnodes_ = Core::LinAlg::merge_map(gslipnodes_, interface->slip_nodes(), false);
+        gslipdofs_ = Core::LinAlg::merge_map(gslipdofs_, interface->slip_dofs(), false);
+        gslipt_ = Core::LinAlg::merge_map(gslipt_, interface->slip_t_dofs(), false);
       }
     }
 
@@ -1476,7 +1476,7 @@ void CONTACT::AbstractStrategy::evaluate_reference_state()
     if (is_dual_quad_slave_trafo())
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempold =
-          Core::LinAlg::MLMultiply(*dold_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::ml_multiply(*dold_, false, *invtrafo_, false, false, false, true);
       doldmod_ = tempold;
     }
 
@@ -1507,7 +1507,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   if (is_dual_quad_slave_trafo())
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrixmod_ = temp;
   }
 
@@ -1522,7 +1522,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   // ATTENTION: for evaluate_relative_movement() we need the vector xsmod in
   // fully overlapping layout. Thus, export here. First, allreduce
   // slave dof row map to obtain fully overlapping slave dof map.
-  Teuchos::RCP<Epetra_Map> fullsdofs = Core::LinAlg::AllreduceEMap(slave_dof_row_map(true));
+  Teuchos::RCP<Epetra_Map> fullsdofs = Core::LinAlg::allreduce_e_map(slave_dof_row_map(true));
   Teuchos::RCP<Epetra_Vector> xsmodfull = Teuchos::rcp(new Epetra_Vector(*fullsdofs));
   Core::LinAlg::export_to(*xsmod, *xsmodfull);
   xsmod = xsmodfull;
@@ -1530,7 +1530,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   // evaluation of obj. invariant slip increment
   // do the evaluation on the interface
   // loop over all slave row nodes on the current interface
-  if (Core::UTILS::IntegralValue<int>(params(), "GP_SLIP_INCR") == false)
+  if (Core::UTILS::integral_value<int>(params(), "GP_SLIP_INCR") == false)
     for (int i = 0; i < (int)interfaces().size(); ++i)
       interfaces()[i]->evaluate_relative_movement(xsmod, dmatrixmod_, doldmod_);
 
@@ -1820,7 +1820,7 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
     }
   }
   // create old style dirichtoggle vector (supposed to go away)
-  pgsdirichtoggle_ = Core::LinAlg::CreateVector(slave_dof_row_map(true), true);
+  pgsdirichtoggle_ = Core::LinAlg::create_vector(slave_dof_row_map(true), true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::export_to(*temp, *pgsdirichtoggle_);
@@ -1998,7 +1998,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = Core::UTILS::IntegralValue<int>(params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = Core::UTILS::integral_value<int>(params(), "RESTART_WITH_CONTACT");
 
   // set restart displacement state
   set_state(Mortar::state_new_displacement, *dis);
@@ -2020,7 +2020,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   {
     // modify dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp;
   }
 
@@ -2119,15 +2119,15 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     interfaces()[i]->build_active_set();
-    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interfaces()[i]->active_nodes(), false);
-    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interfaces()[i]->active_dofs(), false);
-    gactiven_ = Core::LinAlg::MergeMap(gactiven_, interfaces()[i]->active_n_dofs(), false);
-    gactivet_ = Core::LinAlg::MergeMap(gactivet_, interfaces()[i]->active_t_dofs(), false);
+    gactivenodes_ = Core::LinAlg::merge_map(gactivenodes_, interfaces()[i]->active_nodes(), false);
+    gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interfaces()[i]->active_dofs(), false);
+    gactiven_ = Core::LinAlg::merge_map(gactiven_, interfaces()[i]->active_n_dofs(), false);
+    gactivet_ = Core::LinAlg::merge_map(gactivet_, interfaces()[i]->active_t_dofs(), false);
     if (friction_)
     {
-      gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interfaces()[i]->slip_nodes(), false);
-      gslipdofs_ = Core::LinAlg::MergeMap(gslipdofs_, interfaces()[i]->slip_dofs(), false);
-      gslipt_ = Core::LinAlg::MergeMap(gslipt_, interfaces()[i]->slip_t_dofs(), false);
+      gslipnodes_ = Core::LinAlg::merge_map(gslipnodes_, interfaces()[i]->slip_nodes(), false);
+      gslipdofs_ = Core::LinAlg::merge_map(gslipdofs_, interfaces()[i]->slip_dofs(), false);
+      gslipt_ = Core::LinAlg::merge_map(gslipt_, interfaces()[i]->slip_t_dofs(), false);
     }
   }
 
@@ -2159,7 +2159,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
 {
   // check chosen output option
   Inpar::CONTACT::EmOutputType emtype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::EmOutputType>(params(), "EMOUTPUT");
+      Core::UTILS::integral_value<Inpar::CONTACT::EmOutputType>(params(), "EMOUTPUT");
 
   // get out of here if no output wanted
   if (emtype == Inpar::CONTACT::output_none) return;
@@ -2251,7 +2251,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
         lm[d] = cnode->dofs()[d];
         lmowner[d] = cnode->owner();
       }
-      Core::LinAlg::Assemble(*gapslave, posnode, lm, lmowner);
+      Core::LinAlg::assemble(*gapslave, posnode, lm, lmowner);
     }
 
     // loop over all master nodes on the current interface
@@ -2292,7 +2292,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
         lm[d] = cnode->dofs()[d];
         lmowner[d] = cnode->owner();
       }
-      Core::LinAlg::Assemble(*gapmaster, posnode, lm, lmowner);
+      Core::LinAlg::assemble(*gapmaster, posnode, lm, lmowner);
     }
   }
 
@@ -2716,7 +2716,7 @@ void CONTACT::AbstractStrategy::print_active_set() const
   int gcornernodes = 0;
 
   // nonsmooth contact active?
-  bool nonsmooth = Core::UTILS::IntegralValue<int>(params(), "NONSMOOTH_GEOMETRIES");
+  bool nonsmooth = Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES");
 
   // loop over all interfaces
   for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -3027,7 +3027,7 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
     // -------------------------------------------------------------------
     default:
     {
-      FOUR_C_THROW("Unsupported action type: %i | %s", act, ActionType2String(act).c_str());
+      FOUR_C_THROW("Unsupported action type: %i | %s", act, action_type_to_string(act).c_str());
       break;
     }
   }
@@ -3262,7 +3262,7 @@ double CONTACT::AbstractStrategy::get_potential_value(
     const enum NOX::Nln::MeritFunction::MeritFctName mrt_type) const
 {
   FOUR_C_THROW("The currently active strategy \"%s\" does not support this method!",
-      Inpar::CONTACT::SolvingStrategy2String(type()).c_str());
+      Inpar::CONTACT::solving_strategy_to_string(type()).c_str());
   exit(EXIT_FAILURE);
 }
 
@@ -3274,7 +3274,7 @@ double CONTACT::AbstractStrategy::get_linearized_potential_value_terms(const Epe
     const enum NOX::Nln::MeritFunction::LinType lintype) const
 {
   FOUR_C_THROW("The currently active strategy \"%s\" does not support this method!",
-      Inpar::CONTACT::SolvingStrategy2String(type()).c_str());
+      Inpar::CONTACT::solving_strategy_to_string(type()).c_str());
   exit(EXIT_FAILURE);
 }
 

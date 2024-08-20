@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-void BEAMINTERACTION::AddBeamInteractionNodalForces(
+void BEAMINTERACTION::add_beam_interaction_nodal_forces(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
     const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
     const Teuchos::RCP<const Epetra_MultiVector>& displacement,
@@ -43,7 +43,7 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
     gid_node.clear();
     Core::Nodes::Node* current_node = discret_ptr->l_row_node(i_lid);
     discret_ptr->dof(current_node, gid_node);
-    if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
+    if (BEAMINTERACTION::UTILS::is_beam_node(*current_node))
       for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     else
       for (unsigned int dim = 0; dim < 3; ++dim) gid_solid_dof.push_back(gid_node[dim]);
@@ -74,7 +74,7 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
 /**
  *
  */
-void BEAMINTERACTION::AddAveragedNodalNormals(
+void BEAMINTERACTION::add_averaged_nodal_normals(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
         output_writer_base_ptr,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
@@ -108,7 +108,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       // Set the element parameter coordinates.
       Core::LinAlg::Matrix<2, 1, double> xi(true);
       Core::LinAlg::SerialDenseMatrix nodal_coordinates =
-          Core::FE::getEleNodeNumbering_nodes_paramspace(
+          Core::FE::get_ele_node_numbering_nodes_paramspace(
               face_element_iterator.second->get_element()->shape());
 
       // Loop over element nodes.
@@ -143,7 +143,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
 /**
  *
  */
-void BEAMINTERACTION::GetGlobalCouplingForceResultants(const Core::FE::Discretization& discret,
+void BEAMINTERACTION::get_global_coupling_force_resultants(const Core::FE::Discretization& discret,
     const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
     Core::LinAlg::Matrix<3, 2, double>& beam_resultant,
     Core::LinAlg::Matrix<3, 2, double>& solid_resultant)
@@ -164,27 +164,27 @@ void BEAMINTERACTION::GetGlobalCouplingForceResultants(const Core::FE::Discretiz
     discret.dof(current_node, gid_node);
 
     // Get the local force and displacement values.
-    Core::FE::ExtractMyValues(force, local_force, gid_node);
-    Core::FE::ExtractMyValues(displacement, local_position, gid_node);
+    Core::FE::extract_my_values(force, local_force, gid_node);
+    Core::FE::extract_my_values(displacement, local_position, gid_node);
     for (unsigned int dim = 0; dim < 3; ++dim) local_position[dim] += current_node->x()[dim];
 
-    if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
+    if (BEAMINTERACTION::UTILS::is_beam_node(*current_node))
     {
-      if (BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*current_node))
-        GetNodeCouplingForceResultants(local_force, local_position, beam_resultant);
+      if (BEAMINTERACTION::UTILS::is_beam_centerline_node(*current_node))
+        get_node_coupling_force_resultants(local_force, local_position, beam_resultant);
       else
         // Do nothing for non-centerline nodes.
         continue;
     }
     else
-      GetNodeCouplingForceResultants(local_force, local_position, solid_resultant);
+      get_node_coupling_force_resultants(local_force, local_position, solid_resultant);
   }
 }
 
 /**
  *
  */
-void BEAMINTERACTION::GetNodeCouplingForceResultants(const std::vector<double>& local_force,
+void BEAMINTERACTION::get_node_coupling_force_resultants(const std::vector<double>& local_force,
     const std::vector<double>& local_position, Core::LinAlg::Matrix<3, 2, double>& resultant)
 {
   Core::LinAlg::Matrix<3, 1, double> node_pos(true);

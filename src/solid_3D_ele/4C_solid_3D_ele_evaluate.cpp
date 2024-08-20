@@ -32,7 +32,7 @@ namespace
   {
     const Epetra_Vector& acceleration = *discretization.get_state("acceleration");
     std::vector<double> my_acceleration(lm.size());
-    Core::FE::ExtractMyValues(acceleration, my_acceleration, lm);
+    Core::FE::extract_my_values(acceleration, my_acceleration, lm);
 
     return my_acceleration;
   }
@@ -81,7 +81,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
         if (is_params_interface())
           return params_interface().get_action_type();
         else
-          return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
+          return Core::Elements::string_to_action_type(params.get<std::string>("action", "none"));
       });
 
   switch (action)
@@ -132,7 +132,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
           },
           solid_calc_variant_);
 
-      LumpMatrix(elemat2);
+      lump_matrix(elemat2);
 
       evaluate_inertia_force(discretization, lm, elemat2, elevec2);
       return 0;
@@ -253,7 +253,7 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
     }
     default:
       FOUR_C_THROW("The element action %s is not yet implemented for the new solid elements",
-          ActionType2String(action).c_str());
+          action_type_to_string(action).c_str());
   }
 
   return 0;

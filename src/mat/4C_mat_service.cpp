@@ -786,7 +786,7 @@ void Mat::stretches_principal(Core::LinAlg::Matrix<3, 1>& prstr, Core::LinAlg::M
 
   // eigenvalue decomposition
   Core::LinAlg::Matrix<3, 3> prstr2;  // squared principal stretches
-  Core::LinAlg::SYEV(rcgt, prstr2, prdir);
+  Core::LinAlg::syev(rcgt, prstr2, prdir);
 
   // THE principal stretches
   for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));

@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::Rebalance::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Rebalance::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -32,7 +32,7 @@ void Inpar::Rebalance::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
           Core::Rebalance::RebalanceType::monolithic),
       &meshpartitioning);
 
-  Core::UTILS::DoubleParameter("IMBALANCE_TOL", 1.1,
+  Core::UTILS::double_parameter("IMBALANCE_TOL", 1.1,
       "Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured "
       "meshes read from input files.",
       &meshpartitioning);

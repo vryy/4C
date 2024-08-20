@@ -27,7 +27,7 @@ namespace Core::CLN
 {
   //! convert LINALG matrix with CLN values to LINALG matrix with double values
   template <unsigned int num_row, unsigned int num_col>
-  void ConvClnDouble(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
+  void conv_cln_double(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
       LinAlg::Matrix<num_row, num_col, double>& out)
   {
     for (unsigned int idx = 0; idx < in.num_rows() * in.num_cols(); ++idx)
@@ -38,7 +38,7 @@ namespace Core::CLN
 
   //! convert LINALG matrix with double values to LINALG matrix with CLN values
   template <unsigned int num_row, unsigned int num_col>
-  void ConvDoubleCLN(const LinAlg::Matrix<num_row, num_col, double>& in,
+  void conv_double_cln(const LinAlg::Matrix<num_row, num_col, double>& in,
       LinAlg::Matrix<num_row, num_col, ClnWrapper>& out, const int precision = 20)
   {
     for (unsigned int idx = 0; idx < in.num_rows() * in.num_cols(); ++idx)
@@ -59,7 +59,7 @@ namespace Core::CLN
   //! convert LINALG matrix with CLN values to a new LINALG matrix with CLN values with different
   //! precision
   template <unsigned int num_row, unsigned int num_col>
-  void UpdatePresicion(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
+  void update_presicion(const LinAlg::Matrix<num_row, num_col, ClnWrapper>& in,
       LinAlg::Matrix<num_row, num_col, ClnWrapper>& out, const int precision = 20)
   {
     for (unsigned int idx = 0; idx < in.num_rows() * in.num_cols(); ++idx)

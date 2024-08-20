@@ -366,7 +366,7 @@ void Cut::VolumeCell::print(std::ostream& stream) const
   stream << "\n==========================================\n";
   stream << "=== VolumeCell ( address: " << std::setw(10) << this << " ) ===\n";
   stream << "# VolumeCell: "
-         << " pos: " << Point::point_position2_string(position_) << " "
+         << " pos: " << Point::point_position_to_string(position_) << " "
          << "#facets: " << facets_.size() << " "
          << "#intcells: " << integrationcells_.size() << " "
          << "#bcells: " << bcells_.size() << "\n";
@@ -422,7 +422,8 @@ void Cut::VolumeCell::new_boundary_cell(
       new_quad4_cell(mesh, f, x);
       break;
     default:
-      FOUR_C_THROW("Unsupported shape ( shape = %s )", Core::FE::CellTypeToString(shape).c_str());
+      FOUR_C_THROW(
+          "Unsupported shape ( shape = %s )", Core::FE::cell_type_to_string(shape).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -540,7 +541,8 @@ void Cut::VolumeCell::new_integration_cell(
       new_pyramid5_cell(mesh, x);
       break;
     default:
-      FOUR_C_THROW("Unsupported shape ( shape = %s )", Core::FE::CellTypeToString(shape).c_str());
+      FOUR_C_THROW(
+          "Unsupported shape ( shape = %s )", Core::FE::cell_type_to_string(shape).c_str());
       exit(EXIT_FAILURE);
   }
 }
@@ -1108,17 +1110,17 @@ void Cut::VolumeCell::generate_boundary_cells(Mesh& mesh, const Cut::Point::Poin
     std::vector<Point*> pts_par(par_nodes.size());
     for (unsigned parnode = 0; parnode < par_nodes.size(); parnode++)
       pts_par[parnode] = par_nodes[parnode]->point();
-    eqnpar = Kernel::EqnPlaneOfPolygon(pts_par);
+    eqnpar = Kernel::eqn_plane_of_polygon(pts_par);
 
     std::vector<Point*> corners = fac->corner_points();
     std::vector<Point*> cornersTemp(corners);
 
     // when finding eqn of plane for the facet, inline points should not be taken
-    Cut::Kernel::DeleteInlinePts(cornersTemp);
+    Cut::Kernel::delete_inline_pts(cornersTemp);
 
     if (cornersTemp.size() != 0)
     {
-      eqnfac = Kernel::EqnPlaneOfPolygon(corners);
+      eqnfac = Kernel::eqn_plane_of_polygon(corners);
       rever = to_reverse(posi, eqnpar, eqnfac);
     }
 
@@ -1135,7 +1137,7 @@ void Cut::VolumeCell::generate_boundary_cells(Mesh& mesh, const Cut::Point::Poin
     // if no of corners are 3 or 4, just add them as boundary integrationcells directly
     if (corners.size() == 3)
     {
-      double areaCell = Cut::Kernel::getAreaTri(corners);
+      double areaCell = Cut::Kernel::get_area_tri(corners);
       if (areaCell <
           REF_AREA_BCELL)  // What is this Ref_AREA_CELL TOLERANCE?! Make it viable for GLOBAL!!!
         continue;
@@ -1156,13 +1158,13 @@ void Cut::VolumeCell::generate_boundary_cells(Mesh& mesh, const Cut::Point::Poin
 
           if (tri.size() == 3)
           {
-            double areaCell = Cut::Kernel::getAreaTri(tri);
+            double areaCell = Cut::Kernel::get_area_tri(tri);
             if (areaCell < REF_AREA_BCELL) continue;
             new_tri3_cell(mesh, fac, tri);
           }
           else if (tri.size() == 4)
           {
-            double areaCell = Cut::Kernel::getAreaConvexQuad(tri);
+            double areaCell = Cut::Kernel::get_area_convex_quad(tri);
             if (areaCell < REF_AREA_BCELL) continue;
             new_quad4_cell(mesh, fac, tri);
           }
@@ -1240,7 +1242,7 @@ void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
       //    Cut::Kernel::DeleteInlinePts( cornersTemp );
 
       std::vector<double> fac_tri_normal(4);
-      fac_tri_normal = Kernel::EqnPlaneOfPolygon(tri_temp);
+      fac_tri_normal = Kernel::eqn_plane_of_polygon(tri_temp);
 
       Core::LinAlg::Matrix<3, 1> ls_coord(tri_temp[1]->x());
       const std::vector<double> fac_ls_normal =
@@ -1262,7 +1264,7 @@ void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
       }
       if (tri_temp.size() == 3)
       {
-        double areaCell = Cut::Kernel::getAreaTri(tri_temp);
+        double areaCell = Cut::Kernel::get_area_tri(tri_temp);
         if (areaCell < REF_AREA_BCELL)
         {
           std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1272,7 +1274,7 @@ void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
       }
       else if (tri_temp.size() == 4)
       {
-        double areaCell = Cut::Kernel::getAreaConvexQuad(tri_temp);
+        double areaCell = Cut::Kernel::get_area_convex_quad(tri_temp);
         if (areaCell < REF_AREA_BCELL)
         {
           std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1297,7 +1299,7 @@ void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
 
     // Fix normal direction
     std::vector<double> fac_tri_normal(4);
-    fac_tri_normal = Kernel::EqnPlaneOfPolygon(tri_temp);
+    fac_tri_normal = Kernel::eqn_plane_of_polygon(tri_temp);
 
     Core::LinAlg::Matrix<3, 1> ls_coord(tri_temp[1]->x());
     const std::vector<double> fac_ls_normal =
@@ -1320,7 +1322,7 @@ void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
     // Add boundary cell
     if (tri_temp.size() == 3)
     {
-      double areaCell = Cut::Kernel::getAreaTri(tri_temp);
+      double areaCell = Cut::Kernel::get_area_tri(tri_temp);
       if (areaCell < REF_AREA_BCELL)
       {
         std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1329,7 +1331,7 @@ void Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
     }
     else if (tri_temp.size() == 4)
     {
-      double areaCell = Cut::Kernel::getAreaConvexQuad(tri_temp);
+      double areaCell = Cut::Kernel::get_area_convex_quad(tri_temp);
       if (areaCell < REF_AREA_BCELL)
       {
         std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
@@ -1693,7 +1695,7 @@ bool Cut::VolumeCell::set_position_cut_side_based()
       // STEP 4: get point from parent side as the normal orientation should be calculated from the
       // side!!!
       // get unit normal vector
-      std::vector<double> eqn_plane = Kernel::EqnPlaneOfPolygon(f->corner_points());
+      std::vector<double> eqn_plane = Kernel::eqn_plane_of_polygon(f->corner_points());
 
 
       //-----
@@ -1762,14 +1764,15 @@ bool Cut::VolumeCell::set_position_cut_side_based()
     if (on->first->on_cut_side())  // cutside
     {
       double prod = 0.0;
-      std::vector<double> eqn_plane_facet = Kernel::EqnPlaneOfPolygon(on->first->corner_points());
+      std::vector<double> eqn_plane_facet =
+          Kernel::eqn_plane_of_polygon(on->first->corner_points());
       std::vector<Point*> spoints(on->first->parent_side()->nodes().size());
 
       for (unsigned int i = 0; i < on->first->parent_side()->nodes().size(); ++i)
         spoints[i] = on->first->parent_side()->nodes()[i]->point();
 
       // get unit normal vector
-      std::vector<double> eqn_plane_side = Kernel::EqnPlaneOfPolygon(spoints);
+      std::vector<double> eqn_plane_side = Kernel::eqn_plane_of_polygon(spoints);
 
       for (unsigned int dim = 0; dim < 3; ++dim) prod += eqn_plane_facet[dim] * eqn_plane_side[dim];
 

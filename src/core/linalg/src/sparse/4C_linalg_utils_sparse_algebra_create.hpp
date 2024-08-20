@@ -37,14 +37,14 @@ namespace Core::LinAlg
    \param npr (in): estimated number of entries per row.
    (need not be exact, better should be too big rather then too small)
    */
-  Teuchos::RCP<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap, const int npr);
+  Teuchos::RCP<Epetra_CrsMatrix> create_matrix(const Epetra_Map& rowmap, const int npr);
 
   /*!
    \brief Create a new sparse identity matrix and return RefcountPtr to it
 
    \param rowmap (in): row map of matrix
    */
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> CreateIdentityMatrix(const Epetra_Map& map);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> create_identity_matrix(const Epetra_Map& map);
 
   /*! \brief Create prolongation matrix using an external algebraic multigrid package
    *
@@ -53,7 +53,7 @@ namespace Core::LinAlg
    * \param params Additional configuration parameters for algebraic multigrid setup
    * \return Prolongation matrix
    */
-  Core::LinAlg::SparseMatrix CreateInterpolationMatrix(
+  Core::LinAlg::SparseMatrix create_interpolation_matrix(
       const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params);
 
   /*!
@@ -62,7 +62,7 @@ namespace Core::LinAlg
    \param rowmap (in): row map of vector
    \param init (in): initialize vector to zero upon construction
    */
-  Teuchos::RCP<Epetra_Vector> CreateVector(const Epetra_BlockMap& rowmap, const bool init = true);
+  Teuchos::RCP<Epetra_Vector> create_vector(const Epetra_BlockMap& rowmap, const bool init = true);
 
   /*!
    \brief Create a new Epetra_MultiVector and return RefcountPtr to it
@@ -71,7 +71,7 @@ namespace Core::LinAlg
    \param rowmap (in): number of vectors
    \param init (in): initialize vector to zero upon construction
    */
-  Teuchos::RCP<Epetra_MultiVector> CreateMultiVector(
+  Teuchos::RCP<Epetra_MultiVector> create_multi_vector(
       const Epetra_BlockMap& rowmap, const int numrows, const bool init = true);
 
   /*!
@@ -82,7 +82,7 @@ namespace Core::LinAlg
    \param gids The local gids of this map
    \param comm The map's communicator
    */
-  Teuchos::RCP<Epetra_Map> CreateMap(const std::set<int>& gids, const Epetra_Comm& comm);
+  Teuchos::RCP<Epetra_Map> create_map(const std::set<int>& gids, const Epetra_Comm& comm);
 
   /*!
    \brief Create an Epetra_Map from a vector of gids
@@ -92,7 +92,7 @@ namespace Core::LinAlg
    \param gids The local gids of this map
    \param comm The map's communicator
    */
-  Teuchos::RCP<Epetra_Map> CreateMap(const std::vector<int>& gids, const Epetra_Comm& comm);
+  Teuchos::RCP<Epetra_Map> create_map(const std::vector<int>& gids, const Epetra_Comm& comm);
 
   /*!
       \brief Creates MultiMapExtractor to split dofs at certain position
@@ -110,7 +110,7 @@ namespace Core::LinAlg
       \author u.kue
       \date 02/08
      */
-  void CreateMapExtractorFromDiscretization(
+  void create_map_extractor_from_discretization(
       const Core::FE::Discretization& dis, int ndim, Core::LinAlg::MultiMapExtractor& extractor);
 
   /*!
@@ -132,7 +132,7 @@ namespace Core::LinAlg
     \author u.kue
     \date 02/08
    */
-  void CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis,
+  void create_map_extractor_from_discretization(const Core::FE::Discretization& dis,
       const Core::DOFSets::DofSetInterface& dofset, int ndim,
       Core::LinAlg::MapExtractor& extractor);
 
@@ -154,8 +154,8 @@ namespace Core::LinAlg
     \author schott
     \date 12/11
    */
-  void CreateMapExtractorFromDiscretization(const Core::FE::Discretization& dis, int ndim_field1,
-      int ndim_field2, Core::LinAlg::MultiMapExtractor& extractor);
+  void create_map_extractor_from_discretization(const Core::FE::Discretization& dis,
+      int ndim_field1, int ndim_field2, Core::LinAlg::MultiMapExtractor& extractor);
 
 }  // namespace Core::LinAlg
 

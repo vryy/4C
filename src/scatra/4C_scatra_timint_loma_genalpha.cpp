@@ -139,7 +139,7 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
   discret_->set_state("phinp", phiaf_);
 
   // set action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_domain_and_bodyforce, eleparams);
   set_element_time_parameter();
 
@@ -155,7 +155,7 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
   double parbofint = (*scalars)[1];
 
   // set action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_loma_therm_press, eleparams);
 
   // variables for integrals of normal velocity and diffusive flux

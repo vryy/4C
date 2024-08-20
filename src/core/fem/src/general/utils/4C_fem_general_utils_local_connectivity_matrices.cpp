@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-int Core::FE::getNumberOfElementNodes(const Core::FE::CellType& distype)
+int Core::FE::get_number_of_element_nodes(const Core::FE::CellType& distype)
 {
   int numnodes = 0;
 
@@ -108,14 +108,14 @@ int Core::FE::getNumberOfElementNodes(const Core::FE::CellType& distype)
       break;
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
 
   return numnodes;
 }
 
 
-int Core::FE::getNumberOfElementCornerNodes(const Core::FE::CellType& distype)
+int Core::FE::get_number_of_element_corner_nodes(const Core::FE::CellType& distype)
 {
   int numCornerNodes = 0;
   switch (distype)
@@ -150,13 +150,14 @@ int Core::FE::getNumberOfElementCornerNodes(const Core::FE::CellType& distype)
     }
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return numCornerNodes;
 }
 
 
-std::vector<int> Core::FE::getNumberOfFaceElementCornerNodes(const Core::FE::CellType& distype)
+std::vector<int> Core::FE::get_number_of_face_element_corner_nodes(
+    const Core::FE::CellType& distype)
 {
   std::vector<int> faceNodeMap;
   switch (distype)
@@ -241,13 +242,14 @@ std::vector<int> Core::FE::getNumberOfFaceElementCornerNodes(const Core::FE::Cel
     }
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return faceNodeMap;
 }
 
 
-std::vector<int> Core::FE::getNumberOfFaceElementInternalNodes(const Core::FE::CellType& distype)
+std::vector<int> Core::FE::get_number_of_face_element_internal_nodes(
+    const Core::FE::CellType& distype)
 {
   std::vector<int> faceNodeMap;
   switch (distype)
@@ -320,13 +322,13 @@ std::vector<int> Core::FE::getNumberOfFaceElementInternalNodes(const Core::FE::C
     }
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return faceNodeMap;
 }
 
 
-int Core::FE::getNumberOfElementLines(const Core::FE::CellType& distype)
+int Core::FE::get_number_of_element_lines(const Core::FE::CellType& distype)
 {
   int numLines = 0;
   switch (distype)
@@ -369,13 +371,13 @@ int Core::FE::getNumberOfElementLines(const Core::FE::CellType& distype)
       break;
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return numLines;
 }
 
 
-int Core::FE::getNumberOfElementSurfaces(const Core::FE::CellType& distype)
+int Core::FE::get_number_of_element_surfaces(const Core::FE::CellType& distype)
 {
   int numSurf = 0;
   switch (distype)
@@ -415,13 +417,13 @@ int Core::FE::getNumberOfElementSurfaces(const Core::FE::CellType& distype)
       break;
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return numSurf;
 }
 
 
-int Core::FE::getNumberOfElementVolumes(const Core::FE::CellType& distype)
+int Core::FE::get_number_of_element_volumes(const Core::FE::CellType& distype)
 {
   int numVol = 0;
   switch (distype)
@@ -452,29 +454,29 @@ int Core::FE::getNumberOfElementVolumes(const Core::FE::CellType& distype)
       break;
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return numVol;
 }
 
 
-int Core::FE::getNumberOfElementFaces(const Core::FE::CellType& distype)
+int Core::FE::get_number_of_element_faces(const Core::FE::CellType& distype)
 {
-  const int dim = getDimension(distype);
+  const int dim = get_dimension(distype);
   if (dim == 3)
-    return getNumberOfElementSurfaces(distype);
+    return get_number_of_element_surfaces(distype);
   else if (dim == 2)
-    return getNumberOfElementLines(distype);
+    return get_number_of_element_lines(distype);
   else if (dim == 1)
     return 2;
   else
     FOUR_C_THROW("discretization type %s not yet implemented",
-        (Core::FE::CellTypeToString(distype)).c_str());
+        (Core::FE::cell_type_to_string(distype)).c_str());
   return 0;
 }
 
 
-Core::FE::CellType Core::FE::getEleFaceShapeType(
+Core::FE::CellType Core::FE::get_ele_face_shape_type(
     const Core::FE::CellType& distype, const unsigned int face)
 {
   Core::FE::CellType type = Core::FE::CellType::dis_none;
@@ -552,24 +554,25 @@ Core::FE::CellType Core::FE::getEleFaceShapeType(
       break;
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
       break;
   }
   return type;
 }
 
 
-std::vector<std::vector<int>> Core::FE::getEleNodeNumberingFaces(const Core::FE::CellType& distype)
+std::vector<std::vector<int>> Core::FE::get_ele_node_numbering_faces(
+    const Core::FE::CellType& distype)
 {
-  const int nsd = getDimension(distype);
+  const int nsd = get_dimension(distype);
 
   switch (nsd)
   {
     case 3:
-      return getEleNodeNumberingSurfaces(distype);
+      return get_ele_node_numbering_surfaces(distype);
       break;
     case 2:
-      return getEleNodeNumberingLines(distype);
+      return get_ele_node_numbering_lines(distype);
       break;
     default:
       FOUR_C_THROW("spatial dimension not supported");
@@ -582,7 +585,7 @@ std::vector<std::vector<int>> Core::FE::getEleNodeNumberingFaces(const Core::FE:
 }
 
 
-std::vector<std::vector<int>> Core::FE::getEleNodeNumberingSurfaces(
+std::vector<std::vector<int>> Core::FE::get_ele_node_numbering_surfaces(
     const Core::FE::CellType& distype)
 {
   std::vector<std::vector<int>> map;
@@ -789,14 +792,15 @@ std::vector<std::vector<int>> Core::FE::getEleNodeNumberingSurfaces(
     }
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
 
   return map;
 }
 
 
-std::vector<std::vector<int>> Core::FE::getEleNodeNumberingLines(const Core::FE::CellType& distype)
+std::vector<std::vector<int>> Core::FE::get_ele_node_numbering_lines(
+    const Core::FE::CellType& distype)
 {
   std::vector<std::vector<int>> map;
 
@@ -1064,14 +1068,14 @@ std::vector<std::vector<int>> Core::FE::getEleNodeNumberingLines(const Core::FE:
     }
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
 
   return map;
 }
 
 
-std::vector<std::vector<int>> Core::FE::getEleNodeNumbering_lines_surfaces(
+std::vector<std::vector<int>> Core::FE::get_ele_node_numbering_lines_surfaces(
     const Core::FE::CellType& distype)
 {
   int nLine;
@@ -1104,17 +1108,17 @@ std::vector<std::vector<int>> Core::FE::getEleNodeNumbering_lines_surfaces(
   }
   else
     FOUR_C_THROW("discretization type %s not yet implemented",
-        (Core::FE::CellTypeToString(distype)).c_str());
+        (Core::FE::cell_type_to_string(distype)).c_str());
 
 
   return map;
 }
 
 
-Core::LinAlg::SerialDenseMatrix Core::FE::getEleNodeNumbering_nodes_paramspace(
+Core::LinAlg::SerialDenseMatrix Core::FE::get_ele_node_numbering_nodes_paramspace(
     const Core::FE::CellType celltype)
 {
-  return Core::FE::CellTypeSwitch(celltype,
+  return Core::FE::cell_type_switch(celltype,
       [&](auto celltype_t) -> Core::LinAlg::SerialDenseMatrix
       {
         constexpr Core::FE::CellType my_celltype = celltype_t();
@@ -1139,12 +1143,12 @@ Core::LinAlg::SerialDenseMatrix Core::FE::getEleNodeNumbering_nodes_paramspace(
 
 
 template <int probdim>
-Core::LinAlg::Matrix<probdim, 1> Core::FE::GetNodeCoordinates(
+Core::LinAlg::Matrix<probdim, 1> Core::FE::get_node_coordinates(
     const int nodeId, const Core::FE::CellType distype)
 {
-  FOUR_C_ASSERT(nodeId < getNumberOfElementNodes(distype), "node number is not correct");
+  FOUR_C_ASSERT(nodeId < get_number_of_element_nodes(distype), "node number is not correct");
 
-  const int dim = getDimension(distype);
+  const int dim = get_dimension(distype);
   Core::LinAlg::Matrix<probdim, 1> coord(true);
 
   switch (distype)
@@ -1199,14 +1203,14 @@ Core::LinAlg::Matrix<probdim, 1> Core::FE::GetNodeCoordinates(
     }
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
 
   return coord;
 }
 
 
-void Core::FE::getCornerNodeIndices(
+void Core::FE::get_corner_node_indices(
     int& index1, int& index2, const int& hoindex, const Core::FE::CellType distype)
 {
   switch (distype)
@@ -1272,12 +1276,12 @@ void Core::FE::getCornerNodeIndices(
     }
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
 }
 
 
-int Core::FE::getDimension(const Core::FE::CellType distype)
+int Core::FE::get_dimension(const Core::FE::CellType distype)
 {
   int dim = 0;
 
@@ -1369,13 +1373,13 @@ int Core::FE::getDimension(const Core::FE::CellType distype)
       break;
     default:
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return dim;
 }
 
 
-int Core::FE::getOrder(const Core::FE::CellType distype, std::optional<int> default_order)
+int Core::FE::get_order(const Core::FE::CellType distype, std::optional<int> default_order)
 {
   int order = 0;
 
@@ -1459,13 +1463,13 @@ int Core::FE::getOrder(const Core::FE::CellType distype, std::optional<int> defa
     default:
       if (default_order.has_value()) return default_order.value();
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
   }
   return order;
 }
 
 
-int Core::FE::getDegree(const Core::FE::CellType distype, std::optional<int> default_degree)
+int Core::FE::get_degree(const Core::FE::CellType distype, std::optional<int> default_degree)
 {
   int degree = 0;
 
@@ -1549,14 +1553,14 @@ int Core::FE::getDegree(const Core::FE::CellType distype, std::optional<int> def
     default:
       if (default_degree.has_value()) return default_degree.value();
       FOUR_C_THROW("discretization type %s not yet implemented",
-          (Core::FE::CellTypeToString(distype)).c_str());
+          (Core::FE::cell_type_to_string(distype)).c_str());
       break;
   }
   return degree;
 }
 
 
-Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
+Core::FE::CellType Core::FE::get_shape_of_boundary_element(
     const int nen, const Core::FE::CellType parentshape)
 {
   switch (nen)  // number of nodes for the boundary element
@@ -1581,7 +1585,7 @@ Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
         FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, Core::FE::CellTypeToString(parentshape).c_str());
+            nen, Core::FE::cell_type_to_string(parentshape).c_str());
 
     // FluidBoundary element: line3
     case 3:
@@ -1606,7 +1610,7 @@ Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
         FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, Core::FE::CellTypeToString(parentshape).c_str());
+            nen, Core::FE::cell_type_to_string(parentshape).c_str());
 
     // FluidBoundary element: quad4
     case 4:
@@ -1619,7 +1623,7 @@ Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
         FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, Core::FE::CellTypeToString(parentshape).c_str());
+            nen, Core::FE::cell_type_to_string(parentshape).c_str());
 
     // FluidBoundary element: tri6
     case 6:
@@ -1629,7 +1633,7 @@ Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
         FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, Core::FE::CellTypeToString(parentshape).c_str());
+            nen, Core::FE::cell_type_to_string(parentshape).c_str());
 
     // FluidBoundary element: quad8
     case 8:
@@ -1639,7 +1643,7 @@ Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
         FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, Core::FE::CellTypeToString(parentshape).c_str());
+            nen, Core::FE::cell_type_to_string(parentshape).c_str());
 
     // FluidBoundary element: quad9
     case 9:
@@ -1651,7 +1655,7 @@ Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
         FOUR_C_THROW(
             "%d nodes of the FluidBoundary element does not fit to the distype %s of the parent "
             "element",
-            nen, Core::FE::CellTypeToString(parentshape).c_str());
+            nen, Core::FE::cell_type_to_string(parentshape).c_str());
     default:
       FOUR_C_THROW("unexpected number of nodes %d for boundary element", nen);
   }
@@ -1659,7 +1663,7 @@ Core::FE::CellType Core::FE::getShapeOfBoundaryElement(
 }
 
 
-int Core::FE::getParentNodeNumberFromFaceNodeNumber(
+int Core::FE::get_parent_node_number_from_face_node_number(
     const Core::FE::CellType parent_distype, const int faceId, const int faceNodeId)
 {
   switch (parent_distype)
@@ -1694,6 +1698,7 @@ int Core::FE::getParentNodeNumberFromFaceNodeNumber(
 }
 
 
-template Core::LinAlg::Matrix<3, 1> Core::FE::GetNodeCoordinates<3>(
+template Core::LinAlg::Matrix<3, 1> Core::FE::get_node_coordinates<3>(
     const int nodeId, const Core::FE::CellType distype);
+
 FOUR_C_NAMESPACE_CLOSE

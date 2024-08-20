@@ -150,15 +150,15 @@ Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::get_imp
   }
   // call base class routine
   else
-    return Adapter::GetScaTraImplType(ele);
+    return Adapter::get_sca_tra_impl_type(ele);
 }
 
 bool PoroElastScaTra::UTILS::PoroScatraCloneStrategy::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone elements based on poro or scatra elements
-  if (PoroElastScaTra::UTILS::IsPoroScatraElement(actele) or
-      PoroElast::UTILS::IsPoroElement(actele))
+  if (PoroElastScaTra::UTILS::is_poro_scatra_element(actele) or
+      PoroElast::UTILS::is_poro_element(actele))
   {
     // we only support fluid elements here
     eletype.emplace_back("TRANSP");
@@ -239,8 +239,8 @@ bool PoroElastScaTra::UTILS::PoroelastCloneStrategyforScatraElements::determine_
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro or scatra element (we support submeshes here)
-  if (PoroElastScaTra::UTILS::IsPoroScatraElement(actele) or
-      PoroElast::UTILS::IsPoroElement(actele))
+  if (PoroElastScaTra::UTILS::is_poro_scatra_element(actele) or
+      PoroElast::UTILS::is_poro_element(actele))
   {
     // we only support fluid elements here
     eletype.emplace_back("FLUIDPORO");

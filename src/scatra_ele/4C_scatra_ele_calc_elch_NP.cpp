@@ -26,7 +26,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>*
 Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcElchNP<distype>>(
@@ -464,7 +464,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_conv_stab(
                      myelch::diff_manager()->get_valence(k) * frt * laplacewf;
       }
 
-      if (not ScaTra::IsBinaryElectrolyte(myelch::diff_manager()->get_valence()))
+      if (not ScaTra::is_binary_electrolyte(myelch::diff_manager()->get_valence()))
       {
         // 2e) linearization of tau w.r.t. concentration c_k
         // not necessary, since tau not a function of c_k
@@ -954,7 +954,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across
     // get dirichlet toggle from the discretization
     Teuchos::RCP<const Epetra_Vector> dctoggle = discretization.get_state("dctoggle");
     std::vector<double> mydctoggle(lm.size());
-    Core::FE::ExtractMyValues(*dctoggle, mydctoggle, lm);
+    Core::FE::extract_my_values(*dctoggle, mydctoggle, lm);
 
     double val = 0.;
     for (unsigned vi = 0; vi < nen_; ++vi)
@@ -1069,15 +1069,15 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
 )
 {
   // special stabilization parameters in case of binary electrolyte
-  if (ScaTra::IsBinaryElectrolyte(myelch::diff_manager()->get_valence()))
+  if (ScaTra::is_binary_electrolyte(myelch::diff_manager()->get_valence()))
   {
     // do not include migration operator in stabilization terms
     migrationstab_ = false;
 
     // use effective diffusion coefficient for binary electrolyte solutions
-    double resdiffus = ScaTra::CalResDiffCoeff(myelch::diff_manager()->get_valence(),
+    double resdiffus = ScaTra::cal_res_diff_coeff(myelch::diff_manager()->get_valence(),
         myelch::diff_manager()->get_isotropic_diff(),
-        ScaTra::GetIndicesBinaryElectrolyte(myelch::diff_manager()->get_valence()));
+        ScaTra::get_indices_binary_electrolyte(myelch::diff_manager()->get_valence()));
 
     // loop over transported scalars
     for (int k = 0; k < my::numscal_; ++k)

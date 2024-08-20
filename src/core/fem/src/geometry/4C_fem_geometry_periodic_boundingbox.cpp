@@ -152,8 +152,8 @@ void Core::Geo::MeshFree::BoundingBox::setup(const Teuchos::ParameterList& io_pa
   if (boxdiscret_->get_condition("Dirichlet") != nullptr) havedirichletbc_ = true;
 
   // displacement vector in row and col format
-  disn_row_ = Core::LinAlg::CreateVector(*boxdiscret_->dof_row_map(), true);
-  disn_col_ = Core::LinAlg::CreateVector(*boxdiscret_->dof_col_map(), true);
+  disn_row_ = Core::LinAlg::create_vector(*boxdiscret_->dof_row_map(), true);
+  disn_col_ = Core::LinAlg::create_vector(*boxdiscret_->dof_col_map(), true);
 
   // initialize bounding box runtime output
   if (io_params.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
@@ -177,9 +177,9 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
 
     // create fully overlapping boundingbox discret
     Teuchos::RCP<Epetra_Map> rednodecolmap =
-        Core::LinAlg::AllreduceEMap(*boxdiscret_->node_row_map());
+        Core::LinAlg::allreduce_e_map(*boxdiscret_->node_row_map());
     Teuchos::RCP<Epetra_Map> redelecolmap =
-        Core::LinAlg::AllreduceEMap(*boxdiscret_->element_row_map());
+        Core::LinAlg::allreduce_e_map(*boxdiscret_->element_row_map());
 
     // do the fully overlapping ghosting of the bounding box element to have everything redundant
     boxdiscret_->export_column_nodes(*rednodecolmap);
@@ -216,7 +216,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
 
     // assign nodes to element
     Teuchos::RCP<Core::Elements::Element> newele =
-        Core::Communication::Factory("VELE3", "Polynomial", 0, 0);
+        Core::Communication::factory("VELE3", "Polynomial", 0, 0);
     newele->set_node_ids(8, node_ids);
     boxdiscret_->add_element(newele);
   }
@@ -628,7 +628,7 @@ void Core::Geo::MeshFree::BoundingBox::init_runtime_output(
 
   visualization_output_writer_ptr_ =
       Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterMesh(
-          boxdiscret_, Core::IO::VisualizationParametersFactory(
+          boxdiscret_, Core::IO::visualization_parameters_factory(
                            io_params.sublist("RUNTIME VTK OUTPUT"), output_control, restart_time)));
 }
 
@@ -766,7 +766,7 @@ void Core::Geo::MeshFree::BoundingBox::transform_from_undeformed_bounding_box_sy
   throw_if_not_init_or_setup();
 
   Core::Nodes::Node** mynodes = boxdiscret_->l_col_element(0)->nodes();
-  if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
+  if (!mynodes) FOUR_C_THROW("ERROR: local_to_global: Null pointer!");
 
   // reset globcoord variable
   for (unsigned int dim = 0; dim < 3; ++dim) x[dim] = 0.0;

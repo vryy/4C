@@ -62,7 +62,7 @@ void LowMach::Algorithm::init()
   Adapter::ScaTraFluidCouplingAlgorithm::init();
 
   // flag for monolithic solver
-  monolithic_ = (Core::UTILS::IntegralValue<int>(probdyn_, "MONOLITHIC"));
+  monolithic_ = (Core::UTILS::integral_value<int>(probdyn_, "MONOLITHIC"));
 
   // time-step length, maximum time and maximum number of steps
   dt_ = probdyn_.get<double>("TIMESTEP");
@@ -89,7 +89,7 @@ void LowMach::Algorithm::init()
 
   // flag for turbulent inflow
   turbinflow_ =
-      Core::UTILS::IntegralValue<int>(fluiddyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW");
+      Core::UTILS::integral_value<int>(fluiddyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW");
   // number of inflow steps
   numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
   if (turbinflow_)
@@ -134,7 +134,7 @@ void LowMach::Algorithm::setup()
     // check whether (fluid) linearization scheme is a fixed-point-like scheme,
     // which is the only one enabled for monolithic solver, for the time being
     Inpar::FLUID::LinearisationAction linearization =
-        Core::UTILS::IntegralValue<Inpar::FLUID::LinearisationAction>(fluiddyn, "NONLINITER");
+        Core::UTILS::integral_value<Inpar::FLUID::LinearisationAction>(fluiddyn, "NONLINITER");
     if (linearization != Inpar::FLUID::fixed_point_like)
       FOUR_C_THROW(
           "Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number "
@@ -201,7 +201,7 @@ void LowMach::Algorithm::setup()
     lomasolver_ = Teuchos::rcp(
         new Core::LinAlg::Solver(lomasolverparams, fluid_field()->discretization()->get_comm(),
             Global::Problem::instance()->solver_params_callback(),
-            Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+            Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                 Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     // todo extract ScalarTransportFluidSolver
@@ -215,7 +215,7 @@ void LowMach::Algorithm::setup()
     lomasolver_->put_solver_params_to_sub_params("Inverse1",
         Global::Problem::instance()->solver_params(fluidsolver),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
 
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
@@ -231,7 +231,7 @@ void LowMach::Algorithm::setup()
     lomasolver_->put_solver_params_to_sub_params("Inverse2",
         Global::Problem::instance()->solver_params(scalartransportsolvernumber),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
 
     fluid_field()->discretization()->compute_null_space_if_necessary(
@@ -257,7 +257,7 @@ void LowMach::Algorithm::setup()
     const Teuchos::RCP<const Epetra_Map> fdbcmap =
         fluid_field()->get_dbc_map_extractor()->cond_map();
     const Teuchos::RCP<const Epetra_Map> sdbcmap = scatra_field()->dirich_maps()->cond_map();
-    lomadbcmap_ = Core::LinAlg::MergeMap(fdbcmap, sdbcmap, false);
+    lomadbcmap_ = Core::LinAlg::merge_map(fdbcmap, sdbcmap, false);
   }
 
   return;

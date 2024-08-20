@@ -222,7 +222,7 @@ void Discret::ELEMENTS::ScaTraHDG::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -363,7 +363,7 @@ bool Discret::ELEMENTS::ScaTraHDG::read_element(const std::string& eletype,
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDG::lines()
 {
-  return Core::Communication::GetElementLines<ScaTraHDGBoundary, ScaTraHDG>(*this);
+  return Core::Communication::get_element_lines<ScaTraHDGBoundary, ScaTraHDG>(*this);
 }
 
 
@@ -372,7 +372,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDG:
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ScaTraHDG::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<ScaTraHDGBoundary>(*this);
+  return Core::Communication::get_element_surfaces<ScaTraHDGBoundary>(*this);
 }
 
 
@@ -395,7 +395,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDG::create_face_
 
 
   // insert both parent elements
-  return Core::Communication::ElementIntFaceFactory<ScaTraHDGIntFace, ScaTraHDG>(
+  return Core::Communication::element_int_face_factory<ScaTraHDGIntFace, ScaTraHDG>(
       -1,               //!< internal face element id
       -1,               //!< owner of internal face element
       nnode,            //!< number of surface nodes
@@ -565,7 +565,7 @@ Core::Elements::Element* Discret::ELEMENTS::ScaTraHDGBoundary::clone() const
  *----------------------------------------------------------------------*/
 Core::FE::CellType Discret::ELEMENTS::ScaTraHDGBoundary::shape() const
 {
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_master_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_master_element()->shape());
 }
 
 
@@ -598,7 +598,7 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -781,7 +781,7 @@ Core::Elements::Element* Discret::ELEMENTS::ScaTraHDGIntFace::clone() const
 Core::FE::CellType Discret::ELEMENTS::ScaTraHDGIntFace::shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_master_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_master_element()->shape());
 }
 
 /*----------------------------------------------------------------------*

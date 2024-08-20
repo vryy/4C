@@ -96,6 +96,37 @@ Cut::Element* create_wedge6(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xy
 Cut::Element* create_pyramid5(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze);
 
 Cut::Side* create_quad4(Cut::Mesh& mesh, Core::LinAlg::SerialDenseMatrix& xyze);
+
+inline Cut::Side* create_quad4(
+    Cut::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
+{
+  Core::LinAlg::SerialDenseMatrix xyze(3, 4);
+
+  xyze(0, 0) = x - dx;
+  xyze(1, 0) = -0.5;
+  xyze(2, 0) = -0.5 - dz;
+
+  xyze(0, 1) = x + dx;
+  xyze(1, 1) = -0.5;
+  xyze(2, 1) = 1.5 + dz;
+
+  xyze(0, 2) = x + dx;
+  xyze(1, 2) = 1.5;
+  xyze(2, 2) = 1.5 + dz;
+
+  xyze(0, 3) = x - dx;
+  xyze(1, 3) = 1.5;
+  xyze(2, 3) = -0.5 - dz;
+
+  if (reverse)
+  {
+    std::swap(xyze(0, 1), xyze(0, 3));
+    std::swap(xyze(1, 1), xyze(1, 3));
+    std::swap(xyze(2, 1), xyze(2, 3));
+  }
+
+  return create_quad4(mesh, xyze);
+}
 // Cut::Side* create_quad8( Cut::Mesh & mesh, Core::LinAlg::SerialDenseMatrix & xyze );
 // Cut::Side* create_quad9( Cut::Mesh & mesh, Core::LinAlg::SerialDenseMatrix & xyze );
 

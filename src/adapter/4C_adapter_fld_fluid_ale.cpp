@@ -54,7 +54,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   }
 
   // check for matching fluid and ale meshes (==true in default case)
-  if (Core::UTILS::IntegralValue<bool>(
+  if (Core::UTILS::integral_value<bool>(
           Global::Problem::instance()->fsi_dynamic_params(), "MATCHGRID_FLUIDALE"))
   {
     // the fluid-ale coupling matches
@@ -71,7 +71,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
         Teuchos::rcp(new Coupling::Adapter::Coupling());
     coupfa_matching->setup_coupling(*fluid_field()->discretization(),
         *ale_field()->discretization(), *fluidnodemap, *alenodemap, ndim,
-        Core::UTILS::IntegralValue<bool>(
+        Core::UTILS::integral_value<bool>(
             Global::Problem::instance()->fsi_dynamic_params(), "MATCHALL"),
         tolerance, nds_master, nds_slave);
     coupfa_ = coupfa_matching;
@@ -110,7 +110,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   }
 
   // Apply initial ALE mesh displacement
-  if (Core::UTILS::IntegralValue<Inpar::ALE::InitialDisp>(
+  if (Core::UTILS::integral_value<Inpar::ALE::InitialDisp>(
           Global::Problem::instance()->ale_dynamic_params(), "INITIALDISP") !=
       Inpar::ALE::initdisp_zero_disp)
   {
@@ -126,7 +126,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
       Global::Problem::instance()->fluid_dynamic_params());  // call from base algorithm
 
 
-  if (Core::UTILS::IntegralValue<bool>(
+  if (Core::UTILS::integral_value<bool>(
           Global::Problem::instance()->fsi_dynamic_params(), "MATCHGRID_STRUCTALE"))
   {
     Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa =

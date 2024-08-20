@@ -150,7 +150,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 
   // Now, check for the action parameter
   const Thermo::BoundaryAction action =
-      Core::UTILS::GetAsEnum<Thermo::BoundaryAction>(params, "action");
+      Core::UTILS::get_as_enum<Thermo::BoundaryAction>(params, "action");
   if (action == Thermo::calc_normal_vectors)
   {
     // access the global vector
@@ -159,7 +159,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     if (normals == Teuchos::null) FOUR_C_THROW("Could not access vector 'normal vectors'");
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
-    Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
+    Core::Geo::fill_initial_position_array<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
         ele, xyze_);
 
     // determine constant normal to this element
@@ -196,7 +196,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
   else if (action == Thermo::calc_thermo_fextconvection)
   {
     // get node coordinates ( (nsd_+1): domain, nsd_: boundary )
-    Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
+    Core::Geo::fill_initial_position_array<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
         ele, xyze_);
 
     // set views, here we assemble on the boundary dofs only!
@@ -256,7 +256,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state("temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
-        Core::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
+        Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
         Core::LinAlg::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
         etemp_.update(etemp);                                        // copy
@@ -274,7 +274,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         Teuchos::RCP<const Epetra_Vector> tempn = discretization.get_state("old temperature");
         if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
-        Core::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
+        Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
         // build the element temperature
         Core::LinAlg::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
         etemp_.update(etemp);                                       // copy
@@ -334,7 +334,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(1, "displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
-        Core::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
+        Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
 
         // and now check if there is a convection heat transfer boundary condition
         calculate_nln_convection_fint_cond(ele,  // current boundary element
@@ -349,7 +349,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
-    const Inpar::Thermo::DynamicType timint = Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+    const Inpar::Thermo::DynamicType timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
         params, "time integrator", Inpar::Thermo::dyna_undefined);
     switch (timint)
     {
@@ -412,7 +412,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
       if (discretization.has_state(1, "displacement"))
       {
         // get node coordinates (nsd_+1: domain, nsd_: boundary)
-        Core::Geo::fillInitialPositionArray<distype, nsd_ + 1,
+        Core::Geo::fill_initial_position_array<distype, nsd_ + 1,
             Core::LinAlg::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
 
         // set views, here we assemble on the boundary dofs only!
@@ -472,7 +472,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
             Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state("temperature");
             if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
-            Core::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
+            Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
             Core::LinAlg::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
             etemp_.update(etemp);                                        // copy
@@ -490,7 +490,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
             Teuchos::RCP<const Epetra_Vector> tempn = discretization.get_state("old temperature");
             if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
-            Core::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
+            Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
             // build the element temperature
             Core::LinAlg::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
             etemp_.update(etemp);                                       // copy
@@ -518,7 +518,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(1, "displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
-        Core::FE::ExtractMyValues(*disp, mydisp, la[1].lm_);
+        Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
 
         // and now check if there is a convection heat transfer boundary condition
         calculate_nln_convection_fint_cond(ele,  // current boundary element
@@ -531,7 +531,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
         // check the time integrator
         const Inpar::Thermo::DynamicType timint =
-            Core::UTILS::GetAsEnum<Inpar::Thermo::DynamicType>(
+            Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
                 params, "time integrator", Inpar::Thermo::dyna_undefined);
         switch (timint)
         {
@@ -576,7 +576,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 
   else
     FOUR_C_THROW("Unknown type of action for Temperature Implementation: %s",
-        Thermo::BoundaryActionToString(action).c_str());
+        Thermo::boundary_action_to_string(action).c_str());
 
   return 0;
 }  // evaluate()
@@ -596,7 +596,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate_neumann(const Core::Elements::
   prepare_nurbs_eval(ele, discretization);
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
       ele, xyze_);
 
   // integration points and weights
@@ -971,12 +971,12 @@ void Thermo::TemperBoundaryImpl<distype>::eval_shape_func_and_int_fac(
     Core::FE::shape_function_deriv1<distype>(xsi_, deriv_);  // nsd_ x nen_
   }
   else
-    Core::FE::Nurbs::nurbs_get_2D_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
+    Core::FE::Nurbs::nurbs_get_2d_funct_deriv(funct_, deriv_, xsi_, myknots_, weights_, distype);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // initialise the determinant: drs = srqt( det(metrictensor_) )
   double drs(0.0);
-  Core::FE::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_,
+  Core::FE::compute_metric_tensor_for_boundary_ele<distype>(xyze_, deriv_,
       metrictensor_,  // metrictensor between material coordinates xyze_ and coordinate space xi_i
       drs);
 
@@ -1054,7 +1054,7 @@ void Thermo::TemperBoundaryImpl<distype>::integrate_shape_functions(
   double boundaryint = params.get<double>("boundaryint");
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  Core::Geo::fillInitialPositionArray<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
       ele, xyze_);
 
   // integrations points and weights
@@ -1122,7 +1122,7 @@ void Thermo::TemperBoundaryImpl<distype>::surface_integration(
   // dxyzdrs = deriv . xyze
   // dxyzdrs.multiply_nt(1.0,deriv,xyze,0.0) = (LENA)dxyzdrs
   // be careful: normal
-  Core::FE::ComputeMetricTensorForBoundaryEle<distype>(xcurr_T, deriv_,
+  Core::FE::compute_metric_tensor_for_boundary_ele<distype>(xcurr_T, deriv_,
       metrictensor_,  // metric tensor between coordinate space and AK
       detA
       // normalvector==nullptr // we don't need the unit normal vector, but the

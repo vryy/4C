@@ -56,7 +56,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pre_evaluate(Teuchos::Parame
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> nodaltempnp =
           Teuchos::rcp(new std::vector<double>(la[1].lm_.size()));
-      Core::FE::ExtractMyValues(*tempnp, *nodaltempnp, la[1].lm_);
+      Core::FE::extract_my_values(*tempnp, *nodaltempnp, la[1].lm_);
 
       // now set the current temperature vector in the parameter list
       params.set<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", nodaltempnp);
@@ -210,7 +210,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
-      Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> myemat(true);
 
@@ -234,7 +234,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
-        Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        Core::FE::extract_my_values(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
@@ -302,7 +302,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
-      Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // evaluate() is called the first time in Thermo::BaseAlgorithm: at this stage the
@@ -324,7 +324,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
-        Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        Core::FE::extract_my_values(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
@@ -398,7 +398,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
-      Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // evaluate() is called the first time in structure_base_algorithm: at this
@@ -421,7 +421,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
-        Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        Core::FE::extract_my_values(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
@@ -487,7 +487,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
-      Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
 
       Teuchos::RCP<std::vector<char>> couplstressdata;
       Inpar::Solid::StressType iocouplstress;
@@ -499,7 +499,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       else
       {
         couplstressdata = params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
-        iocouplstress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+        iocouplstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
             params, "iocouplstress", Inpar::Solid::stress_none);
       }
 
@@ -528,7 +528,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
           FOUR_C_THROW("Location vector length for temperature does not match!");
 
         // extract the current temperatures
-        Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        Core::FE::extract_my_values(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
         if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
@@ -645,7 +645,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
           if (la[1].size() != nen_ * numdofpernode_thr)
             FOUR_C_THROW("Location vector length for temperature does not match!");
           // extract the current temperatures
-          Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+          Core::FE::extract_my_values(*tempnp, mytempnp, la[1].lm_);
         }
 
         // vector of the current element temperatures
@@ -682,7 +682,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
           }
           // evaluate shape functions NURBS-style
           else
-            Core::FE::Nurbs::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3d_funct(
                 shapefunct, xsi_[gp], myknots, weights, Core::FE::CellType::nurbs27);
 
           // product of shapefunctions and element temperatures
@@ -709,7 +709,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp((la[0].lm_).size());
       // build the location vector only for the structure field
-      Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
+      Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
 
       // initialise the vectors
       // evaluate() is called the first time in structure_base_algorithm: at this
@@ -732,7 +732,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         if (la[1].size() != nen_ * numdofpernode_thr)
           FOUR_C_THROW("Location vector length for temperature does not match!");
         // extract the current temperatures
-        Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
+        Core::FE::extract_my_values(*tempnp, mytempnp, la[1].lm_);
       }
       // default: geometrically non-linear analysis with Total Lagrangean approach
       if (So3Ele::kinematic_type() == Inpar::Solid::KinemType::nonlinearTotLag)
@@ -1031,7 +1031,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
       // with shape functions)
 
       // this element will be removed anyway: create dummy matrices for defgrd and gl strain
-      Core::LinAlg::Matrix<3, 3> defgrd = Core::LinAlg::IdentityMatrix<3>();
+      Core::LinAlg::Matrix<3, 3> defgrd = Core::LinAlg::identity_matrix<3>();
       Core::LinAlg::Matrix<6, 1> glstrain(true);
 
       params.set("temperature", NT(0));
@@ -1159,7 +1159,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     }
     // evaluate shape functions NURBS-style
     else
-      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, Core::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1424,7 +1424,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
     }
     // evaluate shape functions NURBS-style
     else
-      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, Core::FE::CellType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1596,7 +1596,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
     Core::LinAlg::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     Core::LinAlg::Matrix<nsd_, nen_> N_rst_0(false);
-    Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+    Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
 
     // inverse jacobian matrix at centroid
     Core::LinAlg::Matrix<nsd_, nsd_> invJ_0(false);
@@ -1944,7 +1944,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
     Core::LinAlg::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     Core::LinAlg::Matrix<nsd_, nen_> N_rst_0(false);
-    Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
+    Core::FE::shape_function_3d_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
 
     // inverse jacobian matrix at centroid
     Core::LinAlg::Matrix<nsd_, nsd_> invJ_0(false);
@@ -2491,7 +2491,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::init_jacobian_mapping_specia
     if (So3Ele::shape() != Core::FE::CellType::nurbs27)
       Core::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
     else
-      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
           funct, deriv, xsi_[gp], myknots, weights, Core::FE::CellType::nurbs27);
 
     // compute Jacobian matrix and determinant

@@ -33,7 +33,7 @@ namespace ParticleRigidBody
    * \brief set initial fields
    *
    */
-  void SetInitialFields(const Teuchos::ParameterList& params,
+  void set_initial_fields(const Teuchos::ParameterList& params,
       const std::vector<int>& ownedrigidbodies,
       ParticleRigidBody::RigidBodyDataState& rigidbodydatastates);
 

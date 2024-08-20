@@ -256,7 +256,7 @@ void Cut::TetMeshIntersection::find_edge_cuts()
             edges.reserve(2);
             edges.insert(e);
             edges.insert(ce);
-            Cut::Output::GmshEdgesOnly(edges);
+            Cut::Output::gmsh_edges_only(edges);
             throw;
           }
         }
@@ -1060,8 +1060,8 @@ void Cut::TetMeshIntersection::fill(VolumeCell* parent_cell, ChildCell& childcel
           plain_facet_set facets1;
           plain_facet_set facets2;
 
-          FindCommonFacets(p1, p2, line.first, facets1);
-          FindCommonFacets(p1, p2, line.second, facets2);
+          find_common_facets(p1, p2, line.first, facets1);
+          find_common_facets(p1, p2, line.second, facets2);
 
           if (facets1.size() == 1 and facets2.size() == 1)
           {

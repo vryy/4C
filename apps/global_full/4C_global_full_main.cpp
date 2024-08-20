@@ -54,7 +54,7 @@ namespace
    *
    * @param[in] global_comm Global Epetra_Comm object
    */
-  void GetMemoryHighWaterMark(const Epetra_Comm &comm)
+  void get_memory_high_water_mark(const Epetra_Comm &comm)
   {
 #if defined(__linux__)  // This works only on Linux systems
     const std::string status_match = "VmHWM";
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
   using namespace FourC;
 
   Teuchos::RCP<Core::Communication::Communicators> communicators =
-      Core::Communication::CreateComm(std::vector<std::string>(argv, argv + argc));
+      Core::Communication::create_comm(std::vector<std::string>(argv, argv + argc));
   Global::Problem::instance()->set_communicators(communicators);
   Teuchos::RCP<Epetra_Comm> lcomm = communicators->local_comm();
   Teuchos::RCP<Epetra_Comm> gcomm = communicators->global_comm();
@@ -265,14 +265,14 @@ int main(int argc, char *argv[])
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }
 
-  GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
+  global_legacy_module_callbacks().RegisterParObjectTypes();
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {
     if (lcomm->MyPID() == 0)
     {
       printf("\n\n");
-      PrintHelpMessage();
+      print_help_message();
       printf("\n\n");
     }
   }
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
     if (lcomm->MyPID() == 0)
     {
       printf("\n\n");
-      PrintValidParameters();
+      print_valid_parameters();
       printf("\n\n");
     }
   }
@@ -290,18 +290,18 @@ int main(int argc, char *argv[])
     if (lcomm->MyPID() == 0)
     {
       printf("\n\n");
-      PrintDefaultDatHeader();
-      PrintConditionDatHeader();
-      PrintMaterialDatHeader();
-      PrintContactConstitutiveLawDatHeader();
+      print_default_dat_header();
+      print_condition_dat_header();
+      print_material_dat_header();
+      print_contact_constitutive_law_dat_header();
 
       const auto lines = Core::FE::valid_cloning_material_map_lines();
       Core::IO::DatFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
 
-      PrintElementDatHeader();
+      print_element_dat_header();
 
       const std::vector<Input::LineDefinition> result_lines =
-          GlobalLegacyModuleCallbacks().valid_result_description_lines();
+          global_legacy_module_callbacks().valid_result_description_lines();
       Core::IO::DatFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
 
       printf("\n\n");
@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
     /*----------------------------------------------------------------------*/
   }
 
-  GetMemoryHighWaterMark(*gcomm);
+  get_memory_high_water_mark(*gcomm);
 
   lcomm->Barrier();
   if (ngroups > 1)

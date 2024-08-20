@@ -54,7 +54,7 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
   // do some checks
   {
     auto structtimealgo =
-        Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP");
+        Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP");
     if (structtimealgo == Inpar::Solid::dyna_statics)
     {
       FOUR_C_THROW(
@@ -63,7 +63,7 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
           "the deformations will not be applied to the scalar transport problem!");
     }
 
-    auto convform = Core::UTILS::IntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
+    auto convform = Core::UTILS::integral_value<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
     if (convform == Inpar::ScaTra::convform_convective)
     {
       // get scatra discretization
@@ -105,8 +105,8 @@ void SSI::SSIPart2WC::setup()
   SSI::SSIPart::setup();
 
   // construct increment vectors
-  scaincnp_ = Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(0), true);
-  dispincnp_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
+  scaincnp_ = Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(0), true);
+  dispincnp_ = Core::LinAlg::create_vector(*structure_field()->dof_row_map(0), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -136,7 +136,7 @@ void SSI::SSIPart2WC::timeloop()
     get_comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (Core::UTILS::IntegralValue<int>(
+    if (Core::UTILS::integral_value<int>(
             *scatra_field()->scatra_parameter_list(), "OUTPUTNONLINSOLVERSTATS"))
       scatra_field()->output_nonlin_solver_stats(
           iteration_count(), dtnonlinsolve, step(), get_comm());
@@ -497,9 +497,9 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 
   // these are the relaxed inputs
   Teuchos::RCP<Epetra_Vector> dispnp =
-      Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
+      Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
   Teuchos::RCP<Epetra_Vector> velnp =
-      Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
+      Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
 
   while (!stopnonliniter)
   {
@@ -596,7 +596,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::setup()
   SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
-  dispincnpold_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
+  dispincnpold_ = Core::LinAlg::create_vector(*structure_field()->dof_row_map(0), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -615,7 +615,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
   // calculate difference of current (i+1) and old (i) residual vector
   // dispincnpdiff = ( r^{i+1}_{n+1} - r^i_{n+1} )
   Teuchos::RCP<Epetra_Vector> dispincnpdiff =
-      Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
+      Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
   dispincnpdiff->Update(
       1.0, *dispincnp_, (-1.0), *dispincnpold_, 0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
 
@@ -733,7 +733,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
   // this is the relaxed input
   Teuchos::RCP<Epetra_Vector> phinp =
-      Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(0), true);
 
   while (!stopnonliniter)
   {
@@ -814,7 +814,8 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::setup()
   SSI::SSIPart2WC::setup();
 
   // setup old scatra increment vector
-  scaincnpold_ = Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(), true);
+  scaincnpold_ =
+      Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -832,7 +833,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> scaincnpdiff =
-      Core::LinAlg::CreateVector(*scatra_field()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 
   double scaincnpdiffnorm = 0.0;

@@ -68,7 +68,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
   random_number_sphere_beam_linking_step_ = -1;
 
   // this includes temporary change in ghosting
-  BEAMINTERACTION::UTILS::SetFilamentBindingSpotPositions(
+  BEAMINTERACTION::UTILS::set_filament_binding_spot_positions(
       discret_ptr(), spherebeamlinking_params_ptr_);
 
   // build runtime visualization output writer
@@ -137,7 +137,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 
       // sphere current position
       std::vector<double> sphereeledisp;
-      BEAMINTERACTION::UTILS::GetCurrentElementDis(
+      BEAMINTERACTION::UTILS::get_current_element_dis(
           discret(), sphere, beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
       // note: sphere has just one node (with three translational dofs)
@@ -146,7 +146,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
 
       // beam bspot pos
       std::vector<double> beameledisp;
-      BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(discret(), beamele,
+      BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
           beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(),
@@ -205,9 +205,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
 
       // apply forces on binding spots to parent elements
       // and get their discrete element force vectors
-      BEAMINTERACTION::UTILS::ApplyBindingSpotForceToParentElements<Discret::ELEMENTS::Rigidsphere,
-          Discret::ELEMENTS::Beam3Base>(discret(), periodic_bounding_box_ptr(),
-          beam_interaction_data_state_ptr()->get_dis_col_np(), elepairptr, bspotforce, eleforce);
+      BEAMINTERACTION::UTILS::apply_binding_spot_force_to_parent_elements<
+          Discret::ELEMENTS::Rigidsphere, Discret::ELEMENTS::Beam3Base>(discret(),
+          periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+          elepairptr, bspotforce, eleforce);
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
@@ -266,9 +267,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
           bspotstiff[0][0], bspotstiff[0][1], bspotstiff[1][0], bspotstiff[1][1]);
 
       // apply linearizations to parent elements and get their discrete element stiffness matrices
-      BEAMINTERACTION::UTILS::ApplyBindingSpotStiffToParentElements<Discret::ELEMENTS::Rigidsphere,
-          Discret::ELEMENTS::Beam3Base>(discret(), periodic_bounding_box_ptr(),
-          beam_interaction_data_state_ptr()->get_dis_col_np(), elepairptr, bspotstiff, elestiff);
+      BEAMINTERACTION::UTILS::apply_binding_spot_stiff_to_parent_elements<
+          Discret::ELEMENTS::Rigidsphere, Discret::ELEMENTS::Beam3Base>(discret(),
+          periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+          elepairptr, bspotstiff, elestiff);
 
       // assemble the contributions into stiffness matrix class variable
       // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
@@ -332,7 +334,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff
 
       // apply forces on binding spots and corresponding linearizations to parent elements
       // and get their discrete element force vectors and stiffness matrices
-      BEAMINTERACTION::UTILS::ApplyBindingSpotForceStiffToParentElements<
+      BEAMINTERACTION::UTILS::apply_binding_spot_force_stiff_to_parent_elements<
           Discret::ELEMENTS::Rigidsphere, Discret::ELEMENTS::Beam3Base>(discret(),
           periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
           elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
@@ -605,7 +607,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime(
   check_init();
 
   visualization_manager_ptr_ = Teuchos::rcp(new Core::IO::VisualizationManager(
-      Core::IO::VisualizationParametersFactory(
+      Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
       bin_discret_ptr()->get_comm(), "spherebeamlinker"));
@@ -666,7 +668,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
 
       // sphere current position
       std::vector<double> sphereeledisp;
-      BEAMINTERACTION::UTILS::GetCurrentElementDis(
+      BEAMINTERACTION::UTILS::get_current_element_dis(
           discret(), sphere, beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
       // note: sphere has just one node (with three translational dofs)
@@ -675,7 +677,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
 
       // beam bspot pos
       std::vector<double> beameledisp;
-      BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(discret(), beamele,
+      BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
           beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(),
@@ -724,7 +726,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::find_and_store_neigh
 
   // loop over all sphere elements
   int unsigned const numrowsphereeles = ele_type_map_extractor_ptr()->sphere_map()->NumMyElements();
-  std::vector<int> rand_row_sphere = BEAMINTERACTION::UTILS::Permutation(numrowsphereeles);
+  std::vector<int> rand_row_sphere = BEAMINTERACTION::UTILS::permutation(numrowsphereeles);
 
   for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
   {
@@ -785,7 +787,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 
   // current sphere position
   std::vector<double> sphereeledisp;
-  BEAMINTERACTION::UTILS::GetCurrentElementDis(
+  BEAMINTERACTION::UTILS::get_current_element_dis(
       discret(), currele, beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
   // note: sphere has just one node (with three translational dofs)
@@ -794,7 +796,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
     spherepos(dim) = sphere->nodes()[0]->x()[dim] + sphereeledisp[dim];
 
   // loop over all neighboring elements
-  std::vector<int> rand_ele = BEAMINTERACTION::UTILS::Permutation(neighbors.size());
+  std::vector<int> rand_ele = BEAMINTERACTION::UTILS::permutation(neighbors.size());
   for (auto const& eiter : rand_ele)
   {
     Discret::ELEMENTS::Beam3Base const* beamele =
@@ -806,7 +808,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 #endif
 
     std::vector<double> beameledisp;
-    BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(discret(), beamele,
+    BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
         beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
 
     Core::LinAlg::Matrix<3, 1> bspotpos(true);
@@ -815,12 +817,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
     // loop over binding spots of neighboring element
     unsigned int numbspots = beamele->get_number_of_binding_spots(
         spherebeamlinking_params_ptr_->get_linker_material()->linker_type());
-    std::vector<int> rand_bsp = BEAMINTERACTION::UTILS::Permutation(numbspots);
+    std::vector<int> rand_bsp = BEAMINTERACTION::UTILS::permutation(numbspots);
     for (unsigned int bspot_i = 0; bspot_i < numbspots; ++bspot_i)
     {
       // build unique linker id from elegid and local binding spot id
       std::pair<int, int> bspotpair = std::make_pair(beamele->id(), rand_bsp[bspot_i]);
-      int bpspotgid = BEAMINTERACTION::UTILS::CantorPairing(bspotpair);
+      int bpspotgid = BEAMINTERACTION::UTILS::cantor_pairing(bspotpair);
 
       // criterion: has sphere reached maximum number of admissible bonds?
       if ((sphere->get_number_of_bonds() + numnewbondsthisstep) ==
@@ -870,7 +872,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
           spherebeamlinking_params_ptr_->get_linker_material()->linking_length_tolerance();
 
 
-      if (BEAMINTERACTION::UTILS::IsDistanceOutOfRange(
+      if (BEAMINTERACTION::UTILS::is_distance_out_of_range(
               spherepos, bspotpos, linkdistmin, linkdistmax))
         continue;
 
@@ -900,7 +902,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
           spherebeamlinking_params_ptr_->get_linker_material()->linking_angle() +
           spherebeamlinking_params_ptr_->get_linker_material()->linking_angle_tolerance();
 
-      if (BEAMINTERACTION::UTILS::IsEnclosedAngleOutOfRange(
+      if (BEAMINTERACTION::UTILS::is_enclosed_angle_out_of_range(
               dist_vec, curr_bindingspot_beam_tangent, linkanglemin, linkanglemax))
 
         // criterion: check if bspot will already be bonded this step
@@ -941,7 +943,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
 
     // sphere current position
     std::vector<double> sphereeledisp;
-    BEAMINTERACTION::UTILS::GetCurrentElementDis(
+    BEAMINTERACTION::UTILS::get_current_element_dis(
         discret(), sphere, beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
     // note: sphere has just one node (with three translational dofs)
@@ -960,7 +962,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
 
       // beam bspot pos
       std::vector<double> beameledisp;
-      BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(discret(), beamele,
+      BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
           beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(), bspotiter.second,
@@ -973,7 +975,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
           BEAMINTERACTION::BeamLinkPinJointed::create(Inpar::BEAMINTERACTION::truss);
 
       // unique linker id is bspot elegid and locspot id paired
-      int id = BEAMINTERACTION::UTILS::CantorPairing(eleids[1]);
+      int id = BEAMINTERACTION::UTILS::cantor_pairing(eleids[1]);
 
       // dummy triad
       std::vector<Core::LinAlg::Matrix<3, 3>> dummy_triad(2, Core::LinAlg::Matrix<3, 3>(true));
@@ -1021,7 +1023,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
 
   // sphere loop
   int unsigned const numrowsphereeles = ele_type_map_extractor_ptr()->sphere_map()->NumMyElements();
-  std::vector<int> rand_row_sphere = BEAMINTERACTION::UTILS::Permutation(numrowsphereeles);
+  std::vector<int> rand_row_sphere = BEAMINTERACTION::UTILS::permutation(numrowsphereeles);
   for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->sphere_map()->GID(rand_row_sphere[rowele_i]);
@@ -1077,7 +1079,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
   // we do not need to calculate the forces again.
   Core::LinAlg::SerialDenseVector bspotforce_one(6);
   linkelepairptr->get_binding_spot_force(1, bspotforce_one);
-  double f = Core::LinAlg::Norm2(bspotforce_one);
+  double f = Core::LinAlg::norm2(bspotforce_one);
 
 
   // check if linker is stretched -> sgn+ or compressed -> sgn- by checking orientation of force

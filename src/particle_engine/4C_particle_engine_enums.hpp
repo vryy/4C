@@ -105,7 +105,7 @@ namespace PARTICLEENGINE
    *
    * \return particle state dimension
    */
-  int EnumToStateDim(const enum ParticleState& state);
+  int enum_to_state_dim(const enum ParticleState& state);
 
   /*!
    * \brief convert particle state enum to name
@@ -116,7 +116,7 @@ namespace PARTICLEENGINE
    *
    * \return particle state name
    */
-  std::string EnumToStateName(const enum ParticleState& state);
+  std::string enum_to_state_name(const enum ParticleState& state);
 
   /*!
    * \brief convert particle state name to enum
@@ -133,7 +133,7 @@ namespace PARTICLEENGINE
    *
    * \return particle state
    */
-  enum ParticleState EnumFromStateName(const std::string& name);
+  enum ParticleState enum_from_state_name(const std::string& name);
 
   //! @}
 
@@ -171,7 +171,7 @@ namespace PARTICLEENGINE
    *
    * \return particle type name
    */
-  std::string EnumToTypeName(const enum ParticleType& type);
+  std::string enum_to_type_name(const enum ParticleType& type);
 
   /*!
    * \brief convert particle type name to enum
@@ -185,7 +185,7 @@ namespace PARTICLEENGINE
    *
    * \return particle type
    */
-  enum ParticleType EnumFromTypeName(const std::string& name);
+  enum ParticleType enum_from_type_name(const std::string& name);
 
   //! @}
 
@@ -215,7 +215,7 @@ namespace PARTICLEENGINE
    *
    * \return particle status name
    */
-  std::string EnumToStatusName(const enum ParticleStatus& status);
+  std::string enum_to_status_name(const enum ParticleStatus& status);
 
   //! @}
 

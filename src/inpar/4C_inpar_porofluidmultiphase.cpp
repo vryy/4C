@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -24,15 +24,16 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   Teuchos::ParameterList& porofluidmultiphasedyn = list->sublist("POROFLUIDMULTIPHASE DYNAMIC",
       false, "control parameters for porofluidmultiphase problems\n");
 
-  Core::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &porofluidmultiphasedyn);
-  Core::UTILS::IntParameter("NUMSTEP", 20, "Total number of time steps", &porofluidmultiphasedyn);
-  Core::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &porofluidmultiphasedyn);
-  Core::UTILS::IntParameter(
+  Core::UTILS::double_parameter(
+      "MAXTIME", 1000.0, "Total simulation time", &porofluidmultiphasedyn);
+  Core::UTILS::int_parameter("NUMSTEP", 20, "Total number of time steps", &porofluidmultiphasedyn);
+  Core::UTILS::double_parameter("TIMESTEP", 0.1, "Time increment dt", &porofluidmultiphasedyn);
+  Core::UTILS::int_parameter(
       "RESULTSEVRY", 1, "Increment for writing solution", &porofluidmultiphasedyn);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "RESTARTEVRY", 1, "Increment for writing restart", &porofluidmultiphasedyn);
 
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "THETA", 0.5, "One-step-theta time integration factor", &porofluidmultiphasedyn);
   //  Core::UTILS::DoubleParameter("ALPHA_M",0.5,"Generalized-alpha time integration
   //  factor",&porofluidmultiphasedyn);
@@ -49,24 +50,24 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       tuple<std::string>("No", "error_by_function"), tuple<int>(calcerror_no, calcerror_byfunction),
       &porofluidmultiphasedyn);
 
-  Core::UTILS::IntParameter("CALCERRORNO", -1,
+  Core::UTILS::int_parameter("CALCERRORNO", -1,
       "function number for porofluidmultiphase error computation", &porofluidmultiphasedyn);
 
   // linear solver id used for porofluidmultiphase problems
-  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::int_parameter("LINEAR_SOLVER", -1,
       "number of linear solver used for the porofluidmultiphase problem", &porofluidmultiphasedyn);
 
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "ITEMAX", 10, "max. number of nonlin. iterations", &porofluidmultiphasedyn);
-  Core::UTILS::DoubleParameter("ABSTOLRES", 1e-14,
+  Core::UTILS::double_parameter("ABSTOLRES", 1e-14,
       "Absolute tolerance for deciding if residual of nonlinear problem is already zero",
       &porofluidmultiphasedyn);
 
   // convergence criteria adaptivity
-  Core::UTILS::BoolParameter("ADAPTCONV", "No",
+  Core::UTILS::bool_parameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &porofluidmultiphasedyn);
-  Core::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  Core::UTILS::double_parameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &porofluidmultiphasedyn);
@@ -77,27 +78,27 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       tuple<std::string>("none",
           "global"),  // perform finite difference check on time integrator level
       tuple<int>(fdcheck_none, fdcheck_global), &porofluidmultiphasedyn);
-  Core::UTILS::DoubleParameter("FDCHECKEPS", 1.e-6,
+  Core::UTILS::double_parameter("FDCHECKEPS", 1.e-6,
       "dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, "
       "whereas smaller values don't)",
       &porofluidmultiphasedyn);
-  Core::UTILS::DoubleParameter("FDCHECKTOL", 1.e-6,
+  Core::UTILS::double_parameter("FDCHECKTOL", 1.e-6,
       "relative tolerance for finite difference check", &porofluidmultiphasedyn);
-  Core::UTILS::BoolParameter("SKIPINITDER", "yes",
+  Core::UTILS::bool_parameter("SKIPINITDER", "yes",
       "Flag to skip computation of initial time derivative", &porofluidmultiphasedyn);
-  Core::UTILS::BoolParameter("OUTPUT_SATANDPRESS", "yes",
+  Core::UTILS::bool_parameter("OUTPUT_SATANDPRESS", "yes",
       "Flag if output of saturations and pressures should be calculated", &porofluidmultiphasedyn);
-  Core::UTILS::BoolParameter("OUTPUT_SOLIDPRESS", "yes",
+  Core::UTILS::bool_parameter("OUTPUT_SOLIDPRESS", "yes",
       "Flag if output of solid pressure should be calculated", &porofluidmultiphasedyn);
-  Core::UTILS::BoolParameter("OUTPUT_POROSITY", "yes",
+  Core::UTILS::bool_parameter("OUTPUT_POROSITY", "yes",
       "Flag if output of porosity should be calculated", &porofluidmultiphasedyn);
-  Core::UTILS::BoolParameter("OUTPUT_PHASE_VELOCITIES", "yes",
+  Core::UTILS::bool_parameter("OUTPUT_PHASE_VELOCITIES", "yes",
       "Flag if output of phase velocities should be calculated", &porofluidmultiphasedyn);
 
   // Biot stabilization
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "STAB_BIOT", "No", "Flag to (de)activate BIOT stabilization.", &porofluidmultiphasedyn);
-  Core::UTILS::DoubleParameter("STAB_BIOT_SCALING", 1.0,
+  Core::UTILS::double_parameter("STAB_BIOT_SCALING", 1.0,
       "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
       &porofluidmultiphasedyn);
 
@@ -118,9 +119,9 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       &porofluidmultiphasedyn);
 
   // Iterationparameters
-  Core::UTILS::DoubleParameter("TOLRES", 1e-6,
+  Core::UTILS::double_parameter("TOLRES", 1e-6,
       "tolerance in the residual norm for the Newton iteration", &porofluidmultiphasedyn);
-  Core::UTILS::DoubleParameter("TOLINC", 1e-6,
+  Core::UTILS::double_parameter("TOLINC", 1e-6,
       "tolerance in the increment norm for the Newton iteration", &porofluidmultiphasedyn);
 
   setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
@@ -129,7 +130,7 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       tuple<int>(initfield_zero_field, initfield_field_by_function, initfield_field_by_condition),
       &porofluidmultiphasedyn);
 
-  Core::UTILS::IntParameter("INITFUNCNO", -1, "function number for scalar transport initial field",
+  Core::UTILS::int_parameter("INITFUNCNO", -1, "function number for scalar transport initial field",
       &porofluidmultiphasedyn);
 
   setStringToIntegralParameter<int>("DIVERCONT", "stop",
@@ -137,7 +138,7 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       tuple<std::string>("stop", "continue"), tuple<int>(divcont_stop, divcont_continue),
       &porofluidmultiphasedyn);
 
-  Core::UTILS::IntParameter("FLUX_PROJ_SOLVER", -1,
+  Core::UTILS::int_parameter("FLUX_PROJ_SOLVER", -1,
       "Number of linear solver used for L2 projection", &porofluidmultiphasedyn);
 
   setStringToIntegralParameter<int>("FLUX_PROJ_METHOD", "none",
@@ -160,10 +161,10 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       "DOMAININT_FUNCT", "-1.0", "functions used for domain integrals", &porofluidmultiphasedyn);
 
   // coupling with 1D artery network active
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &porofluidmultiphasedyn);
 
-  Core::UTILS::DoubleParameter("STARTING_DBC_TIME_END", -1.0,
+  Core::UTILS::double_parameter("STARTING_DBC_TIME_END", -1.0,
       "End time for the starting Dirichlet BC.", &porofluidmultiphasedyn);
 
   setNumericStringParameter("STARTING_DBC_ONOFF", "0",
@@ -178,12 +179,12 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       porofluidmultiphasedyn.sublist("ARTERY COUPLING", false, "Parameters for artery mesh tying");
 
   // maximum number of segments per artery element for 1D-3D artery coupling
-  Core::UTILS::IntParameter("MAXNUMSEGPERARTELE", 5,
+  Core::UTILS::int_parameter("MAXNUMSEGPERARTELE", 5,
       "maximum number of segments per artery element for 1D-3D artery coupling",
       &porofluidmultiphasemshtdyn);
 
   // penalty parameter
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "PENALTY", 1000.0, "Penalty parameter for line-based coupling", &porofluidmultiphasemshtdyn);
 
   setStringToIntegralParameter<int>("ARTERY_COUPLING_METHOD", "None",
@@ -228,45 +229,45 @@ void Inpar::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       "SCALEREAC_CONT", "0", "scale for coupling (porofluid part)", &porofluidmultiphasemshtdyn);
 
   // Flag if artery elements are evaluated in reference or current configuration
-  Core::UTILS::BoolParameter("EVALUATE_IN_REF_CONFIG", "yes",
+  Core::UTILS::bool_parameter("EVALUATE_IN_REF_CONFIG", "yes",
       "Flag if artery elements are evaluated in reference or current configuration",
       &porofluidmultiphasemshtdyn);
 
   // Flag if 1D-3D coupling should be evaluated on lateral (cylinder) surface of embedded artery
   // elements
-  Core::UTILS::BoolParameter("LATERAL_SURFACE_COUPLING", "no",
+  Core::UTILS::bool_parameter("LATERAL_SURFACE_COUPLING", "no",
       "Flag if 1D-3D coupling should be evaluated on lateral (cylinder) surface of embedded artery "
       "elements",
       &porofluidmultiphasemshtdyn);
 
   // Number of integration patches per 1D element in axial direction for lateral surface coupling
-  Core::UTILS::IntParameter("NUMPATCH_AXI", 1,
+  Core::UTILS::int_parameter("NUMPATCH_AXI", 1,
       "Number of integration patches per 1D element in axial direction for lateral surface "
       "coupling",
       &porofluidmultiphasemshtdyn);
 
   // Number of integration patches per 1D element in radial direction for lateral surface coupling
-  Core::UTILS::IntParameter("NUMPATCH_RAD", 1,
+  Core::UTILS::int_parameter("NUMPATCH_RAD", 1,
       "Number of integration patches per 1D element in radial direction for lateral surface "
       "coupling",
       &porofluidmultiphasemshtdyn);
 
   // Flag if blood vessel volume fraction should be output
-  Core::UTILS::BoolParameter("OUTPUT_BLOODVESSELVOLFRAC", "no",
+  Core::UTILS::bool_parameter("OUTPUT_BLOODVESSELVOLFRAC", "no",
       "Flag if output of blood vessel volume fraction should be calculated",
       &porofluidmultiphasemshtdyn);
 
   // Flag if summary of coupling-pairs should be printed
-  Core::UTILS::BoolParameter("PRINT_OUT_SUMMARY_PAIRS", "no",
+  Core::UTILS::bool_parameter("PRINT_OUT_SUMMARY_PAIRS", "no",
       "Flag if summary of coupling-pairs should be printed", &porofluidmultiphasemshtdyn);
 
   // Flag if free-hanging elements (after blood vessel collapse) should be deleted
-  Core::UTILS::BoolParameter("DELETE_FREE_HANGING_ELES", "no",
+  Core::UTILS::bool_parameter("DELETE_FREE_HANGING_ELES", "no",
       "Flag if free-hanging elements (after blood vessel collapse) should be deleted",
       &porofluidmultiphasemshtdyn);
 
   // components whose size is smaller than this fraction of the total network size are also deleted
-  Core::UTILS::DoubleParameter("DELETE_SMALL_FREE_HANGING_COMPS", -1.0,
+  Core::UTILS::double_parameter("DELETE_SMALL_FREE_HANGING_COMPS", -1.0,
       "Small connected components whose size is smaller than this fraction of the overall network "
       "size are additionally deleted (a valid choice of this parameter should lie between 0 and 1)",
       &porofluidmultiphasemshtdyn);

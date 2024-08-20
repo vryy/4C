@@ -411,7 +411,7 @@ namespace GEOMETRYPAIR
       if (face_element == nullptr)
       {
         // The element is a direct surface element, e.g., shell
-        const bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+        const bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
             *(discretization), element, shape_function_data.myknots_, shape_function_data.weights_);
         if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
         shape_function_data.surface_normal_factor_ = 1.0;
@@ -421,7 +421,7 @@ namespace GEOMETRYPAIR
         // The element is the face of a nurbs27 element
         std::vector<Core::LinAlg::SerialDenseVector> my_parent_knots(3);
         shape_function_data.myknots_.resize(2);
-        const bool zero_size = Core::FE::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(
+        const bool zero_size = Core::FE::Nurbs::get_knot_vector_and_weights_for_nurbs_boundary(
             face_element, face_element->face_master_number(), face_element->parent_element_id(),
             *(discretization), my_parent_knots, shape_function_data.myknots_,
             shape_function_data.weights_, shape_function_data.surface_normal_factor_);
@@ -446,7 +446,7 @@ namespace GEOMETRYPAIR
             "Evaluation of the shape function data for nurbs requires a valid nurbs discretization "
             "pointer");
 
-      const bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+      const bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
           *discretization, element, shape_function_data.myknots_, shape_function_data.weights_);
       if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
     }
@@ -504,7 +504,7 @@ namespace GEOMETRYPAIR
       auto element_data_double = ElementData<ElementType, double>();
       element_data_double.shape_function_data_ = element_data.shape_function_data_;
       element_data_double.element_position_ =
-          Core::FADUtils::CastToDouble(element_data.element_position_);
+          Core::FADUtils::cast_to_double(element_data.element_position_);
       return element_data_double;
     }
   };
@@ -523,9 +523,9 @@ namespace GEOMETRYPAIR
       auto element_data_double = ElementData<ElementType, double>();
       element_data_double.shape_function_data_ = element_data.shape_function_data_;
       element_data_double.element_position_ =
-          Core::FADUtils::CastToDouble(element_data.element_position_);
+          Core::FADUtils::cast_to_double(element_data.element_position_);
       element_data_double.nodal_normals_ =
-          Core::FADUtils::CastToDouble(element_data.nodal_normals_);
+          Core::FADUtils::cast_to_double(element_data.nodal_normals_);
       return element_data_double;
     }
   };

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-Core::IO::VisualizationParameters Core::IO::VisualizationParametersFactory(
+Core::IO::VisualizationParameters Core::IO::visualization_parameters_factory(
     const Teuchos::ParameterList& visualization_ouput_parameter_list,
     const Core::IO::OutputControl& output_control, const double restart_time)
 {
@@ -47,7 +47,7 @@ Core::IO::VisualizationParameters Core::IO::VisualizationParametersFactory(
 
   // This value can be overwritten from the physical field
   parameters.every_iteration_ =
-      Core::UTILS::IntegralValue<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
+      Core::UTILS::integral_value<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
 
   parameters.file_name_prefix_ = output_control.file_name_only_prefix();
 
@@ -72,7 +72,7 @@ Core::IO::VisualizationParameters Core::IO::VisualizationParametersFactory(
 /*
  *
  */
-[[nodiscard]] int Core::IO::GetTotalDigitsToReserveInTimeStep(
+[[nodiscard]] int Core::IO::get_total_digits_to_reserve_in_time_step(
     const VisualizationParameters& visualization_parameters)
 {
   if (visualization_parameters.every_iteration_)
@@ -89,7 +89,7 @@ Core::IO::VisualizationParameters Core::IO::VisualizationParametersFactory(
 /*
  *
  */
-[[nodiscard]] std::pair<double, int> Core::IO::GetTimeAndTimeStepIndexForOutput(
+[[nodiscard]] std::pair<double, int> Core::IO::get_time_and_time_step_index_for_output(
     const VisualizationParameters& visualization_parameters, const double time, const int step,
     const int iteration_number)
 {

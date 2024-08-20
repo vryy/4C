@@ -35,7 +35,7 @@ PaSI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(
       convtolscaleddisp_(params.get<double>("CONVTOLSCALEDDISP")),
       convtolrelativeforce_(params.get<double>("CONVTOLRELATIVEFORCE")),
       convtolscaledforce_(params.get<double>("CONVTOLSCALEDFORCE")),
-      ignoreconvcheck_(Core::UTILS::IntegralValue<bool>(params, "IGNORE_CONV_CHECK")),
+      ignoreconvcheck_(Core::UTILS::integral_value<bool>(params, "IGNORE_CONV_CHECK")),
       writerestartevery_(params.get<int>("RESTARTEVRY"))
 {
   // empty constructor
@@ -47,11 +47,11 @@ void PaSI::PasiPartTwoWayCoup::init()
   PaSI::PartitionedAlgo::init();
 
   // construct interface force
-  intfforcenp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  intfforcenp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
 
   // construct interface increment states
-  intfdispincnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
-  intfforceincnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  intfdispincnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
+  intfforceincnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
 
   // safety check
   if (convtolrelativedisp_ < 0.0 and convtolscaleddisp_ < 0.0 and convtolrelativeforce_ < 0.0 and
@@ -487,9 +487,9 @@ void PaSI::PasiPartTwoWayCoupDispRelax::init()
   PaSI::PasiPartTwoWayCoup::init();
 
   // construct relaxed interface states
-  relaxintfdispnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
-  relaxintfvelnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
-  relaxintfaccnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  relaxintfdispnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
+  relaxintfvelnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
+  relaxintfaccnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
 }
 
 void PaSI::PasiPartTwoWayCoupDispRelax::outerloop()
@@ -601,7 +601,7 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::init()
   PaSI::PasiPartTwoWayCoupDispRelax::init();
 
   // construct old interface increment state
-  intfdispincnpold_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  intfdispincnpold_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
 }
 
 void PaSI::PasiPartTwoWayCoupDispRelaxAitken::read_restart(int restartstep)
@@ -637,7 +637,7 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::output()
 void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   Teuchos::RCP<Epetra_Vector> intfdispincnpdiff =
-      Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+      Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
   intfdispincnpdiff->Update(1.0, *intfdispincnp_, (-1.0), *intfdispincnpold_, 0.0);
 
   double dispincnpdiffnorm(0.0);

@@ -32,7 +32,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& par
 
   // check for the action parameter
   const POROFLUIDMULTIPHASE::Action action =
-      Core::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(params, "action");
+      Core::UTILS::get_as_enum<POROFLUIDMULTIPHASE::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
@@ -104,7 +104,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discreti
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   const POROFLUIDMULTIPHASE::Action action =
-      Core::UTILS::GetAsEnum<POROFLUIDMULTIPHASE::Action>(p, "action");
+      Core::UTILS::get_as_enum<POROFLUIDMULTIPHASE::Action>(p, "action");
 
   switch (action)
   {

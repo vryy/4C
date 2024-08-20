@@ -34,7 +34,7 @@ namespace Core::UTILS
 namespace FLD
 {
   /// add valid fluid-specific function lines
-  void AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager);
+  void add_valid_fluid_functions(Core::UTILS::FunctionManager& function_manager);
 
   /// special implementation for beltrami flow (velocity, pressure)
   class BeltramiUP : public Core::UTILS::FunctionOfSpaceTime

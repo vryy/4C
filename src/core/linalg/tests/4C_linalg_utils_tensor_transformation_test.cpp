@@ -94,20 +94,20 @@ namespace
   TEST_F(TensorTransformationTest, TensorRotation)
   {
     Core::LinAlg::Matrix<3, 3> tmp;
-    Core::LinAlg::Tensor::TensorRotation(rotationMatrix1_, tens1_, tmp);
+    Core::LinAlg::Tensor::tensor_rotation(rotationMatrix1_, tens1_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, rotatedTens1_, 1e-9);
 
-    Core::LinAlg::Tensor::TensorRotation(rotationMatrix2_, tens2_, tmp);
+    Core::LinAlg::Tensor::tensor_rotation(rotationMatrix2_, tens2_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, rotatedTens2_, 1e-9);
   }
 
   TEST_F(TensorTransformationTest, InverseTensorRotation)
   {
     Core::LinAlg::Matrix<3, 3> tmp;
-    Core::LinAlg::Tensor::InverseTensorRotation(rotationMatrix1_, rotatedTens1_, tmp);
+    Core::LinAlg::Tensor::inverse_tensor_rotation(rotationMatrix1_, rotatedTens1_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, tens1_, 1e-9);
 
-    Core::LinAlg::Tensor::InverseTensorRotation(rotationMatrix2_, rotatedTens2_, tmp);
+    Core::LinAlg::Tensor::inverse_tensor_rotation(rotationMatrix2_, rotatedTens2_, tmp);
     FOUR_C_EXPECT_NEAR(tmp, tens2_, 1e-9);
   }
 }  // namespace

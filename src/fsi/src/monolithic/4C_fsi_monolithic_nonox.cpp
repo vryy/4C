@@ -45,7 +45,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleXFFsiWrapper>(MonolithicBase::ale_field());
 
   // enable debugging
-  if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
+  if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
@@ -55,9 +55,9 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   s.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
   itermax_ = fsimono.get<int>("ITEMAX");
-  normtypeinc_ = Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_INC");
-  normtypefres_ = Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_RESF");
-  combincfres_ = Core::UTILS::IntegralValue<Inpar::FSI::BinaryOp>(fsimono, "NORMCOMBI_RESFINC");
+  normtypeinc_ = Core::UTILS::integral_value<Inpar::FSI::ConvNorm>(fsimono, "NORM_INC");
+  normtypefres_ = Core::UTILS::integral_value<Inpar::FSI::ConvNorm>(fsimono, "NORM_RESF");
+  combincfres_ = Core::UTILS::integral_value<Inpar::FSI::BinaryOp>(fsimono, "NORMCOMBI_RESFINC");
   tolinc_ = fsimono.get<double>("CONVTOL");
   tolfres_ = fsimono.get<double>("CONVTOL");
 
@@ -148,18 +148,18 @@ void FSI::MonolithicNoNOX::newton()
   // initialise equilibrium loop
   iter_ = 1;
 
-  x_sum_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  x_sum_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   x_sum_->PutScalar(0.0);
 
   // incremental solution vector with length of all FSI dofs
-  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   iterinc_->PutScalar(0.0);
 
-  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   zeros_->PutScalar(0.0);
 
   // residual vector with length of all FSI dofs
-  rhs_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  rhs_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   rhs_->PutScalar(0.0);
 
   firstcall_ = true;
@@ -307,7 +307,7 @@ void FSI::MonolithicNoNOX::linear_solve()
   solver_ =
       Teuchos::rcp(new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(fluidsolver),
           get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
 

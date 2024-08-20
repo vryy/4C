@@ -679,17 +679,17 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
                 std::stringstream str;
                 str << "cut_element" << my_vc->parent_element()->id() << "_fail.pos";
                 std::ofstream file(str.str().c_str());
-                Cut::Output::GmshCompleteCutElement(file, my_vc->parent_element());
-                Cut::Output::GmshNewSection(file, "MyVC");
-                Cut::Output::GmshVolumecellDump(file, my_vc);
-                Cut::Output::GmshNewSection(file, "OtherPointsVC", true);
+                Cut::Output::gmsh_complete_cut_element(file, my_vc->parent_element());
+                Cut::Output::gmsh_new_section(file, "MyVC");
+                Cut::Output::gmsh_volumecell_dump(file, my_vc);
+                Cut::Output::gmsh_new_section(file, "OtherPointsVC", true);
                 for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
                          ((*vc_data)->cut_points_coords_).begin();
                      rec_it != ((*vc_data)->cut_points_coords_).end(); rec_it++)
                 {
-                  Cut::Output::GmshCoordDump(file, (*rec_it), 0);
+                  Cut::Output::gmsh_coord_dump(file, (*rec_it), 0);
                 }
-                Cut::Output::GmshEndSection(file, true);
+                Cut::Output::gmsh_end_section(file, true);
                 std::cout << "Is the element cut = " << my_vc->parent_element()->is_cut() << "\n";
                 std::cout << "VC_DATA is inside: Is the element cut = " << (*vc_data)->inside_cell_
                           << "\n";
@@ -1025,16 +1025,16 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
     str << "NIVC_" << myrank_ << ".pos";
     std::ofstream file(str.str());
 
-    Cut::Output::GmshNewSection(file, "OtherPoints");
+    Cut::Output::gmsh_new_section(file, "OtherPoints");
     for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
              (vc_data.cut_points_coords_).begin();
          rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
     {
-      Cut::Output::GmshCoordDump(file, (*rec_it), 0);
+      Cut::Output::gmsh_coord_dump(file, (*rec_it), 0);
     }
     for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
     {
-      Cut::Output::GmshNewSection(file, "MyPoints", true);
+      Cut::Output::gmsh_new_section(file, "MyPoints", true);
       VolumeCell* cell = *c;
       // get points for my_vc
       plain_point_set my_cut_points;
@@ -1051,7 +1051,7 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
            my_it++)
       {
         Core::LinAlg::Matrix<3, 1> coord((*my_it)->x(), true);
-        Cut::Output::GmshCoordDump(file, coord, 0);
+        Cut::Output::gmsh_coord_dump(file, coord, 0);
       }
     }
     //  Cut::Output::GmshEndSection(file, true);
@@ -1059,15 +1059,15 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
     {
       VolumeCell* cell = *c;
       const plain_facet_set& facete = cell->facets();
-      Cut::Output::GmshNewSection(file, "VolumeCell", true);
-      Cut::Output::GmshVolumecellDump(file, cell, "lines", true);
+      Cut::Output::gmsh_new_section(file, "VolumeCell", true);
+      Cut::Output::gmsh_volumecell_dump(file, cell, "lines", true);
       for (plain_facet_set::const_iterator it = facete.begin(); it != facete.end(); ++it)
       {
-        Cut::Output::GmshNewSection(file, "Facet", true);
-        Cut::Output::GmshFacetDump(file, *it, "sides", true);
+        Cut::Output::gmsh_new_section(file, "Facet", true);
+        Cut::Output::gmsh_facet_dump(file, *it, "sides", true);
       }
     }
-    Cut::Output::GmshEndSection(file, true);
+    Cut::Output::gmsh_end_section(file, true);
   }
 
   return my_vc;

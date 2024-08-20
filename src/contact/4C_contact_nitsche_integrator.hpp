@@ -51,13 +51,13 @@ namespace CONTACT
         : Integrator(params, eletype, comm),
           theta_(params.get<double>("NITSCHE_THETA")),
           theta_2_(params.get<double>("NITSCHE_THETA_2")),
-          nit_wgt_(Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(
+          nit_wgt_(Core::UTILS::integral_value<Inpar::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING")),
           ppn_(imortar_.get<double>("PENALTYPARAM")),
           ppt_(imortar_.get<double>("PENALTYPARAMTAN")),
           frcoeff_(imortar_.get<double>("FRCOEFF", -1.)),
           frbound_(imortar_.get<double>("FRBOUND", -1.)),
-          frtype_(Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(imortar_, "FRICTION")),
+          frtype_(Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(imortar_, "FRICTION")),
           dt_(imortar_.get<double>("TIMESTEP")),
           two_half_pass_(imortar_.get<bool>("Two_half_pass"))
     {
@@ -214,17 +214,17 @@ namespace CONTACT
   {
     //! map local surface coordinate to local parent coordinate
     template <int dim>
-    void MapGPtoParent(Mortar::Element& moEle, double* boundary_gpcoord, double wgt,
+    void map_gp_to_parent(Mortar::Element& moEle, double* boundary_gpcoord, double wgt,
         Core::LinAlg::Matrix<dim, 1>& pxsi, Core::LinAlg::Matrix<dim, dim>& derivtravo_slave);
 
-    //! templated version of MapGPtoParent
+    //! templated version of map_gp_to_parent
     template <Core::FE::CellType parentdistype, int dim>
     void inline so_ele_gp(Mortar::Element& sele, double wgt, const double* gpcoord,
         Core::LinAlg::Matrix<dim, 1>& pxsi, Core::LinAlg::Matrix<dim, dim>& derivtrafo);
 
     //! actually not the velocity but the displacement increment
     template <int dim>
-    void RelVelInvariant(Mortar::Element& sele, const double* sxi,
+    void rel_vel_invariant(Mortar::Element& sele, const double* sxi,
         const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
         const Core::LinAlg::SerialDenseVector& sval, const Core::LinAlg::SerialDenseMatrix& sderiv,
         Mortar::Element& mele, const double* mxi,
@@ -235,26 +235,26 @@ namespace CONTACT
         std::vector<Core::Gen::Pairedvector<int, double>>& relVel_deriv, double fac = 1.0);
 
     template <int dim>
-    void RelVel(Mortar::Element& ele, const Core::LinAlg::SerialDenseVector& shape,
+    void rel_vel(Mortar::Element& ele, const Core::LinAlg::SerialDenseVector& shape,
         const Core::LinAlg::SerialDenseMatrix& deriv,
         const std::vector<Core::Gen::Pairedvector<int, double>>& dxi, double fac,
         Core::LinAlg::Matrix<dim, 1>& relVel,
         std::vector<Core::Gen::Pairedvector<int, double>>& relVel_deriv);
 
     template <int dim>
-    void VectorScalarProduct(const Core::LinAlg::Matrix<dim, 1>& v1,
+    void vector_scalar_product(const Core::LinAlg::Matrix<dim, 1>& v1,
         const std::vector<Core::Gen::Pairedvector<int, double>>& v1d,
         const Core::LinAlg::Matrix<dim, 1>& v2,
         const std::vector<Core::Gen::Pairedvector<int, double>>& v2d, double& val,
         Core::Gen::Pairedvector<int, double>& val_deriv);
 
-    void BuildTangentVectors3D(const double* np,
+    void build_tangent_vectors3_d(const double* np,
         const std::vector<Core::Gen::Pairedvector<int, double>>& dn, double* t1p,
         std::vector<Core::Gen::Pairedvector<int, double>>& dt1, double* t2p,
         std::vector<Core::Gen::Pairedvector<int, double>>& dt2);
 
     template <int dim>
-    void BuildTangentVectors(const double* np,
+    void build_tangent_vectors(const double* np,
         const std::vector<Core::Gen::Pairedvector<int, double>>& dn, double* t1p,
         std::vector<Core::Gen::Pairedvector<int, double>>& dt1, double* t2p,
         std::vector<Core::Gen::Pairedvector<int, double>>& dt2);
@@ -271,7 +271,7 @@ namespace CONTACT
      * @param[out] pen     scaled nitsche penalty parameter in normal direction
      * @param[out] pet     scaled nitsche penalty parameter in tangential direction
      */
-    void NitscheWeightsAndScaling(Mortar::Element& sele, Mortar::Element& mele,
+    void nitsche_weights_and_scaling(Mortar::Element& sele, Mortar::Element& mele,
         Inpar::CONTACT::NitscheWeighting nit_wgt, double dt, double& ws, double& wm, double& pen,
         double& pet);
 
@@ -290,7 +290,7 @@ namespace CONTACT
       Core::LinAlg::SerialDenseMatrix pqxg(1, dim);
       derivtrafo.clear();
 
-      Core::FE::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
+      Core::FE::boundary_gp_to_parent_gp<dim>(pqxg, derivtrafo, intpoints,
           sele.parent_element()->shape(), sele.shape(), sele.face_parent_number());
 
       // coordinates of the current integration point in parent coordinate system

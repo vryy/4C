@@ -75,7 +75,7 @@ namespace
     delta_ref(6) = -16.7202;
     delta_ref(7) = -2.724;
 
-    Mat::CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
+    Mat::calculate_gamma_delta(gamma, delta, prinv_, dPI, ddPII);
 
     FOUR_C_EXPECT_NEAR(gamma, gamma_ref, 1.0e-10);
     FOUR_C_EXPECT_NEAR(delta, delta_ref, 1.0e-10);
@@ -102,7 +102,7 @@ namespace
     C_VoigtStrain_ref(4) = 0.04;
     C_VoigtStrain_ref(5) = 0.06;
 
-    Mat::EvaluateRightCauchyGreenStrainLikeVoigt(E_VoigtStrain, C_VoigtStrain);
+    Mat::evaluate_right_cauchy_green_strain_like_voigt(E_VoigtStrain, C_VoigtStrain);
 
     FOUR_C_EXPECT_NEAR(C_VoigtStrain, C_VoigtStrain_ref, 1.0e-10);
   }
@@ -127,7 +127,7 @@ namespace
 
     // Read summand properties
     Mat::SummandProperties properties;
-    Mat::ElastHyperProperties(potsum, properties);
+    Mat::elast_hyper_properties(potsum, properties);
 
     // first derivative of strain energy function w.r.t. principle invariants
     Core::LinAlg::Matrix<3, 1> dPI(true);
@@ -150,7 +150,7 @@ namespace
 
     // Compute derivatives of the strain energy function w.r.t. the principal invariants of the
     // strain energy function
-    Mat::ElastHyperEvaluateInvariantDerivatives(prinv_, dPI, ddPII, potsum, properties, 0, 0);
+    Mat::elast_hyper_evaluate_invariant_derivatives(prinv_, dPI, ddPII, potsum, properties, 0, 0);
 
     FOUR_C_EXPECT_NEAR(dPI, dPI_ref, 1.0e-4);
     FOUR_C_EXPECT_NEAR(ddPII, ddPII_ref, 1.0e-4);

@@ -32,7 +32,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>>(
@@ -261,7 +261,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
       double dj_dT_slave(0.0);
 
       // calculate linearizations of Butler-Volmer kinetics w.r.t. temperature dofs
-      CalculateButlerVolmerTempLinearizations(
+      calculate_butler_volmer_temp_linearizations(
           alphaa, alphac, depddT, eta, etempint, faraday, frt, gasconstant, j0, dj_dT_slave);
 
       const double dj_mass_energydT_slave =
@@ -378,7 +378,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
     {
       static Core::LinAlg::Matrix<nen_, nsd_> xyze_transposed;
       xyze_transposed.update_t(my::xyze_);
-      Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
+      Core::FE::evaluate_shape_function_spatial_derivative_in_prob_dim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
     }
@@ -655,9 +655,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::
             double dj_dpot_master(0.0);
 
             // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
-            CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv, alphaa, alphac,
-                0.0, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax, eta,
-                dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+            calculate_butler_volmer_elch_linearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+                alphac, 0.0, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax,
+                eta, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
             const double dj_energydc_slave =
                 pseudo_contact_fac * dj_dc_slave * molar_heat_capacity * etempint;

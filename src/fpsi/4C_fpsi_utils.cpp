@@ -117,11 +117,11 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   // choose cloning strategy depending on poroelast or scatra poroelast problem type
   if (problem->get_problem_type() == Core::ProblemType::fps3i)
   {
-    PoroElast::UTILS::SetupPoro<PoroElastScaTra::UTILS::PoroelastCloneStrategyforScatraElements>();
+    PoroElast::UTILS::setup_poro<PoroElastScaTra::UTILS::PoroelastCloneStrategyforScatraElements>();
   }
   else
   {
-    PoroElast::UTILS::SetupPoro<PoroElast::UTILS::PoroelastCloneStrategy>();
+    PoroElast::UTILS::setup_poro<PoroElast::UTILS::PoroelastCloneStrategy>();
   }
 
 
@@ -131,7 +131,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   // 3.- Create ALE elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
   {
-    Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -141,7 +141,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   }
   else  // ALE discretization already filled
   {
-    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -152,7 +152,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
 
   // 4.- get coupling algorithm
   Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
-  int coupling = Core::UTILS::IntegralValue<int>(fpsidynparams, "COUPALGO");
+  int coupling = Core::UTILS::integral_value<int>(fpsidynparams, "COUPALGO");
   switch (coupling)
   {
     case fpsi_monolithic_plain:
@@ -167,7 +167,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
           "Make sure that the parameter COUPALGO is set to 'fpsi_monolithic_plain', "
           "and the parameter PARITIONED is set to 'monolithic'. ");
       Inpar::FPSI::PartitionedCouplingMethod method;
-      method = Core::UTILS::IntegralValue<Inpar::FPSI::PartitionedCouplingMethod>(
+      method = Core::UTILS::integral_value<Inpar::FPSI::PartitionedCouplingMethod>(
           fpsidynparams, "PARTITIONED");
       if (method == Inpar::FPSI::RobinNeumann)
       {

@@ -185,7 +185,7 @@ namespace Core::IO
    *
    * @return A pair of key and value.
    */
-  std::pair<std::string, std::string> ReadKeyValue(const std::string& line);
+  std::pair<std::string, std::string> read_key_value(const std::string& line);
 
 
 }  // namespace Core::IO

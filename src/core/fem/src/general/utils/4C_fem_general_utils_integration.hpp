@@ -83,7 +83,7 @@ namespace Core::FE
    * discretization
    */
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_hex<distype>, int> = 0>
-  GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule3D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {
@@ -115,7 +115,7 @@ namespace Core::FE
   }
 
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_nurbs<distype>, int> = 0>
-  GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule3D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {
@@ -127,7 +127,7 @@ namespace Core::FE
   }
 
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_tet<distype>, int> = 0>
-  GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule3D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {
@@ -148,7 +148,7 @@ namespace Core::FE
   }
 
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_wedge<distype>, int> = 0>
-  GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule3D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {
@@ -164,7 +164,7 @@ namespace Core::FE
   }
 
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_pyramid<distype>, int> = 0>
-  GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule3D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {
@@ -383,7 +383,7 @@ namespace Core::FE
 
 
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_quad<distype>, int> = 0>
-  GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule2D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {
@@ -419,7 +419,7 @@ namespace Core::FE
   }
 
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_tri<distype>, int> = 0>
-  GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule2D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {
@@ -481,7 +481,7 @@ namespace Core::FE
   };
 
   template <Core::FE::CellType distype, std::enable_if_t<FE::is_line<distype>, int> = 0>
-  GaussRule1D NumGaussPointsToGaussRule(unsigned numgp)
+  GaussRule1D num_gauss_points_to_gauss_rule(unsigned numgp)
   {
     switch (numgp)
     {

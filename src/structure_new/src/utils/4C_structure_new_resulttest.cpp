@@ -34,7 +34,7 @@ namespace
     int component;
   };
 
-  [[nodiscard]] std::optional<QuantityNameAndComponent> GetGaussPointDataNameAndComponent(
+  [[nodiscard]] std::optional<QuantityNameAndComponent> get_gauss_point_data_name_and_component(
       const std::string& name_with_component,
       const std::unordered_map<std::string, int>& quantities)
   {
@@ -59,8 +59,8 @@ namespace
     return std::nullopt;
   }
 
-  [[nodiscard]] double GetGaussPointDataValue(const QuantityNameAndComponent& name_and_component,
-      int node_id,
+  [[nodiscard]] double get_gauss_point_data_value(
+      const QuantityNameAndComponent& name_and_component, int node_id,
       const std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& all_data)
   {
     const Epetra_MultiVector& data = *all_data.at(name_and_component.name);
@@ -85,7 +85,7 @@ namespace
    * @param nodal_data (in) : Nodal data
    * @return double
    */
-  double GetNodalStressStrainComponent(const std::string& prefix, const std::string& label,
+  double get_nodal_stress_strain_component(const std::string& prefix, const std::string& label,
       int node_id, const Epetra_MultiVector& nodal_data)
   {
     int voigt_index = -1;
@@ -342,7 +342,7 @@ int Solid::ResultTest::get_nodal_result(
           "It looks like you don't write stresses. You have to specify the stress type in "
           "IO->STRUCT_STRESS");
     }
-    result = GetNodalStressStrainComponent(
+    result = get_nodal_stress_strain_component(
         "stress", position, node, *data_->get_stress_data_node_postprocessed());
     unknownpos = false;
   }
@@ -356,7 +356,7 @@ int Solid::ResultTest::get_nodal_result(
           "It looks like you don't write strains. You have to specify the strain type in "
           "IO->STRUCT_STRAIN");
     }
-    result = GetNodalStressStrainComponent(
+    result = get_nodal_stress_strain_component(
         "strain", position, node, *data_->get_strain_data_node_postprocessed());
     unknownpos = false;
   }
@@ -364,11 +364,12 @@ int Solid::ResultTest::get_nodal_result(
   // test for any postprocessed gauss point data
   if (data_->get_gauss_point_data_output_manager_ptr() != Teuchos::null)
   {
-    std::optional<QuantityNameAndComponent> name_and_component = GetGaussPointDataNameAndComponent(
-        position, data_->get_gauss_point_data_output_manager_ptr()->get_quantities());
+    std::optional<QuantityNameAndComponent> name_and_component =
+        get_gauss_point_data_name_and_component(
+            position, data_->get_gauss_point_data_output_manager_ptr()->get_quantities());
     if (name_and_component.has_value())
     {
-      result = GetGaussPointDataValue(*name_and_component, node,
+      result = get_gauss_point_data_value(*name_and_component, node,
           data_->get_gauss_point_data_output_manager_ptr()->get_nodal_data());
       unknownpos = false;
     }
@@ -634,7 +635,7 @@ std::optional<int> Solid::ResultTest::get_last_lin_iteration_number(
 
   if (strudisc_->get_comm().MyPID() == 0)
   {
-    const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
+    const int stepn = get_integer_number_at_last_position_of_name(quantity);
 
     const int restart = Global::Problem::instance()->restart();
     if (stepn <= restart) return -1;
@@ -655,7 +656,7 @@ std::optional<int> Solid::ResultTest::get_nln_iteration_number(
 
   if (strudisc_->get_comm().MyPID() == 0)
   {
-    const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
+    const int stepn = get_integer_number_at_last_position_of_name(quantity);
 
     const int restart = Global::Problem::instance()->restart();
     if (stepn <= restart) return -1;
@@ -709,7 +710,7 @@ std::optional<double> Solid::ResultTest::get_energy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int Solid::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
+int Solid::get_integer_number_at_last_position_of_name(const std::string& quantity)
 {
   std::stringstream ss(quantity);
   std::string s;

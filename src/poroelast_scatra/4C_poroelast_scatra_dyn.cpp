@@ -30,13 +30,13 @@ void poro_scatra_drt()
   // 2.- Parameter reading
   const Teuchos::ParameterList& poroscatradynparams = problem->poro_scatra_control_params();
 
-  PoroElastScaTra::UTILS::SetupPoroScatraDiscretizations<
+  PoroElastScaTra::UTILS::setup_poro_scatra_discretizations<
       PoroElastScaTra::UTILS::PoroelastCloneStrategyforScatraElements,
       PoroElastScaTra::UTILS::PoroScatraCloneStrategy>();
 
   // 3.- Creation of Poroelastic + Scalar_Transport problem. (discretization called inside)
   Teuchos::RCP<PoroElastScaTra::PoroScatraBase> poro_scatra =
-      PoroElastScaTra::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
+      PoroElastScaTra::UTILS::create_poro_scatra_algorithm(poroscatradynparams, comm);
 
   // 3.1- Read restart if needed. (discretization called inside)
   const int restart = problem->restart();

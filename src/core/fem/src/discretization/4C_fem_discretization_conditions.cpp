@@ -150,7 +150,7 @@ void Core::FE::Discretization::assign_global_i_ds(const Epetra_Comm& comm,
 
   int mysize = sendblock.size();
   comm.SumAll(&mysize, &size, 1);
-  int mypos = Core::LinAlg::FindMyPos(sendblock.size(), comm);
+  int mypos = Core::LinAlg::find_my_pos(sendblock.size(), comm);
 
   std::vector<int> send(size);
   std::fill(send.begin(), send.end(), 0);

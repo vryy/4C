@@ -174,7 +174,7 @@ namespace SSTI
   };  // SSTI_Algorithm
 
   //! Construct specific SSTI algorithm
-  Teuchos::RCP<SSTI::SSTIAlgorithm> BuildSSTI(Inpar::SSTI::SolutionScheme coupling,
+  Teuchos::RCP<SSTI::SSTIAlgorithm> build_ssti(Inpar::SSTI::SolutionScheme coupling,
       const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
 }  // namespace SSTI
 FOUR_C_NAMESPACE_CLOSE

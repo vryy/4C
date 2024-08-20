@@ -58,7 +58,7 @@ namespace Core::IO
       in >> read_object;
       if (in.fail())
         FOUR_C_THROW("%sCould not read expected value of type '%s'.", user_scope_.c_str(),
-            Core::UTILS::TryDemangle(typeid(T).name()).c_str());
+            Core::UTILS::try_demangle(typeid(T).name()).c_str());
       return read_object;
     }
 

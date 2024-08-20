@@ -54,7 +54,7 @@ CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<Core::FE::Discretization>
     {
       // ReplaceNumDof(actdisc_,discriter->second);
       Teuchos::RCP<Epetra_Map> newcolnodemap =
-          Core::Rebalance::ComputeNodeColMap(actdisc_, discriter->second);
+          Core::Rebalance::compute_node_col_map(actdisc_, discriter->second);
       actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
       Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
           Teuchos::rcp(new Core::DOFSets::TransparentDofSet(actdisc_));
@@ -289,7 +289,7 @@ CONSTRAINTS::MPConstraint3::create_discretization_from_condition(
       if (myrank == 0)
       {
         Teuchos::RCP<Core::Elements::Element> constraintele =
-            Core::Communication::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
+            Core::Communication::factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->set_node_ids(ngid_ele.size(), ngid_ele.data());
         // add constraint element
@@ -441,7 +441,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (assemblevec1)
       {
         elevector1.scale(lagraval);
-        Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
+        Core::LinAlg::assemble(*systemvector1, elevector1, lm, lmowner);
       }
       if (assemblevec3)
       {
@@ -449,7 +449,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
         std::vector<int> constrowner;
         constrlm.push_back(gindex);
         constrowner.push_back(actele->owner());
-        Core::LinAlg::Assemble(*systemvector3, elevector3, constrlm, constrowner);
+        Core::LinAlg::assemble(*systemvector3, elevector3, constrlm, constrowner);
       }
 
       // loadcurve business
@@ -526,7 +526,7 @@ void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<Core::FE::Di
     int offsetID = params.get<int>("OffsetID");
     constrlm.push_back(eid - offsetID);
     constrowner.push_back(actele->owner());
-    Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
+    Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
 
     // loadcurve business
     const auto* curve = cond->parameters().get_if<int>("curve");

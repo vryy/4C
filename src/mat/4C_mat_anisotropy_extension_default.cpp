@@ -161,7 +161,7 @@ bool Mat::DefaultAnisotropyExtension<numfib>::do_element_fiber_initialization()
       {
         // initialize fiber vector with local coordinate system
         Core::LinAlg::Matrix<3, 3> locsys(true);
-        const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
+        const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::identity_matrix<3>();
         this->get_anisotropy()
             ->get_element_cylinder_coordinate_system()
             .evaluate_local_coordinate_system(locsys);
@@ -238,7 +238,7 @@ bool Mat::DefaultAnisotropyExtension<numfib>::do_gp_fiber_initialization()
 template <unsigned int numfib>
 void Mat::DefaultAnisotropyExtension<numfib>::do_external_fiber_initialization()
 {
-  const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
+  const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::identity_matrix<3>();
   set_fiber_vecs(-1.0, Id, Id);
 }
 

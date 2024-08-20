@@ -88,7 +88,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evalu
           this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
+      GEOMETRYPAIR::evaluate_position_derivative1<Beam>(
           projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -182,7 +182,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
     std::vector<int> lambda_row;
     std::vector<double> lambda_pair;
     mortar_manager->location_vector(this_rcp, lambda_row);
-    Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
+    Core::FE::extract_my_values(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
@@ -198,25 +198,25 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
       for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
       {
         // Get the local coordinate of this node.
-        xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, Mortar::discretization_);
+        xi_mortar_node = Core::FE::get_node_coordinates(i_node, Mortar::discretization_);
 
         // Get position and displacement of the mortar node.
-        GEOMETRYPAIR::EvaluatePosition<Beam>(
+        GEOMETRYPAIR::evaluate_position<Beam>(
             xi_mortar_node(0), this->ele1pos_, current_beamposition);
-        GEOMETRYPAIR::EvaluatePosition<Beam>(
+        GEOMETRYPAIR::evaluate_position<Beam>(
             xi_mortar_node(0), this->ele1posref_, ref_beamposition);
         beamdisplacement = current_beamposition;
         beamdisplacement -= ref_beamposition;
 
         // Get the discrete Lagrangian multiplier.
-        GEOMETRYPAIR::EvaluatePosition<Mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+        GEOMETRYPAIR::evaluate_position<Mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
 
         // Add to output data.
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(Core::FADUtils::CastToDouble(current_beamposition(dim)));
-          displacement.push_back(Core::FADUtils::CastToDouble(beamdisplacement(dim)));
-          lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
+          point_coordinates.push_back(Core::FADUtils::cast_to_double(current_beamposition(dim)));
+          displacement.push_back(Core::FADUtils::cast_to_double(beamdisplacement(dim)));
+          lambda_vis.push_back(Core::FADUtils::cast_to_double(lambda_discret(dim)));
         }
       }
     }
@@ -250,18 +250,18 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
           xi = segment.get_etadata() + i_curve_segment *
                                            (segment.get_eta_b() - segment.get_etadata()) /
                                            (double)mortar_segments;
-          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1pos_, current_beamposition);
-          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1posref_, ref_beamposition);
+          GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1pos_, current_beamposition);
+          GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1posref_, ref_beamposition);
           beamdisplacement = current_beamposition;
           beamdisplacement -= ref_beamposition;
-          GEOMETRYPAIR::EvaluatePosition<Mortar>(xi, q_lambda, lambda_discret);
+          GEOMETRYPAIR::evaluate_position<Mortar>(xi, q_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(Core::FADUtils::CastToDouble(current_beamposition(dim)));
-            displacement.push_back(Core::FADUtils::CastToDouble(beamdisplacement(dim)));
-            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::cast_to_double(current_beamposition(dim)));
+            displacement.push_back(Core::FADUtils::cast_to_double(beamdisplacement(dim)));
+            lambda_vis.push_back(Core::FADUtils::cast_to_double(lambda_discret(dim)));
           }
         }
 

@@ -25,7 +25,7 @@ namespace
    * Create a set of three different bounding volumes that is used for some unit tests.
    * The geometry is based on https://github.com/arborx/ArborX/issues/867
    */
-  std::vector<Core::GeometricSearch::BoundingVolume> CreateKDOPBoundingVolumes()
+  std::vector<Core::GeometricSearch::BoundingVolume> create_kdop_bounding_volumes()
   {
     std::vector<Core::GeometricSearch::BoundingVolume> volumes(3);
 

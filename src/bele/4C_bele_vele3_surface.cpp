@@ -101,7 +101,7 @@ void Discret::ELEMENTS::Vele3Surface::unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Vele3Surface::print(std::ostream& os) const
 {
-  os << "Vele3Surface " << Core::FE::CellTypeToString(shape());
+  os << "Vele3Surface " << Core::FE::cell_type_to_string(shape());
   Element::print(os);
   return;
 }
@@ -112,7 +112,7 @@ void Discret::ELEMENTS::Vele3Surface::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Vele3Line, Vele3Surface>(
+  return Core::Communication::element_boundary_factory<Vele3Line, Vele3Surface>(
       Core::Communication::buildLines, *this);
 }
 

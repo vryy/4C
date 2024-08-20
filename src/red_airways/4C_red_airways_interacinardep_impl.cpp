@@ -82,7 +82,7 @@ int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
-  Core::FE::ExtractMyValues(*ial, myial, lm);
+  Core::FE::extract_my_values(*ial, myial, lm);
 
   // Calculate the system matrix for inter-acinar linkers
   sysmat(myial, elemat1_epetra, elevec1_epetra);
@@ -174,7 +174,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // Create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(numnode);

@@ -388,19 +388,19 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_penalty_kappa_inv));
     penalty_kappa_inv_mat->complete();
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BL_scaled = Core::LinAlg::MLMultiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BL_scaled = Core::LinAlg::ml_multiply(
         *penalty_kappa_inv_mat, false, *global_g_bl_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BG_scaled = Core::LinAlg::MLMultiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BG_scaled = Core::LinAlg::ml_multiply(
         *penalty_kappa_inv_mat, false, *global_g_bg_, false, false, false, true);
 
     // Calculate the needed submatrices.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BL = Core::LinAlg::MLMultiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BL = Core::LinAlg::ml_multiply(
         *global_fbl_l_, false, *global_G_BL_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BG = Core::LinAlg::MLMultiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BG = Core::LinAlg::ml_multiply(
         *global_fbl_l_, false, *global_G_BG_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BL = Core::LinAlg::MLMultiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BL = Core::LinAlg::ml_multiply(
         *global_fbg_l_, false, *global_G_BL_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BG = Core::LinAlg::MLMultiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BG = Core::LinAlg::ml_multiply(
         *global_fbg_l_, false, *global_G_BG_scaled, false, false, false, true);
 
     // Add contributions to the global stiffness matrix.

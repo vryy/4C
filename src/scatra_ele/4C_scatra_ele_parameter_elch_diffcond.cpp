@@ -36,7 +36,7 @@ Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleParameterElchDiffCond>(
@@ -73,12 +73,12 @@ void Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::set_parameters(
   Teuchos::ParameterList& diffcondparams = parameters.sublist("DIFFCOND");
 
   // flag if current is used as a solution variable
-  cursolvar_ = Core::UTILS::IntegralValue<int>(diffcondparams, "CURRENT_SOLUTION_VAR");
+  cursolvar_ = Core::UTILS::integral_value<int>(diffcondparams, "CURRENT_SOLUTION_VAR");
 
   // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference
   // number
   diffusioncoefbased_ =
-      Core::UTILS::IntegralValue<Inpar::ElCh::EquPot>(diffcondparams, "MAT_DIFFCOND_DIFFBASED");
+      Core::UTILS::integral_value<Inpar::ElCh::EquPot>(diffcondparams, "MAT_DIFFCOND_DIFFBASED");
 
   // switch for dilute and concentrated solution theory (diffusion potential in current equation):
   //    A          B

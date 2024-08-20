@@ -201,7 +201,8 @@ Epetra_Vector SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_rhs(
   // make copy of structure right-hand side vector
   Epetra_Vector rhs_structure(*structure_rhs);
 
-  auto rhs_structure_master = Core::LinAlg::CreateVector(*ssi_maps_->structure_dof_row_map(), true);
+  auto rhs_structure_master =
+      Core::LinAlg::create_vector(*ssi_maps_->structure_dof_row_map(), true);
 
   for (const auto& meshtying : ssi_structure_meshtying_->mesh_tying_handlers())
   {
@@ -234,9 +235,9 @@ void SSI::MeshtyingStrategySparse::apply_meshtying_to_scatra_manifold_structure(
 {
   temp_scatramanifold_struct_mat_->zero();
   auto temp_scatramanifold_struct_sparse_matrix =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(temp_scatramanifold_struct_mat_);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(temp_scatramanifold_struct_mat_);
   auto manifold_structure_sparse_matrix =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(manifold_structure_matrix);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(manifold_structure_matrix);
 
   // apply mesh tying contributions to temp matrix and complete it
   apply_meshtying_to_xxx_structure(
@@ -255,9 +256,10 @@ void SSI::MeshtyingStrategyBlock::apply_meshtying_to_scatra_manifold_structure(
 {
   temp_scatramanifold_struct_mat_->zero();
   auto temp_scatramanifold_struct_block_matrix =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatramanifold_struct_mat_);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(
+          temp_scatramanifold_struct_mat_);
   auto manifold_structure_matrix_block_matrix =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(manifold_structure_matrix);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(manifold_structure_matrix);
 
   // apply mesh tying contributions to temp matrix blocks and complete the resulting matrix
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra_manifold().size()); ++iblock)
@@ -279,9 +281,9 @@ void SSI::MeshtyingStrategySparse::apply_meshtying_to_scatra_structure(
 {
   temp_scatra_struct_mat_->zero();
   auto temp_scatra_struct_domain_sparse_matrix =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_mat_);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(temp_scatra_struct_mat_);
   auto scatra_structure_matrix_sparse =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(scatra_structure_matrix);
 
   apply_meshtying_to_xxx_structure(
       *temp_scatra_struct_domain_sparse_matrix, *scatra_structure_matrix_sparse);
@@ -299,9 +301,9 @@ void SSI::MeshtyingStrategyBlock::apply_meshtying_to_scatra_structure(
 {
   temp_scatra_struct_mat_->zero();
   auto temp_scatra_struct_domain_block_sparse_matrix =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatra_struct_mat_);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(temp_scatra_struct_mat_);
   auto scatra_structure_matrix_block_sparse =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(scatra_structure_matrix);
 
   // apply mesh tying for all blocks
   for (int iblock = 0; iblock < static_cast<int>(block_position_scatra().size()); ++iblock)
@@ -324,9 +326,9 @@ void SSI::MeshtyingStrategySparse::apply_meshtying_to_structure_scatra(
 {
   temp_struct_scatra_mat_->zero();
   auto temp_struct_scatra_sparse_matrix =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(temp_struct_scatra_mat_);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(temp_struct_scatra_mat_);
   auto struct_scatra_sparse_matrix =
-      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
+      Core::LinAlg::cast_to_sparse_matrix_and_check_success(structure_scatra_matrix);
 
   // apply mesh tying contributions to temp matrix and complete it
   if (do_uncomplete) temp_struct_scatra_sparse_matrix->un_complete();
@@ -345,9 +347,9 @@ void SSI::MeshtyingStrategyBlock::apply_meshtying_to_structure_scatra(
 {
   temp_struct_scatra_mat_->zero();
   auto temp_struct_scatra_block_matrix =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_struct_scatra_mat_);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(temp_struct_scatra_mat_);
   auto structure_scatra_block_matrix =
-      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
+      Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(structure_scatra_matrix);
 
   // apply mesh tying contributions to temp matrix blocks and complete the resulting matrix
   if (do_uncomplete) temp_struct_scatra_block_matrix->un_complete();
@@ -428,8 +430,9 @@ void SSI::MeshtyingStrategyBase::finalize_meshtying_structure_matrix(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool is_scatra_manifold,
-    const Core::LinAlg::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::build_meshtying_strategy(
+    const bool is_scatra_manifold, const Core::LinAlg::MatrixType matrixtype_scatra,
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
 {
   Teuchos::RCP<SSI::MeshtyingStrategyBase> meshtying_strategy = Teuchos::null;

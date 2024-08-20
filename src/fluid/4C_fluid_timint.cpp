@@ -44,8 +44,9 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
       uprestart_(params_->get("write restart every", -1)),
       upres_(params_->get("write solution every", -1)),
       timealgo_(
-          Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
-      physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(*params_, "Physical Type")),
+          Core::UTILS::get_as_enum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
+      physicaltype_(
+          Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(*params_, "Physical Type")),
       myrank_(discret_->get_comm().MyPID()),
       updateprojection_(false),
       projector_(Teuchos::null),
@@ -57,7 +58,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
 
   bool output_fluid =
-      (bool)Core::UTILS::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
+      (bool)Core::UTILS::integral_value<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
 
   // create and initialize parameter container object for fluid specific runtime output
   if (output_fluid)
@@ -70,7 +71,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
     // has to refactor the code. The only implication is that in restarted simulations the .pvd file
     // does not contain the steps of the simulation that is restarted from
     runtime_output_writer_ = Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterMesh(
-        discret_, Core::IO::VisualizationParametersFactory(
+        discret_, Core::IO::visualization_parameters_factory(
                       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::instance()->output_control_file(), time_)));
   }

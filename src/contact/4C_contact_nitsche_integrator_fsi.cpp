@@ -117,14 +117,14 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(Mortar::Element& sele, Mortar::E
 
   double ws = 0.;
   double wm = 0.;
-  CONTACT::UTILS::NitscheWeightsAndScaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
+  CONTACT::UTILS::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
   bool FSI_integrated = true;  // bool indicates if fsi condition is already evaluated ... --> if
                                // true no contribution here ...
 
   Core::LinAlg::Matrix<dim, 1> pxsi(true);
   Core::LinAlg::Matrix<dim, dim> derivtravo_slave;
-  CONTACT::UTILS::MapGPtoParent<dim>(sele, sxi, wgt, pxsi, derivtravo_slave);
+  CONTACT::UTILS::map_gp_to_parent<dim>(sele, sxi, wgt, pxsi, derivtravo_slave);
 
   bool gp_on_this_proc;
 
@@ -153,9 +153,9 @@ void CONTACT::IntegratorNitscheFsi::gpts_forces(Mortar::Element& sele, Mortar::E
 
   // fast check
   const double snn_pengap =
-      ws * CONTACT::UTILS::SolidCauchyAtXi(dynamic_cast<CONTACT::Element*>(&sele),
+      ws * CONTACT::UTILS::solid_cauchy_at_xi(dynamic_cast<CONTACT::Element*>(&sele),
                Core::LinAlg::Matrix<dim - 1, 1>(sxi, true), normal, normal) +
-      wm * CONTACT::UTILS::SolidCauchyAtXi(dynamic_cast<CONTACT::Element*>(&mele),
+      wm * CONTACT::UTILS::solid_cauchy_at_xi(dynamic_cast<CONTACT::Element*>(&mele),
                Core::LinAlg::Matrix<dim - 1, 1>(mxi, true), normal, normal) +
       pen * gap;
 #ifdef WRITE_GMSH
@@ -261,7 +261,7 @@ void CONTACT::IntegratorNitscheFsi::update_ele_contact_state(Mortar::Element& se
   }
 }
 
-double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
+double CONTACT::UTILS::solid_cauchy_at_xi(CONTACT::Element* cele,
     const Core::LinAlg::Matrix<2, 1>& xsi, const Core::LinAlg::Matrix<3, 1>& n,
     const Core::LinAlg::Matrix<3, 1>& dir)
 {

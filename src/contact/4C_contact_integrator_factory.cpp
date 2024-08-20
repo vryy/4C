@@ -72,7 +72,7 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
     case Inpar::CONTACT::solution_penalty:
     case Inpar::CONTACT::solution_multiscale:
     {
-      if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(mortar_params, "ALGORITHM") ==
+      if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(mortar_params, "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts)
         integrator = Teuchos::rcp(new CONTACT::IntegratorNitsche(mortar_params, slave_type, comm));
       else
@@ -94,7 +94,7 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
     default:
     {
       FOUR_C_THROW("Unsupported solving strategy! (stype = %s | %d)",
-          Inpar::CONTACT::SolvingStrategy2String(sol_type).c_str(), sol_type);
+          Inpar::CONTACT::solving_strategy_to_string(sol_type).c_str(), sol_type);
       exit(EXIT_FAILURE);
     }
   }  // end switch
@@ -105,7 +105,7 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::BuildIntegrator(
+Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::build_integrator(
     const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
     const Core::FE::CellType& slave_type, const Epetra_Comm& comm)
 {

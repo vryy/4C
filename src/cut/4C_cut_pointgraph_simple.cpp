@@ -248,14 +248,14 @@ void Cut::Impl::SimplePointGraph2D::find_cycles(Element *element, Cycle &cycle)
 void Cut::Impl::SimplePointGraph2D::correct_rotation_direction(
     const Side *side, std::vector<Cycle> &cycles)
 {
-  Core::LinAlg::Matrix<2, 1> rs = Core::FE::getLocalCenterPosition<2>(side->shape());
+  Core::LinAlg::Matrix<2, 1> rs = Core::FE::get_local_center_position<2>(side->shape());
   Core::LinAlg::Matrix<3, 1> normal_side(false);
 
   Core::LinAlg::SerialDenseMatrix xyze_side(3, side->num_nodes());
   side->coordinates(xyze_side);
 
   // get the normal direction of the underlying side
-  EvalNormalVectors<3>(side->shape(), xyze_side, rs, normal_side);
+  eval_normal_vectors<3>(side->shape(), xyze_side, rs, normal_side);
 
   std::vector<Point *> invert_cycle;
   for (std::vector<Cycle>::iterator it = cycles.begin(); it != cycles.end(); ++it)

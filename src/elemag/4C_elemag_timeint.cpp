@@ -40,7 +40,7 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::Discretization
       solver_(solver),
       params_(params),
       output_(output),
-      elemagdyna_(Core::UTILS::IntegralValue<Inpar::EleMag::DynamicType>(*params_, "TIMEINT")),
+      elemagdyna_(Core::UTILS::integral_value<Inpar::EleMag::DynamicType>(*params_, "TIMEINT")),
       myrank_(actdis->get_comm().MyPID()),
       time_(0.0),
       step_(0),
@@ -54,8 +54,8 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::Discretization
       tau_(params_->get<double>("TAU")),
       dtele_(0.0),
       dtsolve_(0.0),
-      calcerr_(Core::UTILS::IntegralValue<bool>(*params_, "CALCERR")),
-      postprocess_(Core::UTILS::IntegralValue<bool>(*params_, "POSTPROCESS")),
+      calcerr_(Core::UTILS::integral_value<bool>(*params_, "CALCERR")),
+      postprocess_(Core::UTILS::integral_value<bool>(*params_, "POSTPROCESS")),
       errfunct_(params_->get<int>("ERRORFUNCNO", -1)),
       sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1)),
       equilibration_method_(
@@ -88,9 +88,9 @@ void EleMag::ElemagTimeInt::init()
   permeability = Teuchos::rcp(new Epetra_Vector(*discret_->element_row_map()));
 
   // create vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  trace_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  trace_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // Map of the dirichlet conditions
   dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
@@ -121,7 +121,7 @@ void EleMag::ElemagTimeInt::init()
   sysmat_->zero();
 
   // create residual vector
-  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  residual_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // instantiate equilibration class
   equilibration_ =
@@ -398,7 +398,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
     if (ishdg)
     {
       std::vector<int> localDofs = scatradis->dof(2, scatraele);
-      Core::FE::ExtractMyValues(*phicol, (*nodevals_phi), localDofs);
+      Core::FE::extract_my_values(*phicol, (*nodevals_phi), localDofs);
       // Obtain scatra ndofs knowing that the vector contains the values of the transported scalar
       // plus numdim_ components of its gradient
       initParams.set<unsigned int>("ndofs", localDofs.size() / (numdim_ + 1));
@@ -829,7 +829,7 @@ namespace
   |  Interpolate discontinous values to nodal values     berardocco 03/18 |
   *----------------------------------------------------------------------*/
   // internal helper function for output
-  void getNodeVectorsHDG(Core::FE::Discretization &dis,
+  void get_node_vectors_hdg(Core::FE::Discretization &dis,
       const Teuchos::RCP<Epetra_Vector> &traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector> &electric, Teuchos::RCP<Epetra_MultiVector> &electric_post,
       Teuchos::RCP<Epetra_MultiVector> &magnetic, Teuchos::RCP<Epetra_MultiVector> &trace,
@@ -932,7 +932,7 @@ namespace
   /*----------------------------------------------------------------------*
   |  Reads material properties from element for output   berardocco 03/18 |
   *----------------------------------------------------------------------*/
-  void getElementMaterialProperties(Core::FE::Discretization &dis,
+  void get_element_material_properties(Core::FE::Discretization &dis,
       Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
       Teuchos::RCP<Epetra_Vector> &permeability)
   {
@@ -966,7 +966,7 @@ void EleMag::ElemagTimeInt::output()
   trace.reset(new Epetra_MultiVector(*discret_->node_row_map(), numdim_));
 
   // Get the results from the discretization vectors to the output ones
-  getNodeVectorsHDG(*discret_, trace_, numdim_, electric, electric_post, magnetic, trace,
+  get_node_vectors_hdg(*discret_, trace_, numdim_, electric, electric_post, magnetic, trace,
       conductivity, permittivity, permeability);
 
   // Create the new step
@@ -974,7 +974,7 @@ void EleMag::ElemagTimeInt::output()
 
   if (step_ == 0)
   {
-    getElementMaterialProperties(*discret_, conductivity, permittivity, permeability);
+    get_element_material_properties(*discret_, conductivity, permittivity, permeability);
     output_->write_vector("conductivity", conductivity);
     output_->write_vector("permittivity", permittivity);
     output_->write_vector("permeability", permeability);

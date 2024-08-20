@@ -204,7 +204,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
 bool Solid::ModelEvaluator::SpringDashpot::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fspring_np_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fspring_np_ptr_);
   return true;
 }
 
@@ -334,7 +334,7 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   }
 
   // write spring stress if defined in io-flag
-  if (Core::UTILS::IntegralValue<bool>(Global::Problem::instance()->io_params(), "OUTPUT_SPRING"))
+  if (Core::UTILS::integral_value<bool>(Global::Problem::instance()->io_params(), "OUTPUT_SPRING"))
     iowriter.write_vector("springstress", springstress);
 }
 

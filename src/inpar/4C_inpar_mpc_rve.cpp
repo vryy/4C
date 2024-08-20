@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 // set the mpc specific parameters
-void Inpar::RveMpc::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::RveMpc::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -37,7 +37,7 @@ void Inpar::RveMpc::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 }
 
 // set mpc specific conditions
-void Inpar::RveMpc::SetValidConditions(
+void Inpar::RveMpc::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

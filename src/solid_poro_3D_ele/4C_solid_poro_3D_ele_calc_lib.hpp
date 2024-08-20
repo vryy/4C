@@ -86,7 +86,7 @@ namespace Discret::ELEMENTS
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
-    Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+    Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
     if (numdofpernode == DETAIL::num_dim<celltype> + 1)
     {
@@ -381,7 +381,7 @@ namespace Discret::ELEMENTS
       const Core::Elements::Element::LocationArray& la)
   {
     std::vector<double> fluid_ephi(la[1].lm_.size());
-    Core::FE::ExtractMyValues(*(discretization.get_state(1, "fluidvel")), fluid_ephi, la[1].lm_);
+    Core::FE::extract_my_values(*(discretization.get_state(1, "fluidvel")), fluid_ephi, la[1].lm_);
 
     FluidVariables<celltype> fluid_variables{};
     for (unsigned int inode = 0; inode < DETAIL::num_nodes<celltype>; ++inode)  // number of nodes
@@ -421,9 +421,9 @@ namespace Discret::ELEMENTS
   {
     SolidVariables<celltype> solid_variables{};
 
-    Core::FE::ExtractMyValues(
+    Core::FE::extract_my_values(
         *(discretization.get_state(0, "displacement")), solid_variables.soliddisp_nodal, la[0].lm_);
-    Core::FE::ExtractMyValues(
+    Core::FE::extract_my_values(
         *(discretization.get_state(0, "velocity")), solid_variables.solidvel_nodal, la[0].lm_);
 
     return solid_variables;

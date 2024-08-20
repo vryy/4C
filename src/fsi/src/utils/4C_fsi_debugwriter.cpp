@@ -35,7 +35,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis)
 
   coup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   const int ndim = Global::Problem::instance()->n_dim();
-  coup_->setup_coupling(*dis, *dis_, *Core::Conditions::ConditionNodeRowMap(*dis, "FSICoupling"),
+  coup_->setup_coupling(*dis, *dis_, *Core::Conditions::condition_node_row_map(*dis, "FSICoupling"),
       *dis_->node_row_map(), ndim);
 }
 
@@ -57,7 +57,7 @@ void FSI::UTILS::DebugWriter::new_time_step(int step, std::string name)
       Global::Problem::instance()->n_dim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      Core::UTILS::IntegralValue<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
+      Core::UTILS::integral_value<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
 
   writer_ = dis_->writer();
   writer_->set_output(control_);
@@ -109,7 +109,7 @@ void FSI::UTILS::SimpleDebugWriter::new_linear_system(int step, std::string name
       Global::Problem::instance()->n_dim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      Core::UTILS::IntegralValue<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
+      Core::UTILS::integral_value<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
 
   writer_ = dis_->writer();
   writer_->set_output(control_);

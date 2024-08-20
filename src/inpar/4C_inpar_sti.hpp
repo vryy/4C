@@ -44,10 +44,10 @@ namespace Inpar
     };
 
     //! set valid parameters for scatra-thermo interaction
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     //! set valid conditions for scatra-thermo interaction
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
   }  // namespace STI
 }  // namespace Inpar

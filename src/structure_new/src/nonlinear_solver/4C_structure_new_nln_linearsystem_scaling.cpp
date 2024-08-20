@@ -72,7 +72,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
     discret->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->complete();
 
-    stcmat_ = MLMultiply(*tmpstcmat, *stcmat_, true, false, true);
+    stcmat_ = ml_multiply(*tmpstcmat, *stcmat_, true, false, true);
   }
 
   discret->clear_state();
@@ -92,15 +92,15 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
   Epetra_Vector* rhs = dynamic_cast<Epetra_Vector*>(problem.GetRHS());
 
   // right multiplication of stiffness matrix
-  stiff_scaled_ = MLMultiply(*stiff_linalg, *stcmat_, true, false, true);
+  stiff_scaled_ = ml_multiply(*stiff_linalg, *stcmat_, true, false, true);
 
   // left multiplication of stiffness matrix and rhs
   if (stcscale_ == Inpar::Solid::stc_currsym)
   {
-    stiff_scaled_ = MLMultiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
+    stiff_scaled_ = ml_multiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
 
     Teuchos::RCP<Epetra_Vector> rhs_scaled =
-        Core::LinAlg::CreateVector(problem.GetRHS()->Map(), true);
+        Core::LinAlg::create_vector(problem.GetRHS()->Map(), true);
     stcmat_->multiply(true, *rhs, *rhs_scaled);
     rhs->Update(1.0, *rhs_scaled, 0.0);
   }
@@ -114,7 +114,7 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
 void Solid::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& problem)
 {
   Teuchos::RCP<Epetra_MultiVector> disisdc =
-      Core::LinAlg::CreateVector(problem.GetLHS()->Map(), true);
+      Core::LinAlg::create_vector(problem.GetLHS()->Map(), true);
   Epetra_MultiVector* disi = dynamic_cast<Epetra_Vector*>(problem.GetLHS());
 
   stcmat_->multiply(false, *disi, *disisdc);

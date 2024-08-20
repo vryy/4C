@@ -88,7 +88,7 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
-        Core::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::extract_my_values(*disp, mydisp, lm);
         const int numdim = 3;
         Core::LinAlg::SerialDenseMatrix xscurr(num_node(), numdim);  // material coord. of element
         spatial_configuration(xscurr, mydisp);
@@ -104,7 +104,7 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numdim = 3;
       Core::LinAlg::SerialDenseMatrix xscurr(num_node(), numdim);  // material coord. of element
       spatial_configuration(xscurr, mydisp);
@@ -218,8 +218,8 @@ double Discret::ELEMENTS::Bele3::compute_constr_vols(
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      Core::FE::shape_function_2D(funct, e0, e1, shape());
-      Core::FE::shape_function_2D_deriv1(deriv, e0, e1, shape());
+      Core::FE::shape_function_2d(funct, e0, e1, shape());
+      Core::FE::shape_function_2d_deriv1(deriv, e0, e1, shape());
 
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
@@ -291,8 +291,8 @@ void Discret::ELEMENTS::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDense
       const double e1 = intpoints.qxg[gpid][1];
 
       // get shape functions and derivatives of shape functions in the plane of the element
-      Core::FE::shape_function_2D(funct, e0, e1, shape());
-      Core::FE::shape_function_2D_deriv1(deriv, e0, e1, shape());
+      Core::FE::shape_function_2d(funct, e0, e1, shape());
+      Core::FE::shape_function_2d_deriv1(deriv, e0, e1, shape());
 
       // evaluate Jacobi determinant, for projected dA*
       std::vector<double> normal(numdim);

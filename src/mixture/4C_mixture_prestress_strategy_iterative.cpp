@@ -55,7 +55,7 @@ void MIXTURE::IterativePrestressStrategy::evaluate_prestress(const MixtureRule& 
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // Start with zero prestretch
-  G = Core::LinAlg::IdentityMatrix<3>();
+  G = Core::LinAlg::identity_matrix<3>();
 }
 
 void MIXTURE::IterativePrestressStrategy::update(
@@ -89,7 +89,7 @@ void MIXTURE::IterativePrestressStrategy::update(
   Core::LinAlg::Matrix<3, 3> S(true);
   Core::LinAlg::Matrix<3, 3> VT(true);
 
-  Core::LinAlg::SVD<3, 3>(G, Q, S, VT);
+  Core::LinAlg::svd<3, 3>(G, Q, S, VT);
 
   // Compute stretch tensor G = U = V * S * VT
   Core::LinAlg::Matrix<3, 3> VS;

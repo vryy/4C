@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  bool PrestressIsActive(const double currentTime)
+  bool prestress_is_active(const double currentTime)
   {
     Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
@@ -48,7 +48,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dis
   else
   {
     // prestressing business
-    if (PrestressIsActive(time_old()))
+    if (prestress_is_active(time_old()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->fpsi_cond_map(), true));
     }
@@ -71,7 +71,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dis
   else
   {
     // prestressing business
-    if (PrestressIsActive(time()))
+    if (prestress_is_active(time()))
     {
       return Teuchos::rcp(new Epetra_Vector(*interface_->fpsi_cond_map(), true));
     }

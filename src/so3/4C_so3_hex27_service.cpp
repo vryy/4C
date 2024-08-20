@@ -30,7 +30,7 @@ std::vector<double> Discret::ELEMENTS::SoHex27::soh27_element_center_refe_coords
   const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_SOH27, 1> funct;
   // Element midpoint at r=s=t=0.0
-  Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  Core::FE::shape_function_3d(funct, 0.0, 0.0, 0.0, distype);
   Core::LinAlg::Matrix<1, NUMDIM_SOH27> midpoint;
   // midpoint.multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.multiply_tn(funct, xrefe);

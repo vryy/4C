@@ -31,7 +31,7 @@ ParticleInteraction::SPHTemperature::SPHTemperature(const Teuchos::ParameterList
     : params_sph_(params),
       time_(0.0),
       dt_(0.0),
-      temperaturegradient_(Core::UTILS::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT"))
+      temperaturegradient_(Core::UTILS::integral_value<int>(params_sph_, "TEMPERATUREGRADIENT"))
 {
   // empty constructor
 }
@@ -96,7 +96,7 @@ void ParticleInteraction::SPHTemperature::setup(
     // safety check
     if (not(thermomaterial_[type_i]->thermalCapacity_ > 0.0))
       FOUR_C_THROW("thermal capacity for particles of type '%s' not positive!",
-          PARTICLEENGINE::EnumToTypeName(type_i).c_str());
+          PARTICLEENGINE::enum_to_type_name(type_i).c_str());
   }
 
   // setup heat source handler
@@ -179,7 +179,7 @@ void ParticleInteraction::SPHTemperature::init_heat_source_handler()
 {
   // get type of heat source
   Inpar::PARTICLE::HeatSourceType heatsourcetype =
-      Core::UTILS::IntegralValue<Inpar::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
+      Core::UTILS::integral_value<Inpar::PARTICLE::HeatSourceType>(params_sph_, "HEATSOURCETYPE");
 
   // create heat source handler
   switch (heatsourcetype)
@@ -214,7 +214,7 @@ void ParticleInteraction::SPHTemperature::init_heat_source_handler()
 
 void ParticleInteraction::SPHTemperature::init_heat_loss_evaporation_handler()
 {
-  if (Core::UTILS::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
+  if (Core::UTILS::integral_value<int>(params_sph_, "VAPOR_HEATLOSS"))
     heatlossevaporation_ = std::unique_ptr<ParticleInteraction::SPHHeatLossEvaporation>(
         new ParticleInteraction::SPHHeatLossEvaporation(params_sph_));
 
@@ -373,12 +373,12 @@ void ParticleInteraction::SPHTemperature::temperature_gradient() const
 
     // sum contribution of neighboring particle j
     if (tempgrad_i)
-      UTILS::VecAddScale(
+      UTILS::vec_add_scale(
           tempgrad_i, (mass_j[0] / dens_j[0]) * temp_ji * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (tempgrad_j and status_j == PARTICLEENGINE::Owned)
-      UTILS::VecAddScale(
+      UTILS::vec_add_scale(
           tempgrad_j, (mass_i[0] / dens_i[0]) * temp_ji * particlepair.dWdrji_, particlepair.e_ij_);
   }
 }

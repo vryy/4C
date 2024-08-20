@@ -77,9 +77,9 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // get nodes to be coupled
   std::vector<int> masternodes;
-  Core::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_master_, masternodes);
+  Core::Conditions::find_conditioned_nodes(*sourcedis_, couplingcond_master_, masternodes);
   std::vector<int> slavenodes;
-  Core::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
+  Core::Conditions::find_conditioned_nodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
   auto tree = Core::GeometricSearch::NodeMatchingOctree();
@@ -136,9 +136,9 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // get nodes to be coupled
   masternodes.clear();
-  Core::Conditions::FindConditionedNodes(*sourcedis_, couplingcond_slave_, masternodes);
+  Core::Conditions::find_conditioned_nodes(*sourcedis_, couplingcond_slave_, masternodes);
   slavenodes.clear();
-  Core::Conditions::FindConditionedNodes(dis, couplingcond_slave_, slavenodes);
+  Core::Conditions::find_conditioned_nodes(dis, couplingcond_slave_, slavenodes);
 
   // initialize search tree
   tree.init(*sourcedis_, masternodes, 150);

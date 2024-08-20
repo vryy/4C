@@ -78,7 +78,7 @@ void ParticleInteraction::DEMContactRollingViscous::setup(const double& k_normal
   DEMContactRollingBase::setup(k_normal);
 
   // determine rolling contact damping factor
-  const double fac = young_ / (1.0 - UTILS::Pow<2>(nue_));
+  const double fac = young_ / (1.0 - UTILS::pow<2>(nue_));
   const double c_1 = 1.15344;
   d_rolling_fac_ = (1.0 - e_) / (c_1 * std::pow(fac, 0.4) * std::pow(v_max_, 0.2));
 }
@@ -96,8 +96,8 @@ void ParticleInteraction::DEMContactRollingViscous::relative_rolling_velocity(co
     const double* normal, const double* angvel_i, const double* angvel_j,
     double* v_rel_rolling) const
 {
-  UTILS::VecSetCross(v_rel_rolling, angvel_i, normal);
-  if (angvel_j) UTILS::VecAddCross(v_rel_rolling, normal, angvel_j);
+  UTILS::vec_set_cross(v_rel_rolling, angvel_i, normal);
+  if (angvel_j) UTILS::vec_add_cross(v_rel_rolling, normal, angvel_j);
 }
 
 void ParticleInteraction::DEMContactRollingViscous::rolling_contact_moment(double* gap_rolling,
@@ -110,11 +110,11 @@ void ParticleInteraction::DEMContactRollingViscous::rolling_contact_moment(doubl
 
   // compute rolling contact force
   double rollingcontactforce[3];
-  UTILS::VecSetScale(rollingcontactforce, -(d_rolling * normalcontactforce), v_rel_rolling);
+  UTILS::vec_set_scale(rollingcontactforce, -(d_rolling * normalcontactforce), v_rel_rolling);
 
   // compute rolling contact moment
-  UTILS::VecSetCross(rollingcontactmoment, rollingcontactforce, normal);
-  UTILS::VecScale(rollingcontactmoment, r_eff);
+  UTILS::vec_set_cross(rollingcontactmoment, rollingcontactforce, normal);
+  UTILS::vec_scale(rollingcontactmoment, r_eff);
 }
 
 void ParticleInteraction::DEMContactRollingViscous::rolling_potential_energy(
@@ -146,7 +146,7 @@ void ParticleInteraction::DEMContactRollingCoulomb::setup(const double& k_normal
   {
     const double lne = std::log(e_);
     d_rolling_fac_ =
-        2.0 * std::abs(lne) * std::sqrt(k_normal / (UTILS::Pow<2>(lne) + UTILS::Pow<2>(M_PI)));
+        2.0 * std::abs(lne) * std::sqrt(k_normal / (UTILS::pow<2>(lne) + UTILS::pow<2>(M_PI)));
   }
   else
     d_rolling_fac_ = 2.0 * std::sqrt(k_normal);
@@ -166,10 +166,10 @@ void ParticleInteraction::DEMContactRollingCoulomb::relative_rolling_velocity(co
     const double* normal, const double* angvel_i, const double* angvel_j,
     double* v_rel_rolling) const
 {
-  UTILS::VecSetCross(v_rel_rolling, normal, angvel_i);
-  if (angvel_j) UTILS::VecAddCross(v_rel_rolling, angvel_j, normal);
+  UTILS::vec_set_cross(v_rel_rolling, normal, angvel_i);
+  if (angvel_j) UTILS::vec_add_cross(v_rel_rolling, angvel_j, normal);
 
-  UTILS::VecScale(v_rel_rolling, r_eff);
+  UTILS::vec_scale(v_rel_rolling, r_eff);
 }
 
 void ParticleInteraction::DEMContactRollingCoulomb::rolling_contact_moment(double* gap_rolling,
@@ -181,27 +181,27 @@ void ParticleInteraction::DEMContactRollingCoulomb::rolling_contact_moment(doubl
   const double d_rolling = d_rolling_fac_ * std::sqrt(m_eff);
 
   // compute length of rolling gap at time n
-  const double old_length = UTILS::VecNormTwo(gap_rolling);
+  const double old_length = UTILS::vec_norm_two(gap_rolling);
 
   // compute projection of rolling gap onto current normal at time n+1
-  UTILS::VecAddScale(gap_rolling, -UTILS::VecDot(normal, gap_rolling), normal);
+  UTILS::vec_add_scale(gap_rolling, -UTILS::vec_dot(normal, gap_rolling), normal);
 
   // compute length of rolling gap at time n+1
-  const double new_length = UTILS::VecNormTwo(gap_rolling);
+  const double new_length = UTILS::vec_norm_two(gap_rolling);
 
   // maintain length of rolling gap equal to before the projection
-  if (new_length > 1.0e-14) UTILS::VecSetScale(gap_rolling, old_length / new_length, gap_rolling);
+  if (new_length > 1.0e-14) UTILS::vec_set_scale(gap_rolling, old_length / new_length, gap_rolling);
 
   // update of elastic rolling displacement if stick is true
-  if (stick_rolling == true) UTILS::VecAddScale(gap_rolling, dt_, v_rel_rolling);
+  if (stick_rolling == true) UTILS::vec_add_scale(gap_rolling, dt_, v_rel_rolling);
 
   // compute rolling contact force (assume stick-case)
   double rollingcontactforce[3];
-  UTILS::VecSetScale(rollingcontactforce, -k_rolling_, gap_rolling);
-  UTILS::VecAddScale(rollingcontactforce, -d_rolling, v_rel_rolling);
+  UTILS::vec_set_scale(rollingcontactforce, -k_rolling_, gap_rolling);
+  UTILS::vec_add_scale(rollingcontactforce, -d_rolling, v_rel_rolling);
 
   // compute the norm of the rolling contact force
-  const double norm_rollingcontactforce = UTILS::VecNormTwo(rollingcontactforce);
+  const double norm_rollingcontactforce = UTILS::vec_norm_two(rollingcontactforce);
 
   // rolling contact force for stick-case
   if (norm_rollingcontactforce <= (mu_rolling * std::abs(normalcontactforce)))
@@ -216,24 +216,24 @@ void ParticleInteraction::DEMContactRollingCoulomb::rolling_contact_moment(doubl
     stick_rolling = false;
 
     // compute rolling contact force
-    UTILS::VecSetScale(rollingcontactforce,
+    UTILS::vec_set_scale(rollingcontactforce,
         mu_rolling * std::abs(normalcontactforce) / norm_rollingcontactforce, rollingcontactforce);
 
     // compute rolling displacement
     const double inv_k_rolling = 1.0 / k_rolling_;
-    UTILS::VecSetScale(gap_rolling, -inv_k_rolling, rollingcontactforce);
-    UTILS::VecAddScale(gap_rolling, -inv_k_rolling * d_rolling, v_rel_rolling);
+    UTILS::vec_set_scale(gap_rolling, -inv_k_rolling, rollingcontactforce);
+    UTILS::vec_add_scale(gap_rolling, -inv_k_rolling * d_rolling, v_rel_rolling);
   }
 
   // compute rolling contact moment
-  UTILS::VecSetCross(rollingcontactmoment, rollingcontactforce, normal);
-  UTILS::VecScale(rollingcontactmoment, r_eff);
+  UTILS::vec_set_cross(rollingcontactmoment, rollingcontactforce, normal);
+  UTILS::vec_scale(rollingcontactmoment, r_eff);
 }
 
 void ParticleInteraction::DEMContactRollingCoulomb::rolling_potential_energy(
     const double* gap_rolling, double& rollingpotentialenergy) const
 {
-  rollingpotentialenergy = 0.5 * k_rolling_ * UTILS::VecDot(gap_rolling, gap_rolling);
+  rollingpotentialenergy = 0.5 * k_rolling_ * UTILS::vec_dot(gap_rolling, gap_rolling);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -39,7 +39,7 @@ namespace Core::Rebalance
   /*! \brief Rebalance discretizations in input vector using BinningStrategy
      *
     \param vector_of_discretizations (in) : vector containing RCPs to discretizations */
-  void RebalanceDiscretizationsByBinning(const Teuchos::ParameterList& binning_params,
+  void rebalance_discretizations_by_binning(const Teuchos::ParameterList& binning_params,
       Teuchos::RCP<Core::IO::OutputControl> output_control,
       const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
       std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node = nullptr,
@@ -55,7 +55,8 @@ namespace Core::Rebalance
     this method
 
     \return void */
-  void GhostDiscretizationOnAllProcs(const Teuchos::RCP<Core::FE::Discretization> distobeghosted);
+  void ghost_discretization_on_all_procs(
+      const Teuchos::RCP<Core::FE::Discretization> distobeghosted);
 
   /*! \brief Rebalance elements matching to another discretization.
    *
@@ -71,7 +72,7 @@ namespace Core::Rebalance
   \param dis_template        (in) : discretization with parallel distr., serving as template
   \param dis_to_rebalance    (in) : discretization which is rebalanced matching to dis_template
 */
-  void MatchElementDistributionOfMatchingDiscretizations(
+  void match_element_distribution_of_matching_discretizations(
       Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance);
 
   /*! \brief Rebalance conditioned elements matching other conditioned elements.
@@ -88,9 +89,10 @@ namespace Core::Rebalance
   \param condname_template   (i) : condition on template dis with template distribution
   \param condname_rebalance  (i) : condition on elements to be rebalanced
    \param print  (i) : print elemental and nodal redistribution */
-  void MatchElementDistributionOfMatchingConditionedElements(Core::FE::Discretization& dis_template,
-      Core::FE::Discretization& dis_to_rebalance, const std::string& condname_template,
-      const std::string& condname_rebalance, bool print = false);
+  void match_element_distribution_of_matching_conditioned_elements(
+      Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance,
+      const std::string& condname_template, const std::string& condname_rebalance,
+      bool print = false);
 
   /*! \brief Get a column vector made of a row vector.
 
@@ -104,13 +106,13 @@ namespace Core::Rebalance
 
   \param name (in): discretization
   \param state (in): vector of some data  */
-  Teuchos::RCP<const Epetra_Vector> GetColVersionOfRowVector(
+  Teuchos::RCP<const Epetra_Vector> get_col_version_of_row_vector(
       const Teuchos::RCP<const Core::FE::Discretization> dis,
       const Teuchos::RCP<const Epetra_Vector> state, const int nds = 0);
 
 
   /// recompute nodecolmap of standard discretization to include all nodes as of subdicretization
-  Teuchos::RCP<Epetra_Map> ComputeNodeColMap(
+  Teuchos::RCP<Epetra_Map> compute_node_col_map(
       const Teuchos::RCP<Core::FE::Discretization>
           sourcedis,  ///< standard discretization we want to rebalance
       const Teuchos::RCP<Core::FE::Discretization>
@@ -124,7 +126,7 @@ namespace Core::Rebalance
   \param dis_to_rebalance    (i): discretization supposed to be distributed matching template
   \param row_id_vec_to_fill  (o): on exit this vector contains the matched element row gids
   \param col_id_vec_to_fill  (o): on exit this vector contains the matched element col gids  */
-  void MatchElementRowColDistribution(const Core::FE::Discretization& dis_template,
+  void match_element_row_col_distribution(const Core::FE::Discretization& dis_template,
       const Core::FE::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
       std::vector<int>& col_id_vec_to_fill);
 
@@ -135,7 +137,7 @@ namespace Core::Rebalance
   \param dis_to_rebalance    (i): discretization supposed to be distributed matching template
   \param row_id_vec_to_fill  (o): on exit this vector contains the matched node row gids
   \param col_id_vec_to_fill  (o): on exit this vector contains the matched node col gids  */
-  void MatchNodalRowColDistribution(const Core::FE::Discretization& dis_template,
+  void match_nodal_row_col_distribution(const Core::FE::Discretization& dis_template,
       const Core::FE::Discretization& dis_to_rebalance, std::vector<int>& row_id_vec_to_fill,
       std::vector<int>& col_id_vec_to_fill);
 }  // namespace Core::Rebalance

@@ -49,7 +49,7 @@ namespace Cut
   };
 
   //! Map IntersectionStatus to std::string
-  static inline std::string IntersectionStatus2String(IntersectionStatus istatus)
+  static inline std::string intersection_status_to_string(IntersectionStatus istatus)
   {
     switch (istatus)
     {
@@ -69,7 +69,7 @@ namespace Cut
     exit(EXIT_FAILURE);
   };
 
-  inline IntersectionStatus IntersectionStatus2Enum(unsigned num_cut_points)
+  inline IntersectionStatus intersection_status2_enum(unsigned num_cut_points)
   {
     switch (num_cut_points)
     {
@@ -235,7 +235,7 @@ namespace Cut
     {
       if (get_intersection_status() < intersect_single_cut_point)
         FOUR_C_THROW("INVALID IntersectionStatus! ( istatus = \"%s\" )",
-            IntersectionStatus2String(get_intersection_status()).c_str());
+            intersection_status_to_string(get_intersection_status()).c_str());
 
       side_rs_cuts.clear();
       side_rs_cuts.reserve(num_cut_points());
@@ -253,7 +253,7 @@ namespace Cut
     {
       if (get_intersection_status() < intersect_single_cut_point)
         FOUR_C_THROW("INVALID IntersectionStatus! ( istatus = \"%s\" )",
-            IntersectionStatus2String(get_intersection_status()).c_str());
+            intersection_status_to_string(get_intersection_status()).c_str());
 
       xyz_cuts.clear();
       xyz_cuts.reserve(num_cut_points());
@@ -552,7 +552,7 @@ namespace Cut
         FOUR_C_THROW(
             "INVALID IntersectionStatus: This routine is restricted to one single "
             "cut point only! ( istatus_ = \"%s\" )",
-            IntersectionStatus2String(istatus_).c_str());
+            intersection_status_to_string(istatus_).c_str());
 
       final_point(xsi_edge_, x_);
       return x_.data();
@@ -592,11 +592,11 @@ namespace Cut
             {
               std::ofstream file("far_touched_edges.pos");
               Edge* e = side_edges[*it];
-              Cut::Output::GmshEdgeDump(file, e, std::string("FarEdge"));
-              Cut::Output::GmshNewSection(file, "Point", false);
+              Cut::Output::gmsh_edge_dump(file, e, std::string("FarEdge"));
+              Cut::Output::gmsh_new_section(file, "Point", false);
               Core::LinAlg::Matrix<3, 1> p(p_coord.data());
-              Cut::Output::GmshCoordDump(file, p, 0);
-              Cut::Output::GmshEndSection(file);
+              Cut::Output::gmsh_coord_dump(file, p, 0);
+              Cut::Output::gmsh_end_section(file);
               file.close();
               generate_gmsh_dump();
               FOUR_C_THROW("Distance between point touching edge is too high! Check this case!");
@@ -664,7 +664,7 @@ namespace Cut
        * treatment becomes necessary for multiple cut points. */
       if (success)
       {
-        istatus_ = Cut::IntersectionStatus2Enum(num_cut_points_);
+        istatus_ = Cut::intersection_status2_enum(num_cut_points_);
         return (istatus_);
       }
 
@@ -715,7 +715,7 @@ namespace Cut
         else
         {
           num_cut_points_ = conv;
-          istatus_ = Cut::IntersectionStatus2Enum(num_cut_points_);
+          istatus_ = Cut::intersection_status2_enum(num_cut_points_);
         }
         // if we want to get edges back
         if (touched_edges)
@@ -849,7 +849,7 @@ namespace Cut
         scale_ = 1.0;
       else
       {
-        GetElementScale<probdim>(xyze_surfaceElement_, scale_);
+        get_element_scale<probdim>(xyze_surfaceElement_, scale_);
 
         xyze_lineElement_.scale(1. / scale_);
         xyze_surfaceElement_.scale(1. / scale_);
@@ -861,7 +861,7 @@ namespace Cut
         shift_ = 0;
       else
       {
-        GetElementShift<probdim>(xyze_surfaceElement_, shift_);
+        get_element_shift<probdim>(xyze_surfaceElement_, shift_);
 
         for (unsigned i = 0; i < num_nodes_side; ++i)
         {
@@ -881,7 +881,7 @@ namespace Cut
     template <class T>
     bool at_edge(const T& xsi)
     {
-      return Cut::Kernel::AtEdge<sidetype>(xsi);
+      return Cut::Kernel::at_edge<sidetype>(xsi);
     }
 
    private:
@@ -1058,7 +1058,7 @@ namespace Cut
         /* here it is important that the triangle is created in the same rotation
          * as the QUAD4 is, to get normal in the same direction and therefore the
          * same signed distance!!! */
-        Kernel::SplitQuad4IntoTri3(xyze_surfaceElement_, tri3_id, xyze_triElement);
+        Kernel::split_quad4_into_tri3(xyze_surfaceElement_, tri3_id, xyze_triElement);
       }
       else
       {
@@ -1163,7 +1163,7 @@ namespace Cut
       for (unsigned int node_id = 0; node_id < num_nodes; ++node_id)
       {
         const Core::LinAlg::Matrix<prob_dim, 1> edge_point(surf.data() + node_id * prob_dim, true);
-        if (Cut::DistanceBetweenPoints(edge_point, p) <= tol) return true;
+        if (Cut::distance_between_points(edge_point, p) <= tol) return true;
       }
       return false;
     }
@@ -1207,7 +1207,7 @@ namespace Cut
             "This compute_distance routine is only meaningful for "
             "QUAD4 side elements! But you passed in a side element "
             "of type %i | %s.",
-            sidetype, Core::FE::CellTypeToString(sidetype).c_str());
+            sidetype, Core::FE::cell_type_to_string(sidetype).c_str());
 
       TEUCHOS_FUNC_TIME_MONITOR("compute_distance");
 
@@ -1340,7 +1340,7 @@ namespace Cut
           FOUR_C_THROW(
               "Unsupported SideType! If meaningful, add your sideType here. \n"
               "Given SideType = %s",
-              Core::FE::CellTypeToString(side_type).c_str());
+              Core::FE::cell_type_to_string(side_type).c_str());
           exit(EXIT_FAILURE);
       }
       exit(EXIT_FAILURE);

@@ -46,7 +46,7 @@ namespace Inpar
     };
 
     /// set the fs3i parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace FS3I
 

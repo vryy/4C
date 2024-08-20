@@ -55,7 +55,7 @@ void dyn_fluid_drt(const int restart)
   // 1. computation of inflow until it reaches a fully turbulent state
   // 2. computation of the main problem after restart
   // Remark: we restart the simulation to save procs!
-  if ((Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+  if ((Core::UTILS::integral_value<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
           true) and
       (restart < fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
   {

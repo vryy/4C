@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /* Function for checking that the different time steps are a
  multiplicative of each other                                           */
 
-int EHL::Utils::CheckTimeStepping(double dt1, double dt2)
+int EHL::Utils::check_time_stepping(double dt1, double dt2)
 {
   double workdt1 = std::min(dt1, dt2);
   double workdt2 = std::max(dt1, dt2);
@@ -48,10 +48,10 @@ int EHL::Utils::CheckTimeStepping(double dt1, double dt2)
 /*                                                        AN,JH 10/2014 */
 // Modification of time parameter list for problem with different time step size
 
-void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
+void EHL::Utils::change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
     Teuchos::ParameterList& lubricationdyn, Teuchos::ParameterList& sdyn)
 {
-  bool difftimestep = Core::UTILS::IntegralValue<int>(ehlparams, "DIFFTIMESTEPSIZE");
+  bool difftimestep = Core::UTILS::integral_value<int>(ehlparams, "DIFFTIMESTEPSIZE");
 
   if (difftimestep)  // Create subproblems with different time steps
   {
@@ -59,7 +59,7 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
     double lubricationstep = lubricationdyn.get<double>("TIMESTEP");
     double solidstep = sdyn.get<double>("TIMESTEP");
 
-    CheckTimeStepping(lubricationstep, solidstep);
+    check_time_stepping(lubricationstep, solidstep);
 
     // modify global time step size
     ehlparams.set<double>("TIMESTEP", std::min(lubricationstep, solidstep));
@@ -96,8 +96,8 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
 
   if (restarttime > 0.0)
   {
-    lubricationrestart = CheckTimeStepping(lubricationdyn.get<double>("TIMESTEP"), restarttime);
-    structurerestart = CheckTimeStepping(sdyn.get<double>("TIMESTEP"), restarttime);
+    lubricationrestart = check_time_stepping(lubricationdyn.get<double>("TIMESTEP"), restarttime);
+    structurerestart = check_time_stepping(sdyn.get<double>("TIMESTEP"), restarttime);
   }
   else
   {
@@ -112,8 +112,8 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
 
   if (updatetime > 0.0)
   {
-    lubricationupres = CheckTimeStepping(lubricationdyn.get<double>("TIMESTEP"), updatetime);
-    structureupres = CheckTimeStepping(sdyn.get<double>("TIMESTEP"), updatetime);
+    lubricationupres = check_time_stepping(lubricationdyn.get<double>("TIMESTEP"), updatetime);
+    structureupres = check_time_stepping(sdyn.get<double>("TIMESTEP"), updatetime);
   }
   else
   {

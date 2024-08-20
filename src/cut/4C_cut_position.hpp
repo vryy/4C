@@ -52,7 +52,7 @@ namespace Cut
     };
 
     //! Map Status enum to std::string
-    static inline std::string status2_string(enum Status pstatus)
+    static inline std::string status_to_string(enum Status pstatus)
     {
       switch (pstatus)
       {
@@ -305,7 +305,7 @@ namespace Cut
         std::ostringstream msg;
         msg << "The local coordinates are not valid. "
                "( Position::Status = "
-            << status2_string(pos_status_) << " )";
+            << status_to_string(pos_status_) << " )";
         FOUR_C_THROW(msg.str());
       }
 
@@ -339,12 +339,12 @@ namespace Cut
      *  the Newton scheme to find the local coordinate system. */
     void scale_and_shift() override
     {
-      GetElementScale<probdim>(xyze_, scale_);
+      get_element_scale<probdim>(xyze_, scale_);
 
       px_.scale(1.0 / scale_);
       xyze_.scale(1.0 / scale_);
 
-      GetElementShift<probdim>(xyze_, shift_);
+      get_element_shift<probdim>(xyze_, shift_);
 
       for (unsigned i = 0; i < num_nodes_element; ++i)
       {
@@ -479,7 +479,7 @@ namespace Cut
         std::ostringstream msg;
         msg << "Neither the position nor the distance value is valid! "
                "( Position::Status = "
-            << Position::status2_string(this->pos_status_) << " )";
+            << Position::status_to_string(this->pos_status_) << " )";
         FOUR_C_THROW(msg.str());
       }
 
@@ -500,7 +500,7 @@ namespace Cut
         std::ostringstream msg;
         msg << "Neither the position nor the distance value is valid! "
                "( Position::Status = "
-            << Position::status2_string(this->pos_status_) << " )";
+            << Position::status_to_string(this->pos_status_) << " )";
         FOUR_C_THROW(msg.str());
       }
 
@@ -518,7 +518,7 @@ namespace Cut
       else
         tol2 *= tol_px;
 
-      return Kernel::WithinLimitsEmbeddedManifold<probdim, eletype>(
+      return Kernel::within_limits_embedded_manifold<probdim, eletype>(
           xsi_aug_, Tol, allow_dist, tol2);
     }
 

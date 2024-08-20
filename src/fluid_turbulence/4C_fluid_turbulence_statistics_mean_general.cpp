@@ -1105,7 +1105,7 @@ void FLD::TurbulenceStatisticsGeneralMean::time_reset()
     {
       const Epetra_Map* scatradofrowmap = scatradis_->dof_row_map();
       curr_avg_scatra_ = Teuchos::null;
-      curr_avg_scatra_ = Core::LinAlg::CreateVector(*scatradofrowmap, true);
+      curr_avg_scatra_ = Core::LinAlg::create_vector(*scatradofrowmap, true);
     }
   }
 
@@ -1121,11 +1121,11 @@ void FLD::TurbulenceStatisticsGeneralMean::time_reset()
 void FLD::TurbulenceStatisticsGeneralMean::time_reset_fluid_avg_vectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
-  curr_avg_ = Core::LinAlg::CreateVector(dofrowmap, true);
+  curr_avg_ = Core::LinAlg::create_vector(dofrowmap, true);
   if (withscatra_)
   {
     curr_avg_sca_ = Teuchos::null;
-    curr_avg_sca_ = Core::LinAlg::CreateVector(dofrowmap, true);
+    curr_avg_sca_ = Core::LinAlg::create_vector(dofrowmap, true);
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::time_reset_fluid_avg_vectors
 
@@ -1153,9 +1153,9 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_complete()
     {
       const Epetra_Map* scatradofrowmap = scatradis_->dof_row_map();
       curr_avg_scatra_ = Teuchos::null;
-      curr_avg_scatra_ = Core::LinAlg::CreateVector(*scatradofrowmap, true);
+      curr_avg_scatra_ = Core::LinAlg::create_vector(*scatradofrowmap, true);
       prev_avg_scatra_ = Teuchos::null;
-      prev_avg_scatra_ = Core::LinAlg::CreateVector(*scatradofrowmap, true);
+      prev_avg_scatra_ = Core::LinAlg::create_vector(*scatradofrowmap, true);
     }
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::ResetComplete
@@ -1169,13 +1169,13 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_complete()
 void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
-  curr_avg_ = Core::LinAlg::CreateVector(dofrowmap, true);
+  curr_avg_ = Core::LinAlg::create_vector(dofrowmap, true);
 
   curr_n_ = 0;
   curr_avg_time_ = 0.0;
 
   prev_avg_ = Teuchos::null;
-  prev_avg_ = Core::LinAlg::CreateVector(dofrowmap, true);
+  prev_avg_ = Core::LinAlg::create_vector(dofrowmap, true);
 
   prev_n_ = 0;
   prev_avg_time_ = 0.0;
@@ -1183,9 +1183,9 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_
   if (withscatra_)
   {
     curr_avg_sca_ = Teuchos::null;
-    curr_avg_sca_ = Core::LinAlg::CreateVector(dofrowmap, true);
+    curr_avg_sca_ = Core::LinAlg::create_vector(dofrowmap, true);
     prev_avg_sca_ = Teuchos::null;
-    prev_avg_sca_ = Core::LinAlg::CreateVector(dofrowmap, true);
+    prev_avg_sca_ = Core::LinAlg::create_vector(dofrowmap, true);
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors
 
@@ -1203,7 +1203,7 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
   const Epetra_Map* dofrowmap = standarddofset_->dof_row_map();
 
   // split based on complete fluid field
-  Core::LinAlg::CreateMapExtractorFromDiscretization(
+  Core::LinAlg::create_map_extractor_from_discretization(
       *discret, *standarddofset_, 3, velpressplitter_);
 
   Teuchos::RCP<Epetra_Vector> old;

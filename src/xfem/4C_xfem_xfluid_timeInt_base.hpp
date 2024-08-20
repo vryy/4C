@@ -716,7 +716,7 @@ namespace XFEM
 
       // extract local values of the global vectors
       std::vector<double> mymatrix(lm.size());
-      Core::FE::ExtractMyValues(*vel_vec, mymatrix, lm);
+      Core::FE::extract_my_values(*vel_vec, mymatrix, lm);
 
       for (int inode = 0; inode < numnode; ++inode)  // number of nodes
       {

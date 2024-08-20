@@ -260,7 +260,7 @@ int Discret::ELEMENTS::So3Plast<distype>::num_line() const
 template <Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<distype>::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
 }
 
@@ -270,7 +270,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<d
 template <Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<distype>::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
+  return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
 }
 
@@ -351,7 +351,7 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -593,7 +593,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
   // read number of material model
   int material_id = container.get<int>("MAT");
 
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
 
   Teuchos::RCP<Mat::So3Material> so3mat = solid_material();
   so3mat->setup(numgpt_, container);
@@ -647,7 +647,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
   dDp_inc_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = Global::Problem::instance()->semi_smooth_plast_params();
-  Core::UTILS::AddEnumClassToParameterList(
+  Core::UTILS::add_enum_class_to_parameter_list(
       "Core::ProblemType", Global::Problem::instance()->get_problem_type(), plparams);
   read_parameter_list(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
@@ -775,7 +775,7 @@ void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
 
     // get dissipation mode
     auto mode =
-        Core::UTILS::IntegralValue<Inpar::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
+        Core::UTILS::integral_value<Inpar::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
 
     // prepare material for tsi
     plmat->setup_tsi(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);
@@ -906,7 +906,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::have_plastic_spin()
   return false;
 }
 
-int Discret::ELEMENTS::PlastEasTypeToNumEasV(Discret::ELEMENTS::So3PlastEasType et)
+int Discret::ELEMENTS::plast_eas_type_to_num_eas_v(Discret::ELEMENTS::So3PlastEasType et)
 {
   switch (et)
   {

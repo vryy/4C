@@ -28,7 +28,7 @@ namespace
    */
 
   template <int number_of_parameters>
-  void CheckNamingAndOrderOfParameters(
+  void check_naming_and_order_of_parameters(
       const std::array<std::string, number_of_parameters>& param_map,
       const std::vector<std::pair<std::string, double>>& funct_params, std::string function_name)
   {
@@ -73,7 +73,7 @@ PoroMultiPhaseScaTra::TumorGrowthLawHeavisideParameters::TumorGrowthLawHeaviside
       "gamma_T_growth", "w_nl_crit", "w_nl_env", "lambda", "p_t_crit"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 /*----------------------------------------------------------------------*/
@@ -93,7 +93,7 @@ PoroMultiPhaseScaTra::NecrosisLawHeavisideParameters::NecrosisLawHeavisideParame
       "gamma_t_necr", "w_nl_crit", "w_nl_env", "delta_a_t", "p_t_crit"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 
@@ -115,7 +115,7 @@ PoroMultiPhaseScaTra::OxygenConsumptionLawHeavisideParameters::
       "gamma_nl_growth", "gamma_0_nl", "w_nl_crit", "w_nl_env", "p_t_crit"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 /*----------------------------------------------------------------------*/
@@ -136,7 +136,7 @@ PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecroOxyParameters::
       "gamma_T_growth", "w_nl_crit", "w_nl_env", "lambda", "p_t_crit"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 /*----------------------------------------------------------------------*/
@@ -161,7 +161,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawContParameters::
       "alpha_bl_eff", "gammarhoSV", "rho_oxy", "rho_IF", "rho_bl", " alpha_IF"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 /*----------------------------------------------------------------------*/
@@ -187,7 +187,7 @@ PoroMultiPhaseScaTra::OxygenTransvascularExchangeLawDiscParameters::
       "alpha_bl_eff", "gamma*rho", "rho_oxy", "rho_IF", "rho_bl", "S2_max", "alpha_IF"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 /*----------------------------------------------------------------------*/
@@ -213,7 +213,7 @@ PoroMultiPhaseScaTra::LungOxygenExchangeLawParameters::LungOxygenExchangeLawPara
       "volfrac_blood_ref"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 
@@ -245,7 +245,7 @@ PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLawParameters::
       "ScalingFormmHg", "volfrac_blood_ref"};
 
   // Check parameters
-  CheckNamingAndOrderOfParameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
+  check_naming_and_order_of_parameters<NUMBER_OF_PARAMS>(param_map, funct_params, function_name);
 }
 
 FOUR_C_NAMESPACE_CLOSE

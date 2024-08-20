@@ -147,7 +147,7 @@ namespace CONTACT
    * space position xi
    */
   template <int probdim, Core::FE::CellType distype>
-  static void LocalToGlobalPositionAtXiRefConfig(const Core::Elements::Element* element,
+  static void local_to_global_position_at_xi_ref_config(const Core::Elements::Element* element,
       const Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xi,
       Core::LinAlg::Matrix<probdim, 1>& coord)
   {
@@ -184,7 +184,7 @@ namespace CONTACT
    * position xi
    */
   template <Core::FE::CellType distype>
-  static void ComputeUnitNormalAtXiRefConfig(const Core::Elements::Element* element,
+  static void compute_unit_normal_at_xi_ref_config(const Core::Elements::Element* element,
       const Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xi, Core::LinAlg::Matrix<3, 1>& normal)
   {
     static Core::LinAlg::Matrix<3, Core::FE::dim<distype>> gxieta(true);

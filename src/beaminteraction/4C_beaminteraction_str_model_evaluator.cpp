@@ -128,7 +128,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   ia_state_ptr_->setup(ia_discret_);
 
   ia_state_ptr_->get_dis_np() = Teuchos::rcp(new Epetra_Vector(*global_state_ptr()->get_dis_np()));
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->get_dis_np(),
+  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(ia_state_ptr_->get_dis_np(),
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // -------------------------------------------------------------------------
@@ -150,7 +150,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->get_dis_col_np());
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 
@@ -177,7 +177,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
     else if (ele.element_type() == Discret::ELEMENTS::RigidsphereType::instance())
     {
       double currpos[3] = {0.0, 0.0, 0.0};
-      Core::Binstrategy::Utils::GetCurrentNodePos(discret, ele.nodes()[0], disnp, currpos);
+      Core::Binstrategy::Utils::get_current_node_pos(discret, ele.nodes()[0], disnp, currpos);
       const double radius = dynamic_cast<const Discret::ELEMENTS::Rigidsphere&>(ele).radius();
       return {{currpos[0] - radius, currpos[1] - radius, currpos[2] - radius},
           {currpos[0] + radius, currpos[1] + radius, currpos[2] + radius}};
@@ -210,7 +210,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
 
   // extract map for each eletype that is in discretization
   eletypeextractor_ = Teuchos::rcp(new BEAMINTERACTION::UTILS::MapExtractor);
-  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(ia_discret_, eletypeextractor_);
+  BEAMINTERACTION::UTILS::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
 
   // initialize and setup submodel evaluators
   init_and_setup_sub_model_evaluators();
@@ -275,7 +275,7 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (Core::UTILS::IntegralValue<int>(
+  if (Core::UTILS::integral_value<int>(
           Global::Problem::instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING"))
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_spherebeamlink);
@@ -283,7 +283,7 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (Core::UTILS::IntegralValue<int>(
+  if (Core::UTILS::integral_value<int>(
           Global::Problem::instance()->beam_interaction_params().sublist("CROSSLINKING"),
           "CROSSLINKER"))
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_crosslinking);
@@ -301,10 +301,10 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   // ---------------------------------------------------------------------------
   // check for beam contact
   // ---------------------------------------------------------------------------
-  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
-      Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+      Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
@@ -330,7 +330,7 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_potential);
 
   // Check if all all combinations of submodel evaluators work
-  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none and
       beampenaltycouplingconditions.size() > 0)
@@ -480,7 +480,7 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
   binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
-      BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
+      BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 
   // update maps of state vectors and matrices
   update_maps();
@@ -562,7 +562,7 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
       ia_state_ptr_->get_extended_bin_to_row_ele_map(), auxmap);
 
   // 2) extend ghosting of discretization
-  Core::Binstrategy::Utils::ExtendDiscretizationGhosting(
+  Core::Binstrategy::Utils::extend_discretization_ghosting(
       ia_discret_, ia_elecolmap, true, false, true);
 }
 
@@ -577,9 +577,9 @@ void Solid::ModelEvaluator::BeamInteraction::reset(const Epetra_Vector& x)
       global_state().get_time_n(), Global::Problem::instance()->function_manager());
 
   // get current displacement state and export to interaction discretization dofmap
-  BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
+  BEAMINTERACTION::UTILS::update_dof_map_of_vector(
       ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->get_dis_np(),
+  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(ia_state_ptr_->get_dis_np(),
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // update column vector
@@ -700,7 +700,7 @@ bool Solid::ModelEvaluator::BeamInteraction::assemble_force(
 {
   check_init_setup();
 
-  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *force_beaminteraction_);
+  Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *force_beaminteraction_);
 
   return true;
 }
@@ -799,7 +799,7 @@ void Solid::ModelEvaluator::BeamInteraction::read_restart(Core::IO::Discretizati
   const Teuchos::ParameterList& beam_interaction_params =
       Global::Problem::instance()->beam_interaction_params();
   if (have_sub_model_type(Inpar::BEAMINTERACTION::submodel_beamcontact) &&
-      (bool)Core::UTILS::IntegralValue<int>(
+      (bool)Core::UTILS::integral_value<int>(
           beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING"),
           "COUPLE_RESTART_STATE"))
   {
@@ -885,7 +885,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
     // assign Elements to bins
     binstrategy_->remove_all_eles_from_bins();
     binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
-        BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
+        BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 
     // current displacement state gets new reference state
     dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*global_state().get_dis_n()));
@@ -904,7 +904,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
     extend_ghosting();
     binstrategy_->remove_all_eles_from_bins();
     binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
-        BEAMINTERACTION::UTILS::ConvertElementToBinContentType);
+        BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 
     if (global_state().get_my_rank() == 0)
     {
@@ -951,8 +951,8 @@ bool Solid::ModelEvaluator::BeamInteraction::check_if_beam_discret_redistributio
     /* Hermite Interpolation: Check whether node is a beam node which is NOT
      * used for centerline interpolation if so, we simply skip it because
      * it does not have position DoFs */
-    if (BEAMINTERACTION::UTILS::IsBeamNode(*node) and
-        not BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*node))
+    if (BEAMINTERACTION::UTILS::is_beam_node(*node) and
+        not BEAMINTERACTION::UTILS::is_beam_centerline_node(*node))
       continue;
 
     // get GIDs of this node's degrees of freedom
@@ -1145,12 +1145,12 @@ void Solid::ModelEvaluator::BeamInteraction::update_maps()
   // todo: check if update is necessary (->SameAs())
 
   // beam displacement
-  BEAMINTERACTION::UTILS::UpdateDofMapOfVector(ia_discret_, ia_state_ptr_->get_dis_np());
+  BEAMINTERACTION::UTILS::update_dof_map_of_vector(ia_discret_, ia_state_ptr_->get_dis_np());
 
   // get current displacement state and export to interaction discretization dofmap
-  BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
+  BEAMINTERACTION::UTILS::update_dof_map_of_vector(
       ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->get_dis_np(),
+  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(ia_state_ptr_->get_dis_np(),
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
 
   // update column vector
@@ -1175,7 +1175,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_maps()
   ia_state_ptr_->get_stiff() = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *ia_discret_->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
-  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(ia_discret_, eletypeextractor_);
+  BEAMINTERACTION::UTILS::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
 }
 
 /*-----------------------------------------------------------------------------*

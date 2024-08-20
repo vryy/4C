@@ -19,24 +19,24 @@ FOUR_C_NAMESPACE_OPEN
 void Cut::Options::init_by_paramlist(const Teuchos::ParameterList& cutparams)
 {
   geomintersect_floattype_ =
-      Core::UTILS::IntegralValue<CutFloatType>(cutparams, "KERNEL_INTERSECTION_FLOATTYPE");
+      Core::UTILS::integral_value<CutFloatType>(cutparams, "KERNEL_INTERSECTION_FLOATTYPE");
   geomdistance_floattype_ =
-      Core::UTILS::IntegralValue<CutFloatType>(cutparams, "KERNEL_DISTANCE_FLOATTYPE");
+      Core::UTILS::integral_value<CutFloatType>(cutparams, "KERNEL_DISTANCE_FLOATTYPE");
   general_position_dist_floattype_ =
-      Core::UTILS::IntegralValue<CutFloatType>(cutparams, "GENERAL_POSITON_DISTANCE_FLOATTYPE");
+      Core::UTILS::integral_value<CutFloatType>(cutparams, "GENERAL_POSITON_DISTANCE_FLOATTYPE");
   general_position_pos_floattype_ =
-      Core::UTILS::IntegralValue<CutFloatType>(cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
-  direct_divergence_refplane_ = Core::UTILS::IntegralValue<CutDirectDivergenceRefplane>(
+      Core::UTILS::integral_value<CutFloatType>(cutparams, "GENERAL_POSITON_POSITION_FLOATTYPE");
+  direct_divergence_refplane_ = Core::UTILS::integral_value<CutDirectDivergenceRefplane>(
       cutparams, "DIRECT_DIVERGENCE_REFPLANE");
   Cut::PositionFactory::specify_general_dist_floattype(general_position_dist_floattype_);
   Cut::PositionFactory::specify_general_pos_floattype(general_position_pos_floattype_);
-  split_cutsides_ = Core::UTILS::IntegralValue<bool>(cutparams, "SPLIT_CUTSIDES");
-  do_selfcut_ = Core::UTILS::IntegralValue<bool>(cutparams, "DO_SELFCUT");
+  split_cutsides_ = Core::UTILS::integral_value<bool>(cutparams, "SPLIT_CUTSIDES");
+  do_selfcut_ = Core::UTILS::integral_value<bool>(cutparams, "DO_SELFCUT");
   selfcut_do_meshcorrection_ =
-      Core::UTILS::IntegralValue<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
+      Core::UTILS::integral_value<bool>(cutparams, "SELFCUT_DO_MESHCORRECTION");
   selfcut_island_geom_multiplicator_ = cutparams.get<int>("SELFCUT_MESHCORRECTION_MULTIPLICATOR");
   bc_cubaturedegree_ = cutparams.get<int>("BOUNDARYCELL_CUBATURDEGREE");
-  integrate_inside_cells_ = Core::UTILS::IntegralValue<bool>(cutparams, "INTEGRATE_INSIDE_CELLS");
+  integrate_inside_cells_ = Core::UTILS::integral_value<bool>(cutparams, "INTEGRATE_INSIDE_CELLS");
 }
 
 /// Initializes Cut Parameters for Cuttests (use full cln) -- slowest option

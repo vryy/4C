@@ -30,7 +30,7 @@ Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameter
 )
 {
   static auto singleton_map =
-      Core::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+      Core::UTILS::make_singleton_map<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterElch>(new ScaTraEleParameterElch(disname)); });
 
   return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
@@ -64,7 +64,7 @@ void Discret::ELEMENTS::ScaTraEleParameterElch::set_parameters(Teuchos::Paramete
   boundaryfluxcoupling_ = parameters.get<bool>("boundaryfluxcoupling");
 
   // type of closing equation for electric potential
-  equpot_ = Core::UTILS::GetAsEnum<Inpar::ElCh::EquPot>(parameters, "equpot");
+  equpot_ = Core::UTILS::get_as_enum<Inpar::ElCh::EquPot>(parameters, "equpot");
   if (equpot_ == Inpar::ElCh::equpot_undefined)
     FOUR_C_THROW("Invalid type of closing equation for electric potential!");
 

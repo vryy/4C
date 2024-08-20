@@ -164,7 +164,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 07/16 */
-      std::vector<int> get_additive_dof_gi_ds(
+      std::vector<int> get_additive_dof_gids(
           const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief return GIDs of all non-additive, i.e. rotation pseudo vector DoFs for a given
@@ -172,7 +172,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 07/16 */
-      std::vector<int> get_rot_vec_dof_gi_ds(
+      std::vector<int> get_rot_vec_dof_gids(
           const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const;
 
       /** \brief add indices of those DOFs of a given node that are positions
@@ -233,7 +233,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      virtual inline void get_material_strain_resultants_at_all_g_ps(
+      virtual inline void get_material_strain_resultants_at_all_gps(
           std::vector<double>& axial_strain_GPs, std::vector<double>& shear_strain_2_GPs,
           std::vector<double>& shear_strain_3_GPs, std::vector<double>& twist_GPs,
           std::vector<double>& curvature_2_GPs, std::vector<double>& curvature_3_GPs) const
@@ -245,7 +245,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 05/17 */
-      virtual inline void get_spatial_stress_resultants_at_all_g_ps(
+      virtual inline void get_spatial_stress_resultants_at_all_gps(
           std::vector<double>& spatial_axial_force_GPs,
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs, std::vector<double>& spatial_torque_GPs,
@@ -259,7 +259,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 05/17 */
-      virtual inline void get_spatial_forces_at_all_g_ps(
+      virtual inline void get_spatial_forces_at_all_gps(
           std::vector<double>& spatial_axial_force_GPs,
           std::vector<double>& spatial_shear_force_2_GPs,
           std::vector<double>& spatial_shear_force_3_GPs) const
@@ -271,7 +271,7 @@ namespace Discret
        *
        *  \author eichinger
        *  \date 05/17 */
-      virtual inline void get_spatial_moments_at_all_g_ps(std::vector<double>& spatial_torque_GPs,
+      virtual inline void get_spatial_moments_at_all_gps(std::vector<double>& spatial_torque_GPs,
           std::vector<double>& spatial_bending_moment_2_GPs,
           std::vector<double>& spatial_bending_moment_3_GPs) const
       {
@@ -282,7 +282,7 @@ namespace Discret
        *
        *  \author grill
        *  \date 04/17 */
-      virtual inline void get_material_stress_resultants_at_all_g_ps(
+      virtual inline void get_material_stress_resultants_at_all_gps(
           std::vector<double>& material_axial_force_GPs,
           std::vector<double>& material_shear_force_2_GPs,
           std::vector<double>& material_shear_force_3_GPs, std::vector<double>& material_torque_GPs,
@@ -477,8 +477,8 @@ namespace Discret
           auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](
                                                  double reflength)
           {
-            return Discret::UTILS::Beam::IntegrateCenterlineArcLengthAndArcLengthDerivative<nnode,
-                vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
+            return Discret::UTILS::Beam::integrate_centerline_arc_length_and_arc_length_derivative<
+                nnode, vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
           };
 
           const double newton_tolerance = 1e-12;
@@ -505,7 +505,7 @@ namespace Discret
       {
         Core::LinAlg::Matrix<1, vpernode * nnode, T> N_i;
 
-        Discret::UTILS::Beam::EvaluateShapeFunctionsAtXi<nnode, vpernode>(
+        Discret::UTILS::Beam::evaluate_shape_functions_at_xi<nnode, vpernode>(
             xi, N_i, shape(), ref_length());
         calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
       }
@@ -521,7 +521,7 @@ namespace Discret
           const Core::LinAlg::Matrix<1, vpernode * nnode, double>& funct,
           Core::LinAlg::Matrix<3, 1, T>& r) const
       {
-        Discret::UTILS::Beam::CalcInterpolation<nnode, vpernode, 3, T>(
+        Discret::UTILS::Beam::calc_interpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, funct, r);
       }
 
@@ -536,7 +536,7 @@ namespace Discret
           const Core::LinAlg::Matrix<1, vpernode * nnode, double>& deriv,
           Core::LinAlg::Matrix<3, 1, T>& r_xi) const
       {
-        Discret::UTILS::Beam::CalcInterpolation<nnode, vpernode, 3, T>(
+        Discret::UTILS::Beam::calc_interpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, deriv, r_xi);
       }
 

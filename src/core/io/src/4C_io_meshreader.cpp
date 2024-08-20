@@ -109,7 +109,7 @@ void Core::IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
   for (auto& element_reader : element_readers_) element_reader.read_and_distribute();
 
   // read nodes based on the element information
-  ReadNodes(reader_, node_section_name_, element_readers_, max_node_id);
+  read_nodes(reader_, node_section_name_, element_readers_, max_node_id);
 }
 
 /*----------------------------------------------------------------------*/
@@ -130,7 +130,7 @@ void Core::IO::MeshReader::rebalance()
     // We want to be able to read empty fields. If we have such a beast
     // just skip the building of the node  graph and do a proper initialization
     if (numnodes)
-      graph_[i] = Core::Rebalance::BuildGraph(discret, element_readers_[i].get_row_elements());
+      graph_[i] = Core::Rebalance::build_graph(discret, element_readers_[i].get_row_elements());
     else
       graph_[i] = Teuchos::null;
 
@@ -157,7 +157,7 @@ void Core::IO::MeshReader::rebalance()
 
           // here we can reuse the graph, which was calculated before, this saves us some time
           std::tie(rowmap, colmap) =
-              Core::Rebalance::RebalanceNodeMaps(graph_[i], *rebalanceParams);
+              Core::Rebalance::rebalance_node_maps(graph_[i], *rebalanceParams);
 
           break;
         }
@@ -177,7 +177,7 @@ void Core::IO::MeshReader::rebalance()
 
           Teuchos::RCP<Epetra_MultiVector> coordinates = discret->build_node_coordinates();
 
-          std::tie(rowmap, colmap) = Core::Rebalance::RebalanceNodeMaps(
+          std::tie(rowmap, colmap) = Core::Rebalance::rebalance_node_maps(
               graph_[i], *rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
 
           break;
@@ -194,12 +194,12 @@ void Core::IO::MeshReader::rebalance()
           discret->redistribute(*rowmap, *colmap, true, true, false);
 
           Teuchos::RCP<const Epetra_CrsGraph> enriched_graph =
-              Core::Rebalance::BuildMonolithicNodeGraph(*discret,
+              Core::Rebalance::build_monolithic_node_graph(*discret,
                   Core::GeometricSearch::GeometricSearchParams(
                       parameters_.geometric_search_parameters, parameters_.io_parameters));
 
           std::tie(rowmap, colmap) =
-              Core::Rebalance::RebalanceNodeMaps(enriched_graph, *rebalanceParams);
+              Core::Rebalance::rebalance_node_maps(enriched_graph, *rebalanceParams);
 
           break;
         }

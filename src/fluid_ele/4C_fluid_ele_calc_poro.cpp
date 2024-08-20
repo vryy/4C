@@ -35,7 +35,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcPoro<distype>*
 Discret::ELEMENTS::FluidEleCalcPoro<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcPoro<distype>>(
@@ -105,7 +105,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_service(Discret::ELEM
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const auto act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -176,7 +176,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fl
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -298,7 +298,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fl
       discretization, lm, *Base::rotsymmpbc_, &edispn, nullptr, "dispn");
 
   // get node coordinates and number of elements per node
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
 
   // construct views
@@ -335,7 +335,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Discret::ELEMENTS:
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -463,7 +463,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Discret::ELEMENTS:
       discretization, lm, *Base::rotsymmpbc_, &egridvn, nullptr, "gridvn");
 
   // get node coordinates and number of elements per node
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
 
   pre_evaluate(params, ele, discretization);
@@ -5418,7 +5418,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_stabilization_paramet
     */
 
     // get element-type constant for tau
-    const double mk = Discret::ELEMENTS::MK<distype>();
+    const double mk = Discret::ELEMENTS::mk<distype>();
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient
@@ -6147,7 +6147,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::Parame
   if (Base::isNurbs_)
   {
     // access knots and weights for this element
-    bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
+    bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
         discretization, ele, Base::myknots_, Base::weights_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
@@ -6155,7 +6155,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::Parame
   }  // Nurbs specific stuff
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
   // set element id
   Base::eid_ = ele->id();
@@ -6257,7 +6257,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
   Core::LinAlg::Matrix<nsd_, 1> deltavel(true);
   double deltap = 0.0;
 
-  const int calcerr = Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
+  const int calcerr = Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors
@@ -6284,7 +6284,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
+  Core::Geo::fill_initial_position_array<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       ele, Base::xyze_);
   // set element id
   Base::eid_ = ele->id();

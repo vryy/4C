@@ -144,17 +144,17 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        gaps[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->get_gap());
+        gaps[i] = Core::FADUtils::cast_to_double(cpvariables_[i]->get_gap());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        gaps[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_gap());
+        gaps[i] = Core::FADUtils::cast_to_double(gpvariables_[i - size1]->get_gap());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        gaps[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_gap());
+        gaps[i] = Core::FADUtils::cast_to_double(epvariables_[i - size1 - size2]->get_gap());
       }
 
       return gaps;
@@ -172,20 +172,20 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        f[i] =
-            Core::FADUtils::CastToDouble(cpvariables_[i]->getfp() * cpvariables_[i]->get_p_pfac());
+        f[i] = Core::FADUtils::cast_to_double(
+            cpvariables_[i]->getfp() * cpvariables_[i]->get_p_pfac());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        f[i] = Core::FADUtils::CastToDouble(
+        f[i] = Core::FADUtils::cast_to_double(
             gpvariables_[i - size1]->getfp() * gpvariables_[i - size1]->get_p_pfac());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        f[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->getfp() *
-                                            epvariables_[i - size1 - size2]->get_p_pfac());
+        f[i] = Core::FADUtils::cast_to_double(epvariables_[i - size1 - size2]->getfp() *
+                                              epvariables_[i - size1 - size2]->get_p_pfac());
       }
 
       return f;
@@ -203,17 +203,17 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        angles[i] = Core::FADUtils::CastToDouble(cpvariables_[i]->get_angle());
+        angles[i] = Core::FADUtils::cast_to_double(cpvariables_[i]->get_angle());
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        angles[i] = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_angle());
+        angles[i] = Core::FADUtils::cast_to_double(gpvariables_[i - size1]->get_angle());
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        angles[i] = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_angle());
+        angles[i] = Core::FADUtils::cast_to_double(epvariables_[i - size1 - size2]->get_angle());
       }
 
       return angles;
@@ -231,22 +231,23 @@ namespace CONTACT
 
       for (int i = 0; i < size1; i++)
       {
-        double xi = Core::FADUtils::CastToDouble(cpvariables_[i]->get_cp().first);
-        double eta = Core::FADUtils::CastToDouble(cpvariables_[i]->get_cp().second);
+        double xi = Core::FADUtils::cast_to_double(cpvariables_[i]->get_cp().first);
+        double eta = Core::FADUtils::cast_to_double(cpvariables_[i]->get_cp().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
-        double xi = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_cp().first);
-        double eta = Core::FADUtils::CastToDouble(gpvariables_[i - size1]->get_cp().second);
+        double xi = Core::FADUtils::cast_to_double(gpvariables_[i - size1]->get_cp().first);
+        double eta = Core::FADUtils::cast_to_double(gpvariables_[i - size1]->get_cp().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
-        double xi = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_cp().first);
-        double eta = Core::FADUtils::CastToDouble(epvariables_[i - size1 - size2]->get_cp().second);
+        double xi = Core::FADUtils::cast_to_double(epvariables_[i - size1 - size2]->get_cp().first);
+        double eta =
+            Core::FADUtils::cast_to_double(epvariables_[i - size1 - size2]->get_cp().second);
         cps[i] = std::make_pair(xi, eta);
       }
 
@@ -309,19 +310,22 @@ namespace CONTACT
       for (int i = 0; i < size1; i++)
       {
         TYPE eta1 = cpvariables_[i]->get_cp().first;
-        for (int j = 0; j < 3; j++) r1[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1_)(j));
+        for (int j = 0; j < 3; j++)
+          r1[i](j) = Core::FADUtils::cast_to_double(r(eta1, element1_)(j));
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
         TYPE eta1 = gpvariables_[i - size1]->get_cp().first;
-        for (int j = 0; j < 3; j++) r1[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1_)(j));
+        for (int j = 0; j < 3; j++)
+          r1[i](j) = Core::FADUtils::cast_to_double(r(eta1, element1_)(j));
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
         TYPE eta1 = epvariables_[i - size1 - size2]->get_cp().first;
-        for (int j = 0; j < 3; j++) r1[i](j) = Core::FADUtils::CastToDouble(r(eta1, element1_)(j));
+        for (int j = 0; j < 3; j++)
+          r1[i](j) = Core::FADUtils::cast_to_double(r(eta1, element1_)(j));
       }
 
       return r1;
@@ -341,19 +345,22 @@ namespace CONTACT
       for (int i = 0; i < size1; i++)
       {
         TYPE eta2 = cpvariables_[i]->get_cp().second;
-        for (int j = 0; j < 3; j++) r2[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2_)(j));
+        for (int j = 0; j < 3; j++)
+          r2[i](j) = Core::FADUtils::cast_to_double(r(eta2, element2_)(j));
       }
 
       for (int i = size1; i < size2 + size1; i++)
       {
         TYPE eta2 = gpvariables_[i - size1]->get_cp().second;
-        for (int j = 0; j < 3; j++) r2[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2_)(j));
+        for (int j = 0; j < 3; j++)
+          r2[i](j) = Core::FADUtils::cast_to_double(r(eta2, element2_)(j));
       }
 
       for (int i = size1 + size2; i < size1 + size2 + size3; i++)
       {
         TYPE eta2 = epvariables_[i - size1 - size2]->get_cp().second;
-        for (int j = 0; j < 3; j++) r2[i](j) = Core::FADUtils::CastToDouble(r(eta2, element2_)(j));
+        for (int j = 0; j < 3; j++)
+          r2[i](j) = Core::FADUtils::cast_to_double(r(eta2, element2_)(j));
       }
 
       return r2;
@@ -394,11 +401,11 @@ namespace CONTACT
     */
     double get_energy() override
     {
-      if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+      if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp and
-          Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+          Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_qp and
-          Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+          Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lpqp)
         FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
@@ -407,21 +414,21 @@ namespace CONTACT
 
       for (int i = 0; i < (int)cpvariables_.size(); i++)
       {
-        double ppfac = Core::FADUtils::CastToDouble(cpvariables_[i]->get_p_pfac());
+        double ppfac = Core::FADUtils::cast_to_double(cpvariables_[i]->get_p_pfac());
         double e = -cpvariables_[i]->get_integrated_energy();
         energy += ppfac * e;
       }
 
       for (int i = 0; i < (int)gpvariables_.size(); i++)
       {
-        double ppfac = Core::FADUtils::CastToDouble(gpvariables_[i]->get_p_pfac());
+        double ppfac = Core::FADUtils::cast_to_double(gpvariables_[i]->get_p_pfac());
         double e = -gpvariables_[i]->get_integrated_energy();
         energy += ppfac * e;
       }
 
       for (int i = 0; i < (int)epvariables_.size(); i++)
       {
-        double ppfac = Core::FADUtils::CastToDouble(epvariables_[i]->get_p_pfac());
+        double ppfac = Core::FADUtils::cast_to_double(epvariables_[i]->get_p_pfac());
         double e = -epvariables_[i]->get_integrated_energy();
         energy += ppfac * e;
       }
@@ -434,11 +441,11 @@ namespace CONTACT
     */
     double get_unscaled_perp_energy() override
     {
-      if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+      if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp and
-          Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+          Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_qp and
-          Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+          Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lpqp)
         FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 
@@ -459,11 +466,11 @@ namespace CONTACT
     */
     double get_unscaled_parallel_energy() override
     {
-      if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+      if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp and
-          Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+          Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_qp and
-          Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+          Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
               bcparams_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lpqp)
         FOUR_C_THROW("Contact Energy calculation not implemented for the chosen penalty law!");
 

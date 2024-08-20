@@ -109,9 +109,9 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr,
           nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
@@ -126,9 +126,9 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> myemat(true);
       soshw6_nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
@@ -151,9 +151,9 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr,
           nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       if (act == calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
@@ -173,14 +173,14 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "iostrain", Inpar::Solid::strain_none);
       soshw6_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
           params, iostress, iostrain);
@@ -240,7 +240,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       soshw6_recover(myres);
     }
     break;
@@ -759,7 +759,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
   if (eastype_ != soshw6_easnone && split_res)
     // only add for row-map elements
     if (params.get<int>("MyPID") == owner())
-      params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::Norm2(feas), 2.);
+      params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
@@ -859,7 +859,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_anssetup(
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)
     {
-      Core::FE::shape_function_3D_deriv1(df_sp[i], r[i], s[i], t[i], Core::FE::CellType::wedge6);
+      Core::FE::shape_function_3d_deriv1(df_sp[i], r[i], s[i], t[i], Core::FE::CellType::wedge6);
     }
 
     // return adresses of just evaluated matrices
@@ -1017,7 +1017,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_eassetup(
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
   const Core::FE::IntegrationPoints3D intpoints(Core::FE::GaussRule3D::wedge_1point);
   Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> df0;
-  Core::FE::shape_function_3D_deriv1(df0, intpoints.qxg[0][0], intpoints.qxg[0][1],
+  Core::FE::shape_function_3d_deriv1(df0, intpoints.qxg[0][0], intpoints.qxg[0][1],
       intpoints.qxg[0][2], Core::FE::CellType::wedge6);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)

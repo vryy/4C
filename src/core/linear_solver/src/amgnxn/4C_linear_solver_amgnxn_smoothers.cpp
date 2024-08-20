@@ -198,7 +198,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
-  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
       solvparams, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard));
@@ -780,12 +780,12 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
 
   if (solvertype == "umfpack")
   {
-    Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::umfpack, *params);
   }
   else if (solvertype == "superlu")
   {
-    Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::superlu, *params);
   }
   else
@@ -2154,9 +2154,9 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::compute_schur_complement(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aps_sp = Aps.get_matrix(0, 0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_sp = Ass.get_matrix(0, 0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-          Core::LinAlg::MLMultiply(*Asp_sp, *invApp_sp, true);
+          Core::LinAlg::ml_multiply(*Asp_sp, *invApp_sp, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp =
-          Core::LinAlg::MLMultiply(*temp, *Aps_sp, false);
+          Core::LinAlg::ml_multiply(*temp, *Aps_sp, false);
       S_sp->add(*Ass_sp, false, 1.0, -1.0);
       S_sp->complete();
       Sout = Teuchos::rcp(new BlockedMatrix(1, 1));
@@ -2179,13 +2179,13 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::compute_schur_complement(
       for (int b = 0; b < NumBlocks_pp; b++)
       {
         Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-            Core::LinAlg::MLMultiply(*(Asp.get_matrix(0, b)), *(invApp.get_matrix(b, b)), true);
+            Core::LinAlg::ml_multiply(*(Asp.get_matrix(0, b)), *(invApp.get_matrix(b, b)), true);
         if (b == 0)
-          S_sp = Core::LinAlg::MLMultiply(*temp, *(Aps.get_matrix(b, 0)), false);
+          S_sp = Core::LinAlg::ml_multiply(*temp, *(Aps.get_matrix(b, 0)), false);
         else
         {
           Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp_tmp =
-              Core::LinAlg::MLMultiply(*temp, *(Aps.get_matrix(b, 0)), true);
+              Core::LinAlg::ml_multiply(*temp, *(Aps.get_matrix(b, 0)), true);
           S_sp->add(*S_sp_tmp, false, 1.0, 1.0);
         }
       }

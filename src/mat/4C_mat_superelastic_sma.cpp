@@ -211,7 +211,7 @@ void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
   strainenergy_ = 0.0;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid
   int matid;
@@ -417,7 +417,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     for (int j = 0; j < 3; j++) cauchy_green_eigenvectors(i, j) = cauchy_green_tensor(i, j);
 
   // Solve the eigen-problem
-  Core::LinAlg::SymmetricEigenProblem(cauchy_green_eigenvectors, cauchy_green_eigenvalues);
+  Core::LinAlg::symmetric_eigen_problem(cauchy_green_eigenvectors, cauchy_green_eigenvalues);
 
   /*
    **********************************************************

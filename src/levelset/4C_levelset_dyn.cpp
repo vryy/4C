@@ -51,7 +51,7 @@ void levelset_dyn(int restart)
 
   // check velocity field
   const Inpar::ScaTra::VelocityField veltype =
-      Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+      Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
   if (veltype != Inpar::ScaTra::velocity_function)
     FOUR_C_THROW(
         "Other velocity fields than a field given by a function not yet supported for level-set "

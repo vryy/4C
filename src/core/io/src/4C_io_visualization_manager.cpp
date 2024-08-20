@@ -75,7 +75,7 @@ Core::IO::VisualizationData& Core::IO::VisualizationManager::register_visualizat
         visualization_data_name.c_str());
   }
   visualization_map_[visualization_data_name] = std::make_pair(VisualizationData(),
-      VisualizationWriterFactory(parameters_, comm_,
+      visualization_writer_factory(parameters_, comm_,
           get_visualization_data_name_for_output_files(visualization_data_name)));
   return visualization_map_[visualization_data_name].first;
 }

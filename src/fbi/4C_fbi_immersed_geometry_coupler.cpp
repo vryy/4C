@@ -40,7 +40,7 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
                         .get<double>("SEARCH_RADIUS")),
       edgebased_fluidstabilization_(false)
 {
-  edgebased_fluidstabilization_ = (Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(
+  edgebased_fluidstabilization_ = (Core::UTILS::integral_value<Inpar::FLUID::StabType>(
                                        Global::Problem::instance()->fluid_dynamic_params().sublist(
                                            "RESIDUAL-BASED STABILIZATION"),
                                        "STABTYPE") == Inpar::FLUID::stabtype_edgebased);
@@ -60,7 +60,7 @@ void FBI::FBIGeometryCoupler::setup(
   compute_fixed_positions(*discretizations[1], fluidpositions_);
 
   // Computes a bounding box for the fluid elements, within which the search will be done
-  Core::LinAlg::Matrix<3, 2> fluidBox = Core::Geo::getXAABBofPositions(*fluidpositions_);
+  Core::LinAlg::Matrix<3, 2> fluidBox = Core::Geo::get_xaab_bof_positions(*fluidpositions_);
 
   // Sets-up the searchtree (octtree) for the fluid elements in the given bounding box
   searchtree_->initialize_tree(
@@ -143,7 +143,7 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
 
   // gather all gids of nodes redundantly
   std::vector<int> rdata;
-  Core::LinAlg::Gather<int>(
+  Core::LinAlg::gather<int>(
       sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build completely overlapping map of nodes (on ALL processors)
@@ -159,7 +159,7 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
 
   // gather all gids of elements redundantly
   rdata.resize(0);
-  Core::LinAlg::Gather<int>(
+  Core::LinAlg::gather<int>(
       sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build complete overlapping map of elements (on ALL processors)
@@ -223,7 +223,7 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
   }
 
   // Communicate pair ids
-  Core::LinAlg::AllToAllCommunication(
+  Core::LinAlg::all_to_all_communication(
       discretizations[0]->get_comm(), pairids_to_send, pairids_to_recv);
 
   // bring pair_ids in correct format
@@ -237,7 +237,7 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
   }
 
   // Communicate element gids
-  Core::LinAlg::AllToAllCommunication(
+  Core::LinAlg::all_to_all_communication(
       discretizations[0]->get_comm(), element_senddata, element_recvdata);
 
 
@@ -274,7 +274,7 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
     }
 
     // communicate node gids
-    Core::LinAlg::AllToAllCommunication(
+    Core::LinAlg::all_to_all_communication(
         discretizations[0]->get_comm(), node_senddata, node_recvdata);
 
     // add new node gids to overlapping column map
@@ -336,7 +336,7 @@ void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization
       // get the DOF numbers of the current node
       dis.dof(node, 0, src_dofs);
       // get the current displacements
-      Core::FE::ExtractMyValues(*disp, mydisp, src_dofs);
+      Core::FE::extract_my_values(*disp, mydisp, src_dofs);
 
       for (int d = 0; d < 3; ++d) (*positions)[node->id()](d) = node->x()[d] + mydisp.at(d);
     }

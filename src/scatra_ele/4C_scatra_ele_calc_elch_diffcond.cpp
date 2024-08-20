@@ -28,7 +28,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcElchDiffCond<distype, probdim>>(
@@ -1129,7 +1129,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_
   // in this function we check if the actual nodes have a dirichlet value
   Teuchos::RCP<const Epetra_Vector> dctoggle = discretization.get_state("dctoggle");
   std::vector<double> mydctoggle(lm.size());
-  Core::FE::ExtractMyValues(*dctoggle, mydctoggle, lm);
+  Core::FE::extract_my_values(*dctoggle, mydctoggle, lm);
 
   double val = 0.0;
   for (unsigned vi = 0; vi < nen_; ++vi)

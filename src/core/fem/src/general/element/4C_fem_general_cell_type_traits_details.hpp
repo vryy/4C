@@ -80,7 +80,7 @@ namespace Core::FE::Details
   };
 
   template <CellType... celltypes>
-  constexpr bool IsCellTypeInSequence(CellType celltype, CelltypeSequence<celltypes...>)
+  constexpr bool is_cell_type_in_sequence(CellType celltype, CelltypeSequence<celltypes...>)
   {
     return ((celltype == celltypes) || ...);
   }
@@ -96,11 +96,11 @@ namespace Core::FE::Details
   /// @{
   template <CellType celltype, typename CelltypeSequence, typename Function,
       typename UnsupportedCellTypeCallable>
-  auto CellTypeSwitchItem([[maybe_unused]] Function fct,
+  auto cell_type_switch_item([[maybe_unused]] Function fct,
       UnsupportedCellTypeCallable unsupported_celltype_callable) -> std::invoke_result_t<Function,
       std::integral_constant<CellType, first_celltype_in_sequence<CelltypeSequence>::value>>
   {
-    if constexpr (IsCellTypeInSequence(celltype, CelltypeSequence{}))
+    if constexpr (is_cell_type_in_sequence(celltype, CelltypeSequence{}))
     {
       return fct(std::integral_constant<CellType, celltype>{});
     }

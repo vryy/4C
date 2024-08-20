@@ -49,7 +49,7 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void Gather(std::vector<T>& sdata, std::vector<T>& rdata, const int ntargetprocs,
+  void gather(std::vector<T>& sdata, std::vector<T>& rdata, const int ntargetprocs,
       const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = comm.MyPID();
@@ -124,7 +124,7 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void Gather(std::set<T>& sdata, std::set<T>& rdata, const int ntargetprocs, const int* tprocs,
+  void gather(std::set<T>& sdata, std::set<T>& rdata, const int ntargetprocs, const int* tprocs,
       const Epetra_Comm& comm)
   {
     const int myrank = comm.MyPID();
@@ -199,7 +199,7 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void Gather(std::map<int, std::set<T>>& sdata, std::map<int, std::set<T>>& rdata,
+  void gather(std::map<int, std::set<T>>& sdata, std::map<int, std::set<T>>& rdata,
       const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = comm.MyPID();
@@ -274,7 +274,7 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void Gather(std::map<int, std::vector<T>>& sdata, std::map<int, std::vector<T>>& rdata,
+  void gather(std::map<int, std::vector<T>>& sdata, std::map<int, std::vector<T>>& rdata,
       const int ntargetprocs, const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = comm.MyPID();
@@ -350,7 +350,7 @@ namespace Core::LinAlg
    */
 
   template <typename T, typename U>
-  void Gather(std::map<T, U>& sdata, std::map<T, U>& rdata, const int ntargetprocs,
+  void gather(std::map<T, U>& sdata, std::map<T, U>& rdata, const int ntargetprocs,
       const int* tprocs, const Epetra_Comm& comm)
   {
     const int myrank = comm.MyPID();
@@ -418,14 +418,14 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void GatherAll(std::set<T>& data, const Epetra_Comm& comm)
+  void gather_all(std::set<T>& data, const Epetra_Comm& comm)
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = comm.NumProc();
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc.data(), comm);
+    gather<T>(data, data, numprocs, allproc.data(), comm);
     return;
   }
 
@@ -444,13 +444,13 @@ namespace Core::LinAlg
    */
 
   template <typename T, typename U>
-  void GatherAll(std::map<T, U>& data, const Epetra_Comm& comm)
+  void gather_all(std::map<T, U>& data, const Epetra_Comm& comm)
   {
     const int numprocs = comm.NumProc();
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T, U>(data, data, numprocs, allproc.data(), comm);
+    gather<T, U>(data, data, numprocs, allproc.data(), comm);
 
     return;
   }
@@ -470,13 +470,13 @@ namespace Core::LinAlg
    */
 
   template <typename T>
-  void GatherAll(std::map<int, std::vector<T>>& data, const Epetra_Comm& comm)
+  void gather_all(std::map<int, std::vector<T>>& data, const Epetra_Comm& comm)
   {
     const int numprocs = comm.NumProc();
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc.data(), comm);
+    gather<T>(data, data, numprocs, allproc.data(), comm);
 
     return;
   }
@@ -498,14 +498,14 @@ namespace Core::LinAlg
 
    */
   template <typename T>
-  void GatherAll(std::vector<T>& data, const Epetra_Comm& comm)
+  void gather_all(std::vector<T>& data, const Epetra_Comm& comm)
   {
     // ntargetprocs is equal to the total number of processors to make data redundant on all procs
     const int numprocs = comm.NumProc();
     std::vector<int> allproc(numprocs);
     for (int i = 0; i < numprocs; ++i) allproc[i] = i;
 
-    Gather<T>(data, data, numprocs, allproc.data(), comm);
+    gather<T>(data, data, numprocs, allproc.data(), comm);
     return;
   }
 
@@ -527,7 +527,7 @@ namespace Core::LinAlg
    \author u.kue
    \date 05/07
    */
-  void AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap);
+  void allreduce_e_map(std::vector<int>& rredundant, const Epetra_Map& emap);
 
   /// Create an allreduced gid to index map from the given Epetra_Map
   /*!
@@ -547,7 +547,7 @@ namespace Core::LinAlg
    \author u.kue
    \date 05/07
    */
-  void AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap);
+  void allreduce_e_map(std::map<int, int>& idxmap, const Epetra_Map& emap);
 
   /*!
    \brief Create an allreduced gid to index map from the given Epetra_Map
@@ -565,7 +565,7 @@ namespace Core::LinAlg
    \author gjb
    \date 11/07
    */
-  Teuchos::RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap, const int pid);
+  Teuchos::RCP<Epetra_Map> allreduce_e_map(const Epetra_Map& emap, const int pid);
 
   /*!
    \brief Create an allreduced Epetra_Map from the given Epetra_Map
@@ -585,7 +585,7 @@ namespace Core::LinAlg
    \author tk
    \date 04/08
    */
-  Teuchos::RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
+  Teuchos::RCP<Epetra_Map> allreduce_e_map(const Epetra_Map& emap);
 
   /*!
    \brief Create an allreduced Epetra_Map from the given Epetra_Map
@@ -597,7 +597,7 @@ namespace Core::LinAlg
    \author u.kue
    \date 08/09
    */
-  Teuchos::RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap);
+  Teuchos::RCP<Epetra_Map> allreduce_overlapping_e_map(const Epetra_Map& emap);
 
   /*!
    \brief Create an allreduced Epetra_Map from the given Epetra_Map
@@ -609,7 +609,7 @@ namespace Core::LinAlg
    \author ghamm
    \date 10/14
    */
-  Teuchos::RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap, const int pid);
+  Teuchos::RCP<Epetra_Map> allreduce_overlapping_e_map(const Epetra_Map& emap, const int pid);
 
   /*!
    \brief Find position of my map elements in a consecutive vector
@@ -631,10 +631,10 @@ namespace Core::LinAlg
    \author u.kue
    \date 05/07
    */
-  int FindMyPos(int nummyelements, const Epetra_Comm& comm);
+  int find_my_pos(int nummyelements, const Epetra_Comm& comm);
 
   /// create an allreduced sorted copy of the source vectors
-  void AllreduceVector(
+  void allreduce_vector(
       const std::vector<int>& src, std::vector<int>& dest, const Epetra_Comm& comm);
 
   /*!
@@ -651,7 +651,7 @@ namespace Core::LinAlg
    \author h.kue
    \date 09/07
    */
-  void AllToAllCommunication(const Epetra_Comm& comm, const std::vector<std::vector<int>>& send,
+  void all_to_all_communication(const Epetra_Comm& comm, const std::vector<std::vector<int>>& send,
       std::vector<std::vector<int>>& recv);
 
   /*!
@@ -665,7 +665,7 @@ namespace Core::LinAlg
    \param[in] send vector of length comm.NumProc(), j-th element to be send to j-th processor.
    \param[out] recv vector of received elements without knowledge of the sending processor
    */
-  void AllToAllCommunication(
+  void all_to_all_communication(
       const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv);
 
 

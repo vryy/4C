@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::Immersed::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Immersed::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -69,11 +69,11 @@ void Inpar::Immersed::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "summarize time monitor every nln iteration", tuple<std::string>("everyiter", "endofsim"),
       tuple<int>(1, 0), &immersedmethod);
 
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "FLD_SRCHRADIUS_FAC", 1.0, "fac times fluid ele. diag. length", &immersedmethod);
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "STRCT_SRCHRADIUS_FAC", 0.5, "fac times structure bounding box diagonal", &immersedmethod);
-  Core::UTILS::IntParameter("NUM_GP_FLUID_BOUND", 8,
+  Core::UTILS::int_parameter("NUM_GP_FLUID_BOUND", 8,
       "number of gp in fluid elements cut by surface of immersed structure (higher number yields "
       "better mass conservation)",
       &immersedmethod);
@@ -94,19 +94,19 @@ void Inpar::Immersed::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "Coupling variable at the fsi interface", tuple<std::string>("Displacement", "Force"),
       tuple<int>(0, 1), &immersedpart);
 
-  Core::UTILS::DoubleParameter("CONVTOL", 1e-6,
+  Core::UTILS::double_parameter("CONVTOL", 1e-6,
       "Tolerance for iteration over fields in case of partitioned scheme", &immersedpart);
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "RELAX", 1.0, "fixed relaxation parameter for partitioned FSI solvers", &immersedpart);
-  Core::UTILS::DoubleParameter("MAXOMEGA", 0.0,
+  Core::UTILS::double_parameter("MAXOMEGA", 0.0,
       "largest omega allowed for Aitken relaxation (0.0 means no constraint)", &immersedpart);
-  Core::UTILS::IntParameter(
+  Core::UTILS::int_parameter(
       "ITEMAX", 100, "Maximum number of iterations over fields", &immersedpart);
 }
 
 
 
-void Inpar::Immersed::SetValidConditions(
+void Inpar::Immersed::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;

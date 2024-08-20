@@ -115,11 +115,11 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
   {
     Teuchos::Time ltime("", true);
 
-    s_ = Core::LinAlg::MLMultiply(*diag_ainv_, (*a_)(0, 1), true);
+    s_ = Core::LinAlg::ml_multiply(*diag_ainv_, (*a_)(0, 1), true);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = diagAinv * A(0,1) %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    s_ = Core::LinAlg::MLMultiply((*a_)(1, 0), *s_, false);
+    s_ = Core::LinAlg::ml_multiply((*a_)(1, 0), *s_, false);
 
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.totalElapsedTime(true));

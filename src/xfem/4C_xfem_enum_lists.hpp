@@ -33,7 +33,7 @@ namespace XFEM
   };
 
   /// map field name enumerator to string
-  static inline std::string FieldName2String(const enum FieldName& field)
+  static inline std::string field_name_to_string(const enum FieldName& field)
   {
     switch (field)
     {
@@ -51,7 +51,7 @@ namespace XFEM
   }
 
   /// map field name enumerator to string
-  static inline enum FieldName String2FieldName(const std::string& name)
+  static inline enum FieldName string_to_field_name(const std::string& name)
   {
     enum FieldName field = unknown;
     if (name == "structure")

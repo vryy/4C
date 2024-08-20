@@ -64,7 +64,7 @@ namespace CONTACT
     */
     bool active_set_semi_smooth_converged() const override
     {
-      bool semismooth = Core::UTILS::IntegralValue<int>(params(), "SEMI_SMOOTH_NEWTON");
+      bool semismooth = Core::UTILS::integral_value<int>(params(), "SEMI_SMOOTH_NEWTON");
       if (semismooth)
         return activesetssconv_;
       else
@@ -83,7 +83,7 @@ namespace CONTACT
     */
     bool active_set_converged() override
     {
-      bool semismooth = Core::UTILS::IntegralValue<int>(params(), "SEMI_SMOOTH_NEWTON");
+      bool semismooth = Core::UTILS::integral_value<int>(params(), "SEMI_SMOOTH_NEWTON");
       if (!semismooth)
         return activesetconv_;
       else

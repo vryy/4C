@@ -395,10 +395,10 @@ namespace Inpar
     };
 
     /// set the fluid parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// set fluid-specific conditions
-    void SetValidConditions(
+    void set_valid_conditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace FLUID
@@ -406,7 +406,7 @@ namespace Inpar
   namespace LowMach
   {
     /// set the low mach number parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
   }  // namespace LowMach
 
 }  // namespace Inpar

@@ -67,7 +67,7 @@ void MIXTURE::AnisotropicGrowthStrategy::evaluate_inverse_growth_deformation_gra
     Core::LinAlg::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
-  const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
+  const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::identity_matrix<3>();
 
   iFgM.update(1.0 / currentReferenceGrowthScalar - 1.0,
       anisotropy_extension_.get_structural_tensor(gp, 0), 1.0, Id);

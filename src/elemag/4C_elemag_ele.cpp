@@ -70,7 +70,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagType::create(
 void Discret::ELEMENTS::ElemagType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  nv = Core::FE::getDimension(dwele->shape()) - 1;
+  nv = Core::FE::get_dimension(dwele->shape()) - 1;
   dimns = nv;
   numdf = dimns;
   return;
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::Elemag::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -235,14 +235,14 @@ bool Discret::ELEMENTS::Elemag::read_element(const std::string& eletype, const s
 {
   // read number of material model
   int material_id = container.get<int>("MAT");
-  set_material(0, Mat::Factory(material_id));
+  set_material(0, Mat::factory(material_id));
   degree_ = container.get<int>("DEG");
 
   completepol_ = container.get<int>("SPC");
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  set_dis_type(Core::FE::StringToCellType(distype));
+  set_dis_type(Core::FE::string_to_cell_type(distype));
 
   return true;
 }
@@ -253,7 +253,7 @@ bool Discret::ELEMENTS::Elemag::read_element(const std::string& eletype, const s
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Elemag::lines()
 {
-  return Core::Communication::GetElementLines<ElemagBoundary, Elemag>(*this);
+  return Core::Communication::get_element_lines<ElemagBoundary, Elemag>(*this);
 }
 
 
@@ -262,7 +262,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Elemag::li
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Elemag::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<ElemagBoundary, Elemag>(*this);
+  return Core::Communication::get_element_surfaces<ElemagBoundary, Elemag>(*this);
 }
 
 /*----------------------------------------------------------------------*
@@ -276,8 +276,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Elemag::create_face_ele
   Discret::ELEMENTS::Elemag* slave_pele = dynamic_cast<Discret::ELEMENTS::Elemag*>(parent_slave);
 
   // insert both parent elements
-  return Core::Communication::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids,
-      nodes, this, slave_pele, lsurface_master, lsurface_slave, localtrafomap);
+  return Core::Communication::element_int_face_factory<ElemagIntFace, Elemag>(-1, -1, nnode,
+      nodeids, nodes, this, slave_pele, lsurface_master, lsurface_slave, localtrafomap);
 }
 
 //=======================================================================
@@ -341,7 +341,7 @@ Core::Elements::Element* Discret::ELEMENTS::ElemagBoundary::clone() const
  *----------------------------------------------------------------------*/
 Core::FE::CellType Discret::ELEMENTS::ElemagBoundary::shape() const
 {
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_master_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_master_element()->shape());
 }
 
 
@@ -374,7 +374,7 @@ void Discret::ELEMENTS::ElemagBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -539,7 +539,7 @@ Core::Elements::Element* Discret::ELEMENTS::ElemagIntFace::clone() const
 Core::FE::CellType Discret::ELEMENTS::ElemagIntFace::shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return Core::FE::getShapeOfBoundaryElement(num_node(), parent_master_element()->shape());
+  return Core::FE::get_shape_of_boundary_element(num_node(), parent_master_element()->shape());
 }
 
 /*----------------------------------------------------------------------*

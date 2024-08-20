@@ -77,8 +77,8 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
           lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // extract local values of (convective) velocity field from global state vector
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, my::econvelnp_, lmvel);
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, my::evelnp_, lmvel);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, my::econvelnp_, lmvel);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, my::evelnp_, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       my::rotsymmpbc_->rotate_my_values_if_necessary(my::econvelnp_);
@@ -88,7 +88,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       // -> extract local values from global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       //----------------------------------------------------------------------
       // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -188,7 +188,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
 
@@ -338,7 +338,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   // extract local values from the global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
       my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get history variable (needed for double layer modeling)
   Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
@@ -347,7 +347,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   // extract local values from the global vector
   std::vector<Core::LinAlg::Matrix<nen_, 1>> ehist(
       my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
   Teuchos::RCP<Core::Conditions::Condition> cond =
@@ -452,7 +452,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
     // extract local values from the global vector
     std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
-    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
+    Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
 
     if (not is_stationary)
     {

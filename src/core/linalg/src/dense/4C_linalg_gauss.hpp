@@ -29,9 +29,10 @@ namespace Core::LinAlg
     \return determinant of system matrix
   */
   template <bool do_piv, unsigned dim, typename Valtype>
-  Valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, Valtype>& A,  ///< (in)    : system matrix
-      Core::LinAlg::Matrix<dim, 1, Valtype>& b,  ///< (in)    : right-hand-side
-      Core::LinAlg::Matrix<dim, 1, Valtype>& x   ///< (out)   : solution vector
+  Valtype gauss_elimination(
+      Core::LinAlg::Matrix<dim, dim, Valtype>& A,  ///< (in)    : system matrix
+      Core::LinAlg::Matrix<dim, 1, Valtype>& b,    ///< (in)    : right-hand-side
+      Core::LinAlg::Matrix<dim, 1, Valtype>& x     ///< (out)   : solution vector
   );
 
 
@@ -42,9 +43,9 @@ namespace Core::LinAlg
     \return determinant of system matrix
   */
   template <unsigned dim>
-  double scaledGaussElimination(Core::LinAlg::Matrix<dim, dim>& A,  ///< (in)    : system matrix
-      Core::LinAlg::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
-      Core::LinAlg::Matrix<dim, 1>& x                               ///< (out)   : solution vector
+  double scaled_gauss_elimination(Core::LinAlg::Matrix<dim, dim>& A,  ///< (in)    : system matrix
+      Core::LinAlg::Matrix<dim, 1>& b,                                ///< (in)    : right-hand-side
+      Core::LinAlg::Matrix<dim, 1>& x                                 ///< (out)   : solution vector
   );
 
 

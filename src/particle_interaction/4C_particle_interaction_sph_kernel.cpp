@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleInteraction::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& params)
-    : kernelspacedim_(Core::UTILS::IntegralValue<Inpar::PARTICLE::KernelSpaceDimension>(
+    : kernelspacedim_(Core::UTILS::integral_value<Inpar::PARTICLE::KernelSpaceDimension>(
           params, "KERNEL_SPACE_DIM"))
 {
   // empty constructor
@@ -65,7 +65,7 @@ void ParticleInteraction::SPHKernelBase::kernel_space_dimension(int& dim) const
 void ParticleInteraction::SPHKernelBase::grad_wij(
     const double& rij, const double& support, const double* eij, double* gradWij) const
 {
-  UTILS::VecSetScale(gradWij, this->d_wdrij(rij, support), eij);
+  UTILS::vec_set_scale(gradWij, this->d_wdrij(rij, support), eij);
 }
 
 ParticleInteraction::SPHKernelCubicSpline::SPHKernelCubicSpline(
@@ -92,11 +92,11 @@ double ParticleInteraction::SPHKernelCubicSpline::normalization_constant(const d
     case Inpar::PARTICLE::Kernel2D:
     {
       // (10.0 / 7.0) * M_1_PI * inv_h * inv_h
-      return 0.4547284088339866 * UTILS::Pow<2>(inv_h);
+      return 0.4547284088339866 * UTILS::pow<2>(inv_h);
     }
     case Inpar::PARTICLE::Kernel3D:
     {
-      return M_1_PI * UTILS::Pow<3>(inv_h);
+      return M_1_PI * UTILS::pow<3>(inv_h);
     }
     default:
     {
@@ -119,9 +119,9 @@ double ParticleInteraction::SPHKernelCubicSpline::w(const double& rij, const dou
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (1.0 - 1.5 * UTILS::Pow<2>(q) + 0.75 * UTILS::Pow<3>(q)) * normalization_constant(inv_h);
+    return (1.0 - 1.5 * UTILS::pow<2>(q) + 0.75 * UTILS::pow<3>(q)) * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (0.25 * UTILS::Pow<3>(2.0 - q)) * normalization_constant(inv_h);
+    return (0.25 * UTILS::pow<3>(2.0 - q)) * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -133,9 +133,9 @@ double ParticleInteraction::SPHKernelCubicSpline::d_wdrij(
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (-3.0 * q + 2.25 * UTILS::Pow<2>(q)) * inv_h * normalization_constant(inv_h);
+    return (-3.0 * q + 2.25 * UTILS::pow<2>(q)) * inv_h * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (-0.75 * UTILS::Pow<2>(2.0 - q)) * inv_h * normalization_constant(inv_h);
+    return (-0.75 * UTILS::pow<2>(2.0 - q)) * inv_h * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -147,9 +147,9 @@ double ParticleInteraction::SPHKernelCubicSpline::d2_wdrij2(
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (-3.0 + 4.5 * q) * UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
+    return (-3.0 + 4.5 * q) * UTILS::pow<2>(inv_h) * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (1.5 * (2.0 - q)) * UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
+    return (1.5 * (2.0 - q)) * UTILS::pow<2>(inv_h) * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -180,12 +180,12 @@ double ParticleInteraction::SPHKernelQuinticSpline::normalization_constant(
     case Inpar::PARTICLE::Kernel2D:
     {
       // (7.0 / 478.0) * M_1_PI * inv_h * inv_h
-      return 0.0046614418478797 * UTILS::Pow<2>(inv_h);
+      return 0.0046614418478797 * UTILS::pow<2>(inv_h);
     }
     case Inpar::PARTICLE::Kernel3D:
     {
       // (3.0 / 359.0) * M_1_PI * inv_h * inv_h * inv_h
-      return 0.0026599711937364 * UTILS::Pow<3>(inv_h);
+      return 0.0026599711937364 * UTILS::pow<3>(inv_h);
     }
     default:
     {
@@ -209,12 +209,12 @@ double ParticleInteraction::SPHKernelQuinticSpline::w(
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (UTILS::Pow<5>(3.0 - q) - 6.0 * UTILS::Pow<5>(2.0 - q) + 15.0 * UTILS::Pow<5>(1.0 - q)) *
+    return (UTILS::pow<5>(3.0 - q) - 6.0 * UTILS::pow<5>(2.0 - q) + 15.0 * UTILS::pow<5>(1.0 - q)) *
            normalization_constant(inv_h);
   else if (q < 2.0)
-    return (UTILS::Pow<5>(3.0 - q) - 6.0 * UTILS::Pow<5>(2.0 - q)) * normalization_constant(inv_h);
+    return (UTILS::pow<5>(3.0 - q) - 6.0 * UTILS::pow<5>(2.0 - q)) * normalization_constant(inv_h);
   else if (q < 3.0)
-    return UTILS::Pow<5>(3.0 - q) * normalization_constant(inv_h);
+    return UTILS::pow<5>(3.0 - q) * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -226,14 +226,14 @@ double ParticleInteraction::SPHKernelQuinticSpline::d_wdrij(
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (-5.0 * UTILS::Pow<4>(3.0 - q) + 30.0 * UTILS::Pow<4>(2.0 - q) -
-               75.0 * UTILS::Pow<4>(1.0 - q)) *
+    return (-5.0 * UTILS::pow<4>(3.0 - q) + 30.0 * UTILS::pow<4>(2.0 - q) -
+               75.0 * UTILS::pow<4>(1.0 - q)) *
            inv_h * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (-5.0 * UTILS::Pow<4>(3.0 - q) + 30.0 * UTILS::Pow<4>(2.0 - q)) * inv_h *
+    return (-5.0 * UTILS::pow<4>(3.0 - q) + 30.0 * UTILS::pow<4>(2.0 - q)) * inv_h *
            normalization_constant(inv_h);
   else if (q < 3.0)
-    return (-5.0 * UTILS::Pow<4>(3.0 - q)) * inv_h * normalization_constant(inv_h);
+    return (-5.0 * UTILS::pow<4>(3.0 - q)) * inv_h * normalization_constant(inv_h);
   else
     return 0.0;
 }
@@ -245,14 +245,14 @@ double ParticleInteraction::SPHKernelQuinticSpline::d2_wdrij2(
   const double q = rij * inv_h;
 
   if (q < 1.0)
-    return (20.0 * UTILS::Pow<3>(3.0 - q) - 120.0 * UTILS::Pow<3>(2.0 - q) +
-               300.0 * UTILS::Pow<3>(1.0 - q)) *
-           UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
+    return (20.0 * UTILS::pow<3>(3.0 - q) - 120.0 * UTILS::pow<3>(2.0 - q) +
+               300.0 * UTILS::pow<3>(1.0 - q)) *
+           UTILS::pow<2>(inv_h) * normalization_constant(inv_h);
   else if (q < 2.0)
-    return (20.0 * UTILS::Pow<3>(3.0 - q) - 120.0 * UTILS::Pow<3>(2.0 - q)) * UTILS::Pow<2>(inv_h) *
+    return (20.0 * UTILS::pow<3>(3.0 - q) - 120.0 * UTILS::pow<3>(2.0 - q)) * UTILS::pow<2>(inv_h) *
            normalization_constant(inv_h);
   else if (q < 3.0)
-    return (20.0 * UTILS::Pow<3>(3.0 - q)) * UTILS::Pow<2>(inv_h) * normalization_constant(inv_h);
+    return (20.0 * UTILS::pow<3>(3.0 - q)) * UTILS::pow<2>(inv_h) * normalization_constant(inv_h);
   else
     return 0.0;
 }

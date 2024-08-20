@@ -146,7 +146,7 @@ void CONTACT::PenaltyStrategy::initialize()
       *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   // (re)setup global vector containing lagrange multipliers
-  z_ = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
+  z_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   // (re)setup global matrix containing lagrange multiplier derivatives
   linzmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100));
@@ -180,7 +180,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
     if (friction_ and (soltype == Inpar::CONTACT::solution_penalty or
                           soltype == Inpar::CONTACT::solution_multiscale))
@@ -225,9 +225,9 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     interface_[i]->build_active_set();
-    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interface_[i]->active_nodes(), false);
-    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interface_[i]->active_dofs(), false);
-    gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interface_[i]->slip_nodes(), false);
+    gactivenodes_ = Core::LinAlg::merge_map(gactivenodes_, interface_[i]->active_nodes(), false);
+    gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interface_[i]->active_dofs(), false);
+    gslipnodes_ = Core::LinAlg::merge_map(gslipnodes_, interface_[i]->slip_nodes(), false);
   }
 
   // check if contact contributions are present,
@@ -265,9 +265,9 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   {
     // modify lindmatrix_ and dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+        Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     lindmatrix_ = temp1;
     dmatrix_ = temp2;
   }
@@ -307,8 +307,8 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -323,15 +323,15 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
 
   // multiply Mortar matrices D and M with LinZ
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
-      Core::LinAlg::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
-      Core::LinAlg::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::MatrixRowTransform(dtilde, pgsdofrowmap_);
-    mtilde = Mortar::MatrixRowTransform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(dtilde, pgsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(mtilde, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -374,7 +374,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   }
 
   {
-    Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
     Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::export_to(*fcmm, *fcmmtemp);
@@ -405,7 +405,7 @@ void CONTACT::PenaltyStrategy::evaluate_friction(
 
   // check if friction should be applied
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
 
   // coulomb friction case
   if (ftype == Inpar::CONTACT::friction_coulomb || ftype == Inpar::CONTACT::friction_stick)
@@ -485,15 +485,15 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(
 
   // multiply Mortar matrices D and M with LinZ
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
-      Core::LinAlg::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
-      Core::LinAlg::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::MatrixRowTransform(dtilde, pgsdofrowmap_);
-    mtilde = Mortar::MatrixRowTransform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(dtilde, pgsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(mtilde, pgmdofrowmap_);
   }
 
   // remove contact stiffness #2 from kteff
@@ -521,7 +521,7 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(
   Core::LinAlg::export_to(*fcmd, *fcmdtemp);
   feff->Update(1 - alphaf_, *fcmdtemp, 1.0);
 
-  Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
   mmatrix_->multiply(true, *z_, *fcmm);
   Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Core::LinAlg::export_to(*fcmm, *fcmmtemp);
@@ -597,12 +597,12 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
     Teuchos::RCP<Epetra_Vector> gact;
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
-      gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
+      gact = Core::LinAlg::create_vector(*gactivedofs_, true);
       Core::LinAlg::export_to(*wgap_, *gact);
     }
     else
     {
-      gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
+      gact = Core::LinAlg::create_vector(*gactivenodes_, true);
       if (gact->GlobalLength()) Core::LinAlg::export_to(*wgap_, *gact);
     }
 
@@ -623,7 +623,7 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
     // (only for Uzawa Augmented Lagrange strategy)
     //********************************************************************
     Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
     if (soltype == Inpar::CONTACT::solution_uzawa)
     {
@@ -772,7 +772,7 @@ void CONTACT::PenaltyStrategy::assemble()
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
     Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
     if (friction_ and (soltype == Inpar::CONTACT::solution_penalty or
                           soltype == Inpar::CONTACT::solution_multiscale))
@@ -817,9 +817,9 @@ void CONTACT::PenaltyStrategy::assemble()
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     interface_[i]->build_active_set();
-    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interface_[i]->active_nodes(), false);
-    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interface_[i]->active_dofs(), false);
-    gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interface_[i]->slip_nodes(), false);
+    gactivenodes_ = Core::LinAlg::merge_map(gactivenodes_, interface_[i]->active_nodes(), false);
+    gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interface_[i]->active_dofs(), false);
+    gslipnodes_ = Core::LinAlg::merge_map(gslipnodes_, interface_[i]->slip_nodes(), false);
   }
 
   // check if contact contributions are present,
@@ -853,9 +853,9 @@ void CONTACT::PenaltyStrategy::assemble()
   {
     // modify lindmatrix_ and dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+        Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     lindmatrix_ = temp1;
     dmatrix_ = temp2;
   }
@@ -869,8 +869,8 @@ void CONTACT::PenaltyStrategy::assemble()
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -885,15 +885,15 @@ void CONTACT::PenaltyStrategy::assemble()
 
   // multiply Mortar matrices D and M with LinZ
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
-      Core::LinAlg::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
-      Core::LinAlg::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::ml_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::MatrixRowTransform(dtilde, pgsdofrowmap_);
-    mtilde = Mortar::MatrixRowTransform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(dtilde, pgsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(mtilde, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -913,7 +913,7 @@ void CONTACT::PenaltyStrategy::assemble()
   }
 
   {
-    Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
     Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
     Core::LinAlg::export_to(*fcmm, *fcmmtemp);

@@ -271,7 +271,7 @@ namespace NOX
            *  The following completes the sentence "The filter ...".
            *
            *  \author hiermeier \date 08/17  */
-          inline std::string filter_status2_string(enum FilterStatusType filter_status) const
+          inline std::string filter_status_to_string(enum FilterStatusType filter_status) const
           {
             switch (filter_status)
             {

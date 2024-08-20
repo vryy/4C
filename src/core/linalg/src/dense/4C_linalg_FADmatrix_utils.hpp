@@ -103,8 +103,8 @@ namespace Core::LinAlg
 
 /// Save first derivatives in a 3x3 double matrix
 template <typename T>
-inline void FirstDerivToMatrix(FAD const& r_fad,  ///< FAD function
-    Core::LinAlg::Matrix<3, 3, T>& out)           ///< First derivatives
+inline void first_deriv_to_matrix(FAD const& r_fad,  ///< FAD function
+    Core::LinAlg::Matrix<3, 3, T>& out)              ///< First derivatives
 {
   for (int i = 0; i < 3; ++i) out(i, i) = r_fad.dx(i);
   out(0, 1) = r_fad.dx(3);

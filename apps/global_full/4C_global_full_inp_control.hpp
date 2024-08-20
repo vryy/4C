@@ -25,7 +25,7 @@ void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name
 );
 
 //> setup of parallel output as early as possible
-void SetupParallelOutput(
+void setup_parallel_output(
     std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
 
 #endif

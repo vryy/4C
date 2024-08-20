@@ -168,8 +168,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
   {
     out << "    segment " << index_segment << ": ";
     out << "eta in ["
-        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].get_etadata()) << ", "
-        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].get_eta_b()) << "]";
+        << Core::FADUtils::cast_to_double(line_to_3D_segments_[index_segment].get_etadata()) << ", "
+        << Core::FADUtils::cast_to_double(line_to_3D_segments_[index_segment].get_eta_b()) << "]";
     out << ", Gauss points = "
         << line_to_3D_segments_[index_segment].get_number_of_projection_points();
     out << "\n";
@@ -186,9 +186,9 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
     Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(), ele1posref_, r_beam);
+    GEOMETRYPAIR::evaluate_position<Beam>(integration_point.get_eta(), ele1posref_, r_beam);
   else
-    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.get_eta(),
+    GEOMETRYPAIR::evaluate_position<Beam>(integration_point.get_eta(),
         GEOMETRYPAIR::ElementDataToDouble<Beam>::to_double(ele1pos_), r_beam);
 }
 

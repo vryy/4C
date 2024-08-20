@@ -115,7 +115,7 @@ namespace Mat
   /// add material definition to list of defined materials
   ///
   /// this method checks for coincidental material names or types
-  void AppendMaterialDefinition(
+  void append_material_definition(
       std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,  ///< list of defined materials
       const Teuchos::RCP<MaterialDefinition>& mat              ///< material to add
   );

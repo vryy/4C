@@ -32,7 +32,7 @@ namespace Solid
   //! Create auxiliary time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<Solid::TimAda> TimAdaCreate(
+  Teuchos::RCP<Solid::TimAda> tim_ada_create(
       const Teuchos::ParameterList& ioflags,     //!< input-output-flags
       const Teuchos::ParameterList& timeparams,  //!< structural dynamic flags
       const Teuchos::ParameterList& sdyn,        //!< structural dynamic flags

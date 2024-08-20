@@ -28,7 +28,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrode<distype, probdim>>(
@@ -229,7 +229,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           eslavephiint, faraday, frt, detF);
 
       // Butler-Volmer exchange mass flux density
-      const double j0 = CalculateButlerVolmerExchangeMassFluxDensity(
+      const double j0 = calculate_butler_volmer_exchange_mass_flux_density(
           kr, alphaa, alphac, cmax, eslavephiint, emasterphiint, kineticmodel, condition_type);
 
       switch (kineticmodel)
@@ -251,7 +251,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           const double expterm = expterm1 - expterm2;
 
           // core residual term associated with Butler-Volmer mass flux density
-          const double j = IsButlerVolmerLinearized(kineticmodel) ? j0 * frt * eta : j0 * expterm;
+          const double j =
+              is_butler_volmer_linearized(kineticmodel) ? j0 * frt * eta : j0 * expterm;
 
           // forward declarations
           double dj_dc_slave(0.0);
@@ -260,9 +261,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           double dj_dpot_master(0.0);
 
           // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
-          CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv, alphaa, alphac,
-              resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax, eta,
-              dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+          calculate_butler_volmer_elch_linearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+              alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint,
+              cmax, eta, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
           // calculate RHS and linearizations of master and slave-side residuals
           calculate_rh_sand_global_system<distype_master>(funct_slave, funct_master, test_slave,
@@ -277,9 +278,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         case Inpar::S2I::kinetics_butlervolmerreducedresistance:
         {
           // compute Butler-Volmer mass flux density via Newton-Raphson method
-          const double j =
-              CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa, alphac, frt, eslavepotint,
-                  emasterpotint, epd, resistance, itemaxmimplicitBV, convtolimplicitBV, faraday);
+          const double j = calculate_modified_butler_volmer_mass_flux_density(j0, alphaa, alphac,
+              frt, eslavepotint, emasterpotint, epd, resistance, itemaxmimplicitBV,
+              convtolimplicitBV, faraday);
 
           // electrode-electrolyte overpotential at integration point
           const double eta = eslavepotint - emasterpotint - epd - j * faraday * resistance;
@@ -295,9 +296,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           double dj_dpot_master(0.0);
 
           // calculate linearizations of Butler-Volmer kinetics w.r.t. elch dofs
-          CalculateButlerVolmerElchLinearizations(kineticmodel, j0, frt, epdderiv, alphaa, alphac,
-              resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint, cmax, eta,
-              dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
+          calculate_butler_volmer_elch_linearizations(kineticmodel, j0, frt, epdderiv, alphaa,
+              alphac, resistance, expterm1, expterm2, kr, faraday, emasterphiint, eslavephiint,
+              cmax, eta, dj_dc_slave, dj_dc_master, dj_dpot_slave, dj_dpot_master);
 
           // calculate RHS and linearizations of master and slave-side residuals
           calculate_rh_sand_global_system<distype_master>(funct_slave, funct_master, test_slave,
@@ -625,7 +626,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     {
       static Core::LinAlg::Matrix<nen_, nsd_> xyze_transposed;
       xyze_transposed.update_t(my::xyze_);
-      Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
+      Core::FE::evaluate_shape_function_spatial_derivative_in_prob_dim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
     }
@@ -682,7 +683,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
             eslavephiint, faraday, frt, detF);
 
         // Butler-Volmer exchange mass flux density
-        const double j0 = CalculateButlerVolmerExchangeMassFluxDensity(
+        const double j0 = calculate_butler_volmer_exchange_mass_flux_density(
             kr, alphaa, alphac, cmax, eslavephiint, emasterphiint, kineticmodel, conditiontype);
 
         // electrode-electrolyte overpotential at integration point
@@ -694,7 +695,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           case ScaTra::DifferentiationType::disp:
           {
             double dj_dsqrtdetg(0.0), dj_ddetF(0.0);
-            CalculateButlerVolmerDispLinearizations(
+            calculate_butler_volmer_disp_linearizations(
                 kineticmodel, alphaa, alphac, frt, j0, eta, depd_ddetF, dj_dsqrtdetg, dj_ddetF);
 
             const double dj_dsqrtdetg_timefacwgt = pseudo_contact_fac * dj_dsqrtdetg * timefacwgt;
@@ -1237,7 +1238,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         if (std::isinf(epd)) break;
 
         // Butler-Volmer exchange mass flux density
-        const double j0 = CalculateButlerVolmerExchangeMassFluxDensity(
+        const double j0 = calculate_butler_volmer_exchange_mass_flux_density(
             kr, alphaa, alphac, cmax, eslavephiint, emasterphiint, kineticmodel, condition_type);
 
         switch (kineticmodel)
@@ -1259,7 +1260,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
             const double expterm = expterm1 - expterm2;
 
             // core residual term associated with Butler-Volmer mass flux density
-            const double j = IsButlerVolmerLinearized(kineticmodel) ? j0 * frt * eta : j0 * expterm;
+            const double j =
+                is_butler_volmer_linearized(kineticmodel) ? j0 * frt * eta : j0 * expterm;
 
             if (only_positive_fluxes and j < 0.0) break;
 
@@ -1279,9 +1281,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           case Inpar::S2I::kinetics_butlervolmerreducedresistance:
           {
             // compute Butler-Volmer mass flux density via Newton-Raphson method
-            const double j =
-                CalculateModifiedButlerVolmerMassFluxDensity(j0, alphaa, alphac, frt, eslavepotint,
-                    emasterpotint, epd, resistance, itemaxmimplicitBV, convtolimplicitBV, faraday);
+            const double j = calculate_modified_butler_volmer_mass_flux_density(j0, alphaa, alphac,
+                frt, eslavepotint, emasterpotint, epd, resistance, itemaxmimplicitBV,
+                convtolimplicitBV, faraday);
 
             if (only_positive_fluxes and j < 0.0) break;
 

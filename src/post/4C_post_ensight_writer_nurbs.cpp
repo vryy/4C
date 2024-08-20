@@ -185,7 +185,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
         // point 1
         uv(0) = -1.0;
         uv(1) = -1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
+        Core::FE::Nurbs::nurbs_get_2d_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
         for (int isd = 0; isd < 2; ++isd)
         {
           double val = 0;
@@ -200,7 +200,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
         // point 2
         uv(0) = 1.0;
         uv(1) = -1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
+        Core::FE::Nurbs::nurbs_get_2d_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
         for (int isd = 0; isd < 2; ++isd)
         {
           double val = 0;
@@ -215,7 +215,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
         // point 3
         uv(0) = -1.0;
         uv(1) = 1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
+        Core::FE::Nurbs::nurbs_get_2d_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
         for (int isd = 0; isd < 2; ++isd)
         {
           double val = 0;
@@ -230,7 +230,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
         // point 4
         uv(0) = 1.0;
         uv(1) = 1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
+        Core::FE::Nurbs::nurbs_get_2d_funct(nurbs_shape_funct, uv, knots, weights, actele->shape());
         for (int isd = 0; isd < 2; ++isd)
         {
           double val = 0;
@@ -282,7 +282,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 1
           uv(0) = -1.0;
           uv(1) = -1.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -298,7 +298,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 2
           uv(0) = 0.0;
           uv(1) = -1.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -314,7 +314,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 3
           uv(0) = -1.0;
           uv(1) = 0.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -330,7 +330,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 4
           uv(0) = 0.0;
           uv(1) = 0.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -374,7 +374,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 5
           uv(0) = -1.0;
           uv(1) = 1.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
 
           for (int isd = 0; isd < 2; ++isd)
@@ -391,7 +391,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 6
           uv(0) = 0.0;
           uv(1) = 1.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -434,7 +434,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 3
           uv(0) = 1.0;
           uv(1) = -1.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -450,7 +450,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 6
           uv(0) = 1.0;
           uv(1) = 0.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -490,7 +490,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           // point 9
           uv(0) = 1.0;
           uv(1) = 1.0;
-          Core::FE::Nurbs::nurbs_get_2D_funct(
+          Core::FE::Nurbs::nurbs_get_2d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 2; ++isd)
           {
@@ -588,7 +588,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = -1.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -606,7 +606,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = -1.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -623,7 +623,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = 0.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -640,7 +640,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = 0.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -657,7 +657,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = -1.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -674,7 +674,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = -1.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -691,7 +691,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = 0.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -708,7 +708,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = 0.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -769,7 +769,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = -1.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -787,7 +787,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = 0.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -804,7 +804,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = -1.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -821,7 +821,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = 0.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -882,7 +882,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = 1.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -900,7 +900,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = 1.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -917,7 +917,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = 1.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -934,7 +934,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = 1.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -985,7 +985,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = 1.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1002,7 +1002,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = 1.0;
           uv(2) = 0.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1065,7 +1065,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = -1.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1083,7 +1083,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = -1.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1100,7 +1100,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = 0.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1117,7 +1117,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = 0.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1169,7 +1169,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = -1.0;
           uv(1) = 1.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1186,7 +1186,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 0.0;
           uv(1) = 1.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1238,7 +1238,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = -1.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1255,7 +1255,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = 0.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1303,7 +1303,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
           uv(0) = 1.0;
           uv(1) = 1.0;
           uv(2) = 1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -1362,7 +1362,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
   }
 
   // new procmap
-  proc0map = Core::LinAlg::AllreduceEMap(*vispointmap_, 0);
+  proc0map = Core::LinAlg::allreduce_e_map(*vispointmap_, 0);
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *vispointmap_);
@@ -2205,7 +2205,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 1
         uv(0) = -1.0;
         uv(1) = -1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2221,7 +2221,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 2
         uv(0) = 1.0;
         uv(1) = -1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2238,7 +2238,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 3
         uv(0) = -1.0;
         uv(1) = 1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2254,7 +2254,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 4
         uv(0) = 1.0;
         uv(1) = 1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2293,7 +2293,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 1
         uv(0) = -1.0;
         uv(1) = -1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         idu = 2 * ele_cart_id[0];
         idv = 2 * ele_cart_id[1] * (nvpu);
@@ -2312,7 +2312,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 2
         uv(0) = 0.0;
         uv(1) = -1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         idu = 2 * ele_cart_id[0] + 1;
         idv = 2 * ele_cart_id[1] * (nvpu);
@@ -2332,7 +2332,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 3
         uv(0) = -1.0;
         uv(1) = 0.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         idu = 2 * ele_cart_id[0];
         idv = (2 * ele_cart_id[1] + 1) * (nvpu);
@@ -2351,7 +2351,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 4
         uv(0) = 0.0;
         uv(1) = 0.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         idu = 2 * ele_cart_id[0] + 1;
         idv = (2 * ele_cart_id[1] + 1) * (nvpu);
@@ -2386,7 +2386,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 5
         uv(0) = -1.0;
         uv(1) = 1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2404,7 +2404,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 6
         uv(0) = 0.0;
         uv(1) = 1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2437,7 +2437,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 5
         uv(0) = 1.0;
         uv(1) = -1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2455,7 +2455,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 6
         uv(0) = 1.0;
         uv(1) = 0.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2488,7 +2488,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         // point 9
         uv(0) = 1.0;
         uv(1) = 1.0;
-        Core::FE::Nurbs::nurbs_get_2D_funct(
+        Core::FE::Nurbs::nurbs_get_2d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         for (int isd = 0; isd < numdf; ++isd)
         {
@@ -2541,7 +2541,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = -1.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -2564,7 +2564,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = -1.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -2587,7 +2587,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = 0.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -2610,7 +2610,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = 0.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -2633,7 +2633,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = -1.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -2656,7 +2656,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = -1.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -2679,7 +2679,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = 0.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -2702,7 +2702,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = 0.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -2748,7 +2748,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = -1.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         idu = (2 * ele_cart_id[0] + 2);
         idv = (2 * ele_cart_id[1]) * (2 * nele_x_mele_x_lele[0] + 1);
@@ -2770,7 +2770,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = 0.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 2);
@@ -2793,7 +2793,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = -1.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 2);
@@ -2816,7 +2816,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = 0.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 2);
@@ -2862,7 +2862,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = 1.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -2886,7 +2886,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = 1.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -2909,7 +2909,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = 1.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -2932,7 +2932,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = 1.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -2979,7 +2979,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = 1.0;
         uv(2) = -1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
         idu = (2 * ele_cart_id[0] + 2);
         idv = (2 * ele_cart_id[1] + 2) * (2 * nele_x_mele_x_lele[0] + 1);
@@ -3001,7 +3001,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = 1.0;
         uv(2) = 0.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 2);
@@ -3049,7 +3049,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = -1.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -3072,7 +3072,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = -1.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -3095,7 +3095,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = 0.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -3118,7 +3118,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = 0.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -3167,7 +3167,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = -1.0;
         uv(1) = 1.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0]);
@@ -3190,7 +3190,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 0.0;
         uv(1) = 1.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 1);
@@ -3238,7 +3238,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = -1.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 2);
@@ -3261,7 +3261,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = 0.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 2);
@@ -3309,7 +3309,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
         uv(0) = 1.0;
         uv(1) = 1.0;
         uv(2) = 1.0;
-        Core::FE::Nurbs::nurbs_get_3D_funct(
+        Core::FE::Nurbs::nurbs_get_3d_funct(
             nurbs_shape_funct, uv, eleknots, weights, actele->shape());
 
         idu = (2 * ele_cart_id[0] + 2);

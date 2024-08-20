@@ -26,7 +26,7 @@ namespace Discret
     namespace UTILS
     {
       template <Core::FE::CellType distype>
-      void CalcR(const Core::Elements::Element* ele, const std::vector<double>& disp,
+      void calc_r(const Core::Elements::Element* ele, const std::vector<double>& disp,
           Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& R);
 
       template <Core::FE::CellType distype>
@@ -104,7 +104,7 @@ namespace Discret
        * \param gp [in] : Gauss point
        */
       template <Core::FE::CellType distype>
-      void ComputeDeformationGradientMulf(
+      void compute_deformation_gradient_mulf(
           Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
@@ -121,7 +121,7 @@ namespace Discret
        * \param inverseJacobian [in] : Inverse jacobian at the point of evaluation
        */
       template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
-      void ComputeDeformationGradientStandard(Core::LinAlg::Matrix<probdim, probdim>& defgrd,
+      void compute_deformation_gradient_standard(Core::LinAlg::Matrix<probdim, probdim>& defgrd,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xcurr,
           const Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>>& derivs,
           const Core::LinAlg::Matrix<probdim, probdim>& inverseJacobian);
@@ -135,7 +135,7 @@ namespace Discret
        * \param xrefe [out] : reference coordinates of the element
        */
       template <Core::FE::CellType distype, int probdim = 3>
-      void EvaluateNodalCoordinates(Core::Nodes::Node** nodes,
+      void evaluate_nodal_coordinates(Core::Nodes::Node** nodes,
           Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xrefe);
 
       /*!
@@ -147,7 +147,7 @@ namespace Discret
        * \param xdisp [out] : Nodal displacements
        */
       template <Core::FE::CellType distype, int probdim = 3>
-      void EvaluateNodalDisplacements(const std::vector<double>& disp,
+      void evaluate_nodal_displacements(const std::vector<double>& disp,
           Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp);
 
       /*!
@@ -160,7 +160,7 @@ namespace Discret
        * \param xcurr [out] : Current coordinates of the element
        */
       template <Core::FE::CellType distype, int probdim = 3>
-      void EvaluateCurrentNodalCoordinates(
+      void evaluate_current_nodal_coordinates(
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xrefe,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp,
           Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xcurr);
@@ -174,7 +174,7 @@ namespace Discret
        * \param inverseJacobian [out] : inverse jacobian
        */
       template <Core::FE::CellType distype>
-      void EvaluateInverseJacobian(
+      void evaluate_inverse_jacobian(
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xrefe,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
           Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& inverseJacobian);
@@ -186,7 +186,7 @@ namespace Discret
        * \param sdyn [in] : Structural dynamics parameter list
        * \param eletype [out] : Element type string
        */
-      void ThrowErrorFDMaterialTangent(
+      void throw_error_fd_material_tangent(
           const Teuchos::ParameterList& sdyn, const std::string& eletype);
 
     }  // namespace UTILS

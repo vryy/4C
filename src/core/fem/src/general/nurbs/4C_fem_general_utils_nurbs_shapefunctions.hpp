@@ -97,7 +97,7 @@ namespace Core::FE::Nurbs
   */
 
   template <int degree, class V, class UV, class WG>
-  bool nurbs_get_1D_funct(V& nurbs_shape_funct, const UV& u,
+  bool nurbs_get_1d_funct(V& nurbs_shape_funct, const UV& u,
       const Core::LinAlg::SerialDenseVector& knots, const WG& weights)
   {
     // size is the number of control points/basis
@@ -258,7 +258,7 @@ namespace Core::FE::Nurbs
    * @brief Evaluate the 1D NURBS shape functions based on the discretization type of the element.
    */
   template <class V, class UV, class WG>
-  bool nurbs_get_1D_funct(V& nurbs_shape_funct, const UV& u,
+  bool nurbs_get_1d_funct(V& nurbs_shape_funct, const UV& u,
       const Core::LinAlg::SerialDenseVector& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
@@ -266,11 +266,11 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs2:
       {
-        return nurbs_get_1D_funct<1>(nurbs_shape_funct, u, knots, weights);
+        return nurbs_get_1d_funct<1>(nurbs_shape_funct, u, knots, weights);
       }
       case Core::FE::CellType::nurbs3:
       {
-        return nurbs_get_1D_funct<2>(nurbs_shape_funct, u, knots, weights);
+        return nurbs_get_1d_funct<2>(nurbs_shape_funct, u, knots, weights);
       }
       default:
       {
@@ -377,7 +377,7 @@ namespace Core::FE::Nurbs
 
   */
   template <int degree, class VF, class VD, class UV, class WG>
-  bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
+  bool nurbs_get_1d_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
       const Core::LinAlg::SerialDenseVector& knots, const WG& weights)
   {
     // size is the number of control points/basis
@@ -603,7 +603,7 @@ namespace Core::FE::Nurbs
    * discretization type of the element.
    */
   template <class VF, class VD, class UV, class WG>
-  bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
+  bool nurbs_get_1d_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
       const Core::LinAlg::SerialDenseVector& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
@@ -611,11 +611,11 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs2:
       {
-        return nurbs_get_1D_funct_deriv<1>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
+        return nurbs_get_1d_funct_deriv<1>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
       }
       case Core::FE::CellType::nurbs3:
       {
-        return nurbs_get_1D_funct_deriv<2>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
+        return nurbs_get_1d_funct_deriv<2>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
       }
       default:
       {
@@ -625,7 +625,7 @@ namespace Core::FE::Nurbs
   }
 
   template <int degree, class VF, class MD, class MSD, class UV, class WG>
-  bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+  bool nurbs_get_1d_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& u, const Core::LinAlg::SerialDenseVector& knots,
       const WG& weights)
   {
@@ -740,7 +740,7 @@ namespace Core::FE::Nurbs
    * discretization type of the element.
    */
   template <class VF, class MD, class MSD, class UV, class WG>
-  bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+  bool nurbs_get_1d_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& u, const Core::LinAlg::SerialDenseVector& knots,
       const WG& weights, const Core::FE::CellType& distype)
   {
@@ -748,12 +748,12 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs2:
       {
-        return nurbs_get_1D_funct_deriv_deriv2<1>(
+        return nurbs_get_1d_funct_deriv_deriv2<1>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, u, knots, weights);
       }
       case Core::FE::CellType::nurbs3:
       {
-        return nurbs_get_1D_funct_deriv_deriv2<2>(
+        return nurbs_get_1d_funct_deriv_deriv2<2>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, u, knots, weights);
       }
       default:
@@ -847,7 +847,7 @@ namespace Core::FE::Nurbs
 
   */
   template <int degree, typename ScalarType = double, class VF, class UV, class WG>
-  bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
+  bool nurbs_get_2d_funct(VF& nurbs_shape_funct, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
@@ -1038,7 +1038,7 @@ namespace Core::FE::Nurbs
    * @brief Evaluate the 2D NURBS shape functions based on the discretization type of the element.
    */
   template <typename ScalarType = double, class VF, class UV, class WG>
-  bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
+  bool nurbs_get_2d_funct(VF& nurbs_shape_funct, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
@@ -1046,11 +1046,11 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs4:
       {
-        return nurbs_get_2D_funct<1, ScalarType>(nurbs_shape_funct, uv, knots, weights);
+        return nurbs_get_2d_funct<1, ScalarType>(nurbs_shape_funct, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs9:
       {
-        return nurbs_get_2D_funct<2, ScalarType>(nurbs_shape_funct, uv, knots, weights);
+        return nurbs_get_2d_funct<2, ScalarType>(nurbs_shape_funct, uv, knots, weights);
       }
       default:
       {
@@ -1174,7 +1174,7 @@ namespace Core::FE::Nurbs
 
   */
   template <int degree, typename ScalarType = double, class VF, class MD, class UV, class WG>
-  bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
+  bool nurbs_get_2d_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
@@ -1448,7 +1448,7 @@ namespace Core::FE::Nurbs
    * discretization type of the element.
    */
   template <typename ScalarType = double, class VF, class MD, class UV, class WG>
-  bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
+  bool nurbs_get_2d_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
@@ -1456,12 +1456,12 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs4:
       {
-        return nurbs_get_2D_funct_deriv<1, ScalarType>(
+        return nurbs_get_2d_funct_deriv<1, ScalarType>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs9:
       {
-        return nurbs_get_2D_funct_deriv<2, ScalarType>(
+        return nurbs_get_2d_funct_deriv<2, ScalarType>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
       default:
@@ -1590,7 +1590,7 @@ namespace Core::FE::Nurbs
   */
 
   template <int degree, class VF, class MD, class MSD, class UV, class WG>
-  bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+  bool nurbs_get_2d_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
@@ -2046,7 +2046,7 @@ namespace Core::FE::Nurbs
    * discretization type of the element.
    */
   template <class VF, class MD, class MSD, class UV, class WG>
-  bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+  bool nurbs_get_2d_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
@@ -2055,12 +2055,12 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs4:
       {
-        return nurbs_get_2D_funct_deriv_deriv2<1>(
+        return nurbs_get_2d_funct_deriv_deriv2<1>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs9:
       {
-        return nurbs_get_2D_funct_deriv_deriv2<2>(
+        return nurbs_get_2d_funct_deriv_deriv2<2>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
       }
       default:
@@ -2179,7 +2179,7 @@ namespace Core::FE::Nurbs
   */
 
   template <int degree, class V, class UV, class WG>
-  bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
+  bool nurbs_get_3d_funct(V& nurbs_shape_funct, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
@@ -2416,7 +2416,7 @@ namespace Core::FE::Nurbs
    * @brief Evaluate the 3D NURBS shape functions based on the discretization type of the element.
    */
   template <class V, class UV, class WG>
-  bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
+  bool nurbs_get_3d_funct(V& nurbs_shape_funct, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
@@ -2424,11 +2424,11 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs8:
       {
-        return nurbs_get_3D_funct<1>(nurbs_shape_funct, uv, knots, weights);
+        return nurbs_get_3d_funct<1>(nurbs_shape_funct, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs27:
       {
-        return nurbs_get_3D_funct<2>(nurbs_shape_funct, uv, knots, weights);
+        return nurbs_get_3d_funct<2>(nurbs_shape_funct, uv, knots, weights);
       }
       default:
       {
@@ -2585,7 +2585,7 @@ namespace Core::FE::Nurbs
   */
 
   template <int degree, class VF, class UV, class MD, class WG>
-  bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
+  bool nurbs_get_3d_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
@@ -2935,7 +2935,7 @@ namespace Core::FE::Nurbs
    * discretization type of the element.
    */
   template <class VF, class UV, class MD, class WG>
-  bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
+  bool nurbs_get_3d_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
@@ -2943,12 +2943,12 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs8:
       {
-        return nurbs_get_3D_funct_deriv<1>(
+        return nurbs_get_3d_funct_deriv<1>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs27:
       {
-        return nurbs_get_3D_funct_deriv<2>(
+        return nurbs_get_3d_funct_deriv<2>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
       default:
@@ -3192,7 +3192,7 @@ namespace Core::FE::Nurbs
   */
 
   template <int degree, class VF, class MD, class MSD, class UV, class WG>
-  bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+  bool nurbs_get_3d_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
@@ -3808,7 +3808,7 @@ namespace Core::FE::Nurbs
    * discretization type of the element.
    */
   template <class VF, class MD, class MSD, class UV, class WG>
-  bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
+  bool nurbs_get_3d_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
@@ -3817,12 +3817,12 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs8:
       {
-        return nurbs_get_3D_funct_deriv_deriv2<1>(
+        return nurbs_get_3d_funct_deriv_deriv2<1>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs27:
       {
-        return nurbs_get_3D_funct_deriv_deriv2<2>(
+        return nurbs_get_3d_funct_deriv_deriv2<2>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
       }
       default:
@@ -3840,21 +3840,21 @@ namespace Core::FE::Nurbs
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
-    switch (Core::FE::getDimension(distype))
+    switch (Core::FE::get_dimension(distype))
     {
       case 3:
       {
-        return Core::FE::Nurbs::nurbs_get_3D_funct_deriv_deriv2(
+        return Core::FE::Nurbs::nurbs_get_3d_funct_deriv_deriv2(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights, distype);
       }
       case 2:
       {
-        return Core::FE::Nurbs::nurbs_get_2D_funct_deriv_deriv2(
+        return Core::FE::Nurbs::nurbs_get_2d_funct_deriv_deriv2(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights, distype);
       }
       case 1:
       {
-        return Core::FE::Nurbs::nurbs_get_1D_funct_deriv_deriv2(nurbs_shape_funct,
+        return Core::FE::Nurbs::nurbs_get_1d_funct_deriv_deriv2(nurbs_shape_funct,
             nurbs_shape_deriv, nurbs_shape_deriv2, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3869,21 +3869,21 @@ namespace Core::FE::Nurbs
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
-    switch (Core::FE::getDimension(distype))
+    switch (Core::FE::get_dimension(distype))
     {
       case 3:
       {
-        return Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
+        return Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights, distype);
       }
       case 2:
       {
-        return Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
+        return Core::FE::Nurbs::nurbs_get_2d_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights, distype);
       }
       case 1:
       {
-        return Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
+        return Core::FE::Nurbs::nurbs_get_1d_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3898,19 +3898,19 @@ namespace Core::FE::Nurbs
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
   {
-    switch (Core::FE::getDimension(distype))
+    switch (Core::FE::get_dimension(distype))
     {
       case 3:
       {
-        return Core::FE::Nurbs::nurbs_get_3D_funct(nurbs_shape_funct, uv, knots, weights, distype);
+        return Core::FE::Nurbs::nurbs_get_3d_funct(nurbs_shape_funct, uv, knots, weights, distype);
       }
       case 2:
       {
-        return Core::FE::Nurbs::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, distype);
+        return Core::FE::Nurbs::nurbs_get_2d_funct(nurbs_shape_funct, uv, knots, weights, distype);
       }
       case 1:
       {
-        return Core::FE::Nurbs::nurbs_get_1D_funct(
+        return Core::FE::Nurbs::nurbs_get_1d_funct(
             nurbs_shape_funct, uv(0), knots[0], weights, distype);
       }
       default:

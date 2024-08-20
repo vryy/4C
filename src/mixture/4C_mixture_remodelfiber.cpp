@@ -78,13 +78,13 @@ namespace
   }
 
   template <typename T>
-  [[nodiscard]] T EvaluatedI4dlambdar(T lambda_f, T lambda_r, T lambda_ext)
+  [[nodiscard]] T evaluated_i4dlambdar(T lambda_f, T lambda_r, T lambda_ext)
   {
     return -2.0 * std::pow(lambda_f, 2) / (std::pow(lambda_r * lambda_ext, 2) * lambda_r);
   }
 
   template <typename T>
-  [[nodiscard]] T EvaluatdI4dlambdafsq(T lambda_f, T lambda_r, T lambda_ext)
+  [[nodiscard]] T evaluatd_i4dlambdafsq(T lambda_f, T lambda_r, T lambda_ext)
   {
     return 1.0 / std::pow(lambda_r * lambda_ext, 2);
   }
@@ -272,13 +272,13 @@ Core::LinAlg::Matrix<2, 2, T> MIXTURE::Implementation::RemodelFiberImplementatio
   std::tie(K, b) = EvaluateLocalNewtonLinearSystem();
 
   unsigned iteration = 0;
-  while (Core::FADUtils::VectorNorm(b) > 1e-10)
+  while (Core::FADUtils::vector_norm(b) > 1e-10)
   {
     if (iteration >= 500)
     {
       FOUR_C_THROW(
           "The local newton didn't converge within 500 iterations. Residuum is %.3e > %.3e",
-          Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm(b)), 1e-10);
+          Core::FADUtils::cast_to_double(Core::FADUtils::vector_norm(b)), 1e-10);
     }
     K.invert();
     x_np.multiply_nn(-1, K, b, 1.0);
@@ -489,7 +489,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
   return evaluate_d_remodel_evolution_equation_dt_partial_d_remodel(
              lambda_f, lambda_r, lambda_ext) +
          evaluate_d_remodel_evolution_equation_dt_d_i4(lambda_f, lambda_r, lambda_ext) *
-             EvaluatedI4dlambdar(lambda_f, lambda_r, lambda_ext);
+             evaluated_i4dlambdar(lambda_f, lambda_r, lambda_ext);
 }
 
 template <int numstates, typename T>
@@ -557,7 +557,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
   const T lambda_ext = states_.back().lambda_ext;
   const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
 
-  const T dI4dlambdar = EvaluatedI4dlambdar(lambda_f, lambda_r, lambda_ext);
+  const T dI4dlambdar = evaluated_i4dlambdar(lambda_f, lambda_r, lambda_ext);
 
   return fiber_material_->get_d_cauchy_stress_d_i4(I4) * dI4dlambdar / std::pow(lambda_f, 2);
 }
@@ -593,7 +593,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
          evaluate_d_growth_evolution_equation_dt_d_sig(
              lambda_f, lambda_r, lambda_ext, growth_scalar) *
          evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext) *
-         EvaluatdI4dlambdafsq<T>(lambda_f, lambda_r, lambda_ext);
+         evaluatd_i4dlambdafsq<T>(lambda_f, lambda_r, lambda_ext);
 }
 
 template <int numstates, typename T>
@@ -625,7 +625,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
   return dRremodeldF *
          evaluate_d_remodel_evolution_equation_dt_d_sig(lambda_f, lambda_r, lambda_ext) *
          evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext) *
-         EvaluatdI4dlambdafsq<T>(lambda_f, lambda_r, lambda_ext);
+         evaluatd_i4dlambdafsq<T>(lambda_f, lambda_r, lambda_ext);
 }
 
 template <int numstates, typename T>
@@ -651,7 +651,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_fiber_cauchy_stress_d_remodel(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
-  const T dI4dremodel = EvaluatedI4dlambdar(lambda_f, lambda_r, lambda_ext);
+  const T dI4dremodel = evaluated_i4dlambdar(lambda_f, lambda_r, lambda_ext);
   return evaluate_d_fiber_cauchy_stress_partial_d_i4(lambda_f, lambda_r, lambda_ext) * dI4dremodel;
 }
 

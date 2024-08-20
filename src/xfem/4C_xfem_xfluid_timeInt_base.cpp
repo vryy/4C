@@ -474,7 +474,7 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
 ) const
 {
   Core::LinAlg::SerialDenseMatrix xyz(3, ele->num_node(), true);
-  Core::Geo::fillInitialPositionArray(ele, xyz);
+  Core::Geo::fill_initial_position_array(ele, xyz);
 
   // add ale displacements to initial position
   if (state != "reference" && dispnp_ != Teuchos::null &&
@@ -492,9 +492,9 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
     std::vector<double> mydispnp(la[0].lm_.size());
 
     if (state == "dispnp")
-      Core::FE::ExtractMyValues(*dispnp_, mydispnp, la[0].lm_);
+      Core::FE::extract_my_values(*dispnp_, mydispnp, la[0].lm_);
     else if (state == "dispn")
-      Core::FE::ExtractMyValues(*dispn_, mydispnp, la[0].lm_);
+      Core::FE::extract_my_values(*dispn_, mydispnp, la[0].lm_);
     else
       FOUR_C_THROW("XFEM::XfluidTimeintBase::call_x_to_xi_coords: Undefined state!");
 
@@ -589,7 +589,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
   shapeFcnDerivXY.clear();
 
   //-------------------------------------------------------
-  Core::FE::shape_function_3D(
+  Core::FE::shape_function_3d(
       shapeFcn, xi(0), xi(1), xi(2), distype);  // evaluate shape functions at xi
 
   if (compute_deriv)
@@ -613,7 +613,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
 
       // extract local values of the global vectors
       std::vector<double> mydispnp(la[0].lm_.size());
-      Core::FE::ExtractMyValues(*dispnp_, mydispnp, la[0].lm_);
+      Core::FE::extract_my_values(*dispnp_, mydispnp, la[0].lm_);
 
       for (int inode = 0; inode < nen; ++inode)  // number of nodes
       {
@@ -628,7 +628,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
 
     // shape function derivatives w.r.t local coordinates
     Core::LinAlg::Matrix<3, numnode> shapeFcnDeriv;
-    Core::FE::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), distype);
+    Core::FE::shape_function_3d_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), distype);
 
     Core::LinAlg::Matrix<nsd, nsd> xjm(true);    // jacobi matrix
     xjm.multiply_nt(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
@@ -1157,7 +1157,7 @@ void XFEM::XfluidStd::get_gp_values_t(Core::Elements::Element* ele,  ///< pointe
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  Core::FE::ExtractMyValues(*vel_vec, mymatrix, lm);
+  Core::FE::extract_my_values(*vel_vec, mymatrix, lm);
 
   for (int inode = 0; inode < numnode; ++inode)  // number of nodes
   {
@@ -1673,7 +1673,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
 
     // extract local values of the global vectors
     std::vector<double> mymatrix(lm.size());
-    Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+    Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
     // add the displacement of the interface
     for (int idim = 0; idim < 3; ++idim)  // number of dimensions
@@ -1942,7 +1942,7 @@ void XFEM::XfluidStd::compute_start_point_line(
 
 
   for (int i = 0; i < side1->num_node(); i++)
-    xi_1_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side1->shape()), 1.0);
+    xi_1_avg.update(1.0, Core::FE::get_node_coordinates(i, side1->shape()), 1.0);
 
   xi_1_avg.scale(1.0 / side1->num_node());
 
@@ -1956,7 +1956,7 @@ void XFEM::XfluidStd::compute_start_point_line(
   if (side2 != nullptr)  // in case we have side2, use averaged normal
   {
     for (int i = 0; i < side2->num_node(); i++)
-      xi_2_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side2->shape()), 1.0);
+      xi_2_avg.update(1.0, Core::FE::get_node_coordinates(i, side2->shape()), 1.0);
 
     xi_2_avg.scale(1.0 / side2->num_node());
 
@@ -2004,7 +2004,7 @@ void XFEM::XfluidStd::compute_start_point_avg(
     // get the side-center
     for (int i = 0; i < side->num_node(); i++)
     {
-      local_node_coord = Core::FE::GetNodeCoordinates(i, side->shape());
+      local_node_coord = Core::FE::get_node_coordinates(i, side->shape());
       side_center(0) += local_node_coord(0);
       side_center(1) += local_node_coord(1);
     }
@@ -2143,8 +2143,8 @@ void XFEM::XfluidStd::get_normal_side_tn(
   Core::LinAlg::Matrix<3, 1> dx_ds(true);
 
   // get current values
-  Core::FE::shape_function_2D(funct, xi_side(0), xi_side(1), side_distype);
-  Core::FE::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
+  Core::FE::shape_function_2d(funct, xi_side(0), xi_side(1), side_distype);
+  Core::FE::shape_function_2d_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
   proj_x_n.multiply(xyze_, funct);
 
@@ -2256,7 +2256,7 @@ void XFEM::XfluidStd::get_projxn_line(
 
 
   // get current values
-  Core::FE::shape_function_1D(funct, xi_line, line_distype);
+  Core::FE::shape_function_1d(funct, xi_line, line_distype);
 
   // projected point tracked back at t^n
   proj_x_n.multiply(xyze_, funct);
@@ -2288,7 +2288,7 @@ void XFEM::XfluidStd::addeidisp(
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+  Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
   for (int inode = 0; inode < nen; ++inode)  // number of nodes
   {
@@ -2794,9 +2794,9 @@ bool XFEM::XfluidStd::project_on_side(
 
 
     // get current values
-    Core::FE::shape_function_2D(funct, sol(0), sol(1), side_distype);
-    Core::FE::shape_function_2D_deriv1(deriv, sol(0), sol(1), side_distype);
-    Core::FE::shape_function_2D_deriv2(deriv2, sol(0), sol(1), side_distype);
+    Core::FE::shape_function_2d(funct, sol(0), sol(1), side_distype);
+    Core::FE::shape_function_2d_deriv1(deriv, sol(0), sol(1), side_distype);
+    Core::FE::shape_function_2d_deriv2(deriv2, sol(0), sol(1), side_distype);
 
     x.multiply(xyze_, funct);
 
@@ -2933,7 +2933,7 @@ bool XFEM::XfluidStd::project_on_side(
       dist = -sol(2) * normal_length;  // negative sol(2)!!! and scaling with normal length
 
       // evaluate shape function at solution
-      Core::FE::shape_function_2D(funct, sol(0), sol(1), side_distype);
+      Core::FE::shape_function_2d(funct, sol(0), sol(1), side_distype);
 
       // get projected gauss point
       x_side.multiply(xyze_, funct);
@@ -3078,7 +3078,7 @@ void XFEM::XfluidStd::project_on_point(
 
   // extract local values of the global vectors
   std::vector<double> mymatrix(lm.size());
-  Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+  Core::FE::extract_my_values(*matrix_state, mymatrix, lm);
 
   // add the displacement of the interface
   for (int idim = 0; idim < 3; ++idim)  // number of dimensions

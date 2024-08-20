@@ -224,7 +224,7 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
           {
             // let the factory create a matching empty element
             Teuchos::RCP<Core::Elements::Element> ele =
-                Core::Communication::Factory(eletype, distype, elenumber, 0);
+                Core::Communication::factory(eletype, distype, elenumber, 0);
             if (ele.is_null()) FOUR_C_THROW("element creation failed");
 
             // For the time being we support old and new input facilities. To

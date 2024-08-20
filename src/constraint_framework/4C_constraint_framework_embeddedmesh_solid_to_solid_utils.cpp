@@ -128,7 +128,7 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
         default:
           FOUR_C_THROW(
               "The interaction pairs with background element of type %s not yet implemented",
-              (Core::FE::CellTypeToString(background_ele->shape())).c_str());
+              (Core::FE::cell_type_to_string(background_ele->shape())).c_str());
           break;
       }
       break;
@@ -147,14 +147,14 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
         default:
           FOUR_C_THROW(
               "The interaction pairs with background element of type %s not yet implemented",
-              (Core::FE::CellTypeToString(background_ele->shape())).c_str());
+              (Core::FE::cell_type_to_string(background_ele->shape())).c_str());
           break;
       }
       break;
     }
     default:
       FOUR_C_THROW("The interaction pairs with interface element of type %s not yet implemented",
-          (Core::FE::CellTypeToString(background_ele->shape())).c_str());
+          (Core::FE::cell_type_to_string(background_ele->shape())).c_str());
   }
 }
 
@@ -346,7 +346,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_current_element_displacement(
   std::vector<int> lm, lmowner, lmstride;
 
   ele->location_vector(discret, lm, lmowner, lmstride);
-  Core::FE::ExtractMyValues(displacement_vector, eledisp, lm);
+  Core::FE::extract_my_values(displacement_vector, eledisp, lm);
 }
 
 void CONSTRAINTS::EMBEDDEDMESH::get_mortar_gid(

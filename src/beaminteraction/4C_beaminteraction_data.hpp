@@ -527,7 +527,7 @@ namespace BEAMINTERACTION
 
     /// create respective data container from char vector
     template <typename T>
-    T* CreateDataContainer(std::vector<char> const& data)
+    T* create_data_container(std::vector<char> const& data)
     {
       T* new_container = new T();
       new_container->unpack(data);

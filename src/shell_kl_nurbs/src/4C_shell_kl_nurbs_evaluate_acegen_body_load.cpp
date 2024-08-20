@@ -67,7 +67,7 @@ void FourC::Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_body_load_auto_
       v[92] = intpoints.qwgt[i89 - 1] * v[179];
       uv(0) = v[90];
       uv(1) = intpoints.qxg[i89 - 1][0];
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv_deriv2(
+      Core::FE::Nurbs::nurbs_get_2d_funct_deriv_deriv2(
           N, dN, ddN, uv, knots, weights, Core::FE::CellType::nurbs9);
       v[123] = dN(0, 0);
       v[124] = dN(0, 1);

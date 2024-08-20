@@ -48,7 +48,7 @@ namespace Discret::ELEMENTS
    * @param[out] dj_dpot_master  linearization of Butler-Volmer mass flux density w.r.t.
    *                             electric potential on master-side
    */
-  void CalculateButlerVolmerElchLinearizations(int kineticmodel, double j0, double frt,
+  void calculate_butler_volmer_elch_linearizations(int kineticmodel, double j0, double frt,
       double epdderiv, double alphaa, double alphac, double resistance, double expterm1,
       double expterm2, double kr, double faraday, double emasterphiint, double eslavephiint,
       double cmax, double eta, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
@@ -71,7 +71,7 @@ namespace Discret::ELEMENTS
    * @param[out] dj_dT_slave     linearization of Butler-Volmer mass flux density w.r.t.
    *                             temperature on slave-side
    */
-  void CalculateButlerVolmerTempLinearizations(double alphaa, double alphac, double depddT,
+  void calculate_butler_volmer_temp_linearizations(double alphaa, double alphac, double depddT,
       double eta, double etempint, double faraday, double frt, double gasconstant, double j0,
       double& dj_dT_slave);
 
@@ -91,7 +91,7 @@ namespace Discret::ELEMENTS
    *                           determinant of the deformation gradient at the current Gauss
    *                           point
    */
-  void CalculateButlerVolmerDispLinearizations(int kineticmodel, double alphaa, double alphac,
+  void calculate_butler_volmer_disp_linearizations(int kineticmodel, double alphaa, double alphac,
       double frt, double j0, double eta, double depd_ddetF, double& dj_dsqrtdetg, double& dj_ddetF);
 
   /*!
@@ -108,8 +108,8 @@ namespace Discret::ELEMENTS
    * @param[in] s2i_condition_type  scatra-scatra interface condition type
    * @return exchange mass flux density
    */
-  double CalculateButlerVolmerExchangeMassFluxDensity(double kr, double alpha_a, double alpha_c,
-      double c_max, double c_ed, double c_el, int kinetic_model,
+  double calculate_butler_volmer_exchange_mass_flux_density(double kr, double alpha_a,
+      double alpha_c, double c_max, double c_ed, double c_el, int kinetic_model,
       const Core::Conditions::ConditionType& s2i_condition_type);
 
   /*!
@@ -128,15 +128,15 @@ namespace Discret::ELEMENTS
    * @param[in] faraday          faraday constant
    * @return                     Butler-Volmer mass flux density
    */
-  double CalculateModifiedButlerVolmerMassFluxDensity(double j0, double alphaa, double alphac,
+  double calculate_modified_butler_volmer_mass_flux_density(double j0, double alphaa, double alphac,
       double frt, double pot_ed, double pot_el, double epd, double resistance, double itemax,
       double convtol, double faraday);
 
   //! Return, if kinetic model uses linearized Butler-Volmer equation
-  bool IsButlerVolmerLinearized(int kineticmodel);
+  bool is_butler_volmer_linearized(int kineticmodel);
 
   //! Return, if kinetic model uses reduced prefactor in Butler-Volmer equation
-  bool IsReducedButlerVolmer(int kineticmodel);
+  bool is_reduced_butler_volmer(int kineticmodel);
 
 }  // namespace Discret::ELEMENTS
 

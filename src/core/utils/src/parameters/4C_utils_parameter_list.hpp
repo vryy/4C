@@ -22,7 +22,7 @@ namespace Core
   {
     //! add entry as item of enum class @p value to @p list with name @p parameter_name
     template <class EnumType>
-    void AddEnumClassToParameterList(
+    void add_enum_class_to_parameter_list(
         const std::string& parameter_name, const EnumType value, Teuchos::ParameterList& list)
     {
       const std::string docu = "";
@@ -32,15 +32,15 @@ namespace Core
     }
 
     /// local wrapper to test multiple versions of "Yes", "YES", etc
-    void BoolParameter(std::string const& paramName, std::string const& value,
+    void bool_parameter(std::string const& paramName, std::string const& value,
         std::string const& docString, Teuchos::ParameterList* paramList);
 
     /// local wrapper for Teuchos::setIntParameter() that allows only integers
-    void IntParameter(std::string const& paramName, int const value, std::string const& docString,
+    void int_parameter(std::string const& paramName, int const value, std::string const& docString,
         Teuchos::ParameterList* paramList);
 
     /// local wrapper for Teuchos::setDoubleParameter() that allows only doubles
-    void DoubleParameter(std::string const& paramName, double const& value,
+    void double_parameter(std::string const& paramName, double const& value,
         std::string const& docString, Teuchos::ParameterList* paramList);
 
     /*!
@@ -58,18 +58,18 @@ namespace Core
     @param[in] docString Documentation of the parameter
     @param[in/out] paramList Parameter list (to be filled with <paramName,Value,docString>)
     */
-    void StringParameter(std::string const& paramName, std::string const& value,
+    void string_parameter(std::string const& paramName, std::string const& value,
         std::string const& docString, Teuchos::ParameterList* paramList);
 
     template <class T>
-    T IntegralValue(const Teuchos::ParameterList& params, const std::string& name)
+    T integral_value(const Teuchos::ParameterList& params, const std::string& name)
     {
       int value = Teuchos::getIntegralValue<int>(params, name);
       return static_cast<T>(value);
     }
 
     template <class T>
-    T GetAsEnum(const Teuchos::ParameterList& params, const std::string& name)
+    T get_as_enum(const Teuchos::ParameterList& params, const std::string& name)
     {
       static_assert(std::is_enum_v<T>, "This function may only be used for enum constants.");
       int value = params.get<int>(name);
@@ -77,7 +77,7 @@ namespace Core
     }
 
     template <class T>
-    T GetAsEnum(const Teuchos::ParameterList& params, const std::string& name, T default_value)
+    T get_as_enum(const Teuchos::ParameterList& params, const std::string& name, T default_value)
     {
       static_assert(std::is_enum_v<T>, "This function may only be used for enum constants.");
       if (params.isParameter(name))

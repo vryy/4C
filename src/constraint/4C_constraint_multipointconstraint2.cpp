@@ -38,7 +38,7 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Core::FE::Discretization>
     constraintdis_ = create_discretization_from_condition(
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
     Teuchos::RCP<Epetra_Map> newcolnodemap =
-        Core::Rebalance::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
+        Core::Rebalance::compute_node_col_map(actdisc_, constraintdis_.find(0)->second);
     actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
     Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
         Teuchos::rcp(new Core::DOFSets::TransparentDofSet(actdisc_));
@@ -197,7 +197,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
     if (myrank == 0)
     {
       Teuchos::RCP<Core::Elements::Element> constraintele =
-          Core::Communication::Factory(element_name, "Polynomial", j, myrank);
+          Core::Communication::factory(element_name, "Polynomial", j, myrank);
       // set the same global node ids to the ale element
       constraintele->set_node_ids(ngid.size(), ngid.data());
 
@@ -358,7 +358,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (assemblevec1)
       {
         elevector1.scale(lagraval);
-        Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
+        Core::LinAlg::assemble(*systemvector1, elevector1, lm, lmowner);
       }
       if (assemblevec3)
       {
@@ -366,7 +366,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
         std::vector<int> constrowner;
         constrlm.push_back(gindex);
         constrowner.push_back(actele->owner());
-        Core::LinAlg::Assemble(*systemvector3, elevector3, constrlm, constrowner);
+        Core::LinAlg::assemble(*systemvector3, elevector3, constrlm, constrowner);
       }
 
       // Load curve business

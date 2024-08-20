@@ -113,7 +113,7 @@ bool Cut::IntegrationCellCreator::create_cell(
       break;
     default:
       FOUR_C_THROW(
-          "unsupported element shape ( shape = %s )", Core::FE::CellTypeToString(shape).c_str());
+          "unsupported element shape ( shape = %s )", Core::FE::cell_type_to_string(shape).c_str());
       exit(EXIT_FAILURE);
   }
   // if the create process was successful, we can finally create the integration cell
@@ -249,7 +249,7 @@ bool Cut::IntegrationCellCreator::create_2d_cell(
     if (line_cycle().size() != 2) FOUR_C_THROW("The line cycle has the wrong length!");
 
     // find corresponding facet
-    Facet* f = FindFacet(facets, line_cycle());
+    Facet* f = find_facet(facets, line_cycle());
     if (not f) FOUR_C_THROW("Could not find the corresponding line facet!");
 
     add_side(bcell_pos, cell, f, facetype, line_cycle());
@@ -345,7 +345,7 @@ bool Cut::IntegrationCellCreator::create_tet4_cell(
       {
         side[j] = points[Core::FE::eleNodeNumbering_tet10_surfaces[i][j]];
       }
-      Facet* f = FindFacet(facets, side);
+      Facet* f = find_facet(facets, side);
       if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::tri3, side);
     }
 
@@ -371,7 +371,7 @@ bool Cut::IntegrationCellCreator::create_tet4_cell(
       {
         side[j] = points[Core::FE::eleNodeNumbering_tet10_surfaces[i][j]];
       }
-      Facet* f = FindFacet(facets, side);
+      Facet* f = find_facet(facets, side);
       if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::tri3, side);
     }
 
@@ -553,7 +553,7 @@ bool Cut::IntegrationCellCreator::create_hex8_cell(
         {
           side[j] = rpoints[Core::FE::eleNodeNumbering_hex27_surfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
@@ -569,7 +569,7 @@ bool Cut::IntegrationCellCreator::create_hex8_cell(
         {
           side[j] = points[Core::FE::eleNodeNumbering_hex27_surfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
@@ -756,7 +756,7 @@ bool Cut::IntegrationCellCreator::create_wedge6_cell(
         {
           side[j] = rpoints[Core::FE::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 3; ++i)
@@ -766,7 +766,7 @@ bool Cut::IntegrationCellCreator::create_wedge6_cell(
         {
           side[j] = rpoints[Core::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
@@ -782,7 +782,7 @@ bool Cut::IntegrationCellCreator::create_wedge6_cell(
         {
           side[j] = points[Core::FE::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 3; ++i)
@@ -792,7 +792,7 @@ bool Cut::IntegrationCellCreator::create_wedge6_cell(
         {
           side[j] = points[Core::FE::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
@@ -908,7 +908,7 @@ bool Cut::IntegrationCellCreator::create_pyramid5_cell(
         {
           side[j] = points[Core::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 1; ++i)
@@ -918,7 +918,7 @@ bool Cut::IntegrationCellCreator::create_pyramid5_cell(
         {
           side[j] = points[Core::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
@@ -943,7 +943,7 @@ bool Cut::IntegrationCellCreator::create_pyramid5_cell(
         {
           side[j] = points[Core::FE::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::tri3, side);
       }
       for (int i = 0; i < 1; ++i)
@@ -953,7 +953,7 @@ bool Cut::IntegrationCellCreator::create_pyramid5_cell(
         {
           side[j] = points[Core::FE::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
-        Facet* f = FindFacet(facets, side);
+        Facet* f = find_facet(facets, side);
         if (f->on_boundary_cell_side()) add_side(cell, f, Core::FE::CellType::quad4, side);
       }
 
@@ -1224,8 +1224,8 @@ bool Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Element* eleme
         points.insert(points.end(), corner_points.begin(), corner_points.end());
       }
 
-      Core::FE::shape_function_2D_deriv1(deriv, 0., 0., Core::FE::CellType::tri3);
-      Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::tri3>(
+      Core::FE::shape_function_2d_deriv1(deriv, 0., 0., Core::FE::CellType::tri3);
+      Core::FE::compute_metric_tensor_for_boundary_ele<Core::FE::CellType::tri3>(
           xyze, deriv, metrictensor, drs, &normal);
 
       if (normal(axis) < 0)
@@ -1293,8 +1293,8 @@ bool Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Element* eleme
         points.insert(points.end(), corner_points.begin(), corner_points.end());
       }
 
-      Core::FE::shape_function_2D_deriv1(deriv, 0., 0., Core::FE::CellType::quad4);
-      Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad4>(
+      Core::FE::shape_function_2d_deriv1(deriv, 0., 0., Core::FE::CellType::quad4);
+      Core::FE::compute_metric_tensor_for_boundary_ele<Core::FE::CellType::quad4>(
           xyze, deriv, metrictensor, drs, &normal);
 
       if (normal(axis) < 0)

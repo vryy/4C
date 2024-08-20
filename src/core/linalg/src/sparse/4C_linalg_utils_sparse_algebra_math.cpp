@@ -26,7 +26,7 @@ namespace Core::LinAlg
      |  Return value: number of local rows in A added successfully          |
      |             (in case B must be uncompleted, this must be remembered) |
      *----------------------------------------------------------------------*/
-    int DoAdd(const Epetra_CrsMatrix& A, const double scalarA, Epetra_CrsMatrix& B,
+    int do_add(const Epetra_CrsMatrix& A, const double scalarA, Epetra_CrsMatrix& B,
         const double scalarB, const int startRow = 0)
     {
       if (!A.Filled()) FOUR_C_THROW("Internal error, matrix A must have called fill_complete()");
@@ -135,7 +135,7 @@ namespace Core::LinAlg
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     Core::LinAlg::SparseMatrixBase& B, const double scalarB)
 {
   if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
@@ -157,7 +157,7 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   else if (scalarB != 1.0)
     B.scale(scalarB);
 
-  int rowsAdded = DoAdd(*Aprime, scalarA, *B.epetra_matrix(), scalarB);
+  int rowsAdded = do_add(*Aprime, scalarA, *B.epetra_matrix(), scalarB);
   int localSuccess = rowsAdded == Aprime->RowMap().NumMyElements();
   int globalSuccess = 0;
   B.Comm().MinAll(&localSuccess, &globalSuccess, 1);
@@ -168,7 +168,7 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
     // not successful -> matrix structure must be un-completed to be able to add new
     // indices.
     B.un_complete();
-    DoAdd(*Aprime, scalarA, *B.epetra_matrix(), scalarB, rowsAdded);
+    do_add(*Aprime, scalarA, *B.epetra_matrix(), scalarB, rowsAdded);
     B.complete();
   }
 }
@@ -177,7 +177,7 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
     Epetra_CrsMatrix& B, const double scalarB)
 {
   if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
@@ -199,7 +199,7 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   else if (scalarB != 1.0)
     B.Scale(scalarB);
 
-  int rowsAdded = DoAdd(*Aprime, scalarA, B, scalarB);
+  int rowsAdded = do_add(*Aprime, scalarA, B, scalarB);
   if (rowsAdded != Aprime->RowMap().NumMyElements())
     FOUR_C_THROW("Core::LinAlg::Add: Could not add all entries from A into B in row %d",
         Aprime->RowMap().GID(rowsAdded));
@@ -207,7 +207,7 @@ void Core::LinAlg::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
     const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete)
 {
   // make sure fill_complete was called on the matrices
@@ -234,7 +234,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::MatrixMultiply(const SparseMatrix& A,
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const SparseMatrix& A,
     bool transA, const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
     bool complete)
 {

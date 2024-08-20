@@ -103,7 +103,7 @@ void CONTACT::IntegratorNitscheSsiElch::gpts_forces(Mortar::Element& slave_ele,
   double pet = ppt_;
   double nitsche_wgt_slave(0.0), nitsche_wgt_master(0.0);
 
-  CONTACT::UTILS::NitscheWeightsAndScaling(
+  CONTACT::UTILS::nitsche_weights_and_scaling(
       slave_ele, master_ele, nit_wgt_, dt_, nitsche_wgt_slave, nitsche_wgt_master, pen, pet);
 
   double cauchy_nn_weighted_average(0.0);
@@ -180,7 +180,7 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_test(const double fac, Mortar:
     {
       for (int d = 0; d < dim; ++d)
       {
-        row[Core::FE::getParentNodeNumberFromFaceNodeNumber(
+        row[Core::FE::get_parent_node_number_from_face_node_number(
                 ele.parent_element()->shape(), ele.face_parent_number(), s) *
                 dim +
             d] -= fac * jac * wgt * d_testval_ds.second * normal(d) * shape(s);
@@ -196,8 +196,8 @@ double CONTACT::IntegratorNitscheSsiElch::calculate_det_f_of_parent_element(
     const ElementDataBundle<dim>& electrode_quantities)
 {
   auto electrode_ele = electrode_quantities.element;
-  auto xi_parent =
-      Core::FE::CalculateParentGPFromFaceElementData<dim>(electrode_quantities.xi, electrode_ele);
+  auto xi_parent = Core::FE::calculate_parent_gp_from_face_element_data<dim>(
+      electrode_quantities.xi, electrode_ele);
 
   // calculate defgrad based on element discretization type
   static Core::LinAlg::Matrix<dim, dim> defgrd;
@@ -275,12 +275,12 @@ void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(co
       "Number of nodes is not matching discretization type");
 
   static Core::LinAlg::Matrix<num_ele_nodes, dim> xyze;
-  Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<distype, dim>(electrode_ele->nodes(), xyze);
+  Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates<distype, dim>(electrode_ele->nodes(), xyze);
 
   static Core::LinAlg::Matrix<ele_dim, num_ele_nodes> deriv;
   for (auto i = 0; i < num_ele_nodes; ++i)
   {
-    const auto parent_nodeid = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+    const auto parent_nodeid = Core::FE::get_parent_node_number_from_face_node_number(
         electrode_ele->parent_element()->shape(), electrode_ele->face_parent_number(), i);
     for (auto j = 0; j < dim; ++j)
       xyze(i, j) += electrode_ele->mo_data().parent_disp()[parent_nodeid * dim + j];
@@ -289,7 +289,7 @@ void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(co
   }
 
   static Core::LinAlg::Matrix<dim, num_ele_nodes> derxy;
-  Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, dim>(
+  Core::FE::evaluate_shape_function_spatial_derivative_in_prob_dim<distype, dim>(
       derxy, deriv, xyze, *electrode_quantities.gp_normal);
 
   d_detF_dd.resize(electrode_ele->num_node() * dim);
@@ -411,10 +411,10 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
         double dj_dc_electrode(0.0), dj_dc_electrolyte(0.0), dj_dpot_electrode(0.0),
             dj_dpot_electrolyte(0.0);
         // calculate flux linearizations
-        Discret::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, d_epd_dc,
-            alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, electrolyte_conc,
-            electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
-            dj_dpot_electrolyte);
+        Discret::ELEMENTS::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
+            d_epd_dc, alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday,
+            electrolyte_conc, electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte,
+            dj_dpot_electrode, dj_dpot_electrolyte);
 
         // derivative of flux w.r.t. OCP is the same value as w.r.t. electrolyte potential
         const double dj_depd = dj_dpot_electrolyte;
@@ -509,7 +509,7 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_elch_test(const double fac,
 
   for (int s = 0; s < ele.num_node(); ++s)
   {
-    const int slave_parent = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+    const int slave_parent = Core::FE::get_parent_node_number_from_face_node_number(
         ele.parent_element()->shape(), ele.face_parent_number(), s);
     const int slave_parent_conc = slave_parent * numdofpernode_;
     const int slave_parent_pot = slave_parent_conc + 1;
@@ -581,7 +581,7 @@ void CONTACT::IntegratorNitscheSsiElch::setup_gp_elch_properties(
   Core::LinAlg::SerialDenseVector ele_pot(shape_func.length());
   for (int i = 0; i < ele.num_node(); ++i)
   {
-    const int iparent = Core::FE::getParentNodeNumberFromFaceNodeNumber(
+    const int iparent = Core::FE::get_parent_node_number_from_face_node_number(
         ele.parent_element()->shape(), ele.face_parent_number(), i);
     const int iparent_conc = iparent * numdofpernode_;
     const int iparent_pot = iparent_conc + 1;

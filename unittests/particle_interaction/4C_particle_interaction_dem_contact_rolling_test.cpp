@@ -105,8 +105,8 @@ namespace
     contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    ParticleInteraction::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
-    ParticleInteraction::UTILS::VecAddCross(v_rel_rolling_ref, e_ji, angvel_j);
+    ParticleInteraction::UTILS::vec_set_cross(v_rel_rolling_ref, angvel_i, e_ji);
+    ParticleInteraction::UTILS::vec_add_cross(v_rel_rolling_ref, e_ji, angvel_j);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
@@ -129,7 +129,7 @@ namespace
     contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    ParticleInteraction::UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
+    ParticleInteraction::UTILS::vec_set_cross(v_rel_rolling_ref, angvel_i, e_ji);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
@@ -162,18 +162,18 @@ namespace
         r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double rollingcontactmoment_ref[3] = {0.0};
-    const double fac = young_ / (1.0 - ParticleInteraction::UTILS::Pow<2>(nue_));
+    const double fac = young_ / (1.0 - ParticleInteraction::UTILS::pow<2>(nue_));
     const double c_1 = 1.15344;
     const double d_rolling_fac =
         mu_rolling_ * (1.0 - e_) / (c_1 * std::pow(fac, 0.4) * std::pow(v_max_, 0.2));
     const double d_rolling = d_rolling_fac * std::pow(0.5 * r_eff, -0.2);
 
     double rollingcontactforce[3];
-    ParticleInteraction::UTILS::VecSetScale(
+    ParticleInteraction::UTILS::vec_set_scale(
         rollingcontactforce, -(d_rolling * normalcontactforce), v_rel_rolling);
 
-    ParticleInteraction::UTILS::VecSetCross(rollingcontactmoment_ref, rollingcontactforce, e_ji);
-    ParticleInteraction::UTILS::VecScale(rollingcontactmoment_ref, r_eff);
+    ParticleInteraction::UTILS::vec_set_cross(rollingcontactmoment_ref, rollingcontactforce, e_ji);
+    ParticleInteraction::UTILS::vec_scale(rollingcontactmoment_ref, r_eff);
 
     for (int i = 0; i < 3; ++i)
       EXPECT_NEAR(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
@@ -273,9 +273,9 @@ namespace
     contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    ParticleInteraction::UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
-    ParticleInteraction::UTILS::VecAddCross(v_rel_rolling_ref, angvel_j, e_ji);
-    ParticleInteraction::UTILS::VecScale(v_rel_rolling_ref, r_eff);
+    ParticleInteraction::UTILS::vec_set_cross(v_rel_rolling_ref, e_ji, angvel_i);
+    ParticleInteraction::UTILS::vec_add_cross(v_rel_rolling_ref, angvel_j, e_ji);
+    ParticleInteraction::UTILS::vec_scale(v_rel_rolling_ref, r_eff);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
@@ -298,8 +298,8 @@ namespace
     contactrolling_->relative_rolling_velocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    ParticleInteraction::UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
-    ParticleInteraction::UTILS::VecScale(v_rel_rolling_ref, r_eff);
+    ParticleInteraction::UTILS::vec_set_cross(v_rel_rolling_ref, e_ji, angvel_i);
+    ParticleInteraction::UTILS::vec_scale(v_rel_rolling_ref, r_eff);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(v_rel_rolling, v_rel_rolling_ref, 3, 1.0e-12);
   }
@@ -391,7 +391,7 @@ namespace
 
     const double k_rolling = (1.0 - nue_) / (1.0 - 0.5 * nue_) * k_normal_;
     const double rollingpotentialenergy_ref =
-        0.5 * k_rolling * ParticleInteraction::UTILS::VecDot(gap_rolling, gap_rolling);
+        0.5 * k_rolling * ParticleInteraction::UTILS::vec_dot(gap_rolling, gap_rolling);
 
     double rollingpotentialenergy = 0.0;
     contactrolling_->rolling_potential_energy(gap_rolling, rollingpotentialenergy);

@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  B = alpha*A + beta*B                                                |
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Update(double alpha, const Core::LinAlg::SerialDenseMatrix& A, double beta,
+void Core::LinAlg::update(double alpha, const Core::LinAlg::SerialDenseMatrix& A, double beta,
     Core::LinAlg::SerialDenseMatrix& B)
 {
   B.scale(beta);
@@ -28,7 +28,7 @@ void Core::LinAlg::Update(double alpha, const Core::LinAlg::SerialDenseMatrix& A
  | recursive computation of determinant of a  matrix using Sarrus rule  |
  | (uses long double to boost accuracy). Do not use for n > 4.          |
  *----------------------------------------------------------------------*/
-long double Core::LinAlg::Det_long(const Core::LinAlg::SerialDenseMatrix& matrix)
+long double Core::LinAlg::det_long(const Core::LinAlg::SerialDenseMatrix& matrix)
 {
   if (matrix.numCols() == 1)
   {
@@ -59,7 +59,7 @@ long double Core::LinAlg::Det_long(const Core::LinAlg::SerialDenseMatrix& matrix
           temp_matrix(row - 1, c_col - 1) = matrix(row, c_col);
       }
       out_det = out_det + ((long double)(sign) * (long double)(matrix(0, i_col)) *
-                              (long double)(Det_long(temp_matrix)));
+                              (long double)(det_long(temp_matrix)));
       sign *= -1;
     }
     return out_det;
@@ -72,7 +72,7 @@ long double Core::LinAlg::Det_long(const Core::LinAlg::SerialDenseMatrix& matrix
  |   Set matrix components to zero                                      |
  |   this(0:Length) = 0.0                                               |
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Zero(Core::LinAlg::SerialDenseMatrix& mat, int Length)
+void Core::LinAlg::zero(Core::LinAlg::SerialDenseMatrix& mat, int Length)
 {
   int cnt = 0;
   for (int j = 0; j < mat.numCols(); ++j)

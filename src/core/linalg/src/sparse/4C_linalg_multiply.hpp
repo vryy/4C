@@ -69,7 +69,7 @@ namespace Core::LinAlg
   \param complete (in): flag indicating whether C shall be called fill_complete.
                         There intentionally is NO default value for this here.
   */
-  Teuchos::RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
+  Teuchos::RCP<SparseMatrix> ml_multiply(const Epetra_CrsMatrix& Aorig,
       const Epetra_CrsMatrix& Borig, bool explicitdirichlet, bool savegraph, bool complete);
 
   /*!
@@ -78,7 +78,7 @@ namespace Core::LinAlg
   \sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
 
   */
-  Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A, const SparseMatrix& B,
+  Teuchos::RCP<SparseMatrix> ml_multiply(const SparseMatrix& A, const SparseMatrix& B,
       bool explicitdirichlet, bool savegraph, bool complete);
 
   /*!
@@ -87,7 +87,7 @@ namespace Core::LinAlg
   \sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
 
   */
-  Teuchos::RCP<SparseMatrix> MLMultiply(
+  Teuchos::RCP<SparseMatrix> ml_multiply(
       const SparseMatrix& A, const SparseMatrix& B, bool complete);
 
 
@@ -115,7 +115,7 @@ namespace Core::LinAlg
     \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon
     output \return Matrix product A(^T)*B(^T)
   */
-  Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
+  Teuchos::RCP<SparseMatrix> ml_multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput);
 
 }  // namespace Core::LinAlg

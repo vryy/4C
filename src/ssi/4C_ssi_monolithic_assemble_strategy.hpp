@@ -281,7 +281,7 @@ namespace SSI
   };
 
   //! build specific assemble strategy
-  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
+  Teuchos::RCP<SSI::AssembleStrategyBase> build_assemble_strategy(
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold,
       Core::LinAlg::MatrixType matrixtype_ssi, Core::LinAlg::MatrixType matrixtype_scatra);
 

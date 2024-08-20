@@ -28,7 +28,7 @@ namespace Prestress
    *
    * \return Inpar::Solid::PreStress
    */
-  static inline Inpar::Solid::PreStress GetType()
+  static inline Inpar::Solid::PreStress get_type()
   {
     static Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
@@ -41,7 +41,7 @@ namespace Prestress
    *
    * \return double
    */
-  static inline double GetPrestressTime()
+  static inline double get_prestress_time()
   {
     static double pstime =
         Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
@@ -56,7 +56,7 @@ namespace Prestress
    * \return true MULF is set in input file
    * \return false MULF is not set in input file
    */
-  static inline bool IsMulf() { return GetType() == Inpar::Solid::PreStress::mulf; }
+  static inline bool is_mulf() { return get_type() == Inpar::Solid::PreStress::mulf; }
 
   /*!
    * \brief Returns whether material iterative prestressing is set in the parameters of structural
@@ -65,9 +65,9 @@ namespace Prestress
    * \return true material iterative prestressing is set in input file
    * \return false material iterative prestressing is not set in input file
    */
-  static inline bool IsMaterialIterative()
+  static inline bool is_material_iterative()
   {
-    return GetType() == Inpar::Solid::PreStress::material_iterative;
+    return get_type() == Inpar::Solid::PreStress::material_iterative;
   }
 
   /*!
@@ -78,7 +78,7 @@ namespace Prestress
    * \return true MULF is set in input file
    * \return false MULF is not set in input file
    */
-  static inline bool IsMulf(Inpar::Solid::PreStress pstype)
+  static inline bool is_mulf(Inpar::Solid::PreStress pstype)
   {
     return pstype == Inpar::Solid::PreStress::mulf;
   }
@@ -91,7 +91,7 @@ namespace Prestress
    * \return true material iterative prestressing is set in input file
    * \return false material iterative prestressing is not set in input file
    */
-  static inline bool IsMaterialIterative(Inpar::Solid::PreStress pstype)
+  static inline bool is_material_iterative(Inpar::Solid::PreStress pstype)
   {
     return pstype == Inpar::Solid::PreStress::material_iterative;
   }
@@ -104,7 +104,7 @@ namespace Prestress
    * \return true No prestressing is set in the input file
    * \return false Prestressing is set in the input file
    */
-  static inline bool IsNone() { return GetType() == Inpar::Solid::PreStress::none; }
+  static inline bool is_none() { return get_type() == Inpar::Solid::PreStress::none; }
 
 
   /*!
@@ -114,7 +114,7 @@ namespace Prestress
    * \return true No prestressing is set in the input parameter
    * \return false Prestressing is set in the input parameter
    */
-  static inline bool IsNone(Inpar::Solid::PreStress pstype)
+  static inline bool is_none(Inpar::Solid::PreStress pstype)
   {
     return pstype == Inpar::Solid::PreStress::none;
   }
@@ -126,7 +126,7 @@ namespace Prestress
    * \return true Prestressing is set in the input file
    * \return false No prestressing is set in the input file
    */
-  static inline bool IsAny()
+  static inline bool is_any()
   {
     return Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
                Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS") !=
@@ -140,7 +140,7 @@ namespace Prestress
    * \return true Prestressing is set in the input parameter
    * \return false No prestressing is set in the input parameter
    */
-  static inline bool IsAny(Inpar::Solid::PreStress pstype)
+  static inline bool is_any(Inpar::Solid::PreStress pstype)
   {
     return pstype != Inpar::Solid::PreStress::none;
   }
@@ -185,9 +185,9 @@ namespace Prestress
    * \return true MULF prestressing method is active
    * \return false MULF prestressing method is active
    */
-  static inline bool IsMulfActive(const double currentTime)
+  static inline bool is_mulf_active(const double currentTime)
   {
-    return IsMulf() && currentTime <= GetPrestressTime() + 1.0e-15;
+    return is_mulf() && currentTime <= get_prestress_time() + 1.0e-15;
   }
 
   /*!
@@ -200,10 +200,10 @@ namespace Prestress
    * \return true MULF prestressing method is active
    * \return false MULF prestressing method is active
    */
-  static inline bool IsMulfActive(
+  static inline bool is_mulf_active(
       const double currentTime, Inpar::Solid::PreStress pstype, const double pstime)
   {
-    return IsMulf(pstype) && currentTime <= pstime + 1.0e-15;
+    return is_mulf(pstype) && currentTime <= pstime + 1.0e-15;
   }
 
 }  // namespace Prestress

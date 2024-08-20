@@ -102,7 +102,7 @@ void Solid::IMPLICIT::GenAlpha::setup()
     if (midavg != Inpar::Solid::midavg_trlike)
       FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
     else
-      std::cout << "   midavg = " << Inpar::Solid::MidAverageString(midavg) << std::endl;
+      std::cout << "   midavg = " << Inpar::Solid::mid_average_string(midavg) << std::endl;
   }
 
   // ---------------------------------------------------------------------------
@@ -173,7 +173,7 @@ void Solid::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& 
   coeffs.alpham_ = genalpha_sdyn.get_alpha_m();
   coeffs.rhoinf_ = genalpha_sdyn.get_rho_inf();
 
-  Solid::ComputeGeneralizedAlphaParameters(coeffs);
+  Solid::compute_generalized_alpha_parameters(coeffs);
 }
 
 
@@ -381,11 +381,11 @@ bool Solid::IMPLICIT::GenAlpha::assemble_jac(Core::LinAlg::SparseOperator& jac,
 void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1-alpha_f}
-  Core::LinAlg::AssembleMyVector(1.0, f, alphaf_, *fviscon_ptr_);
-  Core::LinAlg::AssembleMyVector(1.0, f, 1 - alphaf_, *fvisconp_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, alphaf_, *fviscon_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, 1 - alphaf_, *fvisconp_ptr_);
   // inertial forces at t_{n+1-alpha_m}
-  Core::LinAlg::AssembleMyVector(1.0, f, 1 - alpham_, *finertianp_ptr_);
-  Core::LinAlg::AssembleMyVector(1.0, f, alpham_, *finertian_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, 1 - alpham_, *finertianp_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, alpham_, *finertian_ptr_);
 }
 
 /*----------------------------------------------------------------------------*

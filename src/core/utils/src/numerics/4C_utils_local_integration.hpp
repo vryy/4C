@@ -30,7 +30,7 @@ namespace Core::UTILS
    * @return auto Approximation of the integral from t_0 to t_1
    */
   template <typename Number>
-  auto IntegrateSimpsonStep(
+  auto integrate_simpson_step(
       const double dt, const Number value1, const Number value2, const Number value3)
   {
     return 1.0 / 3.0 * dt * (value1 + 4 * value2 + value3);
@@ -46,7 +46,7 @@ namespace Core::UTILS
    * @return ValueType Result of the integration
    */
   template <typename StepData>
-  auto IntegrateSimpsonStep(const StepData& step_data_a, const StepData& step_data_b,
+  auto integrate_simpson_step(const StepData& step_data_a, const StepData& step_data_b,
       const StepData& step_data_c) -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     const auto& [time1, value1] = step_data_a;
@@ -76,7 +76,7 @@ namespace Core::UTILS
    * the integration rule w.r.t. the integrand.
    */
   template <typename StepData>
-  static inline auto IntegrateSimpsonStepBCAndReturnDerivativeC(
+  static inline auto integrate_simpson_step_bc_and_return_derivative_c(
       const StepData& step_data_a, const StepData& step_data_b, const StepData& step_data_c)
       -> std::tuple<std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>,
           std::tuple_element_t<0, std::remove_reference_t<decltype(step_data_a)>>>
@@ -113,11 +113,11 @@ namespace Core::UTILS
    * @return auto
    */
   template <typename StepData>
-  auto IntegrateSimpsonStepBC(const StepData& step_data_a, const StepData& step_data_b,
+  auto integrate_simpson_step_bc(const StepData& step_data_a, const StepData& step_data_b,
       const StepData& step_data_c) -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
     return std::get<0>(
-        IntegrateSimpsonStepBCAndReturnDerivativeC(step_data_a, step_data_b, step_data_c));
+        integrate_simpson_step_bc_and_return_derivative_c(step_data_a, step_data_b, step_data_c));
   }
 
   /*!
@@ -133,7 +133,7 @@ namespace Core::UTILS
    * the integration rule w.r.t. the integrand.
    */
   template <typename StepData>
-  auto IntegrateTrapezoidalStepAndReturnDerivativeB(
+  auto integrate_trapezoidal_step_and_return_derivative_b(
       const StepData& step_data_a, const StepData& step_data_b)
       -> std::tuple<std::tuple_element_t<1, std::remove_reference_t<decltype(step_data_a)>>,
           std::tuple_element_t<0, std::remove_reference_t<decltype(step_data_a)>>>
@@ -160,10 +160,11 @@ namespace Core::UTILS
    * @return auto
    */
   template <typename StepData>
-  auto IntegrateTrapezoidalStep(const StepData& step_data_a, const StepData& step_data_b)
+  auto integrate_trapezoidal_step(const StepData& step_data_a, const StepData& step_data_b)
       -> std::decay_t<std::tuple_element_t<1, StepData>>
   {
-    return std::get<0>(IntegrateTrapezoidalStepAndReturnDerivativeB(step_data_a, step_data_b));
+    return std::get<0>(
+        integrate_trapezoidal_step_and_return_derivative_b(step_data_a, step_data_b));
   }
 
   /*!
@@ -177,7 +178,7 @@ namespace Core::UTILS
    * @return ValueType Integration result
    */
   template <typename Integrand, typename Container>
-  inline auto IntegrateSimpsonTrapezoidal(Container indexable_container, Integrand integrand)
+  inline auto integrate_simpson_trapezoidal(Container indexable_container, Integrand integrand)
       -> std::decay_t<std::tuple_element_t<1, decltype(integrand(indexable_container[0]))>>
   {
     using TupleType = decltype(integrand(indexable_container[0]));
@@ -193,7 +194,7 @@ namespace Core::UTILS
     if (size == 2)
     {
       // Apply trapezoidal rule
-      return IntegrateTrapezoidalStep<TupleType>(
+      return integrate_trapezoidal_step<TupleType>(
           integrand(indexable_container[0]), integrand(indexable_container[1]));
     }
 
@@ -207,7 +208,7 @@ namespace Core::UTILS
       const TupleType mid_evaluation = integrand(indexable_container[i]);
       const TupleType end_evaluation = integrand(indexable_container[i + 1]);
       integration_result +=
-          IntegrateSimpsonStep<TupleType>(last_evaluation, mid_evaluation, end_evaluation);
+          integrate_simpson_step<TupleType>(last_evaluation, mid_evaluation, end_evaluation);
       last_evaluation = end_evaluation;
     }
 
@@ -215,7 +216,7 @@ namespace Core::UTILS
     if (size % 2 == 0)
     {
       integration_result +=
-          IntegrateSimpsonStepBC<TupleType>(integrand(indexable_container[size - 3]),
+          integrate_simpson_step_bc<TupleType>(integrand(indexable_container[size - 3]),
               last_evaluation, integrand(indexable_container[size - 1]));
     }
 

@@ -1091,11 +1091,11 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions) const
 {
   const Core::LinAlg::SerialDenseMatrix xyze(
-      Core::Geo::getCurrentNodalPositions(element, currentpositions));
+      Core::Geo::get_current_nodal_positions(element, currentpositions));
   Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-  Core::Geo::checkRoughGeoType(element, xyze, eleGeoType);
+  Core::Geo::check_rough_geo_type(element, xyze, eleGeoType);
   const Core::LinAlg::Matrix<3, 2> elemXAABB(
-      Core::Geo::computeFastXAABB(element->shape(), xyze, eleGeoType));
+      Core::Geo::compute_fast_xaabb(element->shape(), xyze, eleGeoType));
   return classify_xaabb(elemXAABB);
 }
 
@@ -1107,11 +1107,11 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions) const
 {
   const Core::LinAlg::SerialDenseMatrix xyze(
-      Core::Geo::getCurrentNodalPositions(element, currentpositions));
+      Core::Geo::get_current_nodal_positions(element, currentpositions));
   Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-  Core::Geo::checkRoughGeoType(element, xyze, eleGeoType);
+  Core::Geo::check_rough_geo_type(element, xyze, eleGeoType);
   const Core::LinAlg::Matrix<3, 2> elemXAABB(
-      Core::Geo::computeFastXAABB(element->shape(), xyze, eleGeoType));
+      Core::Geo::compute_fast_xaabb(element->shape(), xyze, eleGeoType));
   return classify_xaabb(elemXAABB);
 }
 
@@ -1123,9 +1123,9 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
     const Core::LinAlg::SerialDenseMatrix& xyze_element) const
 {
   Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-  Core::Geo::checkRoughGeoType(element, xyze_element, eleGeoType);
+  Core::Geo::check_rough_geo_type(element, xyze_element, eleGeoType);
   const Core::LinAlg::Matrix<3, 2> elemXAABB(
-      Core::Geo::computeFastXAABB(element->shape(), xyze_element, eleGeoType));
+      Core::Geo::compute_fast_xaabb(element->shape(), xyze_element, eleGeoType));
   return classify_xaabb(elemXAABB);
 }
 
@@ -1177,7 +1177,7 @@ std::map<int, std::set<int>> Core::Geo::SearchTree::TreeNode::search_elements_in
         return children_[childindex[0]]->search_elements_in_radius(
             dis, currentpositions, point, radius, label);
       else
-        return Core::Geo::getElementsInRadius(
+        return Core::Geo::get_elements_in_radius(
             dis, currentpositions, point, radius, label, element_list_);
       break;
     }
@@ -1188,7 +1188,7 @@ std::map<int, std::set<int>> Core::Geo::SearchTree::TreeNode::search_elements_in
       // max depth reached, counts reverse
       if (treedepth_ <= 0 ||
           (element_list_.size() == 1 && (element_list_.begin()->second).size() == 1))
-        return Core::Geo::getElementsInRadius(
+        return Core::Geo::get_elements_in_radius(
             dis, currentpositions, point, radius, label, element_list_);
 
       // dynamically grow tree otherwise, create children and set label for empty children
@@ -1204,7 +1204,7 @@ std::map<int, std::set<int>> Core::Geo::SearchTree::TreeNode::search_elements_in
       }
       else
         // AABB does not fit into a single child node box anymore so don t refine any further
-        return Core::Geo::getElementsInRadius(
+        return Core::Geo::get_elements_in_radius(
             dis, currentpositions, point, radius, label, element_list_);
       break;
     }
@@ -1278,7 +1278,7 @@ void Core::Geo::SearchTree::TreeNode::search_collisions(
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (element_list_.begin()->second).size() == 1)
       {
-        Core::Geo::searchCollisions(currentBVs, queryBV, label, element_list_, collisions);
+        Core::Geo::search_collisions(currentBVs, queryBV, label, element_list_, collisions);
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children
@@ -1324,7 +1324,7 @@ void Core::Geo::SearchTree::TreeNode::search_collisions(
       // max depth reached, counts reverse
       if (treedepth_ <= 0 || (element_list_.begin()->second).size() == 1)
       {
-        Core::Geo::searchCollisions(currentBVs, queryBV, label, element_list_, collisions);
+        Core::Geo::search_collisions(currentBVs, queryBV, label, element_list_, collisions);
         return;
       }
       // dynamically grow tree otherwise, create children and set label for empty children

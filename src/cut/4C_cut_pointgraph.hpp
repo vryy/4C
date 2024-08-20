@@ -174,7 +174,7 @@ namespace Cut
     bool find_cycles(graph_t &g, Cycle &cycle,
         std::map<vertex_t, Core::LinAlg::Matrix<3, 1>> &local, std::vector<Cycle> &cycles);
 
-    Teuchos::RCP<PointGraph> CreatePointGraph(Mesh &mesh, Element *element, Side *side,
+    Teuchos::RCP<PointGraph> create_point_graph(Mesh &mesh, Element *element, Side *side,
         const PointGraph::Location &location, const PointGraph::Strategy &strategy);
   }  // namespace Impl
 }  // namespace Cut

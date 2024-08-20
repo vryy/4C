@@ -32,7 +32,7 @@ namespace Discret
   namespace UTILS
   {
     //! send data to rank map key and recv data
-    void ISendReceiveAny(Teuchos::RCP<Core::FE::Discretization> const& discret,
+    void i_send_receive_any(Teuchos::RCP<Core::FE::Discretization> const& discret,
         std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
         std::vector<std::pair<int, std::vector<int>>>& recvdata);
 

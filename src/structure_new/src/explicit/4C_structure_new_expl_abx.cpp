@@ -169,7 +169,7 @@ template <int t_order>
 void Solid::EXPLICIT::AdamsBashforthX<t_order>::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
-  Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*

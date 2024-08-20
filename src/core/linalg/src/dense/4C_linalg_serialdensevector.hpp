@@ -40,10 +40,10 @@ namespace Core::LinAlg
     \brief Update vector components with scaled values of a,
            b = alpha*a + beta*b
     */
-  void Update(double alpha, const SerialDenseVector& a, double beta, SerialDenseVector& b);
+  void update(double alpha, const SerialDenseVector& a, double beta, SerialDenseVector& b);
 
   // wrapper function to compute Norm of vector
-  double Norm2(const SerialDenseVector& v);
+  double norm2(const SerialDenseVector& v);
 
   // output stream operator
   inline std::ostream& operator<<(std::ostream& out, const SerialDenseVector& vec)

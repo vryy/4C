@@ -29,7 +29,7 @@ namespace Core::FE
    \brief Fill a vector of type VectorType with with 3D shape function
    */
   template <class VectorType, typename NumberType>
-  void shape_function_3D(VectorType& funct,  ///< to be filled with shape function values
+  void shape_function_3d(VectorType& funct,  ///< to be filled with shape function values
       const NumberType& r,                   ///< r coordinate
       const NumberType& s,                   ///< s coordinate
       const NumberType& t,                   ///< t coordinate
@@ -352,7 +352,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with 3D first shape function derivatives
    */
   template <class MatrixType, typename NumberType>
-  void shape_function_3D_deriv1(
+  void shape_function_3d_deriv1(
       MatrixType& deriv1,                ///< to be filled with shape function derivative values
       const NumberType& r,               ///< r coordinate
       const NumberType& s,               ///< s coordinate
@@ -1002,7 +1002,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with 3D second shape function derivatives
    */
   template <class MatrixType, typename NumberType>
-  void shape_function_3D_deriv2(
+  void shape_function_3d_deriv2(
       MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
       const NumberType& r,  ///< r coordinate
       const NumberType& s,  ///< s coordinate
@@ -1974,7 +1974,7 @@ namespace Core::FE
    \brief Fill a vector of type VectorType with 2D shape function
    */
   template <class VectorType, typename NumberType>
-  void shape_function_2D(VectorType& funct,  ///< to be filled with shape function values
+  void shape_function_2d(VectorType& funct,  ///< to be filled with shape function values
       const NumberType& r,                   ///< r coordinate
       const NumberType& s,                   ///< s coordinate
       const Core::FE::CellType& distype      ///< distinguish between DiscretizationType
@@ -2111,7 +2111,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with first 2D shape function derivative
    */
   template <class MatrixType, typename NumberType>
-  void shape_function_2D_deriv1(
+  void shape_function_2d_deriv1(
       MatrixType& deriv1,                ///< to be filled with shape function derivative values
       const NumberType& r,               ///< r coordinate
       const NumberType& s,               ///< s coordinate
@@ -2294,7 +2294,7 @@ namespace Core::FE
         break;
       }
       default:
-        std::cout << Core::FE::CellTypeToString(distype) << std::endl;
+        std::cout << Core::FE::cell_type_to_string(distype) << std::endl;
         FOUR_C_THROW("distype unknown\n");
         break;
     } /* end switch(distype) */
@@ -2305,7 +2305,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with second 2D shape function derivative
    */
   template <class MatrixType, typename NumberType>
-  void shape_function_2D_deriv2(
+  void shape_function_2d_deriv2(
       MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
       const NumberType& r,  ///< r coordinate
       const NumberType& s,  ///< s coordinate
@@ -2545,7 +2545,7 @@ namespace Core::FE
    \brief Fill a vector of type VectorType with 1D shape function
    */
   template <class VectorType, typename NumberType>
-  void shape_function_1D(VectorType& funct,  ///< to be filled with shape function values
+  void shape_function_1d(VectorType& funct,  ///< to be filled with shape function values
       const NumberType& r,                   ///< r coordinate
       const Core::FE::CellType& distype      ///< distinguish between DiscretizationType
   )
@@ -2651,7 +2651,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with first 1D shape function derivative
    */
   template <class MatrixType, typename NumberType>
-  void shape_function_1D_deriv1(
+  void shape_function_1d_deriv1(
       MatrixType& deriv1,                ///< to be filled with shape function derivative values
       const NumberType& r,               ///< r coordinate
       const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
@@ -2757,7 +2757,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with second 1D shape function derivative
    */
   template <class MatrixType, typename NumberType>
-  void shape_function_1D_deriv2(
+  void shape_function_1d_deriv2(
       MatrixType& deriv2,   ///< to be filled with shape function 2-nd derivative values
       const NumberType& r,  ///< r coordinate
       const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
@@ -2807,7 +2807,7 @@ namespace Core::FE
    \brief Fill a matrix of type VectorType with 1D hermite shape function
    */
   template <class VectorType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D(VectorType& funct,  ///< to be filled with shape function values
+  void shape_function_hermite_1d(VectorType& funct,  ///< to be filled with shape function values
       const NumberType1& r,                          ///< r coordinate
       const NumberType2& l,                          ///< length of element
       const Core::FE::CellType& distype              ///< distinguish between DiscretizationType
@@ -2839,7 +2839,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with 1D hermite shape function derivatives
    */
   template <class MatrixType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D_deriv1(
+  void shape_function_hermite_1d_deriv1(
       MatrixType& deriv1,    ///< to be filled with hermite shape function first derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
@@ -2871,7 +2871,7 @@ namespace Core::FE
    \brief Fill a matrix of type MatrixType with 1D hermite shape function derivatives
    */
   template <class MatrixType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D_deriv2(
+  void shape_function_hermite_1d_deriv2(
       MatrixType& deriv2,    ///< to be filled with hermite shape function second derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
@@ -2903,7 +2903,7 @@ namespace Core::FE
    \brief Fill a matrix of type VectorType with 1D hermite shape function derivatives
    */
   template <class VectorType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D_deriv3(
+  void shape_function_hermite_1d_deriv3(
       VectorType deriv3,     ///< to be filled with hermite shape function second derivative values
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
@@ -2935,7 +2935,7 @@ namespace Core::FE
    \brief Fill a matrix of type VectorType with 1D hermite shape functions of order five
    */
   template <class VectorType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D_order5(
+  void shape_function_hermite_1d_order5(
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
@@ -2972,7 +2972,7 @@ namespace Core::FE
    of order five
    */
   template <class VectorType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D_order5_deriv1(
+  void shape_function_hermite_1d_order5_deriv1(
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
@@ -3008,7 +3008,7 @@ namespace Core::FE
    functions of order five
    */
   template <class VectorType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D_order5_deriv2(
+  void shape_function_hermite_1d_order5_deriv2(
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
@@ -3043,7 +3043,7 @@ namespace Core::FE
    of order five
    */
   template <class VectorType, typename NumberType1, typename NumberType2>
-  void shape_function_hermite_1D_order5_deriv3(
+  void shape_function_hermite_1d_order5_deriv3(
       VectorType& funct,     ///< to be filled with the values hermite shape functions of order five
       const NumberType1& r,  ///< r coordinate
       const NumberType2& l,  ///< length of element
@@ -3083,17 +3083,17 @@ namespace Core::FE
     {
       case 1:
       {
-        Core::FE::shape_function_1D(f, xsi(0), distype);
+        Core::FE::shape_function_1d(f, xsi(0), distype);
         break;
       }
       case 2:
       {
-        Core::FE::shape_function_2D(f, xsi(0), xsi(1), distype);
+        Core::FE::shape_function_2d(f, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        Core::FE::shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
+        Core::FE::shape_function_3d(f, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3122,17 +3122,17 @@ namespace Core::FE
     {
       case 1:
       {
-        Core::FE::shape_function_1D_deriv1(d, xsi(0), distype);
+        Core::FE::shape_function_1d_deriv1(d, xsi(0), distype);
         break;
       }
       case 2:
       {
-        Core::FE::shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
+        Core::FE::shape_function_2d_deriv1(d, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        Core::FE::shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
+        Core::FE::shape_function_3d_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3152,17 +3152,17 @@ namespace Core::FE
     {
       case 1:
       {
-        Core::FE::shape_function_1D_deriv2(d2, xsi(0), distype);
+        Core::FE::shape_function_1d_deriv2(d2, xsi(0), distype);
         break;
       }
       case 2:
       {
-        Core::FE::shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
+        Core::FE::shape_function_2d_deriv2(d2, xsi(0), xsi(1), distype);
         break;
       }
       case 3:
       {
-        Core::FE::shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
+        Core::FE::shape_function_3d_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
         break;
       }
       default:
@@ -3187,7 +3187,7 @@ namespace Core::FE
    * @param[in] normal      normal vector
    */
   template <Core::FE::CellType distype, int probdim>
-  void EvaluateShapeFunctionSpatialDerivativeInProbDim(
+  void evaluate_shape_function_spatial_derivative_in_prob_dim(
       Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>>& deriv_xyz,
       const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& deriv,
       const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xyze,

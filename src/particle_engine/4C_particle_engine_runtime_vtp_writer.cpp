@@ -63,12 +63,12 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::setup(bool write_ghosted_particle
       if (status == Ghosted and write_ghosted_particles == false) continue;
 
       std::ostringstream fieldname;
-      fieldname << "particle-" << EnumToTypeName(type) << "-" << EnumToStatusName(status);
+      fieldname << "particle-" << enum_to_type_name(type) << "-" << enum_to_status_name(status);
 
       // construct visualiation manager object for current particle type and status
       (runtime_visualization_managers_[type])[status] =
           std::make_shared<Core::IO::VisualizationManager>(
-              Core::IO::VisualizationParametersFactory(
+              Core::IO::visualization_parameters_factory(
                   Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                   *Global::Problem::instance()->output_control_file(), setuptime_),
               comm_, fieldname.str());
@@ -106,7 +106,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::set_particle_positions_and_states
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       // safety check
       if (not container->have_stored_state(Position))
-        FOUR_C_THROW("particle state '%s' not found!", EnumToStateName(Position).c_str());
+        FOUR_C_THROW("particle state '%s' not found!", enum_to_state_name(Position).c_str());
 #endif
 
       // iterate over particle states
@@ -116,7 +116,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::set_particle_positions_and_states
         int statedim = container->get_state_dim(state);
 
         // get name of particle state
-        std::string statename = EnumToStateName(state);
+        std::string statename = enum_to_state_name(state);
 
         // get pointer to particle state
         const double* state_ptr =

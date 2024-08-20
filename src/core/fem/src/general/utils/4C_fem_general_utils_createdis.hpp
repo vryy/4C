@@ -115,7 +115,7 @@ namespace Core::FE
       // We need to test for all elements (including ghosted ones) to
       // catch all nodes
       std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
-      Core::Conditions::FindConditionObjects(sourcedis, sourceelements, condname, label);
+      Core::Conditions::find_condition_objects(sourcedis, sourceelements, condname, label);
 
       return create_matching_discretization_from_condition(
           sourcedis, sourceelements, discret_name, element_name, conditions_to_copy);
@@ -195,7 +195,7 @@ namespace Core::FE
           {
             // create an element with the same global element id
             condele =
-                Core::Communication::Factory(element_name, "Polynomial", sourceele->id(), myrank);
+                Core::Communication::factory(element_name, "Polynomial", sourceele->id(), myrank);
             // set the same global node ids to the new element
             condele->set_node_ids(nids.size(), nids.data());
           }
@@ -435,7 +435,7 @@ namespace Core::FE
 
       // get this condition vector's elements
       std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
-      Core::Conditions::FindConditionObjects(sourceelements, conds);
+      Core::Conditions::find_condition_objects(sourceelements, conds);
 
       create_matching_discretization_from_condition(sourcedis, sourceelements, targetdis, matmap);
       return;
@@ -454,7 +454,7 @@ namespace Core::FE
       // check and analyze source discretization
       initial_checks(sourcedis, targetdis);
       std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
-      Core::Conditions::FindConditionObjects(sourcedis, sourceelements, condname);
+      Core::Conditions::find_condition_objects(sourcedis, sourceelements, condname);
 
       create_matching_discretization_from_condition(sourcedis, sourceelements, targetdis, matmap);
       return;
@@ -671,7 +671,7 @@ namespace Core::FE
 
         // create a new element of desired type with the same global element id
         Teuchos::RCP<Core::Elements::Element> newele =
-            Core::Communication::Factory(eletype_[i], approxtype, *it, myrank);
+            Core::Communication::factory(eletype_[i], approxtype, *it, myrank);
 
         // get global node ids of source element
         std::vector<int> nids;
@@ -786,7 +786,7 @@ namespace Core::FE
         // create a new element of desired type with the same global element id and same owner as
         // source element
         Teuchos::RCP<Core::Elements::Element> newele =
-            Core::Communication::Factory(eletype_[i], approxtype, *it, sourceeleowner);
+            Core::Communication::factory(eletype_[i], approxtype, *it, sourceeleowner);
 
         // get global node ids of fluid element
         std::vector<int> nids;
@@ -844,7 +844,7 @@ namespace Core::FE
   /// clone target discretization @p targetdis from a given source discretization @p sourcedis.
   /// The @p clonefieldmatmap is required from the global CloningMaterialMap.
   template <class CloneStrategy>
-  void CloneDiscretization(Teuchos::RCP<Core::FE::Discretization> sourcedis,
+  void clone_discretization(Teuchos::RCP<Core::FE::Discretization> sourcedis,
       Teuchos::RCP<Core::FE::Discretization> targetdis,
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
@@ -875,7 +875,7 @@ namespace Core::FE
   /// based on conditions @p conds. The @p clonefieldmatmap is required from the global
   /// CloningMaterialMap.
   template <class CloneStrategy>
-  void CloneDiscretizationFromCondition(const Core::FE::Discretization& sourcedis,
+  void clone_discretization_from_condition(const Core::FE::Discretization& sourcedis,
       Core::FE::Discretization& targetdis, const std::vector<Core::Conditions::Condition*>& conds,
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {
@@ -916,7 +916,7 @@ namespace Core::FE
   /// based on the name of a condition @p condname. The @p clonefieldmatmap is required from the
   /// global CloningMaterialMap.
   template <class CloneStrategy>
-  void CloneDiscretizationFromCondition(const Core::FE::Discretization& sourcedis,
+  void clone_discretization_from_condition(const Core::FE::Discretization& sourcedis,
       Core::FE::Discretization& targetdis, const std::string& condname,
       const std::map<std::pair<std::string, std::string>, std::map<int, int>>& clonefieldmatmap)
   {

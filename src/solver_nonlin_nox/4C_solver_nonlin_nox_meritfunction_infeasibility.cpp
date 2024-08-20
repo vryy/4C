@@ -31,7 +31,7 @@ NOX::Nln::MeritFunction::Infeasibility::Infeasibility(
   const std::string& type_name = params.get<std::string>("Type");
   set_type(type_name);
 
-  merit_function_name_ = MeritFuncName2String(type());
+  merit_function_name_ = merit_func_name_to_string(type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -70,8 +70,8 @@ void NOX::Nln::MeritFunction::Infeasibility::set_type(const std::string& type_na
     std::cout << "Supported infeasibility type names:\n"
                  "EXPECTED INPUT [= deduced merit function type]\n";
     for (const auto& supported_pair : supported_type_names)
-      std::cout << supported_pair.first << " [= " << MeritFuncName2String(supported_pair.second)
-                << "]\n";
+      std::cout << supported_pair.first
+                << " [= " << merit_func_name_to_string(supported_pair.second) << "]\n";
 
     FOUR_C_THROW("Unknown type name: \"%s\"", type_name.c_str());
   }

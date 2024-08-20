@@ -38,16 +38,16 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
   if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow problems!");
 
   Inpar::FLUID::PhysicalType physicaltype =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
+      Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  toggleu_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglev_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // bounds for extension of cavity in x1-direction
   x1min_ = +10e+19;

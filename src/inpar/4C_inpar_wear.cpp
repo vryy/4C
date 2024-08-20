@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Wear::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Wear::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -31,7 +31,7 @@ void Inpar::Wear::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("None", "none", "Archard", "archard"),
       tuple<int>(wear_none, wear_none, wear_archard, wear_archard), &wear);
 
-  Core::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &wear);
+  Core::UTILS::bool_parameter("MATCHINGGRID", "Yes", "is matching grid", &wear);
 
   setStringToIntegralParameter<int>("WEARCOEFF_CONF", "material",
       "configuration in which wcoeff is defined",
@@ -50,16 +50,16 @@ void Inpar::Wear::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           wear_shape_standard),
       &wear);
 
-  Core::UTILS::DoubleParameter("WEARCOEFF", 0.0, "Wear coefficient for slave surface", &wear);
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter("WEARCOEFF", 0.0, "Wear coefficient for slave surface", &wear);
+  Core::UTILS::double_parameter(
       "WEARCOEFF_MASTER", 0.0, "Wear coefficient for master surface", &wear);
-  Core::UTILS::DoubleParameter(
+  Core::UTILS::double_parameter(
       "WEAR_TIMERATIO", 1.0, "Time step ratio between wear and spatial time scale", &wear);
-  Core::UTILS::DoubleParameter("SSSLIP", 1.0, "Fixed slip for steady state wear", &wear);
+  Core::UTILS::double_parameter("SSSLIP", 1.0, "Fixed slip for steady state wear", &wear);
 
-  Core::UTILS::BoolParameter("SSWEAR", "No", "flag for steady state wear", &wear);
+  Core::UTILS::bool_parameter("SSWEAR", "No", "flag for steady state wear", &wear);
 
-  Core::UTILS::BoolParameter(
+  Core::UTILS::bool_parameter(
       "VOLMASS_OUTPUT", "No", "flag for output of mass/volume in ref,mat and cur. conf.", &wear);
 
   setStringToIntegralParameter<int>("WEAR_SIDE", "slave", "Definition of wear side",

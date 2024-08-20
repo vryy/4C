@@ -28,7 +28,7 @@ namespace Core::IO
    * @param[in] csv_file_path      absolute path to csv file
    * @return vector of column vectors read from csv file
    */
-  std::vector<std::vector<double>> ReadCsvAsColumns(
+  std::vector<std::vector<double>> read_csv_as_columns(
       int number_of_columns, const std::string& csv_file_path);
 
   /*!
@@ -38,7 +38,7 @@ namespace Core::IO
    * @param[in] csv_stream         csv input stream
    * @return vector of column vectors read from csv stream
    */
-  std::vector<std::vector<double>> ReadCsvAsColumns(
+  std::vector<std::vector<double>> read_csv_as_columns(
       int number_of_columns, std::istream& csv_stream);
 
   /*!
@@ -132,7 +132,7 @@ namespace Core::IO
         FOUR_C_THROW(
             "Could not read line '%s' from input stream. Likely the string's pattern is not "
             "convertible to an object of type %s",
-            line_str.c_str(), Core::UTILS::TryDemangle(typeid(T).name()).c_str());
+            line_str.c_str(), Core::UTILS::try_demangle(typeid(T).name()).c_str());
       }
     }
     return operated_data;

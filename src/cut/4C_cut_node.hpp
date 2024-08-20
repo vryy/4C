@@ -354,7 +354,7 @@ namespace Cut
    *  it is associated to.
    *
    *  \author hiermeier \date 11/16 */
-  void FindCommonElements(const std::vector<Node*>& nelement, plain_element_set& elements);
+  void find_common_elements(const std::vector<Node*>& nelement, plain_element_set& elements);
 
 
 }  // namespace Cut

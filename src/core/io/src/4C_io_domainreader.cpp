@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::IO
 {
   /// forward declarations
-  void BroadcastInputDataToAllProcs(
+  void broadcast_input_data_to_all_procs(
       Teuchos::RCP<Epetra_Comm> comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData);
 
   /*----------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ namespace Core::IO
         DomainReader::read_rectangular_cuboid_input_data();
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
-    Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(
+    Core::IO::GridGenerator::create_rectangular_cuboid_discretization(
         *dis_, inputData, static_cast<bool>(reader_.my_output_flag()));
 
     if (!myrank && reader_.my_output_flag() == 0)
@@ -94,7 +94,7 @@ namespace Core::IO
         {
           // remove comments, trailing and leading whitespaces
           // compact internal whitespaces
-          line = Core::UTILS::StripComment(line);
+          line = Core::UTILS::strip_comment(line);
 
           // line is now empty
           if (line.size() == 0) continue;
@@ -154,7 +154,7 @@ namespace Core::IO
     // broadcast if necessary
     if (comm_->NumProc() > 1)
     {
-      IO::BroadcastInputDataToAllProcs(comm_, inputData);
+      IO::broadcast_input_data_to_all_procs(comm_, inputData);
     }
 
     return inputData;
@@ -162,7 +162,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void BroadcastInputDataToAllProcs(
+  void broadcast_input_data_to_all_procs(
       Teuchos::RCP<Epetra_Comm> comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
   {
     const int myrank = comm->MyPID();

@@ -49,7 +49,7 @@ void CONSTRAINTS::MPConstraint::set_constr_state(
     for (discrit = constraintdis_.begin(); discrit != constraintdis_.end(); ++discrit)
     {
       Teuchos::RCP<Epetra_Vector> tmp =
-          Core::LinAlg::CreateVector(*(discrit->second)->dof_col_map(), false);
+          Core::LinAlg::create_vector(*(discrit->second)->dof_col_map(), false);
       Core::LinAlg::export_to(*V, *tmp);
       (discrit->second)->clear_state();
       (discrit->second)->set_state(state, tmp);

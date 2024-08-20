@@ -38,7 +38,7 @@ namespace
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
-      Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+      Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
           Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
     }

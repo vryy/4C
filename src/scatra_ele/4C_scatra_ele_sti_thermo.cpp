@@ -33,7 +33,7 @@ void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::extract_element_and_node_va
     FOUR_C_THROW("Cannot extract thermo state vector from discretization!");
 
   // extract local nodal temperature values from global state vector
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
 }
 
 

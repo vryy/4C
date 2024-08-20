@@ -277,7 +277,7 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
@@ -1118,7 +1118,7 @@ void Mat::GrowthRemodelElastHyper::evaluate_stress_cmat_iso(
   static Core::LinAlg::Matrix<8, 1> delta(true);
 
   // compose coefficients
-  CalculateGammaDelta(gamma, delta, prinv, dPIe, ddPIIe);
+  calculate_gamma_delta(gamma, delta, prinv, dPIe, ddPIIe);
 
   evaluate_isotropic_princ_elast(stressiso, cmatiso, iCinv, iCinCiCinv, iCv, gamma, delta);
 

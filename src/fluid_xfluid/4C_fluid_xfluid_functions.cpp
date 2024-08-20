@@ -22,7 +22,7 @@ namespace
 {
   using namespace Discret::UTILS;
 
-  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateXfluidFunction(
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> create_xfluid_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -192,7 +192,7 @@ namespace
   }
 }  // namespace
 
-void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& function_manager)
+void Discret::UTILS::add_valid_xfluid_functions(Core::UTILS::FunctionManager& function_manager)
 {
   Input::LineDefinition gerstenbergerforwardfacingstep =
       Input::LineDefinition::Builder().add_tag("FORWARDFACINGSTEP").build();
@@ -311,7 +311,7 @@ void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& funct
   lines.emplace_back(std::move(urquizaboxflowforce));
   lines.emplace_back(std::move(urquizaboxflowtraction));
 
-  function_manager.add_function_definition(std::move(lines), CreateXfluidFunction);
+  function_manager.add_function_definition(std::move(lines), create_xfluid_function);
 }
 
 

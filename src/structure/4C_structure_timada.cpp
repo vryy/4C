@@ -55,7 +55,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
       sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
       sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
       errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-      errnorm_(Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM")),
+      errnorm_(Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM")),
       errtol_(tap.get<double>("LOCERRTOL")),
       errorder_(1),  // CHANGE THIS CONSTANT
       adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),
@@ -83,7 +83,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
       outsizefile_(Teuchos::null)
 {
   // allocate displacement local error vector
-  locerrdisn_ = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
+  locerrdisn_ = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   // check whether energyout_ file handle was attached
   if ((not sti_->attached_energy_file()) and (outeneperiod_ != 0.0) and (myrank_ == 0))
@@ -474,7 +474,7 @@ void Solid::TimAda::print_constants(std::ostream& str) const
       << "   Max size ratio = " << sizeratiomax_ << std::endl
       << "   Min size ratio = " << sizeratiomin_ << std::endl
       << "   Size ratio scale = " << sizeratioscale_ << std::endl
-      << "   Error norm = " << Inpar::Solid::VectorNormString(errnorm_) << std::endl
+      << "   Error norm = " << Inpar::Solid::vector_norm_string(errnorm_) << std::endl
       << "   Error order = " << errorder_ << std::endl
       << "   Error tolerance = " << errtol_ << std::endl
       << "   Max adaptations = " << adaptstepmax_ << std::endl;

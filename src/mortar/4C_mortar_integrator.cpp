@@ -320,8 +320,8 @@ Mortar::Integrator* Mortar::Integrator::impl(
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 Mortar::IntegratorCalc<distype_s, distype_m>::IntegratorCalc(const Teuchos::ParameterList& params)
     : imortar_(params),
-      shapefcn_(Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
-      lmquadtype_(Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params, "LM_QUAD"))
+      shapefcn_(Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
+      lmquadtype_(Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params, "LM_QUAD"))
 {
   initialize_gp();
 }
@@ -331,7 +331,7 @@ Mortar::IntegratorCalc<distype_s, distype_m>*
 Mortar::IntegratorCalc<distype_s, distype_m>::instance(
     Core::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       [](const Teuchos::ParameterList& p)
       {
         return std::unique_ptr<Mortar::IntegratorCalc<distype_s, distype_m>>(
@@ -353,7 +353,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::initialize_gp()
 
   // get integration type
   Inpar::Mortar::IntType integrationtype =
-      Core::UTILS::IntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
+      Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
 
   // if we use segment-based integration, the shape of the cells has to be considered!
   Core::FE::CellType intshape;
@@ -771,14 +771,14 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (lmquadtype_ == Inpar::Mortar::lagmult_const)
-      UTILS::EvaluateShape_LM_Const(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
     else if (linlm)
-      UTILS::EvaluateShape_LM_Lin(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm_lin(shapefcn_, sxi, lmval, sele, nrow);
     else
-      UTILS::EvaluateShape_LM(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::EvaluateShape_Displ(sxi, sval, sele, dualquad);
+    UTILS::evaluate_shape_displ(sxi, sval, sele, dualquad);
 
     //********************************************************************
     //  loop over all involved masterelements
@@ -797,7 +797,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar
           ->project_gauss_point_2d(sele, eta, *meles[nummaster], mxi);
 
       // evaluate trace space shape functions (on both elements)
-      UTILS::EvaluateShape_Displ(mxi, mval, *meles[nummaster], false);
+      UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
       // check GP projection
       if ((mxi[0] >= -1) && (mxi[0] <= 1) && (kink_projection == false))
@@ -944,11 +944,11 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment_2d(Mortar::
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (lmtype == Inpar::Mortar::lagmult_const)
-      UTILS::EvaluateShape_LM_Const(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
     else if (linlm)
-      UTILS::EvaluateShape_LM_Lin(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm_lin(shapefcn_, sxi, lmval, sele, nrow);
     else
-      UTILS::EvaluateShape_LM(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // transform shape functions for bound case
     if (bound)
@@ -961,8 +961,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment_2d(Mortar::
     }
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::EvaluateShape_Displ(sxi, sval, sele, dualquad);
-    UTILS::EvaluateShape_Displ(mxi, mval, mele, false);
+    UTILS::evaluate_shape_displ(sxi, sval, sele, dualquad);
+    UTILS::evaluate_shape_displ(mxi, mval, mele, false);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.jacobian(sxi);
@@ -1437,12 +1437,12 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
     if (lmquadtype_ == Inpar::Mortar::lagmult_const)
-      UTILS::EvaluateShape_LM_Const(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
     else
-      UTILS::EvaluateShape_LM(shapefcn_, sxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::EvaluateShape_Displ(sxi, sval, sele, false);
+    UTILS::evaluate_shape_displ(sxi, sval, sele, false);
 
     // check for Boundary Segmentation
     bool projactable_gp = false;
@@ -1482,7 +1482,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar
         projactable_gp = true;
 
         // evaluate trace space shape functions (on both elements)
-        UTILS::EvaluateShape_Displ(mxi, mval, *meles[nummaster], false);
+        UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
         // compute cell D/M matrix *******************************************
         bool bound = false;
@@ -1654,7 +1654,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
     }
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    UTILS::EvaluateShape_LM(shapefcn_, sxi, lmval, sele, nrow);
+    UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // transform shape functions for bound case
     if (bound)
@@ -1668,8 +1668,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
 
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::EvaluateShape_Displ(sxi, sval, sele, false);
-    UTILS::EvaluateShape_Displ(mxi, mval, mele, false);
+    UTILS::evaluate_shape_displ(sxi, sval, sele, false);
+    UTILS::evaluate_shape_displ(mxi, mval, mele, false);
 
     // evaluate the integration cell Jacobian
     double jac = cell->jacobian();
@@ -1920,7 +1920,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_q
     //    }
 
     if (lmtype == Inpar::Mortar::lagmult_const)
-      UTILS::EvaluateShape_LM_Const(shapefcn_, psxi, lmval, sele, nrow);
+      UTILS::evaluate_shape_lm_const(shapefcn_, psxi, lmval, sele, nrow);
     else if (bound)
     {
       sele.evaluate_shape_lag_mult(shapefcn_, psxi, lmval, lmderiv, nrow);
@@ -1932,8 +1932,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_q
     }
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::EvaluateShape_Displ(psxi, sval, sele, dualquad3d);
-    UTILS::EvaluateShape_Displ(pmxi, mval, mele, false);
+    UTILS::evaluate_shape_displ(psxi, sval, sele, dualquad3d);
+    UTILS::evaluate_shape_displ(pmxi, mval, mele, false);
 
     // evaluate the integration cell Jacobian
     double jac = cell->jacobian();

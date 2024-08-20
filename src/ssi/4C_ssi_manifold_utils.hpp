@@ -465,7 +465,7 @@ namespace SSI
   };
 
   //! build specific mesh tying strategy
-  Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> BuildManifoldMeshTyingStrategy(
+  Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> build_manifold_mesh_tying_strategy(
       Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
       Teuchos::RCP<UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying,
       Core::LinAlg::MatrixType matrixtype_manifold);

@@ -98,20 +98,20 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
       adaptolbetter_(0.01),
       tolres_struct_(strparams.get("TOLRES", 1.0e-8)),
       tolres_cardvasc0d_(cv0dparams.get("TOL_CARDVASC0D_RES", 1.0e-8)),
-      algochoice_(Core::UTILS::IntegralValue<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
+      algochoice_(Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
           cv0dparams, "SOLALGORITHM")),
       dirichtoggle_(Teuchos::null),
-      zeros_(Core::LinAlg::CreateVector(*(actdisc_->dof_row_map()), true)),
+      zeros_(Core::LinAlg::create_vector(*(actdisc_->dof_row_map()), true)),
       theta_(cv0dparams.get("TIMINT_THETA", 0.5)),
-      enhanced_output_(Core::UTILS::IntegralValue<int>(cv0dparams, "ENHANCED_OUTPUT")),
-      ptc_3d0d_(Core::UTILS::IntegralValue<int>(cv0dparams, "PTC_3D0D")),
+      enhanced_output_(Core::UTILS::integral_value<int>(cv0dparams, "ENHANCED_OUTPUT")),
+      ptc_3d0d_(Core::UTILS::integral_value<int>(cv0dparams, "PTC_3D0D")),
       k_ptc_(cv0dparams.get("K_PTC", 0.0)),
       totaltime_(0.0),
       linsolveerror_(0),
       strparams_(strparams),
       cv0dparams_(cv0dparams),
-      intstrat_(
-          Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(strparams, "INT_STRATEGY")),
+      intstrat_(Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(
+          strparams, "INT_STRATEGY")),
       mor_(mor),
       have_mor_(false)
 {
@@ -208,7 +208,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     cardiovascular0dmap_full_ =
         Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_full_->dof_row_map())));
     cardiovascular0dmap_ = Teuchos::rcp(new Epetra_Map(*(cardiovascular0ddofset_->dof_row_map())));
-    redcardiovascular0dmap_ = Core::LinAlg::AllreduceEMap(*cardiovascular0dmap_);
+    redcardiovascular0dmap_ = Core::LinAlg::allreduce_e_map(*cardiovascular0dmap_);
     cardvasc0dimpo_ =
         Teuchos::rcp(new Epetra_Export(*redcardiovascular0dmap_, *cardiovascular0dmap_));
     cv0ddofincrement_ = Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
@@ -537,12 +537,12 @@ void UTILS::Cardiovascular0DManager::read_restart(
 {
   // check if restart from non-Cardiovascular0D simulation is desired
   const bool restartwithcardiovascular0d =
-      Core::UTILS::IntegralValue<int>(cardvasc0_d_params(), "RESTART_WITH_CARDVASC0D");
+      Core::UTILS::integral_value<int>(cardvasc0_d_params(), "RESTART_WITH_CARDVASC0D");
 
   if (!restartwithcardiovascular0d)
   {
     Teuchos::RCP<Epetra_Map> cardvasc0d = get_cardiovascular0_d_map();
-    Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::CreateVector(*cardvasc0d, true);
+    Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::create_vector(*cardvasc0d, true);
     // old rhs contributions
     reader.read_vector(tempvec, "cv0d_df_np");
     set0_d_df_n(tempvec);
@@ -673,7 +673,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
       curr->second->evaluate_neumann(params, *actdisc_, *coupcond, lm, elevector, &elematrix);
       // minus sign here since we sum into fint_ !!
       elevector.scale(-1.0);
-      if (assvec) Core::LinAlg::Assemble(*systemvector, elevector, lm, lmowner);
+      if (assvec) Core::LinAlg::assemble(*systemvector, elevector, lm, lmowner);
       // plus sign here since evaluate_neumann already assumes that an fext vector enters, and thus
       // puts a minus infront of the load linearization matrix !!
       // elematrix.Scale(1.0);
@@ -901,7 +901,7 @@ void UTILS::Cardiovascular0DManager::solver_setup(
 
   // different setup for #adapttol_
   isadapttol_ = true;
-  isadapttol_ = (Core::UTILS::IntegralValue<int>(params, "ADAPTCONV") == 1);
+  isadapttol_ = (Core::UTILS::integral_value<int>(params, "ADAPTCONV") == 1);
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
@@ -953,10 +953,10 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   {
     // PTC on structural matrix
     Teuchos::RCP<Epetra_Vector> tmp3D =
-        Core::LinAlg::CreateVector(mat_structstiff->row_map(), false);
+        Core::LinAlg::create_vector(mat_structstiff->row_map(), false);
     tmp3D->PutScalar(k_ptc);
     Teuchos::RCP<Epetra_Vector> diag3D =
-        Core::LinAlg::CreateVector(mat_structstiff->row_map(), false);
+        Core::LinAlg::create_vector(mat_structstiff->row_map(), false);
     mat_structstiff->extract_diagonal_copy(*diag3D);
     diag3D->Update(1.0, *tmp3D, 1.0);
     mat_structstiff->replace_diagonal_values(*diag3D);
@@ -974,7 +974,8 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
 
   // merge maps to one large map
-  Teuchos::RCP<Epetra_Map> mergedmap = Core::LinAlg::MergeMap(standrowmap, cardvasc0drowmap, false);
+  Teuchos::RCP<Epetra_Map> mergedmap =
+      Core::LinAlg::merge_map(standrowmap, cardvasc0drowmap, false);
   // define MapExtractor
   // Core::LinAlg::MapExtractor mapext(*mergedmap,standrowmap,cardvasc0drowmap);
 
@@ -1010,7 +1011,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
     // merge maps of reduced standard dofs and additional pressures to one large map
     Teuchos::RCP<Epetra_Map> mergedmap_R =
-        Core::LinAlg::MergeMap(standrowmap_R, cardvasc0drowmap_R, false);
+        Core::LinAlg::merge_map(standrowmap_R, cardvasc0drowmap_R, false);
 
     std::vector<Teuchos::RCP<const Epetra_Map>> myMaps_R;
     myMaps_R.push_back(standrowmap_R);
@@ -1067,7 +1068,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(dirichtoggle_);
 
 
   Teuchos::ParameterList sfparams =
@@ -1078,7 +1079,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(
       Global::Problem::instance()->solver_params(linsolvernumber),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   switch (algochoice_)
   {

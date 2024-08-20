@@ -98,7 +98,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
     if (oldele->material()->parameter()->id() == matid)
       therm->set_material(0, oldele->material());
     else
-      therm->set_material(0, Mat::Factory(matid));
+      therm->set_material(0, Mat::factory(matid));
     therm->set_dis_type(oldele->shape());  // set distype as well!
     therm->set_kinematic_type(kintype);    // set kintype in cloned thermal element
   }
@@ -126,7 +126,7 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
 /*----------------------------------------------------------------------*
  | setup TSI                                                 dano 12/11 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
+void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<Core::FE::Discretization> structdis;
@@ -148,7 +148,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
 
-  bool matchinggrid = Core::UTILS::IntegralValue<bool>(tsidyn, "MATCHINGGRID");
+  bool matchinggrid = Core::UTILS::integral_value<bool>(tsidyn, "MATCHINGGRID");
 
   // we use the structure discretization as layout for the temperature discretization
   if (structdis->num_global_nodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
@@ -161,7 +161,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
           "MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is "
           "empty!");
 
-    Core::FE::CloneDiscretization<TSI::UTILS::ThermoStructureCloneStrategy>(
+    Core::FE::clone_discretization<TSI::UTILS::ThermoStructureCloneStrategy>(
         structdis, thermdis, Global::Problem::instance()->cloning_material_map());
     thermdis->fill_complete();
 
@@ -200,7 +200,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
     structdis->fill_complete(true, true, true);
     thermdis->fill_complete(true, true, true);
 
-    TSI::UTILS::SetMaterialPointersMatchingGrid(structdis, thermdis);
+    TSI::UTILS::set_material_pointers_matching_grid(structdis, thermdis);
   }
   else
   {
@@ -244,7 +244,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | print TSI-logo                                            dano 03/10 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::SetMaterialPointersMatchingGrid(
+void TSI::UTILS::set_material_pointers_matching_grid(
     Teuchos::RCP<const Core::FE::Discretization> sourcedis,
     Teuchos::RCP<const Core::FE::Discretization> targetdis)
 {

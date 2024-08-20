@@ -227,8 +227,8 @@ void FLD::TimIntOneStepTheta::apply_external_forces(Teuchos::RCP<Epetra_MultiVec
   if (step_ <= numstasteps_)
   {
     external_loadsn_ = Teuchos::rcp(new Epetra_Vector(*(*fext)(0)));
-    external_loadsnp_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
-    external_loads_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loadsnp_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
+    external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   }
 
   if (external_loadsn_ == Teuchos::null)
@@ -275,8 +275,8 @@ void FLD::TimIntOneStepTheta::read_restart(int step)
   const int have_fexternal = reader.read_int("have_fexternal");
   if (have_fexternal != -1)
   {
-    external_loadsn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
-    external_loadsnp_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    external_loadsn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
+    external_loadsnp_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     if (step_ > numstasteps_ && params_->get<double>("theta") != 1.0)
     {
       reader.read_vector(external_loadsn_, "fexternal_n");
@@ -303,10 +303,10 @@ void FLD::TimIntOneStepTheta::treat_turbulence_models(Teuchos::ParameterList& el
   FLD::FluidImplicitTimeInt::treat_turbulence_models(eleparams);
   if (reconstructder_)
   {
-    FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, velnp_, "velafgrad", alefluid_);
+    FLD::UTILS::project_gradient_and_set_param(discret_, eleparams, velnp_, "velafgrad", alefluid_);
     if (params_->get<bool>("ost new"))
     {
-      FLD::UTILS::ProjectGradientAndSetParam(discret_, eleparams, veln_, "velngrad", alefluid_);
+      FLD::UTILS::project_gradient_and_set_param(discret_, eleparams, veln_, "velngrad", alefluid_);
     }
   }
 }

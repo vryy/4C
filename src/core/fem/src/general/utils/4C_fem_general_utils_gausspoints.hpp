@@ -358,7 +358,7 @@ namespace Core::FE
       {
         Core::LinAlg::Matrix<nsd, 1> glo(iquad.point());
 
-        bool insideele = Core::Geo::currentToVolumeElementCoordinates(distype, xie, glo, xi);
+        bool insideele = Core::Geo::current_to_volume_element_coordinates(distype, xie, glo, xi);
         if (not insideele && throw_error)
         {
           FOUR_C_THROW("Given Gauss points not inside the element?");

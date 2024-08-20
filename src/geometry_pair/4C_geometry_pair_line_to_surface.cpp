@@ -55,7 +55,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::project
     Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
     const bool min_one_iteration) const
 {
-  ProjectPointToSurface(point, element_data_surface, xi, projection_result,
+  project_point_to_surface(point, element_data_surface, xi, projection_result,
       get_surface_normal_influence_direction(element_data_surface), min_one_iteration);
 }
 
@@ -159,11 +159,11 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
     while (counter < Constants::local_newton_iter_max)
     {
       // Evaluate the position and its derivative on the line.
-      EvaluatePosition<Line>(eta, element_data_line, r_line);
-      EvaluatePositionDerivative1<Line>(eta, element_data_line, dr_line);
+      evaluate_position<Line>(eta, element_data_line, r_line);
+      evaluate_position_derivative1<Line>(eta, element_data_line, dr_line);
 
       // Evaluate the position and its derivative on the surface.
-      EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, dr_surface);
+      evaluate_surface_position_and_derivative(element_data_surface, xi, r_surface, dr_surface);
 
       // Evaluate the residuum $r_{surface} - r_{line} = R_{pos}$ and $xi(i) - value = R_{edge}$
       J_J_inv.put_scalar(0.);
@@ -191,12 +191,12 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
         // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
         // FAD variables is calculated correctly.
       }
-      else if (Core::FADUtils::VectorNorm(residuum) < Constants::local_newton_res_tol &&
-               Core::FADUtils::VectorNorm(delta_xi) < Constants::projection_xi_eta_tol)
+      else if (Core::FADUtils::vector_norm(residuum) < Constants::local_newton_res_tol &&
+               Core::FADUtils::vector_norm(delta_xi) < Constants::projection_xi_eta_tol)
       {
         // System is solved, now check if the parameter coordinates are valid.
-        if (ValidParameter1D(eta) &&
-            ValidParameterSurface<ScalarType, Surface>(xi, normal_influence_direction))
+        if (valid_parameter1_d(eta) &&
+            valid_parameter_surface<ScalarType, Surface>(xi, normal_influence_direction))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -204,7 +204,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (Core::FADUtils::VectorNorm(residuum) > Constants::local_newton_res_max) break;
+      if (Core::FADUtils::vector_norm(residuum) > Constants::local_newton_res_max) break;
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -217,7 +217,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
       }
 
       // Solve the linearized system.
-      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+      if (Core::LinAlg::solve_linear_system_do_not_throw_error_on_zero_determinant_scaled(
               J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
@@ -263,14 +263,14 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::get_s
   Core::LinAlg::Matrix<2, 1, double> xi_corner_node;
   Core::LinAlg::Matrix<3, 1, Core::LinAlg::Matrix<3, 1, double>> corner_nodes;
   Core::LinAlg::SerialDenseMatrix nodal_coordinates =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(Surface::discretization_);
+      Core::FE::get_ele_node_numbering_nodes_paramspace(Surface::discretization_);
   const auto element_data_surface_double =
       ElementDataToDouble<Surface>::to_double(element_data_surface);
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
       xi_corner_node(i_dim) = nodal_coordinates(i_dim, i_node);
-    EvaluatePosition<Surface>(xi_corner_node, element_data_surface_double, corner_nodes(i_node));
+    evaluate_position<Surface>(xi_corner_node, element_data_surface_double, corner_nodes(i_node));
   }
 
   // Calculate the maximum distance between the three points.
@@ -285,7 +285,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::get_s
 
       diff = corner_nodes(j_node);
       diff -= corner_nodes(i_node);
-      distance = Core::FADUtils::VectorNorm(diff);
+      distance = Core::FADUtils::vector_norm(diff);
       if (distance > max_distance) max_distance = distance;
     }
   }
@@ -340,7 +340,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
   {
     // Create the segment with the scalar FAD type.
     segments.push_back(LineSegment<ScalarType>());
-    CopySegment(segment_double, segments.back());
+    copy_segment(segment_double, segments.back());
   }
 }
 
@@ -359,7 +359,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
   {
     // Create the segment with the scalar FAD type.
     segments_double.push_back(LineSegment<double>());
-    CopySegment(segment, segments_double.back());
+    copy_segment(segment, segments_double.back());
   }
 
   // Call Evaluate on the double pair.
@@ -420,7 +420,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
       projection_point.set_eta(
           new_segment.get_etadata() + new_segment.get_segment_length() * factor);
 
-      EvaluatePosition<Line>(projection_point.get_eta(), element_data_line, point_in_space);
+      evaluate_position<Line>(projection_point.get_eta(), element_data_line, point_in_space);
 
       // Calculate the projection.
       this->project_point_to_other(
@@ -433,7 +433,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
  *
  */
 template <typename ScalarType, typename Surface>
-void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+void GEOMETRYPAIR::project_point_to_surface(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
     const ElementData<Surface, ScalarType>& element_data_surface,
     Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
     const double normal_influence_direction, const bool min_one_iteration)
@@ -457,7 +457,7 @@ void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, Scalar
     while (counter < Constants::local_newton_iter_max)
     {
       // Evaluate the position and its derivative on the surface.
-      EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, J_J_inv);
+      evaluate_surface_position_and_derivative(element_data_surface, xi, r_surface, J_J_inv);
 
       // Evaluate the residuum $r_{solid} - r_{point} = R_{pos}$.
       residuum = r_surface;
@@ -468,10 +468,10 @@ void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, Scalar
         // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
         // FAD variables is calculated correctly.
       }
-      else if (Core::FADUtils::VectorNorm(residuum) < Constants::local_newton_res_tol &&
-               Core::FADUtils::VectorNorm(delta_xi) < Constants::projection_xi_eta_tol)
+      else if (Core::FADUtils::vector_norm(residuum) < Constants::local_newton_res_tol &&
+               Core::FADUtils::vector_norm(delta_xi) < Constants::projection_xi_eta_tol)
       {
-        if (ValidParameterSurface<ScalarType, Surface>(xi, normal_influence_direction))
+        if (valid_parameter_surface<ScalarType, Surface>(xi, normal_influence_direction))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -479,10 +479,10 @@ void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, Scalar
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (Core::FADUtils::VectorNorm(residuum) > Constants::local_newton_res_max) break;
+      if (Core::FADUtils::vector_norm(residuum) > Constants::local_newton_res_max) break;
 
       // Solve the linearized system.
-      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+      if (Core::LinAlg::solve_linear_system_do_not_throw_error_on_zero_determinant_scaled(
               J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.

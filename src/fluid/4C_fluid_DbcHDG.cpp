@@ -205,7 +205,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
     Teuchos::ParameterList initParams;
     if (Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::elemag or
         Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::scatra)
-      Core::UTILS::AddEnumClassToParameterList<Core::FE::HDGAction>(
+      Core::UTILS::add_enum_class_to_parameter_list<Core::FE::HDGAction>(
           "action", Core::FE::HDGAction::project_dirich_field, initParams);
     else
       initParams.set<int>(
@@ -256,7 +256,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
 
           // check whether the imposition of the average pressure is requested
           const int dopressavgbc =
-              Core::UTILS::IntegralValue<Inpar::FLUID::PressAvgBc>(params, "PRESSAVGBC");
+              Core::UTILS::integral_value<Inpar::FLUID::PressAvgBc>(params, "PRESSAVGBC");
 
           if (dopressavgbc == Inpar::FLUID::yes_pressure_average_bc)
           {

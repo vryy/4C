@@ -98,7 +98,7 @@ int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       t3_energy(params, mydisp, &elevec1);
     }
@@ -119,12 +119,12 @@ int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       // get residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
 
       /*first displacement vector is modified for proper element evaluation in case of periodic
        *boundary conditions; in case that no periodic boundary conditions are to be applied the
@@ -245,7 +245,7 @@ int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
     }
 
     default:
-      std::cout << "\ncalled element with action type " << ActionType2String(act);
+      std::cout << "\ncalled element with action type " << action_type_to_string(act);
       FOUR_C_THROW("Unknown type of action for Torsion3");
       break;
   }

@@ -65,7 +65,7 @@ Mortar::StrategyBase::StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer
   data().n_dim() = spatialDim;
   data().alpha_f() = alphaf;
   data().max_dof() = maxdof;
-  data().sys_type() = Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(scontact_, "SYSTEM");
+  data().sys_type() = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(scontact_, "SYSTEM");
 }
 
 /*----------------------------------------------------------------------*
@@ -87,12 +87,12 @@ void Mortar::StrategyBase::set_time_integration_info(
       break;
     default:
       FOUR_C_THROW(
-          "Unsupported time integration detected! [\"%s\"]", DynamicTypeString(dyntype).c_str());
+          "Unsupported time integration detected! [\"%s\"]", dynamic_type_string(dyntype).c_str());
       exit(EXIT_FAILURE);
   }
 
   // Check if we only want to compute the contact force at the time endpoint
-  if (Core::UTILS::IntegralValue<int>(data().s_contact(), "CONTACTFORCE_ENDTIME"))
+  if (Core::UTILS::integral_value<int>(data().s_contact(), "CONTACTFORCE_ENDTIME"))
     alphaf_ = 0.0;
   else
   {

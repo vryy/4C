@@ -89,7 +89,7 @@ void Mat::ThermoStVenantKirchhoff::create_thermo_material_if_set()
   const int thermoMatId = this->params_->thermomat_;
   if (thermoMatId != -1)
   {
-    auto mat = Mat::Factory(thermoMatId);
+    auto mat = Mat::factory(thermoMatId);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
     thermo_ = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(mat);
   }
@@ -121,7 +121,7 @@ void Mat::ThermoStVenantKirchhoff::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;

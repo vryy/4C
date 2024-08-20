@@ -128,7 +128,7 @@ namespace
     // following unittests
   };
 
-  void compareParticleStates(
+  void compare_particle_states(
       PARTICLEENGINE::ParticleStates& particle_reference, PARTICLEENGINE::ParticleStates& particle)
   {
     ASSERT_EQ(particle_reference.size(), particle.size());
@@ -143,7 +143,7 @@ namespace
       for (std::size_t j = 0; j < state_reference.size(); ++j)
         EXPECT_NEAR(state_reference[j], state[j], 1e-14)
             << "state '"
-            << PARTICLEENGINE::EnumToStateName(static_cast<PARTICLEENGINE::ParticleState>(i))
+            << PARTICLEENGINE::enum_to_state_name(static_cast<PARTICLEENGINE::ParticleState>(i))
             << "' j = " << j;
     }
   }
@@ -183,7 +183,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -222,7 +222,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -263,7 +263,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -304,7 +304,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -343,7 +343,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
 
     container = particlecontainerbundle_->get_specific_container(
@@ -369,7 +369,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -409,7 +409,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
 
     container = particlecontainerbundle_->get_specific_container(
@@ -435,7 +435,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -476,7 +476,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
 
     container = particlecontainerbundle_->get_specific_container(
@@ -502,7 +502,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 
@@ -543,7 +543,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
 
     container = particlecontainerbundle_->get_specific_container(
@@ -569,7 +569,7 @@ namespace
 
       container->get_particle(index, globalid, particle);
 
-      compareParticleStates(particle_reference, particle);
+      compare_particle_states(particle_reference, particle);
     }
   }
 

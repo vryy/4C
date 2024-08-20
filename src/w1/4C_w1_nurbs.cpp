@@ -63,7 +63,7 @@ void Discret::ELEMENTS::Nurbs::Wall1NurbsType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Nurbs::Wall1NurbsType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid2DNullSpace(node, x0);
+  return compute_solid_2d_null_space(node, x0);
 }
 
 void Discret::ELEMENTS::Nurbs::Wall1NurbsType::setup_element_definition(
@@ -158,7 +158,7 @@ Core::FE::CellType Discret::ELEMENTS::Nurbs::Wall1Nurbs::shape() const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::Wall1Nurbs::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1>(
+  return Core::Communication::element_boundary_factory<Wall1Line, Wall1>(
       Core::Communication::buildLines, *this);
 }
 

@@ -82,7 +82,7 @@ void fs3i_dyn()
   fs3i->test_results(comm);
 
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      Core::Communication::toTeuchosComm<int>(comm);
+      Core::Communication::to_teuchos_comm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 }
 

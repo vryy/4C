@@ -111,7 +111,7 @@ namespace CONTACT
     */
     std::vector<double> get_gap() override
     {
-      std::vector<double> gaps(1, Core::FADUtils::CastToDouble(gap_));
+      std::vector<double> gaps(1, Core::FADUtils::cast_to_double(gap_));
 
       return gaps;
     };
@@ -121,7 +121,7 @@ namespace CONTACT
     */
     std::vector<double> get_contact_force() override
     {
-      std::vector<double> forces(1, Core::FADUtils::CastToDouble(fp_));
+      std::vector<double> forces(1, Core::FADUtils::cast_to_double(fp_));
 
       return forces;
     };
@@ -132,7 +132,7 @@ namespace CONTACT
     std::vector<double> get_contact_angle() override
     {
       double angle = 0.0;
-      double cosangle = Core::FADUtils::CastToDouble(tangentproduct_);
+      double cosangle = Core::FADUtils::cast_to_double(tangentproduct_);
       if (cosangle < 1.0)
         angle = acos(cosangle);  // returns an angle \in [0;pi/2] since scalarproduct \in [0;1.0]
       else
@@ -148,8 +148,8 @@ namespace CONTACT
     std::vector<std::pair<double, double>> get_closest_point() override
     {
       std::pair<double, double> cp(0.0, 0.0);
-      cp.first = Core::FADUtils::CastToDouble(xi1_);
-      cp.second = Core::FADUtils::CastToDouble(xi2_);
+      cp.first = Core::FADUtils::cast_to_double(xi1_);
+      cp.second = Core::FADUtils::cast_to_double(xi2_);
       std::vector<std::pair<double, double>> cps(1, cp);
 
       return cps;
@@ -182,7 +182,7 @@ namespace CONTACT
     {
       std::vector<Core::LinAlg::Matrix<3, 1>> r1(1, Core::LinAlg::Matrix<3, 1>(true));
 
-      for (int j = 0; j < 3; j++) r1[0](j) = Core::FADUtils::CastToDouble(r1_(j));
+      for (int j = 0; j < 3; j++) r1[0](j) = Core::FADUtils::cast_to_double(r1_(j));
 
       return r1;
     };
@@ -194,7 +194,7 @@ namespace CONTACT
     {
       std::vector<Core::LinAlg::Matrix<3, 1>> r2(1, Core::LinAlg::Matrix<3, 1>(true));
 
-      for (int j = 0; j < 3; j++) r2[0](j) = Core::FADUtils::CastToDouble(r2_(j));
+      for (int j = 0; j < 3; j++) r2[0](j) = Core::FADUtils::cast_to_double(r2_(j));
 
       return r2;
     };
@@ -208,11 +208,11 @@ namespace CONTACT
 
       if (get_new_gap_status() == true)
       {
-        for (int i = 0; i < 3; i++) normal(i) = -Core::FADUtils::CastToDouble(normal_(i));
+        for (int i = 0; i < 3; i++) normal(i) = -Core::FADUtils::cast_to_double(normal_(i));
       }
       else
       {
-        for (int i = 0; i < 3; i++) normal(i) = Core::FADUtils::CastToDouble(normal_(i));
+        for (int i = 0; i < 3; i++) normal(i) = Core::FADUtils::cast_to_double(normal_(i));
       }
 
       return normal;
@@ -236,7 +236,7 @@ namespace CONTACT
     double get_energy() override
     {
       TYPE energy = 0.5 * pp_ * gap_ * gap_;
-      return Core::FADUtils::CastToDouble(energy);
+      return Core::FADUtils::cast_to_double(energy);
     };
 
     /*!
@@ -262,8 +262,8 @@ namespace CONTACT
       }
 
       // Only deliver normal_old_ when a valid closest point projection for last time step existed!
-      if (Core::FADUtils::Norm(xi1_old_) < 1.0 + XIETATOL and
-          Core::FADUtils::Norm(xi2_old_) < 1.0 + XIETATOL and !oldcppunconverged_)
+      if (Core::FADUtils::norm(xi1_old_) < 1.0 + XIETATOL and
+          Core::FADUtils::norm(xi2_old_) < 1.0 + XIETATOL and !oldcppunconverged_)
       {
         return &normal_old_;
       }

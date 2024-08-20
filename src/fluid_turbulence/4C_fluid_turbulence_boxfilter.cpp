@@ -29,7 +29,7 @@ FLD::Boxfilter::Boxfilter(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type")),
+      physicaltype_(Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type")),
       //  available control settings
       apply_dynamic_smagorinsky_(false),
       vreman_dynamic_(false),
@@ -942,7 +942,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
   // generate a parameterlist for communication and control
   Teuchos::ParameterList filterparams;
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_box_filter, filterparams);
 
   filterparams.set("thermpress", thermpress);

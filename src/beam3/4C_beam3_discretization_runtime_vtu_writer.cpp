@@ -152,13 +152,13 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
       // this is needed in case your input file contains shifted/cut elements
       if (periodic_boundingbox_ != Teuchos::null)
       {
-        BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(*discretization_, ele,
+        BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(*discretization_, ele,
             displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
       }
       // this is needed in case your input file does not contain shifted/cut elements
       else
       {
-        BEAMINTERACTION::UTILS::GetCurrentElementDis(
+        BEAMINTERACTION::UTILS::get_current_element_dis(
             *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
       }
     }
@@ -290,7 +290,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::UTILS::GetCurrentElementDis(
+    BEAMINTERACTION::UTILS::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
     /* loop over the chosen visualization points (equidistant distribution in the element
@@ -386,7 +386,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_triad_field(
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::UTILS::GetCurrentElementDis(
+    BEAMINTERACTION::UTILS::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
 
@@ -626,8 +626,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_filament_id_and_type(
       FOUR_C_THROW(" No filament number assigned to element with gid %i .", ele->id());
 
     double current_id = cond->parameters().get<int>("ID");
-    double current_type =
-        Inpar::BEAMINTERACTION::String2FilamentType((cond->parameters().get<std::string>("TYPE")));
+    double current_type = Inpar::BEAMINTERACTION::string_to_filament_type(
+        (cond->parameters().get<std::string>("TYPE")));
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
     {
@@ -734,7 +734,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::UTILS::GetCurrentElementDis(
+    BEAMINTERACTION::UTILS::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
 
@@ -842,7 +842,7 @@ void BeamDiscretizationRuntimeOutputWriter::
 
 
     // get GP strain values from previous element evaluation call
-    beamele->get_material_strain_resultants_at_all_g_ps(axial_strain_GPs_current_element,
+    beamele->get_material_strain_resultants_at_all_gps(axial_strain_GPs_current_element,
         shear_strain_2_GPs_current_element, shear_strain_3_GPs_current_element,
         twist_GPs_current_element, curvature_2_GPs_current_element,
         curvature_3_GPs_current_element);
@@ -1018,7 +1018,7 @@ void BeamDiscretizationRuntimeOutputWriter::
 
 
     // get GP stress values from previous element evaluation call
-    beamele->get_material_stress_resultants_at_all_g_ps(material_axial_force_GPs_current_element,
+    beamele->get_material_stress_resultants_at_all_gps(material_axial_force_GPs_current_element,
         material_shear_force_2_GPs_current_element, material_shear_force_3_GPs_current_element,
         material_torque_GPs_current_element, material_bending_moment_2_GPs_current_element,
         material_bending_moment_3_GPs_current_element);
@@ -1206,7 +1206,7 @@ void BeamDiscretizationRuntimeOutputWriter::
 
 
     // get GP stress values from previous element evaluation call
-    beamele->get_spatial_stress_resultants_at_all_g_ps(spatial_axial_force_GPs_current_element,
+    beamele->get_spatial_stress_resultants_at_all_gps(spatial_axial_force_GPs_current_element,
         spatial_shear_force_2_GPs_current_element, spatial_shear_force_3_GPs_current_element,
         spatial_torque_GPs_current_element, spatial_bending_moment_2_GPs_current_element,
         spatial_bending_moment_3_GPs_current_element);
@@ -1487,9 +1487,9 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    BEAMINTERACTION::UTILS::GetCurrentElementDis(
+    BEAMINTERACTION::UTILS::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector);
-    BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(*discretization_, ele,
+    BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(*discretization_, ele,
         displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
 
     beamele->get_pos_at_xi(pos_node_1, -1.0, beamelement_displacement_vector);
@@ -1507,7 +1507,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
     {
       if (xi_intersect(dir) > 1.0) continue;
 
-      beamele->get_spatial_forces_at_all_g_ps(spatial_x_force_GPs_current_element,
+      beamele->get_spatial_forces_at_all_gps(spatial_x_force_GPs_current_element,
           spatial_y_force_2_GPs_current_element, spatial_z_force_3_GPs_current_element);
 
       fint_sum[dir][0] += spatial_x_force_GPs_current_element[0];
@@ -1751,13 +1751,13 @@ void BeamDiscretizationRuntimeOutputWriter::append_continuous_stress_strain_resu
       switch (stress_strain_field)
       {
         case StressStrainField::material_strain:
-          sr_beam->get_material_strain_resultants_at_all_g_ps(stress_strain_GPs_current_element[0],
+          sr_beam->get_material_strain_resultants_at_all_gps(stress_strain_GPs_current_element[0],
               stress_strain_GPs_current_element[1], stress_strain_GPs_current_element[2],
               stress_strain_GPs_current_element[3], stress_strain_GPs_current_element[4],
               stress_strain_GPs_current_element[5]);
           break;
         case StressStrainField::material_stress:
-          sr_beam->get_material_stress_resultants_at_all_g_ps(stress_strain_GPs_current_element[0],
+          sr_beam->get_material_stress_resultants_at_all_gps(stress_strain_GPs_current_element[0],
               stress_strain_GPs_current_element[1], stress_strain_GPs_current_element[2],
               stress_strain_GPs_current_element[3], stress_strain_GPs_current_element[4],
               stress_strain_GPs_current_element[5]);

@@ -121,8 +121,9 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->evaluate(
-        [&](Core::Elements::Element& ele) {
-          Core::FE::ExtrapolateGaussPointQuantityToNodes(
+        [&](Core::Elements::Element& ele)
+        {
+          Core::FE::extrapolate_gauss_point_quantity_to_nodes(
               ele, *data->at(ele.id()), *dis, nodal_stress);
         });
 
@@ -158,8 +159,10 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     Epetra_MultiVector elestress(*(dis->element_row_map()), 6);
 
     dis->evaluate(
-        [&](Core::Elements::Element& ele) {
-          Core::FE::EvaluateGaussPointQuantityAtElementCenter(ele, *data->at(ele.id()), elestress);
+        [&](Core::Elements::Element& ele)
+        {
+          Core::FE::evaluate_gauss_point_quantity_at_element_center(
+              ele, *data->at(ele.id()), elestress);
         });
 
     filter_.get_writer().write_element_result_step(
@@ -405,8 +408,9 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
 
     dis->evaluate(
-        [&](Core::Elements::Element& ele) {
-          Core::FE::ExtrapolateGaussPointQuantityToNodes(
+        [&](Core::Elements::Element& ele)
+        {
+          Core::FE::extrapolate_gauss_point_quantity_to_nodes(
               ele, *data->at(ele.id()), *dis, nodal_stress);
         });
 
@@ -440,7 +444,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         eigenvec(2, 1) = eigenvec(1, 2);
         eigenvec(2, 2) = (*(nodal_stress(2)))[i];
 
-        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
@@ -462,7 +466,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         eigenvec(1, 0) = eigenvec(0, 1);
         eigenvec(1, 1) = (*(nodal_stress(1)))[i];
 
-        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
         (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
         (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
@@ -520,8 +524,9 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
     Epetra_MultiVector element_stress(*dis->element_row_map(), 6, true);
 
     dis->evaluate(
-        [&](Core::Elements::Element& ele) {
-          Core::FE::EvaluateGaussPointQuantityAtElementCenter(
+        [&](Core::Elements::Element& ele)
+        {
+          Core::FE::evaluate_gauss_point_quantity_at_element_center(
               ele, *data->at(ele.id()), element_stress);
         });
 
@@ -554,7 +559,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         eigenvec(2, 1) = eigenvec(1, 2);
         eigenvec(2, 2) = (*(element_stress(2)))[i];
 
-        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
@@ -576,7 +581,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         eigenvec(1, 0) = eigenvec(0, 1);
         eigenvec(1, 1) = (*(element_stress(1)))[i];
 
-        Core::LinAlg::SymmetricEigenProblem(eigenvec, eigenval, true);
+        Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
         (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
         (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);

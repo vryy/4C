@@ -30,10 +30,10 @@ namespace Discret::ELEMENTS::SolidPoroPressureBasedInternal
   namespace
   {
     template <Core::FE::CellType celltype>
-    Input::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
+    Input::LineDefinition::Builder get_default_line_definition_builder()
     {
       return Input::LineDefinition::Builder()
-          .add_int_vector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
+          .add_int_vector(Core::FE::cell_type_to_string(celltype), Core::FE::num_nodes<celltype>)
           .add_named_int("MAT")
           .add_named_string("KINEM")
           .add_optional_named_string("TYPE");
@@ -56,26 +56,26 @@ void Discret::ELEMENTS::SolidPoroPressureBasedType::setup_element_definition(
   std::map<std::string, Input::LineDefinition>& defsgeneral =
       definitions["SOLIDPORO_PRESSURE_BASED"];
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
-      Discret::ELEMENTS::SolidPoroPressureBasedInternal::GetDefaultLineDefinitionBuilder<
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex8)] =
+      Discret::ELEMENTS::SolidPoroPressureBasedInternal::get_default_line_definition_builder<
           Core::FE::CellType::hex8>()
           .add_optional_named_string("EAS")
           .add_optional_tag("FBAR")
           .build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
-      Discret::ELEMENTS::SolidPoroPressureBasedInternal::GetDefaultLineDefinitionBuilder<
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::hex27)] =
+      Discret::ELEMENTS::SolidPoroPressureBasedInternal::get_default_line_definition_builder<
           Core::FE::CellType::hex27>()
           .build();
 
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
-      Discret::ELEMENTS::SolidPoroPressureBasedInternal::GetDefaultLineDefinitionBuilder<
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::tet4)] =
+      Discret::ELEMENTS::SolidPoroPressureBasedInternal::get_default_line_definition_builder<
           Core::FE::CellType::tet4>()
           .build();
 
-  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
-      Discret::ELEMENTS::SolidPoroPressureBasedInternal::GetDefaultLineDefinitionBuilder<
+  defsgeneral[Core::FE::cell_type_to_string(Core::FE::CellType::tet10)] =
+      Discret::ELEMENTS::SolidPoroPressureBasedInternal::get_default_line_definition_builder<
           Core::FE::CellType::tet10>()
           .build();
 }
@@ -110,7 +110,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidPoroPressureBasedType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 Discret::ELEMENTS::SolidPoroPressureBased::SolidPoroPressureBased(int id, int owner)
@@ -125,29 +125,30 @@ Core::Elements::Element* Discret::ELEMENTS::SolidPoroPressureBased::clone() cons
 
 int Discret::ELEMENTS::SolidPoroPressureBased::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(celltype_);
+  return Core::FE::get_number_of_element_lines(celltype_);
 }
 
 int Discret::ELEMENTS::SolidPoroPressureBased::num_surface() const
 {
-  return Core::FE::getNumberOfElementSurfaces(celltype_);
+  return Core::FE::get_number_of_element_surfaces(celltype_);
 }
 
 int Discret::ELEMENTS::SolidPoroPressureBased::num_volume() const
 {
-  return Core::FE::getNumberOfElementVolumes(celltype_);
+  return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>>
 Discret::ELEMENTS::SolidPoroPressureBased::lines()
 {
-  return Core::Communication::GetElementLines<StructuralLine, SolidPoroPressureBased>(*this);
+  return Core::Communication::get_element_lines<StructuralLine, SolidPoroPressureBased>(*this);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>>
 Discret::ELEMENTS::SolidPoroPressureBased::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<StructuralSurface, SolidPoroPressureBased>(*this);
+  return Core::Communication::get_element_surfaces<StructuralSurface, SolidPoroPressureBased>(
+      *this);
 }
 
 void Discret::ELEMENTS::SolidPoroPressureBased::set_params_interface_ptr(
@@ -171,11 +172,11 @@ bool Discret::ELEMENTS::SolidPoroPressureBased::read_element(const std::string& 
 {
   // read base element
   // set cell type
-  celltype_ = Core::FE::StringToCellType(elecelltype);
+  celltype_ = Core::FE::string_to_cell_type(elecelltype);
 
   // read number of material model
   set_material(
-      0, Mat::Factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
+      0, Mat::factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
 
   // read kinematic type
   solid_ele_property_.kintype =
@@ -247,7 +248,7 @@ void Discret::ELEMENTS::SolidPoroPressureBased::unpack(const std::vector<char>& 
 
   celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
 
-  Discret::ELEMENTS::ExtractFromPack(position, data, solid_ele_property_);
+  Discret::ELEMENTS::extract_from_pack(position, data, solid_ele_property_);
 
   poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(position, data));
 

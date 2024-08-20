@@ -191,10 +191,10 @@ namespace BEAMINTERACTION
     {
       out << "\nInstance of BeamToBeamContactVariables (SegmentIds " << segids_.first << " & "
           << segids_.second << "):";
-      out << "\ngap= " << Core::FADUtils::CastToDouble(gap_);
+      out << "\ngap= " << Core::FADUtils::cast_to_double(gap_);
       out << "\nangle= " << angle_ / M_PI * 180.0 << " degree";
-      out << "\nclosest point coords: " << Core::FADUtils::CastToDouble(closestpoint_.first) << " "
-          << Core::FADUtils::CastToDouble(closestpoint_.second);
+      out << "\nclosest point coords: " << Core::FADUtils::cast_to_double(closestpoint_.first)
+          << " " << Core::FADUtils::cast_to_double(closestpoint_.second);
 
       out << "\n";
     }

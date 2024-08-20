@@ -70,7 +70,7 @@ void Discret::ELEMENTS::Nurbs::Ale3NurbsType::nodal_block_information(
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Nurbs::Ale3NurbsType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return ComputeSolid3DNullSpace(node, x0);
+  return compute_solid_3d_null_space(node, x0);
 }
 
 /*----------------------------------------------------------------------------*/

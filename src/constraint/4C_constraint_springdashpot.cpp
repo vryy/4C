@@ -181,7 +181,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
-        if (assvec) Core::LinAlg::Assemble(*fint, elevector1, lm, lmowner);
+        if (assvec) Core::LinAlg::assemble(*fint, elevector1, lm, lmowner);
         if (assmat) stiff->assemble(curr.second->id(), lmstride, elematrix1, lm, lmowner);
 
         // save spring stress for postprocessing
@@ -771,7 +771,7 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 
   // empty displacement vector
   Teuchos::RCP<Epetra_Vector> disp;
-  disp = Core::LinAlg::CreateVector(*(actdisc_->dof_row_map()), true);
+  disp = Core::LinAlg::create_vector(*(actdisc_->dof_row_map()), true);
 
   // initialize gap in reference configuration
   mortar_->interface()->evaluate_distances(disp, tmpnormals_, tmpdnormals_, gap0_, tmpdgap_);

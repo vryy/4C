@@ -31,7 +31,8 @@ Adapter::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
     FOUR_C_THROW("Prestressing for fluid-beam interaction not tested yet.");
   }
   eletypeextractor_ = Teuchos::rcp(new BEAMINTERACTION::UTILS::MapExtractor);
-  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(structure_->discretization(), eletypeextractor_);
+  BEAMINTERACTION::UTILS::setup_ele_type_map_extractor(
+      structure_->discretization(), eletypeextractor_);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

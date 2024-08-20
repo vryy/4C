@@ -198,9 +198,10 @@ bool CONTACT::LineToSurfaceCoupling3d::check_orientation()
 void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
 {
   Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
   Inpar::Mortar::ConsistentDualType consistent =
-      Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
+      Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
+          imortar_, "LM_DUAL_CONSISTENT");
 
   if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin)
     return;
@@ -377,10 +378,11 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   if (A_tot < 1.e-12) return;
 
   // invert bi-ortho matrix me
-  //  Core::LinAlg::SerialDenseMatrix meinv = Core::LinAlg::InvertAndMultiplyByCholesky(me,de,ae);
+  //  Core::LinAlg::SerialDenseMatrix meinv =
+  //  Core::LinAlg::invert_and_multiply_by_cholesky(me,de,ae);
 
   Core::LinAlg::Matrix<4, 4, double> me_tmatrix(me, true);
-  Core::LinAlg::Inverse(me_tmatrix);
+  Core::LinAlg::inverse(me_tmatrix);
   Core::LinAlg::SerialDenseMatrix meinv = me;
 
   // build linearization of ae and store in derivdual
@@ -416,11 +418,11 @@ void CONTACT::LineToSurfaceCoupling3d::integrate_line()
 {
   // get solution strategy
   Inpar::CONTACT::SolvingStrategy sol =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(imortar_, "STRATEGY");
+      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(imortar_, "STRATEGY");
 
   // create integrator object
   Teuchos::RCP<CONTACT::Integrator> integrator =
-      CONTACT::INTEGRATOR::BuildIntegrator(sol, imortar_, int_line()->shape(), get_comm());
+      CONTACT::INTEGRATOR::build_integrator(sol, imortar_, int_line()->shape(), get_comm());
 
   // perform integration
   if (i_type() == LineToSurfaceCoupling3d::lts)
@@ -2385,7 +2387,7 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
 {
   bool friction = false;
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   if (ftype != Inpar::CONTACT::friction_none) friction = true;
 
   // get slave element nodes themselves for normal evaluation

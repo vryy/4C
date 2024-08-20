@@ -55,7 +55,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
     }
     // initialize maps and importer
     errormap_ = Teuchos::rcp(new Epetra_Map(numele, nummyele, 0, actdisc_->get_comm()));
-    rederrormap_ = Core::LinAlg::AllreduceEMap(*errormap_);
+    rederrormap_ = Core::LinAlg::allreduce_e_map(*errormap_);
     errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_, *errormap_));
     errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_, *errormap_));
     acterror_ = Teuchos::rcp(new Epetra_Vector(*rederrormap_));
@@ -294,8 +294,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
           // force+stiff)
           if (!assemblemat1) elevector2.scale((*lagrvalues_force_)[condID - 1]);
           if (assemblemat1) elevector2.scale((*lagrvalues_)[condID - 1]);
-          Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
-          Core::LinAlg::Assemble(*systemvector1, elevector2, lm, lmowner);
+          Core::LinAlg::assemble(*systemvector1, elevector1, lm, lmowner);
+          Core::LinAlg::assemble(*systemvector1, elevector2, lm, lmowner);
         }
       }
     }
@@ -362,7 +362,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
         std::vector<int> constrowner;
         constrlm.push_back(condID - 1);
         constrowner.push_back(curr->second->owner());
-        Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
+        Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
       }
 
       if (actdisc_->get_comm().MyPID() == 0 && (!(activecons_.find(condID)->second)))

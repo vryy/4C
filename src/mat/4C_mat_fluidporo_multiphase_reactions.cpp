@@ -41,7 +41,7 @@ Mat::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
     for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(reacid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(reacid);
 
       // safety check and cast
       if (mat->material_type() != Core::Materials::m_fluidporo_singlereaction)
@@ -111,7 +111,7 @@ void Mat::FluidPoroMultiPhaseReactions::setup_mat_map()
   for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); ++m)
   {
     const int reacid = *m;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(reacid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(reacid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(reacid, mat));
   }
@@ -158,7 +158,7 @@ void Mat::FluidPoroMultiPhaseReactions::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover paramsreac_
   int matid(-1);

@@ -95,7 +95,7 @@ NOX::Nln::CONSTRAINT::Group::get_constraint_interface_ptr(
   if (errflag and it == user_constraint_interfaces_.end())
   {
     std::ostringstream msg;
-    msg << "The given NOX::Nln::SolutionType \"" << NOX::Nln::SolutionType2String(soltype)
+    msg << "The given NOX::Nln::SolutionType \"" << NOX::Nln::solution_type_to_string(soltype)
         << "\" could not be found!";
     throw_error("get_constraint_interface_ptr", msg.str());
   }
@@ -187,14 +187,14 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_rhs_nor
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormF\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i])
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i])
           << " | return value=" << rval << ")" << std::endl;
       FOUR_C_THROW(msg.str());
     }
     else
     {
       FOUR_C_THROW("The norm value %e for quantity %s is not valid!", rval,
-          NOX::Nln::StatusTest::QuantityType2String(chQ[i]).c_str());
+          NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]).c_str());
     }
   }
 
@@ -241,7 +241,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormIncr\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]) << ")"
           << std::endl;
       throw_error("get_solution_update_norms", msg.str());
     }
@@ -289,7 +289,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_previous_solu
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormUpdate\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]) << ")"
           << std::endl;
       throw_error("get_previous_solution_norms", msg.str());
     }
@@ -333,7 +333,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormWRMS\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::quantity_type_to_string(chQ[i]) << ")"
           << std::endl;
       throw_error("get_solution_update_rms", msg.str());
     }

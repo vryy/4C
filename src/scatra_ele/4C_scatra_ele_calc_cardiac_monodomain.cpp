@@ -45,7 +45,7 @@ Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcCardiacMonodomain<distype, probdim>>(
@@ -319,7 +319,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
   // extract additional local values from global vector
   Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
   if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
 }
 
 

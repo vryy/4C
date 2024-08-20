@@ -12,7 +12,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::UTILS
 {
-  void BoolParameter(std::string const& paramName, std::string const& value,
+  void bool_parameter(std::string const& paramName, std::string const& value,
       std::string const& docString, Teuchos::ParameterList* paramList)
   {
     Teuchos::Array<std::string> yesnotuple =
@@ -23,7 +23,7 @@ namespace Core::UTILS
   }
 
 
-  void IntParameter(std::string const& paramName, int const value, std::string const& docString,
+  void int_parameter(std::string const& paramName, int const value, std::string const& docString,
       Teuchos::ParameterList* paramList)
   {
     Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
@@ -32,7 +32,7 @@ namespace Core::UTILS
   }
 
 
-  void DoubleParameter(std::string const& paramName, double const& value,
+  void double_parameter(std::string const& paramName, double const& value,
       std::string const& docString, Teuchos::ParameterList* paramList)
   {
     Teuchos::AnyNumberParameterEntryValidator::AcceptedTypes validator(false);
@@ -42,7 +42,7 @@ namespace Core::UTILS
   }
 
 
-  void StringParameter(std::string const& paramName, std::string const& value,
+  void string_parameter(std::string const& paramName, std::string const& value,
       std::string const& docString, Teuchos::ParameterList* paramList)
   {
     Teuchos::RCP<Teuchos::StringValidator> validator = Teuchos::rcp(new Teuchos::StringValidator());

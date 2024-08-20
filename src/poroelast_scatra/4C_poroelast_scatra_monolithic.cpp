@@ -53,7 +53,7 @@ PoroElastScaTra::PoroScatraMono::PoroScatraMono(
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
-  solveradapttol_ = (Core::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (Core::UTILS::integral_value<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
@@ -129,9 +129,9 @@ void PoroElastScaTra::PoroScatraMono::read_restart(int restart)
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
-    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::set_material_pointers_matching_grid(
         poro_field()->structure_field()->discretization(), scatra_field()->discretization());
-    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::set_material_pointers_matching_grid(
         poro_field()->fluid_field()->discretization(), scatra_field()->discretization());
   }
 }
@@ -201,11 +201,11 @@ void PoroElastScaTra::PoroScatraMono::solve()
   norminc_ = 0.0;
 
   // incremental solution vector with length of all dofs
-  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::create_vector(*dof_row_map(), true);
   zeros_->PutScalar(0.0);
 
   //---------------------------------------------- iteration loop
@@ -360,7 +360,7 @@ void PoroElastScaTra::PoroScatraMono::setup_system()
     const Teuchos::RCP<const Epetra_Map> porocondmap = poro_field()->combined_dbc_map();
     const Teuchos::RCP<const Epetra_Map> scatracondmap = scatra_field()->dirich_maps()->cond_map();
     Teuchos::RCP<const Epetra_Map> dbcmap =
-        Core::LinAlg::MergeMap(porocondmap, scatracondmap, false);
+        Core::LinAlg::merge_map(porocondmap, scatracondmap, false);
 
     // Finally, create the global FSI Dirichlet map extractor
     dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
@@ -579,7 +579,7 @@ bool PoroElastScaTra::PoroScatraMono::setup_solver()
   {
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
   }
   else
@@ -590,16 +590,16 @@ bool PoroElastScaTra::PoroScatraMono::setup_solver()
   // Get the parameters for the Newton iteration
   itermax_ = poroscatradyn.get<int>("ITEMAX");
   itermin_ = poroscatradyn.get<int>("ITEMIN");
-  normtypeinc_ = Core::UTILS::IntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypeinc_ = Core::UTILS::IntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypeinc_ = Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypeinc_ = Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
   normtypefres_ =
-      Core::UTILS::IntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_RESF");
+      Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_RESF");
   combincfres_ =
-      Core::UTILS::IntegralValue<Inpar::PoroElast::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
+      Core::UTILS::integral_value<Inpar::PoroElast::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      Core::UTILS::IntegralValue<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
+      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      Core::UTILS::IntegralValue<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
+      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
 
   tolinc_ = poroscatradyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroscatradyn.get<double>("TOLRES_GLOBAL");
@@ -709,8 +709,9 @@ void PoroElastScaTra::PoroScatraMono::print_newton_iter_header(FILE* ofile)
 
   oss << "------------------------------------------------------------" << std::endl;
   oss << "                   Newton-Raphson Scheme                    " << std::endl;
-  oss << "                NormRES " << VectorNormString(vectornormfres_);
-  oss << "     NormINC " << VectorNormString(vectornorminc_) << "                    " << std::endl;
+  oss << "                NormRES " << vector_norm_string(vectornormfres_);
+  oss << "     NormINC " << vector_norm_string(vectornorminc_) << "                    "
+      << std::endl;
   oss << "------------------------------------------------------------" << std::endl;
 
   // enter converged state etc
@@ -1146,7 +1147,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_scatra()
 
   k_sps_->zero();
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
   // other parameters that might be needed by the elements
   sparams_struct.set("delta time", dt());
@@ -1179,7 +1180,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_scatra()
   // create the parameters for the discretization
   Teuchos::ParameterList sparams_fluid;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", dt());
@@ -1222,7 +1223,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
   std::cout << "scatra field has " << dof_scatra << " DOFs" << std::endl;
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
-  iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1233,7 +1234,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = Core::LinAlg::CreateMatrix(*dof_row_map(), 81);
+  stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);

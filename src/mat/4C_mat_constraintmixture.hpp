@@ -520,7 +520,7 @@ namespace Mat
     Mat::ConstraintMixtureOutputToGmsh(discret_, StepOld(), 1);
   }
   don't forget to include constraintmixture.H */
-  void ConstraintMixtureOutputToGmsh(
+  void constraint_mixture_output_to_gmsh(
       const Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization with displacements
       const int timestep,                                ///< index of timestep
       const int iter                                     ///< iteration index of newton iteration

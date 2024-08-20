@@ -37,17 +37,17 @@ namespace Core::FE
   \param lm     (in): vector containing global ids to be extracted. Size of lm
                       determines number of values to be extracted.
   */
-  void ExtractMyValues(
+  void extract_my_values(
       const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm);
 
-  void ExtractMyValues(const Epetra_Vector& global, Core::LinAlg::SerialDenseVector& local,
+  void extract_my_values(const Epetra_Vector& global, Core::LinAlg::SerialDenseVector& local,
       const std::vector<int>& lm);
 
-  void ExtractMyValues(
+  void extract_my_values(
       const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
 
   template <class Matrix>
-  void ExtractMyValues(
+  void extract_my_values(
       const Epetra_Vector& global, std::vector<Matrix>& local, const std::vector<int>& lm)
   {
     // safety check
@@ -77,7 +77,7 @@ namespace Core::FE
   }
 
   template <class Matrix>
-  void ExtractMyValues(const Epetra_Vector& global, Matrix& local, const std::vector<int>& lm)
+  void extract_my_values(const Epetra_Vector& global, Matrix& local, const std::vector<int>& lm)
   {
     // safety check
     if ((unsigned)(local.num_rows() * local.num_cols()) != lm.size())
@@ -109,9 +109,10 @@ namespace Core::FE
   /*  \author henke
    *  \date 06/09
    */
-  void ExtractMyNodeBasedValues(const Core::Elements::Element* ele,  ///< pointer to current element
-      std::vector<double>& local,       ///< local vector on element-level
-      const Epetra_MultiVector& global  ///< global (multi) vector
+  void extract_my_node_based_values(
+      const Core::Elements::Element* ele,  ///< pointer to current element
+      std::vector<double>& local,          ///< local vector on element-level
+      const Epetra_MultiVector& global     ///< global (multi) vector
   );
 
 
@@ -119,7 +120,8 @@ namespace Core::FE
   /*  \author g.bau
    *  \date 08/08
    */
-  void ExtractMyNodeBasedValues(const Core::Elements::Element* ele,  ///< pointer to current element
+  void extract_my_node_based_values(
+      const Core::Elements::Element* ele,              ///< pointer to current element
       Core::LinAlg::SerialDenseVector& local,          ///< local vector on element-level
       const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
       const int nsd                                    ///< number of space dimensions
@@ -129,10 +131,10 @@ namespace Core::FE
   /*  \author schott
    *  \date 12/16
    */
-  void ExtractMyNodeBasedValues(const Core::Nodes::Node* node,  ///< pointer to current element
-      Core::LinAlg::SerialDenseVector& local,                   ///< local vector on node-level
-      const Teuchos::RCP<Epetra_MultiVector>& global,           ///< global vector
-      const int nsd                                             ///< number of space dimensions
+  void extract_my_node_based_values(const Core::Nodes::Node* node,  ///< pointer to current element
+      Core::LinAlg::SerialDenseVector& local,                       ///< local vector on node-level
+      const Teuchos::RCP<Epetra_MultiVector>& global,               ///< global vector
+      const int nsd                                                 ///< number of space dimensions
   );
 
 
@@ -142,7 +144,8 @@ namespace Core::FE
    *  \date 04/09
    */
   template <class M>
-  void ExtractMyNodeBasedValues(const Core::Elements::Element* ele,  ///< pointer to current element
+  void extract_my_node_based_values(
+      const Core::Elements::Element* ele,              ///< pointer to current element
       M& localmatrix,                                  ///< local matrix on element-level
       const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
       const int nsd                                    ///< number of space dimensions
@@ -181,7 +184,7 @@ namespace Core::FE
   \author henke
  */
   template <class M>
-  void ExtractMyNodeBasedValues(
+  void extract_my_node_based_values(
       const Core::Elements::Element* ele, M& local, const Epetra_MultiVector& global)
   {
     const int numnode = ele->num_node();

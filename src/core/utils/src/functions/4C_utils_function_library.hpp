@@ -33,7 +33,7 @@ namespace Core::UTILS
 namespace Core::UTILS
 {
   /// add valid function lines
-  void AddValidLibraryFunctions(Core::UTILS::FunctionManager& function_manager);
+  void add_valid_library_functions(Core::UTILS::FunctionManager& function_manager);
 
   /**
    * @brief special implementation of a 1D polynomial function

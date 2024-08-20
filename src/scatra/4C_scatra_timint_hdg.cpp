@@ -45,7 +45,7 @@ ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization> &actdi
       startalgo_(true),
       theta_(-1),
       hdgdis_(nullptr),
-      padaptivity_(Core::UTILS::IntegralValue<bool>(*params, "PADAPTIVITY")),
+      padaptivity_(Core::UTILS::integral_value<bool>(*params, "PADAPTIVITY")),
       padapterrortol_(params->get<double>("PADAPTERRORTOL")),
       padapterrorbase_(params->get<double>("PADAPTERRORBASE")),
       padaptdegreemax_(params->get<int>("PADAPTDEGREEMAX")),
@@ -84,8 +84,8 @@ void ScaTra::TimIntHDG::setup()
 
   // HDG vectors passed to the element
   const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
-  intphinp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intphin_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
+  intphinp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intphin_ = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   // write number of degrees of freedom for hdg and interior variables to screen output
   if (discret_->get_comm().MyPID() == 0)
@@ -132,10 +132,10 @@ void ScaTra::TimIntHDG::setup()
   ScaTra::TimIntGenAlpha::setup();
 
   // create vector for concentration at nodes for output
-  interpolatedPhinp_ = Core::LinAlg::CreateVector(*discret_->node_row_map(), true);
+  interpolatedPhinp_ = Core::LinAlg::create_vector(*discret_->node_row_map(), true);
 
   // vector to store the elementdegree at each time step
-  elementdegree_ = Core::LinAlg::CreateVector(*(discret_->element_row_map()), true);
+  elementdegree_ = Core::LinAlg::create_vector(*(discret_->element_row_map()), true);
 }
 
 
@@ -289,7 +289,7 @@ void ScaTra::TimIntHDG::update()
 namespace
 {
   // internal helper function for output
-  void getNodeVectorsHDG(Core::FE::Discretization &dis,
+  void get_node_vectors_hdg(Core::FE::Discretization &dis,
       const Teuchos::RCP<Epetra_Vector> &interiorValues,
       const Teuchos::RCP<Epetra_Vector> &traceValues, const int ndim,
       Teuchos::RCP<Epetra_Vector> &phi, Teuchos::RCP<Epetra_MultiVector> &gradphi,
@@ -303,7 +303,7 @@ namespace
 
     // call element routine to interpolate HDG to elements
     Teuchos::ParameterList eleparams;
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::interpolate_hdg_to_node, eleparams);
     dis.set_state(0, "phiaf", traceValues);
     dis.set_state(nds_intvar_, "intphinp", interiorValues);
@@ -368,7 +368,7 @@ void ScaTra::TimIntHDG::collect_runtime_output_data()
   Teuchos::RCP<Epetra_MultiVector> interpolatedGradPhi;
   Teuchos::RCP<Epetra_Vector> interpolatedtracePhi;
   // get (averaged) values at element nodes
-  getNodeVectorsHDG(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),
+  get_node_vectors_hdg(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),
       interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_,
       discret_->num_dof_sets());
 
@@ -423,7 +423,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
       // binning strategy is created and parallel redistribution is performed
       Teuchos::ParameterList binning_params =
           Global::Problem::instance()->binning_strategy_params();
-      Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+      Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
           "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
           binning_params);
       binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
@@ -521,7 +521,7 @@ void ScaTra::TimIntHDG::set_initial_field(
     {
       // set initial field defined by function
       Teuchos::ParameterList eleparams;
-      Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::set_initial_field, eleparams);
       eleparams.set<int>("funct", startfuncno);
 
@@ -651,7 +651,7 @@ void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
 {
   discret_->clear_state(true);
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::update_interior_variables, eleparams);
   discret_->set_state("phiaf", phinp_);
   discret_->set_state("phin", phin_);
@@ -706,7 +706,7 @@ void ScaTra::TimIntHDG::fd_check()
 
   // create matrix and vector for calculation of sysmat and assemble
   systemmatrix1 = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
-  systemvector1 = Core::LinAlg::CreateVector(*dofrowmap, true);
+  systemvector1 = Core::LinAlg::create_vector(*dofrowmap, true);
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
 
@@ -718,7 +718,7 @@ void ScaTra::TimIntHDG::fd_check()
   // afterwards we need to calculate also the interior vectors with the state vector with
   // perturbation without influence for this update
   Teuchos::RCP<Epetra_Vector> intphitemp;
-  intphitemp = Core::LinAlg::CreateVector(*intdofrowmap, true);
+  intphitemp = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   strategy.zero();
 
@@ -731,7 +731,7 @@ void ScaTra::TimIntHDG::fd_check()
   discret_->set_state(0, "phin", phin_);
   discret_->set_state(nds_intvar_, "intphinp", intphitemp);
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
   Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
 
@@ -761,7 +761,7 @@ void ScaTra::TimIntHDG::fd_check()
 
   // make a copy of system right-hand side vector
   Teuchos::RCP<Epetra_Vector> residualVec = Teuchos::rcp(new Epetra_Vector(*systemvector1));
-  Teuchos::RCP<Epetra_Vector> fdvec = Core::LinAlg::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> fdvec = Core::LinAlg::create_vector(*dofrowmap, true);
 
   for (int k = 0; k < 16; ++k)
   {
@@ -801,7 +801,7 @@ void ScaTra::TimIntHDG::fd_check()
       discret_->set_state(nds_intvar_, "intphinp", intphitemp);
 
       Teuchos::ParameterList eleparams;
-      Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
       Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
@@ -961,7 +961,7 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error()
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_error, eleparams);
 
   eleparams.set<int>("error function number", errorfunctnumber);
@@ -1009,7 +1009,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_initial, eleparams);
 
   discret_->set_state("phiaf", phinp_);
@@ -1098,7 +1098,7 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // set action
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_padaptivity, eleparams);
 
   Core::LinAlg::SerialDenseMatrix dummyMat;
@@ -1216,10 +1216,10 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
   // projection
-  Teuchos::RCP<Epetra_Vector> phinp_old = Core::LinAlg::CreateVector(*facedofs_old, true);
+  Teuchos::RCP<Epetra_Vector> phinp_old = Core::LinAlg::create_vector(*facedofs_old, true);
   Core::LinAlg::export_to(*phinp_, *phinp_old);
 
-  Teuchos::RCP<Epetra_Vector> intphinp_old = Core::LinAlg::CreateVector(*eledofs_old, true);
+  Teuchos::RCP<Epetra_Vector> intphinp_old = Core::LinAlg::create_vector(*eledofs_old, true);
   Core::LinAlg::export_to(*intphinp_, *intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset
@@ -1287,7 +1287,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
 {
   // set action
   Teuchos::ParameterList eleparams;
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::project_field, eleparams);
 
   // set number of dofset for the old dofsets on the parameter list to extract the correct location
@@ -1372,7 +1372,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::assemble_mat_and_rhs()
 {
-  if (!Core::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
+  if (!Core::UTILS::integral_value<int>(*params_, "SEMIIMPLICIT"))
     ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs();
   else  // in semi-implicit evaluation matrix does not change, thus only rhs is assembled in every
         // step
@@ -1399,7 +1399,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
   // set vector values needed by elements

@@ -49,11 +49,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   // allocate some vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  meanvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  meanvelnp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   if (withscatra_)
   {
-    meanscanp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    meanscanp_ = Core::LinAlg::create_vector(*dofrowmap, true);
     // meanfullphinp_ is initalized in ApplyScatraResults()
   }
 
@@ -227,7 +227,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
             uv(0) = 1.0;
             uv(1) = -1.0;
             uv(2) = -1.0;
-            Core::FE::Nurbs::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3d_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -251,7 +251,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
             {
               uv(1) += 2.0 / (numsubdivisions - 1);
 
-              Core::FE::Nurbs::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3d_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -275,7 +275,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
               uv(0) = 1.0;
               uv(1) = 1.0;
               uv(2) = -1.0;
-              Core::FE::Nurbs::nurbs_get_3D_funct(
+              Core::FE::Nurbs::nurbs_get_3d_funct(
                   nurbs_shape_funct, uv, knots, weights, actele->shape());
               for (int isd = 0; isd < 3; ++isd)
               {
@@ -665,7 +665,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
     // extract local values from global vector
     std::vector<double> myvelnp(lm.size());
-    Core::FE::ExtractMyValues(*(nurbsdis->get_state("velnp")), myvelnp, lm);
+    Core::FE::extract_my_values(*(nurbsdis->get_state("velnp")), myvelnp, lm);
 
     // create Matrix objects
     Core::LinAlg::Matrix<3, 27> evelnp;
@@ -693,7 +693,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
     {
       // extract local values from global vector
       std::vector<double> myscanp(lm.size());
-      Core::FE::ExtractMyValues(*(nurbsdis->get_state("scanp")), myscanp, lm);
+      Core::FE::extract_my_values(*(nurbsdis->get_state("scanp")), myscanp, lm);
 
       // insert data into element array (scalar field is stored at pressure dofs)
       for (int i = 0; i < 27; ++i)
@@ -717,7 +717,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
       Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->get_state("phinp_for_statistics");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
-      Core::FE::ExtractMyValues(*phinp, myphinp, scatralm);
+      Core::FE::extract_my_values(*phinp, myphinp, scatralm);
 
       // fill all element arrays
       for (int i = 0; i < nen; ++i)
@@ -765,7 +765,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
           uv(0) = 1.0;
           uv(1) = -1.0;
           uv(2) = -1.0;
-          Core::FE::Nurbs::nurbs_get_3D_funct(
+          Core::FE::Nurbs::nurbs_get_3d_funct(
               nurbs_shape_funct, uv, knots, weights, actele->shape());
           for (int isd = 0; isd < 3; ++isd)
           {
@@ -861,7 +861,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
           {
             uv(1) += 2.0 / (numsubdivisions - 1);
 
-            Core::FE::Nurbs::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3d_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -961,7 +961,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
             uv(0) = 1.0;
             uv(1) = 1.0;
             uv(2) = -1.0;
-            Core::FE::Nurbs::nurbs_get_3D_funct(
+            Core::FE::Nurbs::nurbs_get_3d_funct(
                 nurbs_shape_funct, uv, knots, weights, actele->shape());
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -1502,7 +1502,7 @@ void FLD::TurbulenceStatisticsCcy::add_scatra_results(
       scatradis_ = scatradis;  // now we have access
 
     // we do not have to cast to a NURBSDiscretization here!
-    meanfullphinp_ = Core::LinAlg::CreateVector(*(scatradis_->dof_row_map()), true);
+    meanfullphinp_ = Core::LinAlg::create_vector(*(scatradis_->dof_row_map()), true);
     numscatradofpernode_ = scatradis_->num_dof(scatradis_->l_row_node(0));
 
     // now we know about the number of scatra dofs and can allocate:

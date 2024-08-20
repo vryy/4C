@@ -20,7 +20,7 @@ void Discret::ELEMENTS::SoHex8::soh8_element_center_refe_coords(
 {
   const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_SOH8, 1> funct;
-  Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  Core::FE::shape_function_3d(funct, 0.0, 0.0, 0.0, distype);
   centercoord.multiply_tn(xrefe, funct);
   return;
 }

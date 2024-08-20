@@ -86,7 +86,7 @@ void CONTACT::NitscheStrategyTsi::set_parent_state(const enum Mortar::StateType&
         ele_parentT->location_vector(dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
-        Core::FE::ExtractMyValues(*global, myval, lm);
+        Core::FE::extract_my_values(*global, myval, lm);
 
         ele->mo_data().parent_temp() = myval;
         ele->mo_data().parent_temp_dof() = lm;
@@ -107,7 +107,7 @@ void CONTACT::NitscheStrategyTsi::setup(bool redistributed, bool init)
 void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
 {
   auto NitWgt =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
+      Core::UTILS::integral_value<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
   for (auto& interface : interface_)
   {
     for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)
@@ -141,7 +141,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr
 
   if (!curr_state_eval_)
     FOUR_C_THROW(
-        "you didn't evaluate this contact state for %s first", VecBlockTypeToStr(bt).c_str());
+        "you didn't evaluate this contact state for %s first", vec_block_type_to_str(bt).c_str());
 
   switch (bt)
   {

@@ -566,13 +566,13 @@ bool Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
 {
   plain_side_set sides;
   // Find if the points of the tet share a common side.
-  FindCommonSides(t, sides);
+  find_common_sides(t, sides);
 
   if (sides.size() == 0)
   {
     plain_facet_set facets;
     // Find if the points of the tet share a common facet.
-    FindCommonFacets(t, facets);
+    find_common_facets(t, facets);
     if (facets.size() == 0)
     {
       return true;
@@ -612,7 +612,7 @@ bool Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
       //  but could play an important role when/if the LevelSetSide is remodeled.
       plain_facet_set facets;
       // Find if the points of the tet share a common facet.
-      FindCommonFacets(t, facets);
+      find_common_facets(t, facets);
 
       // Eventhough all nodes share a level set side.
       if (facets.size() != 1)
@@ -663,7 +663,7 @@ bool Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
   }
 #else
   plain_facet_set facets;
-  FindCommonFacets(t, facets);
+  find_common_facets(t, facets);
   if (facets.size() == 0)
   {
     return true;

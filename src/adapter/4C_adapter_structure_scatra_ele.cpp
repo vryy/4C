@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::ScaTra::ImplType Adapter::GetScaTraImplType(Core::Elements::Element* ele)
+Inpar::ScaTra::ImplType Adapter::get_sca_tra_impl_type(Core::Elements::Element* ele)
 {
   Inpar::ScaTra::ImplType impltype(Inpar::ScaTra::impltype_undefined);
 

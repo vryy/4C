@@ -329,7 +329,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::node_based_values(
 {
   FOUR_C_ASSERT(elevec1.numRows() == (int)nen_ * (2 + nsd_), "Vector does not have correct size");
   Core::LinAlg::SerialDenseMatrix locations =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(distype);
+      Core::FE::get_ele_node_numbering_nodes_paramspace(distype);
   Core::LinAlg::SerialDenseVector values(shapes_->ndofs_);
 
   Discret::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(ele);
@@ -355,7 +355,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::node_based_values(
   }
 
   // get trace solution values
-  locations = Core::FE::getEleNodeNumbering_nodes_paramspace(
+  locations = Core::FE::get_ele_node_numbering_nodes_paramspace(
       Core::FE::DisTypeToFaceShapeType<distype>::shape);
 
 
@@ -477,24 +477,24 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::read_global_vectors(
   tracenm_.size(hdgele->onfdofs_);
   Teuchos::RCP<const Epetra_Vector> phiaf = discretization.get_state("phiaf");
   if (phiaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector phiaf");
-  Core::FE::ExtractMyValues(*phiaf, tracen_, la[0].lm_);
+  Core::FE::extract_my_values(*phiaf, tracen_, la[0].lm_);
 
 
   if (discretization.has_state("phin"))
   {
     Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
-    Core::FE::ExtractMyValues(*phin, tracenm_, la[0].lm_);
+    Core::FE::extract_my_values(*phin, tracenm_, la[0].lm_);
   }
 
   Teuchos::RCP<const Epetra_Vector> intphinp = discretization.get_state(2, "intphinp");
   if (intphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector intphinp");
   std::vector<int> localDofs = discretization.dof(2, ele);
-  Core::FE::ExtractMyValues(*intphinp, interiorPhinp_, localDofs);
+  Core::FE::extract_my_values(*intphinp, interiorPhinp_, localDofs);
 
   if (discretization.has_state(2, "intphin"))
   {
     Teuchos::RCP<const Epetra_Vector> intphin = discretization.get_state(2, "intphin");
-    Core::FE::ExtractMyValues(*intphin, interiorPhin_, localDofs);
+    Core::FE::extract_my_values(*intphin, interiorPhin_, localDofs);
   }
 
   return;
@@ -1906,12 +1906,12 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::project_field(
   Teuchos::RCP<const Epetra_Vector> matrix_state = params.get<Teuchos::RCP<Epetra_Vector>>("phi");
 
   std::vector<double> tracephi;
-  Core::FE::ExtractMyValues(*matrix_state, tracephi, la[nds_var_old].lm_);
+  Core::FE::extract_my_values(*matrix_state, tracephi, la[nds_var_old].lm_);
 
   // get node based values!
   matrix_state = params.get<Teuchos::RCP<Epetra_Vector>>("intphi");
   std::vector<double> intphi;
-  Core::FE::ExtractMyValues(*matrix_state, intphi, la[nds_intvar_old].lm_);
+  Core::FE::extract_my_values(*matrix_state, intphi, la[nds_intvar_old].lm_);
   if (intphi.size() != shapes_old->ndofs_ * (nsd_ + 1))
     FOUR_C_THROW(
         "node number not matching: %d vs. %d", intphi.size(), shapes_old->ndofs_ * (nsd_ + 1));

@@ -214,7 +214,7 @@ void PoroElast::MonolithicMeshtying::setup_extractor()
   factivenmap = mortar_adapter_->get_poro_strategy()->fluid_active_n_dof_map();
 
   // build the complement part of the map
-  factivenmapcomplement = Core::LinAlg::SplitMap(*fluid_field()->velocity_row_map(), *factivenmap);
+  factivenmapcomplement = Core::LinAlg::split_map(*fluid_field()->velocity_row_map(), *factivenmap);
 
   // write things into the vector for ->Setup
   fluidveldofmapvec.emplace_back(factivenmap);
@@ -290,8 +290,9 @@ void PoroElast::MonolithicMeshtying::print_newton_iter_header_stream(std::ostrin
 {
   oss << "------------------------------------------------------------" << std::endl;
   oss << "                   Newton-Raphson Scheme                    " << std::endl;
-  oss << "                NormRES " << VectorNormString(vectornormfres_);
-  oss << "     NormINC " << VectorNormString(vectornorminc_) << "                    " << std::endl;
+  oss << "                NormRES " << vector_norm_string(vectornormfres_);
+  oss << "     NormINC " << vector_norm_string(vectornorminc_) << "                    "
+      << std::endl;
   oss << "------------------------------------------------------------" << std::endl;
 
   // enter converged state etc

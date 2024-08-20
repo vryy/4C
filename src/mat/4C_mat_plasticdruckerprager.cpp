@@ -84,7 +84,7 @@ void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   int matid;
   extract_from_pack(position, data, matid);
@@ -335,8 +335,8 @@ void Mat::PlasticDruckerPrager::evaluate_fad(const Core::LinAlg::Matrix<3, 3>* d
     for (int i = 3; i < 6; ++i) strain(i) *= 2.0;
     strain_p.update(1.0, strain, -1.0, strain_e);
 
-    strainplcurr_.at(gp) = Core::FADUtils::CastToDouble(strain_p);
-    strainbarplcurr_.at(gp) = Core::FADUtils::CastToDouble(strainbar_p);
+    strainplcurr_.at(gp) = Core::FADUtils::cast_to_double(strain_p);
+    strainbarplcurr_.at(gp) = Core::FADUtils::cast_to_double(strainbar_p);
   }
   else
   {
@@ -351,19 +351,19 @@ void Mat::PlasticDruckerPrager::evaluate_fad(const Core::LinAlg::Matrix<3, 3>* d
   if ((Phi_trial > 0) && (tang == 1))
   {
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> devstraindouble =
-        Core::FADUtils::CastToDouble(devstrain);
+        Core::FADUtils::cast_to_double(devstrain);
     if (dstrainv != 0.0)
     {
-      setup_cmat_elasto_plastic_apex(*cmat, Core::FADUtils::CastToDouble(kappa), devstraindouble,
-          Core::FADUtils::CastToDouble(xi), Core::FADUtils::CastToDouble(Hiso),
-          Core::FADUtils::CastToDouble(eta), Core::FADUtils::CastToDouble(etabar));
+      setup_cmat_elasto_plastic_apex(*cmat, Core::FADUtils::cast_to_double(kappa), devstraindouble,
+          Core::FADUtils::cast_to_double(xi), Core::FADUtils::cast_to_double(Hiso),
+          Core::FADUtils::cast_to_double(eta), Core::FADUtils::cast_to_double(etabar));
     }
     else
     {
-      setup_cmat_elasto_plastic_cone(*cmat, Core::FADUtils::CastToDouble(Dgamma),
-          Core::FADUtils::CastToDouble(G), Core::FADUtils::CastToDouble(kappa), devstraindouble,
-          Core::FADUtils::CastToDouble(xi), Core::FADUtils::CastToDouble(Hiso),
-          Core::FADUtils::CastToDouble(eta), Core::FADUtils::CastToDouble(etabar));
+      setup_cmat_elasto_plastic_cone(*cmat, Core::FADUtils::cast_to_double(Dgamma),
+          Core::FADUtils::cast_to_double(G), Core::FADUtils::cast_to_double(kappa), devstraindouble,
+          Core::FADUtils::cast_to_double(xi), Core::FADUtils::cast_to_double(Hiso),
+          Core::FADUtils::cast_to_double(eta), Core::FADUtils::cast_to_double(etabar));
     }
   }
   else

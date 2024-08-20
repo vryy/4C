@@ -114,7 +114,7 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
@@ -345,7 +345,7 @@ void Mat::ViscoPlasticNoYieldSurface::calculate_trial_elastic_defgrad_eigenvalue
   // squared principal stretches
   static Core::LinAlg::Matrix<3, 3> SquaredEigenvalues;
   // eigenvalue analysis of trial deformation
-  Core::LinAlg::SYEV(Ce_trial, SquaredEigenvalues, eigen_vectors);
+  Core::LinAlg::syev(Ce_trial, SquaredEigenvalues, eigen_vectors);
 
   // principal stretches
   for (unsigned i = 0; i < 3; ++i)
@@ -597,7 +597,7 @@ Core::LinAlg::Matrix<2, 1>& Mat::ViscoPlasticNoYieldSurface::calculate_residual(
 
   const double temp_abs_pow = std::pow(std::abs(terms.flow_res_sat_deviation), a);
   const double flow_resistance_deriv_np = terms.flow_res_const * temp_abs_pow *
-                                          Core::FADUtils::Signum(terms.flow_res_sat_deviation) *
+                                          Core::FADUtils::signum(terms.flow_res_sat_deviation) *
                                           std::pow(terms.equ_tens_stress_flow_res_ratio, (1.0 / m));
 
   residual(1) = flow_resistance_np - flow_resistance_n - flow_resistance_deriv_np;
@@ -627,7 +627,7 @@ Core::LinAlg::Matrix<2, 2>& Mat::ViscoPlasticNoYieldSurface::calculate_lineariza
 
   J(1, 0) = -terms.flow_res_const / (m * equ_tens_stress_np) *
                 std::pow(std::abs(terms.flow_res_sat_deviation), a) *
-                Core::FADUtils::Signum(terms.flow_res_sat_deviation) *
+                Core::FADUtils::signum(terms.flow_res_sat_deviation) *
                 std::pow(terms.equ_tens_stress_flow_res_ratio, 1.0 / m) -
             terms.flow_res_const * b / (m * flow_res_sat_fac) * a *
                 std::abs(terms.flow_res_sat_deviation) *
@@ -637,7 +637,7 @@ Core::LinAlg::Matrix<2, 2>& Mat::ViscoPlasticNoYieldSurface::calculate_lineariza
   J(1, 1) = 1.0 +
             terms.flow_res_const / (m * flow_resistance_np) *
                 std::pow(std::abs(terms.flow_res_sat_deviation), a) *
-                Core::FADUtils::Signum(terms.flow_res_sat_deviation) *
+                Core::FADUtils::signum(terms.flow_res_sat_deviation) *
                 std::pow(terms.equ_tens_stress_flow_res_ratio, 1.0 / m) +
             terms.flow_res_const / flow_res_sat_fac *
                 std::pow(terms.equ_tens_stress_flow_res_ratio, (1.0 - b) / m) * a *

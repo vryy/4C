@@ -412,7 +412,7 @@ namespace Core::LinAlg
       \param completeoutput (in)     : flag indicating whether output matrix C shall be Complete'd
       upon output \return Matrix product A(^T)*B(^T)
     */
-    friend Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A, bool transA,
+    friend Teuchos::RCP<SparseMatrix> ml_multiply(const SparseMatrix& A, bool transA,
         const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
         bool completeoutput);
 
@@ -432,7 +432,7 @@ namespace Core::LinAlg
       \param completeoutput (in)     : flag indicating whether output matrix C shall be Complete'd
       upon output \return Matrix product A*B
     */
-    friend Teuchos::RCP<SparseMatrix> MLMultiply(
+    friend Teuchos::RCP<SparseMatrix> ml_multiply(
         const SparseMatrix& A, const SparseMatrix& B, bool complete);
 
 
@@ -486,12 +486,12 @@ namespace Core::LinAlg
 
   //! Cast matrix of type SparseOperator to const SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<const Core::LinAlg::SparseMatrix> CastToConstSparseMatrixAndCheckSuccess(
+  Teuchos::RCP<const Core::LinAlg::SparseMatrix> cast_to_const_sparse_matrix_and_check_success(
       Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix);
 
   //! Cast matrix of type SparseOperator to SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> CastToSparseMatrixAndCheckSuccess(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> cast_to_sparse_matrix_and_check_success(
       Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix);
 }  // namespace Core::LinAlg
 

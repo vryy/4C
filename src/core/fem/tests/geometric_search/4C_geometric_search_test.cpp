@@ -48,7 +48,7 @@ namespace
    */
   TEST_F(GeometricSearch, CollisionSearchKDOPVsKDOP)
   {
-    const auto volumes = CreateKDOPBoundingVolumes();
+    const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives and predicates
     primitives_.emplace_back(std::pair{0, volumes[0]});
@@ -59,9 +59,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 1);
 
     const auto &[indices, offsets] =
-        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::collision_search(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::get_pairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 1);
     EXPECT_EQ(pairs[0].first, 0);
@@ -73,7 +73,7 @@ namespace
    */
   TEST_F(GeometricSearch, CollisionSearchNoPrimitives)
   {
-    const auto volumes = CreateKDOPBoundingVolumes();
+    const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives and predicates
     predicates_.emplace_back(std::pair{0, volumes[0]});
@@ -84,9 +84,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 3);
 
     const auto &[indices, offsets] =
-        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::collision_search(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::get_pairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 0);
   }
@@ -96,7 +96,7 @@ namespace
    */
   TEST_F(GeometricSearch, CollisionSearchNoPredicates)
   {
-    const auto volumes = CreateKDOPBoundingVolumes();
+    const auto volumes = create_kdop_bounding_volumes();
 
     // Add the volumes to the primitives and predicates
     primitives_.emplace_back(std::pair{0, volumes[0]});
@@ -107,9 +107,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 0);
 
     const auto &[indices, offsets] =
-        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::collision_search(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::get_pairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 0);
   }
@@ -123,9 +123,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 0);
 
     const auto &[indices, offsets] =
-        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::collision_search(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::get_pairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 0);
   }

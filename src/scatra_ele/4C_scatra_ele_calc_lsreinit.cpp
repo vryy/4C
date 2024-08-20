@@ -31,7 +31,7 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>*
 Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcLsReinit<distype, prob_dim>>(
@@ -96,7 +96,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate(
 
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+  Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   eval_reinitialization(*phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
 
@@ -170,12 +170,12 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
             "l2-projected gradient is missing. -- hiermeier 12/2016");
         const Teuchos::RCP<Epetra_MultiVector>& gradphi =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
-        Core::FE::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
+        Core::FE::extract_my_node_based_values(ele, my::econvelnp_, gradphi, nsd_);
         Teuchos::RCP<const Epetra_Vector> l2_proj_sys_diag =
             discretization.get_state("l2_proj_system_mat_diag");
         if (l2_proj_sys_diag.is_null())
           FOUR_C_THROW("Could not find the l2 projection system diagonal!");
-        Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
+        Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(
             *l2_proj_sys_diag, el2sysmat_diag_inv, lm);
         el2sysmat_diag_inv.reciprocal(el2sysmat_diag_inv);
       }
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       }
 
       // get action
-      const ScaTra::Action action = Core::UTILS::GetAsEnum<ScaTra::Action>(params, "action");
+      const ScaTra::Action action = Core::UTILS::get_as_enum<ScaTra::Action>(params, "action");
       // ----------------------------------------------------------------------
       // calculate element coefficient matrix and/or rhs
       // ----------------------------------------------------------------------
@@ -363,16 +363,16 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.get_state("phizero");
       if (hist == Teuchos::null || phin == Teuchos::null || phizero == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
 
       if (lsreinitparams_->use_projected_vel())
       {
         // get velocity at nodes (pre-computed via L2 projection)
         const Teuchos::RCP<Epetra_MultiVector> velocity =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("reinitialization velocity field");
-        Core::FE::ExtractMyNodeBasedValues(ele, my::econvelnp_, velocity, nsd_);
+        Core::FE::extract_my_node_based_values(ele, my::econvelnp_, velocity, nsd_);
       }
 
       // calculate element coefficient matrix and rhs
@@ -404,7 +404,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       {
         const Teuchos::RCP<Epetra_MultiVector> gradphi =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
-        Core::FE::ExtractMyNodeBasedValues(ele, my::econvelnp_, gradphi, nsd_);
+        Core::FE::extract_my_node_based_values(ele, my::econvelnp_, gradphi, nsd_);
       }
 
       // calculate element coefficient matrix and rhs
@@ -1172,7 +1172,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_inter
       }
       default:
         FOUR_C_THROW("cell distype not implemented yet ( cellType = %s )",
-            Core::FE::CellTypeToString(celldistype).c_str());
+            Core::FE::cell_type_to_string(celldistype).c_str());
         break;
     }
   }
@@ -1259,7 +1259,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_penalty_t
     // Jacobian for coupled transformation
     // get derivatives dxi_3D/deta_2D
     static Core::LinAlg::Matrix<nsd_cell, numvertices> deriv_eta2D;
-    Core::FE::shape_function_2D_deriv1(deriv_eta2D, gpinEta2D(0, 0), gpinEta2D(1, 0), celldistype);
+    Core::FE::shape_function_2d_deriv1(deriv_eta2D, gpinEta2D(0, 0), gpinEta2D(1, 0), celldistype);
 
     // calculate dxi3Ddeta2D
     static Core::LinAlg::Matrix<nsd, nsd_cell> dXi3Ddeta2D;
@@ -1277,10 +1277,10 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_penalty_t
     gpinXi3D.clear();
 
     // coordinates of this integration point in element coordinates \xi^domain
-    Core::Geo::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
+    Core::Geo::map_eta_b_to_xi_d(cell, gpinEta2D, gpinXi3D);
 
     static Core::LinAlg::Matrix<nsd, nen_> deriv_xi3D;
-    Core::FE::shape_function_3D_deriv1(
+    Core::FE::shape_function_3d_deriv1(
         deriv_xi3D, gpinXi3D(0, 0), gpinXi3D(1, 0), gpinXi3D(2, 0), distype);
 
     // calculate dx3Ddxi3D
@@ -1320,7 +1320,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_penalty_t
     // evaluate shape functions and their first derivatives at this Gaussian point
     //--------------------------------------------------------------------------------------------
     my::funct_.clear();
-    Core::FE::shape_function_3D(
+    Core::FE::shape_function_3d(
         my::funct_, posXiDomain(0), posXiDomain(1), posXiDomain(2), distype);
 
     //--------------------------------------------------------------------------------------------

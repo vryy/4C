@@ -336,7 +336,7 @@ namespace Cut
   };
 
   template <class T>
-  inline Facet* FindFacet(const T& facets, const std::vector<Point*>& side)
+  inline Facet* find_facet(const T& facets, const std::vector<Point*>& side)
   {
     Facet* found = nullptr;
     for (typename T::const_iterator i = facets.begin(); i != facets.end(); ++i)
@@ -360,7 +360,7 @@ namespace Cut
   // inline int EntityId( const Facet & f ) { return f.InternalId(); }
   // inline int EntityId( const Facet & f ) { return reinterpret_cast<int>( &f ); }
 
-  inline void RemoveNonmatchingTriangulatedFacets(
+  inline void remove_nonmatching_triangulated_facets(
       const std::vector<Point*>& side, plain_facet_set& facets)
   {
     if (side.size() == 3)
@@ -387,7 +387,7 @@ namespace Cut
     }
   }
 
-  inline void FindCommonFacets(const std::vector<Point*>& side, plain_facet_set& facets)
+  inline void find_common_facets(const std::vector<Point*>& side, plain_facet_set& facets)
   {
     std::vector<Point*>::const_iterator is = side.begin();
     facets = (*is)->facets();
@@ -403,10 +403,10 @@ namespace Cut
     // This is probably an unnecessary call as side here is a tet, i.e. side.size() == 4.
     if (side.size() == 3) FOUR_C_THROW("The TET is degenerate! It does not contain 4 points!");
     // Might be able to remove this call requires side.size()==3
-    RemoveNonmatchingTriangulatedFacets(side, facets);
+    remove_nonmatching_triangulated_facets(side, facets);
   }
 
-  inline void FindCommonFacets(Point* p1, Point* p2, Point* p3, plain_facet_set& facets)
+  inline void find_common_facets(Point* p1, Point* p2, Point* p3, plain_facet_set& facets)
   {
     facets = p1->facets();
     p2->intersection(facets);
@@ -416,10 +416,11 @@ namespace Cut
     side[0] = p1;
     side[1] = p2;
     side[2] = p3;
-    RemoveNonmatchingTriangulatedFacets(side, facets);
+    remove_nonmatching_triangulated_facets(side, facets);
   }
 
-  inline void FindCommonFacets(Point* p1, Point* p2, Point* p3, Point* p4, plain_facet_set& facets)
+  inline void find_common_facets(
+      Point* p1, Point* p2, Point* p3, Point* p4, plain_facet_set& facets)
   {
     facets = p1->facets();
     p2->intersection(facets);

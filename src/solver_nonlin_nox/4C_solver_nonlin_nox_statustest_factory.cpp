@@ -108,7 +108,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_no
     // get the quantity type
     // ------------------------------------------
     std::string quantity_type_string = ql->get("Quantity Type", "???");
-    QuantityType qType = String2QuantityType(quantity_type_string);
+    QuantityType qType = string_to_quantity_type(quantity_type_string);
     if (qType == quantity_unknown)
     {
       std::ostringstream msg;
@@ -233,7 +233,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_no
     // get the quantity type
     // ------------------------------------------
     std::string quantity_type_string = ql->get("Quantity Type", "???");
-    QuantityType qType = String2QuantityType(quantity_type_string);
+    QuantityType qType = string_to_quantity_type(quantity_type_string);
     if (qType == quantity_unknown)
     {
       std::ostringstream msg;
@@ -355,7 +355,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_no
     // get the Quantity Type
     // ------------------------------------------
     std::string quantity_type_string = ql->get("Quantity Type", "???");
-    QuantityType qType = String2QuantityType(quantity_type_string);
+    QuantityType qType = string_to_quantity_type(quantity_type_string);
     if (qType == quantity_unknown)
     {
       std::ostringstream msg;
@@ -430,7 +430,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_ac
   // get the Quantity Type
   // ------------------------------------------
   std::string quantity_type_string = p.get("Quantity Type", "???");
-  QuantityType qtype = String2QuantityType(quantity_type_string);
+  QuantityType qtype = string_to_quantity_type(quantity_type_string);
   if (qtype == quantity_unknown)
   {
     std::ostringstream msg;

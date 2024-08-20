@@ -53,7 +53,7 @@ int Discret::ELEMENTS::Bele3Line::evaluate(Teuchos::ParameterList& params,
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
-          Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+          Core::FE::extract_my_values(*dispnp, mydispnp, lm);
         }
         else
         {
@@ -128,8 +128,8 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
   {
     const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
-    Core::FE::shape_function_1D(funct, e1, distype);
-    Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
+    Core::FE::shape_function_1d(funct, e1, distype);
+    Core::FE::shape_function_1d_deriv1(deriv, e1, distype);
 
     // compute infinitesimal line element dr for integration along the line
     const double dr = f2_substitution(xye, deriv, iel);
@@ -210,7 +210,7 @@ double Discret::ELEMENTS::Bele3Line::f2_substitution(const Core::LinAlg::SerialD
   double dr = 0.0;
   Core::LinAlg::SerialDenseVector der_par(iel);
   Core::LinAlg::multiply_nt(der_par, xye, deriv);
-  dr = Core::LinAlg::Norm2(der_par);
+  dr = Core::LinAlg::norm2(der_par);
   return dr;
 }
 
@@ -271,8 +271,8 @@ void Discret::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterLi
   {
     const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
-    Core::FE::shape_function_1D(funct, e1, distype);
-    Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
+    Core::FE::shape_function_1d(funct, e1, distype);
+    Core::FE::shape_function_1d_deriv1(deriv, e1, distype);
 
     // compute infinitesimal line element dr for integration along the line
     const double dr = f2_substitution(xye, deriv, iel);

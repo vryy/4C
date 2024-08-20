@@ -43,7 +43,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Input::PrintEmptyConditionDefinitions(std::ostream& stream,
+void Input::print_empty_condition_definitions(std::ostream& stream,
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   for (unsigned i = 0; i < condlist.size(); ++i)
@@ -55,18 +55,18 @@ void Input::PrintEmptyConditionDefinitions(std::ostream& stream,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PrintConditionDatHeader()
+void print_condition_dat_header()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
-      Input::ValidConditions();
-  Input::PrintEmptyConditionDefinitions(std::cout, *condlist);
+      Input::valid_conditions();
+  Input::print_empty_condition_definitions(std::cout, *condlist);
 }
 
 
 namespace Input
 {
   // collect some problem-specific conditions that do not fit in the generic sections
-  void SetMiscellaneousConditions(
+  void set_miscellaneous_conditions(
       std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
   {
     /*--------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ namespace Input
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>>
-Input::ValidConditions()
+Input::valid_conditions()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> vc =
       Teuchos::rcp(new std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>());
@@ -907,37 +907,37 @@ Input::ValidConditions()
 
 
   // Finally, add the problem-specific conditions from the various modules
-  Inpar::Mortar::SetValidConditions(condlist);
-  Inpar::S2I::SetValidConditions(condlist);
-  Inpar::ScaTra::SetValidConditions(condlist);
-  Inpar::STI::SetValidConditions(condlist);
-  Inpar::ElCh::SetValidConditions(condlist);
-  Inpar::ElectroPhysiology::SetValidConditions(condlist);
-  Inpar::FLUID::SetValidConditions(condlist);
-  Inpar::ALE::SetValidConditions(condlist);
-  Inpar::FSI::SetValidConditions(condlist);
-  Inpar::FPSI::SetValidConditions(condlist);
-  Inpar::Immersed::SetValidConditions(condlist);
-  Inpar::XFEM::SetValidConditions(condlist);
-  Inpar::BioFilm::SetValidConditions(condlist);
-  Inpar::ArteryNetwork::SetValidConditions(condlist);
-  Inpar::ReducedLung::SetValidConditions(condlist);
-  Inpar::Cardiovascular0D::SetValidConditions(condlist);
-  Inpar::Solid::SetValidConditions(condlist);
-  Inpar::Thermo::SetValidConditions(condlist);
-  Inpar::SSI::SetValidConditions(condlist);
-  Inpar::SSTI::SetValidConditions(condlist);
-  Inpar::PARTICLE::SetValidConditions(condlist);
-  Inpar::LevelSet::SetValidConditions(condlist);
-  Inpar::EleMag::SetValidConditions(condlist);
-  Inpar::BEAMPOTENTIAL::SetValidConditions(condlist);
-  Inpar::RveMpc::SetValidConditions(condlist);
-  Inpar::BEAMINTERACTION::SetValidConditions(condlist);
-  Inpar::EHL::SetValidConditions(condlist);
-  Inpar::PoroMultiPhaseScaTra::SetValidConditions(condlist);
+  Inpar::Mortar::set_valid_conditions(condlist);
+  Inpar::S2I::set_valid_conditions(condlist);
+  Inpar::ScaTra::set_valid_conditions(condlist);
+  Inpar::STI::set_valid_conditions(condlist);
+  Inpar::ElCh::set_valid_conditions(condlist);
+  Inpar::ElectroPhysiology::set_valid_conditions(condlist);
+  Inpar::FLUID::set_valid_conditions(condlist);
+  Inpar::ALE::set_valid_conditions(condlist);
+  Inpar::FSI::set_valid_conditions(condlist);
+  Inpar::FPSI::set_valid_conditions(condlist);
+  Inpar::Immersed::set_valid_conditions(condlist);
+  Inpar::XFEM::set_valid_conditions(condlist);
+  Inpar::BioFilm::set_valid_conditions(condlist);
+  Inpar::ArteryNetwork::set_valid_conditions(condlist);
+  Inpar::ReducedLung::set_valid_conditions(condlist);
+  Inpar::Cardiovascular0D::set_valid_conditions(condlist);
+  Inpar::Solid::set_valid_conditions(condlist);
+  Inpar::Thermo::set_valid_conditions(condlist);
+  Inpar::SSI::set_valid_conditions(condlist);
+  Inpar::SSTI::set_valid_conditions(condlist);
+  Inpar::PARTICLE::set_valid_conditions(condlist);
+  Inpar::LevelSet::set_valid_conditions(condlist);
+  Inpar::EleMag::set_valid_conditions(condlist);
+  Inpar::BEAMPOTENTIAL::set_valid_conditions(condlist);
+  Inpar::RveMpc::set_valid_conditions(condlist);
+  Inpar::BEAMINTERACTION::set_valid_conditions(condlist);
+  Inpar::EHL::set_valid_conditions(condlist);
+  Inpar::PoroMultiPhaseScaTra::set_valid_conditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific
-  SetMiscellaneousConditions(condlist);
+  set_miscellaneous_conditions(condlist);
 
   return vc;
 }

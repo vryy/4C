@@ -31,7 +31,7 @@ namespace
 
   TEST(TestSingletonOwner, CreatesSingleton)
   {
-    auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+    auto singleton_owner = Core::UTILS::make_singleton_owner(
         []() { return std::unique_ptr<DummySingleton>(new DummySingleton()); });
 
     // Expect that the returned object is of DummySingleton type
@@ -87,7 +87,7 @@ namespace
         .WillRepeatedly([]() { return std::unique_ptr<DummySingleton>(new DummySingleton()); });
 
     auto singleton_map =
-        Core::UTILS::MakeSingletonMap<std::string>([&creator]() { return creator.create(); });
+        Core::UTILS::make_singleton_map<std::string>([&creator]() { return creator.create(); });
 
 
     auto* a = singleton_map["a"].instance(Core::UTILS::SingletonAction::create);
@@ -106,7 +106,7 @@ namespace
 
       int a;
     };
-    auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+    auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
         [](int input) { return std::make_unique<DummyWithArgs>(input); });
 
     EXPECT_EQ(singleton_map["a"].instance(Core::UTILS::SingletonAction::create, 2)->a, 2);

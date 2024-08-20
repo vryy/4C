@@ -228,7 +228,7 @@ void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 #ifdef FLUIDSPLITAMG
   mat.matrix(1, 1).add(f->matrix(0, 0), false, 1., 0.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::CreateIdentityMatrix(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::create_identity_matrix(*fluid_field()->interface()->fsi_cond_map());
   mat.matrix(1, 1).add(*eye, false, 1., 1.0);
 #else
   f->Matrix(0, 0).UnComplete();
@@ -344,25 +344,25 @@ void PoroElast::MonolithicFluidSplit::recover_lagrange_multiplier_after_time_ste
 
     // store the product F_{\GammaI} \Delta u_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> fgiddi =
-        Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     fgicur_->multiply(false, *duiinc_, *fgiddi);
 
     // store the product C_{\GammaI} \Delta d_I^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sgiddi =
-        Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     cgicur_->multiply(false, *ddiinc_, *sgiddi);
 
     // store the product F_{\Gamma\Gamma} \Delta u_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> sggddg =
-        Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     fggcur_->multiply(false, *duginc_, *sggddg);
 
     // store the prodcut C_{\Gamma\Gamma} \Delta d_\Gamma^{n+1} in here
     Teuchos::RCP<Epetra_Vector> cggddg =
-        Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map(), true);
+        Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map(), true);
     // compute the above mentioned product
     cggcur_->multiply(false, *duginc_, *cggddg);
     cggddg->Scale(1.0 / timescale);

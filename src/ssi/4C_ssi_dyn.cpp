@@ -45,10 +45,10 @@ void ssi_drt()
 
     // introduce additional scatra field on manifold?
     const bool is_scatra_manifold =
-        Core::UTILS::IntegralValue<bool>(ssiparams.sublist("MANIFOLD"), "ADD_MANIFOLD");
+        Core::UTILS::integral_value<bool>(ssiparams.sublist("MANIFOLD"), "ADD_MANIFOLD");
 
     // Modification of time parameter list
-    SSI::UTILS::ChangeTimeParameter(comm, ssiparams, scatradyn, sdyn);
+    SSI::UTILS::change_time_parameter(comm, ssiparams, scatradyn, sdyn);
 
     const auto coupling =
         Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");
@@ -124,7 +124,7 @@ void ssi_drt()
 
     // 3.3 AFTER restart: reset input filename of the problem so that results from other runs can be
     // read
-    bool flag_readscatra = Core::UTILS::IntegralValue<bool>(ssiparams, "SCATRA_FROM_RESTART_FILE");
+    bool flag_readscatra = Core::UTILS::integral_value<bool>(ssiparams, "SCATRA_FROM_RESTART_FILE");
     if (coupling == Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid and
         flag_readscatra)
     {

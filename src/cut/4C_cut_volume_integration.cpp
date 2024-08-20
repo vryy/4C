@@ -72,30 +72,30 @@ Core::LinAlg::SerialDenseVector Cut::VolumeIntegration::compute_rhs_moment()
     case Core::FE::CellType::hex8:
     {
       volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::hex8>(
-          rhs_mom(0), "LocalToGlobal");
+          rhs_mom(0), "local_to_global");
       break;
     }
     case Core::FE::CellType::tet4:
     {
       volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::tet4>(
-          rhs_mom(0), "LocalToGlobal");
+          rhs_mom(0), "local_to_global");
       break;
     }
     case Core::FE::CellType::wedge6:
     {
       volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::wedge6>(
-          rhs_mom(0), "LocalToGlobal");
+          rhs_mom(0), "local_to_global");
       break;
     }
     case Core::FE::CellType::pyramid5:
     {
       volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::pyramid5>(
-          rhs_mom(0), "LocalToGlobal");
+          rhs_mom(0), "local_to_global");
       break;
     }
     default:
       FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-          Core::FE::CellTypeToString(elem1_->shape()).c_str());
+          Core::FE::cell_type_to_string(elem1_->shape()).c_str());
       exit(EXIT_FAILURE);
   }
   volcell_->set_volume(volGlobal);

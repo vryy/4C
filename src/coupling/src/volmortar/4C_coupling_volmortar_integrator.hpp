@@ -211,7 +211,7 @@ namespace Coupling::VolMortar
    |  Check paraspace mapping                                  farah 02/15|
    *----------------------------------------------------------------------*/
   template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-  bool CheckMapping(
+  bool check_mapping(
       Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
   {
     // check GP projection (SLAVE)
@@ -310,7 +310,7 @@ namespace Coupling::VolMortar
    |  Check mapping                                            farah 06/14|
    *----------------------------------------------------------------------*/
   template <Core::FE::CellType distype>
-  bool CheckMapping(Core::Elements::Element& ele, double* xi)
+  bool check_mapping(Core::Elements::Element& ele, double* xi)
   {
     // check node projection
     double tol = 1e-5;
@@ -365,7 +365,7 @@ namespace Coupling::VolMortar
 
   //===================================
   template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-  bool VolMortarEleBasedGP(Core::Elements::Element& sele, Core::Elements::Element* mele,
+  bool vol_mortar_ele_based_gp(Core::Elements::Element& sele, Core::Elements::Element* mele,
       std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
       double* Axi, double* AuxXi, double* globgp, DualQuad& dq, Shapefcn& shape,
       Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
@@ -376,7 +376,7 @@ namespace Coupling::VolMortar
 
   // evaluation of nts approach
   template <Core::FE::CellType distype>
-  bool ConsInterpolatorEval(Core::Nodes::Node* node, Core::Elements::Element* ele,
+  bool cons_interpolator_eval(Core::Nodes::Node* node, Core::Elements::Element* ele,
       Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Core::FE::Discretization> nodediscret,
       Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
       int& found, int& eleid, double& dist, double* AuxXi, double* nodepos,

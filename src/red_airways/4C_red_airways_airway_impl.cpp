@@ -38,7 +38,7 @@ namespace
   |                                                                      |
   *----------------------------------------------------------------------*/
   template <Core::FE::CellType distype>
-  double GetElementLength(Discret::ELEMENTS::RedAirway* ele)
+  double get_element_length(Discret::ELEMENTS::RedAirway* ele)
   {
     double length = 0.0;
     // get node coordinates and number of elements per node
@@ -66,7 +66,7 @@ namespace
   |                                                                      |
   *----------------------------------------------------------------------*/
   template <Core::FE::CellType distype>
-  bool GetCurveValAtCond(double& bcVal, Core::Nodes::Node* node, std::string condName,
+  bool get_curve_val_at_cond(double& bcVal, Core::Nodes::Node* node, std::string condName,
       std::string optionName, std::string condType, double time)
   {
     // initialize bc value
@@ -152,7 +152,7 @@ namespace
   \param compute_awacinter(i) computing airway-acinus interdependency
   */
   template <Core::FE::CellType distype>
-  void Sysmat(Discret::ELEMENTS::RedAirway* ele, Core::LinAlg::SerialDenseVector& epnp,
+  void sysmat(Discret::ELEMENTS::RedAirway* ele, Core::LinAlg::SerialDenseVector& epnp,
       Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
       Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
       Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
@@ -184,7 +184,7 @@ namespace
     sysmat.putScalar(0.0);
 
     // Calculate the length of airway element
-    const double L = GetElementLength<distype>(ele);
+    const double L = get_element_length<distype>(ele);
 
     double qout_n = params.qout_n;
     double qout_np = params.qout_np;
@@ -462,13 +462,13 @@ namespace
     {
       double pextVal = 0.0;
       // get Pext at time step n
-      GetCurveValAtCond<distype>(pextVal, ele->nodes()[i], "RedAirwayPrescribedExternalPressure",
-          "boundarycond", "ExternalPressure", time - dt);
+      get_curve_val_at_cond<distype>(pextVal, ele->nodes()[i],
+          "RedAirwayPrescribedExternalPressure", "boundarycond", "ExternalPressure", time - dt);
       pextn += pextVal / double(ele->num_node());
 
       // get Pext at time step n+1e
-      GetCurveValAtCond<distype>(pextVal, ele->nodes()[i], "RedAirwayPrescribedExternalPressure",
-          "boundarycond", "ExternalPressure", time);
+      get_curve_val_at_cond<distype>(pextVal, ele->nodes()[i],
+          "RedAirwayPrescribedExternalPressure", "boundarycond", "ExternalPressure", time);
       pextnp += pextVal / double(ele->num_node());
     }
 
@@ -618,15 +618,15 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::extract_my_values(*pn, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::extract_my_values(*pnm, mypnm, lm);
 
   // create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(elemVecdim);
@@ -684,7 +684,7 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat<distype>(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt,
+  sysmat<distype>(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt,
       evaluation_data.compute_awacinter);
 
   return 0;
@@ -711,7 +711,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::Pa
   ele->location_vector(discretization, lm, *lmowner, lmstride);
 
   // Calculate the length of airway element
-  const double L = GetElementLength<distype>(ele);
+  const double L = get_element_length<distype>(ele);
 
   //--------------------------------------------------------------------
   // Initialize the pressure vectors
@@ -879,7 +879,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::extract_my_values(*pn, mypn, lm);
 
   // create objects for element arrays
   Core::LinAlg::SerialDenseVector epn(numnode);
@@ -1306,15 +1306,15 @@ void Discret::ELEMENTS::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  Core::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::extract_my_values(*pn, mypn, lm);
 
   // extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::extract_my_values(*pnm, mypnm, lm);
 
   // create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(elemVecdim);
@@ -1366,18 +1366,18 @@ void Discret::ELEMENTS::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
   elem_params.p_extn = (*evaluation_data.p_extn)[ele->lid()];
   elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->lid()];
 
-  Core::LinAlg::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
+  Core::LinAlg::SerialDenseMatrix system_matrix(elemVecdim, elemVecdim, true);
   Core::LinAlg::SerialDenseVector rhs(elemVecdim);
 
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat<distype>(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt,
+  sysmat<distype>(ele, epnp, epn, epnm, system_matrix, rhs, material, elem_params, time, dt,
       evaluation_data.compute_awacinter);
 
-  double qinnp = -1.0 * (sysmat(0, 0) * epnp(0) + sysmat(0, 1) * epnp(1) - rhs(0));
-  double qoutnp = 1.0 * (sysmat(1, 0) * epnp(0) + sysmat(1, 1) * epnp(1) - rhs(1));
+  double qinnp = -1.0 * (system_matrix(0, 0) * epnp(0) + system_matrix(0, 1) * epnp(1) - rhs(0));
+  double qoutnp = 1.0 * (system_matrix(1, 0) * epnp(0) + system_matrix(1, 1) * epnp(1) - rhs(1));
 
   int gid = ele->id();
 
@@ -1427,7 +1427,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
   // Treat possible collapses
   // -------------------------------------------------------------------
   // Calculate the length of airway element
-  const double L = GetElementLength<distype>(ele);
+  const double L = get_element_length<distype>(ele);
 
   // get area0
   const double area0 = airway_params.area;
@@ -1475,7 +1475,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::extract_my_values(*pnp, mypnp, lm);
 
   // create objects for element arrays
   Core::LinAlg::SerialDenseVector epnp(numnode);
@@ -1604,7 +1604,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::get_junction_volume_mix(RedAirway* 
   //--------------------------------------------------------------------
   // get element length
   //--------------------------------------------------------------------
-  const double L = GetElementLength<distype>(ele);
+  const double L = get_element_length<distype>(ele);
 
   // Check if the node is attached to any other elements
   if (qoutnp >= 0.0)
@@ -1661,7 +1661,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::calc_cfl(RedAirway* ele,
   // get element length
   //--------------------------------------------------------------------
   // Calculate the length of airway element
-  const double L = GetElementLength<distype>(ele);
+  const double L = get_element_length<distype>(ele);
 
   // get area
   double area = eVolnp / L;
@@ -1712,15 +1712,15 @@ void Discret::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
 
     // extract local values from the global vectors
     std::vector<double> mydscatranp(lm.size());
-    Core::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
+    Core::FE::extract_my_values(*dscatranp, mydscatranp, lm);
 
     // extract local values from the global vectors
     std::vector<double> myscatranp(lm.size());
-    Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+    Core::FE::extract_my_values(*scatranp, myscatranp, lm);
 
     // extract local values from the global vectors
     std::vector<double> myavgscatranp(lm.size());
-    Core::FE::ExtractMyValues(*avgscatranp, myavgscatranp, lm);
+    Core::FE::extract_my_values(*avgscatranp, myavgscatranp, lm);
 
     // get flowrate
 
@@ -1777,15 +1777,15 @@ void Discret::ELEMENTS::AirwayImpl<distype>::update_elem12_scatra(RedAirway* ele
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
-  Core::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
+  Core::FE::extract_my_values(*dscatranp, mydscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::extract_my_values(*scatranp, myscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  Core::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
+  Core::FE::extract_my_values(*volumeMix, myvolmix, lm);
 
   // ---------------------------------------------------------------------
   // element scatra must be updated only at the capillary nodes.
@@ -1835,7 +1835,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirw
   // ---------------------------------------------------------------------
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::extract_my_values(*scatranp, myscatranp, lm);
 
   double qin = (*evaluation_data.qin_np)[ele->lid()];
   double eVolnp = (*evaluation_data.elemVolumenp)[ele->lid()];
@@ -1844,7 +1844,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirw
   // get volume of capillaries
   // ---------------------------------------------------------------------
   // Calculate the length of airway element
-  const double length = GetElementLength<distype>(ele);
+  const double length = get_element_length<distype>(ele);
   // get airway area
   double area = eVolnp / length;
 

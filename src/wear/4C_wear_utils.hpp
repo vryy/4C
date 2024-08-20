@@ -63,11 +63,11 @@ namespace Wear
 
       // spatial displacements
       std::vector<double> mydisp_source(lm.size());
-      Core::FE::ExtractMyValues(*disp_source, mydisp_source, lm);
+      Core::FE::extract_my_values(*disp_source, mydisp_source, lm);
 
       // material displacements
       std::vector<double> mydisp_target(lm.size());
-      Core::FE::ExtractMyValues(*disp_target, mydisp_target, lm);
+      Core::FE::extract_my_values(*disp_target, mydisp_target, lm);
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
@@ -93,13 +93,13 @@ namespace Wear
 
         if (ndim == 2)
         {
-          Core::FE::shape_function_2D(funct, e[0], e[1], distype);
-          Core::FE::shape_function_2D_deriv1(deriv, e[0], e[1], distype);
+          Core::FE::shape_function_2d(funct, e[0], e[1], distype);
+          Core::FE::shape_function_2d_deriv1(deriv, e[0], e[1], distype);
         }
         else if (ndim == 3)
         {
-          Core::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
-          Core::FE::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3d(funct, e[0], e[1], e[2], distype);
+          Core::FE::shape_function_3d_deriv1(deriv, e[0], e[1], e[2], distype);
         }
         else
           FOUR_C_THROW("Wrong dimension!");
@@ -166,9 +166,9 @@ namespace Wear
       for (int p = 0; p < ndim; ++p) xmat[p] = 0.0;
 
       if (ndim == 2)
-        Core::FE::shape_function_2D(funct, e[0], e[1], distype);
+        Core::FE::shape_function_2d(funct, e[0], e[1], distype);
       else
-        Core::FE::shape_function_3D(funct, e[0], e[1], e[2], distype);
+        Core::FE::shape_function_3d(funct, e[0], e[1], e[2], distype);
 
       for (int k = 0; k < numnod; ++k)
         for (int p = 0; p < ndim; ++p)

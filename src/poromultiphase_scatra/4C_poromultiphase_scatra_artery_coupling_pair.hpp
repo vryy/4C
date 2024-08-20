@@ -87,7 +87,7 @@ namespace PoroMultiPhaseScaTra
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void delete_unnecessary_g_ps(Teuchos::RCP<Epetra_MultiVector> gp_vector) = 0;
+    virtual void delete_unnecessary_gps(Teuchos::RCP<Epetra_MultiVector> gp_vector) = 0;
 
     /*!
      * @brief Evaluate this pair
@@ -184,7 +184,7 @@ namespace PoroMultiPhaseScaTra
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void delete_unnecessary_g_ps(Teuchos::RCP<Epetra_MultiVector> gp_vector) override;
+    void delete_unnecessary_gps(Teuchos::RCP<Epetra_MultiVector> gp_vector) override;
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated

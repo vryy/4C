@@ -117,7 +117,7 @@ bool NOX::Nln::Direction::ModifiedNewton::compute_correction_direction(::NOX::Ab
       FOUR_C_THROW(
           "The NOX::Nln::CorrectionType \"%s\" is not yet supported "
           "by the NOX::Nln::Direction::ModifiedNewton object!",
-          NOX::Nln::CorrectionType2String(corr_type).c_str());
+          NOX::Nln::correction_type_to_string(corr_type).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -420,7 +420,7 @@ void NOX::Nln::Direction::ModifiedNewton::print(
      << ::NOX::Utils::fill(80, '=');
 
   if (corr_type)
-    os << "\nCorrection Type = " << NOX::Nln::CorrectionType2String(*corr_type) << "\n"
+    os << "\nCorrection Type = " << NOX::Nln::correction_type_to_string(*corr_type) << "\n"
        << ::NOX::Utils::fill(80, '-');
 
   os << "\nStagnation detected                       = " << stagnation_counter_

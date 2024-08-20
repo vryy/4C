@@ -29,7 +29,7 @@ void Cut::TriangulateFacet::split_facet()
 {
   // An edge should contain only 2 end points
   // delete all remaining points on the edge
-  Kernel::DeleteInlinePts(ptlist_);
+  Kernel::delete_inline_pts(ptlist_);
 
   // Deal with zero point facet -- this should never occur, but happens in axel10 cut-test
   if (ptlist_.size() == 0) return;
@@ -51,7 +51,7 @@ void Cut::TriangulateFacet::split_facet()
 
     // get concave (reflex) points of polygon
     Cut::FacetShape geoType;
-    std::vector<int> ptConcavity = Kernel::CheckConvexity(ptlist_, geoType);
+    std::vector<int> ptConcavity = Kernel::check_convexity(ptlist_, geoType);
 
     // a convex polygon or a polygon with only one concave point can be
     // very easily split
@@ -84,7 +84,7 @@ void Cut::TriangulateFacet::split4node_facet(std::vector<Point*>& poly, bool cal
   if (poly.size() != 4) FOUR_C_THROW("This is not a 4 noded facet");
 
   Cut::FacetShape geoType;
-  std::vector<int> ptConcavity = Kernel::CheckConvexity(poly, geoType);
+  std::vector<int> ptConcavity = Kernel::check_convexity(poly, geoType);
 
   int indStart = 0;
 
@@ -201,7 +201,7 @@ void Cut::TriangulateFacet::split_convex_1pt_concave_facet(std::vector<int> ptCo
       if (lastPt == endPt) triDone = true;
     }
 
-    Kernel::DeleteInlinePts(newCell);
+    Kernel::delete_inline_pts(newCell);
 
     if (newCell.size() == 3 || convex)
       split_.push_back(newCell);
@@ -283,7 +283,7 @@ void Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
         newCell.push_back(ptlist_[fourthPt]);
       }
 
-      Kernel::DeleteInlinePts(newCell);
+      Kernel::delete_inline_pts(newCell);
 
       bool isEar = true;
 
@@ -297,7 +297,7 @@ void Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
           if (std::find(newCell.begin(), newCell.end(), ptlist_[reflInd]) != newCell.end())
             continue;
 
-          if (Kernel::PtInsideTriangle(newCell, ptlist_[reflInd]))
+          if (Kernel::pt_inside_triangle(newCell, ptlist_[reflInd]))
           {
             isEar = false;
             break;
@@ -319,7 +319,7 @@ void Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
           if (std::find(newCell.begin(), newCell.end(), ptlist_[reflInd]) != newCell.end())
             continue;
 
-          if (Kernel::PtInsideQuad(newCell, ptlist_[reflInd]))
+          if (Kernel::pt_inside_quad(newCell, ptlist_[reflInd]))
           {
             isEar = false;
             break;
@@ -355,7 +355,7 @@ void Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
       if (ncross == num) FOUR_C_THROW("cannot form cell even after making one cycle");
     }
 
-    Kernel::DeleteInlinePts(ptlist_);
+    Kernel::delete_inline_pts(ptlist_);
     num = ptlist_.size();
     if (num == 3)
     {
@@ -372,7 +372,7 @@ void Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
       ptConcavity.clear();
       Cut::FacetShape geoType;
 
-      ptConcavity = Kernel::CheckConvexity(ptlist_, geoType);
+      ptConcavity = Kernel::check_convexity(ptlist_, geoType);
 
       concsize = ptConcavity.size();
       if (concsize < 2)  // new ptlist_ forms a convex facet
@@ -427,7 +427,7 @@ void Cut::TriangulateFacet::restore_last_ear(int ear_head_index, std::vector<int
   Cut::FacetShape str1;
   ptConcavity.clear();
   ptConcavity =
-      Kernel::CheckConvexity(ptlist_, str1, true, false);  // concave points for the new polygon
+      Kernel::check_convexity(ptlist_, str1, true, false);  // concave points for the new polygon
 }
 
 
@@ -517,12 +517,12 @@ unsigned int Cut::TriangulateFacet::find_second_best_ear(
       [&](const int& a, const int& b)
       {
         std::vector<Point*> tri_a = ears[a].first;
-        const double tri_ear_head_proximity_a = Cut::DistanceBetweenPoints(tri_a[1], tri_a[0]) +
-                                                Cut::DistanceBetweenPoints(tri_a[1], tri_a[2]);
+        const double tri_ear_head_proximity_a = Cut::distance_between_points(tri_a[1], tri_a[0]) +
+                                                Cut::distance_between_points(tri_a[1], tri_a[2]);
 
         std::vector<Point*> tri_b = ears[b].first;
-        const double tri_ear_head_proximity_b = Cut::DistanceBetweenPoints(tri_b[1], tri_b[0]) +
-                                                Cut::DistanceBetweenPoints(tri_b[1], tri_b[2]);
+        const double tri_ear_head_proximity_b = Cut::distance_between_points(tri_b[1], tri_b[0]) +
+                                                Cut::distance_between_points(tri_b[1], tri_b[2]);
 
         return tri_ear_head_proximity_a < tri_ear_head_proximity_b;
       });
@@ -554,7 +554,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
 
     if (DeleteInlinePts)
     {
-      Kernel::DeleteInlinePts(ptlist_);
+      Kernel::delete_inline_pts(ptlist_);
       if (ptlist_.size() == 3)  // after deleting the inline points, it may have only 3 points
       {
         split_.push_back(ptlist_);
@@ -569,7 +569,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
     ptConcavity.clear();
     Cut::FacetShape geoType;
 
-    ptConcavity = Kernel::CheckConvexity(ptlist_, geoType, true, DeleteInlinePts);
+    ptConcavity = Kernel::check_convexity(ptlist_, geoType, true, DeleteInlinePts);
   }
 
 
@@ -607,7 +607,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
     bool haveinlinepts = false;
     if (not DeleteInlinePts)
     {
-      haveinlinepts = Kernel::HaveInlinePts(ptlist_);
+      haveinlinepts = Kernel::have_inline_pts(ptlist_);
     }
 
     // if (i) is an ear, the triangle formed by (i-1),i and (i+1) should be completely within the
@@ -644,7 +644,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
         unsigned reflInd = reflex[j];
         if (reflInd == ind0 || reflInd == ind2) continue;
 
-        if (Kernel::PtInsideTriangle(tri, ptlist_[reflInd], DeleteInlinePts))
+        if (Kernel::pt_inside_triangle(tri, ptlist_[reflInd], DeleteInlinePts))
         {
           if (ptlist_[reflInd] != ptlist_[ind0] and ptlist_[reflInd] != ptlist_[i] and
               ptlist_[reflInd] != ptlist_[ind2])
@@ -677,7 +677,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
 
     if (DeleteInlinePts)
     {
-      Kernel::DeleteInlinePts(ptlist_);  // delete inline points in the new polygon
+      Kernel::delete_inline_pts(ptlist_);  // delete inline points in the new polygon
     }
 
     if (ptlist_.size() == 3)
@@ -694,7 +694,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
 
     Cut::FacetShape str1;
     ptConcavity.clear();
-    ptConcavity = Kernel::CheckConvexity(
+    ptConcavity = Kernel::check_convexity(
         ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
 
     if (triOnly ==
@@ -735,7 +735,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
         /// update triangle shape info
         ptConcavity.clear();
         Cut::FacetShape str1;
-        ptConcavity = Kernel::CheckConvexity(
+        ptConcavity = Kernel::check_convexity(
             ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
         last_added_ear = tri;
         last_added_ear_head = i;
@@ -999,7 +999,7 @@ void Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
       // 6) Reflex points in triangle
       Cut::FacetShape geoType;
       std::vector<int> reflexmaincyclepointids =
-          Kernel::CheckConvexity(ptlist_, geoType, false, false);
+          Kernel::check_convexity(ptlist_, geoType, false, false);
       for (std::vector<int>::iterator i = reflexmaincyclepointids.begin();
            i != reflexmaincyclepointids.end(); ++i)
       {

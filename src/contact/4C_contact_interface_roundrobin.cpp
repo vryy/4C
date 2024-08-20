@@ -64,8 +64,8 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
   else
   {
     eextendedghosting_ =
-        Core::LinAlg::MergeMap(eextendedghosting_, currently_ghosted_elements, true);
-    nextendedghosting_ = Core::LinAlg::MergeMap(nextendedghosting_, currently_ghosted_nodes, true);
+        Core::LinAlg::merge_map(eextendedghosting_, currently_ghosted_elements, true);
+    nextendedghosting_ = Core::LinAlg::merge_map(nextendedghosting_, currently_ghosted_nodes, true);
   }
 
   return;
@@ -83,7 +83,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // get friction type
   Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // change master-side proc ownership
   // some local variables
@@ -182,7 +182,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
       // this Teuchos::rcp holds the memory of the ele
       Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::rcp(Core::Communication::Factory(data), true);
+          Teuchos::rcp(Core::Communication::factory(data), true);
       Teuchos::RCP<Mortar::Element> ele = Teuchos::rcp_dynamic_cast<Mortar::Element>(object);
       if (ele == Teuchos::null) FOUR_C_THROW("Received object is not an ele");
 
@@ -299,7 +299,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
       // this Teuchos::rcp holds the memory of the node
       Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::rcp(Core::Communication::Factory(data), true);
+          Teuchos::rcp(Core::Communication::factory(data), true);
 
       if (ftype == Inpar::CONTACT::friction_none)
       {
@@ -358,12 +358,12 @@ void CONTACT::Interface::round_robin_change_ownership()
       Teuchos::rcp(new Epetra_Map(-1, (int)ecol.size(), ecol.data(), 0, get_comm()));
 
   // Merge s/m column maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> colnodesfull = Core::LinAlg::MergeMap(nodecolmap, SCN, true);
-  Teuchos::RCP<Epetra_Map> colelesfull = Core::LinAlg::MergeMap(elecolmap, SCE, true);
+  Teuchos::RCP<Epetra_Map> colnodesfull = Core::LinAlg::merge_map(nodecolmap, SCN, true);
+  Teuchos::RCP<Epetra_Map> colelesfull = Core::LinAlg::merge_map(elecolmap, SCE, true);
 
   // Merge s/m row maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> rownodesfull = Core::LinAlg::MergeMap(noderowmap, SRN, false);
-  Teuchos::RCP<Epetra_Map> rowelesfull = Core::LinAlg::MergeMap(elerowmap, SRE, false);
+  Teuchos::RCP<Epetra_Map> rownodesfull = Core::LinAlg::merge_map(noderowmap, SRN, false);
+  Teuchos::RCP<Epetra_Map> rowelesfull = Core::LinAlg::merge_map(elerowmap, SRE, false);
 
   // to discretization
   // export nodes and elements to the row map
@@ -454,13 +454,13 @@ void CONTACT::Interface::round_robin_detect_ghosting()
 
   // Append ghost nodes/elements to be ghosted to existing column maps
   eextendedghosting_ =
-      Core::LinAlg::MergeMap(eextendedghosting_, initial_slave_element_column_map, true);
+      Core::LinAlg::merge_map(eextendedghosting_, initial_slave_element_column_map, true);
   nextendedghosting_ =
-      Core::LinAlg::MergeMap(nextendedghosting_, initial_slave_node_column_map, true);
+      Core::LinAlg::merge_map(nextendedghosting_, initial_slave_node_column_map, true);
   eextendedghosting_ =
-      Core::LinAlg::MergeMap(eextendedghosting_, initial_master_element_column_map, true);
+      Core::LinAlg::merge_map(eextendedghosting_, initial_master_element_column_map, true);
   nextendedghosting_ =
-      Core::LinAlg::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
+      Core::LinAlg::merge_map(nextendedghosting_, initial_master_node_column_map, true);
 
   // finally extend ghosting
   discret().export_column_elements(*eextendedghosting_);

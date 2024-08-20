@@ -493,7 +493,7 @@ void FLD::TimIntRedModels::apply_dirichlet_to_system()
   {
     // apply Womersley as a Dirichlet BC
     Core::LinAlg::apply_dirichlet_to_system(
-        *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(sysmat_), *incvel_, *residual_,
+        *Core::LinAlg::cast_to_sparse_matrix_and_check_success(sysmat_), *incvel_, *residual_,
         *locsysman_->trafo(), *zeros_, *(vol_surf_flow_bc_maps_));
   }
   else

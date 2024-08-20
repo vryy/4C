@@ -70,7 +70,7 @@ template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidIntFaceImpl<distype>*
 Discret::ELEMENTS::FluidIntFaceImpl<distype>::instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidIntFaceImpl<distype>>(
@@ -330,7 +330,7 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
     // right value for shared nodes
     for (int i = 0; i < numdofpernode; i++)
     {
-      Core::LinAlg::Assemble(
+      Core::LinAlg::assemble(
           *systemvector, elevec_blocks[i], patch_components_lm[i], patch_components_lmowner[i]);
     }
   }
@@ -360,7 +360,7 @@ int Discret::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
 )
 {
   FLD::IntFaceAction act = FLD::ifa_none;
-  act = Core::UTILS::GetAsEnum<FLD::IntFaceAction>(params, "action");
+  act = Core::UTILS::get_as_enum<FLD::IntFaceAction>(params, "action");
 
   switch (act)
   {

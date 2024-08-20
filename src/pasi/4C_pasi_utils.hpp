@@ -30,7 +30,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void ChangeTimeParameter(const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params,
+    void change_time_parameter(const Epetra_Comm& comm, const Teuchos::ParameterList& pasi_params,
         Teuchos::ParameterList& particle_params, Teuchos::ParameterList& struct_params);
 
     /*!
@@ -38,7 +38,7 @@ namespace PaSI
      *
      * \author Sebastian Fuchs \date 02/2017
      */
-    void Logo();
+    void logo();
 
   }  // namespace UTILS
 

@@ -224,9 +224,9 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = Core::UTILS::IntegralValue<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = Core::UTILS::integral_value<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -296,7 +296,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     // -------------------------------------------------------------------------
 
     // enable debugging
-    if (Core::UTILS::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -323,7 +323,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
   if (restart)
   {
     const bool restartfrompartfsi =
-        Core::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+        Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       if (comm_.MyPID() == 0)
@@ -420,7 +420,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Epetra_Vector& f)
    */
   Teuchos::RCP<Epetra_Vector> fcv = fluid_field()->interface()->extract_fsi_cond_vector(fv);
   Teuchos::RCP<Epetra_Vector> scv =
-      Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
+      Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
   mortarp->multiply(true, *fcv, *scv);
   Teuchos::RCP<Epetra_Vector> modsv = structure_field()->interface()->insert_fsi_cond_vector(scv);
   modsv->Update(1.0, *sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
@@ -739,8 +739,8 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Epetra_Vector& f)
 
   // Reset quantities of previous iteration step since they still store values from the last time
   // step
-  ddginc_ = Core::LinAlg::CreateVector(*structure_field()->interface()->fsi_cond_map(), true);
-  duiinc_ = Core::LinAlg::CreateVector(*fluid_field()->interface()->other_map(), true);
+  ddginc_ = Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
+  duiinc_ = Core::LinAlg::create_vector(*fluid_field()->interface()->other_map(), true);
   veliprev_ = Teuchos::null;
   velgprev_ = Teuchos::null;
   fgicur_ = Teuchos::null;
@@ -818,14 +818,14 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   // ---------Addressing contribution to block (2,2)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> fgg =
-      MLMultiply(f->matrix(1, 1), false, *mortarp, false, false, false, true);
-  fgg = MLMultiply(*mortarp, true, *fgg, false, false, false, true);
+      ml_multiply(f->matrix(1, 1), false, *mortarp, false, false, false, true);
+  fgg = ml_multiply(*mortarp, true, *fgg, false, false, false, true);
 
   s->add(*fgg, false, scale * timescale * (1. - stiparam) / (1. - ftiparam), 1.0);
 
   // ---------Addressing contribution to block (2,3)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> fgi =
-      MLMultiply(*mortarp, true, f->matrix(1, 0), false, false, false, true);
+      ml_multiply(*mortarp, true, f->matrix(1, 0), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lfgi =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->row_map(), 81, false));
 
@@ -833,14 +833,14 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   lfgi->complete(fgi->domain_map(), s->range_map());
 
   if (stcalgo == Inpar::Solid::stc_currsym)
-    lfgi = Core::LinAlg::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
+    lfgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfgi, false, true, true, true);
 
   mat.matrix(0, 1).un_complete();
   mat.matrix(0, 1).add(*lfgi, false, (1. - stiparam) / (1. - ftiparam), 0.0);
 
   // ---------Addressing contribution to block (3,2)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> fig =
-      MLMultiply(f->matrix(0, 1), false, *mortarp, false, false, false, true);
+      ml_multiply(f->matrix(0, 1), false, *mortarp, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lfig =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(fig->row_map(), 81, false));
 
@@ -849,7 +849,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   if (stcalgo != Inpar::Solid::stc_none)
   {
-    lfig = Core::LinAlg::MLMultiply(*lfig, false, *stcmat, false, false, false, true);
+    lfig = Core::LinAlg::ml_multiply(*lfig, false, *stcmat, false, false, false, true);
   }
 
   mat.matrix(1, 0).un_complete();
@@ -859,7 +859,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   mat.matrix(1, 1).un_complete();
   mat.matrix(1, 1).add(fii, false, 1., 0.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
-      Core::LinAlg::CreateIdentityMatrix(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::create_identity_matrix(*fluid_field()->interface()->fsi_cond_map());
   mat.matrix(1, 1).add(*eye, false, 1., 1.0);
 
   // ---------Addressing contribution to block (4,2)
@@ -870,7 +870,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   laig->complete(f->matrix(1, 1).domain_map(), aii.range_map(), true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> llaig =
-      MLMultiply(*laig, false, *mortarp, false, false, false, true);
+      ml_multiply(*laig, false, *mortarp, false, false, false, true);
   laig = Teuchos::rcp(new Core::LinAlg::SparseMatrix(llaig->row_map(), 81, false));
 
   laig->add(*llaig, false, 1.0, 0.0);
@@ -878,7 +878,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   if (stcalgo != Inpar::Solid::stc_none)
   {
-    laig = Core::LinAlg::MLMultiply(*laig, false, *stcmat, false, false, false, true);
+    laig = Core::LinAlg::ml_multiply(*laig, false, *stcmat, false, false, false, true);
   }
 
   mat.assign(2, 0, Core::LinAlg::View, *laig);
@@ -899,8 +899,8 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
     // ---------Addressing contribution to block (2,2)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> fmgg =
-        MLMultiply(mmm->matrix(1, 1), false, *mortarp, false, false, false, true);
-    fmgg = MLMultiply(*mortarp, true, *fmgg, false, false, false, true);
+        ml_multiply(mmm->matrix(1, 1), false, *mortarp, false, false, false, true);
+    fmgg = ml_multiply(*mortarp, true, *fmgg, false, false, false, true);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgg =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(fmgg->row_map(), 81, false));
@@ -911,7 +911,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
     // ---------Addressing contribution to block (3,2)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> fmig =
-        MLMultiply(mmm->matrix(0, 1), false, *mortarp, false, false, false, true);
+        ml_multiply(mmm->matrix(0, 1), false, *mortarp, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmig =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(fmig->row_map(), 81, false));
 
@@ -920,7 +920,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
     if (stcalgo != Inpar::Solid::stc_none)
     {
-      lfmig = Core::LinAlg::MLMultiply(*lfmig, false, *stcmat, false, false, false, true);
+      lfmig = Core::LinAlg::ml_multiply(*lfmig, false, *stcmat, false, false, false, true);
     }
 
     mat.matrix(1, 0).add(*lfmig, false, 1.0, 1.0);
@@ -938,24 +938,24 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
     // ---------Addressing contribution to block (2,4)
     lfmgi->complete(aii.domain_map(), mortarp->range_map(), true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> llfmgi =
-        MLMultiply(*mortarp, true, *lfmgi, false, false, false, true);
+        ml_multiply(*mortarp, true, *lfmgi, false, false, false, true);
     lfmgi = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->row_map(), 81, false));
 
     lfmgi->add(*llfmgi, false, scale, 0.0);
     lfmgi->complete(aii.domain_map(), s->range_map());
 
     if (stcalgo == Inpar::Solid::stc_currsym)
-      lfmgi = Core::LinAlg::MLMultiply(*stcmat, true, *lfmgi, false, true, true, false);
+      lfmgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfmgi, false, true, true, false);
     lfmgi->scale((1. - stiparam) / (1. - ftiparam));
     mat.assign(0, 2, Core::LinAlg::View, *lfmgi);
   }
 
   if (stcalgo != Inpar::Solid::stc_none)
   {
-    s = Core::LinAlg::MLMultiply(*s, false, *stcmat, false, true, true, true);
+    s = Core::LinAlg::ml_multiply(*s, false, *stcmat, false, true, true, true);
 
     if (stcalgo == Inpar::Solid::stc_currsym)
-      s = Core::LinAlg::MLMultiply(*stcmat, true, *s, false, true, true, false);
+      s = Core::LinAlg::ml_multiply(*stcmat, true, *s, false, true, true, false);
   }
 
   // finally assign structure matrix to block (0,0)
@@ -1005,7 +1005,7 @@ void FSI::MortarMonolithicFluidSplit::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1056,7 +1056,7 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1380,7 +1380,7 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(Teuchos::RCP<const E
   Teuchos::RCP<Epetra_Vector> scx = structure_field()->interface()->extract_fsi_cond_vector(sx);
   scx->Update(1.0, *ddgpred_, 1.0);
   Teuchos::RCP<Epetra_Vector> acx =
-      Core::LinAlg::CreateVector(*fluid_field()->interface()->fsi_cond_map());
+      Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map());
   mortarp->Apply(*scx, *acx);
   acx = fluid_to_ale_interface(acx);
 
@@ -1534,7 +1534,7 @@ void FSI::MortarMonolithicFluidSplit::read_restart(int step)
 
   // read Lagrange multiplier
   const bool restartfrompartfsi =
-      Core::UTILS::IntegralValue<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+      Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
   if (not restartfrompartfsi)  // standard restart
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
@@ -1720,7 +1720,7 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
      */
 
     // extract inner velocity DOFs after calling AleToFluid()
-    Teuchos::RCP<Epetra_Map> velothermap = Core::LinAlg::SplitMap(
+    Teuchos::RCP<Epetra_Map> velothermap = Core::LinAlg::split_map(
         *fluid_field()->velocity_row_map(), *interface_fluid_ale_coupling().master_dof_map());
     Core::LinAlg::MapExtractor velothermapext =
         Core::LinAlg::MapExtractor(*fluid_field()->velocity_row_map(), velothermap, false);

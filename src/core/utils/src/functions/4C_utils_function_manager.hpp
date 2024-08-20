@@ -107,7 +107,7 @@ namespace Core::UTILS
    * This includes space- and time-dependent functions and a generic function
    * depending on arbitrary variables.
    */
-  void AddValidBuiltinFunctions(FunctionManager& function_manager);
+  void add_valid_builtin_functions(FunctionManager& function_manager);
 }  // namespace Core::UTILS
 
 
@@ -136,7 +136,7 @@ const T& Core::UTILS::FunctionManager::function_by_id(int num) const
         [&function_any]()
         {
           const std::string actual_type_name_with_rcp_prefix =
-              Core::UTILS::TryDemangle(function_any.type().name());
+              Core::UTILS::try_demangle(function_any.type().name());
 
           // find the outermost pair of angle brackets which should enclose the type inside an RCP
           const std::size_t start = actual_type_name_with_rcp_prefix.find_first_of('<');
@@ -153,7 +153,7 @@ const T& Core::UTILS::FunctionManager::function_by_id(int num) const
     FOUR_C_THROW(
         "You tried to query function %d as a function of type '%s'.\n"
         "Actually, it has type '%s'.",
-        input_id, Core::UTILS::TryDemangle(typeid(T).name()).c_str(), actual_type_name.c_str());
+        input_id, Core::UTILS::try_demangle(typeid(T).name()).c_str(), actual_type_name.c_str());
   }
 }
 

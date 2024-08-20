@@ -46,7 +46,7 @@ Mat::PAR::MatListChemotaxis::MatListChemotaxis(const Core::Mat::PAR::Parameter::
     for (m = pairids_.begin(); m != pairids_.end(); ++m)
     {
       const int pairid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(pairid);
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(pairid);
       material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(pairid, mat));
     }
   }
@@ -102,7 +102,7 @@ void Mat::MatListChemotaxis::setup_mat_map()
   for (m = paramschemo_->pair_ids()->begin(); m != paramschemo_->pair_ids()->end(); ++m)
   {
     const int pairid = *m;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(pairid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(pairid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
     material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(pairid, mat));
   }
@@ -152,7 +152,7 @@ void Mat::MatListChemotaxis::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover paramsreac_
   int matid(-1);

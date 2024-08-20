@@ -166,7 +166,7 @@ namespace GEOMETRYPAIR
    * @param projection_result (out) Flag for the result of the projection.
    */
   template <typename ScalarType, typename Volume>
-  void ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+  void project_point_to_volume(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
       const ElementData<Volume, ScalarType>& element_data_volume,
       Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result);
 }  // namespace GEOMETRYPAIR

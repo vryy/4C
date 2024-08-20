@@ -52,9 +52,9 @@ void PaSI::PartitionedAlgo::init()
   interface_ = structurefield_->interface();
 
   // construct interface states
-  intfdispnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
-  intfvelnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
-  intfaccnp_ = Core::LinAlg::CreateVector(*interface_->pasi_cond_map(), true);
+  intfdispnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
+  intfvelnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
+  intfaccnp_ = Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
 
   // set init flag
   set_is_init(true);

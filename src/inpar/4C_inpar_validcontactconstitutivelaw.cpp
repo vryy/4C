@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Input::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
+void Input::print_empty_contact_constitutive_law_definitions(std::ostream& stream,
     std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
@@ -31,18 +31,18 @@ void Input::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void PrintContactConstitutiveLawDatHeader()
+void print_contact_constitutive_law_dat_header()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> coconstlawlist =
-      Input::ValidContactConstitutiveLaws();
-  Input::PrintEmptyContactConstitutiveLawDefinitions(std::cout, *coconstlawlist);
+      Input::valid_contact_constitutive_laws();
+  Input::print_empty_contact_constitutive_law_definitions(std::cout, *coconstlawlist);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
-Input::ValidContactConstitutiveLaws()
+Input::valid_contact_constitutive_laws()
 {
   // a list containing all valid contact constitutivelaw definitions
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
@@ -63,7 +63,7 @@ Input::ValidContactConstitutiveLaws()
     add_named_real(m, "C", "y intercept");
     add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawComponentDefinition(coconstlawlist, m);
+    append_co_const_law_component_definition(coconstlawlist, m);
   }
   // power law function
   {
@@ -75,7 +75,7 @@ Input::ValidContactConstitutiveLaws()
     add_named_real(m, "B", "power coefficient");
     add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawComponentDefinition(coconstlawlist, m);
+    append_co_const_law_component_definition(coconstlawlist, m);
   }
 
   // cubic function
@@ -90,7 +90,7 @@ Input::ValidContactConstitutiveLaws()
     add_named_real(m, "D", "D");
     add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawComponentDefinition(coconstlawlist, m);
+    append_co_const_law_component_definition(coconstlawlist, m);
   }
 
   // linear function
@@ -103,7 +103,7 @@ Input::ValidContactConstitutiveLaws()
     add_named_real(m, "B", "y intercept");
     add_named_real(m, "Offset", "offset for contact to start", 0.0, true);
 
-    AppendCoConstLawComponentDefinition(coconstlawlist, m);
+    append_co_const_law_component_definition(coconstlawlist, m);
   }
 
   // mirco function
@@ -134,7 +134,7 @@ Input::ValidContactConstitutiveLaws()
     add_named_string(
         m, "TopologyFilePath", "Absolute path to file with micro-topology data", "", true);
 
-    AppendCoConstLawComponentDefinition(coconstlawlist, m);
+    append_co_const_law_component_definition(coconstlawlist, m);
   }
 
   // deliver

@@ -57,7 +57,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
   Teuchos::ParameterList solvparams;
-  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
   Teuchos::RCP<Core::LinAlg::Solver> dummysolver(new Core::LinAlg::Solver(
       solvparams, disnp_ptr_->Comm(), nullptr, Core::IO::Verbositylevel::standard));
@@ -152,7 +152,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::assemble_force(
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
   // assemble and scale with str time-integrator dependent value
-  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
+  Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
 
   // assemble 0D model rhs - already at the generalized mid-point t_{n+theta} !
   block_vec_ptr = cardvasc0dman_->get_cardiovascular0_drhs();
@@ -167,7 +167,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::assemble_force(
   const int max_gid = get_block_dof_row_map_ptr()->MaxAllGID();
   // only call when f is the full rhs of the coupled problem (not for structural
   // equilibriate initial state call)
-  if (elements_f == max_gid + 1) Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
+  if (elements_f == max_gid + 1) Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *block_vec_ptr);
 
   return true;
 }

@@ -62,7 +62,7 @@ void ScaTra::TimIntOneStepTheta::setup()
   // fine-scale vector at time n+1
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
       turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
-    fsphinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    fsphinp_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -90,7 +90,7 @@ void ScaTra::TimIntOneStepTheta::setup()
       homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
-          Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
+          Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
 
@@ -103,7 +103,7 @@ void ScaTra::TimIntOneStepTheta::setup()
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_initialize, eleparams);
 
     // loop over macro-scale elements
@@ -118,7 +118,7 @@ void ScaTra::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrement
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
@@ -299,7 +299,7 @@ void ScaTra::TimIntOneStepTheta::update()
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_update, eleparams);
 
     // loop over macro-scale elements
@@ -367,7 +367,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_read_restart, eleparams);
 
     // loop over macro-scale elements

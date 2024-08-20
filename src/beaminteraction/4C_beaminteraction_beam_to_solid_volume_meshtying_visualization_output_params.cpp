@@ -64,33 +64,33 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::setup
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
-  output_every_iteration_ = (bool)Core::UTILS::IntegralValue<int>(
+  output_every_iteration_ = (bool)Core::UTILS::integral_value<int>(
       global_visualization_output_paramslist, "EVERY_ITERATION");
 
   // Get beam to solid volume mesh tying specific parameters.
-  output_flag_ = (bool)Core::UTILS::IntegralValue<int>(
+  output_flag_ = (bool)Core::UTILS::integral_value<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "WRITE_OUTPUT");
 
-  nodal_forces_ = (bool)Core::UTILS::IntegralValue<int>(
+  nodal_forces_ = (bool)Core::UTILS::integral_value<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "NODAL_FORCES");
 
-  mortar_lambda_discret_ = (bool)Core::UTILS::IntegralValue<int>(
+  mortar_lambda_discret_ = (bool)Core::UTILS::integral_value<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_DISCRET");
 
-  mortar_lambda_continuous_ = (bool)Core::UTILS::IntegralValue<int>(
+  mortar_lambda_continuous_ = (bool)Core::UTILS::integral_value<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_CONTINUOUS");
 
   mortar_lambda_continuous_segments_ =
       beam_to_solid_volume_meshtying_visualization_output_paramslist.get<int>(
           "MORTAR_LAMBDA_CONTINUOUS_SEGMENTS");
 
-  segmentation_ = (bool)Core::UTILS::IntegralValue<int>(
+  segmentation_ = (bool)Core::UTILS::integral_value<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "SEGMENTATION");
 
-  integration_points_ = (bool)Core::UTILS::IntegralValue<int>(
+  integration_points_ = (bool)Core::UTILS::integral_value<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "INTEGRATION_POINTS");
 
-  write_unique_ids_ = (bool)Core::UTILS::IntegralValue<int>(
+  write_unique_ids_ = (bool)Core::UTILS::integral_value<int>(
       beam_to_solid_volume_meshtying_visualization_output_paramslist, "UNIQUE_IDS");
 
   // Set the setup flag.

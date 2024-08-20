@@ -79,7 +79,7 @@ namespace
 
 
     // compose coefficients
-    Mat::CalculateGammaDelta(
+    Mat::calculate_gamma_delta(
         quantities.gamma, quantities.delta, quantities.prinv, quantities.dPIe, quantities.ddPIIe);
 
     // evaluate dSdiFin
@@ -199,7 +199,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& 
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover params_
   int matid;
@@ -566,12 +566,12 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kin_quant_elast(
   // C_{in}^{-1} * C * C_{in}^{-1}
   static Core::LinAlg::Matrix<3, 3> tmp(true);
   static Core::LinAlg::Matrix<3, 3> iCinCiCinM;
-  Mat::EvaluateiCinCiCin(CM, iCinM, iCinCiCinM);
+  Mat::evaluatei_cin_ci_cin(CM, iCinM, iCinCiCinM);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCinCiCinM, iCinCiCinV);
 
   // elastic right Cauchy-Green in strain-like Voigt notation.
   static Core::LinAlg::Matrix<3, 3> CeM(true);
-  Mat::EvaluateCe(*defgrad, iFinM, CeM);
+  Mat::evaluate_ce(*defgrad, iFinM, CeM);
   static Core::LinAlg::Matrix<6, 1> CeV_strain(true);
   Core::LinAlg::Voigt::Strains::matrix_to_vector(CeM, CeV_strain);
 

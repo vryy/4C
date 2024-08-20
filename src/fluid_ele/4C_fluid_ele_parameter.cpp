@@ -131,7 +131,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
   }
 
   // set flag for physical type of fluid flow
-  physicaltype_ = Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
   if (((physicaltype_ == Inpar::FLUID::loma) or
           (physicaltype_ == Inpar::FLUID::varying_density)) and
       (fldparatimint_->is_stationary() == true))
@@ -139,7 +139,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
 
   // set flag for type of linearization (fixed-point-like or Newton)
   //  fix-point like for Oseen or Stokes problems
-  if (Core::UTILS::GetAsEnum<Inpar::FLUID::LinearisationAction>(params, "Linearisation") ==
+  if (Core::UTILS::get_as_enum<Inpar::FLUID::LinearisationAction>(params, "Linearisation") ==
       Inpar::FLUID::Newton)
   {
     if ((physicaltype_ == Inpar::FLUID::oseen) or (physicaltype_ == Inpar::FLUID::stokes))
@@ -176,21 +176,21 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
   //----------------------------------------------------------------------
   Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
 
-  stabtype_ = Core::UTILS::IntegralValue<Inpar::FLUID::StabType>(stablist, "STABTYPE");
+  stabtype_ = Core::UTILS::integral_value<Inpar::FLUID::StabType>(stablist, "STABTYPE");
 
   if (stabtype_ == Inpar::FLUID::stabtype_residualbased)
   {
     // no safety check necessary since all options are used
-    tds_ = Core::UTILS::IntegralValue<Inpar::FLUID::SubscalesTD>(stablist, "TDS");
-    transient_ = Core::UTILS::IntegralValue<Inpar::FLUID::Transient>(stablist, "TRANSIENT");
-    pspg_ = Core::UTILS::IntegralValue<int>(stablist, "PSPG");
-    supg_ = Core::UTILS::IntegralValue<int>(stablist, "SUPG");
-    vstab_ = Core::UTILS::IntegralValue<Inpar::FLUID::VStab>(stablist, "VSTAB");
-    rstab_ = Core::UTILS::IntegralValue<Inpar::FLUID::RStab>(stablist, "RSTAB");
-    graddiv_ = Core::UTILS::IntegralValue<int>(stablist, "GRAD_DIV");
-    cross_ = Core::UTILS::IntegralValue<Inpar::FLUID::CrossStress>(stablist, "CROSS-STRESS");
+    tds_ = Core::UTILS::integral_value<Inpar::FLUID::SubscalesTD>(stablist, "TDS");
+    transient_ = Core::UTILS::integral_value<Inpar::FLUID::Transient>(stablist, "TRANSIENT");
+    pspg_ = Core::UTILS::integral_value<int>(stablist, "PSPG");
+    supg_ = Core::UTILS::integral_value<int>(stablist, "SUPG");
+    vstab_ = Core::UTILS::integral_value<Inpar::FLUID::VStab>(stablist, "VSTAB");
+    rstab_ = Core::UTILS::integral_value<Inpar::FLUID::RStab>(stablist, "RSTAB");
+    graddiv_ = Core::UTILS::integral_value<int>(stablist, "GRAD_DIV");
+    cross_ = Core::UTILS::integral_value<Inpar::FLUID::CrossStress>(stablist, "CROSS-STRESS");
     reynolds_ =
-        Core::UTILS::IntegralValue<Inpar::FLUID::ReynoldsStress>(stablist, "REYNOLDS-STRESS");
+        Core::UTILS::integral_value<Inpar::FLUID::ReynoldsStress>(stablist, "REYNOLDS-STRESS");
 
     if (supg_ and (physicaltype_ == Inpar::FLUID::stokes))
       FOUR_C_THROW(
@@ -200,14 +200,14 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
     // overrule higher_order_ele if input-parameter is set
     // this might be interesting for fast (but slightly
     // less accurate) computations
-    is_inconsistent_ = Core::UTILS::IntegralValue<int>(stablist, "INCONSISTENT");
+    is_inconsistent_ = Core::UTILS::integral_value<int>(stablist, "INCONSISTENT");
 
-    is_reconstructder_ = Core::UTILS::IntegralValue<int>(stablist, "Reconstruct_Sec_Der");
+    is_reconstructder_ = Core::UTILS::integral_value<int>(stablist, "Reconstruct_Sec_Der");
     //-------------------------------
     // get tau definition
     //-------------------------------
 
-    whichtau_ = Core::UTILS::IntegralValue<Inpar::FLUID::TauType>(stablist, "DEFINITION_TAU");
+    whichtau_ = Core::UTILS::integral_value<Inpar::FLUID::TauType>(stablist, "DEFINITION_TAU");
     // check if tau can be handled
     if (not(whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins or
             whichtau_ == Inpar::FLUID::tau_taylor_hughes_zarins_wo_dt or
@@ -257,7 +257,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
 
     // get and check characteristic element length for stabilization parameter tau_Mu
     charelelengthu_ =
-        Core::UTILS::IntegralValue<Inpar::FLUID::CharEleLengthU>(stablist, "CHARELELENGTH_U");
+        Core::UTILS::integral_value<Inpar::FLUID::CharEleLengthU>(stablist, "CHARELELENGTH_U");
     if (not(charelelengthu_ == Inpar::FLUID::streamlength_u or
             charelelengthu_ == Inpar::FLUID::volume_equivalent_diameter_u or
             charelelengthu_ == Inpar::FLUID::root_of_volume_u))
@@ -266,7 +266,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
     // get and check characteristic element length for stabilization parameter
     // tau_Mp and tau_C
     charelelengthpc_ =
-        Core::UTILS::IntegralValue<Inpar::FLUID::CharEleLengthPC>(stablist, "CHARELELENGTH_PC");
+        Core::UTILS::integral_value<Inpar::FLUID::CharEleLengthPC>(stablist, "CHARELELENGTH_PC");
     if (not(charelelengthpc_ == Inpar::FLUID::streamlength_pc or
             charelelengthpc_ == Inpar::FLUID::volume_equivalent_diameter_pc or
             charelelengthpc_ == Inpar::FLUID::root_of_volume_pc))
@@ -453,10 +453,10 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_loma_parameter(
   // parameter for additional rbvmm terms in continuity equation
   //---------------------------------------------------------------------------------
 
-  conti_supg_ = Core::UTILS::IntegralValue<int>(stabparams, "LOMA_CONTI_SUPG");
+  conti_supg_ = Core::UTILS::integral_value<int>(stabparams, "LOMA_CONTI_SUPG");
   conti_cross_ =
-      Core::UTILS::IntegralValue<Inpar::FLUID::CrossStress>(stabparams, "LOMA_CONTI_CROSS_STRESS");
-  conti_reynolds_ = Core::UTILS::IntegralValue<Inpar::FLUID::ReynoldsStress>(
+      Core::UTILS::integral_value<Inpar::FLUID::CrossStress>(stabparams, "LOMA_CONTI_CROSS_STRESS");
+  conti_reynolds_ = Core::UTILS::integral_value<Inpar::FLUID::ReynoldsStress>(
       stabparams, "LOMA_CONTI_REYNOLDS_STRESS");
 
   //---------------------------------------------------------------------------------
@@ -464,7 +464,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_loma_parameter(
   //---------------------------------------------------------------------------------
 
   if (turb_mod_action_ == Inpar::FLUID::multifractal_subgrid_scales)
-    multifrac_loma_conti_ = Core::UTILS::IntegralValue<int>(turbmodelparamsmfs, "LOMA_CONTI");
+    multifrac_loma_conti_ = Core::UTILS::integral_value<int>(turbmodelparamsmfs, "LOMA_CONTI");
 
   return;
 }
@@ -479,7 +479,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_two_phase_parameter(
   // Smeared specific parameters
   Teuchos::ParameterList& smearedlist = params.sublist("SMEARED");
   interface_thickness_ = smearedlist.get<double>("INTERFACE_THICKNESS");
-  enhanced_gaussrule_ = Core::UTILS::IntegralValue<int>(smearedlist, "ENHANCED_GAUSSRULE");
+  enhanced_gaussrule_ = Core::UTILS::integral_value<int>(smearedlist, "ENHANCED_GAUSSRULE");
 
   return;
 }
@@ -539,7 +539,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
       // the classic Smagorinsky model only requires one constant parameter
       turb_mod_action_ = Inpar::FLUID::smagorinsky;
       Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
-      include_Ci_ = Core::UTILS::IntegralValue<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
+      include_Ci_ = Core::UTILS::integral_value<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
       Ci_ = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
     }
     // --------------------------------------------------
@@ -572,9 +572,9 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
       // it is stored in Cs_ after its calculation in calc_subgr_visc
       Cs_ = 0.0;
       Cs_averaged_ =
-          Core::UTILS::IntegralValue<int>(turbmodelparamssgvisc, "C_SMAGORINSKY_AVERAGED");
+          Core::UTILS::integral_value<int>(turbmodelparamssgvisc, "C_SMAGORINSKY_AVERAGED");
       Ci_ = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
-      include_Ci_ = Core::UTILS::IntegralValue<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
+      include_Ci_ = Core::UTILS::integral_value<int>(turbmodelparamssgvisc, "C_INCLUDE_CI");
     }
     else if (physical_turbulence_model == "Multifractal_Subgrid_Scales")
     {
@@ -583,7 +583,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
       // get parameters of model
       Csgs_ = turbmodelparamsmfs.get<double>("CSGS");
       Csgs_phi_ = turbmodelparamsmfs.get<double>("CSGS_PHI");
-      adapt_Csgs_phi_ = Core::UTILS::IntegralValue<int>(turbmodelparamsmfs, "ADAPT_CSGS_PHI");
+      adapt_Csgs_phi_ = Core::UTILS::integral_value<int>(turbmodelparamsmfs, "ADAPT_CSGS_PHI");
 
       if (turbmodelparamsmfs.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
         alpha_ = 3.0;
@@ -592,7 +592,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
       else
         FOUR_C_THROW("Unknown filter type!");
 
-      CalcN_ = Core::UTILS::IntegralValue<int>(turbmodelparamsmfs, "CALC_N");
+      CalcN_ = Core::UTILS::integral_value<int>(turbmodelparamsmfs, "CALC_N");
 
       N_ = turbmodelparamsmfs.get<double>("N");
 
@@ -621,9 +621,9 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
       c_nu_ = turbmodelparamsmfs.get<double>("C_NU");
       c_diff_ = turbmodelparamsmfs.get<double>("C_DIFF");  // loma only
 
-      near_wall_limit_ = Core::UTILS::IntegralValue<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT");
+      near_wall_limit_ = Core::UTILS::integral_value<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT");
       near_wall_limit_scatra_ =
-          Core::UTILS::IntegralValue<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI");
+          Core::UTILS::integral_value<int>(turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI");
 
       if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "element_center")
         B_gp_ = false;
@@ -640,7 +640,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
         mfs_is_conservative_ = false;
 
       consistent_mfs_residual_ =
-          Core::UTILS::IntegralValue<int>(turbmodelparamsmfs, "CONSISTENT_FLUID_RESIDUAL");
+          Core::UTILS::integral_value<int>(turbmodelparamsmfs, "CONSISTENT_FLUID_RESIDUAL");
     }
     else if (physical_turbulence_model == "Vreman")
     {

@@ -165,7 +165,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::write
   // values are padded. The runtime output is written when the time step is already set to the
   // next step.
   auto [output_time, output_step] =
-      Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+      Core::IO::get_time_and_time_step_index_for_output(visualization_params_,
           beam_contact->g_state().get_time_n(), beam_contact->g_state().get_step_n());
   write_output_beam_to_solid_volume_mesh_tying(beam_contact, output_step, output_time);
 }
@@ -181,7 +181,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
 
   if (output_params_ptr_->get_output_every_iteration())
   {
-    auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
+    auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
         visualization_params_, beam_contact->g_state().get_time_n(),
         beam_contact->g_state().get_step_n(), i_iteration);
     write_output_beam_to_solid_volume_mesh_tying(beam_contact, output_step, output_time);
@@ -207,7 +207,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
       output_writer_base_ptr_->get_visualization_writer("btsvc-nodal-forces");
   if (visualization != Teuchos::null)
-    AddBeamInteractionNodalForces(visualization, beam_contact->discret_ptr(),
+    add_beam_interaction_nodal_forces(visualization, beam_contact->discret_ptr(),
         beam_contact->beam_interaction_data_state().get_dis_np(),
         beam_contact->beam_interaction_data_state().get_force_np(),
         output_params_ptr_->get_write_unique_i_ds_flag());

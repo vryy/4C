@@ -28,7 +28,7 @@ namespace Mat::FLUIDPORO
    *                                  (@p dim x @p dim dyadic)
    */
   template <unsigned int dim>
-  void CreateStructureTensorFromVector(
+  void create_structure_tensor_from_vector(
       const std::vector<double>& direction_vector, Core::LinAlg::Matrix<dim, dim>& structure_tensor)
   {
     structure_tensor.clear();
@@ -416,7 +416,7 @@ namespace Mat::FLUIDPORO
 
       Core::LinAlg::Matrix<dim, dim> permeability_tensor(true);
       Core::LinAlg::Matrix<dim, dim> structure_tensor(true);
-      CreateStructureTensorFromVector<dim>(
+      create_structure_tensor_from_vector<dim>(
           anisotropic_permeability_directions[0], structure_tensor);
 
       // Transverse component of the transversely isotropic permeability tensor
@@ -496,7 +496,7 @@ namespace Mat::FLUIDPORO
 
       for (int dim = 0; dim < 3; ++dim)
       {
-        CreateStructureTensorFromVector<3>(
+        create_structure_tensor_from_vector<3>(
             anisotropic_permeability_directions[dim], structure_tensor);
         permeability_tensor.update(orthotropic_permeabilities[dim], structure_tensor, 1.0);
       }
@@ -610,7 +610,7 @@ namespace Mat::FLUIDPORO
 
       for (unsigned int i = 0; i < dim; ++i)
       {
-        CreateStructureTensorFromVector<dim>(
+        create_structure_tensor_from_vector<dim>(
             anisotropic_permeability_directions[i], structure_tensor);
         permeability_tensor.update(
             permeability * anisotropic_permeability_coeffs[i], structure_tensor, 1.0);
@@ -621,7 +621,7 @@ namespace Mat::FLUIDPORO
     }
   };
 
-  Teuchos::RCP<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> CreateAnisotropyStrategy(
+  Teuchos::RCP<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> create_anisotropy_strategy(
       const Mat::PAR::FluidPoro* params)
   {
     switch (params->permeability_func_)
@@ -721,7 +721,7 @@ Mat::FluidPoro::FluidPoro() : params_(nullptr), anisotropy_strategy_(Teuchos::nu
 
 Mat::FluidPoro::FluidPoro(Mat::PAR::FluidPoro* params) : params_(params)
 {
-  anisotropy_strategy_ = Mat::FLUIDPORO::CreateAnisotropyStrategy(params);
+  anisotropy_strategy_ = Mat::FLUIDPORO::create_anisotropy_strategy(params);
 }
 
 void Mat::FluidPoro::pack(Core::Communication::PackBuffer& data) const
@@ -742,7 +742,7 @@ void Mat::FluidPoro::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid
   int matid;
@@ -764,7 +764,8 @@ void Mat::FluidPoro::unpack(const std::vector<char>& data)
   }
 
   // Only execute if not in post-process mode
-  if (params_ != nullptr) anisotropy_strategy_ = Mat::FLUIDPORO::CreateAnisotropyStrategy(params_);
+  if (params_ != nullptr)
+    anisotropy_strategy_ = Mat::FLUIDPORO::create_anisotropy_strategy(params_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);

@@ -76,7 +76,7 @@ void Discret::ELEMENTS::Beam3Base::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -128,7 +128,7 @@ Discret::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-std::vector<int> Discret::ELEMENTS::Beam3Base::get_additive_dof_gi_ds(
+std::vector<int> Discret::ELEMENTS::Beam3Base::get_additive_dof_gids(
     const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
@@ -150,7 +150,7 @@ std::vector<int> Discret::ELEMENTS::Beam3Base::get_additive_dof_gi_ds(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> Discret::ELEMENTS::Beam3Base::get_rot_vec_dof_gi_ds(
+std::vector<int> Discret::ELEMENTS::Beam3Base::get_rot_vec_dof_gids(
     const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
@@ -428,7 +428,7 @@ Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::get_bounding
 {
   // Get the centerline dof values of the beam.
   std::vector<double> element_posdofvec;
-  BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
+  BEAMINTERACTION::UTILS::extract_pos_dof_vec_values(
       discret, this, Teuchos::rcpFromRef(result_data_dofbased), element_posdofvec);
   Core::GeometricSearch::BoundingVolume bounding_volume;
 

@@ -53,7 +53,7 @@ namespace Inpar
       solution_multiscale  ///< method for contact of rough surfaces with a multi scale approach
     };
 
-    inline std::string SolvingStrategy2String(enum SolvingStrategy stype)
+    inline std::string solving_strategy_to_string(enum SolvingStrategy stype)
     {
       switch (stype)
       {
@@ -155,7 +155,7 @@ namespace Inpar
     };
 
     /// convert assemble strategy to string
-    inline std::string AssembleStrategy2String(enum AssembleStrategy assemble_type)
+    inline std::string assemble_strategy_to_string(enum AssembleStrategy assemble_type)
     {
       switch (assemble_type)
       {
@@ -177,7 +177,7 @@ namespace Inpar
     };
 
     /// convert variational approach to string
-    inline std::string VariationalApproach2String(enum VariationalApproach vartype)
+    inline std::string variational_approach_to_string(enum VariationalApproach vartype)
     {
       switch (vartype)
       {
@@ -217,7 +217,7 @@ namespace Inpar
     };
 
     /// Penalty update type to string
-    inline std::string PenaltyUpdate2String(const enum PenaltyUpdate putype)
+    inline std::string penalty_update_to_string(const enum PenaltyUpdate putype)
     {
       switch (putype)
       {
@@ -251,7 +251,7 @@ namespace Inpar
       vector_field_2d = 2  ///< 2-dimensional vector arrow plot
     };
 
-    inline std::string PlotType2String(const enum PlotType ptype)
+    inline std::string plot_type_to_string(const enum PlotType ptype)
     {
       switch (ptype)
       {
@@ -288,7 +288,7 @@ namespace Inpar
                                                    *   projection contributions */
     };
 
-    inline std::string PlotFuncName2String(const enum PlotFuncName pfunc)
+    inline std::string plot_func_name_to_string(const enum PlotFuncName pfunc)
     {
       switch (pfunc)
       {
@@ -362,7 +362,7 @@ namespace Inpar
     };
 
     /// convert to string
-    inline std::string PlotFileFormat2String(const enum PlotFileFormat pformat)
+    inline std::string plot_file_format_to_string(const enum PlotFileFormat pformat)
     {
       switch (pformat)
       {
@@ -376,7 +376,7 @@ namespace Inpar
     }
 
     /// set the contact parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace CONTACT
 

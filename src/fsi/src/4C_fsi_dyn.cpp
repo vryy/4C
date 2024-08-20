@@ -96,7 +96,7 @@ void fluid_ale_drt()
 
   Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
   // check for xfem discretization
-  if (Core::UTILS::IntegralValue<bool>(
+  if (Core::UTILS::integral_value<bool>(
           (problem->x_fluid_dynamic_params().sublist("GENERAL")), "XFLUIDFLUID"))
   {
     FLD::XFluid::setup_fluid_discretization();
@@ -112,7 +112,7 @@ void fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)
   {
-    Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -122,7 +122,7 @@ void fluid_ale_drt()
   }
   else  // filled ale discretization
   {
-    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -157,7 +157,7 @@ void fluid_xfem_drt()
   FLD::XFluid::setup_fluid_discretization();
 
   const Teuchos::ParameterList xfluid = problem->x_fluid_dynamic_params();
-  bool alefluid = Core::UTILS::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
+  bool alefluid = Core::UTILS::integral_value<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
 
   if (alefluid)  // in ale case
   {
@@ -167,7 +167,7 @@ void fluid_xfem_drt()
     // create ale elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)
     {
-      Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+      Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
           problem->get_dis("fluid"), aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -177,7 +177,7 @@ void fluid_xfem_drt()
     }
     else  // filled ale discretization
     {
-      if (!FSI::UTILS::FluidAleNodesDisjoint(problem->get_dis("fluid"), aledis))
+      if (!FSI::UTILS::fluid_ale_nodes_disjoint(problem->get_dis("fluid"), aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -260,7 +260,7 @@ void fluid_freesurf_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)
   {
-    Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -270,7 +270,7 @@ void fluid_freesurf_drt()
   }
   else  // filled ale discretization
   {
-    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -279,7 +279,7 @@ void fluid_freesurf_drt()
 
   const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
 
-  int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
@@ -357,10 +357,10 @@ void fsi_immersed_drt()
   {
     structdis->fill_complete(false, false, false);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
-    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+    Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
         Global::Problem::instance()->output_control_file(), {structdis}, correct_node,
         determine_relevant_points, true);
   }
@@ -381,7 +381,7 @@ void fsi_immersed_drt()
 
   // binning strategy is created
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 
@@ -416,7 +416,7 @@ void fsi_immersed_drt()
   Teuchos::RCP<FSI::Partitioned> fsi;
 
   Inpar::FSI::PartitionedCouplingMethod method =
-      Core::UTILS::IntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+      Core::UTILS::integral_value<Inpar::FSI::PartitionedCouplingMethod>(
           fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
   if (method == Inpar::FSI::DirichletNeumann)
   {
@@ -492,11 +492,11 @@ void fsi_ale_drt()
   {
     structdis->fill_complete(false, false, false);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
 
-    Core::Rebalance::RebalanceDiscretizationsByBinning(binning_params,
+    Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
         Global::Problem::instance()->output_control_file(), {structdis}, correct_node,
         determine_relevant_points, true);
   }
@@ -505,7 +505,7 @@ void fsi_ale_drt()
     structdis->fill_complete();
   }
 
-  if (Core::UTILS::IntegralValue<bool>(
+  if (Core::UTILS::integral_value<bool>(
           (problem->x_fluid_dynamic_params().sublist("GENERAL")), "XFLUIDFLUID"))
   {
     FLD::XFluid::setup_fluid_discretization();
@@ -522,7 +522,7 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)  // empty ale discretization
   {
-    Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
         fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -532,15 +532,15 @@ void fsi_ale_drt()
   }
   else  // filled ale discretization (i.e. read from input file)
   {
-    if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
 
-    if ((not Core::UTILS::IntegralValue<bool>(
+    if ((not Core::UTILS::integral_value<bool>(
             problem->fsi_dynamic_params(), "MATCHGRID_FLUIDALE")) or
-        (not Core::UTILS::IntegralValue<bool>(
+        (not Core::UTILS::integral_value<bool>(
             problem->fsi_dynamic_params(), "MATCHGRID_STRUCTALE")))
     {
       // create vector of discr.
@@ -558,7 +558,7 @@ void fsi_ale_drt()
         // binning strategy is created and parallel redistribution is performed
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::AddEnumClassToParameterList<Core::FE::ShapeFunctionType>(
+        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
@@ -573,7 +573,7 @@ void fsi_ale_drt()
 
   const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
 
-  FSI_COUPLING coupling = Core::UTILS::IntegralValue<FSI_COUPLING>(fsidyn, "COUPALGO");
+  FSI_COUPLING coupling = Core::UTILS::integral_value<FSI_COUPLING>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
@@ -594,7 +594,7 @@ void fsi_ale_drt()
       Teuchos::RCP<FSI::Monolithic> fsi;
 
       Inpar::FSI::LinearBlockSolver linearsolverstrategy =
-          Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       // call constructor to initialize the base class
       if (coupling == fsi_iter_monolithicfluidsplit)
@@ -731,7 +731,7 @@ void fsi_ale_drt()
       Teuchos::RCP<FSI::Partitioned> fsi;
 
       Inpar::FSI::PartitionedCouplingMethod method =
-          Core::UTILS::IntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+          Core::UTILS::integral_value<Inpar::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
       switch (method)
@@ -802,7 +802,7 @@ void xfsi_drt()
 
   // CREATE ALE
   const Teuchos::ParameterList& xfdyn = problem->x_fluid_dynamic_params();
-  bool ale = Core::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
+  bool ale = Core::UTILS::integral_value<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
   Teuchos::RCP<Core::FE::Discretization> aledis;
   if (ale)
   {
@@ -814,7 +814,7 @@ void xfsi_drt()
     // Create ALE elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
     {
-      Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+      Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
           fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -824,7 +824,7 @@ void xfsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+      if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -832,7 +832,7 @@ void xfsi_drt()
     }
   }
 
-  int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_xfem_monolithic:
@@ -841,7 +841,7 @@ void xfsi_drt()
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
       Inpar::FSI::LinearBlockSolver linearsolverstrategy =
-          Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       if (linearsolverstrategy != Inpar::FSI::PreconditionedKrylov)
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
@@ -886,7 +886,7 @@ void xfsi_drt()
       Teuchos::RCP<FSI::Partitioned> fsi;
 
       Inpar::FSI::PartitionedCouplingMethod method =
-          Core::UTILS::IntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+          Core::UTILS::integral_value<Inpar::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
       switch (method)
@@ -943,7 +943,7 @@ void xfpsi_drt()
 
   // 1.-Initialization.
   // setup of the discretizations, including clone strategy
-  PoroElast::UTILS::SetupPoro<PoroElast::UTILS::PoroelastCloneStrategy>();
+  PoroElast::UTILS::setup_poro<PoroElast::UTILS::PoroelastCloneStrategy>();
 
   // setup of discretization for xfluid
   FLD::XFluid::setup_fluid_discretization();
@@ -952,7 +952,7 @@ void xfpsi_drt()
 
   Teuchos::RCP<Core::FE::Discretization> aledis;
   const Teuchos::ParameterList& xfdyn = problem->x_fluid_dynamic_params();
-  bool ale = Core::UTILS::IntegralValue<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
+  bool ale = Core::UTILS::integral_value<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
   if (ale)
   {
     aledis = problem->get_dis("ale");
@@ -963,7 +963,7 @@ void xfpsi_drt()
     // 3.- Create ALE elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
     {
-      Core::FE::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(
+      Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
           fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -973,7 +973,7 @@ void xfpsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis, aledis))
+      if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -986,7 +986,7 @@ void xfpsi_drt()
 
   // 2.- Parameter reading
   const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
-  int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
 
   switch (coupling)
   {
@@ -995,7 +995,7 @@ void xfpsi_drt()
       // monolithic solver settings
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
       Inpar::FSI::LinearBlockSolver linearsolverstrategy =
-          Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+          Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
       if (linearsolverstrategy != Inpar::FSI::PreconditionedKrylov)
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");

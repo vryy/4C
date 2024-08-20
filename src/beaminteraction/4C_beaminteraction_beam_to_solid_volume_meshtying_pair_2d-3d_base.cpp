@@ -60,7 +60,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam,
     r_cross_section_ref(1) = integration_point.get_eta_cross_section()(0);
     r_cross_section_ref(2) = integration_point.get_eta_cross_section()(1);
     r_cross_section_cur.multiply(triad, r_cross_section_ref);
-    GEOMETRYPAIR::EvaluatePosition<Beam>(eta, q, r_beam);
+    GEOMETRYPAIR::evaluate_position<Beam>(eta, q, r_beam);
     r_beam += r_cross_section_cur;
   };
 

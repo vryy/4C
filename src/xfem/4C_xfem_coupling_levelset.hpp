@@ -440,7 +440,7 @@ namespace XFEM
         // smoothed normal at cutter element nodes, the Gaussian point lies in
         Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
-        XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
+        XFEM::UTILS::extract_quantity_at_element(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
@@ -450,7 +450,7 @@ namespace XFEM
       {
         Core::LinAlg::SerialDenseMatrix ephi_test(nen, 1);
         Core::LinAlg::Matrix<nen, 1> ephi(ephi_test, View);
-        XFEM::UTILS::ExtractQuantityAtElement(
+        XFEM::UTILS::extract_quantity_at_element(
             ephi_test, actele, cutter_phinp_col_, cutter_dis_, cutter_nds_phi_, 1);
 
         // Gradients @ GaussPoints
@@ -461,7 +461,7 @@ namespace XFEM
         // smoothed normal at cutter element nodes, the Gaussian point lies in
         Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
-        XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
+        XFEM::UTILS::extract_quantity_at_element(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
@@ -561,8 +561,8 @@ namespace XFEM
       Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat);
 
   template <Core::FE::CellType distype, class M1, class M2>
-  void EvaluateCurvature(double& icurvature,  ///< curvature to be computed
-      int eid,                                ///< element ID
+  void evaluate_curvature(double& icurvature,  ///< curvature to be computed
+      int eid,                                 ///< element ID
       M1& funct,  ///< local shape function for Gauss Point (from fluid element)
       M2& derxy   ///< local derivatives of shape function for Gauss Point (from fluid element)
   )
@@ -584,9 +584,9 @@ namespace XFEM
   }
 
   template <Core::FE::CellType distype, class M1, class M2>
-  void GetPhiAtGP(double& phi_gp,  ///< phi at gausspoint
-      int eid,                     ///< element ID
-      M1& funct,                   ///< local shape function for Gauss Point (from fluid element)
+  void get_phi_at_gp(double& phi_gp,  ///< phi at gausspoint
+      int eid,                        ///< element ID
+      M1& funct,                      ///< local shape function for Gauss Point (from fluid element)
       M2& derxy  ///< local derivatives of shape function for Gauss Point (from fluid element)
   )
   {
@@ -604,7 +604,7 @@ namespace XFEM
   }
 
   template <Core::FE::CellType distype, class M1, class M2, class M3, class M4>
-  double InterpolateCurvature(const M1& funct, const M2& derxy, const M3& esmoothedgradphi_T,
+  double interpolate_curvature(const M1& funct, const M2& derxy, const M3& esmoothedgradphi_T,
       const M4& esmoothedcurvature_T, const int numnode)
   {
     // number space dimensions for element

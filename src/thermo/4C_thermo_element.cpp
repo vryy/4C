@@ -233,7 +233,7 @@ void Thermo::Element::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -259,7 +259,7 @@ void Thermo::Element::print(std::ostream& os) const
   os << "Thermo element";
   Core::Elements::Element::print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
+  std::cout << "DiscretizationType:  " << Core::FE::cell_type_to_string(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
@@ -272,7 +272,7 @@ void Thermo::Element::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::lines()
 {
-  return Core::Communication::GetElementLines<FaceElement, Element>(*this);
+  return Core::Communication::get_element_lines<FaceElement, Element>(*this);
 }  // Lines()
 
 
@@ -281,7 +281,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Thermo::Element::surfaces()
 {
-  return Core::Communication::GetElementSurfaces<FaceElement, Element>(*this);
+  return Core::Communication::get_element_surfaces<FaceElement, Element>(*this);
 }  // Surfaces()
 
 /*----------------------------------------------------------------------*
@@ -380,7 +380,7 @@ Core::FE::CellType Thermo::FaceElement::shape() const
         FOUR_C_THROW(
             "Your parent discretization type is %s. Ccurrently only hex27 and nurbs27 are "
             "implemented.",
-            Core::FE::CellTypeToString(parent_element()->shape()).c_str());
+            Core::FE::cell_type_to_string(parent_element()->shape()).c_str());
       }
       break;
     default:

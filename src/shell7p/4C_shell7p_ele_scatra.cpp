@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   template <typename Interface>
-  void TryPackInterface(const Interface& interface, Core::Communication::PackBuffer& data)
+  void try_pack_interface(const Interface& interface, Core::Communication::PackBuffer& data)
   {
     std::shared_ptr<Discret::ELEMENTS::Shell::Serializable> serializable_interface =
         std::dynamic_pointer_cast<Discret::ELEMENTS::Shell::Serializable>(interface);
@@ -29,7 +29,7 @@ namespace
   }
 
   template <typename Interface>
-  void TryUnpackInterface(
+  void try_unpack_interface(
       Interface& interface, std::size_t& position, const std::vector<char>& data)
   {
     std::shared_ptr<Discret::ELEMENTS::Shell::Serializable> serializable_shell_interface =
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
 
 int Discret::ELEMENTS::Shell7pScatraType::initialize(Core::FE::Discretization& dis)
 {
-  Solid::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
+  Solid::UTILS::Shell::Director::setup_shell_element_directors(*this, dis);
 
   return 0;
 }
@@ -189,13 +189,13 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pScatraType::compute_nu
   for (int dim = 0; dim < Shell::DETAIL::num_dim; ++dim)
     director(dim, 0) = nodal_directors(j, dim) * half_thickness;
 
-  return Solid::UTILS::Shell::ComputeShellNullSpace(node, x0, director);
+  return Solid::UTILS::Shell::compute_shell_null_space(node, x0, director);
 }
 
 void Discret::ELEMENTS::Shell7pScatraType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  Solid::UTILS::Shell::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
+  Solid::UTILS::Shell::nodal_block_information_shell(dwele, numdf, dimns, nv, np);
 }
 
 
@@ -259,7 +259,7 @@ void Discret::ELEMENTS::Shell7pScatra::pack(Core::Communication::PackBuffer& dat
   // pack impltype
   add_to_pack(data, impltype_);
   // optional data, e.g., EAS data, current thickness,..
-  TryPackInterface(shell_interface_, data);
+  try_pack_interface(shell_interface_, data);
 }
 
 
@@ -267,7 +267,7 @@ void Discret::ELEMENTS::Shell7pScatra::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -289,7 +289,7 @@ void Discret::ELEMENTS::Shell7pScatra::unpack(const std::vector<char>& data)
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 
-  TryUnpackInterface(shell_interface_, position, data);
+  try_unpack_interface(shell_interface_, position, data);
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
@@ -337,13 +337,13 @@ bool Discret::ELEMENTS::Shell7pScatra::vis_data(const std::string& name, std::ve
 void Discret::ELEMENTS::Shell7pScatra::print(std::ostream& os) const
 {
   os << "Shell7pScatra ";
-  os << " discretization type: " << Core::FE::CellTypeToString(distype_).c_str();
+  os << " discretization type: " << Core::FE::cell_type_to_string(distype_).c_str();
   Element::print(os);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7pScatra::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Shell7pLine, Shell7pScatra>(
+  return Core::Communication::element_boundary_factory<Shell7pLine, Shell7pScatra>(
       Core::Communication::buildLines, *this);
 }
 
@@ -354,7 +354,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7pSca
 
 int Discret::ELEMENTS::Shell7pScatra::num_line() const
 {
-  return Core::FE::getNumberOfElementLines(distype_);
+  return Core::FE::get_number_of_element_lines(distype_);
 }
 
 
@@ -367,7 +367,7 @@ bool Discret::ELEMENTS::Shell7pScatra::read_element(const std::string& eletype,
   Solid::ELEMENTS::ShellData shell_data = {};
 
   // set discretization type
-  distype_ = Core::FE::StringToCellType(distype);
+  distype_ = Core::FE::string_to_cell_type(distype);
 
   // set thickness in reference frame
   thickness_ = container.get<double>("THICK");
@@ -379,7 +379,8 @@ bool Discret::ELEMENTS::Shell7pScatra::read_element(const std::string& eletype,
   if (container.get_if<std::string>("EAS") != nullptr)
   {
     eletech_.insert(Inpar::Solid::EleTech::eas);
-    Solid::UTILS::Shell::read_element::ReadAndSetLockingTypes(distype_, container, locking_types);
+    Solid::UTILS::Shell::read_element::read_and_set_locking_types(
+        distype_, container, locking_types);
   }
 
   // set calculation interface pointer
@@ -391,7 +392,7 @@ bool Discret::ELEMENTS::Shell7pScatra::read_element(const std::string& eletype,
   {
     if (container.get<bool>("ANS"))
     {
-      shell_data.num_ans = Solid::UTILS::Shell::read_element::ReadAndSetNumANS(distype_);
+      shell_data.num_ans = Solid::UTILS::Shell::read_element::read_and_set_num_ans(distype_);
     }
   }
 
@@ -400,7 +401,7 @@ bool Discret::ELEMENTS::Shell7pScatra::read_element(const std::string& eletype,
 
   // read and set number of material model
   set_material(
-      0, Mat::Factory(Solid::UTILS::Shell::read_element::ReadAndSetElementMaterial(container)));
+      0, Mat::factory(Solid::UTILS::Shell::read_element::read_and_set_element_material(container)));
 
   // setup shell calculation interface
   shell_interface_->setup(*this, *solid_material(), container, locking_types, shell_data);

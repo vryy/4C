@@ -415,7 +415,7 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_ana
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
   Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -443,14 +443,14 @@ void FLD::TimIntHDG::reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  intvelnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intvelaf_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intvelnm_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intveln_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccnp_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccam_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccnm_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
-  intaccn_ = Core::LinAlg::CreateVector(*intdofrowmap, true);
+  intvelnp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intvelaf_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intvelnm_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intveln_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccnp_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccam_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccnm_ = Core::LinAlg::create_vector(*intdofrowmap, true);
+  intaccn_ = Core::LinAlg::create_vector(*intdofrowmap, true);
   if (discret_->get_comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->dof_row_map(0)->NumGlobalElements() << std::endl;
@@ -461,7 +461,7 @@ void FLD::TimIntHDG::reset(bool completeReset, int numsteps, int iter)
 namespace
 {
   // internal helper function for output
-  void getNodeVectorsHDG(Core::FE::Discretization& dis,
+  void get_node_vectors_hdg(Core::FE::Discretization& dis,
       const Teuchos::RCP<Epetra_Vector>& interiorValues,
       const Teuchos::RCP<Epetra_Vector>& traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector>& velocity, Teuchos::RCP<Epetra_Vector>& pressure,
@@ -537,7 +537,7 @@ void FLD::TimIntHDG::output()
 
     Teuchos::RCP<Epetra_Vector> cellPres;
     Teuchos::RCP<Epetra_MultiVector> traceVel;
-    getNodeVectorsHDG(*discret_, intvelnp_, velnp_,
+    get_node_vectors_hdg(*discret_, intvelnp_, velnp_,
         params_->get<int>("number of velocity degrees of freedom"), interpolatedVelocity_,
         interpolatedPressure_, traceVel, cellPres);
     output_->write_vector("velnp_hdg", interpolatedVelocity_, Core::IO::nodevector);
@@ -566,11 +566,11 @@ void FLD::TimIntHDG::calc_intermediate_solution()
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
-      Core::UTILS::IntegralValue<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
+      Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
   {
     Teuchos::RCP<Epetra_Vector> inttmp =
-        Core::LinAlg::CreateVector(*discret_->dof_row_map(1), true);
+        Core::LinAlg::create_vector(*discret_->dof_row_map(1), true);
     inttmp->Update(1.0, *intvelnp_, 0.0);
 
     FLD::FluidImplicitTimeInt::calc_intermediate_solution();
@@ -616,7 +616,7 @@ void FLD::TimIntHDG::init_forcing()
       special_flow_ == "decaying_homogeneous_isotropic_turbulence" or
       special_flow_ == "periodic_hill")
   {
-    forcing_ = Core::LinAlg::CreateVector(*(discret_->dof_row_map(1)), true);
+    forcing_ = Core::LinAlg::create_vector(*(discret_->dof_row_map(1)), true);
 
     if (special_flow_ == "forced_homogeneous_isotropic_turbulence" or
         special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or

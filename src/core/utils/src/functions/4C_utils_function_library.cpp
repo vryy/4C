@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
 
-  Teuchos::RCP<Core::UTILS::FunctionOfScalar> CreateLibraryFunctionScalar(
+  Teuchos::RCP<Core::UTILS::FunctionOfScalar> create_library_function_scalar(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -63,7 +63,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::AddValidLibraryFunctions(Core::UTILS::FunctionManager& function_manager)
+void Core::UTILS::add_valid_library_functions(Core::UTILS::FunctionManager& function_manager)
 {
   using namespace Input;
 
@@ -79,7 +79,7 @@ void Core::UTILS::AddValidLibraryFunctions(Core::UTILS::FunctionManager& functio
 
   function_manager.add_function_definition(
       {std::move(fast_polynomial_funct), std::move(cubic_spline_from_csv_funct)},
-      CreateLibraryFunctionScalar);
+      create_library_function_scalar);
 }
 
 
@@ -102,7 +102,7 @@ double Core::UTILS::FastPolynomialFunction::evaluate_derivative(
 
 Core::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 {
-  auto vector_of_csv_columns = Core::IO::ReadCsvAsColumns(2, csv_file);
+  auto vector_of_csv_columns = Core::IO::read_csv_as_columns(2, csv_file);
 
   cubic_spline_ = std::make_unique<Core::UTILS::CubicSplineInterpolation>(
       Core::UTILS::CubicSplineInterpolation(vector_of_csv_columns[0], vector_of_csv_columns[1]));

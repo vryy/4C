@@ -17,23 +17,23 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Communication::AddOwnedNodeGID(
+void Core::Communication::add_owned_node_gid(
     const Core::FE::Discretization& dis, const int nodegid, std::vector<int>& my_gid_vec)
 {
-  if (IsNodeGIDOnThisProc(dis, nodegid)) my_gid_vec.push_back(nodegid);
+  if (is_node_gid_on_this_proc(dis, nodegid)) my_gid_vec.push_back(nodegid);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Communication::AddOwnedNodeGID(
+void Core::Communication::add_owned_node_gid(
     const Core::FE::Discretization& dis, const int nodegid, std::set<int>& my_gid_set)
 {
-  if (IsNodeGIDOnThisProc(dis, nodegid)) my_gid_set.emplace(nodegid);
+  if (is_node_gid_on_this_proc(dis, nodegid)) my_gid_set.emplace(nodegid);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::Communication::IsNodeGIDOnThisProc(
+bool Core::Communication::is_node_gid_on_this_proc(
     const Core::FE::Discretization& dis, const int node_gid)
 {
   return (

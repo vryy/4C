@@ -176,7 +176,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::read_element(
   for (const auto& summand : potsum_) summand->setup(numgp, container);
 
   // find out which formulations are used
-  Mat::ElastHyperProperties(potsum_, summand_properties_);
+  Mat::elast_hyper_properties(potsum_, summand_properties_);
 
   if (summand_properties_.viscoGeneral)
   {

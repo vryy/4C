@@ -138,21 +138,21 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surf
 
   for (const auto& point : points)
   {
-    GEOMETRYPAIR::EvaluatePosition<Beam>(point.get_eta(), this->ele1posref_, X_beam);
-    GEOMETRYPAIR::EvaluatePosition<Beam>(point.get_eta(), this->ele1pos_, r_beam);
+    GEOMETRYPAIR::evaluate_position<Beam>(point.get_eta(), this->ele1posref_, X_beam);
+    GEOMETRYPAIR::evaluate_position<Beam>(point.get_eta(), this->ele1pos_, r_beam);
     u_beam = r_beam;
     u_beam -= X_beam;
 
-    GEOMETRYPAIR::EvaluatePosition<Surface>(
+    GEOMETRYPAIR::evaluate_position<Surface>(
         point.get_xi(), this->face_element_->get_face_element_data(), r_solid);
     projection_dir = r_solid;
     projection_dir -= r_beam;
 
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      point_coordinates.push_back(Core::FADUtils::CastToDouble(X_beam(dim)));
-      displacement.push_back(Core::FADUtils::CastToDouble(u_beam(dim)));
-      projection_direction.push_back(Core::FADUtils::CastToDouble(projection_dir(dim)));
+      point_coordinates.push_back(Core::FADUtils::cast_to_double(X_beam(dim)));
+      displacement.push_back(Core::FADUtils::cast_to_double(u_beam(dim)));
+      projection_direction.push_back(Core::FADUtils::cast_to_double(projection_dir(dim)));
     }
 
     if (write_unique_ids)
@@ -172,7 +172,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
     const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<double, Beam, Surface>(
+  this->geometry_pair_ = GEOMETRYPAIR::geometry_pair_line_to_surface_factory<double, Beam, Surface>(
       element1, element2, geometry_evaluation_data_ptr);
 }
 
@@ -188,7 +188,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
 
   // Set the number of (centerline) degrees of freedom for the beam element in the face element
   face_element_->set_number_of_dof_other_element(
-      UTILS::GetNumberOfElementCenterlineDof(this->element1()));
+      UTILS::get_number_of_element_centerline_dof(this->element1()));
 
   // If the solid surface is the surface of a 3D volume we set the face element here. Otherwise we
   // simply set the same element again.
@@ -237,8 +237,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>:
         surface_dof.element_position_(i_dof_surface) -=
             this->face_element_->get_face_reference_element_data().element_position_(i_dof_surface);
 
-      GEOMETRYPAIR::EvaluatePosition<Beam>(evaluation_point.get_eta(), beam_dof, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<Surface>(evaluation_point.get_xi(), surface_dof, r_surface);
+      GEOMETRYPAIR::evaluate_position<Beam>(evaluation_point.get_eta(), beam_dof, r_beam);
+      GEOMETRYPAIR::evaluate_position<Surface>(evaluation_point.get_xi(), surface_dof, r_surface);
 
       r_beam -= r_surface;
       return r_beam;
@@ -246,8 +246,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>:
     case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero_fad:
     {
-      GEOMETRYPAIR::EvaluatePosition<Beam>(evaluation_point.get_eta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<Surface>(
+      GEOMETRYPAIR::evaluate_position<Beam>(evaluation_point.get_eta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::evaluate_position<Surface>(
           evaluation_point.get_xi(), this->face_element_->get_face_element_data(), r_surface);
 
       r_beam -= r_surface;
@@ -255,8 +255,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>:
     }
     case BeamToSolidSurfaceCoupling::consistent_fad:
     {
-      GEOMETRYPAIR::EvaluatePosition<Beam>(evaluation_point.get_eta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluateSurfacePosition<Surface>(
+      GEOMETRYPAIR::evaluate_position<Beam>(evaluation_point.get_eta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::evaluate_surface_position<Surface>(
           evaluation_point.get_xi(), this->face_element_->get_face_element_data(), r_surface);
 
       r_beam -= r_surface;
@@ -280,7 +280,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>:
 {
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  UTILS::GetElementCenterlineGIDIndices(discret, this->element1(), beam_centerline_gid);
+  UTILS::get_element_centerline_gid_indices(discret, this->element1(), beam_centerline_gid);
 
   // Get the patch (in this case just the one face element) GIDs.
   const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();

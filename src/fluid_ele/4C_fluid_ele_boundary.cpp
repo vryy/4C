@@ -48,7 +48,7 @@ Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, co
   set_parent_master_element(parent, lsurface);
   set_node_ids(nnode, nodeids);
   build_nodal_pointers(nodes);
-  distype_ = Core::FE::getShapeOfBoundaryElement(num_node(), parent_master_element()->shape());
+  distype_ = Core::FE::get_shape_of_boundary_element(num_node(), parent_master_element()->shape());
 
   numdofpernode_ = parent_master_element()->num_dof_per_node(*FluidBoundary::nodes()[0]);
   // Safety check if all nodes have the same number of dofs!
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::FluidBoundary::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);

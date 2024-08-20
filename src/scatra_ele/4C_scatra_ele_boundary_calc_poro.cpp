@@ -35,7 +35,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcPoro<distype, probdim>>(
@@ -102,7 +102,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       // extract local values from the global vector
       std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp(
           my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, la[0].lm_);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, la[0].lm_);
 
       // get number of dofset associated with velocity related dofs
       const int ndsvel = my::scatraparams_->nds_vel();
@@ -125,7 +125,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       Core::LinAlg::Matrix<nsd_, nen_> econvel(true);
 
       // extract local values of convective velocity field from global state vector
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       my::rotsymmpbc_->rotate_my_values_if_necessary(econvel);
@@ -136,7 +136,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
         lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_ele_];
 
       // extract local values of pressure field from global state vector
-      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
+      Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
 
       // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
       // dimension. If so, we assume that this is the porosity
@@ -152,7 +152,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
         if (disp != Teuchos::null)
         {
           std::vector<double> mydisp(la[ndsdisp].lm_.size());
-          Core::FE::ExtractMyValues(*disp, mydisp, la[ndsdisp].lm_);
+          Core::FE::extract_my_values(*disp, mydisp, la[ndsdisp].lm_);
 
           for (int inode = 0; inode < nen_; ++inode)  // number of nodes
             eporosity_(inode, 0) = mydisp[nsd_ + (inode * (nsd_ele_ + 2))];

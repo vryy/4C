@@ -30,16 +30,16 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
-      pred_(Core::UTILS::IntegralValue<Inpar::Thermo::PredEnum>(tdynparams, "PREDICT")),
-      itertype_(Core::UTILS::IntegralValue<Inpar::Thermo::NonlinSolTech>(tdynparams, "NLNSOL")),
-      normtypetempi_(Core::UTILS::IntegralValue<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_TEMP")),
-      normtypefres_(Core::UTILS::IntegralValue<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_RESF")),
+      pred_(Core::UTILS::integral_value<Inpar::Thermo::PredEnum>(tdynparams, "PREDICT")),
+      itertype_(Core::UTILS::integral_value<Inpar::Thermo::NonlinSolTech>(tdynparams, "NLNSOL")),
+      normtypetempi_(Core::UTILS::integral_value<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_TEMP")),
+      normtypefres_(Core::UTILS::integral_value<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_RESF")),
       combtempifres_(
-          Core::UTILS::IntegralValue<Inpar::Thermo::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
-      iternorm_(Core::UTILS::IntegralValue<Inpar::Thermo::VectorNorm>(tdynparams, "ITERNORM")),
+          Core::UTILS::integral_value<Inpar::Thermo::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
+      iternorm_(Core::UTILS::integral_value<Inpar::Thermo::VectorNorm>(tdynparams, "ITERNORM")),
       itermax_(tdynparams.get<int>("MAXITER")),
       itermin_(tdynparams.get<int>("MINITER")),
-      divcontype_(Core::UTILS::IntegralValue<Inpar::Thermo::DivContAct>(tdynparams, "DIVERCONT")),
+      divcontype_(Core::UTILS::integral_value<Inpar::Thermo::DivContAct>(tdynparams, "DIVERCONT")),
       divcontrefinelevel_(0),
       divcontfinesteps_(0),
       toltempi_(tdynparams.get<double>("TOLTEMP")),
@@ -57,17 +57,17 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       freact_(Teuchos::null)
 {
   // create empty residual force vector
-  fres_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), false);
+  fres_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), false);
 
   // create empty reaction force vector of full length
-  freact_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), false);
+  freact_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), false);
 
   // iterative temperature increments IncT_{n+1}
   // also known as residual temperatures
-  tempi_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  tempi_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // incremental temperature increments IncT_{n+1}
-  tempinc_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  tempinc_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // setup mortar coupling
   if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::thermo)
@@ -287,7 +287,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   tempi_->PutScalar(0.0);
 
   // for temperature increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // copy last converged temperatures
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
@@ -307,7 +307,8 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> freact =
+        Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     tang_->multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -471,7 +472,7 @@ Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::solve()
     // catch problems
     default:
       FOUR_C_THROW("Solution technique \"%s\" is not implemented",
-          Inpar::Thermo::NonlinSolTechString(itertype_).c_str());
+          Inpar::Thermo::nonlin_sol_tech_string(itertype_).c_str());
       return Inpar::Thermo::conv_nonlin_fail;  // compiler happiness
   }
 }
@@ -1040,7 +1041,7 @@ void Thermo::TimIntImpl::fd_check()
   // ------------------------------------------ initialise matrices and vectors
 
   // initialise discurbed increment vector
-  Teuchos::RCP<Epetra_Vector> disturbtempi = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> disturbtempi = Core::LinAlg::create_vector(*dof_row_map(), true);
   const int dofs = disturbtempi->GlobalLength();
   disturbtempi->PutScalar(0.0);
   disturbtempi->ReplaceGlobalValue(0, 0, delta);
@@ -1053,7 +1054,7 @@ void Thermo::TimIntImpl::fd_check()
       Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(), true));
 
   // initialise approximation of tangent
-  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::CreateMatrix((tang_->row_map()), 81);
+  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::create_matrix((tang_->row_map()), 81);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_copy =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_->epetra_matrix(), Core::LinAlg::Copy));

@@ -176,7 +176,7 @@ void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::build_id_sets(
 
   // Build the volume map.
   std::vector<int> volume_ids;
-  ConditionToElementIds(condition_other_, volume_ids);
+  condition_to_element_ids(condition_other_, volume_ids);
   volume_ids_ = std::set<int>(volume_ids.begin(), volume_ids.end());
 }
 
@@ -184,8 +184,8 @@ void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::build_id_sets(
  *
  */
 template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSolidVolumePairShape(
-    const Core::FE::CellType shape)
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+BEAMINTERACTION::create_beam_to_solid_volume_pair_shape(const Core::FE::CellType shape)
 {
   switch (shape)
   {
@@ -218,7 +218,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
  */
 template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
-BEAMINTERACTION::CreateBeamToSolidVolumePairShapeNoNurbs(const Core::FE::CellType shape)
+BEAMINTERACTION::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE::CellType shape)
 {
   switch (shape)
   {
@@ -248,21 +248,21 @@ BEAMINTERACTION::CreateBeamToSolidVolumePairShapeNoNurbs(const Core::FE::CellTyp
  */
 template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments,
     typename... BtsMortarShape>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSolidVolumePairMortar(
-    const Core::FE::CellType shape,
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellType shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
     BtsMortarShape... other_mortar_shape_function)
 {
   switch (mortar_shape_function)
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-      return CreateBeamToSolidVolumePairMortar<BtsClass, BtsMortarTemplateArguments...,
+      return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
           GEOMETRYPAIR::t_line2>(shape, other_mortar_shape_function...);
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line3:
-      return CreateBeamToSolidVolumePairMortar<BtsClass, BtsMortarTemplateArguments...,
+      return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
           GEOMETRYPAIR::t_line3>(shape, other_mortar_shape_function...);
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line4:
-      return CreateBeamToSolidVolumePairMortar<BtsClass, BtsMortarTemplateArguments...,
+      return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
           GEOMETRYPAIR::t_line4>(shape, other_mortar_shape_function...);
     default:
       FOUR_C_THROW("Wrong mortar shape function.");
@@ -274,10 +274,10 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
  *
  */
 template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSolidVolumePairMortar(
-    const Core::FE::CellType shape)
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+BEAMINTERACTION::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellType shape)
 {
-  return CreateBeamToSolidVolumePairShape<BtsClass, BtsMortarTemplateArguments...>(shape);
+  return create_beam_to_solid_volume_pair_shape<BtsClass, BtsMortarTemplateArguments...>(shape);
 }
 
 /**
@@ -298,7 +298,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
       Inpar::BeamToSolid::BeamToSolidContactDiscretization::gauss_point_to_segment)
   {
     // Create the Gauss point to segment pairs.
-    return CreateBeamToSolidVolumePairShape<BeamToSolidVolumeMeshtyingPairGaussPoint>(shape);
+    return create_beam_to_solid_volume_pair_shape<BeamToSolidVolumeMeshtyingPairGaussPoint>(shape);
   }
   else if (contact_discretization == Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar)
   {
@@ -310,13 +310,13 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
     if (mortar_shape_function_rotation == Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::none)
     {
       // Create the positional mortar pairs.
-      return CreateBeamToSolidVolumePairMortar<BeamToSolidVolumeMeshtyingPairMortar>(
+      return create_beam_to_solid_volume_pair_mortar<BeamToSolidVolumeMeshtyingPairMortar>(
           shape, mortar_shape_function);
     }
     else
     {
       // Create the rotational mortart pairs.
-      return CreateBeamToSolidVolumePairMortar<BeamToSolidVolumeMeshtyingPairMortarRotation>(
+      return create_beam_to_solid_volume_pair_mortar<BeamToSolidVolumeMeshtyingPairMortarRotation>(
           shape, mortar_shape_function, mortar_shape_function_rotation);
     }
   }
@@ -327,10 +327,11 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
     const auto sr_beam = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(ele_ptrs[0]);
     const auto eb_beam = dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(ele_ptrs[0]);
     if (sr_beam != nullptr)
-      return CreateBeamToSolidVolumePairShapeNoNurbs<BeamToSolidVolumeMeshtyingPair2D3DFull>(shape);
+      return create_beam_to_solid_volume_pair_shape_no_nurbs<
+          BeamToSolidVolumeMeshtyingPair2D3DFull>(shape);
     else if (eb_beam != nullptr)
-      return CreateBeamToSolidVolumePairShapeNoNurbs<BeamToSolidVolumeMeshtyingPair2D3DPlane>(
-          shape);
+      return create_beam_to_solid_volume_pair_shape_no_nurbs<
+          BeamToSolidVolumeMeshtyingPair2D3DPlane>(shape);
     else
       FOUR_C_THROW(
           "2D-3D coupling is only implemented for Simo-Reissner and torsion free beam elements.");
@@ -453,7 +454,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
       {
         // The face element has to be created and added to the contact pair.
         Teuchos::RCP<GEOMETRYPAIR::FaceElement> new_face_element =
-            GEOMETRYPAIR::FaceElementFactory(find_in_condition->second, fad_order,
+            GEOMETRYPAIR::face_element_factory(find_in_condition->second, fad_order,
                 line_to_surface_evaluation_data->get_surface_normal_strategy());
         new_face_element->set_part_of_pair(true);
         pair_face_elemets[solid_id] = new_face_element;
@@ -496,7 +497,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
           {
             // It is not already in the needed faces -> add it.
             face_elements_needed[element_id] =
-                GEOMETRYPAIR::FaceElementFactory(find_in_condition->second, fad_order,
+                GEOMETRYPAIR::face_element_factory(find_in_condition->second, fad_order,
                     line_to_surface_evaluation_data->get_surface_normal_strategy());
           }
         }
@@ -693,12 +694,12 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
           case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::
               reference_configuration_forced_to_zero:
           case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement:
-            return BeamToSolidSurfaceMeshtyingPairMortarFactory(shape, mortar_shapefunction);
+            return beam_to_solid_surface_meshtying_pair_mortar_factory(shape, mortar_shapefunction);
           case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::
               reference_configuration_forced_to_zero_fad:
           case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::displacement_fad:
           case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::consistent_fad:
-            return BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
+            return beam_to_solid_surface_meshtying_pair_mortar_fad_factory(
                 shape, mortar_shapefunction, rotational_coupling, surface_normal_strategy);
           default:
             FOUR_C_THROW("Wrong coupling type.");
@@ -793,7 +794,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
         }
         case Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar:
         {
-          return BeamToSolidSurfaceContactPairMortarFactory(
+          return beam_to_solid_surface_contact_pair_mortar_factory(
               beam_to_surface_contact_params, shape, beam_is_hermite);
         }
         default:

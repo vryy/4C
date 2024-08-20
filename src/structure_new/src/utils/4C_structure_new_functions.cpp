@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   /// returns St. Venant Kirchhof quick access parameters from given material id
-  const Mat::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
+  const Mat::PAR::StVenantKirchhoff& get_svk_mat_pars(int mat_id)
   {
     auto* params = Global::Problem::instance()->materials()->parameter_by_id(mat_id);
     if (params->type() != Core::Materials::m_stvenant)
@@ -33,7 +33,7 @@ namespace
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateStructureFunction(
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> create_structure_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -50,7 +50,7 @@ namespace
             "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
 
       // get materials
-      auto fparams = GetSVKMatPars(mat_id_struc);
+      auto fparams = get_svk_mat_pars(mat_id_struc);
 
       return Teuchos::rcp(new Solid::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
     }
@@ -68,7 +68,7 @@ namespace
       }
 
       // get materials
-      auto fparams = GetSVKMatPars(mat_id_struc);
+      auto fparams = get_svk_mat_pars(mat_id_struc);
 
       return Teuchos::rcp(new Solid::WeaklyCompressibleEtienneFSIStructureForceFunction(fparams));
     }
@@ -82,7 +82,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Solid::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_manager)
+void Solid::add_valid_structure_functions(Core::UTILS::FunctionManager& function_manager)
 {
   std::vector<Input::LineDefinition> lines;
   lines.emplace_back(Input::LineDefinition::Builder()
@@ -94,7 +94,7 @@ void Solid::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_ma
                          .add_named_int("MAT_STRUC")
                          .build());
 
-  function_manager.add_function_definition(std::move(lines), CreateStructureFunction);
+  function_manager.add_function_definition(std::move(lines), create_structure_function);
 }
 
 

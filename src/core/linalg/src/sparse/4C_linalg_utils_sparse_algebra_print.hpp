@@ -30,21 +30,21 @@ namespace Core::LinAlg
 {
   //! Print content of @p sparsematrix in Matlab format to file @p filename. Create new file or
   //! overwrite exisiting one if @p newfile is true
-  void PrintMatrixInMatlabFormat(
+  void print_matrix_in_matlab_format(
       const std::string& filename, const Epetra_CrsMatrix& sparsematrix, const bool newfile = true);
 
   //! Print content of @p blockmatrix in Matlab format to file @p filename
-  void PrintBlockMatrixInMatlabFormat(
+  void print_block_matrix_in_matlab_format(
       const std::string& filename, const BlockSparseMatrixBase& blockmatrix);
 
   //! Print content of @p vector in Matlab format to file @p filename. Create new file or overwrite
   //! exisiting one if @p newfile is true
-  void PrintVectorInMatlabFormat(
+  void print_vector_in_matlab_format(
       const std::string& filename, const Epetra_Vector& vector, const bool newfile = true);
 
   //! Print content of @p map in Matlab format to file @p filename. Create new file or overwrite
   //! exisiting one if @p newfile is true
-  void PrintMapInMatlabFormat(
+  void print_map_in_matlab_format(
       const std::string& filename, const Epetra_Map& map, const bool newfile = true);
 
 }  // namespace Core::LinAlg

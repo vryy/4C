@@ -24,7 +24,7 @@ namespace
 {
   using namespace FourC;
 
-  void CreateMaterialInGlobalProblem()
+  void create_material_in_global_problem()
   {
     Core::IO::InputParameterContainer mat_stvenant;
     mat_stvenant.add("YOUNG", 1.0);
@@ -41,7 +41,7 @@ namespace
    public:
     BuildNodeCoordinatesTest()
     {
-      CreateMaterialInGlobalProblem();
+      create_material_in_global_problem();
 
       comm_ = Teuchos::rcp(new Epetra_SerialComm());
       test_discretization_ = Teuchos::rcp(new Core::FE::Discretization("dummy", comm_, 3));
@@ -58,7 +58,7 @@ namespace
       inputData_.distype_ = "HEX8";
       inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
-      Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(
+      Core::IO::GridGenerator::create_rectangular_cuboid_discretization(
           *test_discretization_, inputData_, true);
 
       test_discretization_->fill_complete(false, false, false);

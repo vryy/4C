@@ -57,7 +57,7 @@ namespace
       set_ref_values_evaluated_sdi_fin();
 
       // this method is tested in unit_elasthyper_service.H
-      Mat::CalculateGammaDelta(gamma_ref_, delta_ref_, prinv_ref_, dPIe_ref_, ddPIIe_ref_);
+      Mat::calculate_gamma_delta(gamma_ref_, delta_ref_, prinv_ref_, dPIe_ref_, ddPIIe_ref_);
 
       set_up_multiplicative_split_object_with_requirements();
     }

@@ -159,7 +159,7 @@ void Discret::ELEMENTS::Vele3::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::Vele3::unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Vele3::print(std::ostream& os) const
 {
-  os << "Vele3 " << Core::FE::CellTypeToString(shape());
+  os << "Vele3 " << Core::FE::cell_type_to_string(shape());
   Element::print(os);
   return;
 }
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::Vele3::print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::lines()
 {
-  return Core::Communication::ElementBoundaryFactory<Vele3Line, Vele3>(
+  return Core::Communication::element_boundary_factory<Vele3Line, Vele3>(
       Core::Communication::buildLines, *this);
 }
 
@@ -197,7 +197,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::lin
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::surfaces()
 {
-  return Core::Communication::ElementBoundaryFactory<Vele3Surface, Vele3>(
+  return Core::Communication::element_boundary_factory<Vele3Surface, Vele3>(
       Core::Communication::buildSurfaces, *this);
 }
 

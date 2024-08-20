@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::BEAMINTERACTION::BeamInteractionConditionsGetAll(
+void Inpar::BEAMINTERACTION::beam_interaction_conditions_get_all(
     std::vector<Inpar::BEAMINTERACTION::BeamInteractionConditions>& interactions)
 {
   interactions = {Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact,
@@ -31,7 +31,7 @@ void Inpar::BEAMINTERACTION::BeamInteractionConditionsGetAll(
       Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact};
 }
 
-void Inpar::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -58,21 +58,21 @@ void Inpar::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   Teuchos::ParameterList& crosslinking = beaminteraction.sublist("CROSSLINKING", false, "");
 
   // remove this some day
-  Core::UTILS::BoolParameter("CROSSLINKER", "No", "Crosslinker in problem", &crosslinking);
+  Core::UTILS::bool_parameter("CROSSLINKER", "No", "Crosslinker in problem", &crosslinking);
 
   // bounding box for initial random crosslinker position
-  Core::UTILS::StringParameter("INIT_LINKER_BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
+  Core::UTILS::string_parameter("INIT_LINKER_BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
       "Linker are initially set randomly within this bounding box", &crosslinking);
 
   // time step for stochastic events concerning crosslinking
-  Core::UTILS::DoubleParameter("TIMESTEP", -1.0,
+  Core::UTILS::double_parameter("TIMESTEP", -1.0,
       "time step for stochastic events concerning crosslinking (e.g. diffusion, p_link, p_unlink) ",
       &crosslinking);
   // Reading double parameter for viscosity of background fluid
-  Core::UTILS::DoubleParameter("VISCOSITY", 0.0, "viscosity", &crosslinking);
+  Core::UTILS::double_parameter("VISCOSITY", 0.0, "viscosity", &crosslinking);
   // Reading double parameter for thermal energy in background fluid (temperature * Boltzmann
   // constant)
-  Core::UTILS::DoubleParameter("KT", 0.0, "thermal energy", &crosslinking);
+  Core::UTILS::double_parameter("KT", 0.0, "thermal energy", &crosslinking);
   // number of initial (are set right in the beginning) crosslinker of certain type
   setNumericStringParameter("MAXNUMINITCROSSLINKERPERTYPE", "0",
       "number of initial crosslinker of certain type (additional to NUMCROSSLINKERPERTYPE) ",
@@ -94,10 +94,10 @@ void Inpar::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "distance between two binding spots on current filament", &crosslinking);
   // start and end for bspots on a filament in arc parameter (same on each filament independent of
   // their length)
-  Core::UTILS::StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
+  Core::UTILS::string_parameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
   // start and end for bspots on a filament in percent of reference filament length
-  Core::UTILS::StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
+  Core::UTILS::string_parameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
 
 
@@ -106,13 +106,13 @@ void Inpar::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   Teuchos::ParameterList& spherebeamlink = beaminteraction.sublist("SPHERE BEAM LINK", false, "");
 
-  Core::UTILS::BoolParameter("SPHEREBEAMLINKING", "No", "Integrins in problem", &spherebeamlink);
+  Core::UTILS::bool_parameter("SPHEREBEAMLINKING", "No", "Integrins in problem", &spherebeamlink);
 
   // Reading double parameter for contraction rate for active linker
-  Core::UTILS::DoubleParameter("CONTRACTIONRATE", 0.0,
+  Core::UTILS::double_parameter("CONTRACTIONRATE", 0.0,
       "contraction rate of cell (integrin linker) in [microm/s]", &spherebeamlink);
   // time step for stochastic events concerning sphere beam linking
-  Core::UTILS::DoubleParameter("TIMESTEP", -1.0,
+  Core::UTILS::double_parameter("TIMESTEP", -1.0,
       "time step for stochastic events concerning sphere beam linking (e.g. catch-slip-bond "
       "behavior) ",
       &spherebeamlink);
@@ -129,10 +129,10 @@ void Inpar::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       "distance between two binding spots on current filament", &spherebeamlink);
   // start and end for bspots on a filament in arc parameter (same on each filament independent of
   // their length)
-  Core::UTILS::StringParameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
+  Core::UTILS::string_parameter("FILAMENTBSPOTRANGEGLOBAL", "-1.0 -1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
   // start and end for bspots on a filament in percent of reference filament length
-  Core::UTILS::StringParameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
+  Core::UTILS::string_parameter("FILAMENTBSPOTRANGELOCAL", "0.0 1.0",
       "Lower and upper arc parameter bound for binding spots on a filament", &spherebeamlink);
 
   /*----------------------------------------------------------------------*/
@@ -161,17 +161,17 @@ void Inpar::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       tuple<std::string>("None", "none", "Penalty", "penalty"),
       tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beamtospherecontact);
 
-  Core::UTILS::DoubleParameter("PENALTY_PARAMETER", 0.0,
+  Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
       "Penalty parameter for beam-to-rigidsphere contact", &beamtospherecontact);
 
   // ...
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to solid contact */
-  BeamToSolid::SetValidParameters(list);
+  BeamToSolid::set_valid_parameters(list);
 }
 
-void Inpar::BEAMINTERACTION::SetValidConditions(
+void Inpar::BEAMINTERACTION::set_valid_conditions(
     std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
@@ -207,10 +207,10 @@ void Inpar::BEAMINTERACTION::SetValidConditions(
   condlist.push_back(penalty_coupling_condition);
 
   // beam-to-beam interactions
-  Inpar::BEAMCONTACT::SetValidConditions(condlist);
+  Inpar::BEAMCONTACT::set_valid_conditions(condlist);
 
   // beam-to-solid interactions
-  Inpar::BeamToSolid::SetValidConditions(condlist);
+  Inpar::BeamToSolid::set_valid_conditions(condlist);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@ namespace Core::LinAlg::Tensor
    * @param Tout (out) : Rotated tensor
    */
   template <unsigned int n>
-  inline void TensorRotation(const Core::LinAlg::Matrix<n, n>& Q,
+  inline void tensor_rotation(const Core::LinAlg::Matrix<n, n>& Q,
       const Core::LinAlg::Matrix<n, n>& Tin, Core::LinAlg::Matrix<n, n>& Tout)
   {
     Core::LinAlg::Matrix<n, n> temp(false);
@@ -40,7 +40,7 @@ namespace Core::LinAlg::Tensor
    * @param Tout (out) : Unrotated tensor
    */
   template <unsigned int n>
-  inline void InverseTensorRotation(const Core::LinAlg::Matrix<n, n>& Q,
+  inline void inverse_tensor_rotation(const Core::LinAlg::Matrix<n, n>& Q,
       const Core::LinAlg::Matrix<n, n>& Tin, Core::LinAlg::Matrix<n, n>& Tout)
   {
     Core::LinAlg::Matrix<n, n> temp(false);
@@ -57,7 +57,7 @@ namespace Core::LinAlg::Tensor
    * @param Q  (in) : Rotation matrix for each basis vector
    * @param Qfourth (out) : Transformation matrix for fourth order tensors in Voigt notation
    */
-  inline void FourthTensorRotationMatrix(
+  inline void fourth_tensor_rotation_matrix(
       const Core::LinAlg::Matrix<3, 3>& Q, Core::LinAlg::Matrix<6, 6>& Qfourth)
   {
     Qfourth(0, 0) = Q(0, 0) * Q(0, 0);
@@ -109,11 +109,11 @@ namespace Core::LinAlg::Tensor
    * @param fourthTensorGlobal (in) : Rotated fourth order tensor
    * @param fourthTensorLocal (out) : Unrotated fourth order tensor
    */
-  inline void InverseFourthTensorRotation(const Core::LinAlg::Matrix<3, 3>& Q,
+  inline void inverse_fourth_tensor_rotation(const Core::LinAlg::Matrix<3, 3>& Q,
       const Core::LinAlg::Matrix<6, 6>& Tin, Core::LinAlg::Matrix<6, 6>& Tout)
   {
     Core::LinAlg::Matrix<6, 6> Qfourth;
-    FourthTensorRotationMatrix(Q, Qfourth);
+    fourth_tensor_rotation_matrix(Q, Qfourth);
 
     Core::LinAlg::Matrix<6, 6> temp(false);
     temp.multiply_tn(1.0, Qfourth, Tin);

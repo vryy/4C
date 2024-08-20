@@ -37,7 +37,7 @@ namespace Solid
   };
 
   //! Map energy type to std::string
-  inline std::string EnergyType2String(const enum EnergyType type)
+  inline std::string energy_type_to_string(const enum EnergyType type)
   {
     switch (type)
     {
@@ -64,7 +64,7 @@ namespace Solid
   };
 
   //! Map std::string to energy type
-  inline EnergyType String2EnergyType(const std::string type)
+  inline EnergyType string_to_energy_type(const std::string type)
   {
     if (type == "internal_energy")
       return internal_energy;
@@ -104,7 +104,7 @@ namespace Solid
     lm_lm,        ///< Kzz block (of the corresponding model evaluator)
   };
 
-  inline std::string MatBlockType2String(const enum MatBlockType type)
+  inline std::string mat_block_type_to_string(const enum MatBlockType type)
   {
     switch (type)
     {

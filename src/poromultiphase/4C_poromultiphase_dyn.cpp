@@ -38,7 +38,7 @@ void poromultiphase_dyn(int restart)
   // print problem type
   if (comm.MyPID() == 0)
   {
-    POROMULTIPHASE::PrintLogo();
+    POROMULTIPHASE::print_logo();
     std::cout << "###################################################" << std::endl;
     std::cout << "# YOUR PROBLEM TYPE: " << problem->problem_name() << std::endl;
     std::cout << "###################################################" << std::endl;
@@ -51,7 +51,7 @@ void poromultiphase_dyn(int restart)
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
   std::map<int, std::set<int>> nearbyelepairs =
-      POROMULTIPHASE::UTILS::SetupDiscretizationsAndFieldCoupling(
+      POROMULTIPHASE::UTILS::setup_discretizations_and_field_coupling(
           comm, struct_disname, fluid_disname, nds_disp, nds_vel, nds_solidpressure);
 
   // Parameter reading
@@ -66,11 +66,11 @@ void poromultiphase_dyn(int restart)
   // coupling scheme
   // -------------------------------------------------------------------
   Inpar::POROMULTIPHASE::SolutionSchemeOverFields solscheme =
-      Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
+      Core::UTILS::integral_value<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
           poroparams, "COUPALGO");
 
   Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> algo =
-      POROMULTIPHASE::UTILS::CreatePoroMultiPhaseAlgorithm(solscheme, poroparams, comm);
+      POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(solscheme, poroparams, comm);
 
   // initialize
   algo->init(poroparams, poroparams, structdyn, fluiddyn, struct_disname, fluid_disname, true,

@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* create marching time integrator */
-Teuchos::RCP<Solid::TimInt> Solid::TimIntCreate(const Teuchos::ParameterList& timeparams,
+Teuchos::RCP<Solid::TimInt> Solid::tim_int_create(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
@@ -41,12 +41,13 @@ Teuchos::RCP<Solid::TimInt> Solid::TimIntCreate(const Teuchos::ParameterList& ti
   // set default output
   Teuchos::RCP<Solid::TimInt> sti = Teuchos::null;
   // try implicit integrators
-  sti = TimIntImplCreate(timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
+  sti = tim_int_impl_create(
+      timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
   // if nothing found try explicit integrators
   if (sti == Teuchos::null)
   {
-    sti =
-        TimIntExplCreate(timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
+    sti = tim_int_expl_create(
+        timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
   }
 
   // deliver
@@ -55,7 +56,7 @@ Teuchos::RCP<Solid::TimInt> Solid::TimIntCreate(const Teuchos::ParameterList& ti
 
 /*======================================================================*/
 /* create implicit marching time integrator */
-Teuchos::RCP<Solid::TimIntImpl> Solid::TimIntImplCreate(const Teuchos::ParameterList& timeparams,
+Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
@@ -76,7 +77,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::TimIntImplCreate(const Teuchos::Parameter
   }
 
   // create specific time integrator
-  switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // Static analysis
     case Inpar::Solid::dyna_statics:
@@ -116,7 +117,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::TimIntImplCreate(const Teuchos::Parameter
 
 /*======================================================================*/
 /* create explicit marching time integrator */
-Teuchos::RCP<Solid::TimIntExpl> Solid::TimIntExplCreate(const Teuchos::ParameterList& timeparams,
+Teuchos::RCP<Solid::TimIntExpl> Solid::tim_int_expl_create(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization>& actdis,
     Teuchos::RCP<Core::LinAlg::Solver>& solver, Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,
@@ -135,7 +136,7 @@ Teuchos::RCP<Solid::TimIntExpl> Solid::TimIntExplCreate(const Teuchos::Parameter
   }
 
   // create specific time integrator
-  switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // forward Euler time integration
     case Inpar::Solid::dyna_expleuler:

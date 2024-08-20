@@ -84,7 +84,7 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(params, "iostress");
+      return Core::UTILS::get_as_enum<Inpar::Solid::StressType>(params, "iostress");
     }
   }
 
@@ -98,7 +98,7 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(params, "iostrain");
+      return Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(params, "iostrain");
     }
   }
 
@@ -274,7 +274,7 @@ namespace Discret::ELEMENTS
             // compute average of the quantities
             Teuchos::RCP<Epetra_MultiVector> global_data =
                 gp_data_output_manager.get_element_center_data().at(quantity_name);
-            Core::FE::AssembleAveragedElementValues(*global_data, gp_data, ele);
+            Core::FE::assemble_averaged_element_values(*global_data, gp_data, ele);
             break;
           }
           case Inpar::Solid::GaussPointDataOutputType::nodes:
@@ -285,16 +285,16 @@ namespace Discret::ELEMENTS
             Epetra_IntVector& global_nodal_element_count =
                 *gp_data_output_manager.get_nodal_data_count().at(quantity_name);
 
-            Core::FE::ExtrapolateGPQuantityToNodesAndAssemble<celltype>(
+            Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<celltype>(
                 ele, gp_data, *global_data, false, stiffness_matrix_integration);
-            Discret::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
+            Discret::ELEMENTS::assemble_nodal_element_count(global_nodal_element_count, ele);
             break;
           }
           case Inpar::Solid::GaussPointDataOutputType::gauss_points:
           {
             std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                 gp_data_output_manager.get_gauss_point_data().at(quantity_name);
-            Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
+            Discret::ELEMENTS::assemble_gauss_point_values(global_data, gp_data, ele);
             break;
           }
           case Inpar::Solid::GaussPointDataOutputType::none:

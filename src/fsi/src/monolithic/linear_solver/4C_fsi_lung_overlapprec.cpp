@@ -48,15 +48,15 @@ FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   alpha_ = fsidyn.sublist("CONSTRAINT").get<double>("ALPHA");
   simpleiter_ = fsidyn.sublist("CONSTRAINT").get<int>("SIMPLEITER");
-  prec_ = Core::UTILS::IntegralValue<Inpar::FSI::PrecConstr>(
+  prec_ = Core::UTILS::integral_value<Inpar::FSI::PrecConstr>(
       fsidyn.sublist("CONSTRAINT"), "PRECONDITIONER");
 
   Teuchos::ParameterList constrsolvparams;
-  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+  Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, constrsolvparams);
   constraintsolver_ = Teuchos::rcp(new Core::LinAlg::Solver(constrsolvparams, maps.Map(0)->Comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 }
 
@@ -388,8 +388,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> FSI::LungSchurComplement::calculate_sch
   if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
   if (!C.filled()) FOUR_C_THROW("C has to be fill_complete");
 
-  temp_ = Core::LinAlg::MLMultiply(A, B, true);
-  res_ = Core::LinAlg::MLMultiply(*temp_, C, true);
+  temp_ = Core::LinAlg::ml_multiply(A, B, true);
+  res_ = Core::LinAlg::ml_multiply(*temp_, C, true);
 
   return res_;
 }

@@ -63,11 +63,11 @@ void ScaTra::TimIntGenAlpha::setup()
   // -----------------------------
 
   // scalar at times n+alpha_F and n+alpha_M
-  phiaf_ = Core::LinAlg::CreateVector(*dofrowmap, true);
-  phiam_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  phiaf_ = Core::LinAlg::create_vector(*dofrowmap, true);
+  phiam_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // temporal derivative of scalar at times n+1, n and n+alpha_M
-  phidtam_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  phidtam_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // compute specific time factor for generalized-alpha time integration:
   // genalphatimefac = gamma*alpha_F/alpha_M
@@ -77,7 +77,7 @@ void ScaTra::TimIntGenAlpha::setup()
   // fine-scale vector at time n+alpha_F
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
       turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
-    fsphiaf_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+    fsphiaf_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -110,7 +110,7 @@ void ScaTra::TimIntGenAlpha::setup()
       homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
-          Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
+          Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
 }
@@ -123,7 +123,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter(bool forcedincrementalso
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", true);
   eleparams.set<bool>("using stationary formulation", false);
@@ -150,7 +150,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter_backward_euler() const
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
 
   eleparams.set<bool>("using generalized-alpha time integration", false);
@@ -249,7 +249,7 @@ void ScaTra::TimIntGenAlpha::av_m3_separation()
   // set fine-scale velocity for parallel nigthly tests
   // separation matrix depends on the number of proc here
   if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
-      (Core::UTILS::IntegralValue<int>(
+      (Core::UTILS::integral_value<int>(
           extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
     fsphiaf_->PutScalar(0.01);
 

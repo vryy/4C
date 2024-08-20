@@ -94,7 +94,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(discretization1,
+      FBI::UTILS::assemble_centerline_dof_force_stiff_into_fbi_element_force_stiff(discretization1,
           discretization2, elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce,
           &elestiff);
 

@@ -42,8 +42,8 @@ void immersed_problem_drt()
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->immersed_method_params();
   // choose algorithm
-  int coupling = Core::UTILS::IntegralValue<int>(immersedmethodparams, "COUPALGO");
-  int scheme = Core::UTILS::IntegralValue<int>(immersedmethodparams, "SCHEME");
+  int coupling = Core::UTILS::integral_value<int>(immersedmethodparams, "COUPALGO");
+  int scheme = Core::UTILS::integral_value<int>(immersedmethodparams, "SCHEME");
 
 
   ///////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ void immersed_problem_drt()
           algo->init(params);
 
           // ghost structure redundantly on all procs
-          Core::Rebalance::GhostDiscretizationOnAllProcs(problem->get_dis("structure"));
+          Core::Rebalance::ghost_discretization_on_all_procs(problem->get_dis("structure"));
 
           // setup algo
           algo->setup();

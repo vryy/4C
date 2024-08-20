@@ -28,7 +28,7 @@ NOX::Nln::MeritFunction::Lagrangian::Lagrangian(
     : lagrangian_type_(mrtfct_vague), merit_function_name_()
 {
   set_type(identifier);
-  merit_function_name_ = MeritFuncName2String(type());
+  merit_function_name_ = merit_func_name_to_string(type());
 
   utils_ = u;
 }
@@ -202,8 +202,8 @@ void NOX::Nln::MeritFunction::Lagrangian::set_type(const std::string& identifier
     std::cout << "Supported Lagrangian type names:\n"
                  "EXPECTED INPUT [= deduced merit function type]\n";
     for (const auto& supported_pair : supported_type_names)
-      std::cout << supported_pair.first << " [= " << MeritFuncName2String(supported_pair.second)
-                << "]\n";
+      std::cout << supported_pair.first
+                << " [= " << merit_func_name_to_string(supported_pair.second) << "]\n";
 
     FOUR_C_THROW("Unknown type name: \"%s\"", identifier.c_str());
   }

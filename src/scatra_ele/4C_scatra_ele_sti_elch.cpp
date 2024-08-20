@@ -83,7 +83,7 @@ void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::extract_element_and_node_valu
   // extract local nodal values of concentration and electric potential from global state vector
   const std::vector<int>& lm = la[2].lm_;
   std::vector<double> myelchnp(lm.size());
-  Core::FE::ExtractMyValues(*elchnp, myelchnp, lm);
+  Core::FE::extract_my_values(*elchnp, myelchnp, lm);
   for (int inode = 0; inode < nen_; ++inode)
   {
     econcnp_(inode) = myelchnp[inode * 2];

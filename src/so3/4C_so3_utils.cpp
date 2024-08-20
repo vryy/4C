@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::UTILS::CalcR(const Core::Elements::Element* ele,
+void Discret::ELEMENTS::UTILS::calc_r(const Core::Elements::Element* ele,
     const std::vector<double>& disp,
     Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& R)
 {
@@ -32,7 +32,7 @@ void Discret::ELEMENTS::UTILS::CalcR(const Core::Elements::Element* ele,
   if (disp.size() != nsd * nen) FOUR_C_THROW("mismatch in dimensions");
 
   Core::LinAlg::Matrix<nsd, 1> xi_ele_center =
-      Core::FE::getLocalCenterPosition<nsd>(distype);  // depending on distype
+      Core::FE::get_local_center_position<nsd>(distype);  // depending on distype
 
   Core::LinAlg::Matrix<nen, nsd> xrefe;  // X, material coord. of element
   Core::LinAlg::Matrix<nen, nsd> xcurr;  // x, current  coord. of element
@@ -59,7 +59,7 @@ void Discret::ELEMENTS::UTILS::CalcR(const Core::Elements::Element* ele,
   Core::LinAlg::Matrix<nsd, nsd> Q(true);
   Core::LinAlg::Matrix<nsd, nsd> S(true);
   Core::LinAlg::Matrix<nsd, nsd> VT(true);
-  Core::LinAlg::SVD<nsd, nsd>(defgrd, Q, S, VT);
+  Core::LinAlg::svd<nsd, nsd>(defgrd, Q, S, VT);
   R.multiply_nn(Q, VT);
 }
 
@@ -96,8 +96,8 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
 {
   static Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim> xrefe, xcurr;
 
-  EvaluateNodalCoordinates<distype, probdim>(nodes, xrefe);
-  EvaluateCurrentNodalCoordinates<distype, probdim>(xrefe, xdisp, xcurr);
+  evaluate_nodal_coordinates<distype, probdim>(nodes, xrefe);
+  evaluate_current_nodal_coordinates<distype, probdim>(xrefe, xdisp, xcurr);
 
   Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>> N_rst(true);
   Core::FE::shape_function_deriv1<distype>(xsi, N_rst);
@@ -106,7 +106,7 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
   inv_detFJ.multiply(N_rst, xrefe);
   inv_detFJ.invert();
 
-  ComputeDeformationGradientStandard<distype, probdim>(defgrd, xcurr, N_rst, inv_detFJ);
+  compute_deformation_gradient_standard<distype, probdim>(defgrd, xcurr, N_rst, inv_detFJ);
 }
 
 template <Core::FE::CellType distype, int probdim>
@@ -115,7 +115,7 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
     const Core::LinAlg::Matrix<probdim, 1>& xsi, const std::vector<double>& displacement)
 {
   static Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim> xdisp;
-  EvaluateNodalDisplacements<distype, probdim>(displacement, xdisp);
+  evaluate_nodal_displacements<distype, probdim>(displacement, xdisp);
 
   compute_deformation_gradient<distype, probdim>(defgrd, nodes, xsi, xdisp);
 }
@@ -143,16 +143,16 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
 
   if (prestressType == Inpar::Solid::PreStress::mulf)
   {
-    ComputeDeformationGradientMulf<distype>(defgrd, xdisp, derivs, mulfHistory, gp);
+    compute_deformation_gradient_mulf<distype>(defgrd, xdisp, derivs, mulfHistory, gp);
     return;
   }
 
-  ComputeDeformationGradientStandard<distype, Core::FE::dim<distype>>(
+  compute_deformation_gradient_standard<distype, Core::FE::dim<distype>>(
       defgrd, xcurr, derivs, inverseJacobian);
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
+void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf(
     Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
     const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
 }
 
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
+void Discret::ELEMENTS::UTILS::compute_deformation_gradient_standard(
     Core::LinAlg::Matrix<probdim, probdim>& defgrd,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xcurr,
     const Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>>& derivs,
@@ -196,7 +196,7 @@ void Discret::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
 }
 
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates(
+void Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates(
     Core::Nodes::Node** nodes, Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xrefe)
 {
   for (auto i = 0; i < Core::FE::num_nodes<distype>; ++i)
@@ -207,7 +207,7 @@ void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates(
 }
 
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::UTILS::EvaluateNodalDisplacements(const std::vector<double>& disp,
+void Discret::ELEMENTS::UTILS::evaluate_nodal_displacements(const std::vector<double>& disp,
     Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp)
 {
   for (auto i = 0; i < Core::FE::num_nodes<distype>; ++i)
@@ -217,7 +217,7 @@ void Discret::ELEMENTS::UTILS::EvaluateNodalDisplacements(const std::vector<doub
 }
 
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates(
+void Discret::ELEMENTS::UTILS::evaluate_current_nodal_coordinates(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp,
     Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xcurr)
@@ -226,7 +226,7 @@ void Discret::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::UTILS::EvaluateInverseJacobian(
+void Discret::ELEMENTS::UTILS::evaluate_inverse_jacobian(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
     Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& inverseJacobian)
@@ -235,10 +235,10 @@ void Discret::ELEMENTS::UTILS::EvaluateInverseJacobian(
   inverseJacobian.invert();
 }
 
-void Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+void Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
     const Teuchos::ParameterList& sdyn, const std::string& eletype)
 {
-  bool doFDCheck = static_cast<bool>(Core::UTILS::IntegralValue<int>(sdyn, "MATERIALTANGENT"));
+  bool doFDCheck = static_cast<bool>(Core::UTILS::integral_value<int>(sdyn, "MATERIALTANGENT"));
   if (doFDCheck)
   {
     FOUR_C_THROW(
@@ -248,7 +248,7 @@ void Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
   }
 }
 
-template void Discret::ELEMENTS::UTILS::CalcR<Core::FE::CellType::tet10>(
+template void Discret::ELEMENTS::UTILS::calc_r<Core::FE::CellType::tet10>(
     const Core::Elements::Element*, const std::vector<double>&, Core::LinAlg::Matrix<3, 3>&);
 
 template void
@@ -314,59 +314,63 @@ template void Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::C
     const Inpar::Solid::PreStress prestressType,
     const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
 
-template void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf<Core::FE::CellType::hex8>(
+template void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf<Core::FE::CellType::hex8>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<8, 3>& xdisp,
     const Core::LinAlg::Matrix<3, 8>& derivs,
     const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
-template void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf<Core::FE::CellType::tet4>(
+template void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf<Core::FE::CellType::tet4>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<4, 3>& xdisp,
     const Core::LinAlg::Matrix<3, 4>& derivs,
     const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
-template void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf<Core::FE::CellType::tet10>(
+template void
+Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf<Core::FE::CellType::tet10>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<10, 3>& xdisp,
     const Core::LinAlg::Matrix<3, 10>& derivs,
     const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
 
-template void Discret::ELEMENTS::UTILS::ComputeDeformationGradientStandard<Core::FE::CellType::hex8,
-    3>(Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<8, 3>& xcurr,
+template void
+Discret::ELEMENTS::UTILS::compute_deformation_gradient_standard<Core::FE::CellType::hex8, 3>(
+    Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<8, 3>& xcurr,
     const Core::LinAlg::Matrix<3, 8>& derivs, const Core::LinAlg::Matrix<3, 3>& inverseJacobian);
-template void Discret::ELEMENTS::UTILS::ComputeDeformationGradientStandard<Core::FE::CellType::tet4,
-    3>(Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<4, 3>& xcurr,
+template void
+Discret::ELEMENTS::UTILS::compute_deformation_gradient_standard<Core::FE::CellType::tet4, 3>(
+    Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<4, 3>& xcurr,
     const Core::LinAlg::Matrix<3, 4>& derivs, const Core::LinAlg::Matrix<3, 3>& inverseJacobian);
 template void
-Discret::ELEMENTS::UTILS::ComputeDeformationGradientStandard<Core::FE::CellType::tet10, 3>(
+Discret::ELEMENTS::UTILS::compute_deformation_gradient_standard<Core::FE::CellType::tet10, 3>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<10, 3>& xcurr,
     const Core::LinAlg::Matrix<3, 10>& derivs, const Core::LinAlg::Matrix<3, 3>& inverseJacobian);
 
-template void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<Core::FE::CellType::hex8, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(
     Core::Nodes::Node** nodes, Core::LinAlg::Matrix<8, 3>& xrefe);
-template void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet4, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tet4, 3>(
     Core::Nodes::Node** nodes, Core::LinAlg::Matrix<4, 3>& xrefe);
-template void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tet10, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tet10, 3>(
     Core::Nodes::Node** nodes, Core::LinAlg::Matrix<10, 3>& xrefe);
-template void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<Core::FE::CellType::quad4, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates<Core::FE::CellType::quad4, 3>(
     Core::Nodes::Node** nodes, Core::LinAlg::Matrix<4, 3>& xrefe);
-template void Discret::ELEMENTS::UTILS::EvaluateNodalCoordinates<Core::FE::CellType::tri3, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates<Core::FE::CellType::tri3, 3>(
     Core::Nodes::Node** nodes, Core::LinAlg::Matrix<3, 3>& xrefe);
 
-template void Discret::ELEMENTS::UTILS::EvaluateNodalDisplacements<Core::FE::CellType::hex8, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(
     const std::vector<double>&, Core::LinAlg::Matrix<8, 3>& xrefe);
-template void Discret::ELEMENTS::UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet4, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_displacements<Core::FE::CellType::tet4, 3>(
     const std::vector<double>&, Core::LinAlg::Matrix<4, 3>& xrefe);
-template void Discret::ELEMENTS::UTILS::EvaluateNodalDisplacements<Core::FE::CellType::tet10, 3>(
+template void Discret::ELEMENTS::UTILS::evaluate_nodal_displacements<Core::FE::CellType::tet10, 3>(
     const std::vector<double>&, Core::LinAlg::Matrix<10, 3>& xrefe);
 
-template void Discret::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::hex8,
+template void Discret::ELEMENTS::UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8,
     3>(const Core::LinAlg::Matrix<8, 3>& xrefe, const Core::LinAlg::Matrix<8, 3>& xdisp,
     Core::LinAlg::Matrix<8, 3>& xcurr);
-template void Discret::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet4,
+template void Discret::ELEMENTS::UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::tet4,
     3>(const Core::LinAlg::Matrix<4, 3>& xrefe, const Core::LinAlg::Matrix<4, 3>& xdisp,
     Core::LinAlg::Matrix<4, 3>& xcurr);
-template void Discret::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<Core::FE::CellType::tet10,
-    3>(const Core::LinAlg::Matrix<10, 3>& xrefe, const Core::LinAlg::Matrix<10, 3>& xdisp,
+template void
+Discret::ELEMENTS::UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::tet10, 3>(
+    const Core::LinAlg::Matrix<10, 3>& xrefe, const Core::LinAlg::Matrix<10, 3>& xdisp,
     Core::LinAlg::Matrix<10, 3>& xcurr);
 
-template void Discret::ELEMENTS::UTILS::EvaluateInverseJacobian<Core::FE::CellType::tet4>(
+template void Discret::ELEMENTS::UTILS::evaluate_inverse_jacobian<Core::FE::CellType::tet4>(
     const Core::LinAlg::Matrix<4, 3>& xrefe, const Core::LinAlg::Matrix<3, 4>& derivs,
     Core::LinAlg::Matrix<3, 3>& inverseJacobian);
 

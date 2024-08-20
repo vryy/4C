@@ -101,15 +101,15 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
   if (disp == Teuchos::null || res == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
-  Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
+  Core::FE::extract_my_values(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  Core::FE::ExtractMyValues(*res, residual, dof_index_array);
+  Core::FE::extract_my_values(*res, residual, dof_index_array);
 
   // init scale factor for scaled director approach (SDC)
   const double condfac = shell_data_.sdc;
 
   // get nodal coordinates
-  Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
+  Shell::NodalCoordinates<distype> nodal_coordinates = Shell::evaluate_nodal_coordinates<distype>(
       ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // init gauss point in thickness direction that will be modified via SDC
@@ -126,7 +126,7 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
 
   if (shell_data_.num_ans > 0)
   {
-    Shell::SetupANS(shapefunctions_collocation, metrics_collocation_reference,
+    Shell::setup_ans(shapefunctions_collocation, metrics_collocation_reference,
         metrics_collocation_current, nodal_coordinates, total_ansq);
   }
 
@@ -142,7 +142,7 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
   Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
 
 
-  Shell::ForEachGaussPoint<distype>(nodal_coordinates, intpoints_midsurface_,
+  Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
       [&](const std::array<double, 2>& xi_gp,
           const Shell::ShapefunctionsAndDerivatives<distype>& shape_functions,
           Shell::BasisVectorsAndMetrics<distype>& a_current,
@@ -151,23 +151,23 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
         double integration_factor = gpweight * da;
 
         const std::vector<double> shape_functions_ans =
-            Shell::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+            Shell::get_shapefunctions_for_ans<distype>(xi_gp, shell_data_.num_ans);
 
         // integration loop in thickness direction, here we prescribe 2 integration points
         for (int gpt = 0; gpt < intpoints_thickness_.num_points(); ++gpt)
         {
           zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
 
-          Shell::EvaluateMetrics(shape_functions, g_reference, g_current, nodal_coordinates, zeta);
+          Shell::evaluate_metrics(shape_functions, g_reference, g_current, nodal_coordinates, zeta);
 
           // modify the current kovariant metric tensor to neglect the quadratic terms in thickness
           // directions
-          Shell::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+          Shell::modify_kovariant_metrics(g_reference, g_current, a_reference, a_current, zeta,
               shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
               shell_data_.num_ans);
 
           // evaluate Green-Lagrange strains and deformation gradient in cartesian coordinate system
-          auto strains = EvaluateStrains(g_reference, g_current);
+          auto strains = evaluate_strains(g_reference, g_current);
 
           // call material for evaluation of strain energy function
           double psi = 0.0;
@@ -205,9 +205,9 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
   if (disp == Teuchos::null || res == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
-  Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
+  Core::FE::extract_my_values(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  Core::FE::ExtractMyValues(*res, residual, dof_index_array);
+  Core::FE::extract_my_values(*res, residual, dof_index_array);
 
   // init gauss point in thickness direction that will be modified via SDC
   double zeta = 0.0;
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
   const double condfac = shell_data_.sdc;
 
   // get nodal coordinates
-  Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
+  Shell::NodalCoordinates<distype> nodal_coordinates = Shell::evaluate_nodal_coordinates<distype>(
       ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // Assumed Natural Strains (ANS) Technology to remedy transverse shear strain locking
@@ -228,18 +228,18 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
 
   if (shell_data_.num_ans > 0)
   {
-    Shell::SetupANS(shapefunctions_collocation, metrics_collocation_reference,
+    Shell::setup_ans(shapefunctions_collocation, metrics_collocation_reference,
         metrics_collocation_current, nodal_coordinates, total_ansq);
   }
 
   // metric of element at centroid point (for EAS)
   std::array<double, 2> centroid_point = {0.0, 0.0};
   Shell::ShapefunctionsAndDerivatives<distype> shapefunctions_centroid =
-      Shell::EvaluateShapefunctionsAndDerivs<distype>(centroid_point);
+      Shell::evaluate_shapefunctions_and_derivs<distype>(centroid_point);
   Shell::BasisVectorsAndMetrics<distype> metrics_centroid_reference;
   Shell::BasisVectorsAndMetrics<distype> metrics_centroid_current;
 
-  Shell::EvaluateMetrics(shapefunctions_centroid, metrics_centroid_reference,
+  Shell::evaluate_metrics(shapefunctions_centroid, metrics_centroid_reference,
       metrics_centroid_current, nodal_coordinates, 0.0);
 
   // init metric tensor and basis vectors of element mid-surface
@@ -252,30 +252,30 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
   // init enhanced strains for shell:
   Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
 
-  Shell::ForEachGaussPoint<distype>(nodal_coordinates, intpoints_midsurface_,
+  Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
       [&](const std::array<double, 2>& xi_gp,
           const Shell::ShapefunctionsAndDerivatives<distype>& shape_functions,
           Shell::BasisVectorsAndMetrics<distype>& a_current,
           Shell::BasisVectorsAndMetrics<distype>& a_reference, double gpweight, double da, int gp)
       {
         const std::vector<double> shape_functions_ans =
-            Shell::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+            Shell::get_shapefunctions_for_ans<distype>(xi_gp, shell_data_.num_ans);
 
         // integration loop in thickness direction, here we prescribe 2 integration points
         for (int gpt = 0; gpt < intpoints_thickness_.num_points(); ++gpt)
         {
           zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
-          Shell::EvaluateMetrics(shape_functions, g_reference, g_current, nodal_coordinates, zeta);
+          Shell::evaluate_metrics(shape_functions, g_reference, g_current, nodal_coordinates, zeta);
 
           // modify the current kovariant metric tensor to neglect the quadratic terms in thickness
           // directions
-          Shell::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+          Shell::modify_kovariant_metrics(g_reference, g_current, a_reference, a_current, zeta,
               shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
               shell_data_.num_ans);
 
           // evaluate Green-Lagrange strains and deformation gradient in global cartesian coordinate
           // system
-          auto strains = Shell::EvaluateStrains(g_reference, g_current);
+          auto strains = Shell::evaluate_strains(g_reference, g_current);
 
           // update the deformation gradient
           Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> defgrd_enh(false);
@@ -284,16 +284,16 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
           strains.defgrd_ = defgrd_enh;
 
           // evaluate stress in global cartesian system
-          auto stress = Shell::EvaluateMaterialStressCartesianSystem<Shell::DETAIL::num_dim>(
+          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::DETAIL::num_dim>(
               solid_material, strains, params, gp, ele.id());
-          Shell::AssembleStrainTypeToMatrixRow<distype>(
+          Shell::assemble_strain_type_to_matrix_row<distype>(
               strains, strainIO.type, strain_data, gp, 0.5);
           Shell::assemble_stress_type_to_matrix_row<distype>(
               strains, stress, stressIO.type, stress_data, gp, 0.5);
         }
       });
-  Shell::Serialize(stress_data, serialized_stress_data);
-  Shell::Serialize(strain_data, serialized_strain_data);
+  Shell::serialize(stress_data, serialized_stress_data);
+  Shell::serialize(strain_data, serialized_strain_data);
 }
 
 template <Core::FE::CellType distype>
@@ -309,9 +309,9 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
   if (disp == Teuchos::null || res == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
-  Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
+  Core::FE::extract_my_values(*disp, displacement, dof_index_array);
   std::vector<double> residual(dof_index_array.size());
-  Core::FE::ExtractMyValues(*res, residual, dof_index_array);
+  Core::FE::extract_my_values(*res, residual, dof_index_array);
 
   // init gauss point in thickness direction that will be modified via SDC
   double zeta = 0.0;
@@ -321,7 +321,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
 
 
   // get nodal coordinates
-  Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
+  Shell::NodalCoordinates<distype> nodal_coordinates = Shell::evaluate_nodal_coordinates<distype>(
       ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // Assumed Natural Strains (ANS) Technology to remedy transverse shear strain locking
@@ -333,7 +333,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
 
   if (shell_data_.num_ans > 0)
   {
-    Shell::SetupANS(shapefunctions_collocation, metrics_collocation_reference,
+    Shell::setup_ans(shapefunctions_collocation, metrics_collocation_reference,
         metrics_collocation_current, nodal_coordinates, total_ansq);
   }
 
@@ -350,7 +350,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
   Core::LinAlg::SerialDenseVector strain_enh(num_internal_variables);
   Shell::StressEnhanced stress_enh;
 
-  Shell::ForEachGaussPoint<distype>(nodal_coordinates, intpoints_midsurface_,
+  Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
       [&](const std::array<double, 2>& xi_gp,
           const Shell::ShapefunctionsAndDerivatives<distype>& shape_functions,
           Shell::BasisVectorsAndMetrics<distype>& a_current,
@@ -359,7 +359,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
         double integration_factor = gpweight * da;
 
         // update current thickness at gauss point
-        cur_thickness_[gp] = Shell::UpdateGaussPointThickness<distype>(
+        cur_thickness_[gp] = Shell::update_gauss_point_thickness<distype>(
             nodal_coordinates.a3_curr_, shape_functions.shapefunctions_);
 
         // reset mid-surface material tensor and stress resultants to zero
@@ -370,11 +370,11 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
         Shell::MassMatrixVariables mass_matrix_variables;
 
         // calculate B-operator for compatible strains (displacement)
-        Core::LinAlg::SerialDenseMatrix Bop = Shell::CalcBOperator<distype>(
+        Core::LinAlg::SerialDenseMatrix Bop = Shell::calc_b_operator<distype>(
             a_current.kovariant_, a_current.partial_derivative_, shape_functions);
 
         const std::vector<double> shape_functions_ans =
-            Shell::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+            Shell::get_shapefunctions_for_ans<distype>(xi_gp, shell_data_.num_ans);
 
         // modifications due to ANS with B-bar method (Hughes (1980))
         std::invoke(
@@ -382,7 +382,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
             {
               if (shell_data_.num_ans > 0)
               {
-                ModifyBOperatorAns(Bop, shape_functions_ans, shapefunctions_collocation,
+                modify_b_operator_ans(Bop, shape_functions_ans, shapefunctions_collocation,
                     metrics_collocation_current, shell_data_.num_ans);
               }
             });
@@ -394,11 +394,11 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
           zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
           double factor = intpoints_thickness_.qwgt[gpt];
 
-          Shell::EvaluateMetrics(shape_functions, g_reference, g_current, nodal_coordinates, zeta);
+          Shell::evaluate_metrics(shape_functions, g_reference, g_current, nodal_coordinates, zeta);
 
           // modify the current kovariant metric tensor to neglect the quadratic terms in thickness
           // directions
-          Shell::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+          Shell::modify_kovariant_metrics(g_reference, g_current, a_reference, a_current, zeta,
               shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
               shell_data_.num_ans);
 
@@ -407,7 +407,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
           factor *= shifter;
 
           // evaluate Green-Lagrange strains and deformation gradient in cartesian coordinate system
-          auto strains = EvaluateStrains(g_reference, g_current);
+          auto strains = evaluate_strains(g_reference, g_current);
 
           // update the deformation gradient (if needed?)
           if (solid_material.needs_defgrd())
@@ -418,10 +418,10 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
             strains.defgrd_ = defgrd_enh;
           }
 
-          auto stress = Shell::EvaluateMaterialStressCartesianSystem<Shell::DETAIL::num_dim>(
+          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::DETAIL::num_dim>(
               solid_material, strains, params, gp, ele.id());
-          Shell::MapMaterialStressToCurvilinearSystem(stress, g_reference);
-          Shell::ThicknessIntegration<distype>(stress_enh, stress, factor, zeta);
+          Shell::map_material_stress_to_curvilinear_system(stress, g_reference);
+          Shell::thickness_integration<distype>(stress_enh, stress, factor, zeta);
 
           // thickness integration of mass matrix variables
           if (mass_matrix != nullptr)
@@ -469,7 +469,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
           mass_matrix_variables.factor_v_ *= gpweight * density;
           mass_matrix_variables.factor_w_ *= gpweight * density;
           mass_matrix_variables.factor_vw_ *= gpweight * density;
-          Shell::AddMassMatrix(
+          Shell::add_mass_matrix(
               shape_functions, mass_matrix_variables, shell_data_.thickness, *mass_matrix);
         }
       });
@@ -492,7 +492,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
   Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
-  Core::FE::ExtractMyValues(*disp, displacement, dof_index_array);
+  Core::FE::extract_my_values(*disp, displacement, dof_index_array);
 
   // calculate and update inelastic deformation gradient if needed
   if (solid_material.uses_extended_update())
@@ -503,7 +503,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
     double zeta = 0.0;
 
     // get nodal coordinates
-    Shell::NodalCoordinates<distype> nodal_coordinates = Shell::EvaluateNodalCoordinates<distype>(
+    Shell::NodalCoordinates<distype> nodal_coordinates = Shell::evaluate_nodal_coordinates<distype>(
         ele.nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
     // Assumed Natural Strains (ANS) Technology to remedy transverse shear strain locking
@@ -516,7 +516,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
 
     if (shell_data_.num_ans > 0)
     {
-      Shell::SetupANS(shapefunctions_collocation, metrics_collocation_reference,
+      Shell::setup_ans(shapefunctions_collocation, metrics_collocation_reference,
           metrics_collocation_current, nodal_coordinates, total_ansq);
     }
     // init metric tensor and basis vectors of mid-surface
@@ -530,30 +530,30 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
     // enhanced strains
     Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
 
-    Shell::ForEachGaussPoint<distype>(nodal_coordinates, intpoints_midsurface_,
+    Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
         [&](const std::array<double, 2>& xi_gp,
             const Shell::ShapefunctionsAndDerivatives<distype>& shape_functions,
             Shell::BasisVectorsAndMetrics<distype>& a_current,
             Shell::BasisVectorsAndMetrics<distype>& a_reference, double gpweight, double da, int gp)
         {
           const std::vector<double> shape_functions_ans =
-              Shell::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+              Shell::get_shapefunctions_for_ans<distype>(xi_gp, shell_data_.num_ans);
 
           // integration loop in thickness direction, here we prescribe 2 integration points
           for (int gpt = 0; gpt < intpoints_thickness_.num_points(); ++gpt)
           {
             zeta = intpoints_thickness_.qxg[gpt][0] / condfac;
 
-            Shell::EvaluateMetrics(
+            Shell::evaluate_metrics(
                 shape_functions, g_reference, g_current, nodal_coordinates, zeta);
 
             // modify the current kovariant metric tensor to neglect the quadratic terms in
             // thickness directions
-            Shell::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+            Shell::modify_kovariant_metrics(g_reference, g_current, a_reference, a_current, zeta,
                 shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
                 shell_data_.num_ans);
 
-            auto strains = EvaluateStrains(g_reference, g_current);
+            auto strains = evaluate_strains(g_reference, g_current);
 
             // calculate deformation gradient consistent with modified GL strain tensor
             if (solid_material.needs_defgrd())

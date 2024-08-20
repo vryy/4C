@@ -117,9 +117,9 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
@@ -151,9 +151,9 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> myemat(true);
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -196,13 +196,13 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      Core::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::extract_my_values(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      Core::FE::ExtractMyValues(*acc, myacc, lm);
+      Core::FE::extract_my_values(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
@@ -240,17 +240,17 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
       if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> plstrain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
           params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "iostrain", Inpar::Solid::strain_none);
-      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+      auto ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
           params, "ioplstrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -296,7 +296,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // build incremental def gradient for every gauss point
       Core::LinAlg::SerialDenseMatrix gpdefgrd(NUMGPT_SOP5, 9);
@@ -367,7 +367,7 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // update element geometry
       Core::LinAlg::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
@@ -606,12 +606,12 @@ void Discret::ELEMENTS::SoPyramid5::init_jacobian_mapping()
     else if (detJ_[gp] < 0.0)
       FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT");
 
-    if (Prestress::IsMulfActive(time_, pstype_, pstime_))
+    if (Prestress::is_mulf_active(time_, pstype_, pstime_))
       if (!(prestress_->is_init()))
         prestress_->matrixto_storage(gp, invJ_[gp], prestress_->j_history());
   }
 
-  if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
+  if (Prestress::is_mulf_active(time_, pstype_, pstime_)) prestress_->is_init() = true;
 
   return;
 }
@@ -987,7 +987,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_SOP5 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOP5 + 2];
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_SOP5 + 0];
       xdisp(i, 1) = disp[i * NODDOF_SOP5 + 1];
@@ -1014,7 +1014,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     N_XYZ.multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    if (Prestress::IsMulf(pstype_))
+    if (Prestress::is_mulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
       Core::LinAlg::Matrix<3, 3> invJdef;
@@ -1434,7 +1434,7 @@ std::vector<Core::LinAlg::Matrix<NUMNOD_SOP5, 1>> Discret::ELEMENTS::SoPyramid5:
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    Core::FE::shape_function_3D(shapefcts[igp], r, s, t, Core::FE::CellType::pyramid5);
+    Core::FE::shape_function_3d(shapefcts[igp], r, s, t, Core::FE::CellType::pyramid5);
   }
   return shapefcts;
 }
@@ -1457,7 +1457,7 @@ Discret::ELEMENTS::SoPyramid5::sop5_derivs()
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    Core::FE::shape_function_3D_deriv1(derivs[igp], r, s, t, Core::FE::CellType::pyramid5);
+    Core::FE::shape_function_3d_deriv1(derivs[igp], r, s, t, Core::FE::CellType::pyramid5);
   }
   return derivs;
 }
@@ -1515,8 +1515,8 @@ void Discret::ELEMENTS::SoPyramid5::sop5_shapederiv(
 
       Core::LinAlg::Matrix<NUMNOD_SOP5, 1> funct;
       Core::LinAlg::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> deriv;
-      Core::FE::shape_function_3D(funct, r, s, t, Core::FE::CellType::pyramid5);
-      Core::FE::shape_function_3D_deriv1(deriv, r, s, t, Core::FE::CellType::pyramid5);
+      Core::FE::shape_function_3d(funct, r, s, t, Core::FE::CellType::pyramid5);
+      Core::FE::shape_function_3d_deriv1(deriv, r, s, t, Core::FE::CellType::pyramid5);
       for (int inode = 0; inode < NUMNOD_SOP5; ++inode)
       {
         f(inode, igp) = funct(inode);

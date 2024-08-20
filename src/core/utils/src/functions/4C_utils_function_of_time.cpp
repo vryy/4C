@@ -85,7 +85,7 @@ double Core::UTILS::SymbolicFunctionOfTime::evaluate_derivative(
   return f_dt;
 }
 
-Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
+Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_time(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfTime.

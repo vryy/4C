@@ -235,7 +235,7 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  Core::Communication::ExtractAndAssertId(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
 
   // matid and recover MatParams()
   int matid;
@@ -351,7 +351,7 @@ void Mat::PlasticElastHyper::setup(int numgp, const Core::IO::InputParameterCont
 
   summandProperties_.clear();
 
-  ElastHyperProperties(potsum_, summandProperties_);
+  elast_hyper_properties(potsum_, summandProperties_);
 
   // in this case the mandel stress become non-symmetric and the
   // calculated derivatives have to be extended.
@@ -571,7 +571,7 @@ void Mat::PlasticElastHyper::evaluate_elast(const Core::LinAlg::Matrix<3, 3>* de
   Core::LinAlg::Matrix<6, 1> ddPII(true);
 
   evaluate_kin_quant_elast(defgrd, deltaLp, gp);
-  ElastHyperEvaluateInvariantDerivatives(
+  elast_hyper_evaluate_invariant_derivatives(
       prinv_, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
 
   // blank resulting quantities
@@ -796,10 +796,10 @@ void Mat::PlasticElastHyper::evaluate_plast(const Core::LinAlg::Matrix<3, 3>* de
   Core::LinAlg::Matrix<8, 1> delta(true);
 
   if (evaluate_kin_quant_plast(defgrd, deltaDp, gp, params)) return;
-  ElastHyperEvaluateInvariantDerivatives(
+  elast_hyper_evaluate_invariant_derivatives(
       prinv_, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
   if (temp && cauchy) add_thermal_expansion_derivs(prinv_, dPI, ddPII, gp, eleGID, *temp);
-  CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
+  calculate_gamma_delta(gamma, delta, prinv_, dPI, ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -1327,9 +1327,9 @@ void Mat::PlasticElastHyper::evaluate_plast(const Core::LinAlg::Matrix<3, 3>* de
 
   if (evaluate_kin_quant_plast(defgrd, deltaLp, gp, params)) return;
 
-  ElastHyperEvaluateInvariantDerivatives(
+  elast_hyper_evaluate_invariant_derivatives(
       prinv_, dPI, ddPII, potsum_, summandProperties_, gp, eleGID);
-  CalculateGammaDelta(gamma, delta, prinv_, dPI, ddPII);
+  calculate_gamma_delta(gamma, delta, prinv_, dPI, ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -2532,7 +2532,7 @@ void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
 
     Core::LinAlg::Matrix<3, 3> EV(MatrixIn);
     Core::LinAlg::Matrix<3, 3> EW;
-    Core::LinAlg::SYEV(EV, EW, EV);
+    Core::LinAlg::syev(EV, EW, EV);
 
     Core::LinAlg::Matrix<3, 1> vec1;
     Core::LinAlg::Matrix<3, 1> vec2;
