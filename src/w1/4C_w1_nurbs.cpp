@@ -24,10 +24,10 @@ Discret::ELEMENTS::Nurbs::Wall1NurbsType& Discret::ELEMENTS::Nurbs::Wall1NurbsTy
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Wall1NurbsType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Nurbs::Wall1Nurbs* object = new Discret::ELEMENTS::Nurbs::Wall1Nurbs(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

@@ -17,13 +17,11 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_condition_utils.hpp"
-#include "4C_fem_dofset_independent.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_global_legacy_module.hpp"
 #include "4C_inpar_problemtype.hpp"
 #include "4C_io_legacy_table.hpp"
-#include "4C_io_legacy_table_iter.hpp"
 #include "4C_rigidsphere.hpp"
 
 #include <Epetra_MpiComm.h>
@@ -555,7 +553,8 @@ void PostProblem::read_meshes()
           Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots =
               Teuchos::rcp(new Core::FE::Nurbs::Knotvector());
 
-          knots->unpack(*packed_knots);
+          Core::Communication::UnpackBuffer knot_buffer(*packed_knots);
+          knots->unpack(knot_buffer);
 
           if (nurbsdis == nullptr)
           {
@@ -916,14 +915,13 @@ PostResult::read_result_serialdensematrix(const std::string name)
 
   Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> mapdata =
       Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-  std::vector<char>::size_type position = 0;
-  //   std::cout << "elemap:\n" << *elemap << std::endl;
-  //   std::cout << "myelenum: " << elemap->NumMyElements() << std::endl;
+
+  Core::Communication::UnpackBuffer data_buffer(*data);
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
         Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
-    Core::Communication::ParObject::extract_from_pack(position, *data, *gpstress);
+    Core::Communication::ParObject::extract_from_pack(data_buffer, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }
 

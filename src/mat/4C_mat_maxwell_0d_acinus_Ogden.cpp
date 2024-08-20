@@ -54,10 +54,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusOgden::create_materia
 Mat::Maxwell0dAcinusOgdenType Mat::Maxwell0dAcinusOgdenType::instance_;
 
 
-Core::Communication::ParObject* Mat::Maxwell0dAcinusOgdenType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::Maxwell0dAcinusOgdenType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::Maxwell0dAcinusOgden* mxwll_0d_acin = new Mat::Maxwell0dAcinusOgden();
-  mxwll_0d_acin->unpack(data);
+  mxwll_0d_acin->unpack(buffer);
   return mxwll_0d_acin;
 }
 
@@ -97,19 +98,17 @@ void Mat::Maxwell0dAcinusOgden::pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusOgden::unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusOgden::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // Extract kappa and beta
-  extract_from_pack(position, data, kappa_);
-  extract_from_pack(position, data, beta_);
+  extract_from_pack(buffer, kappa_);
+  extract_from_pack(buffer, beta_);
 
   // Extract matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -124,8 +123,7 @@ void Mat::Maxwell0dAcinusOgden::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

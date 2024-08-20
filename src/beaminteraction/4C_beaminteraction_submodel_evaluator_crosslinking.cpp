@@ -1413,43 +1413,49 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   Teuchos::RCP<std::vector<char>> linkercharvec;
   bin_reader.read_char_vector(linkercharvec, "Linker");
 
-  std::vector<char>::size_type index = 0;
-  while (index < linkercharvec->size())
   {
-    std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(index, *linkercharvec, data);
-    Teuchos::RCP<Core::Communication::ParObject> object =
-        Teuchos::rcp(Core::Communication::factory(data), true);
-    Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
-        Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
-    if (beamtobeamlink == Teuchos::null) FOUR_C_THROW("Failed to build a node from the node data");
+    Core::Communication::UnpackBuffer buffer(*linkercharvec);
+    while (!buffer.at_end())
+    {
+      std::vector<char> data;
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      Core::Communication::UnpackBuffer data_buffer(data);
+      Teuchos::RCP<Core::Communication::ParObject> object =
+          Teuchos::rcp(Core::Communication::factory(data_buffer), true);
+      Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
+          Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
+      if (beamtobeamlink == Teuchos::null)
+        FOUR_C_THROW("Failed to build a node from the node data");
 
-    // insert in my list of double bonded crosslinker
-    doublebondcl_[beamtobeamlink->id()] = beamtobeamlink;
+      // insert in my list of double bonded crosslinker
+      doublebondcl_[beamtobeamlink->id()] = beamtobeamlink;
+    }
   }
 
   // -------------------------------------------------------------------------
   // 2) read crosslinker data
   // -------------------------------------------------------------------------
+
   Teuchos::RCP<std::vector<char>> cldata_charvec;
   bin_reader.read_char_vector(cldata_charvec, "ClData");
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData>> cl_not_owned;
   std::set<int> not_owned_gids;
-  index = 0;
   std::map<int, std::vector<char>> cl_datapacks;
   std::vector<int> read_node_ids;
-  while (index < cldata_charvec->size())
+  Core::Communication::UnpackBuffer buffer(*cldata_charvec);
+  while (!buffer.at_end())
   {
     // unpack
     std::vector<char> recv_singlecontainer_data;
-    Core::Communication::ParObject::extract_from_pack(
-        index, *cldata_charvec, recv_singlecontainer_data);
+    Core::Communication::ParObject::extract_from_pack(buffer, recv_singlecontainer_data);
 
+
+    Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
     Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
-            recv_singlecontainer_data),
+            recv_singlecontainer_buffer),
         true);
 
     int const cl_gid = cl_data->get_id();
@@ -1479,12 +1485,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   {
     // this needs to done
     // Fixme
-    std::vector<char>::size_type position = 0;
-    std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(position, iter.second, data);
 
+    Core::Communication::UnpackBuffer cl_buffer(iter.second);
+    std::vector<char> data;
+    Core::Communication::ParObject::extract_from_pack(cl_buffer, data);
+
+    Core::Communication::UnpackBuffer data_buffer(data);
     Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(data),
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
+            data_buffer),
         true);
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
@@ -1498,19 +1507,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
 
   std::map<int, Teuchos::RCP<BEAMINTERACTION::Data::BeamData>> beams_not_owned;
   not_owned_gids.clear();
-  index = 0;
   std::map<int, std::vector<char>> beam_datapacks;
   std::vector<int> read_ele_ids;
-  while (index < beamdata_charvec->size())
+  Core::Communication::UnpackBuffer beamdata_buffer(*beamdata_charvec);
+  while (!beamdata_buffer.at_end())
   {
     // unpack
     std::vector<char> recv_singlecontainer_data;
-    Core::Communication::ParObject::extract_from_pack(
-        index, *beamdata_charvec, recv_singlecontainer_data);
+    Core::Communication::ParObject::extract_from_pack(beamdata_buffer, recv_singlecontainer_data);
 
+    Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data =
         Teuchos::rcp(BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(
-                         recv_singlecontainer_data),
+                         recv_singlecontainer_buffer),
             true);
 
     int const beam_gid = beam_data->get_id();
@@ -1537,14 +1546,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   beam_data_.resize(discret().num_my_col_elements());
   for (auto& iter : beam_datapacks)
   {
-    // this needs to be done
-    // Fixme
-    std::vector<char>::size_type position = 0;
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(position, iter.second, data);
+    Core::Communication::UnpackBuffer buffer(iter.second);
+    Core::Communication::ParObject::extract_from_pack(buffer, data);
 
+    Core::Communication::UnpackBuffer data_buffer(data);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::rcp(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(data), true);
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(data_buffer),
+        true);
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 
@@ -2078,14 +2087,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   crosslinker_data_.resize(bin_discret().num_my_col_nodes());
   for (auto& iter : allpacks)
   {
-    // this needs to done
-    // Fixme
-    std::vector<char>::size_type position = 0;
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(position, iter.second, data);
 
+    Core::Communication::UnpackBuffer buffer1(iter.second);
+    Core::Communication::ParObject::extract_from_pack(buffer1, data);
+
+    Core::Communication::UnpackBuffer buffer2(data);
     Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(data),
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
+            buffer2),
         true);
     crosslinker_data_[bin_discret().node_col_map()->LID(cl_data->get_id())] = cl_data;
   }
@@ -2183,14 +2193,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   beam_data_.resize(discret().num_my_col_elements());
   for (auto& iter : allpacks)
   {
-    // this needs to be done
-    // Fixme
-    std::vector<char>::size_type position = 0;
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(position, iter.second, data);
+    Core::Communication::UnpackBuffer buffer1(iter.second);
+    Core::Communication::ParObject::extract_from_pack(buffer1, data);
 
+    Core::Communication::UnpackBuffer buffer2(data);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::rcp(
-        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(data), true);
+        BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer2),
+        true);
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
   }
 }
@@ -4000,14 +4010,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
           "Received on proc %i data with wrong tag from proc %i", g_state().get_my_rank(), from);
 
     // store received data
-    std::vector<char>::size_type position = 0;
-    while (position < rdata.size())
+
+    Core::Communication::UnpackBuffer buffer(rdata);
+    while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(position, rdata, data);
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
       // this Teuchos::rcp holds the memory
+      Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::rcp(Core::Communication::factory(data), true);
+          Teuchos::rcp(Core::Communication::factory(data_buffer), true);
       Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
           Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
       if (beamtobeamlink == Teuchos::null)
@@ -4028,9 +4040,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
       // insert new double bonds in my list
       doublebondcl_[beamtobeamlink->id()] = beamtobeamlink;
     }
-
-    if (position != rdata.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), position);
   }
 
   // wait for all communication to finish
@@ -4129,22 +4138,20 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
           "Received on proc %i data with wrong tag from proc %i", g_state().get_my_rank(), from);
 
     // store received data
-    std::vector<char>::size_type position = 0;
-    while (position < rdata.size())
+
+    Core::Communication::UnpackBuffer buffer(rdata);
+    while (!buffer.at_end())
     {
       std::vector<char> data;
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
 
-      Core::Communication::ParObject::extract_from_pack(position, rdata, data);
-
+      Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<T> data_container =
-          Teuchos::rcp(BEAMINTERACTION::Data::create_data_container<T>(data), true);
+          Teuchos::rcp(BEAMINTERACTION::Data::create_data_container<T>(data_buffer), true);
 
       // add received data to list
       recv.push_back(data_container);
     }
-
-    if (position != rdata.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), position);
   }
 }
 

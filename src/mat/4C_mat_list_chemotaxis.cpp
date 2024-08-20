@@ -61,10 +61,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListChemotaxis::create_material()
 Mat::MatListChemotaxisType Mat::MatListChemotaxisType::instance_;
 
 
-Core::Communication::ParObject* Mat::MatListChemotaxisType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MatListChemotaxisType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::MatListChemotaxis* MatListChemotaxis = new Mat::MatListChemotaxis();
-  MatListChemotaxis->unpack(data);
+  MatListChemotaxis->unpack(buffer);
   return MatListChemotaxis;
 }
 
@@ -145,18 +146,18 @@ void Mat::MatListChemotaxis::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void Mat::MatListChemotaxis::unpack(const std::vector<char>& data)
+void Mat::MatListChemotaxis::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover paramsreac_
   int matid(-1);
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   paramschemo_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -177,13 +178,13 @@ void Mat::MatListChemotaxis::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::MatList::extract_from_pack(position, data, basedata);
-  Mat::MatList::unpack(basedata);
+  Mat::MatList::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Mat::MatList::unpack(basedata_buffer);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

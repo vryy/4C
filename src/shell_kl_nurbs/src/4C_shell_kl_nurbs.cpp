@@ -38,11 +38,11 @@ Discret::ELEMENTS::KirchhoffLoveShellNurbsType::instance()
  *
  */
 Core::Communication::ParObject* Discret::ELEMENTS::KirchhoffLoveShellNurbsType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::KirchhoffLoveShellNurbs* object =
       new Discret::ELEMENTS::KirchhoffLoveShellNurbs(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -152,23 +152,21 @@ void Discret::ELEMENTS::KirchhoffLoveShellNurbs::pack(Core::Communication::PackB
 /**
  *
  */
-void Discret::ELEMENTS::KirchhoffLoveShellNurbs::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::KirchhoffLoveShellNurbs::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
   // material_
-  extract_from_pack(position, data, material_);
+  extract_from_pack(buffer, material_);
   // gaussrule_
-  extract_from_pack(position, data, gaussrule_[0]);
-  extract_from_pack(position, data, gaussrule_[1]);
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  extract_from_pack(buffer, gaussrule_[0]);
+  extract_from_pack(buffer, gaussrule_[1]);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /**

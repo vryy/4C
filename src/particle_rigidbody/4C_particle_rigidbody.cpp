@@ -525,11 +525,10 @@ void ParticleRigidBody::RigidBodyHandler::get_packed_rigid_body_states(
 void ParticleRigidBody::RigidBodyHandler::extract_packed_rigid_body_states(
     std::vector<char>& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  while (position < buffer.size())
+  Core::Communication::UnpackBuffer data(buffer);
+  while (!data.at_end())
   {
-    const int rigidbody_k = Core::Communication::ParObject::extract_int(position, buffer);
+    const int rigidbody_k = Core::Communication::ParObject::extract_int(data);
 
     // get global ids of rigid bodies owned by this processor
     ownedrigidbodies_.push_back(rigidbody_k);
@@ -545,25 +544,18 @@ void ParticleRigidBody::RigidBodyHandler::extract_packed_rigid_body_states(
     std::vector<double>& angacc_k =
         rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
-    Core::Communication::ParObject::extract_from_pack(position, buffer, mass_k);
+    Core::Communication::ParObject::extract_from_pack(data, mass_k);
     for (int i = 0; i < 6; ++i)
-      Core::Communication::ParObject::extract_from_pack(position, buffer, inertia_k[i]);
+      Core::Communication::ParObject::extract_from_pack(data, inertia_k[i]);
+    for (int i = 0; i < 3; ++i) Core::Communication::ParObject::extract_from_pack(data, pos_k[i]);
+    for (int i = 0; i < 4; ++i) Core::Communication::ParObject::extract_from_pack(data, rot_k[i]);
+    for (int i = 0; i < 3; ++i) Core::Communication::ParObject::extract_from_pack(data, vel_k[i]);
     for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::extract_from_pack(position, buffer, pos_k[i]);
-    for (int i = 0; i < 4; ++i)
-      Core::Communication::ParObject::extract_from_pack(position, buffer, rot_k[i]);
+      Core::Communication::ParObject::extract_from_pack(data, angvel_k[i]);
+    for (int i = 0; i < 3; ++i) Core::Communication::ParObject::extract_from_pack(data, acc_k[i]);
     for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::extract_from_pack(position, buffer, vel_k[i]);
-    for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::extract_from_pack(position, buffer, angvel_k[i]);
-    for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::extract_from_pack(position, buffer, acc_k[i]);
-    for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::extract_from_pack(position, buffer, angacc_k[i]);
+      Core::Communication::ParObject::extract_from_pack(data, angacc_k[i]);
   }
-
-  if (position != buffer.size())
-    FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
 void ParticleRigidBody::RigidBodyHandler::update_rigid_body_ownership()
@@ -660,18 +652,16 @@ void ParticleRigidBody::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_p
     int msgsource = p.first;
     std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
 
       // insert processor id the gathered global id of rigid body is received from
       ownedrigidbodiestohostingprocs_[rigidbody_k].push_back(msgsource);
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -728,11 +718,12 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
   {
     std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
 
       // get reference to rigid body states
       double& mass_k = rigidbodydatastate_->get_ref_mass()[rigidbody_k];
@@ -745,25 +736,22 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
       std::vector<double>& angacc_k =
           rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
-      Core::Communication::ParObject::extract_from_pack(position, rmsg, mass_k);
+      Core::Communication::ParObject::extract_from_pack(buffer, mass_k);
       for (int i = 0; i < 6; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, inertia_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, inertia_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, pos_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, pos_k[i]);
       for (int i = 0; i < 4; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, rot_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, rot_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, vel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, vel_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, angvel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, angvel_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, acc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, acc_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, angacc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, angacc_k[i]);
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -961,29 +949,27 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_mass_quantities(
   {
     std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
-      double mass_k = Core::Communication::ParObject::extract_double(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
+      double mass_k = Core::Communication::ParObject::extract_double(buffer);
 
       std::vector<double> inertia_k(6);
       for (int i = 0; i < 6; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, inertia_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, inertia_k[i]);
 
       std::vector<double> pos_k(3);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, pos_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, pos_k[i]);
 
       // append to gathered partial mass quantities
       gatheredpartialmass[rigidbody_k].push_back(mass_k);
       gatheredpartialinertia[rigidbody_k].push_back(inertia_k);
       gatheredpartialposition[rigidbody_k].push_back(pos_k);
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1190,19 +1176,20 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_and_compute_full_force_
   {
     std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
 
       std::vector<double> tmp_force_k(3);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, tmp_force_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, tmp_force_k[i]);
 
       std::vector<double> tmp_torque_k(3);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, tmp_torque_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, tmp_torque_k[i]);
 
       // get pointer to rigid body states
       double* force_k = rigidbodydatastate_->get_ref_force()[rigidbody_k].data();
@@ -1212,9 +1199,6 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_and_compute_full_force_
       ParticleInteraction::UTILS::vec_add(force_k, tmp_force_k.data());
       ParticleInteraction::UTILS::vec_add(torque_k, tmp_torque_k.data());
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1387,24 +1371,22 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_positions()
   {
     std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
 
       // get reference to rigid body states
       std::vector<double>& pos_k = rigidbodydatastate_->get_ref_position()[rigidbody_k];
       std::vector<double>& rot_k = rigidbodydatastate_->get_ref_rotation()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, pos_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, pos_k[i]);
       for (int i = 0; i < 4; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, rot_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, rot_k[i]);
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1445,24 +1427,22 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_velocities()
   {
     std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
 
       // get reference to rigid body states
       std::vector<double>& vel_k = rigidbodydatastate_->get_ref_velocity()[rigidbody_k];
       std::vector<double>& angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, vel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, vel_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, angvel_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, angvel_k[i]);
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1503,11 +1483,12 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_accelerations()
   {
     std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(position, rmsg);
+      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
 
       // get reference to rigid body states
       std::vector<double>& acc_k = rigidbodydatastate_->get_ref_acceleration()[rigidbody_k];
@@ -1515,13 +1496,10 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_accelerations()
           rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, acc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, acc_k[i]);
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, angacc_k[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, angacc_k[i]);
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 

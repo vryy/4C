@@ -28,7 +28,8 @@ namespace Discret
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      Core::Communication::ParObject* create(const std::vector<char>& data) override = 0;
+      Core::Communication::ParObject* create(
+          Core::Communication::UnpackBuffer& buffer) override = 0;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
@@ -266,7 +267,7 @@ namespace Discret
 
       \ref pack and \ref unpack are used to communicate this element
       */
-      void unpack(const std::vector<char>& data) override
+      void unpack(Core::Communication::UnpackBuffer& buffer) override
       {
         FOUR_C_THROW("not implemented in base class");
       };

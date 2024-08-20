@@ -23,10 +23,10 @@ Core::FE::MeshFree::MeshfreeMultiBinType& Core::FE::MeshFree::MeshfreeMultiBinTy
 }
 
 Core::Communication::ParObject* Core::FE::MeshFree::MeshfreeMultiBinType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto object = new Core::FE::MeshFree::MeshfreeMultiBin(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -102,16 +102,15 @@ void Core::FE::MeshFree::MeshfreeMultiBin::pack(Core::Communication::PackBuffer&
 /*--------------------------------------------------------------------------*
  | Unpack data                                         (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-void Core::FE::MeshFree::MeshfreeMultiBin::unpack(const std::vector<char>& data)
+void Core::FE::MeshFree::MeshfreeMultiBin::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Elements::Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -39,7 +39,8 @@ namespace Mat
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
 namespace Mat
 {
   namespace PAR
@@ -135,7 +136,7 @@ namespace MIXTURE
      * @param position (in/out) : current position to unpack data
      * @param data (in) : vector storing all data to be unpacked into this instance.
      */
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data){};
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer){};
 
     /*!
      * @brief Setups the prestress strategy

@@ -347,50 +347,49 @@ void Discret::ELEMENTS::So3Plast<distype>::pack(Core::Communication::PackBuffer&
  | unpack data (public)                                     seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::So3Plast<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  SoBase::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  SoBase::unpack(basedata_buffer);
 
   // Gauss points and weights
-  int size2 = extract_int(position, data);
+  int size2 = extract_int(buffer);
   xsi_.resize(size2, Core::LinAlg::Matrix<nsd_, 1>(true));
-  for (int i = 0; i < size2; ++i) extract_from_pack(position, data, xsi_[i]);
-  extract_from_pack(position, data, wgt_);
+  for (int i = 0; i < size2; ++i) extract_from_pack(buffer, xsi_[i]);
+  extract_from_pack(buffer, wgt_);
   numgpt_ = wgt_.size();
 
   // paramters
-  fbar_ = (bool)extract_int(position, data);
+  fbar_ = (bool)extract_int(buffer);
 
   // plastic spin type
-  plspintype_ = static_cast<PlSpinType>(extract_int(position, data));
+  plspintype_ = static_cast<PlSpinType>(extract_int(buffer));
 
   // tsi
-  tsi_ = (bool)extract_int(position, data);
+  tsi_ = (bool)extract_int(buffer);
   if (tsi_)
   {
     dFintdT_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>(numgpt_));
     KbT_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true)));
     temp_last_ = Teuchos::rcp(new std::vector<double>(numgpt_));
-    int size = extract_int(position, data);
+    int size = extract_int(buffer);
     for (int i = 0; i < size; i++)
     {
-      extract_from_pack(position, data, (*dFintdT_)[i]);
-      extract_from_pack(position, data, (*KbT_)[i]);
-      extract_from_pack(position, data, (*temp_last_)[i]);
+      extract_from_pack(buffer, (*dFintdT_)[i]);
+      extract_from_pack(buffer, (*KbT_)[i]);
+      extract_from_pack(buffer, (*temp_last_)[i]);
     }
   }
 
   // EAS element technology
-  eastype_ = static_cast<Discret::ELEMENTS::So3PlastEasType>(extract_int(position, data));
-  extract_from_pack(position, data, neas_);
+  eastype_ = static_cast<Discret::ELEMENTS::So3PlastEasType>(extract_int(buffer));
+  extract_from_pack(buffer, neas_);
 
   // no EAS
   if (eastype_ == soh8p_easnone)
@@ -433,22 +432,22 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(const std::vector<char>& data)
 
   if (eastype_ != soh8p_easnone)
   {
-    extract_from_pack(position, data, (*alpha_eas_));
-    extract_from_pack(position, data, (*alpha_eas_last_timestep_));
-    extract_from_pack(position, data, (*alpha_eas_delta_over_last_timestep_));
+    extract_from_pack(buffer, (*alpha_eas_));
+    extract_from_pack(buffer, (*alpha_eas_last_timestep_));
+    extract_from_pack(buffer, (*alpha_eas_delta_over_last_timestep_));
   }
 
-  int size = extract_int(position, data);
-  for (int i = 0; i < size; i++) extract_from_pack(position, data, dDp_last_iter_[i]);
+  int size = extract_int(buffer);
+  for (int i = 0; i < size; i++) extract_from_pack(buffer, dDp_last_iter_[i]);
 
   // Nitsche contact stuff
-  is_nitsche_contact_ = (bool)extract_int(position, data);
+  is_nitsche_contact_ = (bool)extract_int(buffer);
   if (is_nitsche_contact_)
   {
-    extract_from_pack(position, data, cauchy_);
-    extract_from_pack(position, data, cauchy_deriv_);
+    extract_from_pack(buffer, cauchy_);
+    extract_from_pack(buffer, cauchy_deriv_);
     if (tsi_)
-      extract_from_pack(position, data, cauchy_deriv_T_);
+      extract_from_pack(buffer, cauchy_deriv_T_);
     else
       cauchy_deriv_T_.resize(0);
   }
@@ -459,8 +458,7 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(const std::vector<char>& data)
     cauchy_deriv_T_.resize(0);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 
 }  // unpack()

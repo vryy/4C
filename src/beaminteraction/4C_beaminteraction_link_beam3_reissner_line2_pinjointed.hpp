@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
 
     static BeamLinkBeam3rLine2PinJointedType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static BeamLinkBeam3rLine2PinJointedType instance_;
@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
     \ref pack and \ref unpack are used to communicate this element
 
     */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     /// return copy of this linking object
     Teuchos::RCP<BeamLink> clone() const override;

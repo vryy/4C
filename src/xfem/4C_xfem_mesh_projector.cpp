@@ -497,11 +497,12 @@ void XFEM::MeshProjector::communicate_nodes(
     {
       receive_block(rblock, exporter, request);
 
-      std::vector<char>::size_type position = 0;
-      Core::Communication::ParObject::extract_from_pack(position, rblock, tar_nodepositions);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, interpolated_vecs);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, projection_targetnodes);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, have_values);
+      Core::Communication::UnpackBuffer buffer(rblock);
+
+      Core::Communication::ParObject::extract_from_pack(buffer, tar_nodepositions);
+      Core::Communication::ParObject::extract_from_pack(buffer, interpolated_vecs);
+      Core::Communication::ParObject::extract_from_pack(buffer, projection_targetnodes);
+      Core::Communication::ParObject::extract_from_pack(buffer, have_values);
     }
 
     // in the last step, we keep everything on this proc

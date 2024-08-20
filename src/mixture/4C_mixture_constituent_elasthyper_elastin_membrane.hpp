@@ -145,8 +145,7 @@ namespace MIXTURE
      * @param position (in/out) : current position to unpack data
      * @param data (in) : vector storing all data to be unpacked into this instance.
      */
-    void unpack_constituent(
-        std::vector<char>::size_type& position, const std::vector<char>& data) override;
+    void unpack_constituent(Core::Communication::UnpackBuffer& buffer) override;
 
     /*!
      * \brief Register anisotropy extensions to the global anisotropy manager

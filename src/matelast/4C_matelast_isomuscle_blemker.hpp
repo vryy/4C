@@ -88,8 +88,7 @@ namespace Mat
       void pack_summand(Core::Communication::PackBuffer& data) const override;
 
       /// Unpack anisotropy
-      void unpack_summand(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      void unpack_summand(Core::Communication::UnpackBuffer& buffer) override;
 
       /// Provide the material type
       [[nodiscard]] Core::Materials::MaterialType material_type() const override

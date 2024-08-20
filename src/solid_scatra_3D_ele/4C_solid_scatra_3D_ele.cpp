@@ -82,10 +82,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::create
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SolidScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::SolidScatra(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -193,32 +193,29 @@ void Discret::ELEMENTS::SolidScatra::pack(Core::Communication::PackBuffer& data)
   Discret::ELEMENTS::pack(solid_scatra_calc_variant_, data);
 }
 
-void Discret::ELEMENTS::SolidScatra::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SolidScatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  if (extract_int(position, data) != unique_par_object_id())
-    FOUR_C_THROW("wrong instance type data");
+  if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
 
-  celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
 
-  Discret::ELEMENTS::extract_from_pack(position, data, properties_);
+  Discret::ELEMENTS::extract_from_pack(buffer, properties_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
 
   // reset solid and scatra interfaces
   solid_scatra_calc_variant_ =
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);
 
-  Discret::ELEMENTS::unpack(solid_scatra_calc_variant_, position, data);
+  Discret::ELEMENTS::unpack(solid_scatra_calc_variant_, buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::ELEMENTS::SolidScatra::vis_names(std::map<std::string, int>& names)

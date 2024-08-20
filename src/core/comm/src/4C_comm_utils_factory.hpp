@@ -39,7 +39,7 @@ namespace Core::Communication
           already unpacked in the instance. The calling method is responsible for
           freeing this instance!
   */
-  ParObject* factory(const std::vector<char>& data);
+  ParObject* factory(Core::Communication::UnpackBuffer& buffer);
 
   /*!
   \brief Create an instance of a finite element depending on the type of element

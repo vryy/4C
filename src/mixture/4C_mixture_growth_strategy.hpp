@@ -69,10 +69,7 @@ namespace MIXTURE
 
     virtual void pack_mixture_growth_strategy(Core::Communication::PackBuffer& data) const {}
 
-    virtual void unpack_mixture_growth_strategy(
-        std::vector<char>::size_type& position, const std::vector<char>& data)
-    {
-    }
+    virtual void unpack_mixture_growth_strategy(Core::Communication::UnpackBuffer& buffer) {}
 
     virtual void register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
     {

@@ -36,11 +36,10 @@ void Mat::Elastic::CoupAnisoNeoHooke::pack_summand(Core::Communication::PackBuff
   add_to_pack(data, structural_tensor_);
 }
 
-void Mat::Elastic::CoupAnisoNeoHooke::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::CoupAnisoNeoHooke::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
-  extract_from_pack(position, data, a_);
-  extract_from_pack(position, data, structural_tensor_);
+  extract_from_pack(buffer, a_);
+  extract_from_pack(buffer, structural_tensor_);
 }
 
 void Mat::Elastic::CoupAnisoNeoHooke::setup(

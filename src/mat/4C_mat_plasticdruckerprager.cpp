@@ -48,10 +48,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticDruckerPrager::create_materia
 }
 Mat::PlasticDruckerPragerType Mat::PlasticDruckerPragerType::instance_;
 
-Core::Communication::ParObject* Mat::PlasticDruckerPragerType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticDruckerPragerType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::PlasticDruckerPrager* plastic = new Mat::PlasticDruckerPrager();
-  plastic->unpack(data);
+  plastic->unpack(buffer);
   return plastic;
 }
 
@@ -79,15 +80,15 @@ void Mat::PlasticDruckerPrager::pack(Core::Communication::PackBuffer& data) cons
   }
 }
 
-void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
+void Mat::PlasticDruckerPrager::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -104,7 +105,7 @@ void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
     }
 
     int histsize;
-    extract_from_pack(position, data, histsize);
+    extract_from_pack(buffer, histsize);
 
     if (histsize == 0) isinit_ = false;
 
@@ -117,17 +118,16 @@ void Mat::PlasticDruckerPrager::unpack(const std::vector<char>& data)
       Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp_vect(true);
       double tmp_scalar = 0.0;
 
-      extract_from_pack(position, data, tmp_vect);
+      extract_from_pack(buffer, tmp_vect);
       strainpllast_.push_back(tmp_vect);
 
-      extract_from_pack(position, data, tmp_scalar);
+      extract_from_pack(buffer, tmp_scalar);
       strainbarpllast_.push_back(tmp_scalar);
 
       strainplcurr_.push_back(tmp_vect);
       strainbarplcurr_.push_back(tmp_scalar);
     }
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 void Mat::PlasticDruckerPrager::setup(int numgp, const Core::IO::InputParameterContainer& container)

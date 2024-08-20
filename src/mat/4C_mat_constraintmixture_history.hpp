@@ -28,7 +28,7 @@ namespace Mat
 
     static ConstraintMixtureHistoryType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static ConstraintMixtureHistoryType instance_;
@@ -50,7 +50,7 @@ namespace Mat
       return ConstraintMixtureHistoryType::instance().unique_par_object_id();
     }
     void pack(Core::Communication::PackBuffer& data) const override;
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
     //@}
 
     /// Setup

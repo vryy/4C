@@ -469,18 +469,19 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
   }
 
   // position to extract
-  std::vector<char>::size_type position = 0;
 
+
+  Core::Communication::UnpackBuffer buffer(rblock);
   // extract size
   int size = 0;
-  Core::Communication::ParObject::extract_from_pack(position, rblock, size);
+  Core::Communication::ParObject::extract_from_pack(buffer, size);
 
   // extract master ids
   for (int i = 0; i < size; ++i)
   {
     int id;
 
-    Core::Communication::ParObject::extract_from_pack(position, rblock, id);
+    Core::Communication::ParObject::extract_from_pack(buffer, id);
     mymasters.push_back(id);
 
     std::map<int, std::vector<int>>::iterator iter = midtosid_.find(id);
@@ -500,12 +501,12 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
   {
     int slavesize;
 
-    Core::Communication::ParObject::extract_from_pack(position, rblock, slavesize);
+    Core::Communication::ParObject::extract_from_pack(buffer, slavesize);
 
     for (int ll = 0; ll < slavesize; ++ll)
     {
       int sid;
-      Core::Communication::ParObject::extract_from_pack(position, rblock, sid);
+      Core::Communication::ParObject::extract_from_pack(buffer, sid);
 
       std::map<int, std::vector<int>>::iterator iter = midtosid_.find(mymasters[rr]);
 
@@ -533,7 +534,7 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
     {
       double value;
 
-      Core::Communication::ParObject::extract_from_pack(position, rblock, value);
+      Core::Communication::ParObject::extract_from_pack(buffer, value);
 
       (mymasters_vel[mm]).push_back(value);
     }

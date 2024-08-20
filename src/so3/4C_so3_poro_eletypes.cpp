@@ -26,11 +26,11 @@ Discret::ELEMENTS::SoHex8PoroType& Discret::ELEMENTS::SoHex8PoroType::instance()
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -103,11 +103,11 @@ Discret::ELEMENTS::SoTet4PoroType& Discret::ELEMENTS::SoTet4PoroType::instance()
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -179,11 +179,11 @@ Discret::ELEMENTS::SoHex27PoroType& Discret::ELEMENTS::SoHex27PoroType::instance
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex27PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -253,11 +253,11 @@ Discret::ELEMENTS::SoTet10PoroType& Discret::ELEMENTS::SoTet10PoroType::instance
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet10PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
       new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -327,11 +327,11 @@ Discret::ELEMENTS::SoNurbs27PoroType& Discret::ELEMENTS::SoNurbs27PoroType::inst
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::Nurbs::SoNurbs27,
       Core::FE::CellType::nurbs27>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

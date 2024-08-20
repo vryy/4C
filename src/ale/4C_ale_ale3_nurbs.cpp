@@ -25,10 +25,10 @@ Discret::ELEMENTS::Nurbs::Ale3NurbsType& Discret::ELEMENTS::Nurbs::Ale3NurbsType
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale3NurbsType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Nurbs::Ale3Nurbs* object = new Discret::ELEMENTS::Nurbs::Ale3Nurbs(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

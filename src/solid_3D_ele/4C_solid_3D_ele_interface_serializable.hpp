@@ -47,9 +47,8 @@ namespace Discret::ELEMENTS
   constexpr bool IsUnpackable = false;
 
   template <typename T>
-  constexpr bool IsUnpackable<T,
-      std::void_t<decltype(std::declval<T>()->unpack(std::declval<std::vector<char>::size_type&>(),
-          std::declval<const std::vector<char>&>()))>> = true;
+  constexpr bool IsUnpackable<T, std::void_t<decltype(std::declval<T>()->unpack(
+                                     std::declval<Core::Communication::UnpackBuffer&>()))>> = true;
   ///@}
 
 
@@ -98,12 +97,12 @@ namespace Discret::ELEMENTS
      */
     struct UnpackAction
     {
-      UnpackAction(std::size_t& p, const std::vector<char>& d) : position(p), data(d) {}
+      UnpackAction(Core::Communication::UnpackBuffer& buffer) : buffer_(buffer) {}
 
       template <typename T, std::enable_if_t<IsUnpackable<T&>, bool> = true>
       void operator()(T& unpackable)
       {
-        unpackable->unpack(position, data);
+        unpackable->unpack(buffer_);
       }
 
       template <typename T, std::enable_if_t<!IsUnpackable<T&>, bool> = true>
@@ -112,8 +111,7 @@ namespace Discret::ELEMENTS
         // do nothing if it is not unpackable
       }
 
-      std::size_t& position;
-      const std::vector<char>& data;
+      Core::Communication::UnpackBuffer& buffer_;
     };
   }  // namespace Details
 
@@ -135,15 +133,12 @@ namespace Discret::ELEMENTS
    *
    * @tparam VariantType A template argument to match all variant types
    * @param variant (in/out) : variant to unpack
-   * @param position (in/out) : position where to start unpacking. Will be incremented within the
-   * function
-   * @param data (in) : data to unpack from
+   * @param buffer (in/out) : the data to unpack the variant from
    */
   template <typename VariantType>
-  void unpack(
-      VariantType& variant, std::vector<char>::size_type& position, const std::vector<char>& data)
+  void unpack(VariantType& variant, Core::Communication::UnpackBuffer& buffer)
   {
-    std::visit(Details::UnpackAction(position, data), variant);
+    std::visit(Details::UnpackAction(buffer), variant);
   }
 }  // namespace Discret::ELEMENTS
 

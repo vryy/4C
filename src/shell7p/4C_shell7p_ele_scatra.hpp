@@ -35,7 +35,7 @@ namespace Discret::ELEMENTS
     void setup_element_definition(
         std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions) override;
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
     Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
         const std::string eledistype, const int id, const int owner) override;
@@ -109,7 +109,7 @@ namespace Discret::ELEMENTS
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     void print(std::ostream& os) const override;
 

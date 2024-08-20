@@ -422,12 +422,10 @@ void Core::DOFSets::TransparentDofSet::unpack_local_source_dofs(
 {
   gid_to_dofs.clear();
 
-  // position to extract
-  std::vector<char>::size_type position = 0;
-
   // extract size
   int size = 0;
-  Core::Communication::ParObject::extract_from_pack(position, rblock, size);
+  Communication::UnpackBuffer buffer(rblock);
+  Core::Communication::ParObject::extract_from_pack(buffer, size);
 
   for (int rr = 0; rr < size; ++rr)
   {
@@ -435,14 +433,14 @@ void Core::DOFSets::TransparentDofSet::unpack_local_source_dofs(
     std::vector<int> mydofs;
     int numdofs = 0;
 
-    Core::Communication::ParObject::extract_from_pack(position, rblock, gid);
-    Core::Communication::ParObject::extract_from_pack(position, rblock, numdofs);
+    Core::Communication::ParObject::extract_from_pack(buffer, gid);
+    Core::Communication::ParObject::extract_from_pack(buffer, numdofs);
 
     for (int ll = 0; ll < numdofs; ++ll)
     {
       int thisdof = 0;
 
-      Core::Communication::ParObject::extract_from_pack(position, rblock, thisdof);
+      Core::Communication::ParObject::extract_from_pack(buffer, thisdof);
       mydofs.push_back(thisdof);
     }
 

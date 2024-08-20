@@ -46,10 +46,9 @@ void Mat::Elastic::CoupAnisoExpoTwoCoup::pack_summand(Core::Communication::PackB
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::CoupAnisoExpoTwoCoup::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::CoupAnisoExpoTwoCoup::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoup::add_stress_aniso_principal(
@@ -149,12 +148,12 @@ void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::pack_anisotropy(
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::unpack_anisotropy(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  DefaultAnisotropyExtension::unpack_anisotropy(data, position);
+  DefaultAnisotropyExtension::unpack_anisotropy(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, a1a2_);
-  Core::Communication::ParObject::extract_from_pack(position, data, a1_a2_);
+  Core::Communication::ParObject::extract_from_pack(buffer, a1a2_);
+  Core::Communication::ParObject::extract_from_pack(buffer, a1_a2_);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::on_fibers_initialized()

@@ -94,10 +94,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidPoroPressureBasedT
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroPressureBasedType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::SolidPoroPressureBased(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -234,36 +234,33 @@ void Discret::ELEMENTS::SolidPoroPressureBased::pack(Core::Communication::PackBu
   Discret::ELEMENTS::pack(solidporo_press_based_calc_variant_, data);
 }
 
-void Discret::ELEMENTS::SolidPoroPressureBased::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SolidPoroPressureBased::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  if (extract_int(position, data) != unique_par_object_id())
-    FOUR_C_THROW("wrong instance type data");
+  if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
 
-  celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
 
-  Discret::ELEMENTS::extract_from_pack(position, data, solid_ele_property_);
+  Discret::ELEMENTS::extract_from_pack(buffer, solid_ele_property_);
 
-  poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(position, data));
+  poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
 
-  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
 
   // reset solid and poro interfaces
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
   solidporo_press_based_calc_variant_ =
       create_solid_poro_pressure_based_calculation_interface(celltype_);
 
-  Discret::ELEMENTS::unpack(solid_calc_variant_, position, data);
-  Discret::ELEMENTS::unpack(solidporo_press_based_calc_variant_, position, data);
+  Discret::ELEMENTS::unpack(solid_calc_variant_, buffer);
+  Discret::ELEMENTS::unpack(solidporo_press_based_calc_variant_, buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::ELEMENTS::SolidPoroPressureBased::vis_names(std::map<std::string, int>& names)

@@ -842,22 +842,23 @@ namespace Immersed
               myrank, from, myrank);
 
         // ---- unpack data -----
-        std::vector<char>::size_type position = 0;
-        matched = Core::Communication::ParObject::extract_int(position, rdata);
-        owner = Core::Communication::ParObject::extract_int(position, rdata);
-        datalength = Core::Communication::ParObject::extract_int(position, rdata);
+
+        Core::Communication::UnpackBuffer buffer(rdata);
+        matched = Core::Communication::ParObject::extract_int(buffer);
+        owner = Core::Communication::ParObject::extract_int(buffer);
+        datalength = Core::Communication::ParObject::extract_int(buffer);
 
         for (int i = 0; i < globdim; ++i)
-          xvec[i] = Core::Communication::ParObject::extract_double(position, rdata);
+          xvec[i] = Core::Communication::ParObject::extract_double(buffer);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = Core::Communication::ParObject::extract_double(position, rdata);
+            (*vectofill)(dim) = Core::Communication::ParObject::extract_double(buffer);
         }
 
         for (int i = 0; i < globdim; ++i)
-          normal_vec[i] = Core::Communication::ParObject::extract_double(position, rdata);
+          normal_vec[i] = Core::Communication::ParObject::extract_double(buffer);
 
         // wait for all communication to finish
         exporter.wait(request);
@@ -1168,18 +1169,19 @@ namespace Immersed
               myrank, from, myrank);
 
         // ---- unpack data -----
-        std::vector<char>::size_type position = 0;
-        matched = Core::Communication::ParObject::extract_int(position, rdata);
-        owner = Core::Communication::ParObject::extract_int(position, rdata);
-        datalength = Core::Communication::ParObject::extract_int(position, rdata);
+
+        Core::Communication::UnpackBuffer buffer(rdata);
+        matched = Core::Communication::ParObject::extract_int(buffer);
+        owner = Core::Communication::ParObject::extract_int(buffer);
+        datalength = Core::Communication::ParObject::extract_int(buffer);
 
         for (int i = 0; i < globdim; ++i)
-          xvec[i] = Core::Communication::ParObject::extract_double(position, rdata);
+          xvec[i] = Core::Communication::ParObject::extract_double(buffer);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = Core::Communication::ParObject::extract_double(position, rdata);
+            (*vectofill)(dim) = Core::Communication::ParObject::extract_double(buffer);
         }
 
         // wait for all communication to finish
@@ -1574,20 +1576,19 @@ namespace Immersed
               myrank, from, myrank);
 
         // ---- unpack data -----
-        std::vector<char>::size_type position = 0;
-        matched = Core::Communication::ParObject::extract_int(position, rdata);
-        owner = Core::Communication::ParObject::extract_int(position, rdata);
-        datalength = Core::Communication::ParObject::extract_int(position, rdata);
+
+        Core::Communication::UnpackBuffer buffer(rdata);
+        matched = Core::Communication::ParObject::extract_int(buffer);
+        owner = Core::Communication::ParObject::extract_int(buffer);
+        datalength = Core::Communication::ParObject::extract_int(buffer);
 
         for (int i = 0; i < globdim; ++i)
-          fluid_node_glob_coord[i] =
-              Core::Communication::ParObject::extract_double(position, rdata);
+          fluid_node_glob_coord[i] = Core::Communication::ParObject::extract_double(buffer);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*velnp_at_struct_point)(dim) =
-                Core::Communication::ParObject::extract_double(position, rdata);
+            (*velnp_at_struct_point)(dim) = Core::Communication::ParObject::extract_double(buffer);
         }
 
         // wait for all communication to finish

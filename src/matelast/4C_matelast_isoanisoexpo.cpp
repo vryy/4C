@@ -40,11 +40,10 @@ void Mat::Elastic::IsoAnisoExpo::pack_summand(Core::Communication::PackBuffer& d
   add_to_pack(data, structural_tensor_);
 }
 
-void Mat::Elastic::IsoAnisoExpo::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::IsoAnisoExpo::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
-  extract_from_pack(position, data, a_);
-  extract_from_pack(position, data, structural_tensor_);
+  extract_from_pack(buffer, a_);
+  extract_from_pack(buffer, structural_tensor_);
 }
 
 void Mat::Elastic::IsoAnisoExpo::setup(

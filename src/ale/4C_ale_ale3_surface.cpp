@@ -79,7 +79,7 @@ void Discret::ELEMENTS::Ale3Surface::pack(Core::Communication::PackBuffer& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Surface::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Ale3Surface::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Ale3Surface element does not support communication");
 }

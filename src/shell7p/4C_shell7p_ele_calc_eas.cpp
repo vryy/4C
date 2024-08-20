@@ -152,28 +152,28 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::pack(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.sdc);
-  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.thickness);
-  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.num_ans);
+  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.sdc);
+  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.thickness);
+  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.num_ans);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.alpha_);
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.RTilde_);
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.invDTilde_);
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.transL_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.alpha_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.RTilde_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.invDTilde_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.transL_);
   // number of total EAS parameters
-  Core::Communication::ParObject::extract_from_pack(position, data, locking_types_.membrane);
-  Core::Communication::ParObject::extract_from_pack(position, data, locking_types_.bending);
-  Core::Communication::ParObject::extract_from_pack(position, data, locking_types_.thickness);
+  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.membrane);
+  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.bending);
+  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.thickness);
   Core::Communication::ParObject::extract_from_pack(
-      position, data, locking_types_.transverse_shear_strain_const);
+      buffer, locking_types_.transverse_shear_strain_const);
   Core::Communication::ParObject::extract_from_pack(
-      position, data, locking_types_.transverse_shear_strain_lin);
-  Core::Communication::ParObject::extract_from_pack(position, data, locking_types_.total);
+      buffer, locking_types_.transverse_shear_strain_lin);
+  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.total);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, old_step_length_);
-  Core::Communication::ParObject::extract_from_pack(position, data, cur_thickness_);
+  Core::Communication::ParObject::extract_from_pack(buffer, old_step_length_);
+  Core::Communication::ParObject::extract_from_pack(buffer, cur_thickness_);
 }
 
 template <Core::FE::CellType distype>

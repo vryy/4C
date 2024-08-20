@@ -111,17 +111,16 @@ void MIXTURE::MixtureRule::pack_mixture_rule(Core::Communication::PackBuffer& da
 }
 
 // Unpack the mixture rule
-void MIXTURE::MixtureRule::unpack_mixture_rule(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MIXTURE::MixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
   // Read initialized flag
-  numgp_ = Core::Communication::ParObject::extract_int(position, data);
+  numgp_ = Core::Communication::ParObject::extract_int(buffer);
 
   // Read element read flag
-  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(position, data);
+  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(buffer);
 
   // Read is setup flag
-  is_setup_ = (bool)Core::Communication::ParObject::extract_int(position, data);
+  is_setup_ = (bool)Core::Communication::ParObject::extract_int(buffer);
 }
 
 // reads the element definition and set up all quantities

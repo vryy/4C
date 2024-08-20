@@ -30,7 +30,7 @@ namespace CONTACT
 
     static NodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static NodeType instance_;
@@ -79,7 +79,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer);
 
     //@}
 
@@ -443,7 +443,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer);
 
     //! @name Access methods
 
@@ -566,7 +566,7 @@ namespace CONTACT
     class exists.
 
     */
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer);
 
 
     //! @name Access methods
@@ -640,7 +640,7 @@ namespace CONTACT
     };
 
     //! unpack and re-init after parallel comunication
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data){
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer){
         /* no need to pack, since terms are re-evaluated after parallel communication */
     };
 
@@ -767,7 +767,7 @@ namespace CONTACT
      \ref pack and \ref unpack are used to communicate this node
 
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 

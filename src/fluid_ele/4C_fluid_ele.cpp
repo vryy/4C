@@ -24,10 +24,11 @@ Discret::ELEMENTS::FluidType Discret::ELEMENTS::FluidType::instance_;
 
 Discret::ELEMENTS::FluidType& Discret::ELEMENTS::FluidType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::FluidType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Fluid* object = new Discret::ELEMENTS::Fluid(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -254,36 +255,35 @@ void Discret::ELEMENTS::Fluid::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Fluid::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
   // is_ale_
-  is_ale_ = extract_int(position, data);
+  is_ale_ = extract_int(buffer);
   // distype
-  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
 
   // time-dependent subgrid scales
-  bool is_tds = extract_int(position, data);
+  bool is_tds = extract_int(buffer);
   if (is_tds)
   {
     tds_ = Teuchos::rcp(new FLD::TDSEleData());
     std::vector<char> pbtest;
-    extract_from_pack(position, data, pbtest);
+    extract_from_pack(buffer, pbtest);
     if (pbtest.size() == 0) FOUR_C_THROW("Seems no TDS data available");
-    tds_->unpack(pbtest);
+    Core::Communication::UnpackBuffer pbtest_buffer(pbtest);
+    tds_->unpack(pbtest_buffer);
   }
   else
     tds_ = Teuchos::null;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

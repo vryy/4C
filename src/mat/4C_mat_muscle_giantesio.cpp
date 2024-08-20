@@ -290,10 +290,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleGiantesio::create_material()
 
 Mat::MuscleGiantesioType Mat::MuscleGiantesioType::instance_;
 
-Core::Communication::ParObject* Mat::MuscleGiantesioType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MuscleGiantesioType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* muscle_giantesio = new Mat::MuscleGiantesio();
-  muscle_giantesio->unpack(data);
+  muscle_giantesio->unpack(buffer);
   return muscle_giantesio;
 }
 
@@ -351,18 +352,16 @@ void Mat::MuscleGiantesio::pack(Core::Communication::PackBuffer& data) const
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::MuscleGiantesio::unpack(const std::vector<char>& data)
+void Mat::MuscleGiantesio::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // make sure we have a pristine material
   params_ = nullptr;
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
 
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -379,13 +378,12 @@ void Mat::MuscleGiantesio::unpack(const std::vector<char>& data)
     }
   }
 
-  extract_from_pack(position, data, lambda_m_old_);
-  extract_from_pack(position, data, omegaa_old_);
+  extract_from_pack(buffer, lambda_m_old_);
+  extract_from_pack(buffer, omegaa_old_);
 
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Mat::MuscleGiantesio::setup(int numgp, const Core::IO::InputParameterContainer& container)

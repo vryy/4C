@@ -39,7 +39,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
 namespace LinAlg
 {
   class SerialDenseMatrix;
@@ -136,8 +137,7 @@ namespace MIXTURE
      * @param data (in) : vector storing all data to be unpacked into this instance.
      * @param position (in/out) : current position to unpack data
      */
-    virtual void unpack_mixture_rule(
-        std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer);
 
     /*!
      * This method should be called after creation of the constituents

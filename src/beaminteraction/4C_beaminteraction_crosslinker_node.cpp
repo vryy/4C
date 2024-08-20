@@ -26,11 +26,11 @@ CrossLinking::CrosslinkerNodeType CrossLinking::CrosslinkerNodeType::instance_;
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::Communication::ParObject* CrossLinking::CrosslinkerNodeType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> dummycoord(3, 999.0);
   auto* crosslinker = new CrossLinking::CrosslinkerNode(-1, dummycoord, -1);
-  crosslinker->unpack(data);
+  crosslinker->unpack(buffer);
   return crosslinker;
 }
 
@@ -67,13 +67,12 @@ void CrossLinking::CrosslinkerNodeDataContainer::pack(Core::Communication::PackB
  |  Unpack data                                                      (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CrossLinking::CrosslinkerNodeDataContainer::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void CrossLinking::CrosslinkerNodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // numbond
-  Core::Communication::ParObject::extract_from_pack(position, data, numbond_);
+  Core::Communication::ParObject::extract_from_pack(buffer, numbond_);
   // clbspots_
-  Core::Communication::ParObject::extract_from_pack(position, data, clbspots_);
+  Core::Communication::ParObject::extract_from_pack(buffer, clbspots_);
 
   return;
 }
@@ -158,24 +157,24 @@ void CrossLinking::CrosslinkerNode::pack(Core::Communication::PackBuffer& data) 
  |  Unpack data                                                      (public) |
  |                                                             eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CrossLinking::CrosslinkerNode::unpack(const std::vector<char>& data)
+void CrossLinking::CrosslinkerNode::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Nodes::Node::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Core::Nodes::Node::unpack(basedata_buffer);
 
   // mat
-  bool hasmat = extract_int(position, data);
+  bool hasmat = extract_int(buffer);
   if (hasmat)
   {
     std::vector<char> tmp;
-    extract_from_pack(position, data, tmp);
-    Core::Communication::ParObject* o = Core::Communication::factory(tmp);
+    extract_from_pack(buffer, tmp);
+    Core::Communication::UnpackBuffer buffer_tmp(tmp);
+    Core::Communication::ParObject* o = Core::Communication::factory(buffer_tmp);
     Mat::CrosslinkerMat* mat = dynamic_cast<Mat::CrosslinkerMat*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack material
@@ -186,8 +185,7 @@ void CrossLinking::CrosslinkerNode::unpack(const std::vector<char>& data)
     mat_ = Teuchos::null;
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

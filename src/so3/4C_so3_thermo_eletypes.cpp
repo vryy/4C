@@ -36,11 +36,11 @@ Discret::ELEMENTS::SoHex8ThermoType& Discret::ELEMENTS::SoHex8ThermoType::instan
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ThermoType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -143,12 +143,12 @@ Discret::ELEMENTS::SoHex8fbarThermoType& Discret::ELEMENTS::SoHex8fbarThermoType
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarThermoType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -256,11 +256,11 @@ Discret::ELEMENTS::SoTet4ThermoType& Discret::ELEMENTS::SoTet4ThermoType::instan
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ThermoType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -361,12 +361,12 @@ Discret::ELEMENTS::SoTet10ThermoType& Discret::ELEMENTS::SoTet10ThermoType::inst
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ThermoType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -468,12 +468,12 @@ Discret::ELEMENTS::SoHex27ThermoType& Discret::ELEMENTS::SoHex27ThermoType::inst
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ThermoType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -575,12 +575,12 @@ Discret::ELEMENTS::SoHex20ThermoType& Discret::ELEMENTS::SoHex20ThermoType::inst
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex20ThermoType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>* object =
       new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -683,12 +683,12 @@ Discret::ELEMENTS::SoNurbs27ThermoType& Discret::ELEMENTS::SoNurbs27ThermoType::
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27ThermoType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>*
       object = new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
           Core::FE::CellType::nurbs27>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 

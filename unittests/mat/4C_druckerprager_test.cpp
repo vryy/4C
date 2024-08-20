@@ -86,7 +86,8 @@ namespace
     swap(dataSend, data());
     for (int i = 0; i < 4; i++) dataSend.erase(dataSend.begin());
     auto plastic = Teuchos::rcp(new Mat::PlasticDruckerPrager());
-    plastic->unpack(dataSend);
+    Core::Communication::UnpackBuffer buffer(dataSend);
+    plastic->unpack(buffer);
     plastic->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);
     FOUR_C_EXPECT_NEAR(result_stress, ref_stress, 1.0e-12);
   };

@@ -44,7 +44,7 @@ namespace CrossLinking
 
     static CrosslinkerNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static CrosslinkerNodeType instance_;
@@ -94,7 +94,7 @@ namespace CrossLinking
      class exists.
 
      */
-    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    void unpack(Core::Communication::UnpackBuffer& buffer);
 
     //@}
 
@@ -227,7 +227,7 @@ namespace CrossLinking
      \ref pack and \ref unpack are used to communicate this node
 
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 

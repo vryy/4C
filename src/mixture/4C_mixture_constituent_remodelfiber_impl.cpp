@@ -86,13 +86,13 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::pack_constituent(
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberImpl::unpack_constituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  MIXTURE::MixtureConstituent::unpack_constituent(position, data);
+  MIXTURE::MixtureConstituent::unpack_constituent(buffer);
   initialize();
 
-  anisotropy_extension_.unpack_anisotropy(data, position);
-  for (RemodelFiber<2>& fiber : remodel_fiber_) fiber.unpack(position, data);
+  anisotropy_extension_.unpack_anisotropy(buffer);
+  for (RemodelFiber<2>& fiber : remodel_fiber_) fiber.unpack(buffer);
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberImpl::register_anisotropy_extensions(

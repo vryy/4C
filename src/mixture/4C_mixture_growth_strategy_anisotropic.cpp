@@ -51,11 +51,11 @@ void MIXTURE::AnisotropicGrowthStrategy::pack_mixture_growth_strategy(
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::unpack_mixture_growth_strategy(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  MixtureGrowthStrategy::unpack_mixture_growth_strategy(position, data);
+  MixtureGrowthStrategy::unpack_mixture_growth_strategy(buffer);
 
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)

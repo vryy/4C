@@ -33,10 +33,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReaction::create_material(
 /*----------------------------------------------------------------------*/
 Mat::StructPoroReactionType Mat::StructPoroReactionType::instance_;
 
-Core::Communication::ParObject* Mat::StructPoroReactionType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::StructPoroReactionType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::StructPoroReaction* struct_poro = new Mat::StructPoroReaction();
-  struct_poro->unpack(data);
+  struct_poro->unpack(buffer);
   return struct_poro;
 }
 
@@ -90,15 +91,13 @@ void Mat::StructPoroReaction::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::unpack(const std::vector<char>& data)
+void Mat::StructPoroReaction::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -114,12 +113,13 @@ void Mat::StructPoroReaction::unpack(const std::vector<char>& data)
     }
 
   // refporosity_
-  extract_from_pack(position, data, refporosity_);
+  extract_from_pack(buffer, refporosity_);
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  StructPoro::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  StructPoro::unpack(basedata_buffer);
 }
 
 /*----------------------------------------------------------------------*/

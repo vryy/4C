@@ -45,7 +45,7 @@ namespace Mortar
 
     static ElementType& instance();
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
     Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
@@ -101,7 +101,7 @@ namespace Mortar
     class exists.
 
     */
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer);
 
     //@}
 
@@ -421,7 +421,7 @@ namespace Mortar
     \ref pack and \ref unpack are used to communicate this element
 
     */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     Core::Elements::ElementType& element_type() const override { return ElementType::instance(); }
 

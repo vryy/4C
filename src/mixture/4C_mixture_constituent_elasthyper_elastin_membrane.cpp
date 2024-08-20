@@ -174,18 +174,18 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pack_constituent(
 
 // Unpack the constituent
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::unpack_constituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  MixtureConstituentElastHyperBase::unpack_constituent(position, data);
+  MixtureConstituentElastHyperBase::unpack_constituent(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, current_reference_growth_);
+  Core::Communication::ParObject::extract_from_pack(buffer, current_reference_growth_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, mue_frac_);
+  Core::Communication::ParObject::extract_from_pack(buffer, mue_frac_);
 
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 
   // loop map of associated potential summands
-  for (auto& summand : potsum_membrane_) summand->unpack_summand(data, position);
+  for (auto& summand : potsum_membrane_) summand->unpack_summand(buffer);
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::register_anisotropy_extensions(

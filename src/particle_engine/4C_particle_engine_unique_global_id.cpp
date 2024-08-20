@@ -70,16 +70,12 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
 
     reader->read_char_vector(buffer, objectname_ + "reusableglobalids");
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < buffer->size())
+    Core::Communication::UnpackBuffer data(*buffer);
+    while (!data.at_end())
     {
-      Core::Communication::ParObject::extract_from_pack(position, *buffer, reusableglobalids_);
+      Core::Communication::ParObject::extract_from_pack(data, reusableglobalids_);
     }
-
-    if (position != buffer->size())
-      FOUR_C_THROW(
-          "mismatch in size of data %d <-> %d", static_cast<int>(buffer->size()), position);
   }
 }
 
@@ -170,19 +166,15 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
     {
       const std::vector<char>& rmsg = p.second;
 
-      std::vector<char>::size_type position = 0;
 
-      while (position < rmsg.size())
+      Core::Communication::UnpackBuffer buffer(rmsg);
+      while (!buffer.at_end())
       {
-        Core::Communication::ParObject::extract_from_pack(
-            position, rmsg, receivedreusableglobalids);
+        Core::Communication::ParObject::extract_from_pack(buffer, receivedreusableglobalids);
 
         reusableglobalids_.insert(reusableglobalids_.end(), receivedreusableglobalids.begin(),
             receivedreusableglobalids.end());
       }
-
-      if (position != rmsg.size())
-        FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
     }
   }
 
@@ -323,15 +315,12 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
     {
       std::vector<char>& rmsg = rdata[masterrank_];
 
-      std::vector<char>::size_type position = 0;
 
-      while (position < rmsg.size())
+      Core::Communication::UnpackBuffer buffer(rmsg);
+      while (!buffer.at_end())
       {
-        Core::Communication::ParObject::extract_from_pack(position, rmsg, requesteduniqueglobalids);
+        Core::Communication::ParObject::extract_from_pack(buffer, requesteduniqueglobalids);
       }
-
-      if (position != rmsg.size())
-        FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
     }
   }
 }

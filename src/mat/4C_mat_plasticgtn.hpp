@@ -96,7 +96,7 @@ namespace Mat
    public:
     std::string name() const override { return "PlasticGTNType"; }
     static PlasticGTNType& instance() { return instance_; };
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static PlasticGTNType instance_;
@@ -115,7 +115,7 @@ namespace Mat
     }
 
     void pack(Core::Communication::PackBuffer& data) const override;
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
     Core::Materials::MaterialType material_type() const override
     {
       return Core::Materials::m_plgtn;

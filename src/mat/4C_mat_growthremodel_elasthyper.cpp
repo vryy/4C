@@ -110,10 +110,10 @@ Mat::GrowthRemodelElastHyperType Mat::GrowthRemodelElastHyperType::instance_;
 
 
 Core::Communication::ParObject* Mat::GrowthRemodelElastHyperType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::GrowthRemodelElastHyper* gr_elhy = new Mat::GrowthRemodelElastHyper();
-  gr_elhy->unpack(data);
+  gr_elhy->unpack(buffer);
 
   return gr_elhy;
 }
@@ -267,7 +267,7 @@ void Mat::GrowthRemodelElastHyper::pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
+void Mat::GrowthRemodelElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -275,13 +275,13 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
   potsumeliso_.clear();
   potsumelmem_.clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -299,25 +299,25 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
 
 
   // mass fractions of elastin and ground matrix
-  extract_from_pack(position, data, cur_rho_el_);
-  extract_from_pack(position, data, init_rho_el_);
+  extract_from_pack(buffer, cur_rho_el_);
+  extract_from_pack(buffer, init_rho_el_);
 
-  extract_from_pack(position, data, v_);
-  extract_from_pack(position, data, gp_ax_);
-  extract_from_pack(position, data, gp_rad_);
-  extract_from_pack(position, data, acir_m_);
-  extract_from_pack(position, data, aax_m_);
-  extract_from_pack(position, data, arad_m_);
-  extract_from_pack(position, data, aradv_);
-  extract_from_pack(position, data, apl_m_);
-  extract_from_pack(position, data, ag_m_);
-  extract_from_pack(position, data, gm_);
-  extract_from_pack(position, data, radaxicirc_);
-  extract_from_pack(position, data, mue_frac_);
-  extract_from_pack(position, data, setup_);
-  extract_from_pack(position, data, nr_rf_tot_);
+  extract_from_pack(buffer, v_);
+  extract_from_pack(buffer, gp_ax_);
+  extract_from_pack(buffer, gp_rad_);
+  extract_from_pack(buffer, acir_m_);
+  extract_from_pack(buffer, aax_m_);
+  extract_from_pack(buffer, arad_m_);
+  extract_from_pack(buffer, aradv_);
+  extract_from_pack(buffer, apl_m_);
+  extract_from_pack(buffer, ag_m_);
+  extract_from_pack(buffer, gm_);
+  extract_from_pack(buffer, radaxicirc_);
+  extract_from_pack(buffer, mue_frac_);
+  extract_from_pack(buffer, setup_);
+  extract_from_pack(buffer, nr_rf_tot_);
 
-  anisotropy_.unpack_anisotropy(data, position);
+  anisotropy_.unpack_anisotropy(buffer);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -337,7 +337,7 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (auto& p : potsumrf_)
     {
-      p->unpack_summand(data, position);
+      p->unpack_summand(buffer);
       p->register_anisotropy_extensions(anisotropy_);
     }
 
@@ -357,7 +357,7 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (auto& p : potsumelmem_)
     {
-      p->unpack_summand(data, position);
+      p->unpack_summand(buffer);
       p->register_anisotropy_extensions(anisotropy_);
     }
 
@@ -379,7 +379,7 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
       // loop map of associated potential summands
       for (auto& p : potsumeliso_)
       {
-        p->unpack_summand(data, position);
+        p->unpack_summand(buffer);
         p->register_anisotropy_extensions(anisotropy_);
       }
 
@@ -393,12 +393,11 @@ void Mat::GrowthRemodelElastHyper::unpack(const std::vector<char>& data)
             "prestretching algorithm needs it. "
             "This can easily be expanded to other materials!");
       potsumelpenalty_ = sum;
-      potsumelpenalty_->unpack_summand(data, position);
+      potsumelpenalty_->unpack_summand(buffer);
 
       // in the postprocessing mode, we do not unpack everything we have packed
       // -> position check cannot be done in this case
-      if (position != data.size())
-        FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     }
   }
 }

@@ -169,16 +169,17 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
     exporter.receive_any(source, tag, recvdata, length);
     if (source != 0 || tag != foundme) FOUR_C_THROW("Messages got mixed up");
     // Put received elements into discretization
-    std::vector<char>::size_type index = 0;
-    while (index < recvdata.size())
+    Communication::UnpackBuffer buffer(recvdata);
+    while (!buffer.at_end())
     {
       std::vector<char> data;
       // Extract the size and raw data. This operation is asymmetric to the packing operation which
       // did store the size via a manual SizeMarker insertion.
-      Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
       // Pass on the raw data to the factory that selects the specialized implementation based on
       // the unique id stored as first entry.
-      Core::Communication::ParObject* object = Core::Communication::factory(data);
+      Communication::UnpackBuffer data_buffer(data);
+      Core::Communication::ParObject* object = Core::Communication::factory(data_buffer);
       Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->set_owner(myrank);
@@ -278,12 +279,13 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
     // printf("Proc %d received tag %d length %d\n",myrank,tag,length); fflush(stdout);
     if (source != 0 || tag != foundme) FOUR_C_THROW("Messages got mixed up");
     // Put received nodes into discretization
-    std::vector<char>::size_type index = 0;
-    while (index < recvdata.size())
+    Communication::UnpackBuffer buffer(recvdata);
+    while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(index, recvdata, data);
-      Core::Communication::ParObject* object = Core::Communication::factory(data);
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      Communication::UnpackBuffer data_buffer(data);
+      Core::Communication::ParObject* object = Core::Communication::factory(data_buffer);
       Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");
       node->set_owner(myrank);

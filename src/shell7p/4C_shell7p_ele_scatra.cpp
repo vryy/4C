@@ -29,13 +29,11 @@ namespace
   }
 
   template <typename Interface>
-  void try_unpack_interface(
-      Interface& interface, std::size_t& position, const std::vector<char>& data)
+  void try_unpack_interface(Interface& interface, Core::Communication::UnpackBuffer& buffer)
   {
     std::shared_ptr<Discret::ELEMENTS::Shell::Serializable> serializable_shell_interface =
         std::dynamic_pointer_cast<Discret::ELEMENTS::Shell::Serializable>(interface);
-    if (serializable_shell_interface != nullptr)
-      serializable_shell_interface->unpack(position, data);
+    if (serializable_shell_interface != nullptr) serializable_shell_interface->unpack(buffer);
   }
 
 }  // namespace
@@ -49,10 +47,10 @@ Discret::ELEMENTS::Shell7pScatraType& Discret::ELEMENTS::Shell7pScatraType::inst
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::Shell7pScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Shell7pScatra(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -263,35 +261,33 @@ void Discret::ELEMENTS::Shell7pScatra::pack(Core::Communication::PackBuffer& dat
 }
 
 
-void Discret::ELEMENTS::Shell7pScatra::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Shell7pScatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
   // discretization type
-  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
   // element technology
-  extract_from_pack(position, data, eletech_);
+  extract_from_pack(buffer, eletech_);
   // thickness in reference frame
-  extract_from_pack(position, data, thickness_);
+  extract_from_pack(buffer, thickness_);
   // nodal director
-  extract_from_pack(position, data, nodal_directors_);
+  extract_from_pack(buffer, nodal_directors_);
   // Setup flag for material post setup
-  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
   // extract impltype
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(
-      Core::Communication::ParObject::extract_int(position, data));
+  impltype_ =
+      static_cast<Inpar::ScaTra::ImplType>(Core::Communication::ParObject::extract_int(buffer));
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 
-  try_unpack_interface(shell_interface_, position, data);
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  try_unpack_interface(shell_interface_, buffer);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Shell7pScatra::solid_material(int nummat) const

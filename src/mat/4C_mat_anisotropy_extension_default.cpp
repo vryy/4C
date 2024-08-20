@@ -52,12 +52,12 @@ void Mat::DefaultAnisotropyExtension<numfib>::pack_anisotropy(
 
 template <unsigned int numfib>
 void Mat::DefaultAnisotropyExtension<numfib>::unpack_anisotropy(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+    Core::Communication::UnpackBuffer& buffer)
 {
   // Call base unpacking
-  Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(data, position);
+  Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(buffer);
 
-  initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
+  initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
 }
 
 template <unsigned int numfib>

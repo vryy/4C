@@ -205,11 +205,11 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 
         coordsvec.clear();
 
-        std::vector<char>::size_type index = 0;
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
           x1avcoords.insert(onecoord);
         }
       }
@@ -261,11 +261,11 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 
         coordsvec.clear();
 
-        std::vector<char>::size_type index = 0;
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
           x2avcoords.insert(onecoord);
         }
       }

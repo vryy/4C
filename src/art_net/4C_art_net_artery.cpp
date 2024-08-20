@@ -20,10 +20,11 @@ Discret::ELEMENTS::ArteryType Discret::ELEMENTS::ArteryType::instance_;
 
 Discret::ELEMENTS::ArteryType& Discret::ELEMENTS::ArteryType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::ArteryType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::ArteryType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Artery* object = new Discret::ELEMENTS::Artery(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -137,22 +138,20 @@ void Discret::ELEMENTS::Artery::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Artery::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Artery::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
   // Gaussrule
-  extract_from_pack(position, data, gaussrule_);
-  impltype_ = static_cast<Inpar::ArtDyn::ImplType>(extract_int(position, data));
+  extract_from_pack(buffer, gaussrule_);
+  impltype_ = static_cast<Inpar::ArtDyn::ImplType>(extract_int(buffer));
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

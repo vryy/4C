@@ -130,7 +130,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::pack(
 
 template <int numstates, typename T>
 void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   if constexpr (!std::is_floating_point_v<T>)
   {
@@ -141,16 +141,16 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::unpack(
   }
   else
   {
-    Core::Communication::ParObject::extract_from_pack(position, data, lambda_pre_);
+    Core::Communication::ParObject::extract_from_pack(buffer, lambda_pre_);
     sig_h_ = evaluate_fiber_cauchy_stress(1.0, 1.0 / lambda_pre_, 1.0);
 
 
     for (auto& state : states_)
     {
-      Core::Communication::ParObject::extract_from_pack(position, data, state.growth_scalar);
-      Core::Communication::ParObject::extract_from_pack(position, data, state.lambda_r);
-      Core::Communication::ParObject::extract_from_pack(position, data, state.lambda_f);
-      Core::Communication::ParObject::extract_from_pack(position, data, state.lambda_ext);
+      Core::Communication::ParObject::extract_from_pack(buffer, state.growth_scalar);
+      Core::Communication::ParObject::extract_from_pack(buffer, state.lambda_r);
+      Core::Communication::ParObject::extract_from_pack(buffer, state.lambda_f);
+      Core::Communication::ParObject::extract_from_pack(buffer, state.lambda_ext);
     }
   }
 }
@@ -688,10 +688,9 @@ void MIXTURE::RemodelFiber<numstates>::pack(Core::Communication::PackBuffer& dat
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MIXTURE::RemodelFiber<numstates>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  impl_->unpack(position, data);
+  impl_->unpack(buffer);
 }
 
 template <int numstates>

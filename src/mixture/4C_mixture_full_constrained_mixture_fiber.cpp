@@ -259,55 +259,51 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::pack(Core::Communication::Pac
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MIXTURE::FullConstrainedMixtureFiber<Number>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MIXTURE::FullConstrainedMixtureFiber<double>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(position, data, sig_h_);
-  Core::Communication::ParObject::extract_from_pack(position, data, lambda_pre_);
-  Core::Communication::ParObject::extract_from_pack(position, data, current_state_.lambda_f);
+  Core::Communication::ParObject::extract_from_pack(buffer, sig_h_);
+  Core::Communication::ParObject::extract_from_pack(buffer, lambda_pre_);
+  Core::Communication::ParObject::extract_from_pack(buffer, current_state_.lambda_f);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, reference_time_);
-  Core::Communication::ParObject::extract_from_pack(position, data, current_time_shift_);
+  Core::Communication::ParObject::extract_from_pack(buffer, reference_time_);
+  Core::Communication::ParObject::extract_from_pack(buffer, current_time_shift_);
 
   std::size_t size_of_history;
-  Core::Communication::ParObject::extract_from_pack(position, data, size_of_history);
+  Core::Communication::ParObject::extract_from_pack(buffer, size_of_history);
   history_.resize(size_of_history);
 
   for (auto& interval : history_)
   {
     std::size_t size_of_interval;
-    Core::Communication::ParObject::extract_from_pack(position, data, size_of_interval);
+    Core::Communication::ParObject::extract_from_pack(buffer, size_of_interval);
     interval.timesteps.resize(size_of_interval);
     for (auto& item : interval.timesteps)
     {
-      Core::Communication::ParObject::extract_from_pack(position, data, item.reference_stretch);
-      Core::Communication::ParObject::extract_from_pack(position, data, item.growth_scalar);
-      Core::Communication::ParObject::extract_from_pack(
-          position, data, item.growth_scalar_production_rate);
-      Core::Communication::ParObject::extract_from_pack(position, data, item.deposition_time);
+      Core::Communication::ParObject::extract_from_pack(buffer, item.reference_stretch);
+      Core::Communication::ParObject::extract_from_pack(buffer, item.growth_scalar);
+      Core::Communication::ParObject::extract_from_pack(buffer, item.growth_scalar_production_rate);
+      Core::Communication::ParObject::extract_from_pack(buffer, item.deposition_time);
     }
 
-    Core::Communication::ParObject::extract_from_pack(position, data, interval.base_dt);
+    Core::Communication::ParObject::extract_from_pack(buffer, interval.base_dt);
 
-    interval.adaptivity_info.unpack(position, data);
+    interval.adaptivity_info.unpack(buffer);
   }
 
 
-  Core::Communication::ParObject::extract_from_pack(position, data, current_time_);
+  Core::Communication::ParObject::extract_from_pack(buffer, current_time_);
 
 
-  Core::Communication::ParObject::extract_from_pack(position, data, computed_growth_scalar_);
-  Core::Communication::ParObject::extract_from_pack(position, data, computed_sigma_);
-  Core::Communication::ParObject::extract_from_pack(
-      position, data, computed_dgrowth_scalar_dlambda_f_sq_);
-  Core::Communication::ParObject::extract_from_pack(position, data, computed_dsigma_dlambda_f_sq_);
+  Core::Communication::ParObject::extract_from_pack(buffer, computed_growth_scalar_);
+  Core::Communication::ParObject::extract_from_pack(buffer, computed_sigma_);
+  Core::Communication::ParObject::extract_from_pack(buffer, computed_dgrowth_scalar_dlambda_f_sq_);
+  Core::Communication::ParObject::extract_from_pack(buffer, computed_dsigma_dlambda_f_sq_);
 }
 
 template <typename Number>

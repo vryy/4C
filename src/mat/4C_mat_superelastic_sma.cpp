@@ -139,10 +139,11 @@ Mat::SuperElasticSMAType Mat::SuperElasticSMAType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::SuperElasticSMAType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SuperElasticSMAType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::SuperElasticSMA* superelast = new Mat::SuperElasticSMA();
-  superelast->unpack(data);
+  superelast->unpack(buffer);
   return superelast;
 }
 
@@ -205,17 +206,17 @@ void Mat::SuperElasticSMA::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                        hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
+void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
   strainenergy_ = 0.0;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -232,7 +233,7 @@ void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  extract_from_pack(position, data, histsize);
+  extract_from_pack(buffer, histsize);
 
   // if system is not yet initialized, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -248,21 +249,20 @@ void Mat::SuperElasticSMA::unpack(const std::vector<char>& data)
 
     // vectors of last converged state are unpacked
 
-    extract_from_pack(position, data, tmpDouble);
+    extract_from_pack(buffer, tmpDouble);
     druckerpragerloadingcurr_->push_back(tmpDouble);
 
-    extract_from_pack(position, data, tmpDouble);
+    extract_from_pack(buffer, tmpDouble);
     druckerpragerloadinglast_->push_back(tmpDouble);
 
-    extract_from_pack(position, data, tmpDouble);
+    extract_from_pack(buffer, tmpDouble);
     xi_s_curr_->push_back(tmpDouble);
 
-    extract_from_pack(position, data, tmpDouble);
+    extract_from_pack(buffer, tmpDouble);
     xi_s_last_->push_back(tmpDouble);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 

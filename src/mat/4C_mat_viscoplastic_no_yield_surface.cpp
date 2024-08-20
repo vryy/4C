@@ -63,10 +63,10 @@ Mat::ViscoPlasticNoYieldSurfaceType Mat::ViscoPlasticNoYieldSurfaceType::instanc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::ViscoPlasticNoYieldSurfaceType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* visco_plastic_no_yield_surface = new Mat::ViscoPlasticNoYieldSurface();
-  visco_plastic_no_yield_surface->unpack(data);
+  visco_plastic_no_yield_surface->unpack(buffer);
   return visco_plastic_no_yield_surface;
 }
 
@@ -110,15 +110,13 @@ void Mat::ViscoPlasticNoYieldSurface::pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
+void Mat::ViscoPlasticNoYieldSurface::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -136,15 +134,14 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(const std::vector<char>& data)
   }
 
   // history data
-  extract_from_pack<3, 3>(position, data, last_plastic_defgrd_inverse_);
-  extract_from_pack(position, data, last_flowres_isotropic_);
+  extract_from_pack<3, 3>(buffer, last_plastic_defgrd_inverse_);
+  extract_from_pack(buffer, last_flowres_isotropic_);
 
   // no need to unpack this, just resize the data members
   current_flowres_isotropic_.resize(last_flowres_isotropic_.size(), 0.0);
   current_plastic_defgrd_inverse_.resize(last_plastic_defgrd_inverse_.size());
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*---------------------------------------------------------------------*

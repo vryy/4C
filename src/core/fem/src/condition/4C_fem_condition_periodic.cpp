@@ -838,15 +838,15 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
           // ---- unpack ----
           {
             multiplecouplings.clear();
-            size_t pos = 0;
+            Core::Communication::UnpackBuffer buffer(rdata);
             std::vector<int> mids;
-            Core::Communication::ParObject::extract_from_pack(pos, rdata, mids);
+            Core::Communication::ParObject::extract_from_pack(buffer, mids);
 
-            for (std::vector<int>::const_iterator iter = mids.begin(); iter != mids.end(); ++iter)
+            for (int mid : mids)
             {
               std::vector<int> slvs;
-              Core::Communication::ParObject::extract_from_pack(pos, rdata, slvs);
-              multiplecouplings[*iter] = slvs;
+              Core::Communication::ParObject::extract_from_pack(buffer, slvs);
+              multiplecouplings[mid] = slvs;
             }
           }
 

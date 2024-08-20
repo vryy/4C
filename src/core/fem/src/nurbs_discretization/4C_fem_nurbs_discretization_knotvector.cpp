@@ -17,7 +17,7 @@ Core::FE::Nurbs::KnotvectorObjectType Core::FE::Nurbs::KnotvectorObjectType::ins
 
 
 Core::Communication::ParObject* Core::FE::Nurbs::KnotvectorObjectType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   return nullptr;
 }
@@ -791,19 +791,17 @@ void Core::FE::Nurbs::Knotvector::pack(Core::Communication::PackBuffer& data) co
  |  Unpack Knotvectors data                                    (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void Core::FE::Nurbs::Knotvector::unpack(const std::vector<char>& data)
+void Core::FE::Nurbs::Knotvector::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
   filled_ = false;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract number of patches
-  extract_from_pack(position, data, npatches_);
+  extract_from_pack(buffer, npatches_);
 
   // extract dimension
-  extract_from_pack(position, data, dim_);
+  extract_from_pack(buffer, dim_);
 
   // resize all vectors
   degree_.resize(npatches_);
@@ -824,20 +822,20 @@ void Core::FE::Nurbs::Knotvector::unpack(const std::vector<char>& data)
   // extract degree vector
   for (int np = 0; np < npatches_; ++np)
   {
-    extract_from_pack(position, data, degree_[np]);
+    extract_from_pack(buffer, degree_[np]);
   }
 
   // extract knotvector size
   for (int np = 0; np < npatches_; ++np)
   {
-    extract_from_pack(position, data, n_x_m_x_l_[np]);
+    extract_from_pack(buffer, n_x_m_x_l_[np]);
   }
 
   // extract element numbers in all cartesian
   // directions
   for (int np = 0; np < npatches_; ++np)
   {
-    extract_from_pack(position, data, nele_x_mele_x_lele_[np]);
+    extract_from_pack(buffer, nele_x_mele_x_lele_[np]);
   }
 
   // extract knotvector types
@@ -846,12 +844,12 @@ void Core::FE::Nurbs::Knotvector::unpack(const std::vector<char>& data)
     for (int rr = 0; rr < dim_; ++rr)
     {
       (interpolation_[np])[rr] =
-          static_cast<Core::FE::Nurbs::Knotvector::KnotvectorType>(extract_int(position, data));
+          static_cast<Core::FE::Nurbs::Knotvector::KnotvectorType>(extract_int(buffer));
     }
   }
 
   // extract patch offsets
-  extract_from_pack(position, data, offsets_);
+  extract_from_pack(buffer, offsets_);
 
   // extract knotvector coordinates itself
   for (int np = 0; np < npatches_; ++np)
@@ -860,7 +858,7 @@ void Core::FE::Nurbs::Knotvector::unpack(const std::vector<char>& data)
     {
       (knot_values_[np])[rr] = Teuchos::rcp(new std::vector<double>((n_x_m_x_l_[np])[rr]));
 
-      extract_from_pack(position, data, (*((knot_values_[np])[rr])));
+      extract_from_pack(buffer, (*((knot_values_[np])[rr])));
     }
   }
 

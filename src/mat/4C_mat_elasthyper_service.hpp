@@ -415,15 +415,15 @@ namespace Mat
      * @param position position where to start to unpack
      * @param data data holding the values
      */
-    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      isoprinc = (bool)Core::Communication::ParObject::extract_int(position, data);
-      isomod = (bool)Core::Communication::ParObject::extract_int(position, data);
-      anisoprinc = (bool)Core::Communication::ParObject::extract_int(position, data);
-      anisomod = (bool)Core::Communication::ParObject::extract_int(position, data);
-      coeffStretchesPrinc = (bool)Core::Communication::ParObject::extract_int(position, data);
-      coeffStretchesMod = (bool)Core::Communication::ParObject::extract_int(position, data);
-      viscoGeneral = (bool)Core::Communication::ParObject::extract_int(position, data);
+      isoprinc = (bool)Core::Communication::ParObject::extract_int(buffer);
+      isomod = (bool)Core::Communication::ParObject::extract_int(buffer);
+      anisoprinc = (bool)Core::Communication::ParObject::extract_int(buffer);
+      anisomod = (bool)Core::Communication::ParObject::extract_int(buffer);
+      coeffStretchesPrinc = (bool)Core::Communication::ParObject::extract_int(buffer);
+      coeffStretchesMod = (bool)Core::Communication::ParObject::extract_int(buffer);
+      viscoGeneral = (bool)Core::Communication::ParObject::extract_int(buffer);
     }
 
     /**

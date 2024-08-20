@@ -120,7 +120,7 @@ void Discret::ELEMENTS::MembraneLine<distype>::pack(Core::Communication::PackBuf
  |                                                        fbraeu 06/165 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneLine<distype>::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::MembraneLine<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this membrane line element does not support communication");
   return;

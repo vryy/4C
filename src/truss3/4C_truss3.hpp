@@ -39,7 +39,7 @@ namespace Discret
       Core::LinAlg::SerialDenseMatrix compute_null_space(
           Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
@@ -205,7 +205,7 @@ namespace Discret
         return Truss3Type::instance().unique_par_object_id();
       }
 
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       //! coordinates of nodes in reference configuration
       const Core::LinAlg::Matrix<6, 1>& x() const { return x_; }

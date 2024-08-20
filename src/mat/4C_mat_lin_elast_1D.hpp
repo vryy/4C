@@ -72,7 +72,7 @@ namespace Mat
 
     static LinElast1DType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static LinElast1DType instance_;
@@ -118,7 +118,7 @@ namespace Mat
       return LinElast1DType::instance().unique_par_object_id();
     }
 
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     /// my material parameters
@@ -129,7 +129,7 @@ namespace Mat
   class LinElast1DGrowthType : public Core::Communication::ParObjectType
   {
    public:
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
     static LinElast1DGrowthType& instance() { return instance_; }
 
@@ -175,7 +175,7 @@ namespace Mat
       return LinElast1DGrowthType::instance().unique_par_object_id();
     }
 
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     /// polynomial growth factor based on amount of substance (@p conc * @p def_grad)

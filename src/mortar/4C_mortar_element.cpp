@@ -26,10 +26,11 @@ Mortar::ElementType Mortar::ElementType::instance_;
 
 Mortar::ElementType& Mortar::ElementType::instance() { return instance_; }
 
-Core::Communication::ParObject* Mortar::ElementType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mortar::ElementType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mortar::Element* ele = new Mortar::Element(0, 0, Core::FE::CellType::dis_none, 0, nullptr, false);
-  ele->unpack(data);
+  ele->unpack(buffer);
   return ele;
 }
 
@@ -85,11 +86,10 @@ void Mortar::MortarEleDataContainer::pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void Mortar::MortarEleDataContainer::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void Mortar::MortarEleDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // area_
-  Core::Communication::ParObject::extract_from_pack(position, data, area_);
+  Core::Communication::ParObject::extract_from_pack(buffer, area_);
 
   dualshapecoeff_ = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
@@ -232,48 +232,47 @@ void Mortar::Element::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void Mortar::Element::unpack(const std::vector<char>& data)
+void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::FaceElement::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::FaceElement::unpack(base_buffer);
   // shape_
-  shape_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  shape_ = static_cast<Core::FE::CellType>(extract_int(buffer));
   // isslave_
-  isslave_ = extract_int(position, data);
+  isslave_ = extract_int(buffer);
   // nurbs_
-  nurbs_ = extract_int(position, data);
+  nurbs_ = extract_int(buffer);
 
   // for nurbs:
   if (nurbs_)
   {
     // normalfac_
-    normalfac_ = extract_double(position, data);
+    normalfac_ = extract_double(buffer);
     // zero_sized_
-    zero_sized_ = extract_int(position, data);
+    zero_sized_ = extract_int(buffer);
     // knots
     int nr;
-    Core::Communication::ParObject::extract_from_pack(position, data, nr);
+    Core::Communication::ParObject::extract_from_pack(buffer, nr);
 
     if (nr != 0)
     {
       mortarknots_.resize(nr);
       for (int i = 0; i < nr; i++)
-        Core::Communication::ParObject::extract_from_pack(position, data, mortarknots_[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, mortarknots_[i]);
     }
   }
 
   // modata_
-  bool hasdata = extract_int(position, data);
+  bool hasdata = extract_int(buffer);
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new Mortar::MortarEleDataContainer());
-    modata_->unpack(position, data);
+    modata_->unpack(buffer);
   }
   else
   {
@@ -281,17 +280,13 @@ void Mortar::Element::unpack(const std::vector<char>& data)
   }
 
   // physical type
-  physicaltype_ = (PhysicalType)(extract_int(position, data));
+  physicaltype_ = (PhysicalType)(extract_int(buffer));
 
   // mesh size
-  traceHE_ = extract_double(position, data);
-  traceHCond_ = extract_double(position, data);
+  traceHE_ = extract_double(buffer);
+  traceHCond_ = extract_double(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW(
-        "Mismatch in size of available data (size %d) vs. position pointer "
-        "of read data (size %d)",
-        (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

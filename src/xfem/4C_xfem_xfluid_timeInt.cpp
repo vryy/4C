@@ -2147,19 +2147,18 @@ void XFEM::XFluidTimeInt::export_methods(
       std::vector<char> dataRecv;
       send_data(dataSend, dest, source, dataRecv);
 
-      // pointer to current position of group of cells in global std::string (counts bytes)
-      std::vector<char>::size_type posinData = 0;
 
       // unpack received data
-      while (posinData < dataRecv.size())
+      Core::Communication::UnpackBuffer buffer(dataRecv);
+      while (!buffer.at_end())
       {
         // unpack volumecell
         int nid = -1;                   // node id
         std::map<int, int> dofset_map;  // dofset map <nds, Method>
 
         // unpack reconstruction method data
-        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nid);
-        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dofset_map);
+        Core::Communication::ParObject::extract_from_pack(buffer, nid);
+        Core::Communication::ParObject::extract_from_pack(buffer, dofset_map);
 
         // distribute the received information on this proc if the info is required on this node
 

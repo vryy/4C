@@ -83,15 +83,14 @@ void Discret::UTILS::i_send_receive_any(Teuchos::RCP<Core::FE::Discretization> c
     // ---- unpack ----
     {
       // Put received nodes into discretization
-      std::vector<char>::size_type index = 0;
-      while (index < rdata.size())
+      Core::Communication::UnpackBuffer buffer(rdata);
+      while (!buffer.at_end())
       {
         std::pair<int, std::vector<int>> pair;
-        Core::Communication::ParObject::extract_from_pack(index, rdata, pair);
+        Core::Communication::ParObject::extract_from_pack(buffer, pair);
         recvdata.push_back(pair);
       }
-      if (index != rdata.size())
-        FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
+      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not empty after unpacking");
     }
   }
 

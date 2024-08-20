@@ -47,19 +47,17 @@ void FLD::TDSEleData::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::unpack(const std::vector<char>& data)
+void FLD::TDSEleData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // history variables (subgrid-scale velocities, accelerations and pressure)
   {
     int firstdim;
     int secondim;
 
-    extract_from_pack(position, data, firstdim);
-    extract_from_pack(position, data, secondim);
+    extract_from_pack(buffer, firstdim);
+    extract_from_pack(buffer, secondim);
 
 
     saccn_.shape(firstdim, secondim);
@@ -69,13 +67,12 @@ void FLD::TDSEleData::unpack(const std::vector<char>& data)
 
     int size = firstdim * secondim * sizeof(double);
 
-    extract_from_pack(position, data, saccn_.values(), size);
-    extract_from_pack(position, data, svelnp_.values(), size);
-    extract_from_pack(position, data, sveln_.values(), size);
+    extract_from_pack(buffer, saccn_.values(), size);
+    extract_from_pack(buffer, svelnp_.values(), size);
+    extract_from_pack(buffer, sveln_.values(), size);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

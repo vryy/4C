@@ -49,19 +49,17 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::pack(Core::Communication::PackBuff
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroP1<distype>::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1PoroP1<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Base::extract_from_pack(position, data, basedata);
-  Base::unpack(basedata);
+  Base::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Base::unpack(basedata_buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 template <Core::FE::CellType distype>

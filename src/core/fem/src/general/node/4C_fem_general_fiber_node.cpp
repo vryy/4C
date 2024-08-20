@@ -17,14 +17,15 @@ FOUR_C_NAMESPACE_OPEN
 Core::Nodes::FiberNodeType Core::Nodes::FiberNodeType::instance_;
 
 
-Core::Communication::ParObject* Core::Nodes::FiberNodeType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::FiberNodeType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> dummy_coords(3, 999.0);
   std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
   std::vector<std::array<double, 3>> fibers;
   std::map<AngleType, double> angles;
   auto* object = new FiberNode(-1, dummy_coords, coordinateSystemDirections, fibers, angles, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -75,21 +76,20 @@ void Core::Nodes::FiberNode::pack(Core::Communication::PackBuffer& data) const
 
   Pack and Unpack are used to communicate this fiber node
 */
-void Core::Nodes::FiberNode::unpack(const std::vector<char>& data)
+void Core::Nodes::FiberNode::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Node
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Nodes::Node::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Communication::UnpackBuffer basedata_buffer(basedata);
+  Node::unpack(basedata_buffer);
 
   // extract fiber data
-  Core::Communication::ParObject::extract_from_pack(position, data, fibers_);
-  Core::Communication::ParObject::extract_from_pack(position, data, coordinateSystemDirections_);
-  Core::Communication::ParObject::extract_from_pack(position, data, angles_);
+  Core::Communication::ParObject::extract_from_pack(buffer, fibers_);
+  Core::Communication::ParObject::extract_from_pack(buffer, coordinateSystemDirections_);
+  Core::Communication::ParObject::extract_from_pack(buffer, angles_);
 }
 
 /*

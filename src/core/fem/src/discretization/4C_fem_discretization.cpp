@@ -701,12 +701,13 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::unpack_my_elements(Teuchos::RCP<std::vector<char>> e)
 {
-  std::vector<char>::size_type index = 0;
-  while (index < e->size())
+  Communication::UnpackBuffer buffer(*e);
+  while (!buffer.at_end())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(index, *e, data);
-    Core::Communication::ParObject* o = Core::Communication::factory(data);
+    Core::Communication::ParObject::extract_from_pack(buffer, data);
+    Communication::UnpackBuffer data_buffer(data);
+    Core::Communication::ParObject* o = Core::Communication::factory(data_buffer);
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
     FOUR_C_THROW_UNLESS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
@@ -721,12 +722,13 @@ void Core::FE::Discretization::unpack_my_elements(Teuchos::RCP<std::vector<char>
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::unpack_my_nodes(Teuchos::RCP<std::vector<char>> e)
 {
-  std::vector<char>::size_type index = 0;
-  while (index < e->size())
+  Communication::UnpackBuffer buffer(*e);
+  while (!buffer.at_end())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(index, *e, data);
-    Core::Communication::ParObject* o = Core::Communication::factory(data);
+    Core::Communication::ParObject::extract_from_pack(buffer, data);
+    Communication::UnpackBuffer data_buffer(data);
+    Core::Communication::ParObject* o = Core::Communication::factory(data_buffer);
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);
     FOUR_C_THROW_UNLESS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());

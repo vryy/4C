@@ -22,10 +22,11 @@ Discret::ELEMENTS::SoShw6Type Discret::ELEMENTS::SoShw6Type::instance_;
 Discret::ELEMENTS::SoShw6Type& Discret::ELEMENTS::SoShw6Type::instance() { return instance_; }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoShw6Type::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoShw6Type::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::SoShw6(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -158,28 +159,26 @@ void Discret::ELEMENTS::SoShw6::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoShw6::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class So_weg6 Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoWeg6::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Discret::ELEMENTS::SoWeg6::unpack(basedata_buffer);
   // eastype_
-  eastype_ = static_cast<EASType>(extract_int(position, data));
+  eastype_ = static_cast<EASType>(extract_int(buffer));
   // neas_
-  extract_from_pack(position, data, neas_);
+  extract_from_pack(buffer, neas_);
   // easdata_
-  unpack_eas_data(position, data);
+  unpack_eas_data(buffer);
   // reordering
-  optimal_parameterspace_map_ = extract_int(position, data);
-  nodes_rearranged_ = extract_int(position, data);
+  optimal_parameterspace_map_ = extract_int(buffer);
+  nodes_rearranged_ = extract_int(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

@@ -104,8 +104,7 @@ namespace Mat
      * \param data whole data array
      * \param position position of the current reader
      */
-    void unpack_anisotropy(
-        const std::vector<char>& data, std::vector<char>::size_type& position) override;
+    void unpack_anisotropy(Core::Communication::UnpackBuffer& buffer) override;
     /// @}
 
     /// @name Getter methods for the fibers

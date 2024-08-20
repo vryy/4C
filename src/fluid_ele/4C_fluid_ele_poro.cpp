@@ -26,10 +26,10 @@ Discret::ELEMENTS::FluidPoroEleType& Discret::ELEMENTS::FluidPoroEleType::instan
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::FluidPoroEleType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::FluidPoro(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -127,36 +127,33 @@ void Discret::ELEMENTS::FluidPoro::pack(Core::Communication::PackBuffer& data) c
   Fluid::pack(data);
 }
 
-void Discret::ELEMENTS::FluidPoro::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidPoro::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // kintype_
-  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
+  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
 
   // anisotropic_permeability_directions_
   int size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   anisotropic_permeability_directions_.resize(size, std::vector<double>(3, 0.0));
-  for (int i = 0; i < size; ++i)
-    extract_from_pack(position, data, anisotropic_permeability_directions_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(buffer, anisotropic_permeability_directions_[i]);
 
   // anisotropic_permeability_nodal_coeffs_
   size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(this->num_node(), 0.0));
   for (int i = 0; i < size; ++i)
-    extract_from_pack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
+    extract_from_pack(buffer, anisotropic_permeability_nodal_coeffs_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Fluid::extract_from_pack(position, data, basedata);
-  Fluid::unpack(basedata);
+  Fluid::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Fluid::unpack(basedata_buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::lines()

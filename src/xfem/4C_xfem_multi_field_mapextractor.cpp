@@ -285,14 +285,14 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
     // ------------------------------------------------------------------------
     // (3) unpack received block
     // ------------------------------------------------------------------------
-    std::vector<char>::size_type index = 0;
     int j = 0;
-    while (index < receivedset.size())
+    Core::Communication::UnpackBuffer buffer(receivedset);
+    while (!buffer.at_end())
     {
       int gid = receivedgid[j];
       // the set gets cleared at the beginning of the extract_from_pack routine!
       std::set<int> rs;
-      Core::Communication::ParObject::extract_from_pack(index, receivedset, rs);
+      Core::Communication::ParObject::extract_from_pack(buffer, rs);
       g_coupled_sl_dis[gid].insert(rs.begin(), rs.end());
       ++j;
     }

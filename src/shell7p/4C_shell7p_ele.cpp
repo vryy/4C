@@ -37,10 +37,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pType::create(
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::Shell7pType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Shell7p(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -237,34 +237,32 @@ void Discret::ELEMENTS::Shell7p::pack(Core::Communication::PackBuffer& data) con
 }
 
 
-void Discret::ELEMENTS::Shell7p::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Shell7p::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
   // discretization type
-  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
   // element technology
-  extract_from_pack(position, data, eletech_);
+  extract_from_pack(buffer, eletech_);
   // thickness in reference frame
-  extract_from_pack(position, data, thickness_);
+  extract_from_pack(buffer, thickness_);
   // nodal directors
-  extract_from_pack(position, data, nodal_directors_);
+  extract_from_pack(buffer, nodal_directors_);
   // Setup flag for material post setup
-  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
   std::shared_ptr<Shell::Serializable> serializable_interface =
       std::dynamic_pointer_cast<Shell::Serializable>(shell_interface_);
-  if (serializable_interface != nullptr) serializable_interface->unpack(position, data);
+  if (serializable_interface != nullptr) serializable_interface->unpack(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

@@ -104,14 +104,12 @@ Core::Communication::ParObjectFactory& Core::Communication::ParObjectFactory::in
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::Communication::ParObject* Core::Communication::ParObjectFactory::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   finalize_registration();
 
-  // mv ptr behind the size record
-  const int* ptr = (const int*)(data.data());
-  // get the type
-  const int type = *ptr;
+  int type;
+  buffer.peek(type);
 
   std::map<int, ParObjectType*>::iterator i = type_map_.find(type);
   if (i == type_map_.end())
@@ -120,12 +118,9 @@ Core::Communication::ParObject* Core::Communication::ParObjectFactory::create(
         "object id %d undefined. Have you extended Core::Communication::ParObjectList()?", type);
   }
 
-  ParObject* o = i->second->create(data);
+  ParObject* o = i->second->create(buffer);
 
-  if (o == nullptr)
-  {
-    FOUR_C_THROW("failed to create object of type %d", type);
-  }
+  FOUR_C_THROW_UNLESS(o, "failed to create object of type %d", type);
 
   return o;
 }

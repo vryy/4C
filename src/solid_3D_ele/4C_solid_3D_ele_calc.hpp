@@ -68,7 +68,7 @@ namespace Discret::ELEMENTS
 
     void pack(Core::Communication::PackBuffer& data) const;
 
-    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    void unpack(Core::Communication::UnpackBuffer& buffer);
 
     void setup(
         Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container);

@@ -30,7 +30,7 @@ namespace Mat
 
     void pack(Core::Communication::PackBuffer& data) const override = 0;
 
-    void unpack(const std::vector<char>& data) override = 0;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override = 0;
 
     //! @name Evaluation methods
     /*!

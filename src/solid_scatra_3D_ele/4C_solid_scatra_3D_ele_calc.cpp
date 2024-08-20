@@ -265,9 +265,9 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::pack(
 
 template <Core::FE::CellType celltype, typename SolidFormulation>
 void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::unpack(position, data, history_data_);
+  Discret::ELEMENTS::unpack(buffer, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename SolidFormulation>

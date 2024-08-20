@@ -72,21 +72,20 @@ void Discret::ELEMENTS::Beam3Base::pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3Base::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
   // bspotposxi_
-  extract_from_pack(position, data, bspotposxi_);
+  extract_from_pack(buffer, bspotposxi_);
   // filamenttype_
-  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(extract_int(position, data));
+  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(extract_int(buffer));
 
   return;
 }

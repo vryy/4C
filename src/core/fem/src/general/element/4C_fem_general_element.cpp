@@ -282,24 +282,23 @@ void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::unpack(const std::vector<char>& data)
+void Core::Elements::Element::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // id_
-  extract_from_pack(position, data, id_);
+  extract_from_pack(buffer, id_);
   // owner_
-  extract_from_pack(position, data, owner_);
+  extract_from_pack(buffer, owner_);
   // nodeid_
-  extract_from_pack(position, data, nodeid_);
+  extract_from_pack(buffer, nodeid_);
   // mat_
   std::vector<char> tmp;
-  extract_from_pack(position, data, tmp);
+  extract_from_pack(buffer, tmp);
   if (!tmp.empty())
   {
-    Core::Communication::ParObject* o = Core::Communication::factory(tmp);
+    Communication::UnpackBuffer mat_buffer(tmp);
+    Core::Communication::ParObject* o = Core::Communication::factory(mat_buffer);
     auto* mat = dynamic_cast<Core::Mat::Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack only first material
@@ -318,8 +317,7 @@ void Core::Elements::Element::unpack(const std::vector<char>& data)
     std::swap(face_, empty);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 
@@ -1159,24 +1157,22 @@ void Core::Elements::FaceElement::pack(Core::Communication::PackBuffer& data) co
  |  Unpack data                                                (public) |
  |                                                           ager 06/15 |
  *----------------------------------------------------------------------*/
-void Core::Elements::FaceElement::unpack(const std::vector<char>& data)
+void Core::Elements::FaceElement::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
 
   // lface_master_
-  lface_master_ = extract_int(position, data);
+  lface_master_ = extract_int(buffer);
   // Parent Id
-  parent_id_ = extract_int(position, data);
+  parent_id_ = extract_int(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

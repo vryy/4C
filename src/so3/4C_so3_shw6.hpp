@@ -31,7 +31,7 @@ namespace Discret
 
       static SoShw6Type& instance();
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
@@ -131,7 +131,7 @@ namespace Discret
       \ref pack and \ref unpack are used to communicate this element
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
 
       //@}
@@ -307,14 +307,14 @@ namespace Discret
         add_to_pack(data, easdata_.eas_inc);
       };
 
-      void unpack_eas_data(std::vector<char>::size_type& position, const std::vector<char>& data)
+      void unpack_eas_data(Core::Communication::UnpackBuffer& buffer)
       {
-        extract_from_pack(position, data, easdata_.alpha);
-        extract_from_pack(position, data, easdata_.alphao);
-        extract_from_pack(position, data, easdata_.feas);
-        extract_from_pack(position, data, easdata_.invKaa);
-        extract_from_pack(position, data, easdata_.Kda);
-        extract_from_pack(position, data, easdata_.eas_inc);
+        extract_from_pack(buffer, easdata_.alpha);
+        extract_from_pack(buffer, easdata_.alphao);
+        extract_from_pack(buffer, easdata_.feas);
+        extract_from_pack(buffer, easdata_.invKaa);
+        extract_from_pack(buffer, easdata_.Kda);
+        extract_from_pack(buffer, easdata_.eas_inc);
       };
 
      private:

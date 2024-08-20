@@ -107,7 +107,7 @@ namespace Discret
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref unpack are used to communicate this element
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       //@}
 

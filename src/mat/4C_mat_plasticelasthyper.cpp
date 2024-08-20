@@ -92,10 +92,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyper::create_material()
 Mat::PlasticElastHyperType Mat::PlasticElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::PlasticElastHyperType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticElastHyperType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::PlasticElastHyper* elhy = new Mat::PlasticElastHyper();
-  elhy->unpack(data);
+  elhy->unpack(buffer);
 
   return elhy;
 }
@@ -227,19 +228,19 @@ void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
+void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   params_ = nullptr;
   potsum_.clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover MatParams()
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -256,11 +257,11 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.unpack(position, data);
+  summandProperties_.unpack(buffer);
 
   // plastic anisotropy
-  extract_from_pack(position, data, PlAniso_full_);
-  extract_from_pack(position, data, InvPlAniso_full_);
+  extract_from_pack(buffer, PlAniso_full_);
+  extract_from_pack(buffer, InvPlAniso_full_);
 
   if (mat_params() != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -277,26 +278,26 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->unpack_summand(data, position);
+      potsum_[p]->unpack_summand(buffer);
       potsum_[p]->register_anisotropy_extensions(anisotropy_);
     }
   }
 
   // plastic history data
-  extract_from_pack<3, 3>(position, data, last_plastic_defgrd_inverse_);
-  extract_from_pack(position, data, last_alpha_isotropic_);
-  extract_from_pack<3, 3>(position, data, last_alpha_kinematic_);
+  extract_from_pack<3, 3>(buffer, last_plastic_defgrd_inverse_);
+  extract_from_pack(buffer, last_alpha_isotropic_);
+  extract_from_pack<3, 3>(buffer, last_alpha_kinematic_);
 
-  activity_state_.resize(extract_int(position, data));
+  activity_state_.resize(extract_int(buffer));
   for (int i = 0; i < (int)activity_state_.size(); ++i)
-    activity_state_.at(i) = (bool)extract_int(position, data);
+    activity_state_.at(i) = (bool)extract_int(buffer);
 
-  delta_alpha_i_.resize(extract_int(position, data));
+  delta_alpha_i_.resize(extract_int(buffer));
   for (int i = 0; i < (int)delta_alpha_i_.size(); ++i)
-    delta_alpha_i_.at(i) = extract_double(position, data);
+    delta_alpha_i_.at(i) = extract_double(buffer);
 
-  bool tsi = (bool)extract_int(position, data);
-  bool tsi_eas = (bool)extract_int(position, data);
+  bool tsi = (bool)extract_int(buffer);
+  bool tsi_eas = (bool)extract_int(buffer);
   if (!tsi)
   {
     HepDiss_ = Teuchos::null;
@@ -308,7 +309,7 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
   {
     int ngp = last_alpha_isotropic_.size();
     HepDiss_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
-    int numdofperelement = extract_int(position, data);
+    int numdofperelement = extract_int(buffer);
     dHepDissdd_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
         ngp, Core::LinAlg::SerialDenseVector(numdofperelement)));
     dHepDissdT_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
@@ -318,19 +319,18 @@ void Mat::PlasticElastHyper::unpack(const std::vector<char>& data)
   }
 
   // dissipation mode
-  Inpar::TSI::DissipationMode mode = (Inpar::TSI::DissipationMode)extract_int(position, data);
+  Inpar::TSI::DissipationMode mode = (Inpar::TSI::DissipationMode)extract_int(buffer);
   set_dissipation_mode(mode);
 
-  double cpl = extract_double(position, data);
-  double s = extract_double(position, data);
+  double cpl = extract_double(buffer);
+  double s = extract_double(buffer);
   get_params(s, cpl);
 
-  anisotropy_.unpack_anisotropy(data, position);
+  anisotropy_.unpack_anisotropy(buffer);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*/

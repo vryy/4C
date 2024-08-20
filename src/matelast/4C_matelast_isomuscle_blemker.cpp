@@ -69,10 +69,9 @@ void Mat::Elastic::IsoMuscleBlemker::pack_summand(Core::Communication::PackBuffe
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::IsoMuscleBlemker::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::IsoMuscleBlemker::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void Mat::Elastic::IsoMuscleBlemker::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)

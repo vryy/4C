@@ -68,21 +68,20 @@ void Discret::ELEMENTS::SoBase::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoBase::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoBase::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
   // kintype_
-  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
+  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
 
   // material post setup routine
-  material_post_setup_ = (extract_int(position, data) != 0);
+  material_post_setup_ = (extract_int(buffer) != 0);
 }
 
 /*----------------------------------------------------------------------*

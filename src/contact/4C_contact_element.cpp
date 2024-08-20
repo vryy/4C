@@ -18,11 +18,12 @@ CONTACT::ElementType CONTACT::ElementType::instance_;
 
 CONTACT::ElementType& CONTACT::ElementType::instance() { return instance_; }
 
-Core::Communication::ParObject* CONTACT::ElementType::create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::ElementType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   CONTACT::Element* ele =
       new CONTACT::Element(0, 0, Core::FE::CellType::dis_none, 0, nullptr, false);
-  ele->unpack(data);
+  ele->unpack(buffer);
   return ele;
 }
 
@@ -118,19 +119,17 @@ void CONTACT::Element::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::unpack(const std::vector<char>& data)
+void CONTACT::Element::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Mortar::Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Mortar::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Mortar::Element::unpack(base_buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

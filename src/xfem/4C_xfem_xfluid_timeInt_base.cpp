@@ -837,17 +837,17 @@ void XFEM::XfluidTimeintBase::pack_node(
  * unpacking a node after parallel communication only with the basic nodal data                   *
  * without an underlying discretization fitting to the node's new prozessor          schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidTimeintBase::unpack_node(std::vector<char>::size_type& posinData,
-    std::vector<char>& dataRecv, Core::Nodes::Node& node) const
+void XFEM::XfluidTimeintBase::unpack_node(
+    Core::Communication::UnpackBuffer& buffer, Core::Nodes::Node& node) const
 {
   const int nsd = 3;                    // dimension
   int id;                               // global id
   Core::LinAlg::Matrix<nsd, 1> coords;  // coordinates
   int owner;                            // processor
 
-  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, id);
-  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, coords);
-  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, owner);
+  Core::Communication::ParObject::extract_from_pack(buffer, id);
+  Core::Communication::ParObject::extract_from_pack(buffer, coords);
+  Core::Communication::ParObject::extract_from_pack(buffer, owner);
 
   if (owner == myrank_)  // real node with all data
   {
@@ -3239,14 +3239,12 @@ void XFEM::XfluidStd::export_start_data()
   std::vector<char> dataRecv;
   send_data(dataSend, dest, source, dataRecv);
 
-  // pointer to current position of group of cells in global std::string (counts bytes)
-  std::vector<char>::size_type posinData = 0;
-
   // clear vector that should be filled
   timeIntData_->clear();
 
   // unpack received data
-  while (posinData < dataRecv.size())
+  Core::Communication::UnpackBuffer buffer(dataRecv);
+  while (!buffer.at_end())
   {
     std::vector<double> coords(nsd, 0.0);
     Core::Nodes::Node node(0, coords, 0);  // initialize node
@@ -3261,17 +3259,17 @@ void XFEM::XfluidStd::export_start_data()
     double dMin;                                           // minimal distance
     int newtype;                                           // type of the data
 
-    unpack_node(posinData, dataRecv, node);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nds_np);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, vel);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, velDeriv);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, presDeriv);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dispnp);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, startpoint);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, searchedProcs);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, counter);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dMin);
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, newtype);
+    unpack_node(buffer, node);
+    Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
+    Core::Communication::ParObject::extract_from_pack(buffer, vel);
+    Core::Communication::ParObject::extract_from_pack(buffer, velDeriv);
+    Core::Communication::ParObject::extract_from_pack(buffer, presDeriv);
+    Core::Communication::ParObject::extract_from_pack(buffer, dispnp);
+    Core::Communication::ParObject::extract_from_pack(buffer, startpoint);
+    Core::Communication::ParObject::extract_from_pack(buffer, searchedProcs);
+    Core::Communication::ParObject::extract_from_pack(buffer, counter);
+    Core::Communication::ParObject::extract_from_pack(buffer, dMin);
+    Core::Communication::ParObject::extract_from_pack(buffer, newtype);
 
     timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, startpoint,
         searchedProcs, counter, dMin, (TimeIntData::Type)newtype));
@@ -3348,11 +3346,9 @@ void XFEM::XfluidStd::export_final_data()
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
 
-    // pointer to current position of group of cells in global std::string (counts bytes)
-    std::vector<char>::size_type posinData = 0;
-
+    Core::Communication::UnpackBuffer buffer(dataRecv);
     // unpack received data
-    while (posinData < dataRecv.size())
+    while (!buffer.at_end())
     {
       int gid;                                              // global id of node
       int nds_np;                                           // dofset number of node at new timestep
@@ -3361,12 +3357,12 @@ void XFEM::XfluidStd::export_final_data()
       std::vector<double> presValues;                       // pressure values
       int newtype;                                          // type of the data
 
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, gid);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nds_np);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, startpoint);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, velValues);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, presValues);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, newtype);
+      Core::Communication::ParObject::extract_from_pack(buffer, gid);
+      Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
+      Core::Communication::ParObject::extract_from_pack(buffer, startpoint);
+      Core::Communication::ParObject::extract_from_pack(buffer, velValues);
+      Core::Communication::ParObject::extract_from_pack(buffer, presValues);
+      Core::Communication::ParObject::extract_from_pack(buffer, newtype);
 
       Core::LinAlg::Matrix<3, 1> nodedispnp(true);
       if (dispnp_ != Teuchos::null)  // is alefluid

@@ -36,10 +36,11 @@ Discret::ELEMENTS::Beam3rType& Discret::ELEMENTS::Beam3rType::instance() { retur
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Beam3rType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Beam3rType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Beam3r* object = new Discret::ELEMENTS::Beam3r(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -476,52 +477,51 @@ void Discret::ELEMENTS::Beam3r::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           cyron 01/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3r::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3r::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Beam3Base::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Beam3Base::unpack(base_buffer);
 
   // extract all class variables of beam3r element
-  use_fad_ = extract_int(position, data);
-  centerline_hermite_ = extract_int(position, data);
-  isinit_ = extract_int(position, data);
-  extract_from_pack(position, data, reflength_);
-  extract_from_pack<3, 1>(position, data, theta0node_);
-  extract_from_pack<3, 1>(position, data, Tref_);
-  extract_from_pack<3, 1>(position, data, tcurrnode_);
-  extract_from_pack<3, 1>(position, data, kref_gp_);
-  extract_from_pack<3, 1>(position, data, gammaref_gp_);
-  extract_from_pack(position, data, jacobi_gp_elastf_);
-  extract_from_pack(position, data, jacobi_gp_elastm_);
-  extract_from_pack(position, data, jacobi_gp_mass_);
-  extract_from_pack(position, data, jacobi_gp_dampstoch_);
-  extract_from_pack(position, data, jacobi_gp_neumannline_);
-  extract_from_pack<4, 1>(position, data, qconvnode_);
-  extract_from_pack<4, 1>(position, data, qnewnode_);
-  extract_from_pack<4, 1>(position, data, qconv_gp_mass_);
-  extract_from_pack<4, 1>(position, data, qnew_gp_mass_);
-  extract_from_pack<3, 1>(position, data, wconv_gp_mass_);
-  extract_from_pack<3, 1>(position, data, wnew_gp_mass_);
-  extract_from_pack<3, 1>(position, data, aconv_gp_mass_);
-  extract_from_pack<3, 1>(position, data, anew_gp_mass_);
-  extract_from_pack<3, 1>(position, data, amodconv_gp_mass_);
-  extract_from_pack<3, 1>(position, data, amodnew_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rttconv_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rttnew_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rttmodconv_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rttmodnew_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rtconv_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rtnew_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rconv_gp_mass_);
-  extract_from_pack<3, 1>(position, data, rnew_gp_mass_);
-  extract_from_pack<4, 1>(position, data, qconv_gp_dampstoch_);
-  extract_from_pack<4, 1>(position, data, qnew_gp_dampstoch_);
+  use_fad_ = extract_int(buffer);
+  centerline_hermite_ = extract_int(buffer);
+  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, reflength_);
+  extract_from_pack<3, 1>(buffer, theta0node_);
+  extract_from_pack<3, 1>(buffer, Tref_);
+  extract_from_pack<3, 1>(buffer, tcurrnode_);
+  extract_from_pack<3, 1>(buffer, kref_gp_);
+  extract_from_pack<3, 1>(buffer, gammaref_gp_);
+  extract_from_pack(buffer, jacobi_gp_elastf_);
+  extract_from_pack(buffer, jacobi_gp_elastm_);
+  extract_from_pack(buffer, jacobi_gp_mass_);
+  extract_from_pack(buffer, jacobi_gp_dampstoch_);
+  extract_from_pack(buffer, jacobi_gp_neumannline_);
+  extract_from_pack<4, 1>(buffer, qconvnode_);
+  extract_from_pack<4, 1>(buffer, qnewnode_);
+  extract_from_pack<4, 1>(buffer, qconv_gp_mass_);
+  extract_from_pack<4, 1>(buffer, qnew_gp_mass_);
+  extract_from_pack<3, 1>(buffer, wconv_gp_mass_);
+  extract_from_pack<3, 1>(buffer, wnew_gp_mass_);
+  extract_from_pack<3, 1>(buffer, aconv_gp_mass_);
+  extract_from_pack<3, 1>(buffer, anew_gp_mass_);
+  extract_from_pack<3, 1>(buffer, amodconv_gp_mass_);
+  extract_from_pack<3, 1>(buffer, amodnew_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rttconv_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rttnew_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rttmodconv_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rttmodnew_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rtconv_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rtnew_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rconv_gp_mass_);
+  extract_from_pack<3, 1>(buffer, rnew_gp_mass_);
+  extract_from_pack<4, 1>(buffer, qconv_gp_dampstoch_);
+  extract_from_pack<4, 1>(buffer, qnew_gp_dampstoch_);
 
   // NOT communicated
   eint_ = 0.0;
@@ -551,8 +551,7 @@ void Discret::ELEMENTS::Beam3r::unpack(const std::vector<char>& data)
   spatial_y_moment_2_gp_elastm_.clear();
   spatial_z_moment_3_gp_elastm_.clear();
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

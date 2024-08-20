@@ -64,10 +64,10 @@ Discret::ELEMENTS::SoSh8PlastType& Discret::ELEMENTS::SoSh8PlastType::instance()
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::SoSh8Plast(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -373,24 +373,22 @@ void Discret::ELEMENTS::SoSh8Plast::pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh8Plast::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::unpack(basedata_buffer);
   // thickdir
-  thickdir_ = static_cast<ThicknessDirection>(extract_int(position, data));
-  extract_from_pack(position, data, thickvec_);
-  anstype_ = static_cast<ANSType>(extract_int(position, data));
-  nodes_rearranged_ = extract_int(position, data);
+  thickdir_ = static_cast<ThicknessDirection>(extract_int(buffer));
+  extract_from_pack(buffer, thickvec_);
+  anstype_ = static_cast<ANSType>(extract_int(buffer));
+  nodes_rearranged_ = extract_int(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::ELEMENTS::SoSh8Plast::print(std::ostream& os) const

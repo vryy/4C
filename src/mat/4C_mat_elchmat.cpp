@@ -54,10 +54,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElchMat::create_material()
 Mat::ElchMatType Mat::ElchMatType::instance_;
 
 
-Core::Communication::ParObject* Mat::ElchMatType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ElchMatType::create(Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ElchMat* elchmat = new Mat::ElchMat();
-  elchmat->unpack(data);
+  elchmat->unpack(buffer);
   return elchmat;
 }
 
@@ -140,18 +140,18 @@ void Mat::ElchMat::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElchMat::unpack(const std::vector<char>& data)
+void Mat::ElchMat::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid(-1);
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -184,14 +184,14 @@ void Mat::ElchMat::unpack(const std::vector<char>& data)
       for (n = params_->phase_ids().begin(); n != params_->phase_ids().end(); n++)
       {
         std::vector<char> pbtest;
-        extract_from_pack(position, data, pbtest);
-        (mat_.find(*n))->second->unpack(pbtest);
+        extract_from_pack(buffer, pbtest);
+        Core::Communication::UnpackBuffer buffer_pbtest(pbtest);
+        (mat_.find(*n))->second->unpack(buffer_pbtest);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }  // if (params_ != nullptr)
 }
 

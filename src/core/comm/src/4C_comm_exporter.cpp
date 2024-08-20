@@ -308,12 +308,13 @@ void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
     receive_any(source, tag, recvgid, length);
     if (tag != 3) FOUR_C_THROW("Messages got mixed up");
 
-    std::vector<char>::size_type index = 0;
     int j = 0;
-    while (index < recvblock.size())
+
+    UnpackBuffer buffer(recvblock);
+    while (!buffer.at_end())
     {
       int gid = recvgid[j];
-      helper.unpack_object(gid, index, recvblock);
+      helper.unpack_object(gid, buffer);
       j += 1;
     }
 

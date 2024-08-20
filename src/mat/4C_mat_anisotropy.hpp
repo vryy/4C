@@ -77,11 +77,8 @@ namespace Mat
 
     /*!
      * Unpack all data from another processor
-     *
-     * @param data (in) : data object
-     * @param position (in/out) : current position in the data
      */
-    void unpack_anisotropy(const std::vector<char>& data, std::vector<char>::size_type& position);
+    void unpack_anisotropy(Core::Communication::UnpackBuffer& buffer);
 
     /*!
      * This method should be called as soon as the number of Gauss points is known.

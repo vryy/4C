@@ -229,28 +229,26 @@ void BEAMINTERACTION::BeamLinkRigidJointed::pack(Core::Communication::PackBuffer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkRigidJointed::unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkRigidJointed::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  BeamLink::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  BeamLink::unpack(basedata_buffer);
 
   // bspottriad1_
-  extract_from_pack(position, data, bspottriad1_);
+  extract_from_pack(buffer, bspottriad1_);
   // bspottriad2_
-  extract_from_pack(position, data, bspottriad2_);
+  extract_from_pack(buffer, bspottriad2_);
   // Lambdarel1_
-  extract_from_pack(position, data, lambdarel1_);
+  extract_from_pack(buffer, lambdarel1_);
   // Lambdarel2_
-  extract_from_pack(position, data, lambdarel2_);
+  extract_from_pack(buffer, lambdarel2_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

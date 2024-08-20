@@ -18,11 +18,12 @@ Core::Nodes::ImmersedNodeType Core::Nodes::ImmersedNodeType::instance_;
 /*----------------------------------------------------------------------*
  |  kind of ctor (public)                                   rauch 11/14 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Core::Nodes::ImmersedNodeType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::ImmersedNodeType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> dummycoord(3, 999.0);
   Node* object = new Core::Nodes::ImmersedNode(-1, dummycoord, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -123,24 +124,22 @@ void Core::Nodes::ImmersedNode::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                          rauch 11/14 |
  *----------------------------------------------------------------------*/
-void Core::Nodes::ImmersedNode::unpack(const std::vector<char>& data)
+void Core::Nodes::ImmersedNode::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Node::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Communication::UnpackBuffer basedata_buffer(basedata);
+  Node::unpack(basedata_buffer);
 
   // isimersedboundary_
-  IsBoundaryImmersed_ = extract_int(position, data);
+  IsBoundaryImmersed_ = extract_int(buffer);
   // ismatched_
-  ismatched_ = extract_int(position, data);
+  ismatched_ = extract_int(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

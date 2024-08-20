@@ -35,10 +35,10 @@ Discret::ELEMENTS::TransportType Discret::ELEMENTS::TransportType::instance_;
 Discret::ELEMENTS::TransportType& Discret::ELEMENTS::TransportType::instance() { return instance_; }
 
 Core::Communication::ParObject* Discret::ELEMENTS::TransportType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Transport* object = new Discret::ELEMENTS::Transport(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -580,26 +580,24 @@ void Discret::ELEMENTS::Transport::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Transport::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
   // extract internal data
-  extract_from_pack(position, data, name_);
-  extract_from_pack(position, data, vis_map_);
-  extract_from_pack(position, data, numdofpernode_);
-  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(position, data));
+  extract_from_pack(buffer, name_);
+  extract_from_pack(buffer, vis_map_);
+  extract_from_pack(buffer, numdofpernode_);
+  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -774,7 +772,7 @@ void Discret::ELEMENTS::TransportBoundary::pack(Core::Communication::PackBuffer&
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                      gjb 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::TransportBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("This TransportBoundary element does not support communication");
   return;

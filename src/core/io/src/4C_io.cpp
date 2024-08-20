@@ -146,12 +146,13 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
   Teuchos::RCP<std::vector<char>> data =
       reader_->read_result_data_vec_char(id_path, value_path, columns, get_comm(), elemap);
 
-  std::vector<char>::size_type position = 0;
+
+  Communication::UnpackBuffer buffer(*data);
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matrix =
         Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
-    Core::Communication::ParObject::extract_from_pack(position, *data, *matrix);
+    Core::Communication::ParObject::extract_from_pack(buffer, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
 }

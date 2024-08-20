@@ -102,7 +102,7 @@ namespace Mat
 
     static DamageType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static DamageType instance_;
@@ -151,12 +151,7 @@ namespace Mat
     //!  The first entry in data has to be an integer which is the unique
     //!  parobject id defined at the top of this file and delivered by
     //!  unique_par_object_id().
-    //!
-    //!  \param data (in) : vector storing all data to be unpacked into this
-    //!  instance.
-    void unpack(const std::vector<char>&
-            data  //!< (i) : vector storing all data to be unpacked into this instance.
-        ) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 

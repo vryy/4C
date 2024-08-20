@@ -99,8 +99,7 @@ namespace Mat
        * \param data data array to unpack from
        * \param position position of the data
        */
-      void unpack_anisotropy(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      void unpack_anisotropy(Core::Communication::UnpackBuffer& buffer) override;
 
       /*!
        * \brief Notifier method when fibers are initialized.
@@ -180,8 +179,7 @@ namespace Mat
       ///@{
       void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      void unpack_summand(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      void unpack_summand(Core::Communication::UnpackBuffer& buffer) override;
       ///@}
 
       /// Add anisotropic principal stresses

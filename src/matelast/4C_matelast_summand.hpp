@@ -82,12 +82,11 @@ namespace Mat
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       virtual void pack_summand(Core::Communication::PackBuffer& data) const { return; };
 
-      virtual void unpack_summand(
-          const std::vector<char>& data, std::vector<char>::size_type& position){};
+      virtual void unpack_summand(Core::Communication::UnpackBuffer& buffer){};
 
       //@}
 

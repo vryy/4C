@@ -29,13 +29,12 @@ void Mat::CylinderCoordinateSystemManager::pack(Core::Communication::PackBuffer&
   Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_defined_));
 }
 
-void Mat::CylinderCoordinateSystemManager::unpack(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::CylinderCoordinateSystemManager::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(position, data, radial_);
-  Core::Communication::ParObject::extract_from_pack(position, data, axial_);
-  Core::Communication::ParObject::extract_from_pack(position, data, circumferential_);
-  is_defined_ = static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
+  Core::Communication::ParObject::extract_from_pack(buffer, radial_);
+  Core::Communication::ParObject::extract_from_pack(buffer, axial_);
+  Core::Communication::ParObject::extract_from_pack(buffer, circumferential_);
+  is_defined_ = static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
 }
 
 void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(

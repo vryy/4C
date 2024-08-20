@@ -83,10 +83,9 @@ void MIXTURE::MapMixtureRule::setup(Teuchos::ParameterList& params, const int el
   MixtureRule::setup(params, eleGID);
 }
 
-void MIXTURE::MapMixtureRule::unpack_mixture_rule(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MIXTURE::MapMixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
-  MIXTURE::MixtureRule::unpack_mixture_rule(position, data);
+  MIXTURE::MixtureRule::unpack_mixture_rule(buffer);
 }
 
 void MIXTURE::MapMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,

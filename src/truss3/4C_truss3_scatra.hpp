@@ -23,7 +23,7 @@ namespace Discret
     class Truss3ScatraType : public Truss3Type
     {
      public:
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
@@ -86,7 +86,7 @@ namespace Discret
           const std::map<std::string, std::vector<double>>& ele_state) override;
 
       void pack(Core::Communication::PackBuffer& data) const override;
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
      protected:
       void extract_elemental_variables(LocationArray& la,

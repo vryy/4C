@@ -133,18 +133,17 @@ void MIXTURE::MixtureConstituent::pack_constituent(Core::Communication::PackBuff
 }
 
 // Unpack base constituent data, need to be called by every derived class
-void MIXTURE::MixtureConstituent::unpack_constituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MIXTURE::MixtureConstituent::unpack_constituent(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   has_read_element_ = false;
   numgp_ = 0;
   is_setup_ = false;
 
-  Core::Communication::ParObject::extract_from_pack(position, data, numgp_);
+  Core::Communication::ParObject::extract_from_pack(buffer, numgp_);
 
-  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(position, data);
-  is_setup_ = (bool)Core::Communication::ParObject::extract_int(position, data);
+  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(buffer);
+  is_setup_ = (bool)Core::Communication::ParObject::extract_int(buffer);
 }
 
 void MIXTURE::MixtureConstituent::evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,

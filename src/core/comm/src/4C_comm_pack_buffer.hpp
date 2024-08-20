@@ -22,10 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   /**
-   * @brief A class to pack data into a buffer for sending over MPI.
+   * @brief A class to pack data into a buffer.
    *
    * This class allows to add various types of data to a buffer, which is essentially a vector of
    * characters. The buffer can be used to send data over MPI or serialize the data to disk.
+   *
+   * @note It is important that data added to the PackBuffer is extracted in the same order from
+   * a corresponding UnpackBuffer.
    */
   class PackBuffer
   {
@@ -99,6 +102,66 @@ namespace Core::Communication
     //! Scratch buffer used during packing to avoid reallocations.
     std::vector<char> scratch_buffer_;
   };
+
+
+  /**
+   * The counterpart of the PackBuffer class. This class is used to unpack data from a buffer that
+   * was packed using the PackBuffer class. Internally tracks the position in the buffer every time
+   * an object is extracted.
+   */
+  class UnpackBuffer
+  {
+   public:
+    explicit UnpackBuffer(const std::vector<char>& data, std::size_t start_position = 0)
+        : data_(data), position_(start_position)
+    {
+    }
+
+    /*!
+     * \brief Extract stuff from the UnpackBuffer.
+     *
+     * This method is a template for all POD types like int, char, double, ... . It extracts the
+     * next object into @p stuff and assumes that the raw bytes actually came from an object of the
+     * type T.
+     */
+    template <typename T>
+    std::enable_if_t<std::is_pod_v<T>, void> extract_from_pack(T& stuff)
+    {
+      peek(stuff);
+      position_ += sizeof(T);
+    }
+
+    /*!
+     * \brief Extract multiple entries into @p stuff.
+     *
+     * Same as the other method but extracts @p stuff_size entries into the array @p stuff.
+     */
+    template <typename Kind>
+    void extract_from_pack(Kind* stuff, const std::size_t stuff_size)
+    {
+      memcpy(stuff, &data_[position_], stuff_size);
+      position_ += stuff_size;
+    }
+
+    /**
+     * Get @p stuff but also leave it in the buffer for the next extraction.
+     */
+    template <typename T>
+    std::enable_if_t<std::is_pod_v<T>, void> peek(T& stuff) const
+    {
+      memcpy(&stuff, &data_[position_], sizeof(T));
+    }
+
+    /**
+     * Returns true if this buffer contains no more data to be extracted.
+     */
+    [[nodiscard]] bool at_end() const { return position_ >= data_.size(); }
+
+   private:
+    const std::vector<char>& data_;
+    std::vector<char>::size_type position_{0};
+  };
+
 }  // namespace Core::Communication
 
 FOUR_C_NAMESPACE_CLOSE

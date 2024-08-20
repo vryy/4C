@@ -101,8 +101,8 @@ namespace Mat
    * \param vct destination 2D array
    */
   template <typename T>
-  void unpack_fiber_vector(std::vector<char>::size_type& position, const std::vector<char>& data,
-      std::vector<std::vector<T>>& vct);
+  void unpack_fiber_vector(
+      Core::Communication::UnpackBuffer& buffer, std::vector<std::vector<T>>& vct);
 
   /*!
    * \brief Unpack 2D vector of fibers and structural tensors
@@ -114,8 +114,8 @@ namespace Mat
    * \param vct destination 2D array
    */
   template <typename T, unsigned int numfib>
-  void unpack_fiber_array(std::vector<char>::size_type& position, const std::vector<char>& data,
-      std::vector<std::array<T, numfib>>& vct);
+  void unpack_fiber_array(
+      Core::Communication::UnpackBuffer& buffer, std::vector<std::array<T, numfib>>& vct);
 }  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE

@@ -53,10 +53,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Myocard::create_material()
 Mat::MyocardType Mat::MyocardType::instance_;
 
 
-Core::Communication::ParObject* Mat::MyocardType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MyocardType::create(Core::Communication::UnpackBuffer& buffer)
 {
   Mat::Myocard* myocard = new Mat::Myocard();
-  myocard->unpack(data);
+  myocard->unpack(buffer);
   return myocard;
 }
 
@@ -127,26 +127,24 @@ void Mat::Myocard::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                         (public)  cbert 09/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::unpack(const std::vector<char>& data)
+void Mat::Myocard::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
   int unpack_nb_state_variables;
   int num_gp;
   int num;
-  extract_from_pack(position, data, matid);
-  extract_from_pack(position, data, unpack_nb_state_variables);
-  extract_from_pack(position, data, difftensor_);
-  extract_from_pack(position, data, num);
+  extract_from_pack(buffer, matid);
+  extract_from_pack(buffer, unpack_nb_state_variables);
+  extract_from_pack(buffer, difftensor_);
+  extract_from_pack(buffer, num);
   if (num)
     diff_at_ele_center_ = true;
   else
     diff_at_ele_center_ = false;
-  extract_from_pack(position, data, num_gp);
+  extract_from_pack(buffer, num_gp);
 
   params_ = nullptr;
   if (Global::Problem::instance()->materials() !=
@@ -179,12 +177,11 @@ void Mat::Myocard::unpack(const std::vector<char>& data)
              ++k)                                    // Starting from -1 for mechanical activation
           for (int i = 0; i < params_->num_gp; ++i)  // loop over Gauss points
           {
-            extract_from_pack(position, data, val);
+            extract_from_pack(buffer, val);
             myocard_mat_->set_internal_state(k, val, i);
           }
 
-        if (position != data.size())
-          FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+        FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
       }
     }
   }
@@ -193,25 +190,23 @@ void Mat::Myocard::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  unpack_material                                       hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::unpack_material(const std::vector<char>& data)
+void Mat::Myocard::unpack_material(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
   int num_gp;
   int num;
-  extract_from_pack(position, data, matid);
-  extract_from_pack(position, data, nb_state_variables_);
-  extract_from_pack(position, data, difftensor_);
-  extract_from_pack(position, data, num);
+  extract_from_pack(buffer, matid);
+  extract_from_pack(buffer, nb_state_variables_);
+  extract_from_pack(buffer, difftensor_);
+  extract_from_pack(buffer, num);
   if (num)
     diff_at_ele_center_ = true;
   else
     diff_at_ele_center_ = false;
-  extract_from_pack(position, data, num_gp);
+  extract_from_pack(buffer, num_gp);
 
   params_ = nullptr;
   if (Global::Problem::instance()->materials() !=
@@ -238,12 +233,11 @@ void Mat::Myocard::unpack_material(const std::vector<char>& data)
       for (int k = -1; k < nb_state_variables_; ++k)  // Starting from -1 for mechanical activation
         for (int i = 0; i < params_->num_gp; ++i)     // loop over Gauss points
         {
-          extract_from_pack(position, data, val);
+          extract_from_pack(buffer, val);
           myocard_mat_->set_internal_state(k, val, i);
         }
 
-      if (position != data.size())
-        FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     }
   }
 }

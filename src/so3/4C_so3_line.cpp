@@ -100,7 +100,7 @@ void Discret::ELEMENTS::StructuralLine::pack(Core::Communication::PackBuffer& da
 /*----------------------------------------------------------------------*
  |  Unpack data                                                gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::StructuralLine::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("StructuralLine element does not support communication");
   return;

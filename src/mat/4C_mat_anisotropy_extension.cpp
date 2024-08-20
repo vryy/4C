@@ -183,16 +183,13 @@ void Mat::FiberAnisotropyExtension<numfib>::pack_anisotropy(
 
 template <unsigned int numfib>
 void Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  unpack_fiber_array<Core::LinAlg::Matrix<3, 1>, numfib>(position, data, fibers_);
-  unpack_fiber_array<Core::LinAlg::Matrix<6, 1>, numfib>(
-      position, data, fiber_structural_tensors_stress_);
-  unpack_fiber_array<Core::LinAlg::Matrix<3, 3>, numfib>(position, data, fiber_structural_tensors_);
-  tensor_flags_ =
-      static_cast<uint_fast8_t>(Core::Communication::ParObject::extract_int(position, data));
-  fiber_location_ =
-      static_cast<FiberLocation>(Core::Communication::ParObject::extract_int(position, data));
+  unpack_fiber_array<Core::LinAlg::Matrix<3, 1>, numfib>(buffer, fibers_);
+  unpack_fiber_array<Core::LinAlg::Matrix<6, 1>, numfib>(buffer, fiber_structural_tensors_stress_);
+  unpack_fiber_array<Core::LinAlg::Matrix<3, 3>, numfib>(buffer, fiber_structural_tensors_);
+  tensor_flags_ = static_cast<uint_fast8_t>(Core::Communication::ParObject::extract_int(buffer));
+  fiber_location_ = static_cast<FiberLocation>(Core::Communication::ParObject::extract_int(buffer));
 }
 
 template <unsigned int numfib>

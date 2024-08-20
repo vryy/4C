@@ -91,9 +91,9 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::pack(
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
 void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::unpack<ElementFormulation>(position, data, history_data_);
+  Discret::ELEMENTS::unpack<ElementFormulation>(buffer, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>

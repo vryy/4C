@@ -721,14 +721,14 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::pack
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
     Inpar::Solid::KinemType kinematic_type>
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.alpha_inc_);
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.alpha_);
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.s_);
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.invKaa_);
-  Core::Communication::ParObject::extract_from_pack(position, data, eas_iteration_data_.Kda_);
-  Core::Communication::ParObject::extract_from_pack(position, data, old_step_length_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.alpha_inc_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.alpha_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.s_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.invKaa_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.Kda_);
+  Core::Communication::ParObject::extract_from_pack(buffer, old_step_length_);
 };
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,

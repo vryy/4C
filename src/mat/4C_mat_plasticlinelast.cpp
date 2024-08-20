@@ -67,10 +67,11 @@ Mat::PlasticLinElastType Mat::PlasticLinElastType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::PlasticLinElastType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticLinElastType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::PlasticLinElast* plastic = new Mat::PlasticLinElast();
-  plastic->unpack(data);
+  plastic->unpack(buffer);
   return plastic;
 }
 
@@ -135,16 +136,16 @@ void Mat::PlasticLinElast::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 04/11 |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
+void Mat::PlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -161,7 +162,7 @@ void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  extract_from_pack(position, data, histsize);
+  extract_from_pack(buffer, histsize);
 
   // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -182,13 +183,13 @@ void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp_vect(true);
     double tmp_scalar = 0.0;
     // vectors of last converged state are unpacked
-    extract_from_pack(position, data, tmp_vect);
+    extract_from_pack(buffer, tmp_vect);
     strainpllast_->push_back(tmp_vect);
-    extract_from_pack(position, data, tmp_vect);
+    extract_from_pack(buffer, tmp_vect);
     backstresslast_->push_back(tmp_vect);
 
     // scalar-valued vector of last converged state are unpacked
-    extract_from_pack(position, data, tmp_scalar);
+    extract_from_pack(buffer, tmp_scalar);
     strainbarpllast_->push_back(tmp_scalar);
 
     // current vectors have to be initialised
@@ -200,13 +201,12 @@ void Mat::PlasticLinElast::unpack(const std::vector<char>& data)
 
   plastic_step_ = false;
   int plastic_step;
-  extract_from_pack(position, data, plastic_step);
+  extract_from_pack(buffer, plastic_step);
 
   // if it was already plastic before
   if (plastic_step != 0) plastic_step_ = true;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 

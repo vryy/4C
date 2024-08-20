@@ -101,10 +101,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidPoroPressureVeloci
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroPressureVelocityBasedType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::SolidPoroPressureVelocityBased(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -287,38 +287,37 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBased::pack(
   Discret::ELEMENTS::pack(solidporo_press_vel_based_calc_variant_, data);
 }
 
-void Discret::ELEMENTS::SolidPoroPressureVelocityBased::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SolidPoroPressureVelocityBased::unpack(
+    Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  if (extract_int(position, data) != unique_par_object_id())
-    FOUR_C_THROW("wrong instance type data");
+  if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
 
-  celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
 
-  Discret::ELEMENTS::extract_from_pack(position, data, solid_ele_property_);
+  Discret::ELEMENTS::extract_from_pack(buffer, solid_ele_property_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
 
   // anisotropic_permeability_directions_
   int size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   anisotropic_permeability_property_.directions_.resize(size, std::vector<double>(3, 0.0));
   for (int i = 0; i < size; ++i)
-    extract_from_pack(position, data, anisotropic_permeability_property_.directions_[i]);
+    extract_from_pack(buffer, anisotropic_permeability_property_.directions_[i]);
 
   // anisotropic_permeability_nodal_coeffs_
   size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   anisotropic_permeability_property_.nodal_coeffs_.resize(
       size, std::vector<double>(this->num_node(), 0.0));
   for (int i = 0; i < size; ++i)
-    extract_from_pack(position, data, anisotropic_permeability_property_.nodal_coeffs_[i]);
+    extract_from_pack(buffer, anisotropic_permeability_property_.nodal_coeffs_[i]);
 
 
 
@@ -327,11 +326,10 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBased::unpack(const std::vector
   solidporo_press_vel_based_calc_variant_ =
       create_solid_poro_pressure_velocity_based_calculation_interface(celltype_);
 
-  Discret::ELEMENTS::unpack(solid_calc_variant_, position, data);
-  Discret::ELEMENTS::unpack(solidporo_press_vel_based_calc_variant_, position, data);
+  Discret::ELEMENTS::unpack(solid_calc_variant_, buffer);
+  Discret::ELEMENTS::unpack(solidporo_press_vel_based_calc_variant_, buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::ELEMENTS::SolidPoroPressureVelocityBased::vis_names(std::map<std::string, int>& names)

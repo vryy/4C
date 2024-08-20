@@ -139,10 +139,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleCombo::create_material()
 
 Mat::MuscleComboType Mat::MuscleComboType::instance_;
 
-Core::Communication::ParObject* Mat::MuscleComboType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MuscleComboType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* muscle_combo = new Mat::MuscleCombo();
-  muscle_combo->unpack(data);
+  muscle_combo->unpack(buffer);
   return muscle_combo;
 }
 
@@ -194,18 +195,16 @@ void Mat::MuscleCombo::pack(Core::Communication::PackBuffer& data) const
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::MuscleCombo::unpack(const std::vector<char>& data)
+void Mat::MuscleCombo::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // make sure we have a pristine material
   params_ = nullptr;
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
 
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -225,10 +224,9 @@ void Mat::MuscleCombo::unpack(const std::vector<char>& data)
     }
   }
 
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Mat::MuscleCombo::setup(int numgp, const Core::IO::InputParameterContainer& container)

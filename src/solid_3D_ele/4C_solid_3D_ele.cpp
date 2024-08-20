@@ -103,10 +103,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::create(
   return Teuchos::rcp(new Discret::ELEMENTS::Solid(id, owner));
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SolidType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SolidType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Solid(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -181,31 +182,28 @@ void Discret::ELEMENTS::Solid::pack(Core::Communication::PackBuffer& data) const
   Discret::ELEMENTS::pack(solid_calc_variant_, data);
 }
 
-void Discret::ELEMENTS::Solid::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Solid::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  if (extract_int(position, data) != unique_par_object_id())
-    FOUR_C_THROW("wrong instance type data");
+  if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
 
-  celltype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
 
-  Discret::ELEMENTS::extract_from_pack(position, data, solid_ele_property_);
+  Discret::ELEMENTS::extract_from_pack(buffer, solid_ele_property_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, material_post_setup_);
+  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
 
   // reset solid interface
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
 
-  Discret::ELEMENTS::unpack(solid_calc_variant_, position, data);
+  Discret::ELEMENTS::unpack(solid_calc_variant_, buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 void Discret::ELEMENTS::Solid::set_params_interface_ptr(const Teuchos::ParameterList& p)

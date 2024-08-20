@@ -39,7 +39,7 @@ namespace Discret::ELEMENTS::Shell
      * @param position (in/out) : position where to unpack the data
      * @param data     (in)     : data to be unpacked.
      */
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data) = 0;
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer) = 0;
   };
 }  // namespace Discret::ELEMENTS::Shell
 

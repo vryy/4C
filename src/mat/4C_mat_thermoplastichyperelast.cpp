@@ -75,10 +75,10 @@ Mat::ThermoPlasticHyperElastType Mat::ThermoPlasticHyperElastType::instance_;
  | is called in Material::Factory from ReadMaterials()       dano 03/13 |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::ThermoPlasticHyperElastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ThermoPlasticHyperElast* thrplhyper = new Mat::ThermoPlasticHyperElast();
-  thrplhyper->unpack(data);
+  thrplhyper->unpack(buffer);
   return thrplhyper;
 }
 
@@ -154,16 +154,16 @@ void Mat::ThermoPlasticHyperElast::pack(Core::Communication::PackBuffer& data) c
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 03/13 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
+void Mat::ThermoPlasticHyperElast::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -182,7 +182,7 @@ void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  extract_from_pack(position, data, histsize);
+  extract_from_pack(buffer, histsize);
 
   // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -211,34 +211,34 @@ void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp_vect(true);
     double tmp_scalar = 0.0;
 
-    extract_from_pack(position, data, tmp_matrix);
+    extract_from_pack(buffer, tmp_matrix);
     defgrdlast_->push_back(tmp_matrix);
 
-    extract_from_pack(position, data, tmp_matrix);
+    extract_from_pack(buffer, tmp_matrix);
     bebarlast_->push_back(tmp_matrix);
 
-    extract_from_pack(position, data, tmp_scalar);
+    extract_from_pack(buffer, tmp_scalar);
     accplstrainlast_->push_back(tmp_scalar);
 
-    extract_from_pack(position, data, tmp_scalar);
+    extract_from_pack(buffer, tmp_scalar);
     mechdiss_->push_back(tmp_scalar);
 
-    extract_from_pack(position, data, tmp_scalar);
+    extract_from_pack(buffer, tmp_scalar);
     mechdiss_k_tt_->push_back(tmp_scalar);
 
-    extract_from_pack(position, data, tmp_vect);
+    extract_from_pack(buffer, tmp_vect);
     mechdiss_k_td_->push_back(tmp_vect);
 
-    extract_from_pack(position, data, tmp_vect);
+    extract_from_pack(buffer, tmp_vect);
     cmat_kd_t_->push_back(tmp_vect);
 
-    extract_from_pack(position, data, tmp_scalar);
+    extract_from_pack(buffer, tmp_scalar);
     thrplheat_->push_back(tmp_scalar);
 
-    extract_from_pack(position, data, tmp_scalar);
+    extract_from_pack(buffer, tmp_scalar);
     thrplheat_k_tt_->push_back(tmp_scalar);
 
-    extract_from_pack(position, data, tmp_vect);
+    extract_from_pack(buffer, tmp_vect);
     thrplheat_k_td_->push_back(tmp_vect);
 
     // current vectors have to be initialised
@@ -249,13 +249,12 @@ void Mat::ThermoPlasticHyperElast::unpack(const std::vector<char>& data)
 
   plastic_step_ = false;
   int plastic_step;
-  extract_from_pack(position, data, plastic_step);
+  extract_from_pack(buffer, plastic_step);
 
   // if it was already plastic before, set true
   if (plastic_step != 0) plastic_step_ = true;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 

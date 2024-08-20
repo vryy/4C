@@ -87,17 +87,16 @@ void Mat::Elastic::RemodelFiber::pack_summand(Core::Communication::PackBuffer& d
     for (const auto& k : potsumfiber_) k->fiber->pack_summand(data);
 }
 
-void Mat::Elastic::RemodelFiber::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::RemodelFiber::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
   //  // make sure we have a pristine material
   //  params_ = nullptr;
   //  potsumfiber_.clear();
 
   int num_fiber = 0;
-  extract_from_pack(position, data, num_fiber);
+  extract_from_pack(buffer, num_fiber);
   int num_gp = 0;
-  extract_from_pack(position, data, num_gp);
+  extract_from_pack(buffer, num_gp);
 
   cauchystress_.resize(num_fiber);
 
@@ -106,32 +105,32 @@ void Mat::Elastic::RemodelFiber::unpack_summand(
   double t_decay = 0.0;
   for (int k = 0; k < num_fiber; ++k)
   {
-    extract_from_pack(position, data, potsumfiber_[k]->cur_lambr);
-    extract_from_pack(position, data, potsumfiber_[k]->last_lambr);
-    extract_from_pack(position, data, potsumfiber_[k]->cur_rho);
-    extract_from_pack(position, data, potsumfiber_[k]->last_rho);
-    extract_from_pack(position, data, potsumfiber_[k]->AM);
-    extract_from_pack(position, data, potsumfiber_[k]->AM_orth);
-    extract_from_pack(position, data, potsumfiber_[k]->FrnM);
-    extract_from_pack(position, data, potsumfiber_[k]->diFrdlambrM);
-    extract_from_pack(position, data, potsumfiber_[k]->dFrdlambrM);
-    extract_from_pack(position, data, potsumfiber_[k]->iFrM);
-    extract_from_pack(position, data, potsumfiber_[k]->FrdotM);
-    extract_from_pack(position, data, potsumfiber_[k]->dFrdotdlambrM);
-    extract_from_pack(position, data, sig_h);
-    extract_from_pack(position, data, k_sig);
-    extract_from_pack(position, data, t_decay);
-    extract_from_pack(position, data, potsumfiber_[k]->G);
-    extract_from_pack(position, data, cauchystress_[k]);
+    extract_from_pack(buffer, potsumfiber_[k]->cur_lambr);
+    extract_from_pack(buffer, potsumfiber_[k]->last_lambr);
+    extract_from_pack(buffer, potsumfiber_[k]->cur_rho);
+    extract_from_pack(buffer, potsumfiber_[k]->last_rho);
+    extract_from_pack(buffer, potsumfiber_[k]->AM);
+    extract_from_pack(buffer, potsumfiber_[k]->AM_orth);
+    extract_from_pack(buffer, potsumfiber_[k]->FrnM);
+    extract_from_pack(buffer, potsumfiber_[k]->diFrdlambrM);
+    extract_from_pack(buffer, potsumfiber_[k]->dFrdlambrM);
+    extract_from_pack(buffer, potsumfiber_[k]->iFrM);
+    extract_from_pack(buffer, potsumfiber_[k]->FrdotM);
+    extract_from_pack(buffer, potsumfiber_[k]->dFrdotdlambrM);
+    extract_from_pack(buffer, sig_h);
+    extract_from_pack(buffer, k_sig);
+    extract_from_pack(buffer, t_decay);
+    extract_from_pack(buffer, potsumfiber_[k]->G);
+    extract_from_pack(buffer, cauchystress_[k]);
 
     potsumfiber_[k]->growth = Teuchos::rcp(new GrowthEvolution(k_sig, sig_h));
     potsumfiber_[k]->remodel = Teuchos::rcp(new RemodelEvolution(k_sig, sig_h, t_decay));
   }
 
-  extract_from_pack(position, data, init_rho_col_);
+  extract_from_pack(buffer, init_rho_col_);
 
   // loop map of associated potential summands
-  for (auto& k : potsumfiber_) k->fiber->unpack_summand(data, position);
+  for (auto& k : potsumfiber_) k->fiber->unpack_summand(buffer);
 }
 
 void Mat::Elastic::RemodelFiber::register_anisotropy_extensions(Anisotropy& anisotropy)

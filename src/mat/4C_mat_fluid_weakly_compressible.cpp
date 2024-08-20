@@ -41,10 +41,10 @@ Mat::WeaklyCompressibleFluidType Mat::WeaklyCompressibleFluidType::instance_;
 
 
 Core::Communication::ParObject* Mat::WeaklyCompressibleFluidType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::WeaklyCompressibleFluid* fluid = new Mat::WeaklyCompressibleFluid();
-  fluid->unpack(data);
+  fluid->unpack(buffer);
   return fluid;
 }
 
@@ -81,15 +81,13 @@ void Mat::WeaklyCompressibleFluid::pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::WeaklyCompressibleFluid::unpack(const std::vector<char>& data)
+void Mat::WeaklyCompressibleFluid::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -104,8 +102,7 @@ void Mat::WeaklyCompressibleFluid::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

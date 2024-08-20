@@ -45,10 +45,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoNeoHooke::create_material()
 Mat::ViscoNeoHookeType Mat::ViscoNeoHookeType::instance_;
 
 
-Core::Communication::ParObject* Mat::ViscoNeoHookeType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ViscoNeoHookeType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ViscoNeoHooke* visco = new Mat::ViscoNeoHooke();
-  visco->unpack(data);
+  visco->unpack(buffer);
   return visco;
 }
 
@@ -111,16 +112,16 @@ void Mat::ViscoNeoHooke::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoNeoHooke::unpack(const std::vector<char>& data)
+void Mat::ViscoNeoHooke::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -137,7 +138,7 @@ void Mat::ViscoNeoHooke::unpack(const std::vector<char>& data)
 
   // history data
   int twicehistsize;
-  extract_from_pack(position, data, twicehistsize);
+  extract_from_pack(buffer, twicehistsize);
 
   if (twicehistsize == 0) isinit_ = false;
 
@@ -150,14 +151,13 @@ void Mat::ViscoNeoHooke::unpack(const std::vector<char>& data)
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp(true);
     histstresscurr_->push_back(tmp);
     artstresscurr_->push_back(tmp);
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     histstresslast_->push_back(tmp);
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     artstresslast_->push_back(tmp);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

@@ -119,7 +119,7 @@ void Discret::ELEMENTS::Wall1Line::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1Line::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this line element does not support communication");
   return;

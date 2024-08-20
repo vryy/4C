@@ -171,18 +171,19 @@ void CONTACT::Interface::round_robin_change_ownership()
   // ---- unpack ----
   {
     // Put received nodes into discretization
-    std::vector<char>::size_type index = 0;
-    while (index < rdataeles.size())
+    Core::Communication::UnpackBuffer buffer(rdataeles);
+    while (!buffer.at_end())
     {
       std::vector<char> data;
       int ghost = -1;
-      Core::Communication::ParObject::extract_from_pack(index, rdataeles, data);
-      Core::Communication::ParObject::extract_from_pack(index, rdataeles, ghost);
-      if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      Core::Communication::ParObject::extract_from_pack(buffer, ghost);
+      if (ghost == -1) FOUR_C_THROW("Unpack error.");
 
       // this Teuchos::rcp holds the memory of the ele
+      Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::rcp(Core::Communication::factory(data), true);
+          Teuchos::rcp(Core::Communication::factory(data_buffer), true);
       Teuchos::RCP<Mortar::Element> ele = Teuchos::rcp_dynamic_cast<Mortar::Element>(object);
       if (ele == Teuchos::null) FOUR_C_THROW("Received object is not an ele");
 
@@ -287,19 +288,20 @@ void CONTACT::Interface::round_robin_change_ownership()
   // ---- unpack ----
   {
     // Put received nodes into discretization
-    std::vector<char>::size_type index = 0;
-    while (index < rdatanodes.size())
+    Core::Communication::UnpackBuffer buffer(rdatanodes);
+    while (!buffer.at_end())
     {
       std::vector<char> data;
 
       int ghost = -1;
-      Core::Communication::ParObject::extract_from_pack(index, rdatanodes, data);
-      Core::Communication::ParObject::extract_from_pack(index, rdatanodes, ghost);
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      Core::Communication::ParObject::extract_from_pack(buffer, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the node
+      Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::rcp(Core::Communication::factory(data), true);
+          Teuchos::rcp(Core::Communication::factory(data_buffer), true);
 
       if (ftype == Inpar::CONTACT::friction_none)
       {

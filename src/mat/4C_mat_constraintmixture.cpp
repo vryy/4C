@@ -96,10 +96,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ConstraintMixture::create_material()
 
 Mat::ConstraintMixtureType Mat::ConstraintMixtureType::instance_;
 
-Core::Communication::ParObject* Mat::ConstraintMixtureType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ConstraintMixtureType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ConstraintMixture* comix = new Mat::ConstraintMixture();
-  comix->unpack(data);
+  comix->unpack(buffer);
   return comix;
 }
 
@@ -177,16 +178,16 @@ void Mat::ConstraintMixture::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         12/10|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
+void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -202,12 +203,11 @@ void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
     }
 
   int numgp;
-  extract_from_pack(position, data, numgp);
+  extract_from_pack(buffer, numgp);
   if (numgp == 0)
   {  // no history data to unpack
     isinit_ = false;
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     return;
   }
 
@@ -225,58 +225,58 @@ void Mat::ConstraintMixture::unpack(const std::vector<char>& data)
   for (int gp = 0; gp < numgp; gp++)
   {
     Core::LinAlg::Matrix<3, 1> alin;
-    extract_from_pack(position, data, alin);
+    extract_from_pack(buffer, alin);
     a1_->at(gp) = alin;
-    extract_from_pack(position, data, alin);
+    extract_from_pack(buffer, alin);
     a2_->at(gp) = alin;
-    extract_from_pack(position, data, alin);
+    extract_from_pack(buffer, alin);
     a3_->at(gp) = alin;
-    extract_from_pack(position, data, alin);
+    extract_from_pack(buffer, alin);
     a4_->at(gp) = alin;
-    extract_from_pack(position, data, alin);
+    extract_from_pack(buffer, alin);
     vismassstress_->at(gp) = alin;
     double a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     refmassdens_->at(gp) = a;
-    extract_from_pack(position, data, alin);
+    extract_from_pack(buffer, alin);
     visrefmassdens_->at(gp) = alin;
     Core::LinAlg::Matrix<4, 1> pre;
-    extract_from_pack(position, data, pre);
+    extract_from_pack(buffer, pre);
     localprestretch_->at(gp) = pre;
-    extract_from_pack(position, data, pre);
+    extract_from_pack(buffer, pre);
     localhomstress_->at(gp) = pre;
   }
   double basal;
-  extract_from_pack(position, data, basal);
+  extract_from_pack(buffer, basal);
   massprodbasal_ = basal;
-  extract_from_pack(position, data, basal);
+  extract_from_pack(buffer, basal);
   homradius_ = basal;
 
   int delsize = 0;
-  extract_from_pack(position, data, delsize);
+  extract_from_pack(buffer, delsize);
   deletemass_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(delsize));
   for (int iddel = 0; iddel < delsize; iddel++)
   {
     Core::LinAlg::Matrix<3, 1> deldata;
-    extract_from_pack(position, data, deldata);
+    extract_from_pack(buffer, deldata);
     deletemass_->at(iddel) = deldata;
   }
 
   // unpack history
-  extract_from_pack(position, data, delsize);
+  extract_from_pack(buffer, delsize);
   minindex_ = delsize;
   int sizehistory;
-  extract_from_pack(position, data, sizehistory);
+  extract_from_pack(buffer, sizehistory);
   history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory>(sizehistory));
   for (int idpast = 0; idpast < sizehistory; idpast++)
   {
     std::vector<char> datahistory;
-    extract_from_pack(position, data, datahistory);
-    history_->at(idpast).unpack(datahistory);
+    extract_from_pack(buffer, datahistory);
+    Core::Communication::UnpackBuffer buffer_hist(datahistory);
+    history_->at(idpast).unpack(buffer_hist);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   /*
   double oldesttime = 0.0;

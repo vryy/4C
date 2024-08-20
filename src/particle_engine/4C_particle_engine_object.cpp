@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 PARTICLEENGINE::ParticleObjectType PARTICLEENGINE::ParticleObjectType::instance_;
 
 Core::Communication::ParObject* PARTICLEENGINE::ParticleObjectType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   ParticleObject* my_particleobject = new ParticleObject();
-  my_particleobject->unpack(data);
+  my_particleobject->unpack(buffer);
   return my_particleobject;
 }
 
@@ -64,32 +64,29 @@ void PARTICLEENGINE::ParticleObject::pack(Core::Communication::PackBuffer& data)
   add_to_pack(data, index_);
 }
 
-void PARTICLEENGINE::ParticleObject::unpack(const std::vector<char>& data)
+void PARTICLEENGINE::ParticleObject::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // particletype_
-  extract_from_pack(position, data, type_);
+  extract_from_pack(buffer, type_);
 
   // particleglobalid_
-  extract_from_pack(position, data, globalid_);
+  extract_from_pack(buffer, globalid_);
 
   // particle states
   int numstates = 0;
-  extract_from_pack(position, data, numstates);
+  extract_from_pack(buffer, numstates);
   states_.resize(numstates);
-  for (int i = 0; i < numstates; ++i) extract_from_pack(position, data, states_[i]);
+  for (int i = 0; i < numstates; ++i) extract_from_pack(buffer, states_[i]);
 
   // bingid_
-  extract_from_pack(position, data, bingid_);
+  extract_from_pack(buffer, bingid_);
 
   // containerindex_
-  extract_from_pack(position, data, index_);
+  extract_from_pack(buffer, index_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

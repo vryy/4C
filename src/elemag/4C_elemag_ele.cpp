@@ -41,10 +41,11 @@ Discret::ELEMENTS::ElemagIntFaceType& Discret::ELEMENTS::ElemagIntFaceType::inst
 }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::ElemagType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::ElemagType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Elemag* object = new Discret::ELEMENTS::Elemag(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -193,28 +194,26 @@ void Discret::ELEMENTS::Elemag::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Elemag::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Elemag::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
   // distype
-  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
   int val = 0;
-  extract_from_pack(position, data, val);
+  extract_from_pack(buffer, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
-  extract_from_pack(position, data, val);
+  extract_from_pack(buffer, val);
   completepol_ = val;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 
@@ -370,22 +369,20 @@ void Discret::ELEMENTS::ElemagBoundary::pack(Core::Communication::PackBuffer& da
  |  Unpack data                                                (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagBoundary::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ElemagBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
   // distype
   // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }
@@ -556,7 +553,7 @@ void Discret::ELEMENTS::ElemagIntFace::pack(Core::Communication::PackBuffer& dat
  |  Unpack data                                                (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagIntFace::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ElemagIntFace::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this ElemagIntFace element does not support communication");
   return;

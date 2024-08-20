@@ -253,17 +253,18 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
 
     //--------------------------------------------------
     // Unpack block.
-    std::vector<char>::size_type index = 0;
-    while (index < rblockofnodes.size())
+    Communication::UnpackBuffer buffer(rblockofnodes);
+    while (!buffer.at_end())
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
+      Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::factory(data));
+          Teuchos::rcp(Core::Communication::factory(data_buffer));
 
       // check type of ParObject, and return gid
       const int id = check_valid_entity_type(o);
@@ -489,17 +490,18 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
 
     //--------------------------------------------------
     // Unpack block.
-    std::vector<char>::size_type index = 0;
-    while (index < rblockofnodes.size())
+    Communication::UnpackBuffer buffer(rblockofnodes);
+    while (!buffer.at_end())
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
+      Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::factory(data));
+          Teuchos::rcp(Core::Communication::factory(data_buffer));
 
       // cast ParObject to specific type and return id
       const int id = check_valid_entity_type(o);
@@ -642,17 +644,18 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
 
     //--------------------------------------------------
     // Unpack block.
-    std::vector<char>::size_type index = 0;
-    while (index < rblockofnodes.size())
+    Communication::UnpackBuffer buffer(rblockofnodes);
+    while (!buffer.at_end())
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      unpack_entity(index, rblockofnodes, data);
+      unpack_entity(buffer, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
+      Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::factory(data));
+          Teuchos::rcp(Core::Communication::factory(data_buffer));
 
       const int id = check_valid_entity_type(o);
 
@@ -778,9 +781,9 @@ void Core::GeometricSearch::NodeMatchingOctree::pack_entity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::GeometricSearch::NodeMatchingOctree::unpack_entity(
-    std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
+    Communication::UnpackBuffer& buffer, std::vector<char>& data)
 {
-  Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
+  Core::Communication::ParObject::extract_from_pack(buffer, data);
 }  // NodeMatchingOctree::unpack_entity
 
 /*----------------------------------------------------------------------*/
@@ -888,18 +891,19 @@ void Core::GeometricSearch::ElementMatchingOctree::pack_entity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
-    std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
+    Communication::UnpackBuffer& buffer, std::vector<char>& data)
 {
   nodes_.clear();
-  int numnode = Core::Communication::ParObject::extract_int(index, rblockofnodes);
-  Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
+  int numnode = Core::Communication::ParObject::extract_int(buffer);
+  Core::Communication::ParObject::extract_from_pack(buffer, data);
 
   for (int node = 0; node < numnode; node++)
   {
     std::vector<char> nodedata;
-    Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, nodedata);
+    Core::Communication::ParObject::extract_from_pack(buffer, nodedata);
+    Communication::UnpackBuffer nodedatabuffer(nodedata);
     Teuchos::RCP<Core::Communication::ParObject> o =
-        Teuchos::rcp(Core::Communication::factory(nodedata));
+        Teuchos::rcp(Core::Communication::factory(nodedatabuffer));
     Teuchos::RCP<Core::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(o);
     if (actnode == Teuchos::null) FOUR_C_THROW("cast from ParObject to Node failed");
     nodes_.insert(std::pair<int, Teuchos::RCP<Core::Nodes::Node>>(actnode->id(), actnode));

@@ -39,10 +39,11 @@ Mat::LinElast1DType Mat::LinElast1DType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::LinElast1DType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::LinElast1DType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* stvenantk = new Mat::LinElast1D(nullptr);
-  stvenantk->unpack(data);
+  stvenantk->unpack(buffer);
   return stvenantk;
 }
 
@@ -68,15 +69,13 @@ void Mat::LinElast1D::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1D::unpack(const std::vector<char>& data)
+void Mat::LinElast1D::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -93,8 +92,7 @@ void Mat::LinElast1D::unpack(const std::vector<char>& data)
     }
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -123,10 +121,11 @@ Mat::LinElast1DGrowthType Mat::LinElast1DGrowthType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::LinElast1DGrowthType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::LinElast1DGrowthType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* stvk_growth = new Mat::LinElast1DGrowth(nullptr);
-  stvk_growth->unpack(data);
+  stvk_growth->unpack(buffer);
   return stvk_growth;
 }
 
@@ -157,20 +156,19 @@ void Mat::LinElast1DGrowth::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::LinElast1DGrowth::unpack(const std::vector<char>& data)
+void Mat::LinElast1DGrowth::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Mat::LinElast1D::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Mat::LinElast1D::unpack(basedata_buffer);
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   growth_params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -187,8 +185,7 @@ void Mat::LinElast1DGrowth::unpack(const std::vector<char>& data)
     }
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

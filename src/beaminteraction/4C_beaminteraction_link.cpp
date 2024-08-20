@@ -125,34 +125,31 @@ void BEAMINTERACTION::BeamLink::pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // isinit_
-  isinit_ = Core::Communication::ParObject::extract_int(position, data);
+  isinit_ = Core::Communication::ParObject::extract_int(buffer);
   // issetup
-  issetup_ = Core::Communication::ParObject::extract_int(position, data);
+  issetup_ = Core::Communication::ParObject::extract_int(buffer);
   // id_
-  extract_from_pack(position, data, id_);
+  extract_from_pack(buffer, id_);
 
   // eleids_
-  extract_from_pack(position, data, bspot_ids_);
+  extract_from_pack(buffer, bspot_ids_);
   // bspotpos1
-  extract_from_pack(position, data, bspotpos1_);
+  extract_from_pack(buffer, bspotpos1_);
   // bspotpos2
-  extract_from_pack(position, data, bspotpos2_);
+  extract_from_pack(buffer, bspotpos2_);
   // linkertype
-  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(extract_int(position, data));
+  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(extract_int(buffer));
   // timelinkwasset
-  extract_from_pack(position, data, timelinkwasset_);
+  extract_from_pack(buffer, timelinkwasset_);
   // reflength
-  extract_from_pack(position, data, reflength_);
+  extract_from_pack(buffer, reflength_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

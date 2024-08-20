@@ -23,10 +23,10 @@ Discret::ELEMENTS::Wall1ScatraType& Discret::ELEMENTS::Wall1ScatraType::instance
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::Wall1ScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1Scatra* object = new Discret::ELEMENTS::Wall1Scatra(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -119,19 +119,18 @@ void Discret::ELEMENTS::Wall1Scatra::pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Scatra::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1Scatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract scalar transport impltype
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(position, data));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Wall1::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Wall1::unpack(basedata_buffer);
 }
 
 /*----------------------------------------------------------------------*

@@ -59,10 +59,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrosslinkerMat::create_material()
 Mat::CrosslinkerMatType Mat::CrosslinkerMatType::instance_;
 
 
-Core::Communication::ParObject* Mat::CrosslinkerMatType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::CrosslinkerMatType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::CrosslinkerMat* linkermat = new Mat::CrosslinkerMat();
-  linkermat->unpack(data);
+  linkermat->unpack(buffer);
   return linkermat;
 }
 
@@ -100,15 +101,13 @@ void Mat::CrosslinkerMat::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Mat::CrosslinkerMat::unpack(const std::vector<char>& data)
+void Mat::CrosslinkerMat::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -123,8 +122,7 @@ void Mat::CrosslinkerMat::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 FOUR_C_NAMESPACE_CLOSE

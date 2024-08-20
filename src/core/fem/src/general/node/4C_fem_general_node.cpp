@@ -21,11 +21,12 @@ Core::Nodes::NodeType Core::Nodes::NodeType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Core::Nodes::NodeType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::NodeType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> dummycoord(3, 999.0);
   auto* object = new Core::Nodes::Node(-1, dummycoord, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -104,21 +105,18 @@ void Core::Nodes::Node::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::unpack(const std::vector<char>& data)
+void Core::Nodes::Node::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // id_
-  extract_from_pack(position, data, id_);
+  extract_from_pack(buffer, id_);
   // owner_
-  extract_from_pack(position, data, owner_);
+  extract_from_pack(buffer, owner_);
   // x_
-  extract_from_pack(position, data, x_);
+  extract_from_pack(buffer, x_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

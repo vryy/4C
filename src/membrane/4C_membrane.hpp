@@ -188,7 +188,7 @@ namespace Discret
       \ref pack and \ref unpack are used to communicate this element
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
 
       //@}
@@ -667,7 +667,7 @@ namespace Discret
       \ref pack and \ref unpack are used to communicate this element
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
 
       //@}
