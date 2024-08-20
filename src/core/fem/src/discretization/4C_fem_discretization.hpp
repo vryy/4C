@@ -2034,7 +2034,7 @@ namespace Core::FE
 
       \note Sets Filled()=false
      */
-    void un_pack_my_elements(Teuchos::RCP<std::vector<char>> e);
+    void unpack_my_elements(Teuchos::RCP<std::vector<char>> e);
 
     /*!
       \brief Unpack nodal buffer and create local nodes.
@@ -2046,7 +2046,7 @@ namespace Core::FE
 
       \note Sets Filled()=false
      */
-    void un_pack_my_nodes(Teuchos::RCP<std::vector<char>> e);
+    void unpack_my_nodes(Teuchos::RCP<std::vector<char>> e);
 
     //@}
 

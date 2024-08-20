@@ -485,14 +485,14 @@ void PostProblem::read_meshes()
       {
         Teuchos::RCP<std::vector<char>> node_data =
             reader.read_node_data(step, comm_->NumProc(), comm_->MyPID());
-        currfield.discretization()->un_pack_my_nodes(node_data);
+        currfield.discretization()->unpack_my_nodes(node_data);
       }
 
       if (currfield.num_elements() != 0)
       {
         Teuchos::RCP<std::vector<char>> element_data =
             reader.read_element_data(step, comm_->NumProc(), comm_->MyPID());
-        currfield.discretization()->un_pack_my_elements(element_data);
+        currfield.discretization()->unpack_my_elements(element_data);
       }
 
       Teuchos::RCP<std::vector<char>> cond_pbcsline;

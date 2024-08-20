@@ -647,7 +647,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
     {
       // extract node data from blockofnodes
       std::vector<char> data;
-      un_pack_entity(index, rblockofnodes, data);
+      unpack_entity(index, rblockofnodes, data);
 
       // allocate an "empty node". Fill it with info from
       // extracted node data
@@ -777,11 +777,11 @@ void Core::GeometricSearch::NodeMatchingOctree::pack_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::GeometricSearch::NodeMatchingOctree::un_pack_entity(
+void Core::GeometricSearch::NodeMatchingOctree::unpack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   Core::Communication::ParObject::extract_from_pack(index, rblockofnodes, data);
-}  // NodeMatchingOctree::un_pack_entity
+}  // NodeMatchingOctree::unpack_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -887,7 +887,7 @@ void Core::GeometricSearch::ElementMatchingOctree::pack_entity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::GeometricSearch::ElementMatchingOctree::un_pack_entity(
+void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   nodes_.clear();
@@ -905,7 +905,7 @@ void Core::GeometricSearch::ElementMatchingOctree::un_pack_entity(
     nodes_.insert(std::pair<int, Teuchos::RCP<Core::Nodes::Node>>(actnode->id(), actnode));
   }
 
-}  // ElementMatchingOctree::un_pack_entity
+}  // ElementMatchingOctree::unpack_entity
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

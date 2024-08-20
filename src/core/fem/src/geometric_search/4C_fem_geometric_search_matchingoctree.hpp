@@ -139,7 +139,7 @@ namespace Core::GeometricSearch
         const Core::FE::Discretization* dis, const int id) = 0;
 
     //! unpack entity to PackPuffer
-    virtual void un_pack_entity(std::vector<char>::size_type& index,
+    virtual void unpack_entity(std::vector<char>::size_type& index,
         std::vector<char>& rblockofnodes, std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
@@ -304,7 +304,7 @@ namespace Core::GeometricSearch
         const int id) override;
 
     //! unpack node from PackPuffer
-    void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
+    void unpack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
@@ -343,7 +343,7 @@ namespace Core::GeometricSearch
         const int id) override;
 
     //! unpack element from PackPuffer
-    void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
+    void unpack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
@@ -359,7 +359,7 @@ namespace Core::GeometricSearch
     //! The flying nodes are sent around in the round robin loop
     //! together with the corresponding element.
     //!
-    //! \note We need this map as member, because in \ref un_pack_entity
+    //! \note We need this map as member, because in \ref unpack_entity
     //!       we Extract the nodes and fill this map. Then, we set the
     //!       nodal pointers in the communicated element by providing
     //!       the element with this map. The RCPs stored in this map have

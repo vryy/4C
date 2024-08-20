@@ -699,7 +699,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::un_pack_my_elements(Teuchos::RCP<std::vector<char>> e)
+void Core::FE::Discretization::unpack_my_elements(Teuchos::RCP<std::vector<char>> e)
 {
   std::vector<char>::size_type index = 0;
   while (index < e->size())
@@ -719,7 +719,7 @@ void Core::FE::Discretization::un_pack_my_elements(Teuchos::RCP<std::vector<char
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::un_pack_my_nodes(Teuchos::RCP<std::vector<char>> e)
+void Core::FE::Discretization::unpack_my_nodes(Teuchos::RCP<std::vector<char>> e)
 {
   std::vector<char>::size_type index = 0;
   while (index < e->size())
