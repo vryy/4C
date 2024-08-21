@@ -10,11 +10,7 @@
 
 #include "4C_utils_string.hpp"
 
-#include <map>
-#include <stdexcept>
 #include <string>
-#include <tuple>
-#include <utility>
 #include <vector>
 
 namespace
@@ -22,7 +18,7 @@ namespace
   using namespace FourC;
   using namespace Core::UTILS;
 
-  TEST(UtilsReaderTests, SplitStringSeparatorInString)
+  TEST(StringUtils, SplitStringSeparatorInString)
   {
     const std::string str = "1.1,2.2,3.3,4.4,5.5";
     auto splitted_string = split_string_list(str, ",");
