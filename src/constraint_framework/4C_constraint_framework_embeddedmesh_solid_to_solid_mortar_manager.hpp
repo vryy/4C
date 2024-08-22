@@ -156,6 +156,11 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     }
 
     /**
+     * \brief Write output obtained in the embedded mesh
+     */
+    void write_output(double time, int timestep_number);
+
+    /**
      * \brief Write the results of Lagrange multipliers as runtime output
      */
     void write_output_lagrange_multipliers(double time, int timestep_number);
@@ -289,9 +294,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>
         embedded_mesh_solid_pairs_;
 
-    Teuchos::RCP<Core::IO::VisualizationManager> point_visualization_manager_;
-
-    Teuchos::RCP<Core::IO::VisualizationManager> lambda_visualization_manager_;
+    Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_;
   };
 }  // namespace CONSTRAINTS::EMBEDDEDMESH
 

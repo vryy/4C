@@ -88,13 +88,8 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::evaluate_for
 void CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::runtime_output_step_state(
     std::pair<double, int> output_time_and_step)
 {
-  // Write the physical positions of gauss points where surface integrations will take place
-  mortar_manager_->write_output_integration_points(
-      output_time_and_step.first, output_time_and_step.second);
-
-  // Write output vtk of lagrange multipliers
-  mortar_manager_->write_output_lagrange_multipliers(
-      output_time_and_step.first, output_time_and_step.second);
+  // Write runtime output for the embedded mesh method
+  mortar_manager_->write_output(output_time_and_step.first, output_time_and_step.second);
 }
 
 FOUR_C_NAMESPACE_CLOSE
