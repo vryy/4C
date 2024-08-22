@@ -10,9 +10,9 @@
     <PPointData>
       <PDataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="density" format="ascii"/>
-      <PDataArray type="Float64" Name="globalid" format="ascii"/>
+      <PDataArray type="Int32" Name="globalid" format="ascii"/>
       <PDataArray type="Float64" Name="mass" format="ascii"/>
-      <PDataArray type="Float64" Name="owner" format="ascii"/>
+      <PDataArray type="Int32" Name="owner" format="ascii"/>
       <PDataArray type="Float64" Name="pressure" format="ascii"/>
       <PDataArray type="Float64" Name="radius" format="ascii"/>
       <PDataArray type="Float64" Name="velocity" NumberOfComponents="3" format="ascii"/>

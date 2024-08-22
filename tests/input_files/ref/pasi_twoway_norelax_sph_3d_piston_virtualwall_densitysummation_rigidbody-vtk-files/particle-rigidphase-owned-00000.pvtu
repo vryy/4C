@@ -13,10 +13,10 @@
       <PDataArray type="Float64" Name="boundary pressure" format="ascii"/>
       <PDataArray type="Float64" Name="boundary velocity" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="force" NumberOfComponents="3" format="ascii"/>
-      <PDataArray type="Float64" Name="globalid" format="ascii"/>
+      <PDataArray type="Int32" Name="globalid" format="ascii"/>
       <PDataArray type="Float64" Name="inertia" format="ascii"/>
       <PDataArray type="Float64" Name="mass" format="ascii"/>
-      <PDataArray type="Float64" Name="owner" format="ascii"/>
+      <PDataArray type="Int32" Name="owner" format="ascii"/>
       <PDataArray type="Float64" Name="radius" format="ascii"/>
       <PDataArray type="Float64" Name="relative position" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="rigid body color" format="ascii"/>

@@ -12,9 +12,9 @@
       <PDataArray type="Float64" Name="angular acceleration" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="angular velocity" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="force" NumberOfComponents="3" format="ascii"/>
-      <PDataArray type="Float64" Name="globalid" format="ascii"/>
+      <PDataArray type="Int32" Name="globalid" format="ascii"/>
       <PDataArray type="Float64" Name="mass" format="ascii"/>
-      <PDataArray type="Float64" Name="owner" format="ascii"/>
+      <PDataArray type="Int32" Name="owner" format="ascii"/>
       <PDataArray type="Float64" Name="torque" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="velocity" NumberOfComponents="3" format="ascii"/>
     </PPointData>
