@@ -518,15 +518,18 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output(
   // Clear the data of visualization manager
   visualization_manager_->clear_data();
 
-  // Write the physical positions of gauss points where surface integrations will take place
-  write_output_integration_points(time, timestep_number);
+  // Collect output of the physical positions of gauss points
+  // where surface integrations will take place
+  collect_output_integration_points();
 
-  // Write output vtk of lagrange multipliers
-  write_output_lagrange_multipliers(time, timestep_number);
+  // Collect vtk output of lagrange multipliers
+  collect_output_lagrange_multipliers();
+
+  // Write output
+  visualization_manager_->write_to_disk(time, timestep_number);
 }
 
-void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_lagrange_multipliers(
-    double time, int timestep_number)
+void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::collect_output_lagrange_multipliers()
 {
   auto& lagrange_multipliers_visualization_data =
       visualization_manager_->get_visualization_data("lagrange_multipliers");
@@ -542,12 +545,9 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_lagrange
     elepairptr->get_pair_visualization(
         lagrange_multipliers_visualization_data, lambda, this, interface_tracker);
   }
-
-  visualization_manager_->write_to_disk(time, timestep_number);
 }
 
-void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_integration_points(
-    double time, int timestep_number)
+void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::collect_output_integration_points()
 {
   auto& background_integration_points_visualization_data =
       visualization_manager_->get_visualization_data("background_integration_points");
@@ -572,8 +572,6 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_integrat
     elepairptr->get_projected_gauss_rule_in_cut_element(
         cut_element_integration_points_visualization_data);
   }
-
-  visualization_manager_->write_to_disk(time, timestep_number);
 }
 
 bool CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::is_cut_node(
