@@ -46,15 +46,12 @@ bool CONTACT::UTILS::use_safe_redistribute_and_ghosting(const Teuchos::Parameter
        * always requires volume ghosting.
        *
        * Other cases require volume ghosting as well and, thus, have to stick to the old code
-       * branch. They are:
-       * - Everything porous media related has to stick to the old code branch as well.
-       * - "Large" wear, i.e. using Structure-ALE.
+       * branch. Everything porous media related has to stick to the old code branch as well.
        */
       if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(contactParams, "ALGORITHM") ==
               Inpar::Mortar::algorithm_mortar &&
           (Global::Problem::instance()->get_problem_type() != Core::ProblemType::poroelast &&
-              Global::Problem::instance()->get_problem_type() != Core::ProblemType::poroscatra &&
-              Global::Problem::instance()->get_problem_type() != Core::ProblemType::struct_ale))
+              Global::Problem::instance()->get_problem_type() != Core::ProblemType::poroscatra))
         use_safe_ghosting_branch = true;
     }
     else

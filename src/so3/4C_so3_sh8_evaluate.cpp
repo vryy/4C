@@ -131,16 +131,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       }
       else
       {
-        std::vector<double> mydispmat(lm.size());
-        if (structale_)
-        {
-          Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.get_state("material_displacement");
-          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-        }
-
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, &elemat1, nullptr, &elevec1, nullptr,
+            nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
             Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
@@ -166,16 +158,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       }
       else
       {
-        std::vector<double> mydispmat(lm.size());
-        if (structale_)
-        {
-          Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.get_state("material_displacement");
-          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-        }
-
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-            nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, &elemat1, nullptr, &elevec1, nullptr,
+            &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
             Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
@@ -203,16 +187,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       }
       else
       {
-        std::vector<double> mydispmat(lm.size());
-        if (structale_)
-        {
-          Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.get_state("material_displacement");
-          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-        }
-
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, &myemat, nullptr, &elevec1, nullptr,
+            nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
             Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
@@ -245,16 +221,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       }
       else
       {
-        std::vector<double> mydispmat(lm.size());
-        if (structale_)
-        {
-          Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.get_state("material_displacement");
-          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-        }
-
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, &elemat1, &elemat2, &elevec1, nullptr,
+            nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
             Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
       // lump mass
@@ -304,16 +272,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       }
       else
       {
-        std::vector<double> mydispmat(lm.size());
-        if (structale_)
-        {
-          Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.get_state("material_displacement");
-          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-        }
-
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
-            nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, nullptr, nullptr, nullptr, nullptr,
+            nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
       }
       {
         Core::Communication::PackBuffer data;

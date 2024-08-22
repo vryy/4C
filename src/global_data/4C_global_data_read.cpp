@@ -908,29 +908,6 @@ void Global::read_fields(
 
       break;
     }
-    case Core::ProblemType::struct_ale:  // structure with ale
-    {
-      // create empty discretizations
-      structdis = Teuchos::rcp(
-          new Core::FE::Discretization("structure", reader.get_comm(), problem.n_dim()));
-      aledis =
-          Teuchos::rcp(new Core::FE::Discretization("ale", reader.get_comm(), problem.n_dim()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      structdis->set_writer(
-          Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
-      aledis->set_writer(
-          Teuchos::rcp(new Core::IO::DiscretizationWriter(aledis, output_control, distype)));
-
-      problem.add_dis("structure", structdis);
-      problem.add_dis("ale", aledis);
-
-      meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
-      meshreader.add_element_reader(Core::IO::ElementReader(aledis, reader, "--ALE ELEMENTS"));
-
-      break;
-    }
     case Core::ProblemType::poroelast:
     case Core::ProblemType::poromultiphase:
     {

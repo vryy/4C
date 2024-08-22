@@ -893,10 +893,6 @@ void Solid::TimIntImpl::apply_force_stiff_internal(const double time, const doub
   if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // fintn_->PutScalar(0.0);  // initialise internal force vector
 
-  // Set material displacement state for ale-wear formulation
-  if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
-
-
   /* Additionally we hand in "fint_str_"
    * This is usually Teuchos::null unless we do line search in
    * combination with elements that perform a local condensation
@@ -946,9 +942,6 @@ void Solid::TimIntImpl::apply_force_stiff_internal_and_inertial(const double tim
   discret_->set_state(0, "displacement", dis);
   discret_->set_state(0, "velocity", vel);
   discret_->set_state(0, "acceleration", acc);
-
-  // Set material displacement state for struct-ale
-  if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
   /* Additionally we hand in "fint_str_"
    * This is usually Teuchos::null unless we do line search in

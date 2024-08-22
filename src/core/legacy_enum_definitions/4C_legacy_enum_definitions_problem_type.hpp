@@ -62,7 +62,6 @@ namespace Core
     ssi,                   // scalar structure interaction
     ssti,                  // scalar structure thermo interaction
     sti,                   // scalar-thermo interaction
-    struct_ale,            // structural problem, ale formulation
     structure,             // structural problem
     thermo,                // thermal problem
     thermo_fsi,            // thermo-fluid-structure-interaction problem

@@ -52,7 +52,6 @@
 
 adapter/                                    @baci/team_discretization
 adapter/4C_adapter_ale*                        @baci/team_fluid
-adapter/4C_adapter_ale_wear*                   @baci/team_contact
 adapter/4C_adapter_algorithmbase*              @baci/team_discretization
 adapter/4C_adapter_art_net.hpp                 @baci/team_reduced_fluid_models
 adapter/4C_adapter_coupling*                   @baci/team_contact
@@ -295,8 +294,6 @@ tsi/                       @baci/team_thermo
 
 w1/                        @baci/team_structure
 w1/4C_w1_poro*             @baci/team_structure @baci/team_poro
-
-wear/                      @baci/team_contact
 
 xfem/                      @baci/team_fluid
 

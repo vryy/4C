@@ -729,9 +729,6 @@ namespace Solid
     //! Access from inside of the structural time integrator
     //@{
 
-    //! Return material displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> dismat() { return (*dismat_)(0); }
-
     //! Return displacements \f$D_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> dis_new() { return disn_; }
 
@@ -987,17 +984,6 @@ namespace Solid
 
     //@}
 
-    //! @name Structure with ale specific methods
-    //@{
-
-    //! material displacements (structure with ale)
-    Teuchos::RCP<Epetra_Vector> disp_mat() override { return dismatn_; }
-
-    //! apply material displacements to structure field (structure with ale)
-    void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) override;
-
-    //@}
-
     //! @name Biofilm methods
     //@{
 
@@ -1162,9 +1148,6 @@ namespace Solid
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
     Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dis_;
 
-    //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dismat_;
-
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
     Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> vel_;
 
@@ -1173,9 +1156,6 @@ namespace Solid
 
     //!< global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
-
-    //!< global material displacements
-    Teuchos::RCP<Epetra_Vector> dismatn_;  //!< global material displacements
 
     //!< global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> veln_;

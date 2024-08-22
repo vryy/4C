@@ -108,7 +108,6 @@ std::map<std::string, Core::ProblemType> Inpar::PROBLEMTYPE::string_to_problem_t
     string2prbtype["Scalar_Thermo_Interaction"] = Core::ProblemType::sti;
     string2prbtype["Scalar_Transport"] = Core::ProblemType::scatra;
     string2prbtype["Structure"] = Core::ProblemType::structure;
-    string2prbtype["Structure_Ale"] = Core::ProblemType::struct_ale;
     string2prbtype["Structure_Scalar_Interaction"] = Core::ProblemType::ssi;
     string2prbtype["Structure_Scalar_Thermo_Interaction"] = Core::ProblemType::ssti;
     string2prbtype["Thermo"] = Core::ProblemType::thermo;

@@ -112,16 +112,8 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
-      std::vector<double> mydispmat(lm.size(), 0.0);
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
-
-      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
-          nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, matptr, nullptr, &elevec1, nullptr,
+          &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
           Inpar::Solid::strain_none, Inpar::Solid::strain_none);
 
       break;
@@ -142,16 +134,8 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
 
-      std::vector<double> mydispmat(lm.size(), 0.0);
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
-
-      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, &myemat, nullptr, &elevec1, nullptr,
+          nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
           Inpar::Solid::strain_none, Inpar::Solid::strain_none);
 
       break;
@@ -192,25 +176,17 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (act != Core::Elements::struct_calc_internalinertiaforce)
         mass_matrix_evaluate.set_view(elemat2);
 
-      std::vector<double> mydispmat(lm.size(), 0.0);
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
-
       if (act == Core::Elements::struct_calc_internalinertiaforce)
       {
-        nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr, &mass_matrix_evaluate,
-            &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params,
-            Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
+        nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, nullptr, &mass_matrix_evaluate, &elevec1,
+            &elevec2, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+            Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
       else  // standard analysis
       {
-        nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &mass_matrix_evaluate,
-            &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
-            Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
+        nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, &elemat1, &mass_matrix_evaluate, &elevec1,
+            &elevec2, &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+            Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
       if (act == Core::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
 
@@ -251,17 +227,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
-      std::vector<double> mydispmat(lm.size(), 0.0);
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
       // reference and current geometry (nodal positions)
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xref;  // reference coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcur;  // current  coord. of element
-      Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xmat;  // mat  coord. of element
 
       for (int k = 0; k < NUMNOD_SOH8; ++k)
       {
@@ -271,14 +239,6 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         xcur(k, 0) = xref(k, 0) + mydisp[k * NODDOF_SOH8 + 0];
         xcur(k, 1) = xref(k, 1) + mydisp[k * NODDOF_SOH8 + 1];
         xcur(k, 2) = xref(k, 2) + mydisp[k * NODDOF_SOH8 + 2];
-
-        // material displacements for structure with ale
-        if (structale_ == true)
-        {
-          xmat(k, 0) = xref(k, 0) + mydispmat[k * NODDOF_SOH8 + 0];
-          xmat(k, 1) = xref(k, 1) + mydispmat[k * NODDOF_SOH8 + 1];
-          xmat(k, 2) = xref(k, 2) + mydispmat[k * NODDOF_SOH8 + 2];
-        }
       }
 
       // safety check before the actual evaluation starts
@@ -299,16 +259,6 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       // MAT ------------------------
       // build new jacobian mapping with respect to the material configuration
       int err = 0;
-      if (structale_ == true)
-      {
-        err = init_jacobian_mapping(mydispmat);
-        if (err)
-        {
-          // reset class variable before leaving
-          init_jacobian_mapping();
-          return err;
-        }
-      }
 
       std::vector<double> detJmat = detJ_;
       std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJmat = invJ_;
@@ -348,24 +298,6 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         mass_ref += fac;
 
         // MAT ------------------------
-        if (structale_)
-        {
-          fac = wgt * detJmat[ip];
-          volume_mat += fac;
-          fac = wgt * detJmat[ip] * density;
-          mass_mat += fac;
-
-          N_XYZ.multiply(invJmat[ip], derivs[ip]);
-          defgrd.multiply_tt(xcur, N_XYZ);
-          double detFmat = defgrd.determinant();
-
-          /*------------------------------------ integration factor  -------*/
-          fac = wgt * detJcur[ip];
-          volume_cur += fac;
-          fac = wgt * detJcur[ip] * density * 1 / detFmat;
-          mass_cur += fac;
-        }
-        else
         {
           N_XYZ.multiply(invJref[ip], derivs[ip]);
           defgrd.multiply_tt(xcur, N_XYZ);
@@ -382,11 +314,10 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       //----------------------------------------------------------------
 
       // return results
-      if (!structale_)
-      {
-        volume_mat = volume_ref;
-        mass_mat = mass_ref;
-      }
+
+      volume_mat = volume_ref;
+      mass_mat = mass_ref;
+
 
       elevec1(0) = volume_ref;
       elevec1(1) = volume_mat;
@@ -494,16 +425,8 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
 
-      std::vector<double> mydispmat(lm.size(), 0.0);
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
-
-      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
-          nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, nullptr, nullptr, nullptr, nullptr, nullptr,
+          &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
 
       {
         Core::Communication::PackBuffer data;
@@ -1155,14 +1078,6 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         std::vector<double> myres(lm.size());
         Core::FE::extract_my_values(*res, myres, lm);
 
-        std::vector<double> mydispmat(lm.size(), 0.0);
-        if (structale_)
-        {
-          Teuchos::RCP<const Epetra_Vector> dispmat =
-              discretization.get_state("material_displacement");
-          Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-        }
-
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
@@ -1173,8 +1088,8 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         auto ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
             params, "ioplstrain", Inpar::Solid::strain_none);
 
-        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
-            nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, nullptr, nullptr, nullptr, nullptr,
+            nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
 
         // add stresses to global map
         // get EleID Id()
@@ -1607,12 +1522,11 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     std::vector<double>* vel,                                       // current velocities
     std::vector<double>* acc,                                       // current accelerations
     std::vector<double>& residual,                                  // current residual displ
-    std::vector<double>& dispmat,                                 // current material displacements
-    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
-    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   // element mass matrix
-    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force,                  // element internal force vector
-    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* forceinert,             // element inertial force vector
-    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,              // element structural force vector
+    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,    // element stiffness matrix
+    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,     // element mass matrix
+    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force,                    // element internal force vector
+    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* forceinert,               // element inertial force vector
+    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
@@ -1776,9 +1690,6 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     */
     soh8_eassetup(&M_GP, detJ0, T0invT, xrefe);
   }  // -------------------------------------------------------------------- EAS
-
-  // build new jacobian mapping with respect to the material configuration
-  if (structale_ == true) init_jacobian_mapping(dispmat);
 
   // check if we need to split the residuals (for Newton line search)
   // if true an additional global vector is assembled containing

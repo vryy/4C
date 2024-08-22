@@ -1141,10 +1141,6 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
   {
     cparams.set<int>("PROBTYPE", Inpar::CONTACT::tsi);
   }
-  else if (problemtype == Core::ProblemType::struct_ale)
-  {
-    cparams.set<int>("PROBTYPE", Inpar::CONTACT::structalewear);
-  }
   else if (problemtype == Core::ProblemType::poroelast or problemtype == Core::ProblemType::fpsi or
            problemtype == Core::ProblemType::poroscatra)
   {

@@ -135,20 +135,18 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       for (int i = 0; i < (int)mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (int i = 0; i < (int)myres.size(); ++i) myres[i] = 0.0;
-      std::vector<double> mydispmat(lm.size());
-      for (int i = 0; i < (int)mydispmat.size(); ++i) mydispmat[i] = 0.0;
 
       // special case: geometrically linear
       if (kintype_ == Inpar::Solid::KinemType::linear)
       {
-        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_linstiffmass(lm, mydisp, myres, myknots, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_nlnstiffmass(lm, mydisp, myres, myknots, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       break;
     }
@@ -165,25 +163,18 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);
-      std::vector<double> mydispmat(lm.size());
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
 
       // special case: geometrically linear
       if (kintype_ == Inpar::Solid::KinemType::linear)
       {
-        w1_linstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_linstiffmass(lm, mydisp, myres, myknots, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_nlnstiffmass(lm, mydisp, myres, myknots, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
 
       if (act == Core::Elements::struct_calc_nlnstifflmass) w1_lumpmass(&elemat2);
@@ -202,25 +193,18 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);
-      std::vector<double> mydispmat(lm.size());
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
 
       // special case: geometrically linear
       if (kintype_ == Inpar::Solid::KinemType::linear)
       {
-        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_linstiffmass(lm, mydisp, myres, myknots, &elemat1, nullptr, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_nlnstiffmass(lm, mydisp, myres, myknots, &elemat1, nullptr, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       break;
     }
@@ -240,25 +224,18 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
       Core::LinAlg::SerialDenseMatrix myemat(lm.size(), lm.size());
-      std::vector<double> mydispmat(lm.size());
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
 
       // special case: geometrically linear
       if (kintype_ == Inpar::Solid::KinemType::linear)
       {
-        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_linstiffmass(lm, mydisp, myres, myknots, &myemat, nullptr, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
+        w1_nlnstiffmass(lm, mydisp, myres, myknots, &myemat, nullptr, &elevec1, nullptr, nullptr,
+            actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       break;
     }
@@ -345,13 +322,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);
-      std::vector<double> mydispmat(lm.size());
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
+
       const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
       Core::LinAlg::SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
       Core::LinAlg::SerialDenseMatrix strain(intpoints.nquad, Wall1::numstr_);
@@ -359,14 +330,14 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == Inpar::Solid::KinemType::linear)
       {
-        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, nullptr, nullptr, nullptr, &stress,
-            &strain, actmat, params, iostress, iostrain);
+        w1_linstiffmass(lm, mydisp, myres, myknots, nullptr, nullptr, nullptr, &stress, &strain,
+            actmat, params, iostress, iostrain);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, nullptr, nullptr, nullptr, &stress,
-            &strain, actmat, params, iostress, iostrain);
+        w1_nlnstiffmass(lm, mydisp, myres, myknots, nullptr, nullptr, nullptr, &stress, &strain,
+            actmat, params, iostress, iostrain);
       }
 
       {
@@ -415,11 +386,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       const int numdf = 2;
 
       Core::LinAlg::SerialDenseMatrix xjm;
-      Core::LinAlg::SerialDenseMatrix xjmmat;
       xjm.shape(2, 2);
-      xjmmat.shape(2, 2);
       double det = 0.0;
-      double detmat = 0.0;
       double detcur = 0.0;
       double detFmat = 0.0;  // F[0]*F[1]-F[2]*F[3];
 
@@ -435,18 +403,9 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
-      std::vector<double> mydispmat(lm.size());
-      if (structale_)
-      {
-        Teuchos::RCP<const Epetra_Vector> dispmat =
-            discretization.get_state("material_displacement");
-        Core::FE::extract_my_values(*dispmat, mydispmat, lm);
-      }
-
       // reference and current geometry (nodal positions)
       Core::LinAlg::SerialDenseMatrix xrefe(2, numnode);
       Core::LinAlg::SerialDenseMatrix xcure(2, numnode);
-      Core::LinAlg::SerialDenseMatrix xmat(2, numnode);
       Core::LinAlg::SerialDenseVector strain;
       strain.size(4);
       Core::LinAlg::SerialDenseMatrix boplin;
@@ -460,13 +419,6 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
         xrefe(1, k) = nodes()[k]->x()[1];
         xcure(0, k) = xrefe(0, k) + mydisp[k * numdf + 0];
         xcure(1, k) = xrefe(1, k) + mydisp[k * numdf + 1];
-
-        // material displacements for structure with ale
-        if (structale_ == true)
-        {
-          xmat(0, k) = xrefe(0, k) + mydispmat[k * numdf + 0];
-          xmat(1, k) = xrefe(1, k) + mydispmat[k * numdf + 1];
-        }
       }
 
       /*------------------------- get node weights for nurbs elements */
@@ -519,29 +471,6 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
         mass_ref += fac;
 
         // MAT ------------------------
-        if (structale_)
-        {
-          w1_jacobianmatrix(xmat, deriv, xjmmat, &detmat, numnode);
-          fac = wgt * detmat * thickness_;
-          volume_mat += fac;
-          fac = wgt * detmat * thickness_ * density;
-          mass_mat += fac;
-
-          w1_boplin(boplin, deriv, xjmmat, detmat, numnode);
-          w1_defgrad(F, strain, xmat, xcure, boplin, numnode);
-          detFmat = F[0] * F[1] - F[2] * F[3];
-
-          // CUR ------------------------
-          /*--------------------------------------- compute jacobian Matrix */
-          w1_jacobianmatrix(xcure, deriv, xjm, &detcur, numnode);
-
-          /*------------------------------------ integration factor  -------*/
-          fac = wgt * detcur * thickness_;
-          volume_cur += fac;
-          fac = wgt * detcur * thickness_ * density * 1 / detFmat;
-          mass_cur += fac;
-        }
-        else
         {
           w1_boplin(boplin, deriv, xjm, det, numnode);
           w1_defgrad(F, strain, xrefe, xcure, boplin, numnode);
@@ -561,7 +490,6 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       //----------------------------------------------------------------
 
       // return results
-      if (!structale_)
       {
         volume_mat = volume_ref;
         mass_mat = mass_ref;
@@ -879,7 +807,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     const std::vector<double>& disp, const std::vector<double>& residual,
-    const std::vector<double>& dispmat, std::vector<Core::LinAlg::SerialDenseVector>& myknots,
+    std::vector<Core::LinAlg::SerialDenseVector>& myknots,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseMatrix* elestress,
     Core::LinAlg::SerialDenseMatrix* elestrain, Teuchos::RCP<const Core::Mat::Material> material,
@@ -936,20 +864,9 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
   // arrays for structure with ale (fractional step strategy)
   Core::LinAlg::SerialDenseMatrix xmat;
-  Core::LinAlg::SerialDenseMatrix xjmmat;
   Core::LinAlg::SerialDenseMatrix boplinmat;
   Core::LinAlg::SerialDenseVector Fmat;
   Core::LinAlg::SerialDenseVector FFmatinv;
-  double detmat;
-
-  if (structale_ == true)
-  {
-    xmat.shape(2, numnode);
-    xjmmat.shape(2, 2);
-    boplinmat.shape(4, 2 * numnode);
-    Fmat.size(4);
-    FFmatinv.size(4);
-  }
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
@@ -968,13 +885,6 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     xrefe(1, k) = nodes()[k]->x()[1];
     xcure(0, k) = xrefe(0, k) + disp[k * numdf + 0];
     xcure(1, k) = xrefe(1, k) + disp[k * numdf + 1];
-
-    // material displacements for structure with ale
-    if (structale_ == true)
-    {
-      xmat(0, k) = xrefe(0, k) + dispmat[k * numdf + 0];
-      xmat(1, k) = xrefe(1, k) + dispmat[k * numdf + 1];
-    }
   }
 
   /*--------------------------------- get node weights for nurbs elements */
@@ -1096,24 +1006,6 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     // cout.precision(16);
     /*------------ calculate defgrad F^u, Green-Lagrange-strain E^u --*/
     w1_defgrad(F, strain, xrefe, xcure, boplin, numnode);
-
-    // modifications for structural approch with ale
-    if (structale_ == true)
-    {
-      /* -calculate defgrad F^mat, correct Green-Lagrange-strain E^u -*/
-      w1_defgradmat(F, Fmat, FFmatinv, strain, xrefe, xmat, boplin, numnode);
-
-      /*---------- compute jacobian Matrix (material configuration) --*/
-      w1_jacobianmatrix(xmat, deriv, xjmmat, &detmat, numnode);
-
-      /*---------- calculate operator Blin (material configuration) --*/
-      w1_boplin(boplinmat, deriv, xjmmat, detmat, numnode);
-
-      /* -----------------------------replace factors and operators --*/
-      fac = wgt * detmat * thickness_;
-      boplin = boplinmat;
-      F = FFmatinv;
-    }
 
     /*-calculate defgrad F in matrix notation and Blin in current conf.*/
     w1_boplin_cure(b_cure, boplin, F, numeps, nd);
@@ -1298,7 +1190,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     const std::vector<double>& disp, const std::vector<double>& residual,
-    const std::vector<double>& dispmat, std::vector<Core::LinAlg::SerialDenseVector>& myknots,
+    std::vector<Core::LinAlg::SerialDenseVector>& myknots,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseMatrix* elestress,
     Core::LinAlg::SerialDenseMatrix* elestrain, Teuchos::RCP<const Core::Mat::Material> material,
@@ -1592,66 +1484,6 @@ void Discret::ELEMENTS::Wall1::w1_defgrad(Core::LinAlg::SerialDenseVector& F,
 
 /* Discret::ELEMENTS::Wall1::w1_defgrad */
 
-/*----------------------------------------------------------------------*
- | Deformation gradient Fmat and Green-Langrange strain       mgit 04/11|
- | due to structure with ale approach (fractional step method)
- *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_defgradmat(Core::LinAlg::SerialDenseVector& F,
-    Core::LinAlg::SerialDenseVector& Fmat, Core::LinAlg::SerialDenseVector& FFmatinv,
-    Core::LinAlg::SerialDenseVector& strain, const Core::LinAlg::SerialDenseMatrix& xrefe,
-    const Core::LinAlg::SerialDenseMatrix& xmat, Core::LinAlg::SerialDenseMatrix& boplin,
-    const int iel)
-{
-  /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
-  defgrad looks like:
-
-        |  1 + Ux,X  |
-        |  1 + Uy,Y  |
-        |      Ux,Y  |
-        |      Uy,X  |
-  */
-
-  Fmat.putScalar(0.0);
-
-  Fmat[0] = 1;
-  Fmat[1] = 1;
-
-  for (int inode = 0; inode < iel; inode++)
-  {
-    Fmat[0] += boplin(0, 2 * inode) * (xmat(0, inode) - xrefe(0, inode));      // F_11
-    Fmat[1] += boplin(1, 2 * inode + 1) * (xmat(1, inode) - xrefe(1, inode));  // F_22
-    Fmat[2] += boplin(2, 2 * inode) * (xmat(0, inode) - xrefe(0, inode));      // F_12
-    Fmat[3] += boplin(3, 2 * inode + 1) * (xmat(1, inode) - xrefe(1, inode));  // F_21
-  } /* end of loop over nodes */
-
-  // determinant of deformation gradient Fmat
-  double detFmat = Fmat[0] * Fmat[1] - Fmat[2] * Fmat[3];
-
-  Core::LinAlg::SerialDenseVector Fmatinv;
-  Fmatinv.size(4);
-
-  // inverse of Fmat
-  Fmatinv[0] = 1 / detFmat * Fmat[1];
-  Fmatinv[1] = 1 / detFmat * Fmat[0];
-  Fmatinv[2] = -1 / detFmat * Fmat[2];
-  Fmatinv[3] = -1 / detFmat * Fmat[3];
-
-  // F.Fmatinv
-  FFmatinv[0] = F[0] * Fmatinv[0] + F[2] * Fmatinv[3];
-  FFmatinv[1] = F[3] * Fmatinv[2] + F[1] * Fmatinv[1];
-  FFmatinv[2] = F[0] * Fmatinv[2] + F[2] * Fmatinv[1];
-  FFmatinv[3] = F[3] * Fmatinv[0] + F[1] * Fmatinv[3];
-
-  /*-----------------------calculate Green-Lagrange strain E -------------*/
-
-  strain[0] = 0.5 * (FFmatinv[0] * FFmatinv[0] + FFmatinv[3] * FFmatinv[3] - 1.0);  // E_11
-  strain[1] = 0.5 * (FFmatinv[2] * FFmatinv[2] + FFmatinv[1] * FFmatinv[1] - 1.0);  // E_22
-  strain[2] = 0.5 * (FFmatinv[0] * FFmatinv[2] + FFmatinv[3] * FFmatinv[1]);        // E_12
-  strain[3] = strain[2];                                                            // E_21
-
-  return;
-}
-/* Discret::ELEMENTS::Wall1::w1_defgradmat */
 
 /*----------------------------------------------------------------------*
  | Deformation gradient F in matrix notation and B in

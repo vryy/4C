@@ -472,21 +472,6 @@ namespace Adapter
     /// extract rhs (used to calculate reaction force for post-processing)
     Teuchos::RCP<Epetra_Vector> freact() override { return structure_->freact(); }
 
-    //! @name Structure with ale specific methods
-    //@{
-
-    /// material displacements (structure with ale)
-    Teuchos::RCP<Epetra_Vector> disp_mat() override { return structure_->disp_mat(); }
-
-    /// apply material displacements to structure field (structure with ale)
-    void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) override
-    {
-      structure_->apply_dis_mat(dismat);
-    }
-
-    //@}
-
-
     /// create result test for encapsulated structure algorithm
     Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override
     {

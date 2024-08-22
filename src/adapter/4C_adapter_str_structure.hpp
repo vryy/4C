@@ -496,17 +496,6 @@ namespace Adapter
 
     //@}
 
-    //! @name Structure with ale specific methods
-    //@{
-
-    /// material displacements (structure with ale)
-    virtual Teuchos::RCP<Epetra_Vector> disp_mat() = 0;
-
-    /// apply material displacements to structure field (structure with ale)
-    virtual void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) = 0;
-
-    //@}
-
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
 

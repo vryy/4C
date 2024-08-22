@@ -29,11 +29,6 @@ StruResultTest::StruResultTest(Solid::TimInt& tintegrator)
   vel_ = tintegrator.vel();
   acc_ = tintegrator.acc();
   strudisc_ = tintegrator.discretization();
-
-  if (tintegrator.disp_mat() != Teuchos::null)
-    dism_ = tintegrator.dismat();
-  else
-    dism_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*/
@@ -94,29 +89,6 @@ void StruResultTest::test_node(
             FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
                 idx, actnode->id());
           result = (*dis_)[lid];
-        }
-      }
-
-      // test material displacements
-      if (dism_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& dismpmap = dism_->Map();
-        int idx = -1;
-        if (position == "dispmx")
-          idx = 0;
-        else if (position == "dispmy")
-          idx = 1;
-        else if (position == "dispmz")
-          idx = 2;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          int lid = dismpmap.LID(strudisc_->dof(0, actnode, idx));
-          if (lid < 0)
-            FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(),
-                idx, actnode->id());
-          result = (*dism_)[lid];
         }
       }
 

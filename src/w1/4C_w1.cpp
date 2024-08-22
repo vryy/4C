@@ -165,12 +165,8 @@ Discret::ELEMENTS::Wall1::Wall1(int id, int owner)
       iseas_(false),
       eastype_(eas_vague),
       easdata_(EASData()),
-      structale_(false),
       distype_(Core::FE::CellType::dis_none)
 {
-  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale)
-    structale_ = true;
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -187,12 +183,8 @@ Discret::ELEMENTS::Wall1::Wall1(const Discret::ELEMENTS::Wall1& old)
       iseas_(old.iseas_),
       eastype_(old.eas_vague),
       easdata_(old.easdata_),
-      structale_(old.structale_),
       distype_(old.distype_)
-// tsi_couptyp_(old.tsi_couptyp_)
-
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -241,8 +233,6 @@ void Discret::ELEMENTS::Wall1::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, eastype_);
   // eas data
   pack_eas_data(data);
-  // structale
-  add_to_pack(data, structale_);
   // distype
   add_to_pack(data, distype_);
   // line search
@@ -282,8 +272,6 @@ void Discret::ELEMENTS::Wall1::unpack(const std::vector<char>& data)
   eastype_ = static_cast<EasType>(extract_int(position, data));
   // easdata_
   unpack_eas_data(position, data);
-  // structale_
-  structale_ = extract_int(position, data);
   // distype_
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   // line search
