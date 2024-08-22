@@ -19,7 +19,7 @@
   <ParameterList name="Inverse1">
     <Parameter name="Type" type="string" value="MueLu"/>
     <Parameter name="multigrid algorithm" type="string" value="sa"/>
-    <Parameter name="verbosity" type="string" value="Extreme"/>
+    <Parameter name="verbosity" type="string" value="None"/>
     <Parameter name="coarse: max size" type="int" value="200"/>
     <Parameter name="smoother: type" type="string" value="CHEBYSHEV"/>
     <ParameterList name="smoother: params">
@@ -35,8 +35,9 @@
   <!-- ===========  SINGLE FIELD PRECONDITIONER FOR FLUID ================ -->
   <ParameterList name="Inverse2">
     <Parameter name="Type" type="string" value="MueLu"/>
-    <Parameter name="multigrid algorithm" type="string" value="sa"/>
-    <Parameter name="verbosity" type="string" value="Extreme"/>
+    <Parameter name="multigrid algorithm" type="string" value="pg"/>
+    <Parameter name="problem: symmetric" type="bool" value="false"/>
+    <Parameter name="verbosity" type="string" value="None"/>
     <Parameter name="coarse: max size" type="int" value="200"/>
     <Parameter name="smoother: type" type="string" value="RILUK"/>
     <ParameterList name="smoother: params">
@@ -54,7 +55,7 @@
   <ParameterList name="Inverse3">
     <Parameter name="Type" type="string" value="MueLu"/>
     <Parameter name="multigrid algorithm" type="string" value="sa"/>
-    <Parameter name="verbosity" type="string" value="Extreme"/>
+    <Parameter name="verbosity" type="string" value="None"/>
     <Parameter name="coarse: max size" type="int" value="200"/>
     <Parameter name="smoother: type" type="string" value="CHEBYSHEV"/>
     <ParameterList name="smoother: params">

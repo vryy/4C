@@ -13,7 +13,6 @@ with condensed structure interface displacements
 #include "4C_fsi_monolithicstructuresplit.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"
-#include "4C_adapter_fld_fluid.hpp"
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_adapter_str_structure.hpp"
@@ -24,8 +23,6 @@ with condensed structure interface displacements
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
 #include "4C_fsi_nox_group.hpp"
-#include "4C_fsi_overlapprec.hpp"
-#include "4C_fsi_overlapprec_fsiamg.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
@@ -34,8 +31,6 @@ with condensed structure interface displacements
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
 
-#include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_LinearSystem_AztecOO.H>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -47,8 +42,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
     : BlockMonolithic(comm, timeparams),
       lambda_(Teuchos::null),
       lambdaold_(Teuchos::null),
-      energysum_(0.0),
-      linearsolverstrategy_(Inpar::FSI::PreconditionedKrylov)
+      energysum_(0.0)
 {
   // ---------------------------------------------------------------------------
   // FSI specific check of Dirichlet boundary conditions
@@ -228,9 +222,6 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(
 void FSI::MonolithicStructureSplit::setup_system()
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  linearsolverstrategy_ =
-      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 

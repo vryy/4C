@@ -214,10 +214,6 @@ namespace FSI
     /// Write Lagrange multiplier
     void output_lambda() override;
 
-    /// setup solver for global block system
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(Teuchos::ParameterList& nlParams,
-        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils) override;
-
     /// setup of NOX convergence tests
     Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp) override;

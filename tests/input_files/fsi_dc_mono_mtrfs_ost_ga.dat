@@ -56,6 +56,8 @@ COUPALGO                        iter_mortar_monolithicfluidsplit
 ADAPTIVEDIST                    0.001
 BASETOL                         1.0E-5
 ITEMAX                          100
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   2
 TOL_DIS_INC_INF                 1e-11
 TOL_DIS_INC_L2                  1e-11
 TOL_DIS_RES_INF                 1e-11
@@ -76,6 +78,13 @@ TOL_VEL_RES_L2                  1e-11
 GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fsi_Solver
+SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid_ale.xml
+AZREUSE                         10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 500
@@ -88,7 +97,7 @@ STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE 3.68904137903217644e-05 TOL
 STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE -8.60501275084095754e-03 TOLERANCE 1e-10
 FLUID DIS fluid NODE 841 QUANTITY velx VALUE -1.15456297355359249e-04 TOLERANCE 1e-11
 FLUID DIS fluid NODE 841 QUANTITY vely VALUE -2.07401157220933365e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 4.68839649255466187e-02 TOLERANCE 1e-12
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 4.68839649251726817e-02 TOLERANCE 1e-12
 ALE DIS ale NODE 841 QUANTITY dispx VALUE -1.51276898859373482e-04 TOLERANCE 1e-12
 ALE DIS ale NODE 841 QUANTITY dispy VALUE -4.21647726780656311e-03 TOLERANCE 1e-11
 FSI NODE 1139 QUANTITY lambdax VALUE -8.61564676807546307e-05 TOLERANCE 1e-11

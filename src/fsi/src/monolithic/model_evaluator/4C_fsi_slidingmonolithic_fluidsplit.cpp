@@ -12,19 +12,14 @@ with condensed fluid interface velocities
 
 #include "4C_fsi_slidingmonolithic_fluidsplit.hpp"
 
-#include "4C_adapter_ale_fsi.hpp"
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
-#include "4C_ale_utils_mapextractor.hpp"
 #include "4C_constraint_manager.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
-#include "4C_fsi_monolithic_linearsystem.hpp"
-#include "4C_fsi_overlapprec.hpp"
-#include "4C_fsi_overlapprec_fsiamg.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
@@ -39,7 +34,6 @@ with condensed fluid interface velocities
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
 
-#include <math.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -1147,39 +1141,6 @@ void FSI::SlidingMonolithicFluidSplit::unscale_solution(
 
   if (structure_field()->get_stc_algo() != Inpar::Solid::stc_none)
     structure_field()->system_matrix()->reset();
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::SlidingMonolithicFluidSplit::create_linear_system(
-    Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
-    Teuchos::RCP<::NOX::Utils> utils)
-{
-  Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys;
-
-  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
-  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-
-  ::NOX::Epetra::Interface::Jacobian* iJac = this;
-  ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
-  const Teuchos::RCP<Epetra_Operator> J = systemmatrix_;
-  const Teuchos::RCP<Epetra_Operator> M = systemmatrix_;
-
-  switch (linearsolverstrategy_)
-  {
-    case Inpar::FSI::PreconditionedKrylov:
-      linSys = Teuchos::rcp(new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-          Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
-
-      break;
-    default:
-      FOUR_C_THROW("unsupported linear block solver strategy: %d", linearsolverstrategy_);
-      break;
-  }
-
-  return linSys;
 }
 
 /*----------------------------------------------------------------------------*/

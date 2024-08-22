@@ -27,7 +27,7 @@ THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 PREDICT                         ConstDisVelAcc
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
@@ -38,7 +38,7 @@ ALPHA_M                         0.0
 ALPHA_F                         0.0
 RHO_INF                         -1.0
 ---------------------------------------------------------------FLUID DYNAMIC
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
 TIMEINTEGR                      Np_Gen_Alpha
 NONLINITER                      Newton
 ALPHA_F                         1.0
@@ -55,6 +55,8 @@ RESULTSEVRY                           1
 ADAPTIVEDIST                    0.001
 BASETOL                         1.0E-5
 ITEMAX                          100
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   2
 TOL_DIS_INC_INF                 1e-08
 TOL_DIS_INC_L2                  1e-08
 TOL_DIS_RES_INF                 1e-08
@@ -75,7 +77,7 @@ TOL_VEL_RES_L2                  1e-08
 LINEAR_SOLVER                   1
 ALE_TYPE                        solid_linear
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   4
+LINEAR_SOLVER                   1
 STRATEGY                        Penalty
 PENALTYPARAM                    1.0e8
 SEMI_SMOOTH_NEWTON              Yes
@@ -86,69 +88,15 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    1.0
 LM_DUAL_CONSISTENT              none
 --------------------------------------------------------------------SOLVER 1
-NAME                            Ale_Solver
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         CG
-AZPREC                          ILU
-AZREUSE                         0
-IFPACKGFILL                     0
-AZTOL                           1.0E-3
-AZITER                          1000
-AZSUB                           400
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
-AZCONV                          AZ_noscaled
-ML_PRINT                        0
-ML_MAXCOARSESIZE                1000
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 Chebychev
-ML_SMOOTHERMED                  Chebychev
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     3 3 1
-ML_DAMPFINE                     1.0
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
---------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
-NAME                            Fluid_Solver
-SOLVER                          Belos
-AZOUTPUT                        10
-AZSOLVE                         GMRES
-AZPREC                          ILU
-AZREUSE                         0
-IFPACKGFILL                     0
-AZTOL                           1.0E-4
-AZITER                          1000
-AZSUB                           35
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
-AZCONV                          AZ_r0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                1
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     1 1 1
-ML_DAMPFINE                     1.0
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
---------------------------------------------------------------------SOLVER 4
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fsi_Solver
+SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid_ale.xml
+AZREUSE                         0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.03 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3e6 NUE 0.3 DENS 1.2
@@ -164,10 +112,10 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 3e-3 3.1e-3 10000
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.01 6 VALUES 0 0.4 0.4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 478 QUANTITY velx VALUE 1.06374894507558526e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 478 QUANTITY vely VALUE -1.32777940449465470e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 478 QUANTITY velz VALUE -6.42313665126236666e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 478 QUANTITY pressure VALUE 1.03231726859803784e+04 TOLERANCE 1e-4
+FLUID DIS fluid NODE 478 QUANTITY velx VALUE 1.06374918711219846e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 478 QUANTITY vely VALUE -1.32778188504568195e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 478 QUANTITY velz VALUE -6.42313332265037840e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 478 QUANTITY pressure VALUE 1.03231761352551221e+04 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 1325 QUANTITY dispx VALUE -1.42709609116804933e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1325 QUANTITY dispy VALUE -8.14217844055244513e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1325 QUANTITY dispz VALUE -2.20574796267256171e-04 TOLERANCE 1e-8

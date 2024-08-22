@@ -34,7 +34,6 @@ namespace NOX
   {
     /// generalized conjugate residual linear system solver for NOX
     /*!
-      A lot of details stolen from ::NOX::Epetra::LinearSystemAztecOO.
       No preconditioner supported.
       Reuse of internal search directions supported.
      */
