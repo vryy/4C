@@ -118,31 +118,11 @@ NAME                            Fluid_Solver
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/fluid_template.xml
 AZREUSE                         10
-IFPACKGFILL                     0
 AZTOL                           1.0E-4
 AZCONV                          AZ_r0
-AZITER                          1200
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add
-ML_PRINT                        0
-ML_MAXCOARSESIZE                1
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     2 0 1
-ML_DAMPFINE                     0.79
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0

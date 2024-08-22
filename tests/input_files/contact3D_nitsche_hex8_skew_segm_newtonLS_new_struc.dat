@@ -38,7 +38,7 @@ NORMCOMBI_RESFDISP And
 PREDICT     TangDis
 INT_STRATEGY Standard
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER        2
+LINEAR_SOLVER        1
 STRATEGY             Nitsche
 PENALTYPARAM         2e-3
 NITSCHE_THETA        -1.0
@@ -72,12 +72,6 @@ Reduction Factor                = 0.5
 Allow Exceptions                = yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                         UMFPACK
-AZPREC  ML
-AZSOLVE CG
-----------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
-AZPREC   ML
-AZSOLVE  CG
 ---------------------------------------------------------MATERIALS
 MAT 1  MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
 MAT 10 ELAST_CoupBlatzKo MUE 1.0 NUE 0.3 F 0.5

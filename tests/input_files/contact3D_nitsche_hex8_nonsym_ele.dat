@@ -37,7 +37,7 @@ MAXITER      700
 MINITER      0
 PREDICT     TangDis
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER             2
+LINEAR_SOLVER             1
 STRATEGY                  Nitsche
 PENALTYPARAM              2
 NITSCHE_THETA             0.0
@@ -52,12 +52,6 @@ INTTYPE              Elements
 PARALLEL_REDIST      none
 ----------------------------------------------------------SOLVER 1
 SOLVER                         UMFPACK
-AZPREC  ML
-AZSOLVE CG
-----------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
-AZPREC   ML
-AZSOLVE  CG
 ---------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
 MAT 10   ELAST_CoupNeoHooke YOUNG 1 NUE 0.3

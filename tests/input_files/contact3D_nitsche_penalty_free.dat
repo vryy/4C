@@ -65,10 +65,6 @@ PARALLEL_REDIST      none
 --------------------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu
-AZSOLVE              GMRES
-AZPREC               MLFLUID2
-IFPACKGFILL          6
-AZOUTPUT             0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6 INITYIELD -1
 MAT 2 ELAST_CoupNeoHooke YOUNG 1 NUE 0.32

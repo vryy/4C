@@ -108,12 +108,6 @@ PENALTYPARAM_THERMO             5.0
 NITSCHE_METHOD_TSI              nitsche
 ----------------------------------------------------------SOLVER 1
 SOLVER                         UMFPACK
-AZPREC  ML
-AZSOLVE CG
-----------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
-AZPREC   ML
-AZSOLVE  CG
 ------------------------------------------------------SEMI-SMOOTH PLASTICITY
 SEMI_SMOOTH_CPL                 2
 STABILIZATION_S                 1.0
