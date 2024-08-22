@@ -98,7 +98,7 @@ namespace Core::IO
       unsigned int result_num_components_per_node, const std::string& resultname)
   {
     /*  the idea is to transform the given data to a 'point data vector' and append it to the
-     *  collected solution data vectors by calling AppendVisualizationPointDataVector()
+     *  collected solution data vectors by calling append_visualization_point_data_vector()
      */
 
     // count number of nodes for each processor
@@ -124,7 +124,7 @@ namespace Core::IO
       }
     }
 
-    visualization_manager_->get_visualization_data().set_point_data_vector<double>(
+    visualization_manager_->get_visualization_data().set_point_data_vector(
         resultname, point_result_data, result_num_components_per_node);
   }
 

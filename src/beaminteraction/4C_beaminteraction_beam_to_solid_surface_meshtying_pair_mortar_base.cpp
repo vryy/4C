@@ -109,12 +109,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
             visualization_data.get_point_data<double>("displacement");
         std::vector<double>& lambda_vis = visualization_data.get_point_data<double>("lambda");
 
-        std::vector<double>* pair_beam_id = nullptr;
-        std::vector<double>* pair_solid_id = nullptr;
+        std::vector<int>* pair_beam_id = nullptr;
+        std::vector<int>* pair_solid_id = nullptr;
         if (write_unique_ids)
         {
-          pair_beam_id = &(visualization_data.get_point_data<double>("uid_0_pair_beam_id"));
-          pair_solid_id = &(visualization_data.get_point_data<double>("uid_1_pair_solid_id"));
+          pair_beam_id = &(visualization_data.get_point_data<int>("uid_0_pair_beam_id"));
+          pair_solid_id = &(visualization_data.get_point_data<int>("uid_1_pair_solid_id"));
         }
 
         for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
@@ -168,16 +168,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
       std::vector<uint8_t>& cell_types = visualization_data.get_cell_types();
       std::vector<int32_t>& cell_offsets = visualization_data.get_cell_offsets();
 
-      std::vector<double>* pair_point_beam_id = nullptr;
-      std::vector<double>* pair_point_solid_id = nullptr;
-      std::vector<double>* pair_cell_beam_id = nullptr;
-      std::vector<double>* pair_cell_solid_id = nullptr;
+      std::vector<int>* pair_point_beam_id = nullptr;
+      std::vector<int>* pair_point_solid_id = nullptr;
+      std::vector<int>* pair_cell_beam_id = nullptr;
+      std::vector<int>* pair_cell_solid_id = nullptr;
       if (write_unique_ids)
       {
-        pair_point_beam_id = &(visualization_data.get_point_data<double>("uid_0_pair_beam_id"));
-        pair_point_solid_id = &(visualization_data.get_point_data<double>("uid_1_pair_solid_id"));
-        pair_cell_beam_id = &(visualization_data.get_cell_data<double>("uid_0_pair_beam_id"));
-        pair_cell_solid_id = &(visualization_data.get_cell_data<double>("uid_1_pair_solid_id"));
+        pair_point_beam_id = &(visualization_data.get_point_data<int>("uid_0_pair_beam_id"));
+        pair_point_solid_id = &(visualization_data.get_point_data<int>("uid_1_pair_solid_id"));
+        pair_cell_beam_id = &(visualization_data.get_cell_data<int>("uid_0_pair_beam_id"));
+        pair_cell_solid_id = &(visualization_data.get_cell_data<int>("uid_1_pair_solid_id"));
       }
 
       for (const auto& segment : this->line_to_3D_segments_)

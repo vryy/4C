@@ -95,7 +95,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       visualization_data.register_field_data<double>("sum_coupling_moment_beam");
       visualization_data.register_field_data<double>("sum_coupling_force_solid");
       visualization_data.register_field_data<double>("sum_coupling_moment_solid");
-      if (write_unique_ids) visualization_data.register_point_data<double>("uid_0_node_id", 1);
+      if (write_unique_ids) visualization_data.register_point_data<int>("uid_0_node_id", 1);
     }
 
     if (output_params_ptr_->get_averaged_normals_output_flag())
@@ -107,8 +107,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       visualization_data.register_point_data<double>("displacement", 3);
       visualization_data.register_point_data<double>("normal_averaged", 3);
       visualization_data.register_point_data<double>("normal_element", 3);
-      visualization_data.register_point_data<double>("coupling_id", 1);
-      if (write_unique_ids) visualization_data.register_point_data<double>("uid_0_face_id", 1);
+      visualization_data.register_point_data<int>("coupling_id", 1);
+      if (write_unique_ids) visualization_data.register_point_data<int>("uid_0_face_id", 1);
     }
 
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
@@ -120,8 +120,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       visualization_data.register_point_data<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -135,10 +135,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       visualization_data.register_point_data<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
-        visualization_data.register_cell_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_cell_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
+        visualization_data.register_cell_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_cell_data<int>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -152,8 +152,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       visualization_data.register_point_data<double>("projection_direction", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -166,8 +166,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       visualization_data.register_point_data<double>("projection_direction", 3);
       if (write_unique_ids)
       {
-        visualization_data.register_point_data<double>("uid_0_pair_beam_id", 1);
-        visualization_data.register_point_data<double>("uid_1_pair_solid_id", 1);
+        visualization_data.register_point_data<int>("uid_0_pair_beam_id", 1);
+        visualization_data.register_point_data<int>("uid_1_pair_solid_id", 1);
       }
     }
   }

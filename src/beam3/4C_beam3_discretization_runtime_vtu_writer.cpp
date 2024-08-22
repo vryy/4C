@@ -483,7 +483,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_gid()
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
 
   // vector with the IDs of the beams on this processor.
-  std::vector<double> gid;
+  std::vector<int> gid;
   gid.reserve(num_beam_row_elements);
 
   // loop over my elements and collect the data about triads/base vectors

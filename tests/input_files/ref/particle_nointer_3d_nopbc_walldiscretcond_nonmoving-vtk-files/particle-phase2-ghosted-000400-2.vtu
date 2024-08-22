@@ -12,38 +12,30 @@
 
     <Piece NumberOfPoints="0" NumberOfCells="0" >
       <Points>
-        <DataArray type="Float64" NumberOfComponents="3" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Float64" NumberOfComponents="3" format="ascii">
         </DataArray>
       </Points>
 
       <Cells>
-        <DataArray type="Int32" Name="connectivity" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Int32" Name="connectivity" format="ascii">
 
         </DataArray>
-        <DataArray type="Int32" Name="offsets" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Int32" Name="offsets" format="ascii">
 
         </DataArray>
-        <DataArray type="UInt8" Name="types" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="UInt8" Name="types" format="ascii">
 
         </DataArray>
       </Cells>
 
   <PointData>
-        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="globalid" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Int32" Name="globalid" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="owner" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Int32" Name="owner" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="binary">
-AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="ascii">
         </DataArray>
       </PointData>
 

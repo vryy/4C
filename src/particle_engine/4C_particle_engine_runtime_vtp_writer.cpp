@@ -162,7 +162,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::set_particle_positions_and_states
       const int* globalids = (particlestored > 0) ? container->get_ptr_to_global_id(0) : nullptr;
 
       // prepare particle global id data
-      std::vector<double> globaliddata;
+      std::vector<int> globaliddata;
       globaliddata.reserve(particlestored);
 
       // copy particle global id data
@@ -171,15 +171,15 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::set_particle_positions_and_states
       // append global id of particles to vtp writer
       (runtime_visualization_managers_[type])[status]
           ->get_visualization_data()
-          .set_point_data_vector<double>("globalid", globaliddata, 1);
+          .set_point_data_vector<int>("globalid", globaliddata, 1);
 
       // set particle owner data
-      std::vector<double> ownerdata(particlestored, comm_.MyPID());
+      std::vector<int> ownerdata(particlestored, comm_.MyPID());
 
       // append owner of particles to vtp writer
       (runtime_visualization_managers_[type])[status]
           ->get_visualization_data()
-          .set_point_data_vector<double>("owner", ownerdata, 1);
+          .set_point_data_vector<int>("owner", ownerdata, 1);
     }
   }
 }

@@ -65,7 +65,7 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
   if (write_unique_ids)
   {
     auto& visualization_data = visualization->get_visualization_data();
-    std::vector<double>& unique_id = visualization_data.get_point_data<double>("uid_0_node_id");
+    std::vector<int>& unique_id = visualization_data.get_point_data<int>("uid_0_node_id");
     for (int i_lid = 0; i_lid < discret_ptr->num_my_row_nodes(); i_lid++)
       unique_id.push_back(discret_ptr->l_row_node(i_lid)->id());
   }
@@ -87,12 +87,12 @@ void BEAMINTERACTION::add_averaged_nodal_normals(
   std::vector<double>& normal_averaged =
       visualization_data.get_point_data<double>("normal_averaged");
   std::vector<double>& normal_element = visualization_data.get_point_data<double>("normal_element");
-  std::vector<double>& coupling_id = visualization_data.get_point_data<double>("coupling_id");
+  std::vector<int>& coupling_id = visualization_data.get_point_data<int>("coupling_id");
 
-  std::vector<double>* face_id = nullptr;
+  std::vector<int>* face_id = nullptr;
   if (write_unique_ids)
   {
-    face_id = &(visualization_data.get_point_data<double>("uid_0_face_id"));
+    face_id = &(visualization_data.get_point_data<int>("uid_0_face_id"));
   }
 
   // Loop over face elements.
