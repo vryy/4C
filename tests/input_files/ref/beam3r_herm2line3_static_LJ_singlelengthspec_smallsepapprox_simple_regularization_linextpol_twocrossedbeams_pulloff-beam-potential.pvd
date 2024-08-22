@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!--
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="Collection" version="0.1" ByteOrder="LittleEndian">
+  <Collection>
+    <DataSet timestep="2.50000000000000e-01" group="" part="0" file="beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff-potential-vtk-files/beam-potential-00005.pvtu"/>
+    <DataSet timestep="5.00000000000000e-01" group="" part="0" file="beam3r_herm2line3_static_LJ_singlelengthspec_smallsepapprox_simple_regularization_linextpol_twocrossedbeams_pulloff-potential-vtk-files/beam-potential-00010.pvtu"/>
+  </Collection>
+</VTKFile>

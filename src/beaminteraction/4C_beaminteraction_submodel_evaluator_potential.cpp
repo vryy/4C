@@ -513,9 +513,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::update_step_element(
    * move this to runtime_output_step_state as soon as we keep element pairs
    * from previous time step */
   if (visualization_manager_ != Teuchos::null and
-      g_state().get_step_np() % beam_potential_params()
-                                    .get_beam_potential_visualization_output_params()
-                                    ->output_interval_in_steps() ==
+      g_state().get_step_n() % beam_potential_params()
+                                   .get_beam_potential_visualization_output_params()
+                                   ->output_interval_in_steps() ==
           0)
   {
     write_time_step_output_runtime_beam_potential();
