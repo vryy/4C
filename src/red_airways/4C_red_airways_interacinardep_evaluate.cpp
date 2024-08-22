@@ -73,11 +73,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
     act = RedInterAcinarDep::eval_PO2_from_concentration;
   else
   {
-    char errorout[200];
-    sprintf(
-        errorout, "Unknown type of action (%s) for inter-acinar linker element", action.c_str());
-
-    FOUR_C_THROW(errorout);
+    FOUR_C_THROW("Unknown type of action (%s) for inter-acinar linker element", action.c_str());
   }
 
   /*

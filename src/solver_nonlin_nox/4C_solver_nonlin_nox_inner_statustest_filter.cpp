@@ -103,8 +103,7 @@ void NOX::Nln::Inner::StatusTest::Filter::reset()
  *----------------------------------------------------------------------------*/
 void NOX::Nln::Inner::StatusTest::Filter::Point::set_margin_safety_factors()
 {
-  gamma_obj_ = std::min<double>(
-      1.0e-6, 1.0 / (2.0 * std::sqrt<double>(static_cast<double>(num_coords_)).real()));
+  gamma_obj_ = std::min<double>(1.0e-6, 1.0 / (2.0 * std::sqrt(static_cast<double>(num_coords_))));
 
   gamma_theta_ = gamma_obj_;
 }
@@ -1126,8 +1125,7 @@ NOX::Nln::Inner::StatusTest::Filter::acceptability_check(const Point& trial_fp)
  *----------------------------------------------------------------------------*/
 unsigned NOX::Nln::Inner::StatusTest::Filter::prefiltering(const Point& trial_fp)
 {
-  const double sqrt_num_coords =
-      std::sqrt<double>(static_cast<double>(trial_fp.num_coords_)).real();
+  const double sqrt_num_coords = std::sqrt(static_cast<double>(trial_fp.num_coords_));
   const double max_gamma = std::max(Point::gamma_obj_, Point::gamma_theta_);
 
   /* The following pre-filtering approach does only work, if ALL involved
@@ -1335,10 +1333,9 @@ double NOX::Nln::Inner::StatusTest::Filter::minimal_step_length_estimate_of_obj_
         amin_obj = 1.0;
       else
       {
-        double atmin_obj = std::sqrt<double>(
-            obj_slope * obj_slope - 4.0 * obj_mixed_term * Point::gamma_obj_ * Point::scale_(1) /
-                                        Point::scale_(0) * max_theta)
-                               .real();
+        double atmin_obj =
+            std::sqrt(obj_slope * obj_slope - 4.0 * obj_mixed_term * Point::gamma_obj_ *
+                                                  Point::scale_(1) / Point::scale_(0) * max_theta);
         atmin_obj = (-obj_slope - atmin_obj) / (2.0 * obj_mixed_term);
 
         amin_obj = std::min(amin_obj, std::max(0.0, atmin_obj));

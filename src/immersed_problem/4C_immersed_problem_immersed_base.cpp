@@ -487,8 +487,9 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(
         if (CondID)
         {
           params.set("ConditionID", *CondID);
-          char factorname[30];
-          sprintf(factorname, "LoadCurveFactor %d", *CondID);
+          constexpr unsigned character_length = 30;
+          char factorname[character_length];
+          snprintf(factorname, character_length, "LoadCurveFactor %d", *CondID);
           params.set(factorname, curvefac);
         }
         else

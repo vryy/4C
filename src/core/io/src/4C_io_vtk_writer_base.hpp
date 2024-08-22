@@ -16,7 +16,6 @@
 #include "4C_io_visualization_data.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <bits/c++config.h>
 #include <stdint.h>
 #include <zlib.h>
 

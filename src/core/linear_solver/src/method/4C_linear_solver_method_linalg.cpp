@@ -326,8 +326,9 @@ Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inpa
 
   for (int i = 0; i < mlmaxlevel - 1; ++i)
   {
-    char levelstr[19];
-    sprintf(levelstr, "(level %d)", i);
+    constexpr unsigned character_length = 19;
+    char levelstr[character_length];
+    snprintf(levelstr, character_length, "(level %d)", i);
     Teuchos::ParameterList& smolevelsublist =
         mllist.sublist("smoother: list " + std::string(levelstr));
     int type = 0;
