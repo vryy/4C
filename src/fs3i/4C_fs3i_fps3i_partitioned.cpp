@@ -31,6 +31,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_poroelast_monolithic.hpp"
 #include "4C_poroelast_scatra_utils.hpp"
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
@@ -524,7 +525,8 @@ void FS3I::PartFPS3I::setup_system()
   const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");
 
-  if (azprectype != Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2)
+  if (azprectype != Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2 and
+      azprectype != Core::LinearSolver::PreconditionerType::block_teko)
     FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
@@ -556,14 +558,27 @@ void FS3I::PartFPS3I::setup_system()
       Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
-  (scatravec_[0])
-      ->scatra_field()
-      ->discretization()
-      ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse1"));
-  (scatravec_[1])
-      ->scatra_field()
-      ->discretization()
-      ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse2"));
+
+  if (azprectype == Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2)
+  {
+    (scatravec_[0])
+        ->scatra_field()
+        ->discretization()
+        ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse1"));
+    (scatravec_[1])
+        ->scatra_field()
+        ->discretization()
+        ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse2"));
+  }
+  else if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
+  {
+    Core::LinearSolver::Parameters::compute_solver_parameters(
+        *(scatravec_[0])->scatra_field()->discretization(),
+        scatrasolver_->params().sublist("Inverse1"));
+    Core::LinearSolver::Parameters::compute_solver_parameters(
+        *(scatravec_[1])->scatra_field()->discretization(),
+        scatrasolver_->params().sublist("Inverse2"));
+  }
 }
 
 

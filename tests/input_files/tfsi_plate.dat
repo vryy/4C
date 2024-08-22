@@ -46,7 +46,7 @@ INF_PERM                        Yes
 SCATRA_SOLVERTYPE               nonlinear
 COUPLED_LINEAR_SOLVER           4
 LINEAR_SOLVER1                  5
-LINEAR_SOLVER2                  6
+LINEAR_SOLVER2                  5
 STRUCTSCAL_CONVFORM             conservative
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           2
@@ -334,51 +334,12 @@ ML_DAMPCOARSE                   1.0
 NAME                            COUPLED_FS3I_SOLVER
 SOLVER                          Belos
 AZSOLVE                         GMRES
-AZPREC                          BGS2x2
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/scatra_scatra.xml
 AZTOL                           1.0E-07
 AZCONV                          AZ_r0
------------------------------------------------------------SOLVER 5
-NAME                            Scalar_Fluid_Solver
-SOLVER                          Belos
-AZSOLVE                         GMRES
-AZPREC                          ML
-AZCONV                          AZ_r0
-AZTOL                           1.0e-04
-ML_PRINT                        0
-ML_MAXCOARSESIZE                1
-ML_MAXLEVEL                     2
-ML_AGG_SIZE                     9
-ML_DAMPFINE                     0.67
-ML_DAMPMED                      0.67
-ML_DAMPCOARSE                   1.0
-ML_PROLONG_SMO                  0.0
-ML_PROLONG_THRES                0.0
-ML_SMOTIMES                     3 1
-ML_COARSEN                      UC
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  SGS
-ML_SMOOTHERCOARSE               KLU
------------------------------------------------------------SOLVER 6
-NAME                            Scalar_Structure_Solver
-SOLVER                          Belos
-AZSOLVE                         GMRES
-AZPREC                          ML
-AZTOL                           1.0e-04
-AZCONV                          AZ_r0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                1
-ML_MAXLEVEL                     2
-ML_AGG_SIZE                     9
-ML_DAMPFINE                     0.67
-ML_DAMPMED                      0.67
-ML_DAMPCOARSE                   1.0
-ML_PROLONG_SMO                  0.0
-ML_PROLONG_THRES                0.0
-ML_SMOTIMES                     3 1
-ML_COARSEN                      UC
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  SGS
-ML_SMOOTHERCOARSE               KLU
+--------------------------------------------------------------------SOLVER 5
+SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_sutherland   REFVISC 1.0 REFTEMP 293 SUTHTEMP 110.4 SHC 100.0 PRANUM 100 THERMPRESS 1681820.0 GASCON 287.0
 MAT 2   MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1e7 NUE 0.3 DENS 1000.0 THEXPANS 6e-5 CAPA 1000.0 CONDUCT 100.0 INITTEMP 293.0
