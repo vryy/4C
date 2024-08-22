@@ -61,6 +61,12 @@ Core::LinAlg::BgS2x2Operator::BgS2x2Operator(Teuchos::RCP<Epetra_Operator> A,
     FOUR_C_THROW("BGS2x2: provided operator is not a BlockSparseMatrix!");
   }
 
+  if (a_->Comm().MyPID() == 0)
+    std::cout << "WARNING: The native 4C implementation of the 2x2 block Gauss-Seidel "
+                 "preconditioner is deprecated and will be removed soon. Switch to an appropriate "
+                 "xml-file using Teko."
+              << std::endl;
+
   setup_block_preconditioners();
 
   return;
