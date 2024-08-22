@@ -167,7 +167,7 @@ INF_PERM                        No
 SCATRA_SOLVERTYPE               linear
 COUPLED_LINEAR_SOLVER           1
 LINEAR_SOLVER1                  4
-LINEAR_SOLVER2                  3
+LINEAR_SOLVER2                  4
 STRUCTSCAL_INITFUNCNO           1
 STRUCTSCAL_INITIALFIELD         field_by_function
 -----------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
@@ -219,74 +219,12 @@ NAME                            COUPLED_FS3I_SOLVER
 SOLVER                          Belos
 AZOUTPUT                        1
 AZSOLVE                         GMRES
-AZPREC                          BGS2x2
-AZREUSE                         0
-IFPACKGFILL                     2
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/scatra_scatra.xml
 AZTOL                           1.0E-07
 AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
 ----------------------------------------------------------SOLVER 4
-NAME                            SCAT_FLUID
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          ILU
-AZREUSE                         0
-IFPACKGFILL                     0
-AZTOL                           1.0E-7
-AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  0.0
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     2 0 0 0 1
-ML_DAMPFINE                     0.67
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
-----------------------------------------------------------SOLVER 3
-NAME                            SCAT_STRUCT
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          ILU
-AZREUSE                         0
-IFPACKGFILL                     0
-AZTOL                           1.0E-7
-AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  0.0
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     2 0 0 0 1
-ML_DAMPFINE                     0.67
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
+SOLVER                          UMFPACK
 ----------------------------------------------------------SOLVER 5
 NAME                            STRUCT
 SOLVER                          Belos
@@ -2839,7 +2777,7 @@ NODE 924 COORD 5.0000000000000000e+01 2.5000000000000000e+00 1.0000000000000000e
 399 FLUID HEX8 885 887 888 886 919 921 922 920 MAT 1 NA ALE
 400 FLUID HEX8 887 889 890 888 921 923 924 922 MAT 1 NA ALE
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 206 QUANTITY phi VALUE  8.18393287524511348e-01 TOLERANCE 1e-9
+SCATRA DIS scatra2 NODE 206 QUANTITY phi VALUE  8.18393287524511348e-01 TOLERANCE 3e-9
 SCATRA DIS scatra1 NODE 910 QUANTITY phi VALUE  4.50097394860943245e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 910 QUANTITY velx VALUE  9.79854964747224472e-02 TOLERANCE 1e-9
 ---------------------------------------------------------------END
