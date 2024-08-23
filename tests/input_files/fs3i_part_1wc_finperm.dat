@@ -9,37 +9,7 @@ NUMSTEP                         41
 NUM_INITSTEP                    0
 RESULTSEVRY                     1
 TIMESTEP                        0.1
-LINEAR_SOLVER                   7
-----------------------------------------------------------SOLVER 7
-NAME ALE SOLVER
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          ML
-AZREUSE                         100
-IFPACKGFILL                     2
-IFPACKOVERLAP                   2
-IFPACKCOMBINE                   Insert
-AZTOL                           1.0E-5
-AZCONV                          AZ_r0
-AZITER                          2500
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-ML_PRINT                        0
-ML_MAXCOARSESIZE                10000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 Chebychev
-ML_SMOOTHERMED                  Chebychev
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     6 6 6 6 1
-ML_DAMPFINE                     1.0
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
+LINEAR_SOLVER                   1
 ----------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
@@ -56,7 +26,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 MAXTIME                         1000
 NONLINEARBC                     yes
 NONLINITER Newton
@@ -89,36 +59,6 @@ SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
-----------------------------------------------------------SOLVER 2
-NAME                            FLUID_SOLVER
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
-AZREUSE                         1
-IFPACKGFILL                     3
-AZTOL                           1.0E-4
-AZCONV                          AZ_r0
-AZITER                          1200
-AZSUB                           50
-AZOMEGA                         0.69
-AZGRAPH                         1
-IFPACKOVERLAP                   8
-IFPACKCOMBINE                   Zero
-ML_PRINT                        0
-ML_MAXCOARSESIZE                1000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     10 10 10 10 1
-ML_DAMPFINE                     0.6
-ML_DAMPMED                      0.6
-ML_DAMPCOARSE                   1.0
 -------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicstructuresplit
 MAXTIME                         10000.0
@@ -128,15 +68,12 @@ SECONDORDER                     yes
 TIMESTEP                        25.0
 RESULTSEVRY                     1
 -------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-BASETOL                         1.0e-06
-CONVTOL                         1.0e-06
+BASETOL                         1.0e-10
+CONVTOL                         1.0e-10
 INFNORMSCALING                  yes
 ITEMAX                          100
-LINEARBLOCKSOLVER               PreconditionedKrylov
-PCITER                          1 1 1
-PCOMEGA                         1.0 1.0 1.0
-REBUILDPRECEVERYSTEP            No
-PRECONDREUSE                    25
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   3
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                no
 ----------------------------------------------------------------IO
@@ -152,6 +89,7 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
+VERBOSITY                       standard
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Gas_Fluid_Structure_Interaction
 RESTART                         0
@@ -165,9 +103,9 @@ RESTARTEVRY                     10
 RESULTSEVRY                           1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               linear
-COUPLED_LINEAR_SOLVER           1
-LINEAR_SOLVER1                  4
-LINEAR_SOLVER2                  4
+COUPLED_LINEAR_SOLVER           2
+LINEAR_SOLVER1                  1
+LINEAR_SOLVER2                  1
 STRUCTSCAL_INITFUNCNO           1
 STRUCTSCAL_INITIALFIELD         field_by_function
 -----------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
@@ -197,7 +135,7 @@ TIMESTEP                        25.0
 RESULTSEVRY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
-LINEAR_SOLVER                   6
+LINEAR_SOLVER                   1
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-06
 ADAPTCONV                       yes
@@ -214,48 +152,7 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
-----------------------------------------------------------SOLVER 1
-NAME                            COUPLED_FS3I_SOLVER
-SOLVER                          Belos
-AZOUTPUT                        1
-AZSOLVE                         GMRES
-AZPREC                          Teko
-TEKO_XML_FILE                   xml/block_preconditioner/scatra_scatra.xml
-AZTOL                           1.0E-07
-AZCONV                          AZ_r0
-----------------------------------------------------------SOLVER 4
-SOLVER                          UMFPACK
-----------------------------------------------------------SOLVER 5
-NAME                            STRUCT
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          ML
-AZREUSE                         10
-IFPACKGFILL                     2
-IFPACKOVERLAP                   2
-IFPACKCOMBINE                   Insert
-AZTOL                           1.0E-4
-AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           50
-AZOMEGA                         1.0
-AZGRAPH                         1
-ML_PRINT                        0
-ML_MAXCOARSESIZE                25000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     4 0 0 0 1
-ML_DAMPFINE                     0.49
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
-------------------------------------------------STRUCTURAL DYNAMIC
+-------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
@@ -282,9 +179,29 @@ TIMESTEP                        1.0
 TOLCONSTR                       1e-05
 TOLDISP                         1e-05
 TOLRES                          1e-05
-LINEAR_SOLVER                   5
+LINEAR_SOLVER                   1
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
+----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------SOLVER 2
+NAME                            COUPLED_FS3I_SOLVER
+SOLVER                          Belos
+AZOUTPUT                        1
+AZSOLVE                         GMRES
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/scatra_scatra.xml
+AZTOL                           1.0E-07
+AZCONV                          AZ_r0
+----------------------------------------------------------SOLVER 3
+SOLVER                          Belos
+AZSOLVE                         GMRES
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid_ale.xml
+AZTOL                           1.0E-10
+AZCONV                          AZ_r0
+AZOUTPUT                        5
+AZREUSE                         10
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra1 TAR_MAT 3
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra2 TAR_MAT 4
