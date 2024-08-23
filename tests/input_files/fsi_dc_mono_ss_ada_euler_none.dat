@@ -70,6 +70,8 @@ TIMEADAPTON                     yes
 ADAPTIVEDIST                    0.001
 BASETOL                         1.0E-5
 ITEMAX                          100
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   2
 TOL_DIS_INC_INF                 1e-11
 TOL_DIS_INC_L2                  1e-11
 TOL_DIS_RES_INF                 1e-11
@@ -88,6 +90,13 @@ TOL_VEL_RES_INF                 1e-11
 TOL_VEL_RES_L2                  1e-11
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fsi_Solver
+SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid_ale.xml
+AZREUSE                         10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 500
@@ -101,15 +110,15 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*(1-cos(2*t*pi/5))
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-cos(2*t*pi/5))
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE 7.70975264743687940e-06 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE -9.11060242855878414e-04 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE -9.11060242990709146e-04 TOLERANCE 1e-13
 FLUID DIS fluid NODE 841 QUANTITY velx VALUE 1.62805758471379304e-03 TOLERANCE 1e-13
-FLUID DIS fluid NODE 841 QUANTITY vely VALUE -4.76976723239570972e-03 TOLERANCE 1e-13
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 2.56335380117030248e-02 TOLERANCE 1e-12
+FLUID DIS fluid NODE 841 QUANTITY vely VALUE -4.76976723255175157e-03 TOLERANCE 1e-13
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 2.56335380135531594e-02 TOLERANCE 1e-12
 ALE DIS ale NODE 841 QUANTITY dispx VALUE -5.12274896827781734e-06 TOLERANCE 1e-13
 ALE DIS ale NODE 841 QUANTITY dispy VALUE -5.78031216380049196e-04 TOLERANCE 1e-13
 FSI NODE 37 QUANTITY lambdax VALUE 6.52286257847629874e-06 TOLERANCE 1e-12
 FSI NODE 37 QUANTITY lambday VALUE -6.55432196907311266e-04 TOLERANCE 1e-13
-FSI SPECIAL QUANTITY dt VALUE 5.94260324754567956e-02 TOLERANCE 1.0e-12
+FSI SPECIAL QUANTITY dt VALUE 5.94260324756537492e-02 TOLERANCE 1.0e-12
 FSI SPECIAL QUANTITY time VALUE 4.43874215291889862e-01 TOLERANCE 1.0e-11
 FSI SPECIAL QUANTITY adasteps VALUE 2 TOLERANCE 1.0e-13
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS

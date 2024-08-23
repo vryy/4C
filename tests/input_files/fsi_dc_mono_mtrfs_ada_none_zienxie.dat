@@ -73,6 +73,8 @@ TIMEADAPTON                     yes
 ADAPTIVEDIST                    0.001
 BASETOL                         1.0E-5
 ITEMAX                          100
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   2
 TOL_DIS_INC_INF                 1e-11
 TOL_DIS_INC_L2                  1e-11
 TOL_DIS_RES_INF                 1e-11
@@ -93,6 +95,13 @@ TOL_VEL_RES_L2                  1e-11
 GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fsi_Solver
+SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid_ale.xml
+AZREUSE                         10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 500
@@ -113,7 +122,7 @@ FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 4.31381902947911566e-02 TOLERAN
 ALE DIS ale NODE 841 QUANTITY dispx VALUE -1.05358860277137792e-04 TOLERANCE 1e-13
 ALE DIS ale NODE 841 QUANTITY dispy VALUE -3.00476053676386381e-03 TOLERANCE 1e-13
 FSI NODE 1139 QUANTITY lambdax VALUE 7.65789984587225182e-05 TOLERANCE 1e-11
-FSI NODE 1139 QUANTITY lambday VALUE -3.44918379817176282e-02 TOLERANCE 1e-11
+FSI NODE 1139 QUANTITY lambday VALUE -3.44918379648846488e-02 TOLERANCE 1e-11
 FSI SPECIAL QUANTITY dt VALUE 1.21683039232000009e-01 TOLERANCE 1.0e-13
 FSI SPECIAL QUANTITY time VALUE 8.78874432512000037e-01 TOLERANCE 1.1e-13
 FSI SPECIAL QUANTITY adasteps VALUE 1 TOLERANCE 1.0e-13

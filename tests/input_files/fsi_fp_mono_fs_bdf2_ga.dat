@@ -42,7 +42,8 @@ RESULTSEVRY                           1
 ADAPTIVEDIST                    0.001
 BASETOL                         1e-6
 ITEMAX                          10
-LINEARBLOCKSOLVER               PreconditionedKrylov
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   2
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TOL_DIS_INC_INF                 1e-08
@@ -75,6 +76,13 @@ RHO_INF                         0.8
 GENAVG                          TrLike
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Fsi_Solver
+SOLVER                          Belos
+SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/fluid_solid_ale.xml
+AZREUSE                         0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1

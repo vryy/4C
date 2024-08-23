@@ -612,9 +612,8 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::LungMonolithic::create_linear_sys
   switch (linearsolverstrategy_)
   {
     case Inpar::FSI::PreconditionedKrylov:
-      linSys = Teuchos::rcp(new  // ::NOX::Epetra::LinearSystemAztecOO(
-          FSI::MonolithicLinearSystem(printParams, *lsParams, Teuchos::rcp(iJac, false), J,
-              Teuchos::rcp(iPrec, false), M, noxSoln));
+      linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(printParams, *lsParams,
+          Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
     default:
       FOUR_C_THROW("Unsupported type of monolithic solver/preconditioner!");
