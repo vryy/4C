@@ -10,6 +10,9 @@
     <PPointData>
       <PDataArray type="Float64" Name="force" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="moment" NumberOfComponents="3" format="ascii"/>
+      <PDataArray type="Int32" Name="uid_0_beam_1_gid" format="ascii"/>
+      <PDataArray type="Int32" Name="uid_1_beam_2_gid" format="ascii"/>
+      <PDataArray type="Int32" Name="uid_2_gp_id" format="ascii"/>
     </PPointData>
     <Piece Source="beam-potential-00005-0.vtu"/>
     <Piece Source="beam-potential-00005-1.vtu"/>
