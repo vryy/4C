@@ -20,8 +20,8 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_geometry_pair.hpp"
 #include "4C_global_data.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
@@ -580,10 +580,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<1>(penalty_regularization)));
     penalty_regularization_lin_constaint->complete();
     auto regularized_constraint_lin_beam =
-        Core::LinAlg::ml_multiply(*penalty_regularization_lin_constaint, false,
+        Core::LinAlg::matrix_multiply(*penalty_regularization_lin_constaint, false,
             *constraint_lin_beam_, false, false, false, true);
     auto regularized_constraint_lin_solid =
-        Core::LinAlg::ml_multiply(*penalty_regularization_lin_constaint, false,
+        Core::LinAlg::matrix_multiply(*penalty_regularization_lin_constaint, false,
             *constraint_lin_solid_, false, false, false, true);
 
     // Penalty regularization linearized w.r.t. the scaling vector
@@ -592,9 +592,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
       auto penalty_regularization_lin_kappa =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<2>(penalty_regularization)));
       penalty_regularization_lin_kappa->complete();
-      const auto kappa_lin_beam_scaled = Core::LinAlg::ml_multiply(
+      const auto kappa_lin_beam_scaled = Core::LinAlg::matrix_multiply(
           *penalty_regularization_lin_kappa, false, *kappa_lin_beam_, false, false, false, true);
-      const auto kappa_lin_solid_scaled = Core::LinAlg::ml_multiply(
+      const auto kappa_lin_solid_scaled = Core::LinAlg::matrix_multiply(
           *penalty_regularization_lin_kappa, false, *kappa_lin_solid_, false, false, false, true);
       regularized_constraint_lin_beam->add(*kappa_lin_beam_scaled, false, 1.0, 1.0);
       regularized_constraint_lin_solid->add(*kappa_lin_solid_scaled, false, 1.0, 1.0);
@@ -602,16 +602,16 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
 
     // Calculate the needed submatrices
     const auto force_beam_lin_lambda_times_constaint_lin_beam =
-        Core::LinAlg::ml_multiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_beam,
-            false, false, false, true);
+        Core::LinAlg::matrix_multiply(*force_beam_lin_lambda_, false,
+            *regularized_constraint_lin_beam, false, false, false, true);
     const auto force_beam_lin_lambda_times_constaint_lin_solid =
-        Core::LinAlg::ml_multiply(*force_beam_lin_lambda_, false, *regularized_constraint_lin_solid,
-            false, false, false, true);
+        Core::LinAlg::matrix_multiply(*force_beam_lin_lambda_, false,
+            *regularized_constraint_lin_solid, false, false, false, true);
     const auto force_solid_lin_lambda_times_constaint_lin_beam =
-        Core::LinAlg::ml_multiply(*force_solid_lin_lambda_, false, *regularized_constraint_lin_beam,
-            false, false, false, true);
+        Core::LinAlg::matrix_multiply(*force_solid_lin_lambda_, false,
+            *regularized_constraint_lin_beam, false, false, false, true);
     const auto force_solid_lin_lambda_times_constaint_lin_solid =
-        Core::LinAlg::ml_multiply(*force_solid_lin_lambda_, false,
+        Core::LinAlg::matrix_multiply(*force_solid_lin_lambda_, false,
             *regularized_constraint_lin_solid, false, false, false, true);
 
     // Add contributions to the global stiffness matrix
