@@ -518,6 +518,11 @@ void Inpar::Cardiovascular0D::set_valid_parameters(Teuchos::RCP<Teuchos::Paramet
       "ppCO2_ven_sys_0", 1.0, "initial systemic venous CO2 partial pressure", &cardvascrespir0d);
   Core::UTILS::double_parameter(
       "ppO2_ven_sys_0", 1.0, "initial systemic venous O2 partial pressure", &cardvascrespir0d);
+
+  Teuchos::ParameterList& mor = list->sublist("MOR", false, "");
+
+  Core::UTILS::string_parameter(
+      "POD_MATRIX", "none", "filename of file containing projection matrix", &mor);
 }
 
 

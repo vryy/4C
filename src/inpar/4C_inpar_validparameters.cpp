@@ -41,7 +41,6 @@
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
 #include "4C_inpar_levelset.hpp"
 #include "4C_inpar_lubrication.hpp"
-#include "4C_inpar_mor.hpp"
 #include "4C_inpar_mortar.hpp"
 #include "4C_inpar_mpc_rve.hpp"
 #include "4C_inpar_particle.hpp"
@@ -372,8 +371,6 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
   Inpar::FBI::set_valid_parameters(list);
 
   Inpar::PARTICLE::set_valid_parameters(list);
-
-  Inpar::ModelOrderRed::set_valid_parameters(list);
 
   Inpar::EleMag::set_valid_parameters(list);
 
