@@ -10,7 +10,7 @@
 
 #include "4C_linear_solver_amgnxn_smoothers.hpp"
 
-#include "4C_linalg_multiply.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_amgnxn_hierarchies.hpp"
 #include "4C_linear_solver_amgnxn_vcycle.hpp"
 #include "4C_linear_solver_method.hpp"
@@ -2154,9 +2154,9 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::compute_schur_complement(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aps_sp = Aps.get_matrix(0, 0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_sp = Ass.get_matrix(0, 0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-          Core::LinAlg::ml_multiply(*Asp_sp, *invApp_sp, true);
+          Core::LinAlg::matrix_multiply(*Asp_sp, false, *invApp_sp, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp =
-          Core::LinAlg::ml_multiply(*temp, *Aps_sp, false);
+          Core::LinAlg::matrix_multiply(*temp, false, *Aps_sp, false, false, false, false);
       S_sp->add(*Ass_sp, false, 1.0, -1.0);
       S_sp->complete();
       Sout = Teuchos::rcp(new BlockedMatrix(1, 1));
@@ -2178,14 +2178,14 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::compute_schur_complement(
       Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp = Teuchos::null;
       for (int b = 0; b < NumBlocks_pp; b++)
       {
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-            Core::LinAlg::ml_multiply(*(Asp.get_matrix(0, b)), *(invApp.get_matrix(b, b)), true);
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::matrix_multiply(
+            *(Asp.get_matrix(0, b)), false, *(invApp.get_matrix(b, b)), false, true);
         if (b == 0)
-          S_sp = Core::LinAlg::ml_multiply(*temp, *(Aps.get_matrix(b, 0)), false);
+          S_sp = Core::LinAlg::matrix_multiply(*temp, false, *(Aps.get_matrix(b, 0)), false, false);
         else
         {
           Teuchos::RCP<Core::LinAlg::SparseMatrix> S_sp_tmp =
-              Core::LinAlg::ml_multiply(*temp, *(Aps.get_matrix(b, 0)), true);
+              Core::LinAlg::matrix_multiply(*temp, false, *(Aps.get_matrix(b, 0)), false, true);
           S_sp->add(*S_sp_tmp, false, 1.0, 1.0);
         }
       }

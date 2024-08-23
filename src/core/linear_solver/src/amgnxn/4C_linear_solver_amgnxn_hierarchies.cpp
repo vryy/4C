@@ -11,8 +11,8 @@
 
 #include "4C_linear_solver_amgnxn_hierarchies.hpp"
 
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_amgnxn_vcycle.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -691,11 +691,13 @@ void Core::LinearSolver::AMGNxN::MonolithicHierarchy::setup()
             Teuchos::RCP<Core::LinAlg::SparseMatrix> R_spa = r_[level - 1]->get_matrix(row, row);
 
             Teuchos::RCP<Core::LinAlg::SparseMatrix> AP_spa = Teuchos::null;
-            AP_spa = Core::LinAlg::ml_multiply(*A_spa, *P_spa, true);
+            AP_spa =
+                Core::LinAlg::matrix_multiply(*A_spa, false, *P_spa, false, false, false, true);
             if (AP_spa == Teuchos::null) FOUR_C_THROW("Error in AP");
 
             Teuchos::RCP<Core::LinAlg::SparseMatrix> RAP_spa = Teuchos::null;
-            RAP_spa = Core::LinAlg::ml_multiply(*R_spa, *AP_spa, true);
+            RAP_spa =
+                Core::LinAlg::matrix_multiply(*R_spa, false, *AP_spa, false, false, false, true);
             if (RAP_spa == Teuchos::null) FOUR_C_THROW("Error in RAP");
 
             a_[level]->set_matrix(RAP_spa, row, col);
