@@ -44,9 +44,9 @@ RESTARTEVRY                     2000
 RESULTSEVRY                     1
 INF_PERM                        Yes
 SCATRA_SOLVERTYPE               nonlinear
-COUPLED_LINEAR_SOLVER           4
-LINEAR_SOLVER1                  5
-LINEAR_SOLVER2                  5
+COUPLED_LINEAR_SOLVER           2
+LINEAR_SOLVER1                  1
+LINEAR_SOLVER2                  1
 STRUCTSCAL_CONVFORM             conservative
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           2
@@ -140,7 +140,7 @@ LOMA_CONTI_SUPG             no
 LOMA_CONTI_CROSS_STRESS     no_cross
 LOMA_CONTI_REYNOLDS_STRESS  no_reynolds
 -------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 MAXTIME                         800
 TIMESTEP                        0.15
@@ -166,15 +166,10 @@ DIVERCONT                       continue
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0
 BASETOL                         1e-03
-BLOCKSMOOTHER                   BGS BGS BGS
 INFNORMSCALING                  Yes
 ITEMAX                          1
-KRYLOV_ITEMAX                   1000
-LINEARBLOCKSOLVER               PreconditionedKrylov
-PCITER                          1 1 1
-PCOMEGA                         1.0 1.0 1.0
-PRECONDREUSE                    50
-SCHUROMEGA                      0.001 0.01 0.1
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   1
 SHAPEDERIVATIVES                No
 SYMMETRICPRECOND                No
 TOL_DIS_INC_INF                 1e-06
@@ -198,7 +193,7 @@ ALPHA                           0.8
 PRECONDITIONER                  Simple
 SIMPLEITER                      2
 --------------------------------------------------------ALE DYNAMIC
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
 ALE_TYPE                        solid
 RESULTSEVRY                     1200
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -237,7 +232,7 @@ SKIPINITDER                     no
 FSSUGRDIFF                      No
 MESHTYING                       no
 FIELDCOUPLING                   matching
-LINEAR_SOLVER                   5
+LINEAR_SOLVER                   1
 NATURAL_CONVECTION              No
 FDCHECK                         none
 FDCHECKEPS                      1e-06
@@ -265,72 +260,9 @@ EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 CONSISTENCY                     no
 TAU_VALUE                       0
------------------------------------------------------------SOLVER 1
-NAME              Fluid_Solver
-SOLVER            Belos
-AZSOLVE           GMRES
-AZPREC            MLFLUID2
-AZTOL             1.0E-4
-AZCONV            AZ_r0
-AZITER            1000
-AZSUB             40
-ML_PRINT          0
-ML_MAXCOARSESIZE  1000
-ML_MAXLEVEL       3
-ML_COARSEN        UC
-ML_AGG_SIZE       27
-ML_PROLONG_SMO    1.33
-ML_PROLONG_THRES  0.0
-ML_SMOOTHERFINE   SGS
-ML_SMOOTHERMED    SGS
-ML_SMOOTHERCOARSE Umfpack
-ML_SMOTIMES       2 2 1
-ML_DAMPFINE       0.67
-ML_DAMPMED        0.67
-ML_DAMPCOARSE     1.0
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
-SOLVER                          Belos
-AZSOLVE                         GMRES
-AZPREC                          ML
-AZTOL                           1.0E-6
-AZCONV                          AZ_r0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                10000
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     5 5 5 5 1
-ML_DAMPFINE                     0.79
-ML_DAMPMED                      0.79
-ML_DAMPCOARSE                   1.0
---------------------------------------------------------------------SOLVER 3
-NAME                            Ale_Solver
-SOLVER                          Belos
-AZSOLVE                         CG
-AZPREC                          ML
-AZTOL                           1.0E-3
-AZCONV                          AZ_noscaled
-ML_PRINT                        0
-ML_MAXCOARSESIZE                10000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     3 3 3 3 1
-ML_DAMPFINE                     0.79
-ML_DAMPMED                      0.79
-ML_DAMPCOARSE                   1.0
---------------------------------------------------------------------SOLVER 4
 NAME                            COUPLED_FS3I_SOLVER
 SOLVER                          Belos
 AZSOLVE                         GMRES
@@ -338,8 +270,6 @@ AZPREC                          Teko
 TEKO_XML_FILE                   xml/block_preconditioner/scatra_scatra.xml
 AZTOL                           1.0E-07
 AZCONV                          AZ_r0
---------------------------------------------------------------------SOLVER 5
-SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_sutherland   REFVISC 1.0 REFTEMP 293 SUTHTEMP 110.4 SHC 100.0 PRANUM 100 THERMPRESS 1681820.0 GASCON 287.0
 MAT 2   MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1e7 NUE 0.3 DENS 1000.0 THEXPANS 6e-5 CAPA 1000.0 CONDUCT 100.0 INITTEMP 293.0
@@ -7447,9 +7377,9 @@ NODE      2912 COORD  5.0000000000000000e-01  2.0000000000000001e-01 -2.00000000
    2099 FLUID HEX8  2261 2260 2286 2287 1975 1974 2000 2001    MAT 1 NA ALE
    2100 FLUID HEX8  2262 2261 2287 2288 1976 1975 2001 2002    MAT 1 NA ALE
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 2602 QUANTITY phi VALUE 2.94492044833711589e+02 TOLERANCE 5.5e-6
+SCATRA DIS scatra2 NODE 2602 QUANTITY phi VALUE 2.94491956485981859e+02 TOLERANCE 5.5e-6
 STRUCTURE DIS structure NODE 2627 QUANTITY dispy VALUE -4.80974755517966148e-05 TOLERANCE 1e-6
 SCATRA DIS scatra1 NODE 1418 QUANTITY phi VALUE 2.92999992604131194e+02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1430 QUANTITY velx VALUE 8.05645088924995256e-02 TOLERANCE 1.0e-5
+FLUID DIS fluid NODE 1430 QUANTITY velx VALUE 8.04198067722815685e-02 TOLERANCE 1.0e-5
 ---------------------------------------------------------------END
 // END

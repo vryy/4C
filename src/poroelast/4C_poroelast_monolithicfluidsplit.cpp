@@ -13,7 +13,6 @@
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
-#include "4C_fsi_overlapprec_fsiamg.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"

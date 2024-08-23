@@ -9,6 +9,7 @@ PROBLEMTYP       Fluid_Structure_Interaction
 -----------------------------------------------------------------IO
 STRUCT_STRAIN    EA
 STRUCT_STRESS    Cauchy
+VERBOSITY        standard
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER    1
 INITIALFIELD     zero_field
@@ -57,7 +58,7 @@ LOMA_CONTI_SUPG             no
 LOMA_CONTI_CROSS_STRESS     no_cross
 LOMA_CONTI_REYNOLDS_STRESS  no_reynolds
 -------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 MAXTIME                         3.0
 TIMESTEP                        0.02
@@ -102,7 +103,7 @@ SEARCH_PARAM                    0.3
 INTTYPE                         elements_BS
 NUMGP_PER_DIM                   4
 ----------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
 STRATEGY                        Lagrange
 SYSTEM                          Condensed
 FRICTION                        None
@@ -120,14 +121,10 @@ RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    1e-03
 BASETOL                         1e-05
-BLOCKSMOOTHER                   BGS BGS BGS
 INFNORMSCALING                  Yes
 ITEMAX                          100
-LINEARBLOCKSOLVER               PreconditionedKrylov
-PCITER                          1 1 1
-PCOMEGA                         1.0 1.0 1.0
-PRECONDREUSE                    0
-SCHUROMEGA                      0.001 0.01 0.1
+LINEARBLOCKSOLVER               LinalgSolver
+LINEAR_SOLVER                   2
 SHAPEDERIVATIVES                No
 SYMMETRICPRECOND                No
 TOL_DIS_INC_INF                 1e-04
@@ -151,7 +148,7 @@ ALPHA                           0.8
 PRECONDITIONER                  Simple
 SIMPLEITER                      2
 --------------------------------------------------------ALE DYNAMIC
-LINEAR_SOLVER                   4
+LINEAR_SOLVER                   1
 ALE_TYPE                        solid
 MAXTIME                         3.0
 NUMSTEP                         150
@@ -159,66 +156,15 @@ NUM_INITSTEP                    0
 RESULTSEVRY                     1200
 TIMESTEP                        0.02
 -----------------------------------------------------------SOLVER 1
-NAME              Fluid_Solver
-SOLVER            Belos
-AZOUTPUT          0
-AZSOLVE           GMRES
-AZPREC            MLFLUID2
-AZREUSE           5
-IFPACKGFILL       0
-AZTOL             1.0E-4
-AZCONV            AZ_r0
-AZITER            1000
-AZSUB             40
-AZOMEGA           1.0
-AZGRAPH           1
-IFPACKOVERLAP     0
-ML_PRINT          0
-ML_MAXCOARSESIZE  1000
-ML_MAXLEVEL       3
-ML_COARSEN        UC
-ML_AGG_SIZE       27
-ML_PROLONG_SMO    1.33
-ML_PROLONG_THRES  0.0
-ML_SMOOTHERFINE   SGS
-ML_SMOOTHERMED    SGS
-ML_SMOOTHERCOARSE Umfpack
-ML_SMOTIMES       2 2 1
-ML_DAMPFINE       0.67
-ML_DAMPMED        0.67
-ML_DAMPCOARSE     1.0
+SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 2
-SOLVER            Superlu
------------------------------------------------------------SOLVER 3
-SOLVER            Superlu
------------------------------------------------------------SOLVER 4
-SOLVER            Belos
-AZOUTPUT          0
-AZSOLVE           CG
-AZPREC            ML
-AZREUSE           10
-IFPACKGFILL       0
-AZTOL             1.0E-7
-AZCONV            AZ_r0
-AZITER            1000
-AZSUB             40
-AZOMEGA           1.0
-AZGRAPH           1
-IFPACKOVERLAP     0
-ML_PRINT          0
-ML_MAXCOARSESIZE  1
-ML_MAXLEVEL       2
-ML_COARSEN        UC
-ML_AGG_SIZE       27
-ML_PROLONG_SMO    1.33
-ML_PROLONG_THRES  0.0
-ML_SMOOTHERFINE   ILU
-ML_SMOOTHERMED    ILU
-ML_SMOOTHERCOARSE Umfpack
-ML_SMOTIMES       0 0 0
-ML_DAMPFINE       1.0
-ML_DAMPMED        1.0
-ML_DAMPCOARSE     1.0
+SOLVER                          Belos
+AZSOLVE                         GMRES
+AZPREC                          Teko
+TEKO_XML_FILE                   fsci_simp_salz_syst_preconditioner.xml
+AZTOL                           1e-5
+AZOUTPUT                        10
+AZREUSE                         10
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_herschelbulkley TAU_0 1.34385286 KFAC 0.378251440 NEXP 0.62406206 MEXP 1000.0 LOLIMSHEARRATE 0.060080 UPLIMSHEARRATE 7352.421224 DENSITY 0.0014
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 201 DENS 0.001037
@@ -231,17 +177,17 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*(1-cos(2*t*pi/1.0))*1.0*(1-0.450430161*(x*x+y*y))
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 20057 QUANTITY    dispx VALUE -1.27336672296565253e-05 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 20057 QUANTITY    dispz VALUE  4.53991046126393487e-05 TOLERANCE 1e-10
-FLUID     DIS     fluid NODE   405 QUANTITY     velx VALUE  5.66503377122538978e-09 TOLERANCE 1e-10
-FLUID     DIS     fluid NODE   405 QUANTITY     vely VALUE  6.85217877811447338e-09 TOLERANCE 1e-10
-FLUID     DIS     fluid NODE   405 QUANTITY     velz VALUE  2.23774342781983932e-05 TOLERANCE 1e-10
-FLUID     DIS     fluid NODE   405 QUANTITY pressure VALUE  4.44223071358201826e-02 TOLERANCE 1e-08
-ALE       DIS       ale NODE 14120 QUANTITY    dispx VALUE -5.97577623668255292e-06 TOLERANCE 1e-10
-ALE       DIS       ale NODE 14120 QUANTITY    dispz VALUE  9.99232111412994773e-06 TOLERANCE 1e-10
-FSI                     NODE 14122 QUANTITY  lambdax VALUE -1.44497076128863561e-01 TOLERANCE 1e-08
-FSI                     NODE 14122 QUANTITY  lambday VALUE  1.36839436601922118e-07 TOLERANCE 1e-08
-FSI                     NODE 14122 QUANTITY  lambdaz VALUE  9.54771528813289430e-03 TOLERANCE 1e-08
+STRUCTURE DIS structure NODE 20057 QUANTITY    dispx VALUE -1.27312102099483934e-05 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 20057 QUANTITY    dispz VALUE  4.53996893179491870e-05 TOLERANCE 1e-10
+FLUID     DIS     fluid NODE   405 QUANTITY     velx VALUE  6.42268622270865543e-09 TOLERANCE 1e-10
+FLUID     DIS     fluid NODE   405 QUANTITY     vely VALUE  5.85661470103425903e-09 TOLERANCE 1e-10
+FLUID     DIS     fluid NODE   405 QUANTITY     velz VALUE  2.25776372827481427e-05 TOLERANCE 1e-10
+FLUID     DIS     fluid NODE   405 QUANTITY pressure VALUE  4.52063369875310012e-02 TOLERANCE 1e-08
+ALE       DIS       ale NODE 14120 QUANTITY    dispx VALUE -5.97316332006364920e-06 TOLERANCE 1e-10
+ALE       DIS       ale NODE 14120 QUANTITY    dispz VALUE  9.99193997559203183e-06 TOLERANCE 1e-10
+FSI                     NODE 14122 QUANTITY  lambdax VALUE -1.46034150452150402e-01 TOLERANCE 1e-08
+FSI                     NODE 14122 QUANTITY  lambday VALUE -9.29859740299800800e-06 TOLERANCE 1e-08
+FSI                     NODE 14122 QUANTITY  lambdaz VALUE  9.54593992897133023e-03 TOLERANCE 1e-08
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // inflow_ring
