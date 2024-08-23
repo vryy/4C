@@ -13,6 +13,7 @@
 
 #include "4C_beamcontact_beam3contact_manager.hpp"
 #include "4C_cardiovascular0d_manager.hpp"
+#include "4C_cardiovascular0d_mor_pod.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_constraint_manager.hpp"
 #include "4C_constraint_solver.hpp"
@@ -39,7 +40,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mor_pod.hpp"
 #include "4C_mortar_manager_base.hpp"
 #include "4C_mortar_strategy_base.hpp"
 #include "4C_mortar_utils.hpp"

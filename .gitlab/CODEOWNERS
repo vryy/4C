@@ -203,8 +203,6 @@ mixture/                   @baci/team_structure @baci/team_material
 
 module_registry/          @baci/team_discretization
 
-mor/                       @baci/team_structure
-
 mortar/                    @baci/team_contact
 
 particle_algorithm/        @baci/team_particle

@@ -8,8 +8,8 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef FOUR_C_MOR_POD_HPP
-#define FOUR_C_MOR_POD_HPP
+#ifndef FOUR_C_CARDIOVASCULAR0D_MOR_POD_HPP
+#define FOUR_C_CARDIOVASCULAR0D_MOR_POD_HPP
 
 #include "4C_config.hpp"
 
