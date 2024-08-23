@@ -16,7 +16,6 @@ vectors and matrices.
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_function.hpp"
@@ -504,8 +503,8 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
 {
   // selective multiplication from left
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::ml_multiply(
-      *subtrafo_, *sysmat, sysmat->explicit_dirichlet(), sysmat->save_graph(), true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::matrix_multiply(
+      *subtrafo_, false, *sysmat, false, sysmat->explicit_dirichlet(), sysmat->save_graph(), true);
 
   // put transformed rows back into global matrix
   sysmat->put(*temp, 1.0, locsysdofmap_);
