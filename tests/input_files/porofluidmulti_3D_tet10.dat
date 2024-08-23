@@ -27,21 +27,13 @@ MAXTIME                         2.0
 TIMESTEP                        0.1
 RESULTSEVRY                     1
 FLUX_PROJ_METHOD                L2_projection
-FLUX_PROJ_SOLVER                2
+FLUX_PROJ_SOLVER                1
 OUTPUT_POROSITY                 no
 -----------------------------------------------------------------------IO
 VERBOSITY                       Minimal
 --------------------------------------------------------------------SOLVER 1
 NAME                            Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            L2-projection solver for fluxes/pressure gradient
-SOLVER                          Belos
-AZSOLVE                         CG
-AZPREC                          ML
-AZTOL                           1.0E-6
-AZITER                          20
-AZCONV                          AZ_r0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 11 12 13 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4
 

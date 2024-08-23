@@ -1,6 +1,6 @@
 -----------------------------------------------------------------------TITLE
-testing: Stress calculation via ML agreagtion
-hint: This does give different results in parallel, since the ML agreagtion Matrix does depend on the parallel distribution of the discretisation
+testing: Stress calculation
+hint: This does give different results in parallel, since the multigrid aggregation does depend on the parallel distribution of the discretisation
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        400
 NODES                           882

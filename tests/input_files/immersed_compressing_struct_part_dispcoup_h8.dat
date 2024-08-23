@@ -134,11 +134,12 @@ NUM_GP_FLUID_BOUND              125
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
 NAME                            Structure_Solver
---------------------------------------------------------------------SOLVER 2
+-----------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/fluid_template.xml
 AZTOL                           1e-05
 AZOUTPUT                        50
 ----------------------------------------------------------MATERIALS

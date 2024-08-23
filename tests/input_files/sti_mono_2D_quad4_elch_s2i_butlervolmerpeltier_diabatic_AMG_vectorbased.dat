@@ -14,6 +14,8 @@ constant initial lithium concentrations, electric potentials, and temperatures
 DIM           2
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Scalar_Thermo_Interaction
+-----------------------------------------------------------------IO
+VERBOSITY                       standard
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMESTEP                        1.0
@@ -44,7 +46,8 @@ MATRIXTYPE                      sparse
 COUPLINGTYPE                    MatchingNodes
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Belos
-AZPREC                          MLFLUID2
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/sti_template.xml
 AZSUB                           100
 ML_MAXCOARSESIZE                1
 ML_MAXLEVEL                     2

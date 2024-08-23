@@ -39,7 +39,7 @@ Outer Iteration StatusTest = no
 ------------------------------------------------------STRUCT NOX/Status Test
 XML File                        = contact3D_nitsche_so3plast_nonsym_fbar_plast.xml
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER             2
+LINEAR_SOLVER             1
 STRATEGY                  Nitsche
 PENALTYPARAM              4
 PENALTYPARAMTAN           0.25
@@ -57,12 +57,6 @@ INTTYPE              Segments
 PARALLEL_REDIST      dynamic
 ----------------------------------------------------------SOLVER 1
 SOLVER                         UMFPACK
-AZPREC  ML
-AZSOLVE CG
-----------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
-AZPREC   ML
-AZSOLVE  CG
 ------------------------------------------------------SEMI-SMOOTH PLASTICITY
 SEMI_SMOOTH_CPL                 5
 STABILIZATION_S                 1.0
