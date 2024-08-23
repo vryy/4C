@@ -242,7 +242,7 @@ void Solid::TimInt::setup()
   conman_->setup((*dis_)(0), sdynparams_);
 
   // model order reduction
-  mor_ = Teuchos::rcp(new ModelOrderRed::ProperOrthogonalDecomposition(dof_row_map(),
+  mor_ = Teuchos::rcp(new Cardiovascular0D::ProperOrthogonalDecomposition(dof_row_map(),
       Global::Problem::instance()->mor_params().get<std::string>("POD_MATRIX"),
       Global::Problem::instance()->output_control_file()->input_file_name()));
 

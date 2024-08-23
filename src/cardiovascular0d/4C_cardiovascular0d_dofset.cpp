@@ -41,7 +41,7 @@ void UTILS::Cardiovascular0DDofSet::reset()
  *----------------------------------------------------------------------*/
 int UTILS::Cardiovascular0DDofSet::assign_degrees_of_freedom(
     const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start,
-    const Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
+    const Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor)
 {
   // A definite offset is currently not supported.
   if (start != 0) FOUR_C_THROW("right now user specified dof offsets are not supported");

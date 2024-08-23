@@ -44,7 +44,8 @@ FOUR_C_NAMESPACE_OPEN
 UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     Teuchos::RCP<Core::FE::Discretization> discr, Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::ParameterList strparams, Teuchos::ParameterList cv0dparams,
-    Core::LinAlg::Solver& solver, Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
+    Core::LinAlg::Solver& solver,
+    Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor)
     : actdisc_(discr),
       myrank_(actdisc_->get_comm().MyPID()),
       dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),

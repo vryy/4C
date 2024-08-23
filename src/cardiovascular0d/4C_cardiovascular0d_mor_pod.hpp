@@ -29,7 +29,7 @@ namespace Core::LinAlg
 {
   class SparseMatrix;
 }  // namespace Core::LinAlg
-namespace ModelOrderRed
+namespace Cardiovascular0D
 {
   class ProperOrthogonalDecomposition
   {
@@ -108,7 +108,7 @@ namespace ModelOrderRed
     Teuchos::RCP<Epetra_Import> structrinvimpo_;
 
   };  // class
-}  // namespace ModelOrderRed
+}  // namespace Cardiovascular0D
 FOUR_C_NAMESPACE_CLOSE
 
 #endif
