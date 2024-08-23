@@ -12,7 +12,6 @@
 
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_string.hpp"
 
