@@ -3,6 +3,7 @@ Monolithic FSI: 2D Driven cavity with flexible bottom
 FSI:                            iter_monolithicstructuresplit
 Fluid:                          One_Step_Theta
 Structure:                      GenAlpha
+Purpose of this test: exercise halving the time step size if Newton does not converge
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2080
 NODES                           2244
@@ -48,8 +49,8 @@ LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1.0
 TIMESTEP                        0.1
-NUMSTEP                         4
-RESULTSEVRY                           1
+NUMSTEP                         3
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicstructuresplit
 --------------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
@@ -101,18 +102,18 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*(1-cos(2*t*pi/5))
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-cos(2*t*pi/5))
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE 1.24771248764563602e-08 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE -2.26115095627230121e-06 TOLERANCE 1e-13
-FLUID DIS fluid NODE 841 QUANTITY velx VALUE 5.00362551919469807e-05 TOLERANCE 1e-13
-FLUID DIS fluid NODE 841 QUANTITY vely VALUE -8.47656375467392573e-05 TOLERANCE 1e-13
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 4.36652471597412384e-03 TOLERANCE 1e-13
-ALE DIS ale NODE 841 QUANTITY dispx VALUE -2.14758167435042534e-08 TOLERANCE 1e-13
-ALE DIS ale NODE 841 QUANTITY dispy VALUE -1.44041001897889113e-06 TOLERANCE 1e-13
-FSI NODE 37 QUANTITY lambdax VALUE 6.53763341457373752e-07 TOLERANCE 1e-12
-FSI NODE 37 QUANTITY lambday VALUE -1.17360790765040824e-04 TOLERANCE 1e-13
-FSI SPECIAL QUANTITY dt VALUE 9.15062500000000251e-03 TOLERANCE 1.0e-13
-FSI SPECIAL QUANTITY time VALUE 5.46312500000000062e-02 TOLERANCE 1.0e-11
-FSI SPECIAL QUANTITY adasteps VALUE 1 TOLERANCE 1.0e-13
+STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE 8.01086260211662344e-09 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE -1.50545751503492208e-06 TOLERANCE 1e-13
+FLUID DIS fluid NODE 841 QUANTITY velx VALUE 3.61613600149185063e-05 TOLERANCE 1e-13
+FLUID DIS fluid NODE 841 QUANTITY vely VALUE -6.19697547069460424e-05 TOLERANCE 1e-13
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE 2.92926205623525492e-03 TOLERANCE 1e-13
+ALE DIS ale NODE 841 QUANTITY dispx VALUE -1.39448850360579393e-08 TOLERANCE 1e-13
+ALE DIS ale NODE 841 QUANTITY dispy VALUE -9.59133526015619836e-07 TOLERANCE 1e-13
+FSI NODE 37 QUANTITY lambdax VALUE 4.81608723204308962e-07 TOLERANCE 1e-12
+FSI NODE 37 QUANTITY lambday VALUE -7.18673785205390585e-05 TOLERANCE 1e-13
+FSI SPECIAL QUANTITY dt VALUE 8.31875000000000149e-03 TOLERANCE 1.0e-13
+FSI SPECIAL QUANTITY time VALUE 4.63125000000000064e-02 TOLERANCE 1.0e-11
+FSI SPECIAL QUANTITY adasteps VALUE 2 TOLERANCE 1.0e-13
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 //                              structure_dry_vertices
