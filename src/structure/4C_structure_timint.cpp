@@ -30,12 +30,12 @@
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_micromaterial.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -1416,7 +1416,7 @@ void Solid::TimInt::update_step_contact_vum()
 
       // auxiliary operator BN = Bc * N
       Teuchos::RCP<Core::LinAlg::SparseMatrix> BN =
-          Core::LinAlg::ml_multiply(*Bc, false, *N, true, false, false, true);
+          Core::LinAlg::matrix_multiply(*Bc, false, *N, true, false, false, true);
 
       // operator A
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1;
@@ -1424,9 +1424,9 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx3;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> A;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Atemp1 =
-          Core::LinAlg::ml_multiply(*BN, true, *Minv, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*BN, true, *Minv, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Atemp2 =
-          Core::LinAlg::ml_multiply(*Atemp1, false, *BN, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*Atemp1, false, *BN, false, false, false, true);
       Atemp2->scale(R4);
       Core::LinAlg::split_matrix2x2(Atemp2, notactivenodemap, activenodemap, notactivenodemap,
           activenodemap, tempmtx1, tempmtx2, tempmtx3, A);
