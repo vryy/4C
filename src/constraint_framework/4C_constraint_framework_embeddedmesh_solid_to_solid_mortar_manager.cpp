@@ -34,8 +34,7 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
     : discret_(discret),
       start_value_lambda_gid_(start_value_lambda_gid),
       embedded_mesh_coupling_params_(embedded_mesh_coupling_params),
-      point_visualization_manager_(visualization_manager),
-      lambda_visualization_manager_(visualization_manager)
+      visualization_manager_(visualization_manager)
 {
   // Initialize cutwizard instance and perform the cut
   Teuchos::RCP<Cut::CutWizard> cutwizard = Teuchos::rcp(new Cut::CutWizard(discret_));
@@ -56,31 +55,31 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
 
   n_lambda_node_ = n_lambda_node_temp;
 
-  point_visualization_manager_->register_visualization_data("background_integration_points");
-  point_visualization_manager_->register_visualization_data("interface_integration_points");
-  point_visualization_manager_->register_visualization_data("cut_element_integration_points");
-  lambda_visualization_manager_->register_visualization_data("lagrange_multipliers");
+  visualization_manager_->register_visualization_data("background_integration_points");
+  visualization_manager_->register_visualization_data("interface_integration_points");
+  visualization_manager_->register_visualization_data("cut_element_integration_points");
+  visualization_manager_->register_visualization_data("lagrange_multipliers");
 
   auto& background_integration_points_visualization_data =
-      point_visualization_manager_->get_visualization_data("background_integration_points");
+      visualization_manager_->get_visualization_data("background_integration_points");
   background_integration_points_visualization_data.register_point_data<double>("weights", 1);
   background_integration_points_visualization_data.register_point_data<int>(
       "integration_cell_id", 1);
 
   auto& interface_integration_points_visualization_data =
-      point_visualization_manager_->get_visualization_data("interface_integration_points");
+      visualization_manager_->get_visualization_data("interface_integration_points");
   interface_integration_points_visualization_data.register_point_data<double>("weights", 1);
   interface_integration_points_visualization_data.register_point_data<int>(
       "integration_cell_id", 1);
 
   auto& cut_element_integration_points_visualization_data =
-      point_visualization_manager_->get_visualization_data("cut_element_integration_points");
+      visualization_manager_->get_visualization_data("cut_element_integration_points");
   cut_element_integration_points_visualization_data.register_point_data<double>("weights", 1);
   cut_element_integration_points_visualization_data.register_point_data<int>(
       "integration_cell_id", 1);
 
   auto& lagrange_multipliers_visualization_data =
-      lambda_visualization_manager_->get_visualization_data("lagrange_multipliers");
+      visualization_manager_->get_visualization_data("lagrange_multipliers");
   lagrange_multipliers_visualization_data.register_point_data<double>("lambda", 3);
 
   // Setup the solid to solid mortar manager
@@ -513,13 +512,27 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::penalty_invert_kappa() con
   return global_kappa_inv;
 }
 
-void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_lagrange_multipliers(
+void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output(
     double time, int timestep_number)
 {
-  lambda_visualization_manager_->clear_data();
+  // Clear the data of visualization manager
+  visualization_manager_->clear_data();
 
+  // Collect output of the physical positions of gauss points
+  // where surface integrations will take place
+  collect_output_integration_points();
+
+  // Collect vtk output of lagrange multipliers
+  collect_output_lagrange_multipliers();
+
+  // Write output
+  visualization_manager_->write_to_disk(time, timestep_number);
+}
+
+void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::collect_output_lagrange_multipliers()
+{
   auto& lagrange_multipliers_visualization_data =
-      lambda_visualization_manager_->get_visualization_data("lagrange_multipliers");
+      visualization_manager_->get_visualization_data("lagrange_multipliers");
 
   Teuchos::RCP<Epetra_Vector> lambda = get_global_lambda_col();
 
@@ -532,23 +545,18 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_lagrange
     elepairptr->get_pair_visualization(
         lagrange_multipliers_visualization_data, lambda, this, interface_tracker);
   }
-
-  lambda_visualization_manager_->write_to_disk(time, timestep_number);
 }
 
-void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_integration_points(
-    double time, int timestep_number)
+void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::collect_output_integration_points()
 {
-  point_visualization_manager_->clear_data();
-
   auto& background_integration_points_visualization_data =
-      point_visualization_manager_->get_visualization_data("background_integration_points");
+      visualization_manager_->get_visualization_data("background_integration_points");
 
   auto& interface_integration_points_visualization_data =
-      point_visualization_manager_->get_visualization_data("interface_integration_points");
+      visualization_manager_->get_visualization_data("interface_integration_points");
 
   auto& cut_element_integration_points_visualization_data =
-      point_visualization_manager_->get_visualization_data("cut_element_integration_points");
+      visualization_manager_->get_visualization_data("cut_element_integration_points");
 
   // Loop over pairs
   for (auto& elepairptr : embedded_mesh_solid_pairs_)
@@ -564,8 +572,6 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::write_output_integrat
     elepairptr->get_projected_gauss_rule_in_cut_element(
         cut_element_integration_points_visualization_data);
   }
-
-  point_visualization_manager_->write_to_disk(time, timestep_number);
 }
 
 bool CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::is_cut_node(

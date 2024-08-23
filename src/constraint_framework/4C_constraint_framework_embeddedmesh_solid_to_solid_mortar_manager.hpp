@@ -156,15 +156,21 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     }
 
     /**
-     * \brief Write the results of Lagrange multipliers as runtime output
+     * \brief Write output obtained in the embedded mesh
      */
-    void write_output_lagrange_multipliers(double time, int timestep_number);
+    void write_output(double time, int timestep_number);
+
+    /**
+     * \brief Collect the results of Lagrange multipliers as runtime output for the visualization
+     * manager
+     */
+    void collect_output_lagrange_multipliers();
 
     /**
      * \brief Write the integration points on the boundary elements and cut elements
-     * after the cut operation.
+     * after the cut operation and save it in the visualization manager
      */
-    void write_output_integration_points(double time, int timestep_number);
+    void collect_output_integration_points();
 
    protected:
     /**
@@ -289,9 +295,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>
         embedded_mesh_solid_pairs_;
 
-    Teuchos::RCP<Core::IO::VisualizationManager> point_visualization_manager_;
-
-    Teuchos::RCP<Core::IO::VisualizationManager> lambda_visualization_manager_;
+    Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_;
   };
 }  // namespace CONSTRAINTS::EMBEDDEDMESH
 
