@@ -81,8 +81,7 @@ namespace MIXTURE
 
     void setup(Teuchos::ParameterList& params, const int eleGID) override;
 
-    void unpack_mixture_rule(
-        std::vector<char>::size_type& position, const std::vector<char>& data) override;
+    void unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     ///! Rule parameters as defined in the input file

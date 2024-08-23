@@ -127,10 +127,10 @@ Mat::MultiplicativeSplitDefgradElastHyperType
     Mat::MultiplicativeSplitDefgradElastHyperType::instance_;
 
 Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* splitdefgrad_elhy = new Mat::MultiplicativeSplitDefgradElastHyper();
-  splitdefgrad_elhy->unpack(data);
+  splitdefgrad_elhy->unpack(buffer);
 
   return splitdefgrad_elhy;
 }
@@ -191,19 +191,19 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBu
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& data)
+void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   params_ = nullptr;
   potsumel_.clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -218,7 +218,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& 
     }
   }
 
-  anisotropy_->unpack_anisotropy(data, position);
+  anisotropy_->unpack_anisotropy(buffer);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -232,7 +232,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(const std::vector<char>& 
     // loop map of associated potential summands
     for (const auto& elastic_summand : potsumel_)
     {
-      elastic_summand->unpack_summand(data, position);
+      elastic_summand->unpack_summand(buffer);
       elastic_summand->register_anisotropy_extensions(*anisotropy_);
     }
 

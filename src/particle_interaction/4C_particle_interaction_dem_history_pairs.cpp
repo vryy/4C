@@ -333,22 +333,20 @@ template <typename Historypairtype>
 void ParticleInteraction::DEMHistoryPairs::unpack_history_pairs(const std::vector<char>& buffer,
     std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>& historydata)
 {
-  std::vector<char>::size_type position = 0;
-  while (position < buffer.size())
+  Core::Communication::UnpackBuffer data(buffer);
+  while (!data.at_end())
   {
     // get global ids
-    int globalid_i = Core::Communication::ParObject::extract_int(position, buffer);
-    int globalid_j = Core::Communication::ParObject::extract_int(position, buffer);
+    int globalid_i = Core::Communication::ParObject::extract_int(data);
+    int globalid_j = Core::Communication::ParObject::extract_int(data);
 
     // unpack history pair data
     Historypairtype historypair = Historypairtype();
-    historypair.unpack(position, buffer);
+    historypair.unpack(data);
 
     // add history pair data
     historydata[globalid_i][globalid_j] = std::make_pair(true, historypair);
   }
-  if (position != buffer.size())
-    FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
 template <typename Historypairtype>

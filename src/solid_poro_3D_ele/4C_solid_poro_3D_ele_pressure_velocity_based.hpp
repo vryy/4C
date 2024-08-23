@@ -52,7 +52,7 @@ namespace Discret::ELEMENTS
 
     Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
     [[nodiscard]] std::string name() const override { return "SolidPoroPressureVelocityBasedType"; }
 
@@ -111,7 +111,7 @@ namespace Discret::ELEMENTS
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     [[nodiscard]] Core::FE::CellType shape() const override { return celltype_; };
 

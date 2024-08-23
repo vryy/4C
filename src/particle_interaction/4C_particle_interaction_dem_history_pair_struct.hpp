@@ -43,12 +43,12 @@ namespace ParticleInteraction
     }
 
     //! unpack history pair data
-    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      Core::Communication::ParObject::extract_from_pack(position, data, stick_);
+      Core::Communication::ParObject::extract_from_pack(buffer, stick_);
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, data, gap_t_[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, gap_t_[i]);
     }
   };
 
@@ -70,12 +70,12 @@ namespace ParticleInteraction
     }
 
     //! unpack history pair data
-    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      Core::Communication::ParObject::extract_from_pack(position, data, stick_);
+      Core::Communication::ParObject::extract_from_pack(buffer, stick_);
 
       for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(position, data, gap_r_[i]);
+        Core::Communication::ParObject::extract_from_pack(buffer, gap_r_[i]);
     }
   };
 
@@ -97,11 +97,11 @@ namespace ParticleInteraction
     }
 
     //! unpack history pair data
-    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data)
+    void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      Core::Communication::ParObject::extract_from_pack(position, data, surface_energy_);
+      Core::Communication::ParObject::extract_from_pack(buffer, surface_energy_);
 
-      Core::Communication::ParObject::extract_from_pack(position, data, adhesion_force_);
+      Core::Communication::ParObject::extract_from_pack(buffer, adhesion_force_);
     }
   };
 }  // namespace ParticleInteraction

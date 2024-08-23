@@ -36,10 +36,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMultiScale::create_material()
 Mat::ScatraMultiScaleType Mat::ScatraMultiScaleType::instance_;
 
 
-Core::Communication::ParObject* Mat::ScatraMultiScaleType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScatraMultiScaleType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ScatraMultiScale* ScatraMatMultiScale = new Mat::ScatraMultiScale();
-  ScatraMatMultiScale->unpack(data);
+  ScatraMatMultiScale->unpack(buffer);
   return ScatraMatMultiScale;
 }
 
@@ -81,15 +82,13 @@ void Mat::ScatraMultiScale::pack(Core::Communication::PackBuffer& data) const
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScale::unpack(const std::vector<char>& data)
+void Mat::ScatraMultiScale::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -106,12 +105,12 @@ void Mat::ScatraMultiScale::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  ScatraMat::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  ScatraMat::unpack(basedata_buffer);
 
   // final safety check
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d!", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

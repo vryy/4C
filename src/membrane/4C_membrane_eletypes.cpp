@@ -27,11 +27,11 @@ Discret::ELEMENTS::MembraneTri3Type& Discret::ELEMENTS::MembraneTri3Type::instan
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri3Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>* object =
       new Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -100,11 +100,11 @@ Discret::ELEMENTS::MembraneTri6Type& Discret::ELEMENTS::MembraneTri6Type::instan
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneTri6Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::tri6>* object =
       new Discret::ELEMENTS::Membrane<Core::FE::CellType::tri6>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -173,11 +173,11 @@ Discret::ELEMENTS::MembraneQuad4Type& Discret::ELEMENTS::MembraneQuad4Type::inst
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad4Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::quad4>* object =
       new Discret::ELEMENTS::Membrane<Core::FE::CellType::quad4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -246,11 +246,11 @@ Discret::ELEMENTS::MembraneQuad9Type& Discret::ELEMENTS::MembraneQuad9Type::inst
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneQuad9Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Membrane<Core::FE::CellType::quad9>* object =
       new Discret::ELEMENTS::Membrane<Core::FE::CellType::quad9>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

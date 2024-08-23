@@ -91,7 +91,7 @@ void Discret::ELEMENTS::Vele3Line::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Line::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Vele3Line::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Vele3Line element does not support communication");
   return;

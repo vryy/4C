@@ -23,7 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
+
 namespace Input
 {
   class LineDefinition;
@@ -54,11 +56,8 @@ namespace Mat
 
     /*!
      * Unpack all data from another processor
-     *
-     * @param data (in) : data object
-     * @param position (in/out) : current position in the data
      */
-    void unpack(const std::vector<char>& data, std::vector<char>::size_type& position);
+    void unpack(Core::Communication::UnpackBuffer& buffer);
 
     ///@}
 

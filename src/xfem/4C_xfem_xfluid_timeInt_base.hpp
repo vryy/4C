@@ -522,8 +522,7 @@ namespace XFEM
     void pack_node(Core::Communication::PackBuffer& dataSend, Core::Nodes::Node& node) const;
 
     //! unpacking a node
-    void unpack_node(std::vector<char>::size_type& posinData, std::vector<char>& dataRecv,
-        Core::Nodes::Node& node) const;
+    void unpack_node(Core::Communication::UnpackBuffer& buffer, Core::Nodes::Node& node) const;
 
 
     /*========================================================================*/

@@ -100,7 +100,7 @@ namespace Discret::ELEMENTS
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //! @name Access methods
     //! @{

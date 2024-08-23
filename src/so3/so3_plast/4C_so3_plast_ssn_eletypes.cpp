@@ -31,10 +31,10 @@ Discret::ELEMENTS::SoHex8PlastType& Discret::ELEMENTS::SoHex8PlastType::instance
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PlastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -135,10 +135,10 @@ Discret::ELEMENTS::SoHex18PlastType& Discret::ELEMENTS::SoHex18PlastType::instan
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex18PlastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -238,10 +238,10 @@ Discret::ELEMENTS::SoHex27PlastType& Discret::ELEMENTS::SoHex27PlastType::instan
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex27PlastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -337,10 +337,10 @@ Discret::ELEMENTS::SoTet4PlastType& Discret::ELEMENTS::SoTet4PlastType::instance
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PlastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -434,10 +434,10 @@ Discret::ELEMENTS::SoNurbs27PlastType& Discret::ELEMENTS::SoNurbs27PlastType::in
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27PlastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 

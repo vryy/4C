@@ -121,7 +121,7 @@ namespace Solid
 
       void pack_my_quantities(std::vector<char>& data) const;
 
-      void unpack_quantities(std::size_t pos, const std::vector<char>& data,
+      void unpack_quantities(Core::Communication::UnpackBuffer& buffer,
           std::unordered_map<std::string, int>& quantities) const;
 
       void prepare_nodal_data_vectors(const Epetra_Map& node_col_map);

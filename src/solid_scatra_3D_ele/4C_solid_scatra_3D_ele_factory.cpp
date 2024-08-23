@@ -79,13 +79,13 @@ void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
   Discret::ELEMENTS::add_to_pack(data, properties.solid);
 }
 
-void Discret::ELEMENTS::extract_from_pack(std::size_t& position, const std::vector<char>& data,
+void Discret::ELEMENTS::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
     Discret::ELEMENTS::SolidScatraElementProperties& properties)
 {
-  properties.impltype = static_cast<Inpar::ScaTra::ImplType>(
-      Core::Communication::ParObject::extract_int(position, data));
+  properties.impltype =
+      static_cast<Inpar::ScaTra::ImplType>(Core::Communication::ParObject::extract_int(buffer));
 
-  Discret::ELEMENTS::extract_from_pack(position, data, properties.solid);
+  Discret::ELEMENTS::extract_from_pack(buffer, properties.solid);
 }
 
 Discret::ELEMENTS::SolidScatraCalcVariant

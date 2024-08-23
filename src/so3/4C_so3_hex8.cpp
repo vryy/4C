@@ -43,10 +43,11 @@ namespace
   const std::string name = Discret::ELEMENTS::SoHex8Type::instance().name();
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8Type::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex8Type::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::SoHex8(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -244,34 +245,33 @@ void Discret::ELEMENTS::SoHex8::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  SoBase::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  SoBase::unpack(basedata_buffer);
   // eastype_
-  eastype_ = static_cast<EASType>(extract_int(position, data));
+  eastype_ = static_cast<EASType>(extract_int(buffer));
   // neas_
-  extract_from_pack(position, data, neas_);
+  extract_from_pack(buffer, neas_);
   // analyticalmaterialtangent_
-  analyticalmaterialtangent_ = extract_int(position, data);
+  analyticalmaterialtangent_ = extract_int(buffer);
   // eas data
-  unpack_eas_data(position, data);
+  unpack_eas_data(buffer);
   // line search
-  extract_from_pack(position, data, old_step_length_);
+  extract_from_pack(buffer, old_step_length_);
   // Extract prestress
-  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
-  extract_from_pack(position, data, pstime_);
-  extract_from_pack(position, data, time_);
+  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(buffer));
+  extract_from_pack(buffer, pstime_);
+  extract_from_pack(buffer, time_);
   if (Prestress::is_mulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
-    extract_from_pack(position, data, tmpprestress);
+    extract_from_pack(buffer, tmpprestress);
     if (prestress_ == Teuchos::null)
     {
       int numgpt = NUMGPT_SOH8;
@@ -280,19 +280,19 @@ void Discret::ELEMENTS::SoHex8::unpack(const std::vector<char>& data)
       if (me) numgpt += 1;  // one more history entry for centroid data in hex8fbar
       prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, numgpt));
     }
-    prestress_->unpack(tmpprestress);
+    Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
+    prestress_->unpack(tmpprestress_buffer);
   }
 
   // detJ_
-  extract_from_pack(position, data, detJ_);
+  extract_from_pack(buffer, detJ_);
   // invJ_
   int size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   invJ_.resize(size, Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
-  for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(buffer, invJ_[i]);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

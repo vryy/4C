@@ -31,12 +31,12 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::pack_anisotropy(
 }
 
 void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::unpack_anisotropy(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(position, data, scalar_products_);
-  Core::Communication::ParObject::extract_from_pack(position, data, structural_tensors_stress_);
-  Core::Communication::ParObject::extract_from_pack(position, data, structural_tensors_);
-  is_initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(position, data));
+  Core::Communication::ParObject::extract_from_pack(buffer, scalar_products_);
+  Core::Communication::ParObject::extract_from_pack(buffer, structural_tensors_stress_);
+  Core::Communication::ParObject::extract_from_pack(buffer, structural_tensors_);
+  is_initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
 }
 
 double Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::get_scalar_product(int gp) const
@@ -205,10 +205,9 @@ void Mat::Elastic::CoupAnisoExpoShear::pack_summand(Core::Communication::PackBuf
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::CoupAnisoExpoShear::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::CoupAnisoExpoShear::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void Mat::Elastic::CoupAnisoExpoShear::get_fiber_vecs(

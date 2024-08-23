@@ -44,8 +44,7 @@ namespace Mat
       /// @{
       void pack_anisotropy(Core::Communication::PackBuffer& data) const override;
 
-      void unpack_anisotropy(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      void unpack_anisotropy(Core::Communication::UnpackBuffer& buffer) override;
       /// @}
 
       double get_scalar_product(int gp) const override;
@@ -153,8 +152,7 @@ namespace Mat
       ///@{
       void pack_summand(Core::Communication::PackBuffer& data) const override;
 
-      void unpack_summand(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
+      void unpack_summand(Core::Communication::UnpackBuffer& buffer) override;
       ///@}
 
       /*!

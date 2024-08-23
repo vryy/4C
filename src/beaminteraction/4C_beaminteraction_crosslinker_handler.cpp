@@ -126,14 +126,15 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
     {
       // Put received nodes either into discretization or into list of homeless linker
       homelesslinker.clear();
-      std::vector<char>::size_type index = 0;
-      while (index < rdata.size())
+      Core::Communication::UnpackBuffer buffer(rdata);
+      while (!buffer.at_end())
       {
         std::vector<char> data;
-        Core::Communication::ParObject::extract_from_pack(index, rdata, data);
+        Core::Communication::ParObject::extract_from_pack(buffer, data);
         // this Teuchos::rcp holds the memory of the node
+        Core::Communication::UnpackBuffer data_buffer(data);
         Teuchos::RCP<Core::Communication::ParObject> object =
-            Teuchos::rcp(Core::Communication::factory(data), true);
+            Teuchos::rcp(Core::Communication::factory(data_buffer), true);
         Teuchos::RCP<Core::Nodes::Node> node = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(object);
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
@@ -402,14 +403,15 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
     // ---- unpack ----
     {
       // Put received nodes into discretization
-      std::vector<char>::size_type index = 0;
-      while (index < rdata.size())
+      Core::Communication::UnpackBuffer buffer(rdata);
+      while (!buffer.at_end())
       {
         std::vector<char> data;
-        Core::Communication::ParObject::extract_from_pack(index, rdata, data);
+        Core::Communication::ParObject::extract_from_pack(buffer, data);
         // this Teuchos::rcp holds the memory of the node
+        Core::Communication::UnpackBuffer data_buffer(data);
         Teuchos::RCP<Core::Communication::ParObject> object =
-            Teuchos::rcp(Core::Communication::factory(data), true);
+            Teuchos::rcp(Core::Communication::factory(data_buffer), true);
         Teuchos::RCP<Core::Nodes::Node> node = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(object);
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 

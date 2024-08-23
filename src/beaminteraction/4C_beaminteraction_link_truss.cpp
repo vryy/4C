@@ -30,10 +30,10 @@ BEAMINTERACTION::BeamLinkTrussType BEAMINTERACTION::BeamLinkTrussType::instance_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   BEAMINTERACTION::BeamLinkTruss* my_truss_linker = new BEAMINTERACTION::BeamLinkTruss();
-  my_truss_linker->unpack(data);
+  my_truss_linker->unpack(buffer);
   return my_truss_linker;
 }
 
@@ -149,24 +149,24 @@ void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkTruss::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  BeamLinkPinJointed::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  BeamLinkPinJointed::unpack(basedata_buffer);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> dataele;
-  extract_from_pack(position, data, dataele);
+  extract_from_pack(buffer, dataele);
   if (dataele.size() > 0)
   {
+    Core::Communication::UnpackBuffer elebuffer(dataele);
     Core::Communication::ParObject* object =
-        Core::Communication::factory(dataele);  // Unpack is done here
+        Core::Communication::factory(elebuffer);  // Unpack is done here
     Discret::ELEMENTS::Truss3* linkele = dynamic_cast<Discret::ELEMENTS::Truss3*>(object);
     if (linkele == nullptr) FOUR_C_THROW("failed to unpack Truss3 object within BeamLinkTruss");
     linkele_ = Teuchos::rcp(linkele);

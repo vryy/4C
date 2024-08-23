@@ -67,11 +67,11 @@ Mat::FluidPoroMultiPhaseReactionsType Mat::FluidPoroMultiPhaseReactionsType::ins
 
 
 Core::Communication::ParObject* Mat::FluidPoroMultiPhaseReactionsType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::FluidPoroMultiPhaseReactions* FluidPoroMultiPhaseReactions =
       new Mat::FluidPoroMultiPhaseReactions();
-  FluidPoroMultiPhaseReactions->unpack(data);
+  FluidPoroMultiPhaseReactions->unpack(buffer);
   return FluidPoroMultiPhaseReactions;
 }
 
@@ -151,18 +151,18 @@ void Mat::FluidPoroMultiPhaseReactions::pack(Core::Communication::PackBuffer& da
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroMultiPhaseReactions::unpack(const std::vector<char>& data)
+void Mat::FluidPoroMultiPhaseReactions::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover paramsreac_
   int matid(-1);
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   paramsreac_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -183,13 +183,13 @@ void Mat::FluidPoroMultiPhaseReactions::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::FluidPoroMultiPhase::extract_from_pack(position, data, basedata);
-  Mat::FluidPoroMultiPhase::unpack(basedata);
+  Mat::FluidPoroMultiPhase::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Mat::FluidPoroMultiPhase::unpack(basedata_buffer);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

@@ -39,10 +39,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReactionECM::create_materi
 Mat::StructPoroReactionECMType Mat::StructPoroReactionECMType::instance_;
 
 Core::Communication::ParObject* Mat::StructPoroReactionECMType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::StructPoroReactionECM* struct_poro = new Mat::StructPoroReactionECM();
-  struct_poro->unpack(data);
+  struct_poro->unpack(buffer);
   return struct_poro;
 }
 
@@ -122,15 +122,13 @@ void Mat::StructPoroReactionECM::pack(Core::Communication::PackBuffer& data) con
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::StructPoroReactionECM::unpack(const std::vector<char>& data)
+void Mat::StructPoroReactionECM::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -145,15 +143,16 @@ void Mat::StructPoroReactionECM::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  extract_from_pack(position, data, refporosity_old_);
-  extract_from_pack(position, data, refporositydot_old_);
-  extract_from_pack(position, data, chempot_init_);
-  extract_from_pack(position, data, chempot_);
+  extract_from_pack(buffer, refporosity_old_);
+  extract_from_pack(buffer, refporositydot_old_);
+  extract_from_pack(buffer, chempot_init_);
+  extract_from_pack(buffer, chempot_);
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  StructPoroReaction::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  StructPoroReaction::unpack(basedata_buffer);
 }
 
 

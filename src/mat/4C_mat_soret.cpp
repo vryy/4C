@@ -33,10 +33,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Soret::create_material()
 
 Mat::SoretType Mat::SoretType::instance_;
 
-Core::Communication::ParObject* Mat::SoretType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SoretType::create(Core::Communication::UnpackBuffer& buffer)
 {
   Mat::Soret* soret = new Mat::Soret();
-  soret->unpack(data);
+  soret->unpack(buffer);
   return soret;
 }
 
@@ -78,15 +78,13 @@ void Mat::Soret::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data from a char vector                            fang 06/15 |
  *----------------------------------------------------------------------*/
-void Mat::Soret::unpack(const std::vector<char>& data)
+void Mat::Soret::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -103,12 +101,12 @@ void Mat::Soret::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  FourierIso::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  FourierIso::unpack(basedata_buffer);
 
   // final safety check
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d!", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

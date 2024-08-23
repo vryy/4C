@@ -106,10 +106,10 @@ Mat::RobinsonType Mat::RobinsonType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::RobinsonType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::RobinsonType::create(Core::Communication::UnpackBuffer& buffer)
 {
   Mat::Robinson* robinson = new Mat::Robinson();
-  robinson->unpack(data);
+  robinson->unpack(buffer);
   return robinson;
 }
 
@@ -175,16 +175,16 @@ void Mat::Robinson::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 11/11 |
  *----------------------------------------------------------------------*/
-void Mat::Robinson::unpack(const std::vector<char>& data)
+void Mat::Robinson::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -201,7 +201,7 @@ void Mat::Robinson::unpack(const std::vector<char>& data)
 
   // history data
   int numgp;
-  extract_from_pack(position, data, numgp);
+  extract_from_pack(buffer, numgp);
 
   // if system is not yet initialised, the history vectors have to be intialized
   if (numgp == 0) isinit_ = false;
@@ -226,18 +226,18 @@ void Mat::Robinson::unpack(const std::vector<char>& data)
     Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> tmp2(true);
 
     // unpack strain/stress vectors of last converged state
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     strainpllast_->push_back(tmp);
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     backstresslast_->push_back(tmp);
 
     // unpack matrices of last converged state
-    extract_from_pack(position, data, tmp1);
+    extract_from_pack(buffer, tmp1);
     kvarva_->push_back(tmp1);
-    extract_from_pack(position, data, tmp2);
+    extract_from_pack(buffer, tmp2);
     kvakvae_->push_back(tmp2);
 
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     strain_last_.push_back(tmp);
 
     // current vectors have to be initialised
@@ -245,8 +245,7 @@ void Mat::Robinson::unpack(const std::vector<char>& data)
     backstresscurr_->push_back(tmp);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 

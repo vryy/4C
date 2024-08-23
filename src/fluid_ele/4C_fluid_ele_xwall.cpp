@@ -32,10 +32,10 @@ Discret::ELEMENTS::FluidXWallType& Discret::ELEMENTS::FluidXWallType::instance()
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::FluidXWallType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::FluidXWall* object = new Discret::ELEMENTS::FluidXWall(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

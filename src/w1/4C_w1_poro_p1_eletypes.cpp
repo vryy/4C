@@ -29,10 +29,10 @@ Discret::ELEMENTS::WallQuad4PoroP1Type& Discret::ELEMENTS::WallQuad4PoroP1Type::
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroP1Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Wall1PoroP1<Core::FE::CellType::quad4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -110,10 +110,10 @@ Discret::ELEMENTS::WallQuad9PoroP1Type& Discret::ELEMENTS::WallQuad9PoroP1Type::
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroP1Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Wall1PoroP1<Core::FE::CellType::quad9>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -191,11 +191,11 @@ Discret::ELEMENTS::WallTri3PoroP1Type& Discret::ELEMENTS::WallTri3PoroP1Type::in
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroP1Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1PoroP1<Core::FE::CellType::tri3>* object =
       new Discret::ELEMENTS::Wall1PoroP1<Core::FE::CellType::tri3>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

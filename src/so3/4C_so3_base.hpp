@@ -79,7 +79,7 @@ namespace Discret
       \ref pack and \ref unpack are used to communicate this element
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       // get the kinematic type from the element
       Inpar::Solid::KinemType kinematic_type() const { return kintype_; }

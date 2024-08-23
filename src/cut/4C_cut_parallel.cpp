@@ -154,11 +154,11 @@ void Cut::Parallel::export_communication_finished(bool& procDone)
     send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
-    size_t posinData = 0;
     int allProcsDone = 0;
 
+    Core::Communication::UnpackBuffer data_recv_buffer(dataRecv);
     // unpack received data
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, allProcsDone);
+    Core::Communication::ParObject::extract_from_pack(data_recv_buffer, allProcsDone);
 
     // if the received information is allProcsDone==false, then set the current proc also to
     // procDone=false within the next round-iteration the next proc is also set to procDone=false
@@ -230,21 +230,19 @@ void Cut::Parallel::export_node_position_data()
       std::vector<char> dataRecv;
       send_data(dataSend, dest, source, dataRecv);
 
-      // pointer to current position of group of cells in global std::string (counts bytes)
-      std::vector<char>::size_type posinData = 0;
-
       // clear vector that should be filled
       curr_undecided_node_pos_.clear();
       curr_undecided_node_pos_shadow_.clear();
       tmp_curr_undecidedNodePos_shadow.clear();
 
       // unpack received data
-      while (posinData < dataRecv.size())
+      Core::Communication::UnpackBuffer data_recv_buffer(dataRecv);
+      while (!data_recv_buffer.at_end())
       {
         Core::Communication::ParObject::extract_from_pack(
-            posinData, dataRecv, curr_undecided_node_pos_);
+            data_recv_buffer, curr_undecided_node_pos_);
         Core::Communication::ParObject::extract_from_pack(
-            posinData, dataRecv, tmp_curr_undecidedNodePos_shadow);
+            data_recv_buffer, tmp_curr_undecidedNodePos_shadow);
 
         //--------------------
         // copy from std::map<std::vector<int>, int> -> std::map<plain_int_set, int>
@@ -531,14 +529,11 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
       std::vector<char> dataRecv;
       send_data(dataSend, dest, source, dataRecv);
 
-      // pointer to current position of group of cells in global std::string (counts bytes)
-      std::vector<char>::size_type posinData = 0;
-
       // clear vector that should be filled
       dof_set_data_.clear();
 
-      // unpack received data
-      while (posinData < dataRecv.size())
+      Core::Communication::UnpackBuffer data_recv_buffer(dataRecv);
+      while (!data_recv_buffer.at_end())
       {
         // unpack volumecell
         int set_index = -1;                                         // set index for Volumecell
@@ -548,12 +543,11 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
         std::map<int, int> node_dofsetnumber_map;  // map <nid, current dofset number>
 
         // unpack volumecell data
-        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, set_index);
-        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, inside_cell);
-        unpack_points(posinData, dataRecv, cut_points_coords);
-        Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, peid);
-        Core::Communication::ParObject::extract_from_pack(
-            posinData, dataRecv, node_dofsetnumber_map);
+        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, set_index);
+        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, inside_cell);
+        unpack_points(data_recv_buffer, cut_points_coords);
+        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, peid);
+        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, node_dofsetnumber_map);
 
         // create a new dofSetData object with unpacked data
         dof_set_data_.push_back(Teuchos::rcp(new Cut::MeshIntersection::DofSetData(
@@ -1143,15 +1137,15 @@ void Cut::Parallel::pack_points(Core::Communication::PackBuffer& dataSend,
  * unpacking a point for parallel communication only with the basic point data                    *
  * without an underlying discretization fitting to the node's new prozessor          schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void Cut::Parallel::unpack_points(std::vector<char>::size_type& posinData,
-    std::vector<char>& dataRecv, std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
+void Cut::Parallel::unpack_points(Core::Communication::UnpackBuffer& buffer,
+    std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
 {
   const int nsd = 3;  // dimension
 
   int num_points = 0;
 
   // unpack number of points for current volumecell
-  Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, num_points);
+  Core::Communication::ParObject::extract_from_pack(buffer, num_points);
 
 
   Core::LinAlg::Matrix<nsd, 1> coords(true);
@@ -1161,7 +1155,7 @@ void Cut::Parallel::unpack_points(std::vector<char>::size_type& posinData,
     coords.clear();
 
     // pack xyz-coordinates for point
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, coords);
+    Core::Communication::ParObject::extract_from_pack(buffer, coords);
 
     points_coords.push_back(coords);
   }

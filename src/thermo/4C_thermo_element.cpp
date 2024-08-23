@@ -29,10 +29,11 @@ Thermo::ElementType& Thermo::ElementType::instance() { return instance_; }
  | create the new element type (public)                      dano 09/09 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Thermo::ElementType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Thermo::ElementType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Thermo::Element* object = new Thermo::Element(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }  // Create()
 
@@ -229,23 +230,21 @@ void Thermo::Element::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
-void Thermo::Element::unpack(const std::vector<char>& data)
+void Thermo::Element::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Elements::Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Core::Elements::Element::unpack(base_buffer);
   // kintype_
-  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
+  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
   // distype
-  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }  // unpack()
 
@@ -403,7 +402,7 @@ void Thermo::FaceElement::pack(std::vector<char>& data) const
 /*----------------------------------------------------------------------*
  | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
-void Thermo::FaceElement::unpack(const std::vector<char>& data)
+void Thermo::FaceElement::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("This FaceElement element does not support communication");
   return;

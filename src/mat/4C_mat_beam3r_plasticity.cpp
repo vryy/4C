@@ -81,11 +81,11 @@ Mat::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 Core::Communication::ParObject* Mat::BeamElastPlasticMaterialType<T>::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   // create material from packed data
   Mat::BeamPlasticMaterial<T>* matobject = new Mat::BeamPlasticMaterial<T>();
-  matobject->unpack(data);
+  matobject->unpack(buffer);
   return matobject;
 }
 
@@ -192,22 +192,20 @@ void Mat::BeamPlasticMaterial<T>::pack(Core::Communication::PackBuffer& data) co
  *-----------------------------------------------------------------------------------------------*/
 // Unpack data
 template <typename T>
-void Mat::BeamPlasticMaterial<T>::unpack(const std::vector<char>& data)
+void Mat::BeamPlasticMaterial<T>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   int matid;
-  this->extract_from_pack(position, data, matid);
+  this->extract_from_pack(buffer, matid);
 
-  this->extract_from_pack(position, data, numgp_force_);
-  this->extract_from_pack(position, data, numgp_moment_);
+  this->extract_from_pack(buffer, numgp_force_);
+  this->extract_from_pack(buffer, numgp_moment_);
   this->setup(numgp_force_, numgp_moment_);
-  this->extract_from_pack(position, data, gammaplastaccum_);
-  this->extract_from_pack(position, data, gammaplastconv_);
-  this->extract_from_pack(position, data, kappaplastaccum_);
-  this->extract_from_pack(position, data, kappaplastconv_);
+  this->extract_from_pack(buffer, gammaplastaccum_);
+  this->extract_from_pack(buffer, gammaplastconv_);
+  this->extract_from_pack(buffer, kappaplastaccum_);
+  this->extract_from_pack(buffer, kappaplastconv_);
 
   this->set_parameter(nullptr);
 
@@ -223,8 +221,7 @@ void Mat::BeamPlasticMaterial<T>::unpack(const std::vector<char>& data)
       this->set_parameter(static_cast<Mat::PAR::BeamReissnerElastPlasticMaterialParams*>(mat));
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*-----------------------------------------------------------------------------------------------*

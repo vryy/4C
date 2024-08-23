@@ -51,43 +51,42 @@ void Core::Communication::ParObject::add_to_pack(PackBuffer& data, const std::st
   add_to_pack(data, stuff.data(), numele * sizeof(char));
 }
 
-void Core::Communication::ParObject::extract_from_pack(std::vector<char>::size_type& position,
-    const std::vector<char>& data, Core::LinAlg::SerialDenseMatrix& stuff)
+void Core::Communication::ParObject::extract_from_pack(
+    UnpackBuffer& buffer, Core::LinAlg::SerialDenseMatrix& stuff)
 {
   int m = 0;
-  extract_from_pack(position, data, m);
+  extract_from_pack(buffer, m);
   int n = 0;
-  extract_from_pack(position, data, n);
+  extract_from_pack(buffer, n);
   stuff.reshape(m, n);
   double* a = stuff.values();
-  if (m * n > 0) extract_from_pack(position, data, a, n * m * sizeof(double));
-}
-
-void Core::Communication::ParObject::extract_from_pack(std::vector<char>::size_type& position,
-    const std::vector<char>& data, Core::LinAlg::SerialDenseVector& stuff)
-{
-  int m = 0;
-  extract_from_pack(position, data, m);
-  stuff.resize(m);
-  double* a = stuff.values();
-  if (m > 0) extract_from_pack(position, data, a, m * sizeof(double));
+  if (m * n > 0) extract_from_pack(buffer, a, n * m * sizeof(double));
 }
 
 void Core::Communication::ParObject::extract_from_pack(
-    std::vector<char>::size_type& position, const std::vector<char>& data, std::string& stuff)
+    UnpackBuffer& buffer, Core::LinAlg::SerialDenseVector& stuff)
 {
-  int dim = 0;
-  extract_from_pack(position, data, dim);
-  stuff.resize(dim);
-  int size = dim * sizeof(char);
-  extract_from_pack(position, data, stuff.data(), size);
+  int m = 0;
+  extract_from_pack(buffer, m);
+  stuff.resize(m);
+  double* a = stuff.values();
+  if (m > 0) extract_from_pack(buffer, a, m * sizeof(double));
 }
 
-int Core::Communication::extract_and_assert_id(std::vector<char>::size_type& position,
-    const std::vector<char>& data, const int desired_type_id)
+void Core::Communication::ParObject::extract_from_pack(
+    Core::Communication::UnpackBuffer& buffer, std::string& stuff)
+{
+  int dim = 0;
+  extract_from_pack(buffer, dim);
+  stuff.resize(dim);
+  int size = dim * sizeof(char);
+  extract_from_pack(buffer, stuff.data(), size);
+}
+
+int Core::Communication::extract_and_assert_id(UnpackBuffer& buffer, const int desired_type_id)
 {
   int type_id = 0;
-  Core::Communication::ParObject::extract_from_pack(position, data, type_id);
+  Core::Communication::ParObject::extract_from_pack(buffer, type_id);
 
   std::string error_message = "Wrong instance type data. The extracted type id is " +
                               std::to_string(type_id) + ", while the desired type id is " +

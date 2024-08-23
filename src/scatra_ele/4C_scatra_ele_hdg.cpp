@@ -51,10 +51,10 @@ Discret::ELEMENTS::ScaTraHDGIntFaceType& Discret::ELEMENTS::ScaTraHDGIntFaceType
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::ScaTraHDGType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::ScaTraHDG* object = new Discret::ELEMENTS::ScaTraHDG(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -218,28 +218,26 @@ void Discret::ELEMENTS::ScaTraHDG::pack(Core::Communication::PackBuffer& data) c
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDG::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDG::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Transport::extract_from_pack(position, data, basedata);
-  Transport::unpack(basedata);
+  Transport::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Transport::unpack(basedata_buffer);
 
   int val = 0;
-  extract_from_pack(position, data, val);
+  extract_from_pack(buffer, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
-  extract_from_pack(position, data, val);
+  extract_from_pack(buffer, val);
   completepol_ = val;
-  extract_from_pack(position, data, val);
+  extract_from_pack(buffer, val);
   degree_old_ = val;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -260,14 +258,14 @@ void Discret::ELEMENTS::ScaTraHDG::pack_material(Core::Communication::PackBuffer
 /*----------------------------------------------------------------------*
  |  UnPackMaterial data (public)                         hoermann 12/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDG::unpack_material(const std::vector<char>& data) const
+void Discret::ELEMENTS::ScaTraHDG::unpack_material(Core::Communication::UnpackBuffer& buffer) const
 {
   Teuchos::RCP<Core::Mat::Material> mat = material();
   if (mat->material_type() == Core::Materials::m_myocard)
   {
     // Note: We need to do a dynamic_cast here
     Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
-    actmat->unpack_material(data);
+    actmat->unpack_material(buffer);
   }
   else
     FOUR_C_THROW("No material defined to unpack!");
@@ -594,22 +592,20 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::pack(Core::Communication::PackBuffer&
  |  Unpack data                                                (public) |
  |                                                        hoermann 09/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGBoundary::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDGBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
   // distype
   // distype_ = static_cast<Core::FE::CellType>( extract_int(position,data) );
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }
@@ -798,7 +794,7 @@ void Discret::ELEMENTS::ScaTraHDGIntFace::pack(Core::Communication::PackBuffer& 
  |  Unpack data                                                (public) |
  |                                                       hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGIntFace::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ScaTraHDGIntFace::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this ScaTraHDGIntFace element does not support communication");
   return;

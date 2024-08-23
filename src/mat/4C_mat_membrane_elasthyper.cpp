@@ -41,10 +41,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneElastHyper::create_material(
 Mat::MembraneElastHyperType Mat::MembraneElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::MembraneElastHyperType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MembraneElastHyperType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::MembraneElastHyper* memelhy = new Mat::MembraneElastHyper();
-  memelhy->unpack(data);
+  memelhy->unpack(buffer);
 
   return memelhy;
 }  // Mat::Membrane_ElastHyperType::Create
@@ -88,18 +89,17 @@ void Mat::MembraneElastHyper::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |                                                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneElastHyper::unpack(const std::vector<char>& data)
+void Mat::MembraneElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Mat::ElastHyper::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Mat::ElastHyper::unpack(basedata_buffer);
 
-  extract_from_pack(position, data, fibervecs_);
+  extract_from_pack(buffer, fibervecs_);
 
   return;
 }  // Mat::MembraneElastHyper::unpack()

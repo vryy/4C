@@ -179,11 +179,11 @@ namespace FLD
 
           coordsvec.clear();
 
-          std::vector<char>::size_type index = 0;
-          while (index < rblock.size())
+          Core::Communication::UnpackBuffer buffer(rblock);
+          while (!buffer.at_end())
           {
             double onecoord;
-            Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+            Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
             coords.insert(onecoord);
           }
         }

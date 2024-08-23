@@ -115,25 +115,24 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
   Teuchos::RCP<std::vector<char>> particledata = Teuchos::rcp(new std::vector<char>);
   reader->read_char_vector(particledata, "ParticleData");
 
-  std::vector<char>::size_type position = 0;
 
-  while (position < particledata->size())
+
+  Core::Communication::UnpackBuffer buffer(*particledata);
+  while (!buffer.at_end())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(position, *particledata, data);
+    Core::Communication::ParObject::extract_from_pack(buffer, data);
 
     // this std::shared_ptr holds the memory
-    std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(data));
+    Core::Communication::UnpackBuffer data_buffer(data);
+    std::shared_ptr<Core::Communication::ParObject> object(
+        Core::Communication::factory(data_buffer));
     ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
     if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
     // store read particle
     particlestoread.push_back(particleobject);
   }
-
-  if (position != particledata->size())
-    FOUR_C_THROW(
-        "mismatch in size of data %d <-> %d", static_cast<int>(particledata->size()), position);
 
   // read restart of unique global identifier handler
   particleuniqueglobalidhandler_->read_restart(reader);
@@ -1215,11 +1214,12 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
     const int msgsource = p.first;
     const std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      Core::Communication::ParObject::extract_from_pack(position, rmsg, receivedbins);
+      Core::Communication::ParObject::extract_from_pack(buffer, receivedbins);
 
       // iterate over received bins
       for (int receivedbin : receivedbins)
@@ -1228,9 +1228,6 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
         if (binrowmap_->LID(receivedbin) >= 0) (thisbinsghostedby_[receivedbin]).insert(msgsource);
       }
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1740,15 +1737,18 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
     const int msgsource = p.first;
     const std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(position, rmsg, data);
+      Core::Communication::ParObject::extract_from_pack(buffer, data);
 
       // this std::shared_ptr holds the memory
-      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::factory(data));
+      Core::Communication::UnpackBuffer data_buffer(data);
+      std::shared_ptr<Core::Communication::ParObject> object(
+          Core::Communication::factory(data_buffer));
       ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
       if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
@@ -1756,9 +1756,6 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
       particlestoreceive[particleobject->return_particle_type()].push_back(
           std::make_pair(msgsource, particleobject));
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 }
 
@@ -1798,11 +1795,12 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
   {
     const std::vector<char>& rmsg = p.second;
 
-    std::vector<char>::size_type position = 0;
 
-    while (position < rmsg.size())
+
+    Core::Communication::UnpackBuffer buffer(rmsg);
+    while (!buffer.at_end())
     {
-      Core::Communication::ParObject::extract_from_pack(position, rmsg, receiveddirectghosting);
+      Core::Communication::ParObject::extract_from_pack(buffer, receiveddirectghosting);
 
       // iterate over particle types
       for (const auto& typeIt : receiveddirectghosting)
@@ -1820,9 +1818,6 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
         }
       }
     }
-
-    if (position != rmsg.size())
-      FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
 
   // validate flags denoting validity of direct ghosting

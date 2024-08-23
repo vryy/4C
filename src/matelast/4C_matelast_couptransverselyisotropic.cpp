@@ -116,10 +116,10 @@ void Mat::Elastic::CoupTransverselyIsotropic::pack_summand(
 }
 
 void Mat::Elastic::CoupTransverselyIsotropic::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  extract_from_pack(position, data, a_);
-  extract_from_pack(position, data, aa_);
+  extract_from_pack(buffer, a_);
+  extract_from_pack(buffer, aa_);
 }
 
 void Mat::Elastic::CoupTransverselyIsotropic::get_fiber_vecs(

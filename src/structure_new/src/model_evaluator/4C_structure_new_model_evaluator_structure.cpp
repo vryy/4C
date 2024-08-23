@@ -899,14 +899,15 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     {
       // Get the values at the Gauss-points.
       std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> mapdata{};
-      std::vector<char>::size_type position = 0;
+
+      Core::Communication::UnpackBuffer buffer(raw_data);
       for (int i = 0; i < discret_ptr()->element_row_map()->NumMyElements(); ++i)
       {
         if (DoPostprocessingOnElement(*discret().l_row_element(i)))
         {
           Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
               Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
-          Core::Communication::ParObject::extract_from_pack(position, raw_data, *gpstress);
+          Core::Communication::ParObject::extract_from_pack(buffer, *gpstress);
           mapdata[discret_ptr()->element_row_map()->GID(i)] = gpstress;
         }
       }

@@ -40,10 +40,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FourierIso::create_material()
 Mat::FourierIsoType Mat::FourierIsoType::instance_;
 
 
-Core::Communication::ParObject* Mat::FourierIsoType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::FourierIsoType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::FourierIso* fourieriso = new Mat::FourierIso();
-  fourieriso->unpack(data);
+  fourieriso->unpack(buffer);
   return fourieriso;
 }
 
@@ -78,15 +79,13 @@ void Mat::FourierIso::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void Mat::FourierIso::unpack(const std::vector<char>& data)
+void Mat::FourierIso::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -101,8 +100,7 @@ void Mat::FourierIso::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

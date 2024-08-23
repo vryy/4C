@@ -43,7 +43,7 @@ namespace Core::Nodes
 
     static FiberNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static FiberNodeType instance_;
@@ -121,7 +121,7 @@ namespace Core::Nodes
     \param data (in): a char vector to unpack the data from
 
     */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 

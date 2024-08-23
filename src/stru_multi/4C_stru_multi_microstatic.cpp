@@ -1147,33 +1147,30 @@ void MultiScale::MicroStaticParObject::pack(Core::Communication::PackBuffer& dat
   add_to_pack(data, micro_data->cmat_);
 }
 
-void MultiScale::MicroStaticParObject::unpack(const std::vector<char>& data)
+void MultiScale::MicroStaticParObject::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   MultiScale::MicroStaticParObject::MicroStaticData micro_data{};
-  extract_from_pack(position, data, micro_data.gp_);
-  extract_from_pack(position, data, micro_data.eleowner_);
-  extract_from_pack(position, data, micro_data.microdisnum_);
-  extract_from_pack(position, data, micro_data.V0_);
-  extract_from_pack(position, data, micro_data.defgrd_);
-  extract_from_pack(position, data, micro_data.stress_);
-  extract_from_pack(position, data, micro_data.cmat_);
+  extract_from_pack(buffer, micro_data.gp_);
+  extract_from_pack(buffer, micro_data.eleowner_);
+  extract_from_pack(buffer, micro_data.microdisnum_);
+  extract_from_pack(buffer, micro_data.V0_);
+  extract_from_pack(buffer, micro_data.defgrd_);
+  extract_from_pack(buffer, micro_data.stress_);
+  extract_from_pack(buffer, micro_data.cmat_);
   set_micro_static_data(micro_data);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 MultiScale::MicroStaticParObjectType MultiScale::MicroStaticParObjectType::instance_;
 
 Core::Communication::ParObject* MultiScale::MicroStaticParObjectType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* micro = new MultiScale::MicroStaticParObject();
-  micro->unpack(data);
+  micro->unpack(buffer);
   return micro;
 }
 

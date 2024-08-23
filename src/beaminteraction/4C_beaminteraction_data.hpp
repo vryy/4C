@@ -147,9 +147,9 @@ namespace BEAMINTERACTION
       void pack(Core::Communication::PackBuffer& data) const;
 
       /*!
-      \brief Unpack data from a char vector into this container
+      \brief Unpack data into this container
       */
-      void unpack(std::vector<char> const& data);
+      void unpack(Core::Communication::UnpackBuffer& buffer);
 
       //! @}
 
@@ -295,7 +295,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void unpack(std::vector<char> const& data);
+      void unpack(Core::Communication::UnpackBuffer& buffer);
 
       //! @}
 
@@ -368,7 +368,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void unpack(std::vector<char> const& data);
+      void unpack(Core::Communication::UnpackBuffer& buffer);
 
       //! @}
 
@@ -436,7 +436,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Unpack data from a char vector into this container
       */
-      void unpack(std::vector<char> const& data);
+      void unpack(Core::Communication::UnpackBuffer& buffer);
 
       //! @}
 
@@ -527,7 +527,7 @@ namespace BEAMINTERACTION
 
     /// create respective data container from char vector
     template <typename T>
-    T* create_data_container(std::vector<char> const& data)
+    T* create_data_container(Core::Communication::UnpackBuffer& data)
     {
       T* new_container = new T();
       new_container->unpack(data);

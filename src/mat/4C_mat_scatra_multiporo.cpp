@@ -40,10 +40,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroFluid::create_mate
 Mat::ScatraMatMultiPoroFluidType Mat::ScatraMatMultiPoroFluidType::instance_;
 
 Core::Communication::ParObject* Mat::ScatraMatMultiPoroFluidType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ScatraMatMultiPoroFluid* scatra_mat = new Mat::ScatraMatMultiPoroFluid();
-  scatra_mat->unpack(data);
+  scatra_mat->unpack(buffer);
   return scatra_mat;
 }
 
@@ -81,15 +81,13 @@ void Mat::ScatraMatMultiPoroFluid::pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMatMultiPoroFluid::unpack(const std::vector<char>& data)
+void Mat::ScatraMatMultiPoroFluid::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -106,8 +104,9 @@ void Mat::ScatraMatMultiPoroFluid::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  ScatraMat::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  ScatraMat::unpack(basedata_buffer);
 }
 
 /*----------------------------------------------------------------------*/
@@ -130,10 +129,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroVolFrac::create_ma
 Mat::ScatraMatMultiPoroVolFracType Mat::ScatraMatMultiPoroVolFracType::instance_;
 
 Core::Communication::ParObject* Mat::ScatraMatMultiPoroVolFracType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ScatraMatMultiPoroVolFrac* scatra_mat = new Mat::ScatraMatMultiPoroVolFrac();
-  scatra_mat->unpack(data);
+  scatra_mat->unpack(buffer);
   return scatra_mat;
 }
 
@@ -172,15 +171,13 @@ void Mat::ScatraMatMultiPoroVolFrac::pack(Core::Communication::PackBuffer& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMatMultiPoroVolFrac::unpack(const std::vector<char>& data)
+void Mat::ScatraMatMultiPoroVolFrac::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -197,8 +194,9 @@ void Mat::ScatraMatMultiPoroVolFrac::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  ScatraMat::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  ScatraMat::unpack(basedata_buffer);
 }
 
 /*----------------------------------------------------------------------*/
@@ -218,10 +216,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroSolid::create_mate
 Mat::ScatraMatMultiPoroSolidType Mat::ScatraMatMultiPoroSolidType::instance_;
 
 Core::Communication::ParObject* Mat::ScatraMatMultiPoroSolidType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ScatraMatMultiPoroSolid* scatra_mat = new Mat::ScatraMatMultiPoroSolid();
-  scatra_mat->unpack(data);
+  scatra_mat->unpack(buffer);
   return scatra_mat;
 }
 
@@ -257,15 +255,13 @@ void Mat::ScatraMatMultiPoroSolid::pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMatMultiPoroSolid::unpack(const std::vector<char>& data)
+void Mat::ScatraMatMultiPoroSolid::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -282,8 +278,9 @@ void Mat::ScatraMatMultiPoroSolid::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  ScatraMat::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  ScatraMat::unpack(basedata_buffer);
 }
 
 /*----------------------------------------------------------------------*/
@@ -311,10 +308,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatMultiPoroTemperature::creat
 Mat::ScatraMatMultiPoroTemperatureType Mat::ScatraMatMultiPoroTemperatureType::instance_;
 
 Core::Communication::ParObject* Mat::ScatraMatMultiPoroTemperatureType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ScatraMatMultiPoroTemperature* scatra_mat = new Mat::ScatraMatMultiPoroTemperature();
-  scatra_mat->unpack(data);
+  scatra_mat->unpack(buffer);
   return scatra_mat;
 }
 
@@ -351,15 +348,13 @@ void Mat::ScatraMatMultiPoroTemperature::pack(Core::Communication::PackBuffer& d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScatraMatMultiPoroTemperature::unpack(const std::vector<char>& data)
+void Mat::ScatraMatMultiPoroTemperature::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -376,8 +371,9 @@ void Mat::ScatraMatMultiPoroTemperature::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  ScatraMat::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  ScatraMat::unpack(basedata_buffer);
 }
 
 FOUR_C_NAMESPACE_CLOSE

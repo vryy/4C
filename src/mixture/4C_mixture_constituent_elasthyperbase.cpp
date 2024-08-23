@@ -93,9 +93,9 @@ void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
 
 // Unpack the constituent
 void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  MixtureConstituent::unpack_constituent(position, data);
+  MixtureConstituent::unpack_constituent(buffer);
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -103,7 +103,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
 
   // matid and recover params_
   int matid;
-  Core::Communication::ParObject::extract_from_pack(position, data, matid);
+  Core::Communication::ParObject::extract_from_pack(buffer, matid);
 
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -125,11 +125,11 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
     }
   }
 
-  summand_properties_.unpack(position, data);
+  summand_properties_.unpack(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, prestretch_);
+  Core::Communication::ParObject::extract_from_pack(buffer, prestretch_);
 
-  cosy_anisotropy_extension_.unpack_anisotropy(data, position);
+  cosy_anisotropy_extension_.unpack_anisotropy(buffer);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -139,7 +139,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
           MIXTURE::PAR::PrestressStrategy::factory(params_->get_prestressing_mat_id())
               ->create_prestress_strategy();
 
-      prestress_strategy_->unpack(position, data);
+      prestress_strategy_->unpack(buffer);
     }
 
     // make sure the referenced materials in material list have quick access parameters
@@ -153,7 +153,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
     }
 
     // loop map of associated potential summands
-    for (auto& summand : potsum_) summand->unpack_summand(data, position);
+    for (auto& summand : potsum_) summand->unpack_summand(buffer);
   }
 }
 

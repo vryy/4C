@@ -31,10 +31,10 @@ Discret::ELEMENTS::Truss3ScatraType& Discret::ELEMENTS::Truss3ScatraType::instan
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::Truss3ScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Truss3Scatra(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -118,21 +118,19 @@ void Discret::ELEMENTS::Truss3Scatra::pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Truss3Scatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Truss3::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Truss3::unpack(basedata_buffer);
 
-  extract_from_pack(position, data, impltype_);
+  extract_from_pack(buffer, impltype_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

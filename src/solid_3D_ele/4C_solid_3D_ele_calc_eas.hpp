@@ -115,7 +115,7 @@ namespace Discret
 
       void pack(Core::Communication::PackBuffer& data) const;
 
-      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+      void unpack(Core::Communication::UnpackBuffer& buffer);
 
       void material_post_setup(
           const Core::Elements::Element& ele, Mat::So3Material& solid_material);

@@ -25,12 +25,12 @@ Discret::ELEMENTS::SoHex8PoroScatraType& Discret::ELEMENTS::SoHex8PoroScatraType
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* object =
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -82,12 +82,12 @@ Discret::ELEMENTS::SoTet4PoroScatraType& Discret::ELEMENTS::SoTet4PoroScatraType
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* object =
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -139,12 +139,12 @@ Discret::ELEMENTS::SoHex27PoroScatraType& Discret::ELEMENTS::SoHex27PoroScatraTy
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex27PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>* object =
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -198,12 +198,12 @@ Discret::ELEMENTS::SoTet10PoroScatraType& Discret::ELEMENTS::SoTet10PoroScatraTy
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet10PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>* object =
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -256,13 +256,13 @@ Discret::ELEMENTS::SoNurbs27PoroScatraType& Discret::ELEMENTS::SoNurbs27PoroScat
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
       Core::FE::CellType::nurbs27>* object =
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
           Core::FE::CellType::nurbs27>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

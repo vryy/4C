@@ -36,10 +36,10 @@ Discret::ELEMENTS::SoSh18PlastType& Discret::ELEMENTS::SoSh18PlastType::instance
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::SoSh18PlastType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::SoSh18Plast(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -161,23 +161,22 @@ void Discret::ELEMENTS::SoSh18Plast::pack(Core::Communication::PackBuffer& data)
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh18Plast::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::unpack(basedata);
-  extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::SoSh18::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::unpack(basedata_buffer);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer2(basedata);
+  Discret::ELEMENTS::SoSh18::unpack(basedata_buffer2);
 
   sync_eas();
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

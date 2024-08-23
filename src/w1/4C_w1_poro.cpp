@@ -103,52 +103,49 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pack(Core::Communication::PackBuffer
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1Poro<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // detJ_
-  extract_from_pack(position, data, detJ_);
+  extract_from_pack(buffer, detJ_);
 
   // invJ_
   int size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   invJ_.resize(size, Core::LinAlg::Matrix<numdim_, numdim_>(true));
-  for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(buffer, invJ_[i]);
 
   // xsi_
   size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   xsi_.resize(size, Core::LinAlg::Matrix<numdim_, 1>(true));
-  for (int i = 0; i < size; ++i) extract_from_pack(position, data, xsi_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(buffer, xsi_[i]);
 
   // scatra_coupling_
-  scatra_coupling_ = static_cast<bool>(extract_int(position, data));
+  scatra_coupling_ = static_cast<bool>(extract_int(buffer));
 
   // anisotropic_permeability_directions_
   size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   anisotropic_permeability_directions_.resize(size, std::vector<double>(3, 0.0));
-  for (int i = 0; i < size; ++i)
-    extract_from_pack(position, data, anisotropic_permeability_directions_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(buffer, anisotropic_permeability_directions_[i]);
 
   // anisotropic_permeability_nodal_coeffs_
   size = 0;
-  extract_from_pack(position, data, size);
+  extract_from_pack(buffer, size);
   anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(numnod_, 0.0));
   for (int i = 0; i < size; ++i)
-    extract_from_pack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
+    extract_from_pack(buffer, anisotropic_permeability_nodal_coeffs_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::Wall1::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Discret::ELEMENTS::Wall1::unpack(basedata_buffer);
 
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   init_ = true;
 }

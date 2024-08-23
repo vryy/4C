@@ -57,10 +57,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElastHyper::create_material()
 Mat::ElastHyperType Mat::ElastHyperType::instance_;
 
 
-Core::Communication::ParObject* Mat::ElastHyperType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ElastHyperType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* elhy = new Mat::ElastHyper();
-  elhy->unpack(data);
+  elhy->unpack(buffer);
 
   return elhy;
 }
@@ -125,19 +126,19 @@ void Mat::ElastHyper::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::unpack(const std::vector<char>& data)
+void Mat::ElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   params_ = nullptr;
   potsum_.clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -153,10 +154,10 @@ void Mat::ElastHyper::unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.unpack(position, data);
+  summandProperties_.unpack(buffer);
 
   // Pack anisotropy
-  anisotropy_.unpack_anisotropy(data, position);
+  anisotropy_.unpack_anisotropy(buffer);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -173,16 +174,13 @@ void Mat::ElastHyper::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (auto& p : potsum_)
     {
-      p->unpack_summand(data, position);
+      p->unpack_summand(buffer);
       p->register_anisotropy_extensions(anisotropy_);
     }
 
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    if (position != data.size())
-    {
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
-    }
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 

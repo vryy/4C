@@ -227,7 +227,7 @@ namespace Core::Elements
     \ref pack and \ref unpack are used to communicate this element
 
     */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     /// return ElementType instance
     virtual Core::Elements::ElementType& element_type() const = 0;
@@ -1333,7 +1333,7 @@ might become invalid after a redistribution of the discretization.
     \ref pack and \ref unpack are used to communicate this face element
 
     */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom

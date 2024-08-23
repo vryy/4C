@@ -35,7 +35,7 @@ namespace Discret
 
       static SoHex8PoroScatraType& instance();
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
@@ -62,7 +62,7 @@ namespace Discret
 
       static SoTet4PoroScatraType& instance();
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
@@ -90,7 +90,7 @@ namespace Discret
 
       static SoHex27PoroScatraType& instance();
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
@@ -117,7 +117,7 @@ namespace Discret
 
       static SoTet10PoroScatraType& instance();
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
@@ -144,7 +144,7 @@ namespace Discret
 
       static SoNurbs27PoroScatraType& instance();
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;

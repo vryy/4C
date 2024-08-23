@@ -41,10 +41,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Sutherland::create_material()
 Mat::SutherlandType Mat::SutherlandType::instance_;
 
 
-Core::Communication::ParObject* Mat::SutherlandType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SutherlandType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::Sutherland* sutherland = new Mat::Sutherland();
-  sutherland->unpack(data);
+  sutherland->unpack(buffer);
   return sutherland;
 }
 
@@ -77,15 +78,13 @@ void Mat::Sutherland::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Sutherland::unpack(const std::vector<char>& data)
+void Mat::Sutherland::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -100,8 +99,7 @@ void Mat::Sutherland::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

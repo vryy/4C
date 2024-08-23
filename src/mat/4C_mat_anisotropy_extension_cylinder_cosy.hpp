@@ -25,7 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
 namespace Mat
 {
   // Forward declaration
@@ -62,12 +63,8 @@ namespace Mat
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
-     *
-     * \param data whole data array
-     * \param position position of the current reader
      */
-    void unpack_anisotropy(
-        const std::vector<char>& data, std::vector<char>::size_type& position) override;
+    void unpack_anisotropy(Core::Communication::UnpackBuffer& buffer) override;
     /// @}
 
     /*!

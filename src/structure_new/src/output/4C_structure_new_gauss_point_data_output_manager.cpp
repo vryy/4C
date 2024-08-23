@@ -234,8 +234,8 @@ Solid::ModelEvaluator::GaussPointDataOutputManager::receive_quantities_from_proc
   auto quantities = std::unique_ptr<std::unordered_map<std::string, int>>(
       new std::unordered_map<std::string, int>());
 
-  std::size_t pos = 0;
-  unpack_quantities(pos, rdata, *quantities);
+  Core::Communication::UnpackBuffer buffer(rdata);
+  unpack_quantities(buffer, *quantities);
 
   return quantities;
 }
@@ -253,9 +253,9 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::broadcast_my_quantitite
 
   if (exporter.get_comm().MyPID() != 0)
   {
-    std::size_t pos = 0;
     std::unordered_map<std::string, int> received_quantities{};
-    unpack_quantities(pos, data, received_quantities);
+    Core::Communication::UnpackBuffer buffer(data);
+    unpack_quantities(buffer, received_quantities);
 
     merge_quantities(received_quantities);
   }
@@ -269,10 +269,11 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::pack_my_quantities(
   std::swap(data, packBuffer());
 }
 
-void Solid::ModelEvaluator::GaussPointDataOutputManager::unpack_quantities(std::size_t pos,
-    const std::vector<char>& data, std::unordered_map<std::string, int>& quantities) const
+void Solid::ModelEvaluator::GaussPointDataOutputManager::unpack_quantities(
+    Core::Communication::UnpackBuffer& buffer,
+    std::unordered_map<std::string, int>& quantities) const
 {
-  Core::Communication::ParObject::extract_from_pack(pos, data, quantities);
+  Core::Communication::ParObject::extract_from_pack(buffer, quantities);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -31,10 +31,10 @@ Discret::ELEMENTS::Beam3ebType& Discret::ELEMENTS::Beam3ebType::instance() { ret
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::Beam3ebType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Beam3eb* object = new Discret::ELEMENTS::Beam3eb(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -374,36 +374,34 @@ void Discret::ELEMENTS::Beam3eb::pack(Core::Communication::PackBuffer& data) con
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3eb::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Beam3Base::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Beam3Base::unpack(base_buffer);
 
   // extract all class variables of beam3 element
-  extract_from_pack(position, data, jacobi_);
-  isinit_ = extract_int(position, data);
-  extract_from_pack(position, data, ekin_);
-  extract_from_pack(position, data, eint_);
-  extract_from_pack(position, data, Tref_);
-  extract_from_pack<3, 1>(position, data, l_);
-  extract_from_pack<3, 1>(position, data, p_);
-  extract_from_pack<3, 2>(position, data, t0_);
-  extract_from_pack<3, 2>(position, data, t_);
-  extract_from_pack(position, data, kappa_max_);
-  extract_from_pack(position, data, epsilon_max_);
-  extract_from_pack(position, data, axial_strain_gp_);
-  extract_from_pack(position, data, curvature_gp_);
-  extract_from_pack(position, data, axial_force_gp_);
-  extract_from_pack(position, data, bending_moment_gp_);
+  extract_from_pack(buffer, jacobi_);
+  isinit_ = extract_int(buffer);
+  extract_from_pack(buffer, ekin_);
+  extract_from_pack(buffer, eint_);
+  extract_from_pack(buffer, Tref_);
+  extract_from_pack<3, 1>(buffer, l_);
+  extract_from_pack<3, 1>(buffer, p_);
+  extract_from_pack<3, 2>(buffer, t0_);
+  extract_from_pack<3, 2>(buffer, t_);
+  extract_from_pack(buffer, kappa_max_);
+  extract_from_pack(buffer, epsilon_max_);
+  extract_from_pack(buffer, axial_strain_gp_);
+  extract_from_pack(buffer, curvature_gp_);
+  extract_from_pack(buffer, axial_force_gp_);
+  extract_from_pack(buffer, bending_moment_gp_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

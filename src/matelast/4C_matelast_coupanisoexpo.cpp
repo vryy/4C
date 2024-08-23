@@ -76,10 +76,9 @@ void Mat::Elastic::CoupAnisoExpo::pack_summand(Core::Communication::PackBuffer& 
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::CoupAnisoExpo::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::CoupAnisoExpo::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void Mat::Elastic::CoupAnisoExpo::get_fiber_vecs(

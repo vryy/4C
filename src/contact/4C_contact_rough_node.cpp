@@ -23,13 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 
 CONTACT::RoughNodeType CONTACT::RoughNodeType::instance_;
 
-Core::Communication::ParObject* CONTACT::RoughNodeType::create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::RoughNodeType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
 
   CONTACT::RoughNode* node = new CONTACT::RoughNode(0, x, 0, dofs, false, false, 0, 0, 0, 0, 0, 0);
-  node->unpack(data);
+  node->unpack(buffer);
 
   return node;
 }
@@ -114,32 +115,30 @@ void CONTACT::RoughNode::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void CONTACT::RoughNode::unpack(const std::vector<char>& data)
+void CONTACT::RoughNode::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class CONTACT::Node
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  CONTACT::Node::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  CONTACT::Node::unpack(basedata_buffer);
 
-  hurstexponentfunction_ = extract_int(position, data);
-  initialtopologystddeviationfunction_ = extract_int(position, data);
-  resolution_ = extract_int(position, data);
-  randomtopologyflag_ = extract_int(position, data);
-  randomseedflag_ = extract_int(position, data);
-  randomgeneratorseed_ = extract_int(position, data);
+  hurstexponentfunction_ = extract_int(buffer);
+  initialtopologystddeviationfunction_ = extract_int(buffer);
+  resolution_ = extract_int(buffer);
+  randomtopologyflag_ = extract_int(buffer);
+  randomseedflag_ = extract_int(buffer);
+  randomgeneratorseed_ = extract_int(buffer);
 
-  hurstExponent_ = extract_double(position, data);
-  initialTopologyStdDeviation_ = extract_double(position, data);
-  extract_from_pack(position, data, topology_);
-  maxTopologyHeight_ = extract_double(position, data);
+  hurstExponent_ = extract_double(buffer);
+  initialTopologyStdDeviation_ = extract_double(buffer);
+  extract_from_pack(buffer, topology_);
+  maxTopologyHeight_ = extract_double(buffer);
 
   // Check
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

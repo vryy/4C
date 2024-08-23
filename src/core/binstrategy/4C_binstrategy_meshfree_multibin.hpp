@@ -41,7 +41,7 @@ namespace Core::FE::MeshFree
     static MeshfreeMultiBinType& instance();
 
     //!< create parallel object of this element type
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
     //!< create element of this element type
     Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
@@ -145,7 +145,7 @@ namespace Core::FE::MeshFree
      *
      *///                                                  (public) ghamm 04/13
     /*------------------------------------------------------------------------*/
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     // return meshfree bin type instance
     Core::Elements::ElementType& element_type() const override

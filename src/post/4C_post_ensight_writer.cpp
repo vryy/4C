@@ -650,12 +650,12 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
     // Unpack received block and write the data
     if (myrank_ == 0)
     {
-      std::vector<char>::size_type index = 0;
       std::vector<int> nodeids;
+      Core::Communication::UnpackBuffer buffer(rblock);
       // extract data from recieved package
-      while (index < rblock.size())
+      while (!buffer.at_end())
       {
-        Core::Communication::ParObject::extract_from_pack(index, rblock, nodeids);
+        Core::Communication::ParObject::extract_from_pack(buffer, nodeids);
       }
       // compute node lid based on proc0map and write it to file
       for (int i = 0; i < (int)nodeids.size(); ++i)
@@ -858,12 +858,12 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
       // Unpack received block and write the data
       if (myrank_ == 0)
       {
-        std::vector<char>::size_type index = 0;
         std::vector<int> elegids;
         // extract data from recieved package
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
-          Core::Communication::ParObject::extract_from_pack(index, rblock, elegids);
+          Core::Communication::ParObject::extract_from_pack(buffer, elegids);
         }
         for (int i = 0; i < (int)elegids.size(); ++i)
         {

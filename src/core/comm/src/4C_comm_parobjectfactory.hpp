@@ -13,6 +13,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_buffer.hpp"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -73,7 +75,7 @@ namespace Core::Communication
     int unique_par_object_id();
 
     /// Create ParObject from packed data
-    virtual ParObject* create(const std::vector<char>& data) { return nullptr; }
+    virtual ParObject* create(Core::Communication::UnpackBuffer& buffer) { return nullptr; }
 
     /// internal name of this ParObjectType.
     virtual std::string name() const = 0;
@@ -109,7 +111,7 @@ namespace Core::Communication
     virtual ~ParObjectFactory() = default;
 
     /// create a parobject from its data stream
-    ParObject* create(const std::vector<char>& data);
+    ParObject* create(Core::Communication::UnpackBuffer& buffer);
 
     /// create an element from its name (and dis type if needed)
     Teuchos::RCP<Core::Elements::Element> create(

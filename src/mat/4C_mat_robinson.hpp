@@ -112,7 +112,7 @@ namespace Mat
 
     static RobinsonType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static RobinsonType instance_;
@@ -161,9 +161,7 @@ namespace Mat
     //!  parobject id defined at the top of this file and delivered by
     //!  unique_par_object_id().
     //!
-    void unpack(const std::vector<char>&
-            data  //!< (i) vector storing all data to be unpacked into this instance
-        ) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 

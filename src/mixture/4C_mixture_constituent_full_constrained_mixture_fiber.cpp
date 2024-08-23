@@ -132,17 +132,17 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::pack_constituent(
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::unpack_constituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  MIXTURE::MixtureConstituent::unpack_constituent(position, data);
+  MIXTURE::MixtureConstituent::unpack_constituent(buffer);
   initialize();
 
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 
   for (FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
-    fiber.unpack(position, data);
+    fiber.unpack(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, last_lambda_f_);
+  Core::Communication::ParObject::extract_from_pack(buffer, last_lambda_f_);
 
   if (params_->enable_growth_)
   {

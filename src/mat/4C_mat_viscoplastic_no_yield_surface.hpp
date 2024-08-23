@@ -105,7 +105,7 @@ namespace Mat
 
     static ViscoPlasticNoYieldSurfaceType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static ViscoPlasticNoYieldSurfaceType instance_;
@@ -147,7 +147,7 @@ namespace Mat
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     Core::Materials::MaterialType material_type() const override

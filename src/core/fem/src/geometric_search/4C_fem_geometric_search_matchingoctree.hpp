@@ -41,6 +41,7 @@ namespace Core::Elements
 namespace Core::Communication
 {
   class PackBuffer;
+  class UnpackBuffer;
   class ParObject;
 }  // namespace Core::Communication
 
@@ -139,8 +140,8 @@ namespace Core::GeometricSearch
         const Core::FE::Discretization* dis, const int id) = 0;
 
     //! unpack entity to PackPuffer
-    virtual void un_pack_entity(std::vector<char>::size_type& index,
-        std::vector<char>& rblockofnodes, std::vector<char>& data) = 0;
+    virtual void unpack_entity(
+        Core::Communication::UnpackBuffer& buffer, std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
     virtual int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) = 0;
@@ -304,8 +305,7 @@ namespace Core::GeometricSearch
         const int id) override;
 
     //! unpack node from PackPuffer
-    void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
-        std::vector<char>& data) override;
+    void unpack_entity(Communication::UnpackBuffer& buffer, std::vector<char>& data) override;
 
     //! check if unpacked type is correct
     int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) override;
@@ -343,8 +343,7 @@ namespace Core::GeometricSearch
         const int id) override;
 
     //! unpack element from PackPuffer
-    void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
-        std::vector<char>& data) override;
+    void unpack_entity(Communication::UnpackBuffer& buffer, std::vector<char>& data) override;
 
     //! check if unpacked type is correct
     int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) override;
@@ -359,7 +358,7 @@ namespace Core::GeometricSearch
     //! The flying nodes are sent around in the round robin loop
     //! together with the corresponding element.
     //!
-    //! \note We need this map as member, because in \ref un_pack_entity
+    //! \note We need this map as member, because in \ref unpack_entity
     //!       we Extract the nodes and fill this map. Then, we set the
     //!       nodal pointers in the communicated element by providing
     //!       the element with this map. The RCPs stored in this map have

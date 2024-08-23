@@ -28,11 +28,11 @@ Discret::ELEMENTS::RedAirBloodScatraLine3Type::instance()
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::RedAirBloodScatraLine3Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::RedAirBloodScatraLine3* object =
       new Discret::ELEMENTS::RedAirBloodScatraLine3(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -154,34 +154,32 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3::pack(Core::Communication::PackBu
  |  Unpack data                                                (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirBloodScatraLine3::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::RedAirBloodScatraLine3::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
   std::map<std::string, double> it;
   int n = 0;
 
-  extract_from_pack(position, data, n);
+  extract_from_pack(buffer, n);
 
   for (int i = 0; i < n; i++)
   {
     std::string name;
     double val;
-    extract_from_pack(position, data, name);
-    extract_from_pack(position, data, val);
+    extract_from_pack(buffer, name);
+    extract_from_pack(buffer, val);
     elem_params_[name] = val;
   }
 
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

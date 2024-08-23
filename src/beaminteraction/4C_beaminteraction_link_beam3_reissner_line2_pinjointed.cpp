@@ -32,11 +32,11 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed* my_beam3rline2 =
       new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed();
-  my_beam3rline2->unpack(data);
+  my_beam3rline2->unpack(buffer);
   return my_beam3rline2;
 }
 
@@ -283,24 +283,25 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(const std::vector<char>& data)
+void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(
+    Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  BeamLinkPinJointed::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  BeamLinkPinJointed::unpack(basedata_buffer);
 
   // Unpack data of sub material (these lines are copied from element.cpp)
   std::vector<char> dataele;
-  extract_from_pack(position, data, dataele);
+  extract_from_pack(buffer, dataele);
   if (dataele.size() > 0)
   {
+    Core::Communication::UnpackBuffer dataele_buffer(dataele);
     Core::Communication::ParObject* object =
-        Core::Communication::factory(dataele);  // Unpack is done here
+        Core::Communication::factory(dataele_buffer);  // Unpack is done here
     Discret::ELEMENTS::Beam3r* linkele = dynamic_cast<Discret::ELEMENTS::Beam3r*>(object);
     if (linkele == nullptr)
       FOUR_C_THROW("failed to unpack Beam3r object within BeamLinkBeam3rLine2PinJointed");

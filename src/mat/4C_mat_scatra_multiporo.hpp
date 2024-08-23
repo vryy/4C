@@ -146,7 +146,7 @@ namespace Mat
 
     static ScatraMatMultiPoroFluidType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static ScatraMatMultiPoroFluidType instance_;
@@ -159,7 +159,7 @@ namespace Mat
 
     static ScatraMatMultiPoroVolFracType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static ScatraMatMultiPoroVolFracType instance_;
@@ -172,7 +172,7 @@ namespace Mat
 
     static ScatraMatMultiPoroSolidType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static ScatraMatMultiPoroSolidType instance_;
@@ -184,7 +184,7 @@ namespace Mat
 
     static ScatraMatMultiPoroTemperatureType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static ScatraMatMultiPoroTemperatureType instance_;
@@ -237,7 +237,7 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 
@@ -324,7 +324,7 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 
@@ -408,7 +408,7 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 
@@ -483,7 +483,7 @@ namespace Mat
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 

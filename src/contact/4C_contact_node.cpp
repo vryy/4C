@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::NodeType CONTACT::NodeType::instance_;
 
 
-Core::Communication::ParObject* CONTACT::NodeType::create(const std::vector<char>& data)
+Core::Communication::ParObject* CONTACT::NodeType::create(Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
   auto* node = new CONTACT::Node(0, x, 0, dofs, false, false);
-  node->unpack(data);
+  node->unpack(buffer);
   return node;
 }
 
@@ -85,21 +85,20 @@ void CONTACT::NodeDataContainer::pack(Core::Communication::PackBuffer& data) con
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeDataContainer::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void CONTACT::NodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // txi_
-  Core::Communication::ParObject::extract_from_pack(position, data, txi_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, txi_, 3 * sizeof(double));
   // teta_
-  Core::Communication::ParObject::extract_from_pack(position, data, teta_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, teta_, 3 * sizeof(double));
   // grow_
-  Core::Communication::ParObject::extract_from_pack(position, data, grow_);
+  Core::Communication::ParObject::extract_from_pack(buffer, grow_);
   // kappa_
-  Core::Communication::ParObject::extract_from_pack(position, data, kappa_);
+  Core::Communication::ParObject::extract_from_pack(buffer, kappa_);
   // activeold_
-  activeold_ = Core::Communication::ParObject::extract_int(position, data);
+  activeold_ = Core::Communication::ParObject::extract_int(buffer);
   // n_old_
-  Core::Communication::ParObject::extract_from_pack(position, data, n_old_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, n_old_, 3 * sizeof(double));
 
   return;
 }
@@ -144,19 +143,18 @@ void CONTACT::NodePoroDataContainer::pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                            ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::NodePoroDataContainer::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void CONTACT::NodePoroDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // fvel
-  Core::Communication::ParObject::extract_from_pack(position, data, fvel_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, fvel_, 3 * sizeof(double));
   // fpres
-  Core::Communication::ParObject::extract_from_pack(position, data, fpres_);
+  Core::Communication::ParObject::extract_from_pack(buffer, fpres_);
   // svel
-  Core::Communication::ParObject::extract_from_pack(position, data, svel_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, svel_, 3 * sizeof(double));
   // poroLM
-  Core::Communication::ParObject::extract_from_pack(position, data, porolm_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, porolm_, 3 * sizeof(double));
   // ncoup
-  Core::Communication::ParObject::extract_from_pack(position, data, ncouprow_);
+  Core::Communication::ParObject::extract_from_pack(buffer, ncouprow_);
   return;
 }
 
@@ -187,14 +185,13 @@ void CONTACT::NodeTSIDataContainer::pack(Core::Communication::PackBuffer& data) 
  |  Unpack data                                                (public) |
  |                                                           seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::NodeTSIDataContainer::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void CONTACT::NodeTSIDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(position, data, temp_master_);
-  Core::Communication::ParObject::extract_from_pack(position, data, t_ref_);
-  Core::Communication::ParObject::extract_from_pack(position, data, t_dam_);
-  Core::Communication::ParObject::extract_from_pack(position, data, derivTempMasterDisp_);
-  Core::Communication::ParObject::extract_from_pack(position, data, derivTempMasterTemp_);
+  Core::Communication::ParObject::extract_from_pack(buffer, temp_master_);
+  Core::Communication::ParObject::extract_from_pack(buffer, t_ref_);
+  Core::Communication::ParObject::extract_from_pack(buffer, t_dam_);
+  Core::Communication::ParObject::extract_from_pack(buffer, derivTempMasterDisp_);
+  Core::Communication::ParObject::extract_from_pack(buffer, derivTempMasterTemp_);
   return;
 }
 
@@ -324,32 +321,31 @@ void CONTACT::Node::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::unpack(const std::vector<char>& data)
+void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Mortar::Node
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Mortar::Node::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Mortar::Node::unpack(basedata_buffer);
 
   // active_
-  active_ = extract_int(position, data);
+  active_ = extract_int(buffer);
   // isslave_
-  initactive_ = extract_int(position, data);
+  initactive_ = extract_int(buffer);
   // isslave_
-  involvedm_ = extract_int(position, data);
+  involvedm_ = extract_int(buffer);
   // isslave_
-  linsize_ = extract_int(position, data);
+  linsize_ = extract_int(buffer);
 
   // data_
-  bool hasdata = extract_int(position, data);
+  bool hasdata = extract_int(buffer);
   if (hasdata)
   {
     codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
-    codata_->unpack(position, data);
+    codata_->unpack(buffer);
   }
   else
   {
@@ -357,11 +353,11 @@ void CONTACT::Node::unpack(const std::vector<char>& data)
   }
 
   // porodata_
-  bool hasdataporo = extract_int(position, data);
+  bool hasdataporo = extract_int(buffer);
   if (hasdataporo)
   {
     coporodata_ = Teuchos::rcp(new CONTACT::NodePoroDataContainer());
-    coporodata_->unpack(position, data);
+    coporodata_->unpack(buffer);
   }
   else
   {
@@ -369,17 +365,16 @@ void CONTACT::Node::unpack(const std::vector<char>& data)
   }
 
   // TSI data
-  bool hasTSIdata = (bool)extract_int(position, data);
+  bool hasTSIdata = (bool)extract_int(buffer);
   if (hasTSIdata)
   {
     cTSIdata_ = Teuchos::rcp(new CONTACT::NodeTSIDataContainer());
-    cTSIdata_->unpack(position, data);
+    cTSIdata_->unpack(buffer);
   }
   else
     cTSIdata_ = Teuchos::null;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

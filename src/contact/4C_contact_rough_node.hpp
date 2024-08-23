@@ -22,7 +22,7 @@ namespace CONTACT
 
     static RoughNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static RoughNodeType instance_;
@@ -92,7 +92,7 @@ namespace CONTACT
      \ref pack and \ref unpack are used to communicate this node
 
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     // //! @name Access methods
 

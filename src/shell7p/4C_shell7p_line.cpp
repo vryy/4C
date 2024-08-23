@@ -73,7 +73,7 @@ void Discret::ELEMENTS::Shell7pLine::pack(Core::Communication::PackBuffer& data)
 }
 
 
-void Discret::ELEMENTS::Shell7pLine::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Shell7pLine::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Shell line element does not support communication");
 }

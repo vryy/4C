@@ -53,10 +53,10 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::Mixture::create_material()
 Mat::MixtureType Mat::MixtureType::instance_;
 
 // Create a material instance from packed data
-Core::Communication::ParObject* Mat::MixtureType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MixtureType::create(Core::Communication::UnpackBuffer& buffer)
 {
   auto* mix_elhy = new Mat::Mixture();
-  mix_elhy->unpack(data);
+  mix_elhy->unpack(buffer);
 
   return mix_elhy;
 }
@@ -136,19 +136,19 @@ void Mat::Mixture::pack(Core::Communication::PackBuffer& data) const
 }
 
 // Unpack data
-void Mat::Mixture::unpack(const std::vector<char>& data)
+void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   params_ = nullptr;
   constituents_->clear();
   setup_ = false;
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -168,19 +168,19 @@ void Mat::Mixture::unpack(const std::vector<char>& data)
     }
 
     // Extract setup flag
-    setup_ = (bool)extract_int(position, data);
+    setup_ = (bool)extract_int(buffer);
 
 
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt(0);
-    Core::Communication::ParObject::extract_from_pack(position, data, isPreEvaluatedInt);
+    Core::Communication::ParObject::extract_from_pack(buffer, isPreEvaluatedInt);
     is_pre_evaluated_.resize(isPreEvaluatedInt.size());
     for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
     {
       is_pre_evaluated_[i] = static_cast<bool>(isPreEvaluatedInt[i]);
     }
 
-    anisotropy_.unpack_anisotropy(data, position);
+    anisotropy_.unpack_anisotropy(buffer);
 
     // extract constituents
     // constituents are not accessible during post processing
@@ -201,20 +201,17 @@ void Mat::Mixture::unpack(const std::vector<char>& data)
       // make sure the referenced materials in material list have quick access parameters
       for (const auto& constituent : *constituents_)
       {
-        constituent->unpack_constituent(position, data);
+        constituent->unpack_constituent(buffer);
         constituent->register_anisotropy_extensions(anisotropy_);
       }
 
       // unpack mixturerule
-      mixture_rule_->unpack_mixture_rule(position, data);
+      mixture_rule_->unpack_mixture_rule(buffer);
       mixture_rule_->set_constituents(constituents_);
       mixture_rule_->register_anisotropy_extensions(anisotropy_);
 
       // position checking is not available in post processing mode
-      if (position != data.size())
-      {
-        FOUR_C_THROW("Mismatch in size of data to unpack (%d <-> %d)", data.size(), position);
-      }
+      FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     }
   }
 }

@@ -25,7 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
 namespace MIXTURE
 {
   namespace Details
@@ -82,7 +83,7 @@ namespace MIXTURE
 
     void pack(Core::Communication::PackBuffer& data) const;
 
-    void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    void unpack(Core::Communication::UnpackBuffer& buffer);
 
     void emplace_back(unsigned int level, unsigned int num_simpson_intervals);
 

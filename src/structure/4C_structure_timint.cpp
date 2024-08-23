@@ -1796,8 +1796,8 @@ void Solid::TimInt::set_restart_state(Teuchos::RCP<Epetra_Vector> disn,
 
   // unpack nodes and elements
   // so everything should be OK
-  discret_->un_pack_my_nodes(nodedata);
-  discret_->un_pack_my_elements(elementdata);
+  discret_->unpack_my_nodes(nodedata);
+  discret_->unpack_my_elements(elementdata);
   discret_->redistribute(*noderowmap, *nodecolmap);
 }
 /*----------------------------------------------------------------------*/

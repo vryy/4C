@@ -104,7 +104,7 @@ void Discret::ELEMENTS::FluidIntFace::pack(Core::Communication::PackBuffer& data
  |  Unpack data                                                (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidIntFace::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;

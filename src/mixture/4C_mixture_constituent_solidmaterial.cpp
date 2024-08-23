@@ -80,10 +80,10 @@ void MIXTURE::MixtureConstituentSolidMaterial::pack_constituent(
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   // unpack constituent data
-  MixtureConstituent::unpack_constituent(position, data);
+  MixtureConstituent::unpack_constituent(buffer);
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -91,7 +91,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
 
   // extract the matid of the Mixture_SolidMaterial
   int matid;
-  Core::Communication::ParObject::extract_from_pack(position, data, matid);
+  Core::Communication::ParObject::extract_from_pack(buffer, matid);
 
   // recover the params_ of the Mixture_SolidMaterial
   if (Global::Problem::instance()->materials() != Teuchos::null)
@@ -124,8 +124,9 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
     // solid material packed: 1. the data size, 2. the packed data of size sm
     // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector
     std::vector<char> sub_vec;
-    Core::Communication::ParObject::extract_from_pack(position, data, sub_vec);
-    material_->unpack(sub_vec);
+    Core::Communication::ParObject::extract_from_pack(buffer, sub_vec);
+    Core::Communication::UnpackBuffer sub_vec_buffer(sub_vec);
+    material_->unpack(sub_vec_buffer);
   }
 }
 

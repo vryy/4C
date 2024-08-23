@@ -88,22 +88,18 @@ void BEAMINTERACTION::Data::CrosslinkerData::pack(Core::Communication::PackBuffe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::CrosslinkerData::unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::CrosslinkerData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
   // id
-  Core::Communication::ParObject::extract_from_pack(position, data, id_);
+  Core::Communication::ParObject::extract_from_pack(buffer, id_);
   // position
-  Core::Communication::ParObject::extract_from_pack(position, data, pos_);
+  Core::Communication::ParObject::extract_from_pack(buffer, pos_);
   // bspot status
-  Core::Communication::ParObject::extract_from_pack(position, data, bspots_);
+  Core::Communication::ParObject::extract_from_pack(buffer, bspots_);
   // number of bonds
-  Core::Communication::ParObject::extract_from_pack(position, data, numbond_);
+  Core::Communication::ParObject::extract_from_pack(buffer, numbond_);
 
-  if (position != data.size())
-    FOUR_C_THROW(
-        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }
@@ -140,26 +136,18 @@ void BEAMINTERACTION::Data::BeamData::pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BeamData::unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::BeamData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
   // id
-  Core::Communication::ParObject::extract_from_pack(position, data, id_);
+  Core::Communication::ParObject::extract_from_pack(buffer, id_);
   // bspotpos
-  Core::Communication::ParObject::extract_from_pack(position, data, bspotpos_);
+  Core::Communication::ParObject::extract_from_pack(buffer, bspotpos_);
   // bspottriad
-  Core::Communication::ParObject::extract_from_pack(position, data, bspottriad_);
+  Core::Communication::ParObject::extract_from_pack(buffer, bspottriad_);
   // bspotstatus
-  Core::Communication::ParObject::extract_from_pack(position, data, bspotstatus_);
-  //  // filamenttype
-  //  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(
-  //      Core::Communication::ParObject::extract_int(position,data) );
+  Core::Communication::ParObject::extract_from_pack(buffer, bspotstatus_);
 
-
-  if (position != data.size())
-    FOUR_C_THROW(
-        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }
@@ -205,23 +193,19 @@ void BEAMINTERACTION::Data::BindEventData::pack(Core::Communication::PackBuffer&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::BindEventData::unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::BindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
+  Core::Communication::ParObject::extract_from_pack(buffer, clgid_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, clgid_);
+  Core::Communication::ParObject::extract_from_pack(buffer, elegid_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, elegid_);
+  Core::Communication::ParObject::extract_from_pack(buffer, bspotlocn_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, bspotlocn_);
+  Core::Communication::ParObject::extract_from_pack(buffer, requestproc_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, requestproc_);
+  Core::Communication::ParObject::extract_from_pack(buffer, permission_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, permission_);
-
-  if (position != data.size())
-    FOUR_C_THROW(
-        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }
@@ -253,20 +237,16 @@ void BEAMINTERACTION::Data::UnBindEventData::pack(Core::Communication::PackBuffe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::Data::UnBindEventData::unpack(std::vector<char> const& data)
+void BEAMINTERACTION::Data::UnBindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
+  Core::Communication::ParObject::extract_from_pack(buffer, clgid_);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, clgid_);
-
-  Core::Communication::ParObject::extract_from_pack(position, data, eletoupdate_);
+  Core::Communication::ParObject::extract_from_pack(buffer, eletoupdate_);
 
   linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(
-      Core::Communication::ParObject::extract_int(position, data));
+      Core::Communication::ParObject::extract_int(buffer));
 
-  if (position != data.size())
-    FOUR_C_THROW(
-        "Mismatch in size of data %d and position %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

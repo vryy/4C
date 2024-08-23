@@ -203,10 +203,10 @@ Mat::PlasticNlnLogNeoHookeType Mat::PlasticNlnLogNeoHookeType::instance_;
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::PlasticNlnLogNeoHookeType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::PlasticNlnLogNeoHooke* plasticneo = new Mat::PlasticNlnLogNeoHooke();
-  plasticneo->unpack(data);
+  plasticneo->unpack(buffer);
   return plasticneo;
 }
 
@@ -269,16 +269,16 @@ void Mat::PlasticNlnLogNeoHooke::pack(Core::Communication::PackBuffer& data) con
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
+void Mat::PlasticNlnLogNeoHooke::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -295,7 +295,7 @@ void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  extract_from_pack(position, data, histsize);
+  extract_from_pack(buffer, histsize);
 
   // if system is not yet initialized, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -304,12 +304,12 @@ void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
   {
     double tmp1 = 0.0;
     // scalar-valued vector of last converged state are unpacked
-    extract_from_pack(position, data, tmp1);
+    extract_from_pack(buffer, tmp1);
     accplstrainlast_.push_back(tmp1);
 
     Core::LinAlg::Matrix<3, 3> tmp(true);
     // vectors of last converged state are unpacked
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     invplrcglast_.push_back(tmp);
 
     // current vectors have to be initialized
@@ -317,8 +317,7 @@ void Mat::PlasticNlnLogNeoHooke::unpack(const std::vector<char>& data)
     invplrcgcurr_.push_back(tmp);
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 

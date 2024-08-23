@@ -60,10 +60,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListReactions::create_material()
 Mat::MatListReactionsType Mat::MatListReactionsType::instance_;
 
 
-Core::Communication::ParObject* Mat::MatListReactionsType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MatListReactionsType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::MatListReactions* MatListReactions = new Mat::MatListReactions();
-  MatListReactions->unpack(data);
+  MatListReactions->unpack(buffer);
   return MatListReactions;
 }
 
@@ -172,18 +173,18 @@ void Mat::MatListReactions::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 11/14 |
  *----------------------------------------------------------------------*/
-void Mat::MatListReactions::unpack(const std::vector<char>& data)
+void Mat::MatListReactions::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover paramsreac_
   int matid(-1);
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   paramsreac_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -204,8 +205,9 @@ void Mat::MatListReactions::unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::MatList::extract_from_pack(position, data, basedata);
-  Mat::MatList::unpack(basedata);
+  Mat::MatList::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Mat::MatList::unpack(basedata_buffer);
 
   if (paramsreac_ != nullptr)  // paramsreac_ are not accessible in postprocessing mode
   {
@@ -226,14 +228,14 @@ void Mat::MatListReactions::unpack(const std::vector<char>& data)
       for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); m++)
       {
         std::vector<char> pbtest;
-        extract_from_pack(position, data, pbtest);
-        (material_map_write()->find(*m))->second->unpack(pbtest);
+        extract_from_pack(buffer, pbtest);
+        Core::Communication::UnpackBuffer buffer_pbtest(pbtest);
+        (material_map_write()->find(*m))->second->unpack(buffer_pbtest);
       }
     }
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 

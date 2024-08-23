@@ -53,10 +53,10 @@ Mat::Maxwell0dAcinusExponentialType Mat::Maxwell0dAcinusExponentialType::instanc
 
 
 Core::Communication::ParObject* Mat::Maxwell0dAcinusExponentialType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::Maxwell0dAcinusExponential* mxwll_0d_acin = new Mat::Maxwell0dAcinusExponential();
-  mxwll_0d_acin->unpack(data);
+  mxwll_0d_acin->unpack(buffer);
   return mxwll_0d_acin;
 }
 
@@ -98,21 +98,19 @@ void Mat::Maxwell0dAcinusExponential::pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::Maxwell0dAcinusExponential::unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusExponential::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // Extract e1_0_, e1_lin_, e1_exp_, tau_
-  extract_from_pack(position, data, e1_0_);
-  extract_from_pack(position, data, e1_lin_);
-  extract_from_pack(position, data, e1_exp_);
-  extract_from_pack(position, data, tau_);
+  extract_from_pack(buffer, e1_0_);
+  extract_from_pack(buffer, e1_lin_);
+  extract_from_pack(buffer, e1_exp_);
+  extract_from_pack(buffer, tau_);
 
   // Extract matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -127,8 +125,7 @@ void Mat::Maxwell0dAcinusExponential::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

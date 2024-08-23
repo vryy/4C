@@ -177,10 +177,11 @@ Mat::CrystalPlasticityType Mat::CrystalPlasticityType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       			|
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Mat::CrystalPlasticityType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::CrystalPlasticityType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::CrystalPlasticity* cp = new Mat::CrystalPlasticity();
-  cp->unpack(data);
+  cp->unpack(buffer);
   return cp;
 }
 
@@ -237,15 +238,13 @@ void Mat::CrystalPlasticity::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::unpack(const std::vector<char>& data)
+void Mat::CrystalPlasticity::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // recover matid and params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -264,7 +263,7 @@ void Mat::CrystalPlasticity::unpack(const std::vector<char>& data)
 
   // history data
   int histsize;
-  extract_from_pack(position, data, histsize);
+  extract_from_pack(buffer, histsize);
 
   // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
@@ -281,23 +280,22 @@ void Mat::CrystalPlasticity::unpack(const std::vector<char>& data)
       Core::LinAlg::Matrix<3, 3> tmp_matrix(true);
       std::vector<double> tmp_vect(def_system_count_);
 
-      extract_from_pack(position, data, tmp_matrix);
+      extract_from_pack(buffer, tmp_matrix);
       deform_grad_last_->push_back(tmp_matrix);
 
-      extract_from_pack(position, data, tmp_matrix);
+      extract_from_pack(buffer, tmp_matrix);
       plastic_deform_grad_last_->push_back(tmp_matrix);
 
-      extract_from_pack(position, data, tmp_vect);
+      extract_from_pack(buffer, tmp_vect);
       gamma_last_->push_back(tmp_vect);
 
-      extract_from_pack(position, data, tmp_vect);
+      extract_from_pack(buffer, tmp_vect);
       defect_densities_last_->push_back(tmp_vect);
     }
 
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }  // Unpack
 

@@ -27,7 +27,7 @@ Discret::ELEMENTS::RedAirBloodScatraType& Discret::ELEMENTS::RedAirBloodScatraTy
 
 
 Core::Communication::ParObject* Discret::ELEMENTS::RedAirBloodScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("Not implemented.");
 }
@@ -142,36 +142,34 @@ void Discret::ELEMENTS::RedAirBloodScatra::pack(Core::Communication::PackBuffer&
  |  Unpack data                                                (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirBloodScatra::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::RedAirBloodScatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
   std::map<std::string, double> it;
   int n = 0;
 
-  extract_from_pack(position, data, n);
+  extract_from_pack(buffer, n);
 
   for (int i = 0; i < n; i++)
   {
     std::string name;
     double val;
-    extract_from_pack(position, data, name);
-    extract_from_pack(position, data, val);
+    extract_from_pack(buffer, name);
+    extract_from_pack(buffer, val);
     elem_params_[name] = val;
   }
 
   // extract generation
-  extract_from_pack(position, data, generation_);
+  extract_from_pack(buffer, generation_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

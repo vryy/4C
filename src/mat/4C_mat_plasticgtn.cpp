@@ -57,10 +57,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticGTN::create_material()
 }
 Mat::PlasticGTNType Mat::PlasticGTNType::instance_;
 
-Core::Communication::ParObject* Mat::PlasticGTNType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticGTNType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::PlasticGTN* plastic = new Mat::PlasticGTN();
-  plastic->unpack(data);
+  plastic->unpack(buffer);
   return plastic;
 }
 
@@ -88,15 +89,15 @@ void Mat::PlasticGTN::pack(Core::Communication::PackBuffer& data) const
   }
 }
 
-void Mat::PlasticGTN::unpack(const std::vector<char>& data)
+void Mat::PlasticGTN::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -113,7 +114,7 @@ void Mat::PlasticGTN::unpack(const std::vector<char>& data)
     }
 
     int histsize;
-    extract_from_pack(position, data, histsize);
+    extract_from_pack(buffer, histsize);
 
     if (histsize == 0) isinit_ = false;
 
@@ -132,28 +133,27 @@ void Mat::PlasticGTN::unpack(const std::vector<char>& data)
       Core::LinAlg::Matrix<3, 3> tmp_vect(true);
       double tmp_scalar = 0.0;
 
-      extract_from_pack(position, data, tmp_vect);
+      extract_from_pack(buffer, tmp_vect);
       elastic_strain_n_.push_back(tmp_vect);
       elastic_strain_n1_.push_back(tmp_vect);
 
-      extract_from_pack(position, data, tmp_vect);
+      extract_from_pack(buffer, tmp_vect);
       strain_n_.push_back(tmp_vect);
       strain_n1_.push_back(tmp_vect);
 
-      extract_from_pack(position, data, tmp_vect);
+      extract_from_pack(buffer, tmp_vect);
       stress_n_.push_back(tmp_vect);
       stress_n1_.push_back(tmp_vect);
 
-      extract_from_pack(position, data, tmp_scalar);
+      extract_from_pack(buffer, tmp_scalar);
       f_n_.push_back(tmp_scalar);
       f_n1_.push_back(tmp_scalar);
 
-      extract_from_pack(position, data, tmp_scalar);
+      extract_from_pack(buffer, tmp_scalar);
       epbar_n_.push_back(tmp_scalar);
       epbar_n1_.push_back(tmp_scalar);
     }
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   }
 }
 

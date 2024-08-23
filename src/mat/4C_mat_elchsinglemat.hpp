@@ -118,7 +118,7 @@ namespace Mat
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
-    void unpack(const std::vector<char>& data) override = 0;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override = 0;
     //@}
 
     //! compute diffusion coefficient accounting for concentration and temperature dependence

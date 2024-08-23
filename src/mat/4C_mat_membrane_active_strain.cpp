@@ -51,10 +51,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneActiveStrain::create_materia
 
 Mat::MembraneActiveStrainType Mat::MembraneActiveStrainType::instance_;
 
-Core::Communication::ParObject* Mat::MembraneActiveStrainType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MembraneActiveStrainType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::MembraneActiveStrain* membrane_activestrain = new Mat::MembraneActiveStrain();
-  membrane_activestrain->unpack(data);
+  membrane_activestrain->unpack(buffer);
 
   return membrane_activestrain;
 }  // Mat::Membrane_ActiveStrainType::Create
@@ -139,15 +140,13 @@ void Mat::MembraneActiveStrain::pack(Core::Communication::PackBuffer& data) cons
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
+void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid = -1;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -162,15 +161,16 @@ void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
     }
 
   // fiber vectors: Fiber1, Fiber2, Normal
-  extract_from_pack(position, data, fibervecs_);
+  extract_from_pack(buffer, fibervecs_);
 
   // unpack data of passive material
   std::vector<char> matpassive_data;
-  extract_from_pack(position, data, matpassive_data);
+  extract_from_pack(buffer, matpassive_data);
   if (matpassive_data.size() > 0)
   {
+    Core::Communication::UnpackBuffer buffer_matpassive(matpassive_data);
     Core::Communication::ParObject* o =
-        Core::Communication::factory(matpassive_data);  // Unpack is done here
+        Core::Communication::factory(buffer_matpassive);  // Unpack is done here
     Mat::So3Material* matpassive = dynamic_cast<Mat::So3Material*>(o);
     if (matpassive == nullptr) FOUR_C_THROW("failed to unpack passive material");
 
@@ -182,13 +182,12 @@ void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
   }
 
   int numgp;
-  extract_from_pack(position, data, numgp);
+  extract_from_pack(buffer, numgp);
   isinit_ = true;
   if (numgp == 0)  // no internal data to unpack
   {
     isinit_ = false;
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     return;
   }
 
@@ -199,9 +198,9 @@ void Mat::MembraneActiveStrain::unpack(const std::vector<char>& data)
   double activation_gp;
   for (int gp = 0; gp < numgp; ++gp)
   {
-    extract_from_pack(position, data, voltage_gp);
+    extract_from_pack(buffer, voltage_gp);
     voltage_->at(gp) = voltage_gp;
-    extract_from_pack(position, data, activation_gp);
+    extract_from_pack(buffer, activation_gp);
     activation_->at(gp) = activation_gp;
   }
 }  // Mat::MembraneActiveStrain::unpack()

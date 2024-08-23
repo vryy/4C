@@ -21,13 +21,13 @@ Core::FE::Nurbs::ControlPointType Core::FE::Nurbs::ControlPointType::instance_;
 
 
 Core::Communication::ParObject* Core::FE::Nurbs::ControlPointType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> dummycoord(3, 999.0);
   double dummyweight = 999.;
   Core::FE::Nurbs::ControlPoint* object =
       new Core::FE::Nurbs::ControlPoint(-1, dummycoord, dummyweight, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -91,18 +91,17 @@ void Core::FE::Nurbs::ControlPoint::pack(Core::Communication::PackBuffer& data) 
 
   Pack and Unpack are used to communicate this control point
 */
-void Core::FE::Nurbs::ControlPoint::unpack(const std::vector<char>& data)
+void Core::FE::Nurbs::ControlPoint::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Node
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Nodes::Node::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Core::Nodes::Node::unpack(basedata_buffer);
   // extract weight
-  Core::Nodes::Node::extract_from_pack(position, data, w_);
+  Core::Nodes::Node::extract_from_pack(buffer, w_);
 
   return;
 }

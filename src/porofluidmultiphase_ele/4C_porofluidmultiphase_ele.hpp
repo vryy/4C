@@ -31,7 +31,7 @@ namespace Discret
       static PoroFluidMultiPhaseType& instance();
 
       /// create an element from data
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
       /// create an element from a dat file specifier
       Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
@@ -184,7 +184,7 @@ namespace Discret
 
       \ref pack and \ref unpack are used to communicate this element
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       //! @name Access methods
 
@@ -442,7 +442,7 @@ namespace Discret
       \ref pack and \ref unpack are used to communicate this element
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
 
       //@}

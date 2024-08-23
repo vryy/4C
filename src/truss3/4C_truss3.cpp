@@ -22,10 +22,11 @@ Discret::ELEMENTS::Truss3Type Discret::ELEMENTS::Truss3Type::instance_;
 
 Discret::ELEMENTS::Truss3Type& Discret::ELEMENTS::Truss3Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Truss3(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -165,30 +166,28 @@ void Discret::ELEMENTS::Truss3::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Truss3::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
-  isinit_ = extract_int(position, data);
-  extract_from_pack<6, 1>(position, data, x_);
-  extract_from_pack<1, 3>(position, data, diff_disp_ref_);
-  extract_from_pack(position, data, material_);
-  extract_from_pack(position, data, lrefe_);
-  extract_from_pack(position, data, jacobimass_);
-  extract_from_pack(position, data, jacobinode_);
-  extract_from_pack(position, data, crosssec_);
-  extract_from_pack(position, data, gaussrule_);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
+  isinit_ = extract_int(buffer);
+  extract_from_pack<6, 1>(buffer, x_);
+  extract_from_pack<1, 3>(buffer, diff_disp_ref_);
+  extract_from_pack(buffer, material_);
+  extract_from_pack(buffer, lrefe_);
+  extract_from_pack(buffer, jacobimass_);
+  extract_from_pack(buffer, jacobinode_);
+  extract_from_pack(buffer, crosssec_);
+  extract_from_pack(buffer, gaussrule_);
   // kinematic type
-  kintype_ = static_cast<KinematicType>(extract_int(position, data));
+  kintype_ = static_cast<KinematicType>(extract_int(buffer));
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

@@ -58,13 +58,12 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::pack(Core::Communication::PackB
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void Discret::ELEMENTS::Shell7pEleCalc<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.sdc);
-  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.thickness);
-  Core::Communication::ParObject::extract_from_pack(position, data, shell_data_.num_ans);
-  Core::Communication::ParObject::extract_from_pack(position, data, cur_thickness_);
+  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.sdc);
+  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.thickness);
+  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.num_ans);
+  Core::Communication::ParObject::extract_from_pack(buffer, cur_thickness_);
 }
 
 

@@ -70,8 +70,7 @@ namespace MIXTURE
 
     void pack_constituent(Core::Communication::PackBuffer& data) const override;
 
-    void unpack_constituent(
-        std::vector<char>::size_type& position, const std::vector<char>& data) override;
+    void unpack_constituent(Core::Communication::UnpackBuffer& buffer) override;
 
     void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 

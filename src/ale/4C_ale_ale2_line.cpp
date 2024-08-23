@@ -75,7 +75,7 @@ void Discret::ELEMENTS::Ale2Line::pack(Core::Communication::PackBuffer& data) co
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2Line::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Ale2Line::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Ale2Line element does not support communication");
   return;

@@ -53,10 +53,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyperVCU::create_materia
 Mat::PlasticElastHyperVCUType Mat::PlasticElastHyperVCUType::instance_;
 
 
-Core::Communication::ParObject* Mat::PlasticElastHyperVCUType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticElastHyperVCUType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::PlasticElastHyperVCU* elhy = new Mat::PlasticElastHyperVCU();
-  elhy->unpack(data);
+  elhy->unpack(buffer);
 
   return elhy;
 }
@@ -117,19 +118,19 @@ void Mat::PlasticElastHyperVCU::pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
+void Mat::PlasticElastHyperVCU::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   params_ = nullptr;
   potsum_.clear();
 
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover MatParams()
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -146,7 +147,7 @@ void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
     }
   }
 
-  summandProperties_.unpack(position, data);
+  summandProperties_.unpack(buffer);
 
   if (mat_params() != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -163,13 +164,13 @@ void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
     {
-      potsum_[p]->unpack_summand(data, position);
+      potsum_[p]->unpack_summand(buffer);
     }
   }
 
   // plastic history data
-  extract_from_pack<3, 3>(position, data, last_plastic_defgrd_inverse_);
-  extract_from_pack(position, data, last_alpha_isotropic_);
+  extract_from_pack<3, 3>(buffer, last_plastic_defgrd_inverse_);
+  extract_from_pack(buffer, last_alpha_isotropic_);
 
   // no need to pack this
   delta_alpha_i_.resize(last_alpha_isotropic_.size(), 0.);
@@ -177,8 +178,7 @@ void Mat::PlasticElastHyperVCU::unpack(const std::vector<char>& data)
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

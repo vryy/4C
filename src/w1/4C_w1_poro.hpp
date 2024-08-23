@@ -132,7 +132,7 @@ namespace Discret
       \ref pack and \ref unpack are used to communicate this element
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       //! Get vector of Teuchos::RCPs to the lines of this element
       std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;

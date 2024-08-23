@@ -55,7 +55,7 @@ namespace PARTICLEENGINE
      */
     static ParticleObjectType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     //! particle object type instance
@@ -111,7 +111,7 @@ namespace PARTICLEENGINE
 
     void pack(Core::Communication::PackBuffer& data) const override;
 
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //! \name set particle object members
     //! @{

@@ -26,12 +26,12 @@ Discret::ELEMENTS::SoHex8PoroP1ScatraType& Discret::ELEMENTS::SoHex8PoroP1Scatra
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroP1ScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* object =
       new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -81,12 +81,12 @@ Discret::ELEMENTS::SoTet4PoroP1ScatraType& Discret::ELEMENTS::SoTet4PoroP1Scatra
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroP1ScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* object =
       new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
           -1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

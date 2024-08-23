@@ -103,10 +103,11 @@ Mat::FluidPoroSinglePhaseType Mat::FluidPoroSinglePhaseType::instance_;
  *  Create material from given data                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 
-Core::Communication::ParObject* Mat::FluidPoroSinglePhaseType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::FluidPoroSinglePhaseType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::FluidPoroSinglePhase* fluid_poro = new Mat::FluidPoroSinglePhase();
-  fluid_poro->unpack(data);
+  fluid_poro->unpack(buffer);
   return fluid_poro;
 }
 
@@ -143,15 +144,13 @@ void Mat::FluidPoroSinglePhase::pack(Core::Communication::PackBuffer& data) cons
 /*----------------------------------------------------------------------*
  * unpack material                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSinglePhase::unpack(const std::vector<char>& data)
+void Mat::FluidPoroSinglePhase::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -166,8 +165,7 @@ void Mat::FluidPoroSinglePhase::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -330,10 +328,10 @@ Mat::FluidPoroSingleVolFracType Mat::FluidPoroSingleVolFracType::instance_;
  *----------------------------------------------------------------------*/
 
 Core::Communication::ParObject* Mat::FluidPoroSingleVolFracType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::FluidPoroSingleVolFrac* fluid_poro = new Mat::FluidPoroSingleVolFrac();
-  fluid_poro->unpack(data);
+  fluid_poro->unpack(buffer);
   return fluid_poro;
 }
 
@@ -370,15 +368,13 @@ void Mat::FluidPoroSingleVolFrac::pack(Core::Communication::PackBuffer& data) co
 /*----------------------------------------------------------------------*
  * unpack material                                      kremheller 10/17 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroSingleVolFrac::unpack(const std::vector<char>& data)
+void Mat::FluidPoroSingleVolFrac::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -393,8 +389,7 @@ void Mat::FluidPoroSingleVolFrac::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*
@@ -458,10 +453,10 @@ Mat::FluidPoroVolFracPressureType Mat::FluidPoroVolFracPressureType::instance_;
  *----------------------------------------------------------------------*/
 
 Core::Communication::ParObject* Mat::FluidPoroVolFracPressureType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::FluidPoroVolFracPressure* fluid_poro = new Mat::FluidPoroVolFracPressure();
-  fluid_poro->unpack(data);
+  fluid_poro->unpack(buffer);
   return fluid_poro;
 }
 
@@ -498,15 +493,13 @@ void Mat::FluidPoroVolFracPressure::pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  * unpack material                                      kremheller 02/18 |
  *----------------------------------------------------------------------*/
-void Mat::FluidPoroVolFracPressure::unpack(const std::vector<char>& data)
+void Mat::FluidPoroVolFracPressure::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -521,8 +514,7 @@ void Mat::FluidPoroVolFracPressure::unpack(const std::vector<char>& data)
             material_type());
     }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

@@ -125,14 +125,15 @@ namespace Core::Binstrategy::Utils
       // ---- unpack ----
       {
         // Put received nodes into discretization
-        std::vector<char>::size_type index = 0;
-        while (index < rdata.size())
+        Communication::UnpackBuffer buffer(rdata);
+        while (!buffer.at_end())
         {
           std::vector<char> data;
-          Core::Communication::ParObject::extract_from_pack(index, rdata, data);
+          Core::Communication::ParObject::extract_from_pack(buffer, data);
+          Communication::UnpackBuffer data_buffer(data);
           // this Teuchos::rcp holds the memory of the node
           Teuchos::RCP<Core::Communication::ParObject> object =
-              Teuchos::rcp(Core::Communication::factory(data), true);
+              Teuchos::rcp(Core::Communication::factory(data_buffer), true);
           Teuchos::RCP<Core::Elements::Element> element =
               Teuchos::rcp_dynamic_cast<Core::Elements::Element>(object);
           if (element == Teuchos::null) FOUR_C_THROW("Received object is not a element");
@@ -149,8 +150,6 @@ namespace Core::Binstrategy::Utils
           // add node (ownership already adapted on sending proc)
           discret->add_element(element);
         }
-        if (index != rdata.size())
-          FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
       }
     }
 
@@ -224,17 +223,15 @@ namespace Core::Binstrategy::Utils
       // ---- unpack ----
       {
         // Put received nodes into discretization
-        std::vector<char>::size_type index = 0;
-        while (index < rdata.size())
+        Communication::UnpackBuffer buffer(rdata);
+        while (!buffer.at_end())
         {
           std::pair<int, std::vector<int>> pair;
-          Core::Communication::ParObject::extract_from_pack(index, rdata, pair);
+          Core::Communication::ParObject::extract_from_pack(buffer, pair);
           std::vector<int>::const_iterator j;
           for (j = pair.second.begin(); j != pair.second.end(); ++j)
             bintorowelemap[*j].insert(pair.first);
         }
-        if (index != rdata.size())
-          FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(rdata.size()), index);
       }
     }
 

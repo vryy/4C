@@ -333,7 +333,7 @@ int Mat::Elastic::Summand::unique_par_object_id() const { return -1; }
 
 void Mat::Elastic::Summand::pack(Core::Communication::PackBuffer& data) const { return; }
 
-void Mat::Elastic::Summand::unpack(const std::vector<char>& data) { return; };
+void Mat::Elastic::Summand::unpack(Core::Communication::UnpackBuffer& buffer) { return; };
 
 
 // Function which reads in the given fiber value due to the FIBER1 nomenclature

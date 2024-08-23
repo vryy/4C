@@ -26,11 +26,11 @@ Discret::ELEMENTS::SoHex8PoroP1Type& Discret::ELEMENTS::SoHex8PoroP1Type::instan
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroP1Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
       new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -110,11 +110,11 @@ Discret::ELEMENTS::SoTet4PoroP1Type& Discret::ELEMENTS::SoTet4PoroP1Type::instan
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroP1Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
       new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

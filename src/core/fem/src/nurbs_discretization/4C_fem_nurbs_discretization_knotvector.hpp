@@ -30,7 +30,7 @@ namespace Core::FE
 
       static KnotvectorObjectType& instance() { return instance_; };
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
      private:
       static KnotvectorObjectType instance_;
@@ -323,7 +323,7 @@ namespace Core::FE
       \ref pack and \ref unpack are used to communicate this class
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       //! @}
 

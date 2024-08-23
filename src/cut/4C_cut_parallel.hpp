@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
 
 namespace Core::FE
 {
@@ -122,9 +123,8 @@ namespace Cut
     /*!
     \brief Unpack the point coordinates
      */
-    void unpack_points(std::vector<char>::size_type& posinData,  //!< position in data
-        std::vector<char>& dataRecv,                             //!< received data
-        std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords   //!< point coordinates
+    void unpack_points(Core::Communication::UnpackBuffer& buffer,  //!< received data
+        std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords     //!< point coordinates
     ) const;
 
     /*!

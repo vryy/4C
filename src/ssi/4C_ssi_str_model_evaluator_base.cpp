@@ -33,9 +33,7 @@ void Solid::ModelEvaluator::BaseSSI::determine_stress_strain()
   const auto stresses =
       Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
 
-  // initialize position pointer
-  std::vector<char>::size_type position(0);
-
+  Core::Communication::UnpackBuffer buffer(stressdata);
   // loop over all row elements
   for (int i = 0; i < discret().element_row_map()->NumMyElements(); ++i)
   {
@@ -43,7 +41,7 @@ void Solid::ModelEvaluator::BaseSSI::determine_stress_strain()
     const auto stresses_ele = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
 
     // extract stresses
-    Core::Communication::ParObject::extract_from_pack(position, stressdata, *stresses_ele);
+    Core::Communication::ParObject::extract_from_pack(buffer, *stresses_ele);
 
     // store stresses
     (*stresses)[discret().element_row_map()->GID(i)] = stresses_ele;

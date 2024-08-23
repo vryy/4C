@@ -46,10 +46,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScalarDepInterp::create_material()
 Mat::ScalarDepInterpType Mat::ScalarDepInterpType::instance_;
 
 
-Core::Communication::ParObject* Mat::ScalarDepInterpType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScalarDepInterpType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ScalarDepInterp* ScalarDepInterp = new Mat::ScalarDepInterp();
-  ScalarDepInterp->unpack(data);
+  ScalarDepInterp->unpack(buffer);
   return ScalarDepInterp;
 }
 
@@ -229,16 +230,16 @@ void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
+void Mat::ScalarDepInterp::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -254,7 +255,7 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
     }
 
   int numgp;
-  extract_from_pack(position, data, numgp);
+  extract_from_pack(buffer, numgp);
   if (not(numgp == 0))
   {
     lambda_ = std::vector<double>(numgp, 1.0);
@@ -262,18 +263,19 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
     for (int gp = 0; gp < numgp; gp++)
     {
       double lambda = 1.0;
-      extract_from_pack(position, data, lambda);
+      extract_from_pack(buffer, lambda);
       lambda_.at(gp) = lambda;
     }
   }
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
   std::vector<char> dataelastic;
-  extract_from_pack(position, data, dataelastic);
+  extract_from_pack(buffer, dataelastic);
   if (dataelastic.size() > 0)
   {
+    Core::Communication::UnpackBuffer buffer_dataelastic(dataelastic);
     Core::Communication::ParObject* o =
-        Core::Communication::factory(dataelastic);  // Unpack is done here
+        Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_zero_mat_ = Teuchos::rcp(matel);
@@ -283,11 +285,12 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
   std::vector<char> dataelastic2;
-  extract_from_pack(position, data, dataelastic2);
+  extract_from_pack(buffer, dataelastic2);
   if (dataelastic2.size() > 0)
   {
+    Core::Communication::UnpackBuffer buffer_dataelastic(dataelastic2);
     Core::Communication::ParObject* o =
-        Core::Communication::factory(dataelastic2);  // Unpack is done here
+        Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_unit_mat_ = Teuchos::rcp(matel);
@@ -295,8 +298,7 @@ void Mat::ScalarDepInterp::unpack(const std::vector<char>& data)
   else
     lambda_unit_mat_ = Teuchos::null;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

@@ -27,11 +27,11 @@ Discret::ELEMENTS::WallQuad4PoroScatraType& Discret::ELEMENTS::WallQuad4PoroScat
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>* object =
       new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -90,11 +90,11 @@ Discret::ELEMENTS::WallQuad9PoroScatraType& Discret::ELEMENTS::WallQuad9PoroScat
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>* object =
       new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -153,11 +153,11 @@ Discret::ELEMENTS::WallNurbs4PoroScatraType& Discret::ELEMENTS::WallNurbs4PoroSc
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>* object =
       new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -216,11 +216,11 @@ Discret::ELEMENTS::WallNurbs9PoroScatraType& Discret::ELEMENTS::WallNurbs9PoroSc
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>* object =
       new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -279,11 +279,11 @@ Discret::ELEMENTS::WallTri3PoroScatraType& Discret::ELEMENTS::WallTri3PoroScatra
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroScatraType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>* object =
       new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

@@ -33,7 +33,7 @@ namespace Discret
 
         static Ale2NurbsType& instance();
 
-        Core::Communication::ParObject* create(const std::vector<char>& data) override;
+        Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
         Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
             const std::string eledistype, const int id, const int owner) override;

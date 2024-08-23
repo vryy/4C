@@ -22,7 +22,7 @@ namespace CONTACT
 
     static FriNodeType& instance() { return instance_; };
 
-    Core::Communication::ParObject* create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
    private:
     static FriNodeType instance_;
@@ -71,7 +71,7 @@ namespace CONTACT
      class exists.
 
      */
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer);
 
     //@}
 
@@ -274,7 +274,7 @@ namespace CONTACT
     //! @name Access methods
 
     virtual void pack(Core::Communication::PackBuffer& data) const;
-    virtual void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+    virtual void unpack(Core::Communication::UnpackBuffer& buffer);
 
     /*!
      \brief Return the weighted wear per node (length 1)
@@ -444,7 +444,7 @@ namespace CONTACT
      \ref pack and \ref unpack are used to communicate this node
 
      */
-    void unpack(const std::vector<char>& data) override;
+    void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     //@}
 

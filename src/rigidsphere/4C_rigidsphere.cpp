@@ -40,10 +40,10 @@ Discret::ELEMENTS::RigidsphereType& Discret::ELEMENTS::RigidsphereType::instance
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::RigidsphereType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Rigidsphere* object = new Discret::ELEMENTS::Rigidsphere(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return (object);
 }
 
@@ -187,37 +187,36 @@ void Discret::ELEMENTS::Rigidsphere::pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                           meier 05/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Rigidsphere::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
 
   // extract all class variables
-  extract_from_pack(position, data, radius_);
-  extract_from_pack(position, data, rho_);
+  extract_from_pack(buffer, radius_);
+  extract_from_pack(buffer, rho_);
 
-  int unsigned numbonds = extract_int(position, data);
+  int unsigned numbonds = extract_int(buffer);
   for (int unsigned i = 0; i < numbonds; ++i)
   {
     std::vector<char> tmp;
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
+    Core::Communication::UnpackBuffer tmp_buffer(tmp);
     Teuchos::RCP<Core::Communication::ParObject> object =
-        Teuchos::rcp(Core::Communication::factory(tmp), true);
+        Teuchos::rcp(Core::Communication::factory(tmp_buffer), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
     if (link == Teuchos::null) FOUR_C_THROW("Received object is not a beam to beam linkage");
     mybondstobeams_[link->id()] = link;
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

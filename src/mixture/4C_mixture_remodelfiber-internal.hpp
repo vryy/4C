@@ -22,7 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
 
 namespace MIXTURE
 {
@@ -63,7 +64,7 @@ namespace MIXTURE
        * @param position (in/out) : Position, where to start reading
        * @param data (in) : Vector of chars to extract data from
        */
-      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+      void unpack(Core::Communication::UnpackBuffer& buffer);
 
       /// @brief Updates previous history data
       void update();

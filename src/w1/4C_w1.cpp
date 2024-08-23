@@ -23,10 +23,11 @@ Discret::ELEMENTS::Wall1Type Discret::ELEMENTS::Wall1Type::instance_;
 
 Discret::ELEMENTS::Wall1Type& Discret::ELEMENTS::Wall1Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Wall1* object = new Discret::ELEMENTS::Wall1(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -246,38 +247,36 @@ void Discret::ELEMENTS::Wall1::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  SoBase::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  SoBase::unpack(basedata_buffer);
   // material_
-  extract_from_pack(position, data, material_);
+  extract_from_pack(buffer, material_);
   // thickness_
-  extract_from_pack(position, data, thickness_);
+  extract_from_pack(buffer, thickness_);
   // plane strain or plane stress information_
-  wtype_ = static_cast<DimensionalReduction>(extract_int(position, data));
+  wtype_ = static_cast<DimensionalReduction>(extract_int(buffer));
   // gaussrule_
-  extract_from_pack(position, data, gaussrule_);
+  extract_from_pack(buffer, gaussrule_);
   // stresstype_
-  stresstype_ = static_cast<StressType>(extract_int(position, data));
+  stresstype_ = static_cast<StressType>(extract_int(buffer));
   // iseas_
-  iseas_ = extract_int(position, data);
+  iseas_ = extract_int(buffer);
   // eastype_
-  eastype_ = static_cast<EasType>(extract_int(position, data));
+  eastype_ = static_cast<EasType>(extract_int(buffer));
   // easdata_
-  unpack_eas_data(position, data);
+  unpack_eas_data(buffer);
   // distype_
-  distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
+  distype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
   // line search
-  extract_from_pack(position, data, old_step_length_);
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  extract_from_pack(buffer, old_step_length_);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

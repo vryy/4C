@@ -40,10 +40,11 @@ Discret::ELEMENTS::Beam3kType& Discret::ELEMENTS::Beam3kType::instance() { retur
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Beam3kType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Beam3kType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Beam3k* object = new Discret::ELEMENTS::Beam3k(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -384,62 +385,60 @@ void Discret::ELEMENTS::Beam3k::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           meier 05/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3k::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Beam3Base::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Beam3Base::unpack(base_buffer);
 
   // extract all class variables of beam3k element
-  use_fad_ = extract_int(position, data);
-  isinit_ = extract_int(position, data);
-  extract_from_pack<3, 1>(position, data, Tref_);
-  extract_from_pack<3, 1>(position, data, t_);
-  extract_from_pack<3, 1>(position, data, theta0_);
-  extract_from_pack<4, 1>(position, data, qrefconv_);
-  extract_from_pack<4, 1>(position, data, qrefnew_);
-  extract_from_pack<3, 1>(position, data, k0_);
-  extract_from_pack(position, data, length_);
-  extract_from_pack(position, data, jacobi_);
-  extract_from_pack(position, data, jacobi2_);
-  extract_from_pack(position, data, jacobi_cp_);
-  extract_from_pack(position, data, jacobi2_cp_);
-  rotvec_ = extract_int(position, data);
-  weakkirchhoff_ = extract_int(position, data);
-  extract_from_pack(position, data, eint_);
-  extract_from_pack(position, data, ekin_);
-  extract_from_pack<4, 1>(position, data, qconvmass_);
-  extract_from_pack<4, 1>(position, data, qnewmass_);
-  extract_from_pack<3, 1>(position, data, wconvmass_);
-  extract_from_pack<3, 1>(position, data, wnewmass_);
-  extract_from_pack<3, 1>(position, data, aconvmass_);
-  extract_from_pack<3, 1>(position, data, anewmass_);
-  extract_from_pack<3, 1>(position, data, amodconvmass_);
-  extract_from_pack<3, 1>(position, data, amodnewmass_);
-  extract_from_pack<3, 1>(position, data, rttconvmass_);
-  extract_from_pack<3, 1>(position, data, rttnewmass_);
-  extract_from_pack<3, 1>(position, data, rttmodconvmass_);
-  extract_from_pack<3, 1>(position, data, rttmodnewmass_);
-  extract_from_pack<3, 1>(position, data, rtconvmass_);
-  extract_from_pack<3, 1>(position, data, rtnewmass_);
-  extract_from_pack<3, 1>(position, data, rconvmass_);
-  extract_from_pack<3, 1>(position, data, rnewmass_);
-  extract_from_pack(position, data, axial_strain_gp_);
-  extract_from_pack(position, data, twist_gp_);
-  extract_from_pack(position, data, curvature_2_gp_);
-  extract_from_pack(position, data, curvature_3_gp_);
-  extract_from_pack(position, data, axial_force_gp_);
-  extract_from_pack(position, data, torque_gp_);
-  extract_from_pack(position, data, bending_moment_2_gp_);
-  extract_from_pack(position, data, bending_moment_3_gp_);
+  use_fad_ = extract_int(buffer);
+  isinit_ = extract_int(buffer);
+  extract_from_pack<3, 1>(buffer, Tref_);
+  extract_from_pack<3, 1>(buffer, t_);
+  extract_from_pack<3, 1>(buffer, theta0_);
+  extract_from_pack<4, 1>(buffer, qrefconv_);
+  extract_from_pack<4, 1>(buffer, qrefnew_);
+  extract_from_pack<3, 1>(buffer, k0_);
+  extract_from_pack(buffer, length_);
+  extract_from_pack(buffer, jacobi_);
+  extract_from_pack(buffer, jacobi2_);
+  extract_from_pack(buffer, jacobi_cp_);
+  extract_from_pack(buffer, jacobi2_cp_);
+  rotvec_ = extract_int(buffer);
+  weakkirchhoff_ = extract_int(buffer);
+  extract_from_pack(buffer, eint_);
+  extract_from_pack(buffer, ekin_);
+  extract_from_pack<4, 1>(buffer, qconvmass_);
+  extract_from_pack<4, 1>(buffer, qnewmass_);
+  extract_from_pack<3, 1>(buffer, wconvmass_);
+  extract_from_pack<3, 1>(buffer, wnewmass_);
+  extract_from_pack<3, 1>(buffer, aconvmass_);
+  extract_from_pack<3, 1>(buffer, anewmass_);
+  extract_from_pack<3, 1>(buffer, amodconvmass_);
+  extract_from_pack<3, 1>(buffer, amodnewmass_);
+  extract_from_pack<3, 1>(buffer, rttconvmass_);
+  extract_from_pack<3, 1>(buffer, rttnewmass_);
+  extract_from_pack<3, 1>(buffer, rttmodconvmass_);
+  extract_from_pack<3, 1>(buffer, rttmodnewmass_);
+  extract_from_pack<3, 1>(buffer, rtconvmass_);
+  extract_from_pack<3, 1>(buffer, rtnewmass_);
+  extract_from_pack<3, 1>(buffer, rconvmass_);
+  extract_from_pack<3, 1>(buffer, rnewmass_);
+  extract_from_pack(buffer, axial_strain_gp_);
+  extract_from_pack(buffer, twist_gp_);
+  extract_from_pack(buffer, curvature_2_gp_);
+  extract_from_pack(buffer, curvature_3_gp_);
+  extract_from_pack(buffer, axial_force_gp_);
+  extract_from_pack(buffer, torque_gp_);
+  extract_from_pack(buffer, bending_moment_2_gp_);
+  extract_from_pack(buffer, bending_moment_3_gp_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

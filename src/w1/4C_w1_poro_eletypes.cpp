@@ -28,10 +28,10 @@ Discret::ELEMENTS::WallQuad4PoroType& Discret::ELEMENTS::WallQuad4PoroType::inst
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallQuad4PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -98,10 +98,10 @@ Discret::ELEMENTS::WallQuad9PoroType& Discret::ELEMENTS::WallQuad9PoroType::inst
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallQuad9PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -167,10 +167,10 @@ Discret::ELEMENTS::WallNurbs4PoroType& Discret::ELEMENTS::WallNurbs4PoroType::in
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs4PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -236,10 +236,10 @@ Discret::ELEMENTS::WallNurbs9PoroType& Discret::ELEMENTS::WallNurbs9PoroType::in
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallNurbs9PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -305,10 +305,10 @@ Discret::ELEMENTS::WallTri3PoroType& Discret::ELEMENTS::WallTri3PoroType::instan
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::WallTri3PoroType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   auto* object = new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

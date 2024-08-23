@@ -153,18 +153,16 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::pack_all_affiliation_pairs(
 void ParticleRigidBody::RigidBodyAffiliationPairs::unpack_affiliation_pairs(
     const std::vector<char>& buffer)
 {
-  std::vector<char>::size_type position = 0;
-  while (position < buffer.size())
+  Core::Communication::UnpackBuffer data(buffer);
+  while (!data.at_end())
   {
     // get affiliation pair
-    const int globalid = Core::Communication::ParObject::extract_int(position, buffer);
-    const int rigidbody = Core::Communication::ParObject::extract_int(position, buffer);
+    const int globalid = Core::Communication::ParObject::extract_int(data);
+    const int rigidbody = Core::Communication::ParObject::extract_int(data);
 
     // add affiliation pair
     affiliationdata_[globalid] = rigidbody;
   }
-  if (position != buffer.size())
-    FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
 void ParticleRigidBody::RigidBodyAffiliationPairs::add_affiliation_pair_to_buffer(

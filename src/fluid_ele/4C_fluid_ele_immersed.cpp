@@ -23,10 +23,10 @@ Discret::ELEMENTS::FluidTypeImmersed& Discret::ELEMENTS::FluidTypeImmersed::inst
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::FluidTypeImmersed::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::FluidImmersed* object = new Discret::ELEMENTS::FluidImmersed(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -117,25 +117,23 @@ void Discret::ELEMENTS::FluidImmersed::pack(Core::Communication::PackBuffer& dat
  |  Unpack data                                                (public) |
  |                                                          rauch 03/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidImmersed::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidImmersed::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Discret::ELEMENTS::Fluid::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Discret::ELEMENTS::Fluid::unpack(basedata_buffer);
   // Part of immersion domain?
-  is_immersed_ = extract_int(position, data);
+  is_immersed_ = extract_int(buffer);
   // Part of immersion domain for immersed boundary?
-  is_immersed_bdry_ = extract_int(position, data);
+  is_immersed_bdry_ = extract_int(buffer);
   // has dirichletvals projected?
-  has_projected_dirichletvalues_ = extract_int(position, data);
+  has_projected_dirichletvalues_ = extract_int(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

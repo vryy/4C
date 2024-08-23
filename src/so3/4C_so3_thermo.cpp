@@ -84,27 +84,26 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pack(
  | unpack data (public)                                      dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::unpack(
+    Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // detJ_
-  So3Ele::extract_from_pack(position, data, detJ_);
+  So3Ele::extract_from_pack(buffer, detJ_);
   // invJ_
   int size = 0;
-  So3Ele::extract_from_pack(position, data, size);
+  So3Ele::extract_from_pack(buffer, size);
   invJ_.resize(size, Core::LinAlg::Matrix<nsd_, nsd_>(true));
-  for (int i = 0; i < size; ++i) So3Ele::extract_from_pack(position, data, invJ_[i]);
+  for (int i = 0; i < size; ++i) So3Ele::extract_from_pack(buffer, invJ_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
-  So3Ele::extract_from_pack(position, data, basedata);
-  So3Ele::unpack(basedata);
+  So3Ele::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  So3Ele::unpack(basedata_buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 
 }  // unpack()

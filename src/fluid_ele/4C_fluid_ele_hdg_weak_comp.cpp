@@ -30,10 +30,10 @@ Discret::ELEMENTS::FluidHDGWeakCompType& Discret::ELEMENTS::FluidHDGWeakCompType
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::FluidHDGWeakComp* object = new Discret::ELEMENTS::FluidHDGWeakComp(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -155,26 +155,24 @@ void Discret::ELEMENTS::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Fluid::extract_from_pack(position, data, basedata);
-  Fluid::unpack(basedata);
+  Fluid::extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Fluid::unpack(basedata_buffer);
 
   int val = 0;
-  extract_from_pack(position, data, val);
+  extract_from_pack(buffer, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
   degree_ = val;
-  extract_from_pack(position, data, val);
+  extract_from_pack(buffer, val);
   completepol_ = val;
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

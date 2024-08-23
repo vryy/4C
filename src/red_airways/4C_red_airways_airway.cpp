@@ -26,10 +26,10 @@ Discret::ELEMENTS::RedAirwayType& Discret::ELEMENTS::RedAirwayType::instance() {
 
 
 Core::Communication::ParObject* Discret::ELEMENTS::RedAirwayType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::RedAirway* object = new Discret::ELEMENTS::RedAirway(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -183,40 +183,38 @@ void Discret::ELEMENTS::RedAirway::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirway::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::RedAirway::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
 
-  extract_from_pack(position, data, elem_type_);
-  extract_from_pack(position, data, resistance_);
-  extract_from_pack(position, data, elemsolving_type_);
+  extract_from_pack(buffer, elem_type_);
+  extract_from_pack(buffer, resistance_);
+  extract_from_pack(buffer, elemsolving_type_);
 
-  extract_from_pack(position, data, airway_params_.power_velocity_profile);
-  extract_from_pack(position, data, airway_params_.wall_elasticity);
-  extract_from_pack(position, data, airway_params_.poisson_ratio);
-  extract_from_pack(position, data, airway_params_.wall_thickness);
-  extract_from_pack(position, data, airway_params_.area);
-  extract_from_pack(position, data, airway_params_.viscous_Ts);
-  extract_from_pack(position, data, airway_params_.viscous_phase_shift);
-  extract_from_pack(position, data, airway_params_.branch_length);
-  extract_from_pack(position, data, airway_params_.generation);
+  extract_from_pack(buffer, airway_params_.power_velocity_profile);
+  extract_from_pack(buffer, airway_params_.wall_elasticity);
+  extract_from_pack(buffer, airway_params_.poisson_ratio);
+  extract_from_pack(buffer, airway_params_.wall_thickness);
+  extract_from_pack(buffer, airway_params_.area);
+  extract_from_pack(buffer, airway_params_.viscous_Ts);
+  extract_from_pack(buffer, airway_params_.viscous_phase_shift);
+  extract_from_pack(buffer, airway_params_.branch_length);
+  extract_from_pack(buffer, airway_params_.generation);
 
-  extract_from_pack(position, data, airway_params_.airway_coll);
-  extract_from_pack(position, data, airway_params_.s_close);
-  extract_from_pack(position, data, airway_params_.s_open);
-  extract_from_pack(position, data, airway_params_.p_crit_open);
-  extract_from_pack(position, data, airway_params_.p_crit_close);
-  extract_from_pack(position, data, airway_params_.open_init);
+  extract_from_pack(buffer, airway_params_.airway_coll);
+  extract_from_pack(buffer, airway_params_.s_close);
+  extract_from_pack(buffer, airway_params_.s_open);
+  extract_from_pack(buffer, airway_params_.p_crit_open);
+  extract_from_pack(buffer, airway_params_.p_crit_close);
+  extract_from_pack(buffer, airway_params_.open_init);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

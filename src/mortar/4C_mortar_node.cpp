@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 Mortar::NodeType Mortar::NodeType::instance_;
 
 
-Core::Communication::ParObject* Mortar::NodeType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mortar::NodeType::create(Core::Communication::UnpackBuffer& buffer)
 {
   std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
   auto* node = new Mortar::Node(0, x, 0, dofs, false);
-  node->unpack(data);
+  node->unpack(buffer);
   return node;
 }
 
@@ -68,20 +68,18 @@ void Mortar::NodeDataContainer::pack(Core::Communication::PackBuffer& data) cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::NodeDataContainer::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void Mortar::NodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // n_
-  Core::Communication::ParObject::extract_from_pack(position, data, n_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, n_, 3 * sizeof(double));
   // edgetangent_
-  Core::Communication::ParObject::extract_from_pack(
-      position, data, edgeTangent_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, edgeTangent_, 3 * sizeof(double));
   // lm_
-  Core::Communication::ParObject::extract_from_pack(position, data, lm_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, lm_, 3 * sizeof(double));
   // lmold_
-  Core::Communication::ParObject::extract_from_pack(position, data, lmold_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, lmold_, 3 * sizeof(double));
   // lmuzawa_
-  Core::Communication::ParObject::extract_from_pack(position, data, lmuzawa_, 3 * sizeof(double));
+  Core::Communication::ParObject::extract_from_pack(buffer, lmuzawa_, 3 * sizeof(double));
 }
 
 
@@ -224,61 +222,59 @@ void Mortar::Node::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::unpack(const std::vector<char>& data)
+void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Core::Nodes::Node
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Core::Nodes::Node::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer basedata_buffer(basedata);
+  Core::Nodes::Node::unpack(basedata_buffer);
   // isslave_
-  isslave_ = extract_int(position, data);
+  isslave_ = extract_int(buffer);
   // istiedslave_
-  istiedslave_ = extract_int(position, data);
+  istiedslave_ = extract_int(buffer);
   // isonbound_
-  isonbound_ = extract_int(position, data);
+  isonbound_ = extract_int(buffer);
   // isonedge_
-  isonedge_ = extract_int(position, data);
+  isonedge_ = extract_int(buffer);
   // isoncorner_
-  isoncorner_ = extract_int(position, data);
+  isoncorner_ = extract_int(buffer);
   // isdbc_
-  isdbc_ = extract_int(position, data);
+  isdbc_ = extract_int(buffer);
   // dbcdofs_
-  dbcdofs_[0] = extract_int(position, data);
-  dbcdofs_[1] = extract_int(position, data);
-  dbcdofs_[2] = extract_int(position, data);
+  dbcdofs_[0] = extract_int(buffer);
+  dbcdofs_[1] = extract_int(buffer);
+  dbcdofs_[2] = extract_int(buffer);
   // dentries_
-  extract_from_pack(position, data, dentries_);
+  extract_from_pack(buffer, dentries_);
   // dofs_
-  extract_from_pack(position, data, dofs_);
+  extract_from_pack(buffer, dofs_);
   // xspatial_
-  extract_from_pack(position, data, xspatial_, 3 * sizeof(double));
+  extract_from_pack(buffer, xspatial_, 3 * sizeof(double));
   // uold_
-  extract_from_pack(position, data, uold_, 3 * sizeof(double));
+  extract_from_pack(buffer, uold_, 3 * sizeof(double));
   // hasproj_
-  hasproj_ = extract_int(position, data);
+  hasproj_ = extract_int(buffer);
   // hassegment_
-  hassegment_ = extract_int(position, data);
+  hassegment_ = extract_int(buffer);
   // nurbsw_
-  nurbsw_ = extract_double(position, data);
+  nurbsw_ = extract_double(buffer);
 
   // data_
-  bool hasdata = extract_int(position, data);
+  bool hasdata = extract_int(buffer);
   if (hasdata)
   {
     modata_ = Teuchos::rcp(new Mortar::NodeDataContainer());
-    modata_->unpack(position, data);
+    modata_->unpack(buffer);
   }
   else
   {
     modata_ = Teuchos::null;
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

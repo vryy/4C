@@ -58,10 +58,10 @@ void Mat::Elastic::AnisoActiveStressEvolution::pack_summand(
 }
 
 void Mat::Elastic::AnisoActiveStressEvolution::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  extract_from_pack(position, data, tauc_n_);
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  extract_from_pack(buffer, tauc_n_);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
 void Mat::Elastic::AnisoActiveStressEvolution::register_anisotropy_extensions(

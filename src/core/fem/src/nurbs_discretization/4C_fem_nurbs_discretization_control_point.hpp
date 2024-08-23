@@ -34,7 +34,7 @@ namespace Core::FE
 
       static ControlPointType& instance() { return instance_; };
 
-      Core::Communication::ParObject* create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
      private:
       static ControlPointType instance_;
@@ -126,7 +126,7 @@ namespace Core::FE
       \param data (in): a char vector to unpack the data from
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       //@}
 

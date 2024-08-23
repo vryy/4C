@@ -26,11 +26,11 @@ Discret::ELEMENTS::MembraneScatraTri3Type& Discret::ELEMENTS::MembraneScatraTri3
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri3Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>* object =
       new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -79,11 +79,11 @@ Discret::ELEMENTS::MembraneScatraTri6Type& Discret::ELEMENTS::MembraneScatraTri6
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraTri6Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>* object =
       new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -132,11 +132,11 @@ Discret::ELEMENTS::MembraneScatraQuad4Type& Discret::ELEMENTS::MembraneScatraQua
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad4Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>* object =
       new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -185,11 +185,11 @@ Discret::ELEMENTS::MembraneScatraQuad9Type& Discret::ELEMENTS::MembraneScatraQua
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::MembraneScatraQuad9Type::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>* object =
       new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 

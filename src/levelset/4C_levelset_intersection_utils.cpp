@@ -552,18 +552,18 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
     const std::vector<char>& data, std::map<int, Core::Geo::BoundaryIntCells>& intcellmap)
 {
   // pointer to current position in a group of cells in local std::string (counts bytes)
-  std::vector<char>::size_type posingroup = 0;
 
-  while (posingroup < data.size())
+  Core::Communication::UnpackBuffer buffer(data);
+  while (!buffer.at_end())
   {
     // extract fluid element gid
     int elegid = -1;
-    Core::Communication::ParObject::extract_from_pack(posingroup, data, elegid);
+    Core::Communication::ParObject::extract_from_pack(buffer, elegid);
     if (elegid < 0) FOUR_C_THROW("extraction of element gid failed");
 
     // extract number of boundary integration cells for this element
     int numvecs = -1;
-    Core::Communication::ParObject::extract_from_pack(posingroup, data, numvecs);
+    Core::Communication::ParObject::extract_from_pack(buffer, numvecs);
 
     // vector holding group of boundary integration cells belonging to this element
     Core::Geo::BoundaryIntCells intcellvector;
@@ -576,17 +576,17 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
       // distype of cell
       Core::FE::CellType distype;
       int distypeint = -1;
-      Core::Communication::ParObject::extract_from_pack(posingroup, data, distypeint);
+      Core::Communication::ParObject::extract_from_pack(buffer, distypeint);
       distype = (Core::FE::CellType)distypeint;
       if (!(distype == Core::FE::CellType::tri3 || distype == Core::FE::CellType::quad4))
         FOUR_C_THROW("unexpected distype %d", distypeint);
 
       Core::LinAlg::SerialDenseMatrix vertices_xi;
-      Core::Communication::ParObject::extract_from_pack(posingroup, data, vertices_xi);
+      Core::Communication::ParObject::extract_from_pack(buffer, vertices_xi);
 
       // coordinates of cell vertices in physical space
       Core::LinAlg::SerialDenseMatrix vertices_xyz;
-      Core::Communication::ParObject::extract_from_pack(posingroup, data, vertices_xyz);
+      Core::Communication::ParObject::extract_from_pack(buffer, vertices_xyz);
 
       // store boundary integration cells in boundaryintcelllist
       Core::LinAlg::SerialDenseMatrix dummyMat;
@@ -597,9 +597,6 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
     // add group of cells for this element to the map
     intcellmap.insert(std::make_pair(elegid, intcellvector));
   }
-  // check correct reading
-  if (posingroup != data.size())
-    FOUR_C_THROW("mismatch in size of data %d <-> %d", (int)data.size(), posingroup);
 }
 
 

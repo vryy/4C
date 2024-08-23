@@ -82,26 +82,23 @@ void Discret::ELEMENTS::PreStress::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PreStress::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::PreStress::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract isinit_
-  isinit_ = extract_int(position, data);
+  isinit_ = extract_int(buffer);
 
   // extract numnode_
-  extract_from_pack(position, data, numnode_);
+  extract_from_pack(buffer, numnode_);
 
   // extract Fhist_
-  extract_from_pack(position, data, *fhist_);
+  extract_from_pack(buffer, *fhist_);
 
   // extract invJhist_
-  extract_from_pack(position, data, *inv_jhist_);
+  extract_from_pack(buffer, *inv_jhist_);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
 }
 

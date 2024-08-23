@@ -28,10 +28,11 @@ Discret::ELEMENTS::Bele3Type Discret::ELEMENTS::Bele3Type::instance_;
 Discret::ELEMENTS::Bele3Type& Discret::ELEMENTS::Bele3Type::instance() { return instance_; }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::Bele3Type::create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Bele3Type::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Discret::ELEMENTS::Bele3* object = new Discret::ELEMENTS::Bele3(-1, -1);
-  object->unpack(data);
+  object->unpack(buffer);
   return object;
 }
 
@@ -221,21 +222,19 @@ void Discret::ELEMENTS::Bele3::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Bele3::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract base class Element
   std::vector<char> basedata(0);
-  extract_from_pack(position, data, basedata);
-  Element::unpack(basedata);
+  extract_from_pack(buffer, basedata);
+  Core::Communication::UnpackBuffer base_buffer(basedata);
+  Element::unpack(base_buffer);
   // numdofpernode_
-  numdofpernode_ = extract_int(position, data);
+  numdofpernode_ = extract_int(buffer);
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 

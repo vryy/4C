@@ -457,11 +457,12 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       avg_w.clear();
       avg_p.clear();
 
-      std::vector<char>::size_type position = 0;
 
+
+      Core::Communication::UnpackBuffer buffer(rblock);
       // size
       int size;
-      Core::Communication::ParObject::extract_from_pack(position, rblock, size);
+      Core::Communication::ParObject::extract_from_pack(buffer, size);
 
       x.resize(size, 0.0);
       y.resize(size, 0.0);
@@ -473,17 +474,17 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       avg_p.resize(size, 0.0);
 
       // x and y
-      Core::Communication::ParObject::extract_from_pack(position, rblock, x);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, y);
+      Core::Communication::ParObject::extract_from_pack(buffer, x);
+      Core::Communication::ParObject::extract_from_pack(buffer, y);
 
       // counters
-      Core::Communication::ParObject::extract_from_pack(position, rblock, count);
+      Core::Communication::ParObject::extract_from_pack(buffer, count);
 
       // avgs
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_u);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_v);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_w);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_p);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_u);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_v);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_w);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_p);
 
       rblock.clear();
     }
@@ -748,11 +749,11 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       avg_w.clear();
       avg_p.clear();
 
-      std::vector<char>::size_type position = 0;
+      Core::Communication::UnpackBuffer buffer(rblock);
 
       // size
       int size;
-      Core::Communication::ParObject::extract_from_pack(position, rblock, size);
+      Core::Communication::ParObject::extract_from_pack(buffer, size);
 
       count.resize(size, 0);
       avg_u.resize(size, 0.0);
@@ -761,17 +762,17 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       avg_p.resize(size, 0.0);
 
       // x and y
-      Core::Communication::ParObject::extract_from_pack(position, rblock, x);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, y);
+      Core::Communication::ParObject::extract_from_pack(buffer, x);
+      Core::Communication::ParObject::extract_from_pack(buffer, y);
 
       // counters
-      Core::Communication::ParObject::extract_from_pack(position, rblock, count);
+      Core::Communication::ParObject::extract_from_pack(buffer, count);
 
       // avgs
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_u);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_v);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_w);
-      Core::Communication::ParObject::extract_from_pack(position, rblock, avg_p);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_u);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_v);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_w);
+      Core::Communication::ParObject::extract_from_pack(buffer, avg_p);
 
       rblock.clear();
     }

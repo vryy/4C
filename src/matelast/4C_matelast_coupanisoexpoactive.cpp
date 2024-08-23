@@ -57,11 +57,10 @@ void Mat::Elastic::CoupAnisoExpoActive::pack_summand(Core::Communication::PackBu
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void Mat::Elastic::CoupAnisoExpoActive::unpack_summand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
+void Mat::Elastic::CoupAnisoExpoActive::unpack_summand(Core::Communication::UnpackBuffer& buffer)
 {
-  extract_from_pack(position, data, lambdaact_);
-  anisotropy_extension_.unpack_anisotropy(data, position);
+  extract_from_pack(buffer, lambdaact_);
+  anisotropy_extension_.unpack_anisotropy(buffer);
 
   d_p_iact_ = evaluated_psi_active();
 }

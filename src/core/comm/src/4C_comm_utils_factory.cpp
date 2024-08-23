@@ -18,9 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Core::Communication::factory(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Communication::factory(
+    Core::Communication::UnpackBuffer& buffer)
 {
-  return ParObjectFactory::instance().create(data);
+  return ParObjectFactory::instance().create(buffer);
 }
 
 /*----------------------------------------------------------------------*

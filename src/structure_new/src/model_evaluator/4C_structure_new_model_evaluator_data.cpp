@@ -86,20 +86,14 @@ namespace
   template <typename T>
   static void unpack_received_block(const std::vector<char>& receiveddata, T& collected_data)
   {
-    std::vector<char>::size_type index = 0;
-    while (index < receiveddata.size())
+    Core::Communication::UnpackBuffer buffer(receiveddata);
+    while (!buffer.at_end())
     {
       // the set gets cleared at the beginning of the extract_from_pack routine!
       T rs;
-      Core::Communication::ParObject::extract_from_pack(index, receiveddata, rs);
+      Core::Communication::ParObject::extract_from_pack(buffer, rs);
       collected_data.insert(rs.begin(), rs.end());
     }
-    // sanity check
-    if (index > receiveddata.size())
-      FOUR_C_THROW(
-          "Something is messed up in the received data block! Expected "
-          "size = %d <--> received size = %d",
-          receiveddata.size(), index);
   }
 
   template <typename T>

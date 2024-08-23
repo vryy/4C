@@ -508,8 +508,7 @@ namespace Core::Communication
         at position index in recvblock. index must be incremented by the objects
         size.
        */
-      virtual void unpack_object(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) = 0;
+      virtual void unpack_object(int gid, UnpackBuffer& buffer) = 0;
 
       /// after communication remove all objects that are not in the target map
       virtual void post_export_cleanup(Exporter* exporter) = 0;
@@ -551,13 +550,13 @@ namespace Core::Communication
         return false;
       }
 
-      void unpack_object(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
+      void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        std::vector<char> data;
-        ParObject::extract_from_pack(index, recvblock, data);
+        std::vector<char> object_data;
+        ParObject::extract_from_pack(buffer, object_data);
 
-        ParObject* o = factory(data);
+        UnpackBuffer object_buffer(object_data);
+        ParObject* o = factory(object_buffer);
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
           FOUR_C_THROW("typename T in template does not implement ParObject (dynamic_cast failed)");
@@ -611,11 +610,10 @@ namespace Core::Communication
         return false;
       }
 
-      void unpack_object(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
+      void unpack_object(int gid, UnpackBuffer& buffer) override
       {
         Teuchos::RCP<T> obj = Teuchos::rcp(new T);
-        ParObject::extract_from_pack(index, recvblock, *obj);
+        ParObject::extract_from_pack(buffer, *obj);
 
         // add object to my map
         objects_[gid] = obj;
@@ -660,11 +658,9 @@ namespace Core::Communication
         return false;
       }
 
-      void unpack_object(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
+      void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        memcpy(&objects_[gid], &recvblock[index], sizeof(T));
-        index += sizeof(T);
+        ParObject::extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override
@@ -707,10 +703,9 @@ namespace Core::Communication
         return false;
       }
 
-      void unpack_object(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
+      void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        ParObject::extract_from_pack(index, recvblock, objects_[gid]);
+        ParObject::extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override
@@ -750,10 +745,9 @@ namespace Core::Communication
         return false;
       }
 
-      void unpack_object(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
+      void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        ParObject::extract_from_pack(index, recvblock, objects_[gid]);
+        ParObject::extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override
@@ -794,10 +788,9 @@ namespace Core::Communication
         return false;
       }
 
-      void unpack_object(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
+      void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        ParObject::extract_from_pack(index, recvblock, objects_[gid]);
+        ParObject::extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override

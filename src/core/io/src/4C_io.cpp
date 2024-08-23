@@ -146,12 +146,13 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
   Teuchos::RCP<std::vector<char>> data =
       reader_->read_result_data_vec_char(id_path, value_path, columns, get_comm(), elemap);
 
-  std::vector<char>::size_type position = 0;
+
+  Communication::UnpackBuffer buffer(*data);
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matrix =
         Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
-    Core::Communication::ParObject::extract_from_pack(position, *data, *matrix);
+    Core::Communication::ParObject::extract_from_pack(buffer, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
 }
@@ -180,8 +181,8 @@ void Core::IO::DiscretizationReader::read_mesh(int step)
   // number of elements in dis_
   // the call to redistribute deletes the unnecessary elements,
   // so everything should be OK
-  dis_->un_pack_my_nodes(nodedata);
-  dis_->un_pack_my_elements(elementdata);
+  dis_->unpack_my_nodes(nodedata);
+  dis_->unpack_my_elements(elementdata);
 
   dis_->setup_ghosting(true, false, false);
 
@@ -201,7 +202,7 @@ void Core::IO::DiscretizationReader::read_nodes_only(int step)
       meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // unpack nodes; fill_complete() has to be called manually
-  dis_->un_pack_my_nodes(nodedata);
+  dis_->unpack_my_nodes(nodedata);
   return;
 }
 
@@ -235,8 +236,8 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
   // number of elements in dis_
   // the call to redistribute deletes the unnecessary elements,
   // so everything should be OK
-  dis_->un_pack_my_nodes(nodedata);
-  dis_->un_pack_my_elements(elementdata);
+  dis_->unpack_my_nodes(nodedata);
+  dis_->unpack_my_elements(elementdata);
   dis_->redistribute(*noderowmap, *nodecolmap, *elerowmap, *elecolmap);
   return;
 }

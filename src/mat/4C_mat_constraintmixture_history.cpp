@@ -17,10 +17,10 @@ FOUR_C_NAMESPACE_OPEN
 Mat::ConstraintMixtureHistoryType Mat::ConstraintMixtureHistoryType::instance_;
 
 Core::Communication::ParObject* Mat::ConstraintMixtureHistoryType::create(
-    const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ConstraintMixtureHistory* cmhis = new Mat::ConstraintMixtureHistory();
-  cmhis->unpack(data);
+  cmhis->unpack(buffer);
   return cmhis;
 }
 
@@ -65,22 +65,20 @@ void Mat::ConstraintMixtureHistory::pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  |  History: Unpack                               (public)         03/11|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixtureHistory::unpack(const std::vector<char>& data)
+void Mat::ConstraintMixtureHistory::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  std::vector<char>::size_type position = 0;
-
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // unpack internal variables
   double a;
-  extract_from_pack(position, data, a);
+  extract_from_pack(buffer, a);
   depositiontime_ = a;
-  extract_from_pack(position, data, a);
+  extract_from_pack(buffer, a);
   dt_ = a;
   int b;
-  extract_from_pack(position, data, b);
+  extract_from_pack(buffer, b);
   numgp_ = b;
-  extract_from_pack(position, data, b);
+  extract_from_pack(buffer, b);
   expvar_ = b;
 
   collagenstretch1_ = Teuchos::rcp(new std::vector<double>(numgp_));
@@ -101,37 +99,36 @@ void Mat::ConstraintMixtureHistory::unpack(const std::vector<char>& data)
 
   for (int gp = 0; gp < numgp_; ++gp)
   {
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     collagenstretch1_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     collagenstretch2_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     collagenstretch3_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     collagenstretch4_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     massprod1_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     massprod2_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     massprod3_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     massprod4_->at(gp) = a;
     if (expvar_)
     {
-      extract_from_pack(position, data, a);
+      extract_from_pack(buffer, a);
       vardegrad1_->at(gp) = a;
-      extract_from_pack(position, data, a);
+      extract_from_pack(buffer, a);
       vardegrad2_->at(gp) = a;
-      extract_from_pack(position, data, a);
+      extract_from_pack(buffer, a);
       vardegrad3_->at(gp) = a;
-      extract_from_pack(position, data, a);
+      extract_from_pack(buffer, a);
       vardegrad4_->at(gp) = a;
     }
   }
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
   return;
 }

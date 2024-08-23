@@ -55,10 +55,11 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoAnisotropic::create_material()
 Mat::ViscoAnisotropicType Mat::ViscoAnisotropicType::instance_;
 
 
-Core::Communication::ParObject* Mat::ViscoAnisotropicType::create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ViscoAnisotropicType::create(
+    Core::Communication::UnpackBuffer& buffer)
 {
   Mat::ViscoAnisotropic* visco = new Mat::ViscoAnisotropic();
-  visco->unpack(data);
+  visco->unpack(buffer);
   return visco;
 }
 
@@ -125,16 +126,16 @@ void Mat::ViscoAnisotropic::pack(Core::Communication::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         05/08|
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::unpack(const std::vector<char>& data)
+void Mat::ViscoAnisotropic::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   isinit_ = true;
-  std::vector<char>::size_type position = 0;
 
-  Core::Communication::extract_and_assert_id(position, data, unique_par_object_id());
+
+  Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // matid and recover params_
   int matid;
-  extract_from_pack(position, data, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
   if (Global::Problem::instance()->materials() != Teuchos::null)
     if (Global::Problem::instance()->materials()->num() != 0)
@@ -150,12 +151,11 @@ void Mat::ViscoAnisotropic::unpack(const std::vector<char>& data)
     }
 
   int numgp, numhist;
-  extract_from_pack(position, data, numgp);
+  extract_from_pack(buffer, numgp);
   if (numgp == 0)
   {  // no history data to unpack
     isinit_ = false;
-    if (position != data.size())
-      FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+    FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
     return;
   }
   // unpack fiber internal variables
@@ -167,19 +167,19 @@ void Mat::ViscoAnisotropic::unpack(const std::vector<char>& data)
   for (int gp = 0; gp < numgp; ++gp)
   {
     std::vector<double> a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     a1_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     a2_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     ca1_->at(gp) = a;
-    extract_from_pack(position, data, a);
+    extract_from_pack(buffer, a);
     ca2_->at(gp) = a;
   }
 
 
   // unpack history
-  extract_from_pack(position, data, numhist);
+  extract_from_pack(buffer, numhist);
   histstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
   artstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
   histstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
@@ -192,15 +192,14 @@ void Mat::ViscoAnisotropic::unpack(const std::vector<char>& data)
     artstresscurr_->push_back(tmp);
 
     // last vectors are unpacked
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     histstresslast_->push_back(tmp);
-    extract_from_pack(position, data, tmp);
+    extract_from_pack(buffer, tmp);
     artstresslast_->push_back(tmp);
   }
 
 
-  if (position != data.size())
-    FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
+  FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
 /*----------------------------------------------------------------------*

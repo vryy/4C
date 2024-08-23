@@ -220,11 +220,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
 
         coordsvec.clear();
 
-        std::vector<char>::size_type index = 0;
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
           x1cavcoords.insert(onecoord);
         }
       }
@@ -277,11 +277,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
 
         coordsvec.clear();
 
-        std::vector<char>::size_type index = 0;
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
           x2cavcoords.insert(onecoord);
         }
       }
@@ -334,11 +334,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
 
         coordsvec.clear();
 
-        std::vector<char>::size_type index = 0;
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
           x2wavcoords.insert(onecoord);
         }
       }
@@ -391,11 +391,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
 
         coordsvec.clear();
 
-        std::vector<char>::size_type index = 0;
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
           clravcoords.insert(onecoord);
         }
       }
@@ -448,11 +448,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
 
         coordsvec.clear();
 
-        std::vector<char>::size_type index = 0;
-        while (index < rblock.size())
+        Core::Communication::UnpackBuffer buffer(rblock);
+        while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
           ctbavcoords.insert(onecoord);
         }
       }
@@ -511,11 +511,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
 
             coordsvec.clear();
 
-            std::vector<char>::size_type index = 0;
-            while (index < rblock.size())
+            Core::Communication::UnpackBuffer buffer(rblock);
+            while (!buffer.at_end())
             {
               double onecoord;
-              Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+              Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
               x1avcoords.insert(onecoord);
             }
           }
@@ -568,11 +568,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
 
             coordsvec.clear();
 
-            std::vector<char>::size_type index = 0;
-            while (index < rblock.size())
+            Core::Communication::UnpackBuffer buffer(rblock);
+            while (!buffer.at_end())
             {
               double onecoord;
-              Core::Communication::ParObject::extract_from_pack(index, rblock, onecoord);
+              Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
               x2avcoords.insert(onecoord);
             }
           }

@@ -88,7 +88,7 @@ void Discret::ELEMENTS::Bele3Line::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3Line::unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Bele3Line::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Bele3Line element does not support communication");
   return;

@@ -75,10 +75,9 @@ void MIXTURE::FunctionMixtureRule::setup(Teuchos::ParameterList& params, const i
       create_functions_from_function_ids(params_->mass_fractions_funct_ids_);
 }
 
-void MIXTURE::FunctionMixtureRule::unpack_mixture_rule(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+void MIXTURE::FunctionMixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
-  MIXTURE::MixtureRule::unpack_mixture_rule(position, data);
+  MIXTURE::MixtureRule::unpack_mixture_rule(buffer);
 
   mass_fractions_functions_ =
       create_functions_from_function_ids(params_->mass_fractions_funct_ids_);

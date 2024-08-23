@@ -48,7 +48,7 @@ namespace Discret
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
-      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       void material_post_setup(
           Core::Elements::Element& ele, Mat::So3Material& solid_material) override;

@@ -69,7 +69,7 @@ namespace Discret
       \ref pack and \ref unpack are used to communicate this node
 
       */
-      void unpack(const std::vector<char>& data) override;
+      void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       /// get history of deformation gradient
       inline Core::LinAlg::SerialDenseMatrix& f_history() const { return *fhist_; }

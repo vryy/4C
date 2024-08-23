@@ -60,11 +60,11 @@ void MIXTURE::MixtureConstituentElastHyperDamage::pack_constituent(
 
 // Unpack the constituent
 void MIXTURE::MixtureConstituentElastHyperDamage::unpack_constituent(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
+    Core::Communication::UnpackBuffer& buffer)
 {
-  MixtureConstituentElastHyperBase::unpack_constituent(position, data);
+  MixtureConstituentElastHyperBase::unpack_constituent(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(position, data, current_reference_growth_);
+  Core::Communication::ParObject::extract_from_pack(buffer, current_reference_growth_);
 }
 
 // Reads the element from the input file

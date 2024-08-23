@@ -1858,11 +1858,9 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
 
-    // pointer to current position of group of cells in global std::string (counts bytes)
-    std::vector<char>::size_type posinData = 0;
-
+    Core::Communication::UnpackBuffer buffer(dataRecv);
     // unpack received data
-    while (posinData < dataRecv.size())
+    while (!buffer.at_end())
     {
       std::vector<double> coords(nsd, 0.0);
       Core::Nodes::Node node(0, coords, 0);
@@ -1876,16 +1874,16 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       int initial_ele_owner;
       int newtype;
 
-      unpack_node(posinData, dataRecv, node);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nds_np);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, vel);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, velDeriv);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, presDeriv);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dispnp);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, initialpoint);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, initial_eid);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, initial_ele_owner);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, newtype);
+      unpack_node(buffer, node);
+      Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
+      Core::Communication::ParObject::extract_from_pack(buffer, vel);
+      Core::Communication::ParObject::extract_from_pack(buffer, velDeriv);
+      Core::Communication::ParObject::extract_from_pack(buffer, presDeriv);
+      Core::Communication::ParObject::extract_from_pack(buffer, dispnp);
+      Core::Communication::ParObject::extract_from_pack(buffer, initialpoint);
+      Core::Communication::ParObject::extract_from_pack(buffer, initial_eid);
+      Core::Communication::ParObject::extract_from_pack(buffer, initial_ele_owner);
+      Core::Communication::ParObject::extract_from_pack(buffer, newtype);
 
       timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
           initialpoint, initial_eid, initial_ele_owner,
@@ -1934,11 +1932,11 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     send_data(dataSend, dest, source, dataRecv);
 
     // pointer to current position of group of cells in global std::string (counts bytes)
-    size_t posinData = 0;
     int allProcsDone;
 
     // unpack received data
-    Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, allProcsDone);
+    Core::Communication::UnpackBuffer buffer(dataRecv);
+    Core::Communication::ParObject::extract_from_pack(buffer, allProcsDone);
 
     if (allProcsDone == 0) procDone = 0;
 
@@ -1980,11 +1978,10 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
 
-    // pointer to current position of group of cells in global std::string (counts bytes)
-    std::vector<char>::size_type posinData = 0;
 
     // unpack received data
-    while (posinData < dataRecv.size())
+    Core::Communication::UnpackBuffer buffer(dataRecv);
+    while (!buffer.at_end())
     {
       std::vector<double> coords(nsd, 0.0);
       Core::Nodes::Node node(0, coords, 0);
@@ -2001,19 +1998,19 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       int iter;
       int newtype;
 
-      unpack_node(posinData, dataRecv, node);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, nds_np);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, vel);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, velDeriv);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, presDeriv);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, dispnp);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, initialpoint);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, initial_eid);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, initial_ele_owner);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, startpoint);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, searchedProcs);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, iter);
-      Core::Communication::ParObject::extract_from_pack(posinData, dataRecv, newtype);
+      unpack_node(buffer, node);
+      Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
+      Core::Communication::ParObject::extract_from_pack(buffer, vel);
+      Core::Communication::ParObject::extract_from_pack(buffer, velDeriv);
+      Core::Communication::ParObject::extract_from_pack(buffer, presDeriv);
+      Core::Communication::ParObject::extract_from_pack(buffer, dispnp);
+      Core::Communication::ParObject::extract_from_pack(buffer, initialpoint);
+      Core::Communication::ParObject::extract_from_pack(buffer, initial_eid);
+      Core::Communication::ParObject::extract_from_pack(buffer, initial_ele_owner);
+      Core::Communication::ParObject::extract_from_pack(buffer, startpoint);
+      Core::Communication::ParObject::extract_from_pack(buffer, searchedProcs);
+      Core::Communication::ParObject::extract_from_pack(buffer, iter);
+      Core::Communication::ParObject::extract_from_pack(buffer, newtype);
 
       timeIntData_->push_back(
           TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, initialpoint, initial_eid,
