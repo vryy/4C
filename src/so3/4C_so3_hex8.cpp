@@ -146,16 +146,6 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
   if (Prestress::is_mulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
-  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale)
-  {
-    if (kintype_ == Inpar::Solid::KinemType::linear)
-      FOUR_C_THROW("Structure-Ale approach only for nonlinear kinematics !!!");
-
-    structale_ = true;
-  }
-  else
-    structale_ = false;
-
 
   return;
 }
@@ -186,16 +176,6 @@ Discret::ELEMENTS::SoHex8::SoHex8(const Discret::ELEMENTS::SoHex8& old)
 
   if (Prestress::is_mulf(pstype_))
     prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
-
-  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale)
-  {
-    if (kintype_ == Inpar::Solid::KinemType::linear)
-      FOUR_C_THROW("Structure-Ale approach only for nonlinear kinematics !!!");
-
-    structale_ = true;
-  }
-  else
-    structale_ = false;
 
   return;
 }

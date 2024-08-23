@@ -475,24 +475,6 @@ namespace Solid
       [[nodiscard]] int group_id() const;
       ///@}
 
-      /// @name Structure with ale specific methods
-      ///@{
-      /// FixMe set/apply material displacements to structure field (structure with ale)
-      void set_disp_mat_np(Teuchos::RCP<Epetra_Vector> dispmatnp) override
-      {
-        FOUR_C_THROW("Not supported at the moment!");
-      }
-
-      /// FixMe write access to material displacements (strutcure with ale) at \f$t^{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> write_access_disp_mat_np() override
-      {
-        check_init_setup();
-        FOUR_C_THROW("Not yet supported!");
-        return Teuchos::null;
-      }
-      ///@}
-
-
       /// Time adaptivity (derived pure virtual functionality)
       /// @{
       /// Resize MStep Object due to time adaptivity in FSI (derived)

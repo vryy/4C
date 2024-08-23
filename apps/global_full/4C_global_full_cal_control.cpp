@@ -39,7 +39,6 @@
 #include "4C_structure_dyn_nln_drt.hpp"
 #include "4C_thermo_dyn.hpp"
 #include "4C_tsi_dyn.hpp"
-#include "4C_wear_dyn.hpp"
 
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
@@ -134,10 +133,6 @@ void ntacal()
 
     case Core::ProblemType::red_airways:
       dyn_red_airways_drt();
-      break;
-
-    case Core::ProblemType::struct_ale:
-      wear_dyn_drt(restart);
       break;
 
     case Core::ProblemType::immersed_fsi:

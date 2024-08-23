@@ -75,9 +75,6 @@ class StruResultTest : public Core::UTILS::ResultTest
   //! global displacement DOFs
   Teuchos::RCP<const Epetra_Vector> dis_;
 
-  //! global material displacement DOFs
-  Teuchos::RCP<const Epetra_Vector> dism_;
-
   //! global velocity DOFs
   Teuchos::RCP<const Epetra_Vector> vel_;
 

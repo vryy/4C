@@ -59,15 +59,6 @@ namespace Inpar
       wear_shape_standard  ///< std. shape functions
     };
 
-    /// Definition of wear-ALE coupling algorithm
-    /// (this enum represents the input file parameter WEAR_COUPALGO)
-    enum WearCoupAlgo
-    {
-      wear_stagg,      ///< partitioned (fractional step) approach
-      wear_iterstagg,  ///< partitioned approach
-      wear_monolithic  ///< monolithic approach not (yet?) implemented
-    };
-
     /// Definition of wear-ALE time scale coupling algorithm
     /// (this enum represents the input file parameter WEAR_TIMESCALE)
     enum WearTimeScale
@@ -75,22 +66,6 @@ namespace Inpar
       wear_time_equal,     ///< shape evolution step after each structural step
       wear_time_different  ///< shape evolution for accumulated wear after predefined structural
                            ///< steps
-    };
-
-    /// Definition of configuration for wear coefficient
-    /// (this enum represents the input file parameter WEARCOEFF_CONF)
-    enum WearCoeffConf
-    {
-      wear_coeff_mat,  ///< wear coefficient in material conf. constant
-      wear_coeff_sp    ///< wear coefficient in spatial conf. constant
-    };
-
-    /// Definition of configuration for shape evolution step
-    /// (this enum represents the input file parameter WEAR_SHAPE_EVO)
-    enum WearShapeEvo
-    {
-      wear_se_mat,  ///< shape evolution in material conf.
-      wear_se_sp    ///< shape evolution in spat. conf.
     };
 
     /// set the wear parameters

@@ -607,9 +607,6 @@ void Solid::TimIntOneStepTheta::update_step_state()
   //    A_{n} := A_{n+1}
   acc_->update_steps(*accn_);
 
-  // material displacements (struct ale)
-  if ((dismatn_ != Teuchos::null)) dismat_->update_steps(*dismatn_);
-
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0, *fextn_, 0.0);
@@ -657,9 +654,6 @@ void Solid::TimIntOneStepTheta::update_step_element()
   // go to elements
   discret_->clear_state();
   discret_->set_state("displacement", (*dis_)(0));
-
-  // Set material displacement state for ale-wear formulation
-  if ((dismat_ != Teuchos::null)) discret_->set_state("material_displacement", (*dismat_)(0));
 
   if (!have_nonlinear_mass())
   {

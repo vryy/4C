@@ -384,18 +384,6 @@ namespace Adapter
 
     //@}
 
-    /// @name Structure with ale specific methods
-    ///@{
-    /// unknown material displacements at \f$t_{n+1}\f$
-    /// ToDo Replace the deprecated version with the new version
-    virtual Teuchos::RCP<Epetra_Vector> write_access_disp_mat_np() = 0;
-    Teuchos::RCP<Epetra_Vector> disp_mat() override { return write_access_disp_mat_np(); }
-
-    /// set/apply material displacements to structure field (structure with ale)
-    virtual void set_disp_mat_np(Teuchos::RCP<Epetra_Vector> dispmatnp) = 0;
-    void apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat) override { set_disp_mat_np(dismat); };
-    ///@}
-
     /// @name Misc
     ///@{
     /// dof map of vector of unknowns

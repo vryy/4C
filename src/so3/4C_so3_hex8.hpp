@@ -410,9 +410,6 @@ namespace Discret
       //@}
 
      protected:
-      //! struct_ale
-      bool structale_;
-
       //! action parameters recognized by so_hex8
       //  FixMe Deprecated: Should be replaced by the Core::Elements::ActionType! hiermeier 04/16
       enum ActionType
@@ -559,7 +556,6 @@ namespace Discret
           std::vector<double>* vel,                    // current velocities
           std::vector<double>* acc,                    // current accelerations
           std::vector<double>& residual,               ///< current residual displ
-          std::vector<double>& dispmat,                ///< current material displacements
           Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
               stiffmatrix,                                             ///< element stiffness matrix
           Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix

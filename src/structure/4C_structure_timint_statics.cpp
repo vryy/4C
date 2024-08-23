@@ -380,9 +380,6 @@ void Solid::TimIntStatics::update_step_state()
   //    D_{n} := D_{n+1}
   dis_->update_steps(*disn_);
 
-  // new material displacements
-  if ((dismatn_ != Teuchos::null)) dismat_->update_steps(*dismatn_);
-
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}
   vel_->update_steps(*veln_);
@@ -433,9 +430,6 @@ void Solid::TimIntStatics::update_step_element()
   // go to elements
   discret_->clear_state();
   discret_->set_state("displacement", (*dis_)(0));
-
-  // Set material displacement state for ale-wear formulation
-  if ((dismat_ != Teuchos::null)) discret_->set_state("material_displacement", (*dismat_)(0));
 
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->clear_state();

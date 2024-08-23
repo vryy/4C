@@ -107,18 +107,6 @@ namespace
 
         break;
       }
-      case Core::ProblemType::struct_ale:
-      {
-        PostField* structurefield = problem.get_discretization(0);
-        StructureFilter structwriter(
-            structurefield, problem.outname(), problem.stresstype(), problem.straintype());
-        structwriter.write_files();
-
-        PostField* alefield = problem.get_discretization(1);
-        AleFilter alewriter(alefield, problem.outname());
-        alewriter.write_files();
-        break;
-      }
       case Core::ProblemType::structure:
       {
         // Regular solid/structure output

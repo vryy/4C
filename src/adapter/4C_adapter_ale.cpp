@@ -14,7 +14,6 @@
 #include "4C_adapter_ale_fpsi.hpp"
 #include "4C_adapter_ale_fsi.hpp"
 #include "4C_adapter_ale_fsi_msht.hpp"
-#include "4C_adapter_ale_wear.hpp"
 #include "4C_adapter_ale_xffsi.hpp"
 #include "4C_ale.hpp"
 #include "4C_fem_condition_periodic.hpp"
@@ -23,7 +22,6 @@
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_fpsi.hpp"
 #include "4C_inpar_fsi.hpp"
-#include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
@@ -269,11 +267,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
       ale_ = Teuchos::rcp(new Adapter::AleFpsiWrapper(ale));
       break;
     }
-    case Core::ProblemType::struct_ale:
-    {
-      ale_ = Teuchos::rcp(new Adapter::AleWearWrapper(ale));
-      break;
-    }
     case Core::ProblemType::freesurf:
     case Core::ProblemType::fluid_ale:
     case Core::ProblemType::elch:
@@ -284,7 +277,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     }
     default:
       FOUR_C_THROW("ALE type not implemented yet!!");
-      break;
   }
 
   return;

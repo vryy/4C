@@ -341,9 +341,6 @@ namespace Discret
       // EAS data
       EASData easdata_;
 
-      //! struct_ale
-      bool structale_;
-
       //! the element discretization type (shape)
       Core::FE::CellType distype_;
 
@@ -361,7 +358,6 @@ namespace Discret
       void w1_nlnstiffmass(const std::vector<int>& lm,  ///< location vector
           const std::vector<double>& disp,              ///< element displacements
           const std::vector<double>& residual,          ///< residual displacements
-          const std::vector<double>& dispmat,           ///< residual displacements
           std::vector<Core::LinAlg::SerialDenseVector>&
               myknots,                                       ///< knot vector for nurbs elements
           Core::LinAlg::SerialDenseMatrix* stiffmatrix,      ///< element stiffness matrix
@@ -379,7 +375,6 @@ namespace Discret
       void w1_linstiffmass(const std::vector<int>& lm,  ///< location vector
           const std::vector<double>& disp,              ///< element displacements
           const std::vector<double>& residual,          ///< residual displacements
-          const std::vector<double>& dispmat,           ///< residual displacements
           std::vector<Core::LinAlg::SerialDenseVector>&
               myknots,                                       ///< knot vector for nurbs elements
           Core::LinAlg::SerialDenseMatrix* stiffmatrix,      ///< element stiffness matrix
@@ -427,24 +422,6 @@ namespace Discret
               xcure,  ///< current/spatial co-ordinates of element nodes
           Core::LinAlg::SerialDenseMatrix& boplin,  ///< linear B-operator
           const int iel                             ///< number of element nodes
-      );
-
-      /// Deformation gradient, measures distortion of the mesh of the
-      /// material configuration with respect to the referential configuration
-      /// in structure with ale approaches (fractional step method)
-      /// \author mgit \date 04/11
-      void w1_defgradmat(
-          Core::LinAlg::SerialDenseVector&
-              F,  ///< deformation gradient (mesh distortion of material configuration)
-          Core::LinAlg::SerialDenseVector&
-              Fmat,  ///< deformation gradient (mesh distortion of spatial configuration)
-          Core::LinAlg::SerialDenseVector& FFmatinv,  ///< product of F and Fmat(inv)
-          Core::LinAlg::SerialDenseVector&
-              strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
-          const Core::LinAlg::SerialDenseMatrix& xrefe,  ///< reference coordinates of element nodes
-          const Core::LinAlg::SerialDenseMatrix& xmat,   ///< material coordinates of element nodes
-          Core::LinAlg::SerialDenseMatrix& boplin,       ///< linear B-operator
-          const int iel                                  ///< number of element nodes
       );
 
       /// Non-linear B-operator in reference configuration

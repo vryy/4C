@@ -33,16 +33,6 @@ void Inpar::Wear::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   Core::UTILS::bool_parameter("MATCHINGGRID", "Yes", "is matching grid", &wear);
 
-  setStringToIntegralParameter<int>("WEARCOEFF_CONF", "material",
-      "configuration in which wcoeff is defined",
-      tuple<std::string>("material", "mat", "spatial", "sp"),
-      tuple<int>(wear_coeff_mat, wear_coeff_mat, wear_coeff_sp, wear_coeff_sp), &wear);
-
-  setStringToIntegralParameter<int>("WEAR_SHAPE_EVO", "material",
-      "configuration for shape evolution step",
-      tuple<std::string>("material", "mat", "spatial", "sp"),
-      tuple<int>(wear_se_mat, wear_se_mat, wear_se_sp, wear_se_sp), &wear);
-
   setStringToIntegralParameter<int>("WEAR_SHAPEFCN", "std",
       "Type of employed set of shape functions for wear",
       tuple<std::string>("Dual", "dual", "Standard", "standard", "std"),
@@ -75,13 +65,6 @@ void Inpar::Wear::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   setStringToIntegralParameter<int>("WEARTIMINT", "explicit", "Definition of wear time integration",
       tuple<std::string>("explicit", "e", "expl", "implicit", "i", "impl"),
       tuple<int>(wear_expl, wear_expl, wear_expl, wear_impl, wear_impl, wear_impl), &wear);
-
-  setStringToIntegralParameter<int>("WEAR_COUPALGO", "stagg",
-      "Definition of wear (ALE) coupling algorithm",
-      tuple<std::string>("stagg", "s", "iterstagg", "is", "monolithic", "mono"),
-      tuple<int>(
-          wear_stagg, wear_stagg, wear_iterstagg, wear_iterstagg, wear_monolithic, wear_monolithic),
-      &wear);
 
   setStringToIntegralParameter<int>("WEAR_TIMESCALE", "equal",
       "Definition wear time scale compares to std. time scale",

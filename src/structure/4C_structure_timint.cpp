@@ -139,11 +139,9 @@ Solid::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       lumpmass_(Core::UTILS::integral_value<int>(sdynparams, "LUMPMASS") == 1),
       zeros_(Teuchos::null),
       dis_(Teuchos::null),
-      dismat_(Teuchos::null),
       vel_(Teuchos::null),
       acc_(Teuchos::null),
       disn_(Teuchos::null),
-      dismatn_(Teuchos::null),
       veln_(Teuchos::null),
       accn_(Teuchos::null),
       fifc_(Teuchos::null),
@@ -328,17 +326,6 @@ void Solid::TimInt::create_all_solution_vectors()
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
-
-  if ((Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale and
-          (Global::Problem::instance()->wear_params()).get<double>("WEARCOEFF") > 0.0))
-  {
-    // material displacements Dm_{n+1} at t_{n+1}
-    dismatn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
-
-    // material_displacements D_{n}
-    dismat_ =
-        Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
-  }
 
   // velocities V_{n+1} at t_{n+1}
   veln_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -1026,9 +1013,6 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     discret_->clear_state();
     discret_->set_state(0, "displacement", (*dis_)(0));
 
-    // for structure ale
-    if (dismat_ != Teuchos::null) discret_->set_state(0, "material_displacement", (*dismat_)(0));
-
     // create the parameters for the discretization
     Teuchos::ParameterList p;
 
@@ -1060,9 +1044,6 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     discret_->set_state(0, "acceleration", acc_aux);
 
     if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", (*vel_)(0));
-
-    // for structure ale
-    if (dismat_ != Teuchos::null) discret_->set_state(0, "material_displacement", (*dismat_)(0));
 
     discret_->evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->clear_state();
@@ -1701,7 +1682,6 @@ void Solid::TimInt::reset_step()
 {
   // reset state vectors
   disn_->Update(1.0, (*dis_)[0], 0.0);
-  if (dismatn_ != Teuchos::null) dismatn_->Update(1.0, (*dismat_)[0], 0.0);
   veln_->Update(1.0, (*vel_)[0], 0.0);
   accn_->Update(1.0, (*acc_)[0], 0.0);
 
@@ -1789,12 +1769,6 @@ void Solid::TimInt::read_restart_state()
 
   reader.read_vector(disn_, "displacement");
   dis_->update_steps(*disn_);
-
-  if ((dismatn_ != Teuchos::null))
-  {
-    reader.read_vector(dismatn_, "material_displacement");
-    dismat_->update_steps(*dismatn_);
-  }
 
   reader.read_vector(veln_, "velocity");
   vel_->update_steps(*veln_);
@@ -2146,7 +2120,6 @@ void Solid::TimInt::output_restart(bool& datawritten)
   if (step_ != 0) output_->write_mesh(step_, (*time_)[0]);
   output_->new_step(step_, (*time_)[0]);
   output_->write_vector("displacement", (*dis_)(0));
-  if (dismat_ != Teuchos::null) output_->write_vector("material_displacement", (*dismat_)(0));
   output_->write_vector("velocity", (*vel_)(0));
   output_->write_vector("acceleration", (*acc_)(0));
   output_->write_element_data(firstoutputofrun_);
@@ -2231,8 +2204,6 @@ void Solid::TimInt::output_state(bool& datawritten)
     output_->new_step(step_, (*time_)[0]);
     output_->write_vector("displacement", (*dis_)(0));
   }
-
-  if ((dismatn_ != Teuchos::null)) output_->write_vector("material_displacement", (*dismat_)(0));
 
   // for visualization of vel and acc do not forget to comment in corresponding lines in
   // StructureEnsightWriter
@@ -2381,8 +2352,6 @@ void Solid::TimInt::determine_stress_strain()
     discret_->set_state(0, "residual displacement", zeros_);
     discret_->set_state(0, "displacement", disn_);
 
-    if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
-
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> system_vector = Teuchos::null;
     Core::FE::UTILS::evaluate(
@@ -2465,8 +2434,6 @@ void Solid::TimInt::determine_optional_quantity()
     // extended set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "residual displacement", zeros_);
     discret_->set_state(0, "displacement", disn_);
-
-    if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
 
     discret_->evaluate(
         p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -2813,7 +2780,6 @@ void Solid::TimInt::output_volume_mass()
   p.set("action", "calc_struct_mass_volume");
   discret_->clear_state();
   discret_->set_state("displacement", (*dis_)(0));
-  if ((dismatn_ != Teuchos::null)) discret_->set_state(0, "material_displacement", dismatn_);
   discret_->evaluate_scalars(p, norms);
   discret_->clear_state();
 
@@ -3218,15 +3184,6 @@ void Solid::TimInt::set_force_interface(
 }
 
 /*----------------------------------------------------------------------*/
-/* apply the new material_displacements        mgit 05/11 / rauch 01/16 */
-void Solid::TimInt::apply_dis_mat(Teuchos::RCP<Epetra_Vector> dismat)
-{
-  // The values in dismatn_ are replaced, because the new absolute material
-  // displacement is provided in the argument (not an increment)
-  Core::LinAlg::export_to(*dismat, *dismatn_);
-}
-
-/*----------------------------------------------------------------------*/
 /* Attach file handle for energy file #energyfile_                      */
 void Solid::TimInt::attach_energy_file()
 {
@@ -3309,9 +3266,6 @@ void Solid::TimInt::reset()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
-  // displacements D_{n}
-  dismat_ =
-      Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, dof_row_map_view(), true));
   // accelerations A_{n}

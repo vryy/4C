@@ -438,11 +438,6 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         }
       }
       break;
-      case Core::ProblemType::struct_ale:
-      {
-        structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
-      }
-      break;
       default:
       {
         /// wrap time loop for pure structure problems

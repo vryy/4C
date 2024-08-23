@@ -12,7 +12,6 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
@@ -142,7 +141,6 @@ Solid::ResultTest::ResultTest()
       issetup_(false),
       strudisc_(Teuchos::null),
       disn_(Teuchos::null),
-      dismatn_(Teuchos::null),
       veln_(Teuchos::null),
       accn_(Teuchos::null),
       reactn_(Teuchos::null),
@@ -165,12 +163,6 @@ void Solid::ResultTest::init(
   gstate_ = Teuchos::rcpFromRef(gstate);
   data_ = Teuchos::rcpFromRef(data);
   strudisc_ = gstate.get_discret();
-
-  if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::struct_ale and
-      (Global::Problem::instance()->wear_params()).get<double>("WEARCOEFF") > 0.0)
-    FOUR_C_THROW("Material displ. are not yet considered!");
-  else
-    dismatn_ = Teuchos::null;
 
   isinit_ = true;
 }
@@ -261,29 +253,6 @@ int Solid::ResultTest::get_nodal_result(
         FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
             actnode->id());
       result = (*disn_)[lid];
-    }
-  }
-
-  // test material displacements
-  if (!dismatn_.is_null())
-  {
-    const Epetra_BlockMap& dismpmap = dismatn_->Map();
-    int idx = -1;
-    if (position == "dispmx")
-      idx = 0;
-    else if (position == "dispmy")
-      idx = 1;
-    else if (position == "dispmz")
-      idx = 2;
-
-    if (idx >= 0)
-    {
-      unknownpos = false;
-      int lid = dismpmap.LID(strudisc_->dof(0, actnode, idx));
-      if (lid < 0)
-        FOUR_C_THROW("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx,
-            actnode->id());
-      result = (*dismatn_)[lid];
     }
   }
 

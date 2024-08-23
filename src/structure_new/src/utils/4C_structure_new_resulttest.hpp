@@ -224,8 +224,6 @@ namespace Solid
     // our solution
     //! global displacement DOFs
     Teuchos::RCP<const Epetra_Vector> disn_;
-    //! global material displacement DOFs
-    Teuchos::RCP<const Epetra_Vector> dismatn_;
     //! global velocity DOFs
     Teuchos::RCP<const Epetra_Vector> veln_;
     //! global acceleration DOFs
