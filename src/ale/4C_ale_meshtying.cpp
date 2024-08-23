@@ -23,6 +23,7 @@
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mortar_interface.hpp"
 #include "4C_mortar_node.hpp"
@@ -526,7 +527,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block nm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_mod =
-      ml_multiply(sysmatnew->matrix(0, 2), false, *P, false, false, false, true);
+      matrix_multiply(sysmatnew->matrix(0, 2), false, *P, false, false, false, true);
 
   // Add transformation matrix to nm
   sysmatnew->matrix(0, 1).un_complete();
@@ -540,7 +541,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmn
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_mod =
-      ml_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
+      matrix_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
 
   // Add transformation matrix to mn
   sysmatnew->matrix(1, 0).un_complete();
@@ -551,9 +552,9 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_mod =
-      ml_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
+      matrix_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
-      ml_multiply(*kss_mod, false, *P, false, false, false, true);
+      matrix_multiply(*kss_mod, false, *P, false, false, false, true);
 
   // Add transformation matrix to mm
   sysmatnew->matrix(1, 1).un_complete();
