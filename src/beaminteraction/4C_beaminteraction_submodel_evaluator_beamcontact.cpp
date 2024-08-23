@@ -386,9 +386,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
    * write previously computed and (locally) stored data at this point. Like
    * this, it works in SUBMODELEVALUATOR::BeamPotential */
   if (visualization_manager_ptr_ != Teuchos::null and
-      g_state().get_step_np() % beam_contact_params()
-                                    .beam_contact_runtime_visualization_output_params()
-                                    ->output_interval_in_steps() ==
+      g_state().get_step_n() % beam_contact_params()
+                                   .beam_contact_runtime_visualization_output_params()
+                                   ->output_interval_in_steps() ==
           0)
   {
     write_time_step_output_runtime_beam_contact();

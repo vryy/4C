@@ -145,6 +145,12 @@ void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterL
   Core::UTILS::bool_parameter("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR", "No",
       "write visualization output for forces/moments separately for each element pair",
       &beampotential_output_sublist);
+
+  // whether to write out the UIDs (uid_0_beam_1_gid, uid_1_beam_2_gid, uid_2_gp_id)
+  Core::UTILS::bool_parameter("WRITE_UIDS", "No",
+      "write out the unique ID's for each visualization point,i.e., master and slave beam element "
+      "global ID (uid_0_beam_1_gid, uid_1_beam_2_gid) and local Gauss point ID (uid_2_gp_id)",
+      &beampotential_output_sublist);
 }
 
 void Inpar::BEAMPOTENTIAL::set_valid_conditions(

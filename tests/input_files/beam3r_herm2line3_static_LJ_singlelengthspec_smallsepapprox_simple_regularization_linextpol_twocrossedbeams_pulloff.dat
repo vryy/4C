@@ -20,7 +20,7 @@ PRECISION_SCREEN       3
 FILE_TYPE              csv
 WRITE_HEADER           no
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT              binary
+OUTPUT_DATA_FORMAT              ascii
 INTERVAL_STEPS                  1
 EVERY_ITERATION                 yes
 ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
@@ -70,10 +70,11 @@ NUM_GAUSSPOINTS                 50
 CUTOFF_RADIUS                   1.0e-1
 ----------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
 VTK_OUTPUT_BEAM_POTENTIAL       yes
-INTERVAL_STEPS                  1
+INTERVAL_STEPS                  5
 EVERY_ITERATION                 no
 FORCES                          yes
 MOMENTS                         yes
+WRITE_UIDS                      yes
 --------------------------------DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS
 DLINE 4
 E 1 - POTLAW 1 VAL 1.0 FUNCT none

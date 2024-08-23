@@ -513,9 +513,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::update_step_element(
    * move this to runtime_output_step_state as soon as we keep element pairs
    * from previous time step */
   if (visualization_manager_ != Teuchos::null and
-      g_state().get_step_np() % beam_potential_params()
-                                    .get_beam_potential_visualization_output_params()
-                                    ->output_interval_in_steps() ==
+      g_state().get_step_n() % beam_potential_params()
+                                   .get_beam_potential_visualization_output_params()
+                                   ->output_interval_in_steps() ==
           0)
   {
     write_time_step_output_runtime_beam_potential();
@@ -1077,6 +1077,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
                      beam_potential_params().number_gauss_points();
   }
 
+  /* Note: - each UID set is not unique due to the fact that each GP produces two force
+   *         vectors (one on the slave side, one on the master side)
+   *       - in case of the single length specific approach (SBIP) the uid for the GP refers
+   *         to the slave beam element */
+  // get and prepare storage for uid_0_beam_1_gid values
+  std::vector<int> uid_0_beam_1_gid(0);
+  uid_0_beam_1_gid.reserve(num_row_points);
+
+  // get and prepare storage for uid_1_beam_2_gid values
+  std::vector<int> uid_1_beam_2_gid(0);
+  uid_1_beam_2_gid.reserve(num_row_points);
+
+  // get and prepare storage for uid_2_gp_id values
+  std::vector<int> uid_2_gp_id(0);
+  uid_2_gp_id.reserve(num_row_points);
+
   // get and prepare storage for point coordinate values
   auto& visualization_data = visualization_manager_->get_visualization_data();
   std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
@@ -1151,6 +1167,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
               .get_beam_potential_visualization_output_params()
               ->is_write_forces_moments_per_element_pair())
       {
+        uid_0_beam_1_gid.push_back((*pair_iter)->element1()->id());
+        uid_1_beam_2_gid.push_back((*pair_iter)->element2()->id());
+        uid_2_gp_id.push_back(ipoint);
+
         for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
         {
           point_coordinates.push_back(coordinates_ele1_this_pair[ipoint](idim));
@@ -1158,6 +1178,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
           potential_force_vector.push_back(potential_forces_ele1_this_pair[ipoint](idim));
           potential_moment_vector.push_back(potential_moments_ele1_this_pair[ipoint](idim));
         }
+
+        uid_0_beam_1_gid.push_back((*pair_iter)->element1()->id());
+        uid_1_beam_2_gid.push_back((*pair_iter)->element2()->id());
+        uid_2_gp_id.push_back(ipoint);
 
         for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
         {
@@ -1214,6 +1238,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
         // add as a new point if not found above
         if (xcoord_iter == point_coordinates.end() - 2 or point_coordinates.empty())
         {
+          uid_0_beam_1_gid.push_back((*pair_iter)->element1()->id());
+          uid_1_beam_2_gid.push_back((*pair_iter)->element2()->id());
+          uid_2_gp_id.push_back(ipoint);
+
           for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
           {
             point_coordinates.push_back(coordinates_ele1_this_pair[ipoint](idim));
@@ -1266,6 +1294,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
         // add as a new point if not found above
         if (xcoord_iter == point_coordinates.end() - 2)
         {
+          uid_0_beam_1_gid.push_back((*pair_iter)->element1()->id());
+          uid_1_beam_2_gid.push_back((*pair_iter)->element2()->id());
+          uid_2_gp_id.push_back(ipoint);
+
           for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
           {
             point_coordinates.push_back(coordinates_ele2_this_pair[ipoint](idim));
@@ -1280,6 +1312,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
 
 
   // append all desired output data to the writer object's storage
+
   if (beam_potential_params().get_beam_potential_visualization_output_params()->is_write_forces())
   {
     visualization_manager_->get_visualization_data().set_point_data_vector(
@@ -1290,6 +1323,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
   {
     visualization_manager_->get_visualization_data().set_point_data_vector(
         "moment", potential_moment_vector, num_spatial_dimensions);
+  }
+
+  if (beam_potential_params().get_beam_potential_visualization_output_params()->is_write_uids())
+  {
+    visualization_manager_->get_visualization_data().set_point_data_vector(
+        "uid_0_beam_1_gid", uid_0_beam_1_gid, 1);
+
+    visualization_manager_->get_visualization_data().set_point_data_vector(
+        "uid_1_beam_2_gid", uid_1_beam_2_gid, 1);
+
+    visualization_manager_->get_visualization_data().set_point_data_vector(
+        "uid_2_gp_id", uid_2_gp_id, 1);
   }
 
   // finalize everything and write all required vtk files to filesystem

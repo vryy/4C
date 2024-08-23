@@ -29,7 +29,8 @@ BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::BeamToBeamPotentialRunt
       output_every_iteration_(false),
       output_forces_(false),
       output_moments_(false),
-      write_force_moment_per_elepair_(false)
+      write_force_moment_per_elepair_(false),
+      output_uids_(false)
 {
   // empty constructor
 }
@@ -62,6 +63,10 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::init(
   /****************************************************************************/
   write_force_moment_per_elepair_ = (bool)Core::UTILS::integral_value<int>(
       beam_contact_visualization_output_paramslist, "WRITE_FORCE_MOMENT_PER_ELEMENTPAIR");
+
+  /****************************************************************************/
+  output_uids_ = (bool)Core::UTILS::integral_value<int>(
+      beam_contact_visualization_output_paramslist, "WRITE_UIDS");
 
   isinit_ = true;
 }

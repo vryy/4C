@@ -80,6 +80,13 @@ namespace BEAMINTERACTION
       return write_force_moment_per_elepair_;
     };
 
+    /// whether to write out the UIDs (uid_0_beam_1_gid, uid_1_beam_2_gid, uid_2_gp_id)
+    bool is_write_uids() const
+    {
+      throw_error_if_not_init_and_setup();
+      return output_uids_;
+    };
+
    private:
     //! returns the isinit_ flag
     inline const bool& is_init() const { return isinit_; };
@@ -116,6 +123,9 @@ namespace BEAMINTERACTION
 
     /// whether to write forces/moments separately for each element pair
     bool write_force_moment_per_elepair_;
+
+    /// whether to write out the UIDs (uid_0_beam_1_gid, uid_1_beam_2_gid, uid_2_gp_id)
+    bool output_uids_;
   };
 
 }  // namespace BEAMINTERACTION
