@@ -30,7 +30,6 @@ with condensed structure interface displacements
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
 

@@ -29,9 +29,9 @@ with condensed fluid interface velocities
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
 
@@ -660,7 +660,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
   lfgi->complete(fgi.domain_map(), s->range_map());
 
   if (stcalgo == Inpar::Solid::stc_currsym)
-    lfgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfgi, false, true, true, true);
+    lfgi = Core::LinAlg::matrix_multiply(*stcmat, true, *lfgi, false, true, true, true);
 
   mat.matrix(0, 1).un_complete();
   mat.matrix(0, 1).add(*lfgi, false, 1., 0.0);
@@ -681,7 +681,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
     lfig->complete(s->domain_map(), fig.range_map());
 
-    lfig = Core::LinAlg::ml_multiply(*lfig, false, *stcmat, false, false, false, true);
+    lfig = Core::LinAlg::matrix_multiply(*lfig, false, *stcmat, false, false, false, true);
 
     mat.matrix(1, 0).un_complete();
     mat.matrix(1, 0).add(*lfig, false, 1., 0.0);
@@ -708,7 +708,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
     if (stcalgo != Inpar::Solid::stc_none)
     {
-      laig = Core::LinAlg::ml_multiply(*laig, false, *stcmat, false, false, false, true);
+      laig = Core::LinAlg::matrix_multiply(*laig, false, *stcmat, false, false, false, true);
     }
 
     mat.assign(2, 0, Core::LinAlg::View, *laig);
@@ -747,7 +747,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
 
       if (stcalgo != Inpar::Solid::stc_none)
       {
-        lfmig = Core::LinAlg::ml_multiply(*lfmig, false, *stcmat, false, false, false, true);
+        lfmig = Core::LinAlg::matrix_multiply(*lfmig, false, *stcmat, false, false, false, true);
       }
 
       mat.matrix(1, 0).add(*lfmig, false, 1.0, 1.0);
@@ -772,7 +772,7 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
       lfmgi->complete(aii.domain_map(), s->range_map());
 
       if (stcalgo == Inpar::Solid::stc_currsym)
-        lfmgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfmgi, false, true, true, true);
+        lfmgi = Core::LinAlg::matrix_multiply(*stcmat, true, *lfmgi, false, true, true, true);
 
       mat.matrix(0, 2).un_complete();
       mat.matrix(0, 2).add(*lfmgi, false, 1., 0.0);
@@ -787,9 +787,9 @@ void FSI::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMat
   }
   else  // apply STC matrix on block (0,0) if STC is used
   {
-    s = Core::LinAlg::ml_multiply(*s, false, *stcmat, false, true, true, true);
+    s = Core::LinAlg::matrix_multiply(*s, false, *stcmat, false, true, true, true);
     if (stcalgo == Inpar::Solid::stc_currsym)
-      s = Core::LinAlg::ml_multiply(*stcmat, true, *s, false, true, true, false);
+      s = Core::LinAlg::matrix_multiply(*stcmat, true, *s, false, true, true, false);
   }
 
   // finally assign structure block
