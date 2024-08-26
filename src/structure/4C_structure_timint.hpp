@@ -78,7 +78,7 @@ namespace Core::IO
   class DiscretizationWriter;
 }
 
-namespace ModelOrderRed
+namespace Cardiovascular0D
 {
   class ProperOrthogonalDecomposition;
 }
@@ -1210,7 +1210,7 @@ namespace Solid
     Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter_;
     //@}
 
-    Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor_;  //!< model order reduction
+    Teuchos::RCP<Cardiovascular0D::ProperOrthogonalDecomposition> mor_;  //!< model order reduction
 
    private:
     //! flag indicating if class is setup

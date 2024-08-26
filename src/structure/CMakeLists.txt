@@ -13,7 +13,6 @@ set(_dependencies
     global_data
     inpar
     mat
-    mor
     mortar
     poroelast
     so3

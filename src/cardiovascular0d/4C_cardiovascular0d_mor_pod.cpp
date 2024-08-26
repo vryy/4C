@@ -8,11 +8,10 @@
 
  *----------------------------------------------------------------------*/
 
-#include "4C_mor_pod.hpp"
+#include "4C_cardiovascular0d_mor_pod.hpp"
 
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_string.hpp"
 
@@ -22,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
+Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
     Teuchos::RCP<const Epetra_Map> full_model_dof_row_map, const std::string &pod_matrix_file_name,
     const std::string &absolute_path_to_input_file)
     : full_model_dof_row_map_(full_model_dof_row_map)
@@ -93,7 +92,7 @@ ModelOrderRed::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix>
-ModelOrderRed::ProperOrthogonalDecomposition::reduce_diagnoal(
+Cardiovascular0D::ProperOrthogonalDecomposition::reduce_diagnoal(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> M)
 {
   // right multiply M * V
@@ -119,7 +118,7 @@ ModelOrderRed::ProperOrthogonalDecomposition::reduce_diagnoal(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix>
-ModelOrderRed::ProperOrthogonalDecomposition::reduce_off_diagonal(
+Cardiovascular0D::ProperOrthogonalDecomposition::reduce_off_diagonal(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> M)
 {
   // right multiply M * V
@@ -139,7 +138,7 @@ ModelOrderRed::ProperOrthogonalDecomposition::reduce_off_diagonal(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ModelOrderRed::ProperOrthogonalDecomposition::reduce_rhs(
+Teuchos::RCP<Epetra_MultiVector> Cardiovascular0D::ProperOrthogonalDecomposition::reduce_rhs(
     Teuchos::RCP<Epetra_MultiVector> v)
 {
   Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_, true));
@@ -150,7 +149,7 @@ Teuchos::RCP<Epetra_MultiVector> ModelOrderRed::ProperOrthogonalDecomposition::r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::reduce_residual(
+Teuchos::RCP<Epetra_Vector> Cardiovascular0D::ProperOrthogonalDecomposition::reduce_residual(
     Teuchos::RCP<Epetra_Vector> v)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_));
@@ -165,7 +164,7 @@ Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::reduce
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::extend_solution(
+Teuchos::RCP<Epetra_Vector> Cardiovascular0D::ProperOrthogonalDecomposition::extend_solution(
     Teuchos::RCP<Epetra_Vector> v_red)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_, true));
@@ -179,7 +178,7 @@ Teuchos::RCP<Epetra_Vector> ModelOrderRed::ProperOrthogonalDecomposition::extend
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ModelOrderRed::ProperOrthogonalDecomposition::multiply_epetra_multi_vectors(
+void Cardiovascular0D::ProperOrthogonalDecomposition::multiply_epetra_multi_vectors(
     Teuchos::RCP<Epetra_MultiVector> multivect1, char multivect1Trans,
     Teuchos::RCP<Epetra_MultiVector> multivect2, char multivect2Trans,
     Teuchos::RCP<Epetra_Map> redmap, Teuchos::RCP<Epetra_Import> impo,
@@ -202,7 +201,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::multiply_epetra_multi_vectors
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ModelOrderRed::ProperOrthogonalDecomposition::epetra_multi_vector_to_linalg_sparse_matrix(
+void Cardiovascular0D::ProperOrthogonalDecomposition::epetra_multi_vector_to_linalg_sparse_matrix(
     Teuchos::RCP<Epetra_MultiVector> multivect, Teuchos::RCP<Epetra_Map> rangemap,
     Teuchos::RCP<Epetra_Map> domainmap, Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsemat)
 {
@@ -241,7 +240,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::epetra_multi_vector_to_linalg
  |   fclose(fid);                                                       |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void ModelOrderRed::ProperOrthogonalDecomposition::read_pod_basis_vectors_from_file(
+void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_from_file(
     const std::string &absolute_path_to_pod_file, Teuchos::RCP<Epetra_MultiVector> &projmatrix)
 {
   // ***************************
@@ -370,7 +369,7 @@ void ModelOrderRed::ProperOrthogonalDecomposition::read_pod_basis_vectors_from_f
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool ModelOrderRed::ProperOrthogonalDecomposition::is_pod_basis_orthogonal(
+bool Cardiovascular0D::ProperOrthogonalDecomposition::is_pod_basis_orthogonal(
     const Epetra_MultiVector &M)
 {
   const int n = M.NumVectors();

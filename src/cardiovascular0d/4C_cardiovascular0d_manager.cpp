@@ -15,6 +15,7 @@
 #include "4C_cardiovascular0d_4elementwindkessel.hpp"
 #include "4C_cardiovascular0d_arterialproxdist.hpp"
 #include "4C_cardiovascular0d_dofset.hpp"
+#include "4C_cardiovascular0d_mor_pod.hpp"
 #include "4C_cardiovascular0d_respiratory_syspulperiphcirculation.hpp"
 #include "4C_cardiovascular0d_resulttest.hpp"
 #include "4C_cardiovascular0d_syspulcirculation.hpp"
@@ -28,7 +29,6 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_mor_pod.hpp"
 
 #include <stdio.h>
 #include <Teuchos_ParameterList.hpp>
@@ -44,7 +44,8 @@ FOUR_C_NAMESPACE_OPEN
 UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     Teuchos::RCP<Core::FE::Discretization> discr, Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::ParameterList strparams, Teuchos::ParameterList cv0dparams,
-    Core::LinAlg::Solver& solver, Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor)
+    Core::LinAlg::Solver& solver,
+    Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor)
     : actdisc_(discr),
       myrank_(actdisc_->get_comm().MyPID()),
       dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
