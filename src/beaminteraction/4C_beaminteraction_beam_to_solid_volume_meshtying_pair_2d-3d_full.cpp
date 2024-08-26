@@ -135,6 +135,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
   double beam_jacobian = 0.0;
   const double penalty_parameter =
       this->params()->beam_to_solid_volume_meshtying_params()->get_penalty_parameter();
+  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1()))
+                            ->get_circular_cross_section_radius_for_interactions();
 
   // Calculate the mesh tying forces.
   // Loop over segments.
@@ -151,7 +153,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
     if (std::abs(eta - eta_last_gauss_point) > 1e-10)
     {
       GEOMETRYPAIR::evaluate_position_derivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
-      beam_jacobian = 0.5 * dr_beam_ref.norm2();
+      beam_jacobian = dr_beam_ref.norm2();
 
       GEOMETRYPAIR::evaluate_shape_function_matrix<Beam>(H, eta, q_beam.shape_function_data_);
       GEOMETRYPAIR::evaluate_position<Beam>(eta, q_beam, pos_beam);
@@ -191,7 +193,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
 
     // Numerical integration factor for this Gauss point.
     const double integration_factor =
-        projected_gauss_point.get_gauss_weight() * beam_jacobian * penalty_parameter;
+        projected_gauss_point.get_gauss_weight() * beam_jacobian * radius * M_PI;
 
     // The following calculations are based on Steinbrecher, Popp, Meier: "Consistent coupling of
     // positions and rotations for embedding 1D Cosserat beams into 3D solid volumes", eq. 97-98. Be
@@ -222,7 +224,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
       force_pair_local(i_dof + Beam::n_dof_ + Solid::n_dof_) += temp_beam_force_rot(i_dof);
 
     // Add to pair force contributions.
-    force_pair_local.scale(integration_factor);
+    force_pair_local.scale(integration_factor * penalty_parameter);
     force_pair += Core::FADUtils::cast_to_double(force_pair_local);
 
     // The rotational stiffness contributions have to be handled separately due to the non-additive

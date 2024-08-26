@@ -91,6 +91,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
   double beam_jacobian;
   double penalty_parameter =
       this->params()->beam_to_solid_volume_meshtying_params()->get_penalty_parameter();
+  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1()))
+                            ->get_circular_cross_section_radius_for_interactions();
 
   // Calculate the meshtying forces.
   // Loop over segments.
@@ -104,7 +106,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
     // Get the jacobian in the reference configuration.
     GEOMETRYPAIR::evaluate_position_derivative1<Beam>(
         projected_gauss_point.get_eta(), this->ele1posref_, dr_beam_ref);
-    beam_jacobian = 0.5 * dr_beam_ref.norm2();
+    beam_jacobian = dr_beam_ref.norm2();
 
     // Get the current positions on beam and solid.
     GEOMETRYPAIR::evaluate_position<Beam>(projected_gauss_point.get_eta(), this->ele1pos_, r_beam);
@@ -123,16 +125,18 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
     force -= r_beam;
     force.scale(penalty_parameter);
 
+    const double integration_factor =
+        projected_gauss_point.get_gauss_weight() * beam_jacobian * radius * M_PI;
+
     // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
     // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
-                                  projected_gauss_point.get_gauss_weight() * beam_jacobian;
+        force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) * integration_factor;
     for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + Beam::n_dof_) *
-                                  projected_gauss_point.get_gauss_weight() * beam_jacobian;
+        force_element_2(i_dof) -=
+            force(i_dir) * r_solid(i_dir).dx(i_dof + Beam::n_dof_) * integration_factor;
   }
 
 
