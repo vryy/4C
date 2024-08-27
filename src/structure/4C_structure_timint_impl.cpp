@@ -36,9 +36,9 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mortar_defines.hpp"
@@ -2540,10 +2540,12 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       if (stcscale_ != Inpar::Solid::stc_none)
       {
         // std::cout<<"scaling constraint matrices"<<std::endl;
-        constrT = Core::LinAlg::ml_multiply(*stcmat_, true, *constrT, false, false, false, true);
+        constrT =
+            Core::LinAlg::matrix_multiply(*stcmat_, true, *constrT, false, false, false, true);
         if (stcscale_ == Inpar::Solid::stc_currsym)
         {
-          constr = Core::LinAlg::ml_multiply(*stcmat_, true, *constr, false, false, false, true);
+          constr =
+              Core::LinAlg::matrix_multiply(*stcmat_, true, *constr, false, false, false, true);
         }
       }
       // Call constraint solver to solve system with zeros on diagonal
@@ -4228,11 +4230,11 @@ void Solid::TimIntImpl::stc_preconditioning()
       stccompl_ = true;
     }
 
-    stiff_ = ml_multiply(*(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), *stcmat_,
-        true, false, true);
+    stiff_ = matrix_multiply(*(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)),
+        false, *stcmat_, false, true, false, true);
     if (stcscale_ == Inpar::Solid::stc_currsym)
     {
-      stiff_ = ml_multiply(*stcmat_, true,
+      stiff_ = matrix_multiply(*stcmat_, true,
           *(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), false, true, false,
           true);
       Teuchos::RCP<Epetra_Vector> fressdc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -4299,7 +4301,7 @@ void Solid::TimIntImpl::compute_stc_matrix()
     }
 #endif
 
-    stcmat_ = ml_multiply(*tmpstcmat, *stcmat_, false, false, true);
+    stcmat_ = matrix_multiply(*tmpstcmat, false, *stcmat_, false, false, false, true);
   }
 
   discret_->clear_state();

@@ -24,9 +24,9 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_equilibrate.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
@@ -163,7 +163,7 @@ void ScaTra::MeshtyingStrategyS2I::condense_mat_and_rhs(
         {
           // replace slave-side rows of global system matrix by projected slave-side rows including
           // interface contributions
-          sparsematrix->add(*Core::LinAlg::ml_multiply(
+          sparsematrix->add(*Core::LinAlg::matrix_multiply(
                                 *Q_, true, sparsematrixrowsslave, false, false, false, true),
               false, 1., 1.);
           // during calculation of initial time derivative, standard global system matrix is
@@ -179,8 +179,8 @@ void ScaTra::MeshtyingStrategyS2I::condense_mat_and_rhs(
         }
 
         // add projected slave-side rows to master-side rows of global system matrix
-        sparsematrix->add(
-            *Core::LinAlg::ml_multiply(*P_, true, sparsematrixrowsslave, false, false, false, true),
+        sparsematrix->add(*Core::LinAlg::matrix_multiply(
+                              *P_, true, sparsematrixrowsslave, false, false, false, true),
             false, 1., 1.);
 
         // extract slave-side entries of global residual vector
@@ -229,7 +229,7 @@ void ScaTra::MeshtyingStrategyS2I::condense_mat_and_rhs(
         // contributions
         sparsematrix->complete();
         sparsematrix->apply_dirichlet(*interfacemaps_->Map(2), false);
-        sparsematrix->add(*Core::LinAlg::ml_multiply(
+        sparsematrix->add(*Core::LinAlg::matrix_multiply(
                               *Q_, true, sparsematrixrowsmaster, false, false, false, true),
             false, 1., 1.);
         // during calculation of initial time derivative, standard global system matrix is replaced
@@ -237,7 +237,7 @@ void ScaTra::MeshtyingStrategyS2I::condense_mat_and_rhs(
         if (!calcinittimederiv) sparsematrix->add(*imastermatrix_, false, 1., 1.);
 
         // add projected master-side rows to slave-side rows of global system matrix
-        sparsematrix->add(*Core::LinAlg::ml_multiply(
+        sparsematrix->add(*Core::LinAlg::matrix_multiply(
                               *P_, true, sparsematrixrowsmaster, false, false, false, true),
             false, 1., 1.);
 
@@ -753,7 +753,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               if (lmside_ == Inpar::S2I::side_slave)
               {
                 systemmatrix->add(*islavematrix_, false, 1., 1.);
-                systemmatrix->add(*Core::LinAlg::ml_multiply(
+                systemmatrix->add(*Core::LinAlg::matrix_multiply(
                                       *P_, true, *islavematrix_, false, false, false, true),
                     false, -1., 1.);
                 interfacemaps_->add_vector(islaveresidual_, 1, scatratimint_->residual());
@@ -764,7 +764,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               }
               else
               {
-                systemmatrix->add(*Core::LinAlg::ml_multiply(
+                systemmatrix->add(*Core::LinAlg::matrix_multiply(
                                       *P_, true, *imastermatrix_, false, false, false, true),
                     false, -1., 1.);
                 systemmatrix->add(*imastermatrix_, false, 1., 1.);

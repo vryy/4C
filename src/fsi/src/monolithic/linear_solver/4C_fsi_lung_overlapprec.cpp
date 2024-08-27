@@ -14,7 +14,7 @@
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_multiply.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_linalg.hpp"
@@ -388,8 +388,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> FSI::LungSchurComplement::calculate_sch
   if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
   if (!C.filled()) FOUR_C_THROW("C has to be fill_complete");
 
-  temp_ = Core::LinAlg::ml_multiply(A, B, true);
-  res_ = Core::LinAlg::ml_multiply(*temp_, C, true);
+  temp_ = Core::LinAlg::matrix_multiply(A, false, B, false, false, false, true);
+  res_ = Core::LinAlg::matrix_multiply(*temp_, false, C, false, false, false, true);
 
   return res_;
 }

@@ -13,9 +13,9 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_inpar_structure.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 
@@ -72,7 +72,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
     discret->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     tmpstcmat->complete();
 
-    stcmat_ = ml_multiply(*tmpstcmat, *stcmat_, true, false, true);
+    stcmat_ = Core::LinAlg::matrix_multiply(*tmpstcmat, false, *stcmat_, false, true, false, true);
   }
 
   discret->clear_state();
@@ -92,12 +92,14 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
   Epetra_Vector* rhs = dynamic_cast<Epetra_Vector*>(problem.GetRHS());
 
   // right multiplication of stiffness matrix
-  stiff_scaled_ = ml_multiply(*stiff_linalg, *stcmat_, true, false, true);
+  stiff_scaled_ =
+      Core::LinAlg::matrix_multiply(*stiff_linalg, false, *stcmat_, false, true, false, true);
 
   // left multiplication of stiffness matrix and rhs
   if (stcscale_ == Inpar::Solid::stc_currsym)
   {
-    stiff_scaled_ = ml_multiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
+    stiff_scaled_ =
+        Core::LinAlg::matrix_multiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
 
     Teuchos::RCP<Epetra_Vector> rhs_scaled =
         Core::LinAlg::create_vector(problem.GetRHS()->Map(), true);

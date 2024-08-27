@@ -22,9 +22,9 @@
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
 
@@ -316,14 +316,14 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   cfsgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_fs->matrix(fidx_nopen, sidx_other)));
   cfsggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_fs->matrix(fidx_nopen, sidx_nopen)));
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDkfsgi =
-      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *cfsgicur_, true);  // T*D^-1*K^FS_gi;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDkfsgi = Core::LinAlg::matrix_multiply(
+      *k_lambdainv_d_, false, *cfsgicur_, false, true);  // T*D^-1*K^FS_gi;
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDfgi =
-      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *fgicur_, true);  // T*D^-1*Fgi;
+      Core::LinAlg::matrix_multiply(*k_lambdainv_d_, false, *fgicur_, false, true);  // T*D^-1*Fgi;
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDfgg =
-      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *fggcur_, true);  // T*D^-1*Fgg;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDkfsgg =
-      Core::LinAlg::ml_multiply(*k_lambdainv_d_, *cfsggcur_, true);  // T*D^-1*K^FS_gg;
+      Core::LinAlg::matrix_multiply(*k_lambdainv_d_, false, *fggcur_, false, true);  // T*D^-1*Fgg;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDkfsgg = Core::LinAlg::matrix_multiply(
+      *k_lambdainv_d_, false, *cfsggcur_, false, true);  // T*D^-1*K^FS_gg;
 
   mat.matrix(1, 0).add(*tanginvDkfsgi, false, -1.0, 1.0);
   mat.matrix(1, 0).add(*tanginvDkfsgg, false, -1.0, 1.0);
@@ -559,7 +559,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
       *fluid_field()->interface()->fsi_cond_map(), *structure_field()->interface()->fsi_cond_map());
 
   // Calculate 1/b*Tangent*invD
-  k_lambdainv_d_ = Core::LinAlg::ml_multiply(*k_lambda_, *k_inv_d_, true);
+  k_lambdainv_d_ = Core::LinAlg::matrix_multiply(*k_lambda_, false, *k_inv_d_, false, true);
   k_lambdainv_d_->scale(1.0 / (1.0 - stiparam));  // *= 1/b
 }
 

@@ -13,7 +13,6 @@
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_control_point.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

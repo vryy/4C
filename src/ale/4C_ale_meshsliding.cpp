@@ -17,6 +17,7 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -188,7 +189,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute modification for block mn       (+ P^T * A_sn)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Amn_mod =
-      ml_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
+      matrix_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
 
   // Add modification block to mn
   sysmatnew->matrix(1, 0).un_complete();  // sonst kann ich auf den Block nichts neues draufaddieren
@@ -196,7 +197,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute modification for block mm       (+ P^T * A_sm)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Amm_mod =
-      ml_multiply(*P, true, sysmatnew->matrix(2, 1), false, false, false, true);
+      matrix_multiply(*P, true, sysmatnew->matrix(2, 1), false, false, false, true);
 
   // Add modification block to mm
   sysmatnew->matrix(1, 1).un_complete();
@@ -204,7 +205,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute modification for block ms       (+ P^T * A_ss)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Ams_mod =
-      ml_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
+      matrix_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
 
   // Add modification block to ms
   sysmatnew->matrix(1, 2).un_complete();
@@ -214,9 +215,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute replacement for block sn      - (T * D^(-1) * A_sn)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asn_mod_interm =
-      ml_multiply(*d_inv_, false, sysmatnew->matrix(2, 0), false, false, false, true);
+      matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 0), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asn_mod =
-      ml_multiply(*T, false, *Asn_mod_interm, false, false, false, true);
+      matrix_multiply(*T, false, *Asn_mod_interm, false, false, false, true);
 
   // Replace sn block with (negative) modification block
   sysmatnew->matrix(2, 0).un_complete();
@@ -224,9 +225,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute replacement for block sm      - (T * D^(-1) * A_sm)   +  N_m
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asm_mod_interm =
-      ml_multiply(*d_inv_, false, sysmatnew->matrix(2, 1), false, false, false, true);
+      matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 1), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Asm_mod =
-      ml_multiply(*T, false, *Asm_mod_interm, false, false, false, true);
+      matrix_multiply(*T, false, *Asm_mod_interm, false, false, false, true);
 
   // Replace sm block with (negative) modification block
   sysmatnew->matrix(2, 1).un_complete();
@@ -235,9 +236,9 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // compute replacement for block ss      (- T * D^(-1) *A_ss)   +  H  +  N_s
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_mod_interm =
-      ml_multiply(*d_inv_, false, sysmatnew->matrix(2, 2), false, false, false, true);
+      matrix_multiply(*d_inv_, false, sysmatnew->matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Ass_mod =
-      ml_multiply(*T, false, *Ass_mod_interm, false, false, false, true);
+      matrix_multiply(*T, false, *Ass_mod_interm, false, false, false, true);
 
   // Replace ss block with (negative) modification block
   sysmatnew->matrix(2, 2).un_complete();

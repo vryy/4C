@@ -29,6 +29,7 @@ with condensed structure interface displacements
 #include "4C_io_control.hpp"
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
 
@@ -777,7 +778,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
 
   // ----------Addressing contribution to block (1,3)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sig =
-      ml_multiply(s->matrix(0, 1), false, *mortarp, false, false, false, true);
+      matrix_multiply(s->matrix(0, 1), false, *mortarp, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsig =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(sig->row_map(), 81, false));
 
@@ -788,7 +789,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
 
   // ----------Addressing contribution to block (3,1)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sgi =
-      ml_multiply(*mortarp, true, s->matrix(1, 0), false, false, false, true);
+      matrix_multiply(*mortarp, true, s->matrix(1, 0), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsgi =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
 
@@ -799,8 +800,8 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
 
   // ----------Addressing contribution to block (3,3)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sgg =
-      ml_multiply(s->matrix(1, 1), false, *mortarp, false, false, false, true);
-  sgg = ml_multiply(*mortarp, true, *sgg, false, false, false, true);
+      matrix_multiply(s->matrix(1, 1), false, *mortarp, false, false, false, true);
+  sgg = matrix_multiply(*mortarp, true, *sgg, false, false, false, true);
 
   f->add(*sgg, false, (1. - ftiparam) / ((1. - stiparam) * scale * timescale), 1.0);
   mat.assign(1, 1, Core::LinAlg::View, *f);

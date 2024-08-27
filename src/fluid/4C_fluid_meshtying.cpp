@@ -23,6 +23,7 @@
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_method_parameters.hpp"
 #include "4C_mortar_interface.hpp"
@@ -936,7 +937,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gndofrowmap_, 100));
   knm_mod->add(splitmatrix->matrix(0, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_add =
-      ml_multiply(splitmatrix->matrix(0, 2), false, *P, false, false, false, true);
+      matrix_multiply(splitmatrix->matrix(0, 2), false, *P, false, false, false, true);
   knm_mod->add(*knm_add, false, 1.0, 1.0);
   knm_mod->complete(splitmatrix->matrix(0, 1).domain_map(), splitmatrix->matrix(0, 1).row_map());
 
@@ -952,7 +953,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmn_mod->add(splitmatrix->matrix(1, 0), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_add =
-      ml_multiply(*P, true, splitmatrix->matrix(2, 0), false, false, false, true);
+      matrix_multiply(*P, true, splitmatrix->matrix(2, 0), false, false, false, true);
   kmn_mod->add(*kmn_add, false, 1.0, 1.0);
   kmn_mod->complete(splitmatrix->matrix(1, 0).domain_map(), splitmatrix->matrix(1, 0).row_map());
 
@@ -966,9 +967,9 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmm_mod->add(splitmatrix->matrix(1, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kms =
-      ml_multiply(*P, true, splitmatrix->matrix(2, 2), false, false, false, true);
+      matrix_multiply(*P, true, splitmatrix->matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_add =
-      ml_multiply(*kms, false, *P, false, false, false, true);
+      matrix_multiply(*kms, false, *P, false, false, false, true);
   kmm_mod->add(*kmm_add, false, 1.0, 1.0);
   kmm_mod->complete(splitmatrix->matrix(1, 1).domain_map(), splitmatrix->matrix(1, 1).row_map());
 
@@ -1255,7 +1256,7 @@ void FLD::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block nm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_mod =
-      ml_multiply(sysmatnew->matrix(0, 2), false, *P, false, false, false, true);
+      matrix_multiply(sysmatnew->matrix(0, 2), false, *P, false, false, false, true);
 
   // Add transformation matrix to nm
   sysmatnew->matrix(0, 1).un_complete();
@@ -1268,7 +1269,7 @@ void FLD::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmn
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_mod =
-      ml_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
+      matrix_multiply(*P, true, sysmatnew->matrix(2, 0), false, false, false, true);
 
   // Add transformation matrix to mn
   sysmatnew->matrix(1, 0).un_complete();
@@ -1279,9 +1280,9 @@ void FLD::Meshtying::condensation_operation_block_matrix(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_mod =
-      ml_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
+      matrix_multiply(*P, true, sysmatnew->matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
-      ml_multiply(*kss_mod, false, *P, false, false, false, true);
+      matrix_multiply(*kss_mod, false, *P, false, false, false, true);
 
   // Add transformation matrix to mm
   sysmatnew->matrix(1, 1).un_complete();
@@ -1789,7 +1790,7 @@ void FLD::Meshtying::condensation_operation_block_matrix_shape(
   /*--------------------------------------------------------------------*/
   // compute modification for block nm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_mod =
-      ml_multiply(shapederivatives->matrix(0, 2), false, *P, false, false, false, true);
+      matrix_multiply(shapederivatives->matrix(0, 2), false, *P, false, false, false, true);
 
   // Add transformation matrix to nm
   shapederivatives->matrix(0, 1).un_complete();
@@ -1802,7 +1803,7 @@ void FLD::Meshtying::condensation_operation_block_matrix_shape(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmn
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_mod =
-      ml_multiply(*P, true, shapederivatives->matrix(2, 0), false, false, false, true);
+      matrix_multiply(*P, true, shapederivatives->matrix(2, 0), false, false, false, true);
 
   // Add transformation matrix to mn
   shapederivatives->matrix(1, 0).un_complete();
@@ -1813,9 +1814,9 @@ void FLD::Meshtying::condensation_operation_block_matrix_shape(
   /*--------------------------------------------------------------------*/
   // compute modification for block kmm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_mod =
-      ml_multiply(*P, true, shapederivatives->matrix(2, 2), false, false, false, true);
+      matrix_multiply(*P, true, shapederivatives->matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
-      ml_multiply(*kss_mod, false, *P, false, false, false, true);
+      matrix_multiply(*kss_mod, false, *P, false, false, false, true);
 
   // Add transformation matrix to mm
   shapederivatives->matrix(1, 1).un_complete();

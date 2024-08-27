@@ -31,10 +31,10 @@ with condensed fluid interface velocities
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
 
@@ -818,14 +818,14 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   // ---------Addressing contribution to block (2,2)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> fgg =
-      ml_multiply(f->matrix(1, 1), false, *mortarp, false, false, false, true);
-  fgg = ml_multiply(*mortarp, true, *fgg, false, false, false, true);
+      matrix_multiply(f->matrix(1, 1), false, *mortarp, false, false, false, true);
+  fgg = matrix_multiply(*mortarp, true, *fgg, false, false, false, true);
 
   s->add(*fgg, false, scale * timescale * (1. - stiparam) / (1. - ftiparam), 1.0);
 
   // ---------Addressing contribution to block (2,3)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> fgi =
-      ml_multiply(*mortarp, true, f->matrix(1, 0), false, false, false, true);
+      matrix_multiply(*mortarp, true, f->matrix(1, 0), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lfgi =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->row_map(), 81, false));
 
@@ -833,14 +833,14 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   lfgi->complete(fgi->domain_map(), s->range_map());
 
   if (stcalgo == Inpar::Solid::stc_currsym)
-    lfgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfgi, false, true, true, true);
+    lfgi = Core::LinAlg::matrix_multiply(*stcmat, true, *lfgi, false, true, true, true);
 
   mat.matrix(0, 1).un_complete();
   mat.matrix(0, 1).add(*lfgi, false, (1. - stiparam) / (1. - ftiparam), 0.0);
 
   // ---------Addressing contribution to block (3,2)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> fig =
-      ml_multiply(f->matrix(0, 1), false, *mortarp, false, false, false, true);
+      matrix_multiply(f->matrix(0, 1), false, *mortarp, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lfig =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(fig->row_map(), 81, false));
 
@@ -849,7 +849,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   if (stcalgo != Inpar::Solid::stc_none)
   {
-    lfig = Core::LinAlg::ml_multiply(*lfig, false, *stcmat, false, false, false, true);
+    lfig = Core::LinAlg::matrix_multiply(*lfig, false, *stcmat, false, false, false, true);
   }
 
   mat.matrix(1, 0).un_complete();
@@ -870,7 +870,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   laig->complete(f->matrix(1, 1).domain_map(), aii.range_map(), true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> llaig =
-      ml_multiply(*laig, false, *mortarp, false, false, false, true);
+      matrix_multiply(*laig, false, *mortarp, false, false, false, true);
   laig = Teuchos::rcp(new Core::LinAlg::SparseMatrix(llaig->row_map(), 81, false));
 
   laig->add(*llaig, false, 1.0, 0.0);
@@ -878,7 +878,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
   if (stcalgo != Inpar::Solid::stc_none)
   {
-    laig = Core::LinAlg::ml_multiply(*laig, false, *stcmat, false, false, false, true);
+    laig = Core::LinAlg::matrix_multiply(*laig, false, *stcmat, false, false, false, true);
   }
 
   mat.assign(2, 0, Core::LinAlg::View, *laig);
@@ -899,8 +899,8 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
     // ---------Addressing contribution to block (2,2)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> fmgg =
-        ml_multiply(mmm->matrix(1, 1), false, *mortarp, false, false, false, true);
-    fmgg = ml_multiply(*mortarp, true, *fmgg, false, false, false, true);
+        matrix_multiply(mmm->matrix(1, 1), false, *mortarp, false, false, false, true);
+    fmgg = matrix_multiply(*mortarp, true, *fmgg, false, false, false, true);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgg =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(fmgg->row_map(), 81, false));
@@ -911,7 +911,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
     // ---------Addressing contribution to block (3,2)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> fmig =
-        ml_multiply(mmm->matrix(0, 1), false, *mortarp, false, false, false, true);
+        matrix_multiply(mmm->matrix(0, 1), false, *mortarp, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmig =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(fmig->row_map(), 81, false));
 
@@ -920,7 +920,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 
     if (stcalgo != Inpar::Solid::stc_none)
     {
-      lfmig = Core::LinAlg::ml_multiply(*lfmig, false, *stcmat, false, false, false, true);
+      lfmig = Core::LinAlg::matrix_multiply(*lfmig, false, *stcmat, false, false, false, true);
     }
 
     mat.matrix(1, 0).add(*lfmig, false, 1.0, 1.0);
@@ -938,24 +938,24 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
     // ---------Addressing contribution to block (2,4)
     lfmgi->complete(aii.domain_map(), mortarp->range_map(), true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> llfmgi =
-        ml_multiply(*mortarp, true, *lfmgi, false, false, false, true);
+        matrix_multiply(*mortarp, true, *lfmgi, false, false, false, true);
     lfmgi = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->row_map(), 81, false));
 
     lfmgi->add(*llfmgi, false, scale, 0.0);
     lfmgi->complete(aii.domain_map(), s->range_map());
 
     if (stcalgo == Inpar::Solid::stc_currsym)
-      lfmgi = Core::LinAlg::ml_multiply(*stcmat, true, *lfmgi, false, true, true, false);
+      lfmgi = Core::LinAlg::matrix_multiply(*stcmat, true, *lfmgi, false, true, true, false);
     lfmgi->scale((1. - stiparam) / (1. - ftiparam));
     mat.assign(0, 2, Core::LinAlg::View, *lfmgi);
   }
 
   if (stcalgo != Inpar::Solid::stc_none)
   {
-    s = Core::LinAlg::ml_multiply(*s, false, *stcmat, false, true, true, true);
+    s = Core::LinAlg::matrix_multiply(*s, false, *stcmat, false, true, true, true);
 
     if (stcalgo == Inpar::Solid::stc_currsym)
-      s = Core::LinAlg::ml_multiply(*stcmat, true, *s, false, true, true, false);
+      s = Core::LinAlg::matrix_multiply(*stcmat, true, *s, false, true, true, false);
   }
 
   // finally assign structure matrix to block (0,0)
