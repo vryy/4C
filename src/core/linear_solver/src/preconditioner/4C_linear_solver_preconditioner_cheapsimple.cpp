@@ -11,7 +11,7 @@
 #include "4C_linear_solver_preconditioner_cheapsimple.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_multiply.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_preconditioner_linalg_ana.hpp"
 
 #include <Ifpack.h>
@@ -115,11 +115,11 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
   {
     Teuchos::Time ltime("", true);
 
-    s_ = Core::LinAlg::ml_multiply(*diag_ainv_, (*a_)(0, 1), true);
+    s_ = Core::LinAlg::matrix_multiply(*diag_ainv_, false, (*a_)(0, 1), false, false, false, true);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = diagAinv * A(0,1) %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    s_ = Core::LinAlg::ml_multiply((*a_)(1, 0), *s_, false);
+    s_ = Core::LinAlg::matrix_multiply((*a_)(1, 0), false, *s_, false, false, false, false);
 
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.totalElapsedTime(true));
