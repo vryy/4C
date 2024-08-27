@@ -496,16 +496,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::update_step_state(const 
 bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::pre_update_step_element(bool beam_redist)
 {
   check_init_setup();
-  // not repartition of binning discretization necessary
-  return false;
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::update_step_element(
-    bool repartition_was_done)
-{
-  check_init_setup();
 
   /* Fixme
    * writing vtk output needs to be done BEFORE updating (and thus clearing
@@ -520,6 +510,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::update_step_element(
   {
     write_time_step_output_runtime_beam_potential();
   }
+
+  // not repartition of binning discretization necessary
+  return false;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::update_step_element(
+    bool repartition_was_done)
+{
+  check_init_setup();
 
   nearby_elements_map_.clear();
   find_and_store_neighboring_elements();
