@@ -93,9 +93,9 @@ GEOMETRY_PAIR_STRATEGY                gauss_point_projection_cross_section
 GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
 COUPLE_RESTART_STATE                  Yes
 --------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 23 QUANTITY dispx VALUE -0.0068964766068355 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 23 QUANTITY dispy VALUE 0.4485467747819918 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 23 QUANTITY dispz VALUE 0.0059171742472106 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 23 QUANTITY dispx VALUE -7.02875301448391623e-03 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 23 QUANTITY dispy VALUE 4.38817796628492518e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 23 QUANTITY dispz VALUE 5.84207139452741758e-03 TOLERANCE 1e-7
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3eb_static_beam_to_solid_volume_meshtying_circ_curved.xml
 -----------------------------------------------------------------------MATERIALS
