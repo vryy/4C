@@ -47,14 +47,6 @@ NUMSTEP                         6
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 SECONDORDER                     No
--------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov
-ITEMAX                          15
-PRECONDREUSE                    0
-SHAPEDERIVATIVES                Yes
-CONVTOL                         1e-10
-----------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
 ------------------------------------------------------XFEM GENERAL
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
@@ -73,6 +65,8 @@ MASS_CONSERVATION_SCALING       full
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.05
+----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.8 DENSITY 10.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0

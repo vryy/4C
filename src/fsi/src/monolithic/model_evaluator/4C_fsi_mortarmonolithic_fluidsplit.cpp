@@ -22,8 +22,6 @@ with condensed fluid interface velocities
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
-#include "4C_fsi_overlapprec.hpp"
-#include "4C_fsi_overlapprec_fsiamg.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
@@ -40,7 +38,6 @@ with condensed fluid interface velocities
 
 #include <math.h>
 #include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_LinearSystem_AztecOO.H>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

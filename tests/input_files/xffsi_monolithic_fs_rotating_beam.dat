@@ -80,15 +80,6 @@ NUMSTEP                         2
 RESTARTEVRY                     5
 COUPALGO                        iter_fluidfluid_monolithicfluidsplit_nonox
 SECONDORDER                     no
------------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov
-ITEMAX                          40
-CONVTOL                         1.0E-8
-PRECONDREUSE                    0
-SHAPEDERIVATIVES                yes
---------------------------------------------------------------------SOLVER 1
-NAME                            Fluid_Solver
-SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    no
@@ -111,6 +102,8 @@ RELAXING_ALE                    yes
 RELAXING_ALE_EVERY              1
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1 DENSITY 1
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1

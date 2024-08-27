@@ -57,14 +57,6 @@ NUMSTEP                         6
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 SECONDORDER                     No
------------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov
-ITEMAX                          7
-PRECONDREUSE                    0
-SHAPEDERIVATIVES                yes
-CONVTOL                         1e-10
---------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
@@ -79,6 +71,8 @@ XFF_CONV_STAB_SCALING           none
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.02 DENSITY 10.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.4 DENS 2.0

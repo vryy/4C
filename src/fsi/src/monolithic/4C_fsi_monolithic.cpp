@@ -24,7 +24,6 @@
 #include "4C_fsi_nox_group.hpp"
 #include "4C_fsi_nox_linearsystem.hpp"
 #include "4C_fsi_nox_newton.hpp"
-#include "4C_fsi_overlapprec_fsiamg.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
@@ -38,7 +37,6 @@
 #include "4C_structure_aux.hpp"
 
 #include <NOX_Direction_UserDefinedFactory.H>
-#include <NOX_Epetra_Interface_Preconditioner.H>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -1152,89 +1150,8 @@ void FSI::BlockMonolithic::prepare_time_step_preconditioner()
 void FSI::BlockMonolithic::create_system_matrix(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-
-  std::vector<int> pciter;
-  std::vector<double> pcomega;
-  std::vector<int> spciter;
-  std::vector<double> spcomega;
-  std::vector<int> fpciter;
-  std::vector<double> fpcomega;
-  std::vector<int> apciter;
-  std::vector<double> apcomega;
-  std::vector<std::string> blocksmoother;
-  std::vector<double> schuromega;
-  {
-    std::string word1;
-    std::string word2;
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "PCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "PCOMEGA"));
-      while (pciterstream >> word1) pciter.push_back(std::atoi(word1.c_str()));
-      while (pcomegastream >> word2) pcomega.push_back(std::atof(word2.c_str()));
-    }
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "STRUCTPCITER"));
-      std::istringstream pcomegastream(
-          Teuchos::getNumericStringParameter(fsimono, "STRUCTPCOMEGA"));
-      while (pciterstream >> word1) spciter.push_back(std::atoi(word1.c_str()));
-      while (pcomegastream >> word2) spcomega.push_back(std::atof(word2.c_str()));
-    }
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCOMEGA"));
-      while (pciterstream >> word1) fpciter.push_back(std::atoi(word1.c_str()));
-      while (pcomegastream >> word2) fpcomega.push_back(std::atof(word2.c_str()));
-    }
-    {
-      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "ALEPCITER"));
-      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "ALEPCOMEGA"));
-      while (pciterstream >> word1) apciter.push_back(std::atoi(word1.c_str()));
-      while (pcomegastream >> word2) apcomega.push_back(std::atof(word2.c_str()));
-    }
-    {
-      std::string word;
-      std::istringstream blocksmootherstream(
-          Teuchos::getNumericStringParameter(fsimono, "BLOCKSMOOTHER"));
-      while (blocksmootherstream >> word) blocksmoother.push_back(word);
-    }
-    {
-      std::istringstream blocksmootherstream(
-          Teuchos::getNumericStringParameter(fsimono, "SCHUROMEGA"));
-      while (blocksmootherstream >> word2) schuromega.push_back(std::atof(word2.c_str()));
-    }
-  }
-
-  Inpar::FSI::LinearBlockSolver linearsolverstrategy =
-      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
-
-  // create block system matrix
-  switch (linearsolverstrategy)
-  {
-    case Inpar::FSI::PreconditionedKrylov:
-    {
-      mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(extractor(), *structure_field(),
-          *fluid_field(), *ale_field(), structuresplit,
-          Core::UTILS::integral_value<int>(fsimono, "SYMMETRICPRECOND"), blocksmoother, schuromega,
-          pcomega, pciter, spcomega, spciter, fpcomega, fpciter, apcomega, apciter,
-          Core::UTILS::integral_value<int>(fsimono, "FSIAMGANALYZE"), linearsolverstrategy,
-          verbosity_));
-      break;
-    }
-    case Inpar::FSI::LinalgSolver:
-    {
-      mat = Teuchos::rcp(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              extractor(), extractor(), 81, false, true));
-      break;
-    }
-    default:
-    {
-      FOUR_C_THROW("Unsupported type of monolithic solver/preconditioner");
-      break;
-    }
-  }
+  mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      extractor(), extractor(), 81, false, true));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1251,100 +1168,78 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   ::NOX::Epetra::Interface::Jacobian* iJac = this;
-  ::NOX::Epetra::Interface::Preconditioner* iPrec = this;
   const Teuchos::RCP<Epetra_Operator> J = system_matrix();
   const Teuchos::RCP<Epetra_Operator> M = system_matrix();
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  Inpar::FSI::LinearBlockSolver linearsolverstrategy =
-      Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-  switch (linearsolverstrategy)
+  const int linsolvernumber = fsimono.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == -1)
+    FOUR_C_THROW(
+        "no linear solver defined for monolithic FSI. Please set LINEAR_SOLVER in FSI "
+        "DYNAMIC/MONOLITHIC SOLVER to a valid number!");
+
+  const Teuchos::ParameterList& fsisolverparams =
+      Global::Problem::instance()->solver_params(linsolvernumber);
+
+  auto solver = Teuchos::rcp(new Core::LinAlg::Solver(fsisolverparams, get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY")));
+
+  const auto azprectype =
+      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(fsisolverparams, "AZPREC");
+
+  switch (azprectype)
   {
-    case Inpar::FSI::PreconditionedKrylov:
+    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
+    case Core::LinearSolver::PreconditionerType::block_teko:
     {
-      linSys = Teuchos::rcp(new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
-          Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
-      break;
-    }
-    case Inpar::FSI::LinalgSolver:
-    {
-      const int linsolvernumber = fsimono.get<int>("LINEAR_SOLVER");
-      if (linsolvernumber == -1)
-        FOUR_C_THROW(
-            "no linear solver defined for monolithic FSI. Please set LINEAR_SOLVER in FSI "
-            "DYNAMIC/MONOLITHIC SOLVER to a valid number!");
-
-      const Teuchos::ParameterList& fsisolverparams =
-          Global::Problem::instance()->solver_params(linsolvernumber);
-
-      auto solver = Teuchos::rcp(new Core::LinAlg::Solver(fsisolverparams, get_comm(),
+      solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams,
           Global::Problem::instance()->solver_params_callback(),
           Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      structure_field()->discretization()->compute_null_space_if_necessary(
+          solver->params().sublist("Inverse1"));
+      Core::LinearSolver::Parameters::fix_null_space("Structure",
+          *structure_field()->discretization()->dof_row_map(),
+          system_matrix()->matrix(0, 0).epetra_matrix()->RowMap(),
+          solver->params().sublist("Inverse1"));
 
-      const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-          fsisolverparams, "AZPREC");
+      solver->put_solver_params_to_sub_params("Inverse2", fsisolverparams,
+          Global::Problem::instance()->solver_params_callback(),
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      fluid_field()->discretization()->compute_null_space_if_necessary(
+          solver->params().sublist("Inverse2"));
+      Core::LinearSolver::Parameters::fix_null_space("Fluid",
+          *fluid_field()->discretization()->dof_row_map(),
+          system_matrix()->matrix(1, 1).epetra_matrix()->RowMap(),
+          solver->params().sublist("Inverse2"));
 
-      switch (azprectype)
-      {
-        case Core::LinearSolver::PreconditionerType::multigrid_muelu:
-        case Core::LinearSolver::PreconditionerType::block_teko:
-        {
-          solver->put_solver_params_to_sub_params("Inverse1", fsisolverparams,
-              Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-          structure_field()->discretization()->compute_null_space_if_necessary(
-              solver->params().sublist("Inverse1"));
-          Core::LinearSolver::Parameters::fix_null_space("Structure",
-              *structure_field()->discretization()->dof_row_map(),
-              system_matrix()->matrix(0, 0).epetra_matrix()->RowMap(),
-              solver->params().sublist("Inverse1"));
-
-          solver->put_solver_params_to_sub_params("Inverse2", fsisolverparams,
-              Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-          fluid_field()->discretization()->compute_null_space_if_necessary(
-              solver->params().sublist("Inverse2"));
-          Core::LinearSolver::Parameters::fix_null_space("Fluid",
-              *fluid_field()->discretization()->dof_row_map(),
-              system_matrix()->matrix(1, 1).epetra_matrix()->RowMap(),
-              solver->params().sublist("Inverse2"));
-
-          solver->put_solver_params_to_sub_params("Inverse3", fsisolverparams,
-              Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-          const_cast<Core::FE::Discretization&>(*(ale_field()->discretization()))
-              .compute_null_space_if_necessary(solver->params().sublist("Inverse3"));
-          Core::LinearSolver::Parameters::fix_null_space("Ale",
-              *ale_field()->discretization()->dof_row_map(),
-              system_matrix()->matrix(2, 2).epetra_matrix()->RowMap(),
-              solver->params().sublist("Inverse3"));
-
-          break;
-        }
-        default:
-        {
-          std::cout << "\nWARNING:   MueLu FSI block preconditioner expected!" << std::endl;
-          break;
-        }
-      }
-
-      linSys = Teuchos::rcp(new NOX::FSI::LinearSystem(
-          printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver));
+      solver->put_solver_params_to_sub_params("Inverse3", fsisolverparams,
+          Global::Problem::instance()->solver_params_callback(),
+          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      const_cast<Core::FE::Discretization&>(*(ale_field()->discretization()))
+          .compute_null_space_if_necessary(solver->params().sublist("Inverse3"));
+      Core::LinearSolver::Parameters::fix_null_space("Ale",
+          *ale_field()->discretization()->dof_row_map(),
+          system_matrix()->matrix(2, 2).epetra_matrix()->RowMap(),
+          solver->params().sublist("Inverse3"));
 
       break;
     }
     default:
     {
-      FOUR_C_THROW("unsupported linear block solver strategy: %d", linearsolverstrategy);
+      std::cout << "\nWARNING:   MueLu FSI block preconditioner expected!" << std::endl;
       break;
     }
   }
+
+  linSys = Teuchos::rcp(new NOX::FSI::LinearSystem(
+      printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver));
 
   return linSys;
 }

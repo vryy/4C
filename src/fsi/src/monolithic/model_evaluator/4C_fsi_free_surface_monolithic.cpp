@@ -19,7 +19,6 @@
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_monolithic_linearsystem.hpp"
 #include "4C_fsi_nox_newton.hpp"
-#include "4C_fsi_overlapprec_fsiamg.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fsi.hpp"

@@ -104,14 +104,6 @@ TIMESTEP                        1
 NUMSTEP                         1
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicfluidsplit_nonox
------------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-LINEARBLOCKSOLVER               PreconditionedKrylov
-ITEMAX                          10
-CONVTOL                         1.0E-12
-BASETOL                         1.0E-3
-PRECONDREUSE                    0
-NORMCOMBI_RESFINC               And
-SHAPEDERIVATIVES                No
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
