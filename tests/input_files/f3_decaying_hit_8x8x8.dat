@@ -90,8 +90,7 @@ NEAR_WALL_LIMIT_CSGS_PHI        no
 NAME                            Fluid_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
-AZPREC                          MueLu
-MUELU_XML_FILE                  xml/multigrid/fluid_template.xml
+AZPREC                          ILU
 AZTOL                           1.0E-12
 AZCONV                          AZ_r0
 AZITER                          10
