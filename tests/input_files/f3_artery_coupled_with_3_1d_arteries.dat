@@ -60,32 +60,12 @@ TOL_PRES_INC                    1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos
-AZOUTPUT                        0
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
-AZREUSE                         0
-IFPACKGFILL                     0
-AZTOL                           1.0E-4
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/fluid_template.xml
+AZTOL                           1.0E-12
 AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                7000
-ML_MAXLEVEL                     2
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     1 1 1 1 1
-ML_DAMPFINE                     1.0
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
+AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 2
 NAME                            Arterial_Network_Solver
 SOLVER                          UMFPACK
@@ -4326,13 +4306,13 @@ NODE 1551 COORD -1.0000000000 -15.00000000000 125.32
 641 ART LINE2 1549 1550 MAT 4 GP 5 TYPE LinExp DIAM 6.00000000
 642 ART LINE2 1550 1551 MAT 4 GP 5 TYPE LinExp DIAM 6.00000000
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 833 QUANTITY pressure VALUE -4.43535726041706293e+04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 833 QUANTITY pressure VALUE -4.43535726357361564e+04 TOLERANCE 1e-9
 FLUID DIS fluid NODE 833 QUANTITY     velx VALUE  0.00000000000000000e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 833 QUANTITY     vely VALUE  0.00000000000000000e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 833 QUANTITY     velz VALUE -6.42271961650481416e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE  98 QUANTITY pressure VALUE -2.51315634406556019e+04 TOLERANCE 1e-9
+FLUID DIS fluid NODE  98 QUANTITY pressure VALUE -2.51315634571833471e+04 TOLERANCE 1e-9
 FLUID DIS fluid NODE  98 QUANTITY     velx VALUE -1.37087825648620747e-02 TOLERANCE 1e-9
 FLUID DIS fluid NODE  98 QUANTITY     vely VALUE -1.82210694298935334e-02 TOLERANCE 1e-9
-FLUID DIS fluid NODE  98 QUANTITY     velz VALUE -6.36289204107785906e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE  98 QUANTITY     velz VALUE -6.36289203184698451e+01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
