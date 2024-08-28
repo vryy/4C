@@ -393,7 +393,7 @@ void FLD::TimIntRedModels::insert_volumetric_surface_flow_cond_vector(
  | prepare AVM3-based scale separation                         vg 10/08 |
  | overloaded in TimIntRedModelsModels and TimIntLoma        bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::av_m3_preparation()
+void FLD::TimIntRedModels::avm3_preparation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
@@ -412,15 +412,15 @@ void FLD::TimIntRedModels::av_m3_preparation()
   //    impedancebc_->update_residual(residual_);
   //  }
 
-  av_m3_assemble_mat_and_rhs(eleparams);
+  avm3_assemble_mat_and_rhs(eleparams);
 
   // apply Womersley as a Dirichlet BC
   Core::LinAlg::apply_dirichlet_to_system(
       *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
 
   // get scale-separation matrix
-  av_m3_get_scale_separation_matrix();
-}  // TimIntRedModels::av_m3_preparation
+  avm3_get_scale_separation_matrix();
+}  // TimIntRedModels::avm3_preparation
 
 /*----------------------------------------------------------------------*
  | RedModels - specific BC in linear_relaxation_solve            bk 12/13|

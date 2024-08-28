@@ -894,7 +894,7 @@ void LowMach::Algorithm::read_inflow_restart(int restart)
 {
   // in case a inflow generation in the inflow section has been performed,
   // there are not any scatra results available and the initial field is used
-  // caution: if av_m3_preparation is called ,e.g., for multifractal subgrid-scale
+  // caution: if avm3_preparation is called ,e.g., for multifractal subgrid-scale
   //          modeling the physical parameters (dens, visc, diff) are required
   //          to obtain non-zero values which otherwise cause troubles when dividing by them
   //          we have to set the temperature field here

@@ -109,7 +109,7 @@ namespace ScaTra
     void add_neumann_to_residual() override;
 
     /// AVM3-based scale separation
-    void av_m3_separation() override;
+    void avm3_separation() override;
 
     /// dynamic Smagorinsky model
     void dynamic_computation_of_cs() override;

@@ -250,13 +250,13 @@ namespace FLD
     \brief Evaluate for AVM3 Separation
 
     */
-    virtual void av_m3_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams);
+    virtual void avm3_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams);
 
     /*!
     \brief Get scale separation matrix
 
     */
-    virtual void av_m3_get_scale_separation_matrix();
+    virtual void avm3_get_scale_separation_matrix();
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
@@ -853,10 +853,10 @@ namespace FLD
     virtual void update_gridv();
 
     /// prepare AVM3-based scale separation
-    virtual void av_m3_preparation();
+    virtual void avm3_preparation();
 
     /// AVM3-based scale separation
-    virtual void av_m3_separation();
+    virtual void avm3_separation();
 
     /// compute flow rate
     virtual void compute_flow_rates() const;

@@ -110,7 +110,7 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res) override;
 
     /// prepare AVM3-based scale separation
-    void av_m3_preparation() override;
+    void avm3_preparation() override;
 
     /// prepare time step
     void prepare_time_step() override;

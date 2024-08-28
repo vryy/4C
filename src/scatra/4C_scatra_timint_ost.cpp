@@ -192,7 +192,7 @@ void ScaTra::TimIntOneStepTheta::add_neumann_to_residual()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::av_m3_separation()
+void ScaTra::TimIntOneStepTheta::avm3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -356,7 +356,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
 
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
       turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
-    av_m3_preparation();
+    avm3_preparation();
 
   // read restart on micro scale in multi-scale simulations if necessary
   if (macro_scale_)
