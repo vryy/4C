@@ -1162,15 +1162,15 @@ namespace ScaTra
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! prepare AVM3-based scale separation
-    void av_m3_preparation();
+    void avm3_preparation();
 
     //! AVM3-based scale separation
-    virtual void av_m3_separation() = 0;
+    virtual void avm3_separation() = 0;
 
     /*--- calculate and update -----------------------------------------------*/
 
     //! scaling of AVM3-based subgrid-diffusivity matrix
-    void av_m3_scaling(Teuchos::ParameterList& eleparams  //!< parameter list
+    void avm3_scaling(Teuchos::ParameterList& eleparams  //!< parameter list
     );
 
     /*--- query and output ---------------------------------------------------*/

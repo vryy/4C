@@ -105,7 +105,7 @@ namespace ScaTra
     void add_neumann_to_residual() override;
 
     /// AVM3-based scale separation
-    void av_m3_separation() override;
+    void avm3_separation() override;
 
     /// add parameters specific for time-integration scheme
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;

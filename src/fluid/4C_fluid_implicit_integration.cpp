@@ -466,7 +466,7 @@ void FLD::FluidImplicitTimeInt::init_nonlinear_bc()
     {
       FOUR_C_THROW(
           "The functionality of impedance BC together with AVM3 is not known. Take a look into "
-          "function av_m3_preparation()");
+          "function avm3_preparation()");
     }
   }
 }
@@ -515,7 +515,7 @@ void FLD::FluidImplicitTimeInt::complete_general_init()
     // before the Neumann loads are added
     residual_->PutScalar(0.0);
 
-    av_m3_assemble_mat_and_rhs(eleparams);
+    avm3_assemble_mat_and_rhs(eleparams);
     stressmanager_->init_aggr(sysmat_);
   }
 
@@ -767,7 +767,7 @@ void FLD::FluidImplicitTimeInt::prepare_time_step()
   // -------------------------------------------------------------------
   if (step_ == 1 and (fssgv_ != Inpar::FLUID::no_fssgv or
                          scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator))
-    av_m3_preparation();
+    avm3_preparation();
 }
 
 /*----------------------------------------------------------------------*
@@ -1079,7 +1079,7 @@ void FLD::FluidImplicitTimeInt::assemble_mat_and_rhs()
   //----------------------------------------------------------------------
   // AVM3-based solution approach if required
   //----------------------------------------------------------------------
-  if (fssgv_ != Inpar::FLUID::no_fssgv) av_m3_separation();
+  if (fssgv_ != Inpar::FLUID::no_fssgv) avm3_separation();
 
   //----------------------------------------------------------------------
   // multifractal subgrid-scale modeling
@@ -3814,7 +3814,7 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
   if ((fssgv_ != Inpar::FLUID::no_fssgv) or
       (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator))
   {
-    av_m3_preparation();
+    avm3_preparation();
   }
 
   if (xwall_ != Teuchos::null) xwall_->read_restart(reader);
@@ -3922,7 +3922,7 @@ void FLD::FluidImplicitTimeInt::set_restart(const int step, const double time,
       (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator))
   {
     set_element_time_parameter();
-    av_m3_preparation();
+    avm3_preparation();
   }
 }
 
@@ -3983,7 +3983,7 @@ void FLD::FluidImplicitTimeInt::update_gridv()
  | prepare AVM3-based scale separation                         vg 10/08 |
  | overloaded in TimIntRedModels and TimIntLoma               bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::av_m3_preparation()
+void FLD::FluidImplicitTimeInt::avm3_preparation()
 {
   // AVM3 can't be used with locsys conditions cause it hasn't been implemented yet
   if (locsysman_ != Teuchos::null)
@@ -4012,18 +4012,18 @@ void FLD::FluidImplicitTimeInt::av_m3_preparation()
   //    impedancebc_->update_residual(residual_);
   //  }
 
-  av_m3_assemble_mat_and_rhs(eleparams);
+  avm3_assemble_mat_and_rhs(eleparams);
 
   // get scale-separation matrix
-  av_m3_get_scale_separation_matrix();
-}  // FluidImplicitTimeInt::av_m3_preparation
+  avm3_get_scale_separation_matrix();
+}  // FluidImplicitTimeInt::avm3_preparation
 
 
 /*----------------------------------------------------------------------*
  | prepare AVM3-based scale separation:                        vg 10/08 |
  | assemble mat and rhs                                                 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::av_m3_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
+void FLD::FluidImplicitTimeInt::avm3_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
 {
   // zero matrix
   sysmat_->zero();
@@ -4109,7 +4109,7 @@ void FLD::FluidImplicitTimeInt::av_m3_assemble_mat_and_rhs(Teuchos::ParameterLis
  | prepare AVM3-based scale separation:                         vg 10/08 |
  | get scale separation matrix                                  bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
+void FLD::FluidImplicitTimeInt::avm3_get_scale_separation_matrix()
 {
   // extract the ML parameters:
   Teuchos::ParameterList& mlparams = solver_->params().sublist("ML Parameters");
@@ -4177,7 +4177,7 @@ void FLD::FluidImplicitTimeInt::av_m3_get_scale_separation_matrix()
 /*----------------------------------------------------------------------*
  | AVM3-based scale separation                                 vg 10/08 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::av_m3_separation()
+void FLD::FluidImplicitTimeInt::avm3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
@@ -4187,7 +4187,7 @@ void FLD::FluidImplicitTimeInt::av_m3_separation()
 
   // set fine-scale vector
   discret_->set_state("fsvelaf", fsvelaf_);
-}  // FluidImplicitTimeInt::av_m3_separation
+}  // FluidImplicitTimeInt::avm3_separation
 
 
 /*----------------------------------------------------------------------*

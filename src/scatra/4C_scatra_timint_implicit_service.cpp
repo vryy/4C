@@ -236,7 +236,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
       // AVM3 separation for incremental solver: get fine-scale part of scalar
       if (incremental_ and (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
                                turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales))
-        av_m3_separation();
+        avm3_separation();
 
       // add element parameters according to time-integration scheme
       // we want to have an incremental solver!!
@@ -1362,7 +1362,7 @@ void ScaTra::ScaTraTimIntImpl::output_integr_reac(const int num)
 /*----------------------------------------------------------------------*
  |  prepare AVM3-based scale separation                        vg 10/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
+void ScaTra::ScaTraTimIntImpl::avm3_preparation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -1458,12 +1458,12 @@ void ScaTra::ScaTraTimIntImpl::av_m3_preparation()
       // Mnsv_ = Core::LinAlg::Multiply(*Sep_,true,*Mnsv_,false);
     }
   }
-}  // ScaTraTimIntImpl::av_m3_preparation
+}  // ScaTraTimIntImpl::avm3_preparation
 
 /*----------------------------------------------------------------------*
  |  scaling of AVM3-based subgrid-diffusivity matrix           vg 10/08 |
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::av_m3_scaling(Teuchos::ParameterList& eleparams)
+void ScaTra::ScaTraTimIntImpl::avm3_scaling(Teuchos::ParameterList& eleparams)
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");

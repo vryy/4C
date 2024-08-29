@@ -107,7 +107,7 @@ namespace ScaTra
 
     void add_neumann_to_residual() override;
 
-    void av_m3_separation() override;
+    void avm3_separation() override;
 
     void dynamic_computation_of_cs() override;
 

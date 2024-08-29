@@ -186,7 +186,7 @@ void ScaTra::TimIntBDF2::add_neumann_to_residual()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntBDF2::av_m3_separation()
+void ScaTra::TimIntBDF2::avm3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -331,7 +331,7 @@ void ScaTra::TimIntBDF2::read_restart(const int step, Teuchos::RCP<Core::IO::Inp
 
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
       turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
-    av_m3_preparation();
+    avm3_preparation();
 }
 
 FOUR_C_NAMESPACE_CLOSE

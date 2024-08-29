@@ -145,7 +145,7 @@ void ScaTra::TimIntStationary::add_neumann_to_residual()
 /*----------------------------------------------------------------------*
  | AVM3-based scale separation                                 vg 03/09 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntStationary::av_m3_separation()
+void ScaTra::TimIntStationary::avm3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");

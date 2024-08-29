@@ -238,7 +238,7 @@ void ScaTra::TimIntGenAlpha::add_neumann_to_residual()
 /*----------------------------------------------------------------------*
  | AVM3-based scale separation                                 vg 03/09 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntGenAlpha::av_m3_separation()
+void ScaTra::TimIntGenAlpha::avm3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -426,7 +426,7 @@ void ScaTra::TimIntGenAlpha::read_restart(
 
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
       turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
-    av_m3_preparation();
+    avm3_preparation();
 }
 
 

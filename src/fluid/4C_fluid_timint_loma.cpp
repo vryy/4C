@@ -296,7 +296,7 @@ void FLD::TimIntLoma::call_statistics_manager()
  | prepare AVM3-based scale separation                         vg 10/08 |
  | overloaded in TimIntRedModels and TimIntLoma               bk 12/13 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::av_m3_preparation()
+void FLD::TimIntLoma::avm3_preparation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
@@ -313,10 +313,10 @@ void FLD::TimIntLoma::av_m3_preparation()
   eleparams.set("thermpressderiv at n+alpha_F/n+1", thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1", thermpressdtam_);
 
-  av_m3_assemble_mat_and_rhs(eleparams);
+  avm3_assemble_mat_and_rhs(eleparams);
 
   // get scale-separation matrix
-  av_m3_get_scale_separation_matrix();
+  avm3_get_scale_separation_matrix();
 
   // perform initial separation to initialize fsvelaf_
   // required for loma
@@ -327,6 +327,6 @@ void FLD::TimIntLoma::av_m3_preparation()
   }
 
   return;
-}  // TimIntLoma::av_m3_preparation
+}  // TimIntLoma::avm3_preparation
 
 FOUR_C_NAMESPACE_CLOSE

@@ -1184,7 +1184,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_time_step()
   if ((step_ == 1 or (turbinflow_ and step_ == numinflowsteps_ + 1)) and
       (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
           turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales))
-    av_m3_preparation();
+    avm3_preparation();
 
   // -------------------------------------------------------------------
   // compute values at intermediate time steps (only for gen.-alpha)
@@ -2770,7 +2770,7 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
   if (incremental_ and step_ > 0 and
       (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
           turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales))
-    av_m3_separation();
+    avm3_separation();
 
   // add state vectors according to time-integration scheme
   add_time_integration_specific_vectors();
@@ -2811,7 +2811,7 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
 
   // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
   // fine-scale subgrid-diffusivity matrix by subgrid diffusivity
-  if (not incremental_ and fssgd_ != Inpar::ScaTra::fssugrdiff_no) av_m3_scaling(eleparams);
+  if (not incremental_ and fssgd_ != Inpar::ScaTra::fssugrdiff_no) avm3_scaling(eleparams);
 
   // potential residual scaling and potential addition of Neumann terms
   scaling_and_neumann();  // TODO: do we have to call this function twice??
