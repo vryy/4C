@@ -57,12 +57,6 @@ void Core::UTILS::ResultTest::test_special(const Core::IO::InputParameterContain
 int Core::UTILS::ResultTest::compare_values(
     double actresult, std::string type, const Core::IO::InputParameterContainer& container)
 {
-  int gid;
-
-  if (type != "SPECIAL")
-  {
-    gid = container.get<int>(type);
-  }
   std::string quantity = container.get<std::string>("QUANTITY");
   double givenresult = container.get<double>("VALUE");
   double tolerance = container.get<double>("TOLERANCE");
@@ -76,13 +70,20 @@ int Core::UTILS::ResultTest::compare_values(
 
   // prepare std::string stream 'msghead' containing general information on the current test
   std::stringstream msghead;
-  msghead << std::left << std::setw(9) << myname_ << ": " << std::left << std::setw(8)
-          << quantity.c_str();
+  msghead << std::left << std::setw(9) << myname_ << ": ";
+
+  if (type != "SPECIAL")
+  {
+    msghead << std::left << std::setw(12) << container.get_or<std::string>("DIS", "");
+  }
+
+  msghead << std::left << std::setw(8) << quantity.c_str();
 
   if (name != "") msghead << "(" << name << ")";
 
   if (type != "SPECIAL")
   {
+    const int gid = container.get<int>(type);
     std::transform(type.begin(), type.end(), type.begin(), ::tolower);
     msghead << " at " << type << " " << std::right << std::setw(3) << gid;
   }
