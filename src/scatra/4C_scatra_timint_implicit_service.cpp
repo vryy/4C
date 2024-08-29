@@ -22,6 +22,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
@@ -1392,33 +1393,16 @@ void ScaTra::ScaTraTimIntImpl::avm3_preparation()
 
   // get normalized fine-scale subgrid-diffusivity matrix
   {
-    // extract the ML parameters
-    Teuchos::ParameterList& mlparams = solver_->params().sublist("ML Parameters");
-    // remark: we create a new solver with ML preconditioner here, since this allows for also using
-    // other solver setups to solve the system of equations get the solver number used form the
-    // multifractal subgrid-scale model parameter list
-    const int scale_sep_solvernumber =
-        extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
-    if (scale_sep_solvernumber != (-1))  // create a dummy solver
-    {
-      Teuchos::RCP<Core::LinAlg::Solver> solver =
-          Teuchos::rcp(new Core::LinAlg::Solver(problem_->solver_params(scale_sep_solvernumber),
-              discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
-      // compute the null space,
-      discret_->compute_null_space_if_necessary(solver->params(), true);
-      // and, finally, extract the ML parameters
-      mlparams = solver->params().sublist("ML Parameters");
-    }
+    Teuchos::ParameterList params;
+    Core::LinearSolver::Parameters::compute_solver_parameters(*discret_, params);
 
     // get toggle vector for Dirchlet boundary conditions
     const Teuchos::RCP<const Epetra_Vector> dbct = dirichlet_toggle();
 
     // get nullspace parameters
-    double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
+    double* nullspace = params.get("null space: vectors", (double*)nullptr);
     if (!nullspace) FOUR_C_THROW("No nullspace supplied in parameter list");
-    int nsdim = mlparams.get("null space: dimension", 1);
+    int nsdim = params.get("null space: dimension", 1);
 
     // modify nullspace to ensure that DBC are fully taken into account
     if (nullspace)
@@ -1431,7 +1415,7 @@ void ScaTra::ScaTraTimIntImpl::avm3_preparation()
 
     // get plain aggregation Ptent
     Core::LinAlg::SparseMatrix Ptent =
-        Core::LinAlg::create_interpolation_matrix(*sysmat_sd_, nullspace, mlparams);
+        Core::LinAlg::create_interpolation_matrix(*sysmat_sd_, nullspace, params);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
     Sep_ = Core::LinAlg::matrix_multiply(Ptent, false, Ptent, true);
