@@ -111,8 +111,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
   }
 
   // Get the pair GIDs.
-  const auto [pair_gid, _1, _2] =
-      get_beam_to_surface_pair_gid<Beam>(discret, *this->element1(), *this->face_element_);
+  const auto pair_gid =
+      get_beam_to_surface_pair_gid_combined<Beam>(discret, *this->element1(), *this->face_element_);
 
   // Add the terms to the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)
@@ -205,14 +205,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
     }
   }
 
-
-  // Get the beam centerline GIDs.
-  Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  BEAMINTERACTION::UTILS::get_element_centerline_gid_indices(
-      discret, this->element1(), beam_centerline_gid);
-
-  // Get the patch GIDs.
-  const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
+  // Get the pair GIDs.
+  const auto [beam_centerline_gid, patch_gid] =
+      get_beam_to_surface_pair_gid<Beam>(discret, *this->element1(), *this->face_element_);
 
   // Get the Lagrange multiplier GIDs.
   const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);

@@ -56,8 +56,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, B
   ScalarType potential = this->get_penalty_potential();
 
   // Get the pair GIDs.
-  const auto [pair_gid, _1, _2] =
-      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
+  const auto pair_gid = get_beam_to_surface_pair_gid_combined<Beam>(
+      *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)

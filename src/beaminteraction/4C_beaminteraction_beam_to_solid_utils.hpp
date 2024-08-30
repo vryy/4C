@@ -317,15 +317,14 @@ namespace BEAMINTERACTION
       const unsigned int n_mortar_rot = 0);
 
   /**
-   * \brief Get the GIDs of the a beam-to-surface pair, i.e. first the beam GIDs and then the
-   * surface GIDs.
+   * \brief Get the GIDs of the beam and a surface in a beam-to-surface pair.
    * @param discret (in) discretization.
    * @param beam_element (in) Beam element.
    * @param face_element (in) Face element for the surface.
-   * @return Vector with the GIDs of this pair.
+   * @return Vectors with the GIDs of the beam and the solid.
    */
   template <typename Beam, typename Surface, typename ScalarType>
-  std::tuple<std::vector<int>, Core::LinAlg::Matrix<Beam::n_dof_, 1, int>, std::vector<int>>
+  std::tuple<Core::LinAlg::Matrix<Beam::n_dof_, 1, int>, const std::vector<int>&>
   get_beam_to_surface_pair_gid(const Core::FE::Discretization& discret,
       const Core::Elements::Element& beam_element,
       const GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>& face_element)
@@ -335,19 +334,34 @@ namespace BEAMINTERACTION
     UTILS::get_element_centerline_gid_indices(discret, &beam_element, beam_centerline_gid);
 
     // Get the patch (in this case just the one face element) GIDs.
-    const std::vector<int> patch_gid = face_element.get_patch_gid();
-    std::vector<int> pair_gid;
-    pair_gid.resize(Beam::n_dof_ + patch_gid.size());
+    const std::vector<int>& patch_gid = face_element.get_patch_gid();
+    return {beam_centerline_gid, patch_gid};
+  }
 
-    // Combine beam and solid GIDs into one vector.
+  /**
+   * \brief Get the combined GIDs of the a beam-to-surface pair, i.e. first the beam GIDs and then
+   * the surface GIDs.
+   * @param discret (in) discretization.
+   * @param beam_element (in) Beam element.
+   * @param face_element (in) Face element for the surface.
+   * @return Vector with the GIDs of this pair.
+   */
+  template <typename Beam, typename Surface, typename ScalarType>
+  std::vector<int> get_beam_to_surface_pair_gid_combined(const Core::FE::Discretization& discret,
+      const Core::Elements::Element& beam_element,
+      const GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>& face_element)
+  {
+    const auto [beam_centerline_gid, patch_gid] =
+        get_beam_to_surface_pair_gid<Beam>(discret, beam_element, face_element);
+    std::vector<int> pair_gid(Beam::n_dof_ + patch_gid.size(), -1);
+
     for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
       pair_gid[i_dof_beam] = beam_centerline_gid(i_dof_beam);
     for (unsigned int i_dof_patch = 0; i_dof_patch < patch_gid.size(); i_dof_patch++)
       pair_gid[Beam::n_dof_ + i_dof_patch] = patch_gid[i_dof_patch];
 
-    return {pair_gid, beam_centerline_gid, patch_gid};
+    return pair_gid;
   }
-
 
 }  // namespace BEAMINTERACTION
 

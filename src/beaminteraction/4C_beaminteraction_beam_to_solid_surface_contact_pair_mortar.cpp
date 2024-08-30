@@ -168,7 +168,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   }
 
   // GIDs of the pair and the force vector acting on the pair.
-  const auto [_1, beam_centerline_gid, patch_gid] =
+  const auto [beam_centerline_gid, patch_gid] =
       get_beam_to_surface_pair_gid<Beam>(discret, *this->element1(), *this->face_element_);
 
   // Get the Lagrange multiplier GIDs.

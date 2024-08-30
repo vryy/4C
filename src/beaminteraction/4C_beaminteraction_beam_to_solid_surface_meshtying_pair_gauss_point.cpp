@@ -113,8 +113,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
   // Get the pair GIDs.
   // Note we get the full patch GIDs here but we only use the ones for the beam and the surface, not
   // the ones for the averaged normals
-  const auto [pair_gid, _1, _2] =
-      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
+  const auto pair_gid = get_beam_to_surface_pair_gid_combined<Beam>(
+      *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)
