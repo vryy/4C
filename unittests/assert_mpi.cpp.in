@@ -9,6 +9,8 @@
 
 #include "4C_config.hpp"
 
+#include <mpi.h>
+
 // GENERATED FILE! Make sure to edit the template in the source directory.
 
 // This test is automatically included inside every test executable created from the cmake function
