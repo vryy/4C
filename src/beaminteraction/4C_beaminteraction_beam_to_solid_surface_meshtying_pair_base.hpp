@@ -135,13 +135,6 @@ namespace BEAMINTERACTION
     Core::LinAlg::Matrix<3, 1, ScalarType> evaluate_coupling(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const;
 
-    /**
-     * \brief Get the GIDs of the pair, i.e. first the beam GIDs and then the pair GIDs.
-     * @param discret (in) discretization.
-     * @return Vector with the GIDs of this pair.
-     */
-    std::vector<int> get_pair_gid(const Core::FE::Discretization& discret) const;
-
    private:
     /**
      * \brief Add points on the beam element to an output writer.

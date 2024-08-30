@@ -78,7 +78,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
   ScalarType beam_segmentation_factor = 0.0;
 
   // GIDs of the pair and the force vector acting on the pair.
-  const std::vector<int> pair_gid = this->get_pair_gid(*discret);
+  const std::vector<int> pair_gid =
+      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
 
   // Integrate over segments.
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
@@ -216,7 +217,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
   ScalarType beam_segmentation_factor = 0.0;
 
   // GIDs of the pair and the force vector acting on the pair.
-  const std::vector<int> pair_gid = this->get_pair_gid(*discret);
+  const std::vector<int> pair_gid =
+      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
 
   // Integrate over segments.
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
