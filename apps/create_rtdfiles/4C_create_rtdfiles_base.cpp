@@ -8,10 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#
 #include "4C_config.hpp"
 
 #include "4C_create_rtdfiles_wrapper.hpp"
+
+#include <mpi.h>
 
 #include <cstring>
 #include <filesystem>

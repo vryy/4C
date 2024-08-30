@@ -14,6 +14,8 @@
 
 #include "4C_io_legacy_types.hpp"
 
+#include <mpi.h>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

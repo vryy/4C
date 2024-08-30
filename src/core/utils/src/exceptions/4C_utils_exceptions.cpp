@@ -18,6 +18,7 @@
 #endif
 
 #include <boost/stacktrace.hpp>
+#include <mpi.h>
 
 #include <array>
 #include <cstdarg>

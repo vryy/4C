@@ -29,7 +29,4 @@
 
 @FOUR_C_DEFINES_FOR_EXTERNAL_DEPENDENCIES@
 
-// Centrally include MPI which is a core dependency that needs configuration.
-#include <mpi.h>  // IWYU pragma: export
-
 #endif

@@ -11,6 +11,8 @@
 
 #include "4C_config.hpp"
 
+#include <mpi.h>
+
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
