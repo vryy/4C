@@ -77,10 +77,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
   ScalarType segment_jacobian = 0.0;
   ScalarType beam_segmentation_factor = 0.0;
 
-  // GIDs of the pair and the force vector acting on the pair.
-  const std::vector<int> pair_gid =
-      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
-
   // Integrate over segments.
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
@@ -152,6 +148,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
     }
   }
 
+  // GIDs of the pair and the force vector acting on the pair.
+  const auto [pair_gid, _1, _2] =
+      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
+
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)
   {
@@ -216,10 +216,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
   ScalarType segment_jacobian = 0.0;
   ScalarType beam_segmentation_factor = 0.0;
 
-  // GIDs of the pair and the force vector acting on the pair.
-  const std::vector<int> pair_gid =
-      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
-
   // Integrate over segments.
   for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
@@ -263,6 +259,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
                    penalty_potential(gap, this->params()->beam_to_solid_surface_contact_params());
     }
   }
+
+  // GIDs of the pair and the force vector acting on the pair.
+  const auto [pair_gid, _1, _2] =
+      get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)

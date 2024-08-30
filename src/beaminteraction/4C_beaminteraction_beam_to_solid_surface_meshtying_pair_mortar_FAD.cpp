@@ -111,7 +111,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
   }
 
   // Get the pair GIDs.
-  std::vector<int> pair_gid =
+  const auto [pair_gid, _1, _2] =
       get_beam_to_surface_pair_gid<Beam>(discret, *this->element1(), *this->face_element_);
 
   // Add the terms to the global stiffness matrix.

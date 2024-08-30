@@ -56,7 +56,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, B
   ScalarType potential = this->get_penalty_potential();
 
   // Get the pair GIDs.
-  std::vector<int> pair_gid =
+  const auto [pair_gid, _1, _2] =
       get_beam_to_surface_pair_gid<Beam>(*discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.

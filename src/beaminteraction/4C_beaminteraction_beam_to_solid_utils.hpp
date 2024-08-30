@@ -325,7 +325,8 @@ namespace BEAMINTERACTION
    * @return Vector with the GIDs of this pair.
    */
   template <typename Beam, typename Surface, typename ScalarType>
-  std::vector<int> get_beam_to_surface_pair_gid(const Core::FE::Discretization& discret,
+  std::tuple<std::vector<int>, Core::LinAlg::Matrix<Beam::n_dof_, 1, int>, std::vector<int>>
+  get_beam_to_surface_pair_gid(const Core::FE::Discretization& discret,
       const Core::Elements::Element& beam_element,
       const GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>& face_element)
   {
@@ -334,7 +335,7 @@ namespace BEAMINTERACTION
     UTILS::get_element_centerline_gid_indices(discret, &beam_element, beam_centerline_gid);
 
     // Get the patch (in this case just the one face element) GIDs.
-    const std::vector<int>& patch_gid = face_element.get_patch_gid();
+    const std::vector<int> patch_gid = face_element.get_patch_gid();
     std::vector<int> pair_gid;
     pair_gid.resize(Beam::n_dof_ + patch_gid.size());
 
@@ -344,7 +345,7 @@ namespace BEAMINTERACTION
     for (unsigned int i_dof_patch = 0; i_dof_patch < patch_gid.size(); i_dof_patch++)
       pair_gid[Beam::n_dof_ + i_dof_patch] = patch_gid[i_dof_patch];
 
-    return pair_gid;
+    return {pair_gid, beam_centerline_gid, patch_gid};
   }
 
 
