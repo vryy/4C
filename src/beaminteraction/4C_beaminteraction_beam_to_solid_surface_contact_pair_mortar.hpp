@@ -57,6 +57,11 @@ namespace BEAMINTERACTION
     ~BeamToSolidSurfaceContactPairMortar() override{};
 
     /**
+     * \brief This pair has no direct stiffness contribution.
+     */
+    bool is_assembly_direct() const override { return false; }
+
+    /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
