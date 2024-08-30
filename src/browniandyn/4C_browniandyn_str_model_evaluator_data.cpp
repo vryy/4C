@@ -90,12 +90,11 @@ void Solid::ModelEvaluator::BrownianDynData::init(
             beams_damping_coefficient_prefactors_perunitlength_.size());
       }
 
-      if (beams_damping_coefficient_prefactors_perunitlength_[0] < 0.0 or
-          beams_damping_coefficient_prefactors_perunitlength_[0] < 0.0 or
-          beams_damping_coefficient_prefactors_perunitlength_[0] < 0.0)
-      {
-        FOUR_C_THROW("The damping coefficients for beams must not be negative!");
-      }
+      FOUR_C_THROW_UNLESS(
+          std::all_of(beams_damping_coefficient_prefactors_perunitlength_.begin(),
+              beams_damping_coefficient_prefactors_perunitlength_.end(),
+              [](double damping_coefficient) { return damping_coefficient >= 0.0; }),
+          "The damping coefficients for beams must not be negative!");
     }
   }
   // safety check for valid input parameter
