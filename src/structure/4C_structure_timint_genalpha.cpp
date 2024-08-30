@@ -334,6 +334,9 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   // initialise stiffness matrix to zero
   stiff_->zero();
 
+  // in the case of material damping initialise damping matrix to zero
+  if (damping_ == Inpar::Solid::damp_material) damp_->zero();
+
   // build predicted mid-state by last converged state and predicted target state
   evaluate_mid_state();
 
@@ -356,7 +359,8 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   // build new internal forces and stiffness
   if (have_nonlinear_mass() == Inpar::Solid::ml_none)
   {
-    apply_force_stiff_internal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params);
+    apply_force_stiff_internal(
+        timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params, damp_);
   }
   else
   {
@@ -464,8 +468,9 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
     //                + (1 - alpha_f) K_{T}
 
     stiff_->add(*mass_, false, (1. - alpham_) / (beta_ * (*dt_)[0] * (*dt_)[0]), 1. - alphaf_);
-    if (damping_ == Inpar::Solid::damp_rayleigh)
+    if (damping_ != Inpar::Solid::damp_none)
     {
+      if (damping_ == Inpar::Solid::damp_material) damp_->complete();
       stiff_->add(*damp_, false, (1. - alphaf_) * gamma_ / (beta_ * (*dt_)[0]), 1.0);
     }
   }
