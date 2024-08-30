@@ -65,15 +65,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
 
   // Initialize variables for contact kinematics.
   Core::LinAlg::Matrix<3, 1, ScalarType> dr_beam_ref;
-  Core::LinAlg::Matrix<3, 1, ScalarType> surface_normal;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_rel;
   Core::LinAlg::Matrix<1, Beam::n_nodes_ * Beam::n_val_, ScalarType> N_beam;
   Core::LinAlg::Matrix<1, Surface::n_nodes_ * Surface::n_val_, ScalarType> N_surface;
   Core::LinAlg::Matrix<Beam::n_dof_ + Surface::n_dof_, 1, ScalarType> gap_variation_times_normal;
   Core::LinAlg::Matrix<Beam::n_dof_ + Surface::n_dof_, 1, ScalarType> pair_force_vector;
-  ScalarType gap = 0.0;
   ScalarType segment_jacobian = 0.0;
   ScalarType beam_segmentation_factor = 0.0;
 
@@ -90,10 +85,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
       // Get the current Gauss point.
       const auto& projected_gauss_point =
           this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
-
-      // Get the fixed and variable projection coordinates.
-      const auto& xi = projected_gauss_point.get_xi();
       const auto& eta = projected_gauss_point.get_eta();
+      const auto& xi = projected_gauss_point.get_xi();
 
       // Get the Jacobian in the reference configuration.
       GEOMETRYPAIR::evaluate_position_derivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
@@ -101,19 +94,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
       // Jacobian including the segment length.
       segment_jacobian = Core::FADUtils::vector_norm(dr_beam_ref) * beam_segmentation_factor;
 
-      // Get the surface normal vector.
-      GEOMETRYPAIR::evaluate_surface_normal<Surface>(
-          xi, this->face_element_->get_face_element_data(), surface_normal);
-
-      // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::evaluate_position<Beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::evaluate_position<Surface>(
-          xi, this->face_element_->get_face_element_data(), r_surface);
-
-      // Evaluate the gap function.
-      r_rel = r_beam;
-      r_rel -= r_surface;
-      gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
+      // Get the contact kinematics
+      const auto [_1, _2, surface_normal, gap] =
+          this->evaluate_contact_kinematics_at_projection_point(
+              projected_gauss_point, beam_cross_section_radius);
 
       // Get the shape function matrices.
       GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
@@ -207,12 +191,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
 
   // Initialize variables for contact kinematics.
   Core::LinAlg::Matrix<3, 1, ScalarType> dr_beam_ref;
-  Core::LinAlg::Matrix<3, 1, ScalarType> surface_normal;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_rel;
   ScalarType potential = 0.0;
-  ScalarType gap = 0.0;
   ScalarType segment_jacobian = 0.0;
   ScalarType beam_segmentation_factor = 0.0;
 
@@ -229,9 +208,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
       // Get the current Gauss point.
       const auto& projected_gauss_point =
           this->line_to_3D_segments_[i_segment].get_projection_points()[i_gp];
-
-      // Get the fixed and variable projection coordinates.
-      const auto& xi = projected_gauss_point.get_xi();
       const auto& eta = projected_gauss_point.get_eta();
 
       // Get the Jacobian in the reference configuration.
@@ -240,19 +216,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
       // Jacobian including the segment length.
       segment_jacobian = Core::FADUtils::vector_norm(dr_beam_ref) * beam_segmentation_factor;
 
-      // Get the surface normal vector.
-      GEOMETRYPAIR::evaluate_surface_normal<Surface>(
-          xi, this->face_element_->get_face_element_data(), surface_normal);
-
-      // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::evaluate_position<Beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::evaluate_position<Surface>(
-          xi, this->face_element_->get_face_element_data(), r_surface);
-
-      // Evaluate the gap function.
-      r_rel = r_beam;
-      r_rel -= r_surface;
-      gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
+      // Evaluate the contact kinematics
+      const auto gap = std::get<3>(this->evaluate_contact_kinematics_at_projection_point(
+          projected_gauss_point, beam_cross_section_radius));
 
       // Get the contact force.
       potential += projected_gauss_point.get_gauss_weight() * segment_jacobian *

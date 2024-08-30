@@ -113,6 +113,41 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::c
       this->geometry_pair_, true);
 }
 
+/**
+ *
+ */
+template <typename ScalarType, typename Beam, typename Surface>
+std::tuple<Core::LinAlg::Matrix<3, 1, ScalarType>, Core::LinAlg::Matrix<3, 1, ScalarType>,
+    Core::LinAlg::Matrix<3, 1, ScalarType>, ScalarType>
+BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
+    evaluate_contact_kinematics_at_projection_point(
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>& projection_point,
+        const double beam_cross_section_radius) const
+{
+  // Get the projection coordinates
+  const auto& xi = projection_point.get_xi();
+  const auto& eta = projection_point.get_eta();
+
+  // Get the surface normal vector
+  Core::LinAlg::Matrix<3, 1, ScalarType> surface_normal;
+  GEOMETRYPAIR::evaluate_surface_normal<Surface>(
+      xi, this->face_element_->get_face_element_data(), surface_normal);
+
+  // Evaluate the current position of beam and solid
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
+  GEOMETRYPAIR::evaluate_position<Beam>(eta, this->ele1pos_, r_beam);
+  GEOMETRYPAIR::evaluate_position<Surface>(
+      xi, this->face_element_->get_face_element_data(), r_surface);
+
+  // Evaluate the gap function
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_rel;
+  r_rel = r_beam;
+  r_rel -= r_surface;
+  ScalarType gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
+
+  return {r_beam, r_surface, surface_normal, gap};
+}
 
 /**
  * Explicit template initialization of template class.

@@ -117,6 +117,15 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>
     cast_geometry_pair() const;
 
+    /**
+     * @brief Evaluate the contact kinematics at a projection point
+     */
+    std::tuple<Core::LinAlg::Matrix<3, 1, ScalarType>, Core::LinAlg::Matrix<3, 1, ScalarType>,
+        Core::LinAlg::Matrix<3, 1, ScalarType>, ScalarType>
+    evaluate_contact_kinematics_at_projection_point(
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>& projection_point,
+        const double beam_cross_section_radius) const;
+
    protected:
     //! Pointer to the face element object which manages the positions on the surface, including the
     //! averaged nodal normals.

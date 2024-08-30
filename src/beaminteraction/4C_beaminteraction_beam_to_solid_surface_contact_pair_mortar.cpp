@@ -79,13 +79,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   const double beam_cross_section_radius =
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
-  // Initialize variables for contact kinematics
-  Core::LinAlg::Matrix<3, 1, ScalarType> surface_normal;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
-  Core::LinAlg::Matrix<3, 1, ScalarType> r_rel;
-  ScalarType gap = 0.0;
-
   // Initialize variables for the shape function matrices
   Core::LinAlg::Matrix<mortar_trial::spatial_dim_, mortar_trial::n_dof_, ScalarType> N_lambda_trial;
   Core::LinAlg::Matrix<Mortar::spatial_dim_, Mortar::n_dof_, ScalarType> N_lambda;
@@ -119,19 +112,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
                                       0.5 * segment.get_segment_length() *
                                       get_jacobian_for_configuration(eta, contact_defined_on);
 
-      // Get the surface normal vector
-      GEOMETRYPAIR::evaluate_surface_normal<Surface>(
-          xi, this->face_element_->get_face_element_data(), surface_normal);
-
-      // Evaluate the current position of beam and solid
-      GEOMETRYPAIR::evaluate_position<Beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::evaluate_position<Surface>(
-          xi, this->face_element_->get_face_element_data(), r_surface);
-
-      // Evaluate the gap function
-      r_rel = r_beam;
-      r_rel -= r_surface;
-      gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
+      // Evaluate the contact kinematics
+      const auto [_1, _2, surface_normal, gap] =
+          this->evaluate_contact_kinematics_at_projection_point(
+              projected_gauss_point, beam_cross_section_radius);
 
       // Get the shape function matrices
       GEOMETRYPAIR::evaluate_shape_function_matrix<mortar_trial>(N_lambda_trial, eta);
