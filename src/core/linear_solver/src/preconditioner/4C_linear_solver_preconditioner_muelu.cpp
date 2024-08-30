@@ -72,9 +72,8 @@ void Core::LinearSolver::MueLuPreconditioner::setup(
 
       Teuchos::ParameterList& inverseList = muelulist_.sublist("MueLu Parameters");
 
-      if (!inverseList.isParameter("MUELU_XML_FILE"))
-        FOUR_C_THROW("MUELU_XML_FILE parameter not set!");
       std::string xmlFileName = inverseList.get<std::string>("MUELU_XML_FILE");
+      if (xmlFileName == "none") FOUR_C_THROW("MUELU_XML_FILE parameter not set!");
 
       Teuchos::RCP<Teuchos::ParameterList> muelu_params =
           Teuchos::rcp(new Teuchos::ParameterList());
