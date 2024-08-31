@@ -23,6 +23,7 @@
 #include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_so3_material.hpp"
 
@@ -353,8 +354,8 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype>
   struct ShapeFunctionsAndDerivatives
   {
-    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1> shapefunctions_;
-    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> derivatives_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1> shapefunctions_{};
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> derivatives_{};
   };
 
   /*!

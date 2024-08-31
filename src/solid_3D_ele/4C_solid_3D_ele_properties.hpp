@@ -32,6 +32,7 @@ namespace Discret::ELEMENTS
     fbar,
     eas_mild,
     eas_full,
+    shell_ans,
     shell_eas
   };
 
@@ -47,6 +48,8 @@ namespace Discret::ELEMENTS
         return "eas_mild";
       case ElementTechnology::eas_full:
         return "eas_full";
+      case ElementTechnology::shell_ans:
+        return "shell_ans";
       case ElementTechnology::shell_eas:
         return "shell_eas";
     }
@@ -67,6 +70,8 @@ namespace Discret::ELEMENTS
         return fct(std::integral_constant<ElementTechnology, ElementTechnology::eas_mild>{});
       case ElementTechnology::eas_full:
         return fct(std::integral_constant<ElementTechnology, ElementTechnology::eas_full>{});
+      case ElementTechnology::shell_ans:
+        return fct(std::integral_constant<ElementTechnology, ElementTechnology::shell_ans>{});
       case ElementTechnology::shell_eas:
         return fct(std::integral_constant<ElementTechnology, ElementTechnology::shell_eas>{});
     }

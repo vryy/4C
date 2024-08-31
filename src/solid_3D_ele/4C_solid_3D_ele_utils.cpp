@@ -118,6 +118,10 @@ Discret::ELEMENTS::ElementTechnology Solid::UTILS::read_element::read_element_te
   {
     return Discret::ELEMENTS::ElementTechnology::eas_mild;
   }
+  else if (type == "shell_ans")
+  {
+    return Discret::ELEMENTS::ElementTechnology::shell_ans;
+  }
   else if (type == "shell_eas")
   {
     return Discret::ELEMENTS::ElementTechnology::shell_eas;
