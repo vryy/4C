@@ -46,13 +46,10 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::IterativeSolver(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::setup(
-    Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-    const bool refactor, const bool reset, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
+void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::setup(Teuchos::RCP<MatrixType> A,
+    Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {
-  // see whether operator is a Epetra_CrsMatrix
-  Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
-
   if (!params().isSublist("Belos Parameters")) FOUR_C_THROW("Do not have belos parameter list");
   Teuchos::ParameterList& belist = params().sublist("Belos Parameters");
 
@@ -61,12 +58,12 @@ void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::setup(
   if (create)
   {
     ncall_ = 0;
-    preconditioner_ = create_preconditioner(belist, A != Teuchos::null, projector);
+    preconditioner_ = create_preconditioner(belist, projector);
   }
 
-  b_ = b;
-  a_ = matrix;  // we cannot use A here, since it could be Teuchos::null (for blocked operators);
+  a_ = A;
   x_ = x;
+  b_ = b;
 
   preconditioner_->setup(create, a_.get(), x_.get(), b_.get());
 }
@@ -250,81 +247,59 @@ bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::check_reuse_st
 template <class MatrixType, class VectorType>
 Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase>
 Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_preconditioner(
-    Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
+    Teuchos::ParameterList& solverlist, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  1.1)   create_preconditioner");
 
   Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> preconditioner;
 
-  if (isCrsMatrix)
+  if (params().isSublist("IFPACK Parameters"))
   {
-    // get type of preconditioner and build either Ifpack or ML
-    // if we have an ifpack parameter list, we do ifpack
-    // if we have an ml parameter list we do ml
-    if (params().isSublist("IFPACK Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::IFPACKPreconditioner(
-          params().sublist("IFPACK Parameters"), solverlist));
-    }
-    else if (params().isSublist("ML Parameters"))
-    {
-      preconditioner =
-          Teuchos::rcp(new Core::LinearSolver::MLPreconditioner(params().sublist("ML Parameters")));
-    }
-    else if (params().isSublist("MueLu Parameters"))
-    {
-      preconditioner = Teuchos::rcp(
-          new Core::LinearSolver::MueLuPreconditioner(params().sublist("MueLu Parameters")));
-    }
-    else if (params().isSublist("MueLu (BeamSolid) Parameters"))
-    {
-      preconditioner =
-          Teuchos::rcp(new Core::LinearSolver::MueLuBeamSolidBlockPreconditioner(params()));
-    }
-    else
-      FOUR_C_THROW(
-          "Core::LinearSolver::IterativeSolver::create_preconditioner: Unknown preconditioner for "
-          "iterative solver chosen.");
-
-    if (projector != Teuchos::null)
-    {
-      preconditioner = Teuchos::rcp(
-          new Core::LinearSolver::KrylovProjectionPreconditioner(preconditioner, projector));
-    }
+    preconditioner = Teuchos::rcp(new Core::LinearSolver::IFPACKPreconditioner(
+        params().sublist("IFPACK Parameters"), solverlist));
+  }
+  else if (params().isSublist("ML Parameters"))
+  {
+    preconditioner =
+        Teuchos::rcp(new Core::LinearSolver::MLPreconditioner(params().sublist("ML Parameters")));
+  }
+  else if (params().isSublist("MueLu Parameters"))
+  {
+    preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuPreconditioner(params()));
+  }
+  else if (params().isSublist("MueLu (BeamSolid) Parameters"))
+  {
+    preconditioner =
+        Teuchos::rcp(new Core::LinearSolver::MueLuBeamSolidBlockPreconditioner(params()));
+  }
+  else if (params().isSublist("MueLu (Contact) Parameters"))
+  {
+    preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuContactSpPreconditioner(params()));
+  }
+  else if (params().isSublist("CheapSIMPLE Parameters"))
+  {
+    preconditioner = Teuchos::rcp(new Core::LinearSolver::SimplePreconditioner(params()));
+  }
+  else if (params().isSublist("BGS Parameters"))
+  {
+    preconditioner = Teuchos::rcp(
+        new Core::LinearSolver::BGSPreconditioner(params(), params().sublist("BGS Parameters")));
+  }
+  else if (params().isSublist("Teko Parameters"))
+  {
+    preconditioner = Teuchos::rcp(new Core::LinearSolver::TekoPreconditioner(params()));
+  }
+  else if (params().isSublist("AMGnxn Parameters"))
+  {
+    preconditioner = Teuchos::rcp(new Core::LinearSolver::AmGnxnPreconditioner(params()));
   }
   else
+    FOUR_C_THROW("Unknown preconditioner chosen for iterative linear solver.");
+
+  if (projector != Teuchos::null)
   {
-    // assume block matrix
-    if (params().isSublist("CheapSIMPLE Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::SimplePreconditioner(params()));
-    }
-    else if (params().isSublist("BGS Parameters"))
-    {
-      preconditioner = Teuchos::rcp(
-          new Core::LinearSolver::BGSPreconditioner(params(), params().sublist("BGS Parameters")));
-    }
-    else if (params().isSublist("MueLu Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuPreconditioner(params()));
-    }
-    else if (params().isSublist("Teko Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::TekoPreconditioner(params()));
-    }
-    else if (params().isSublist("MueLu (Contact) Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuContactSpPreconditioner(params()));
-    }
-    else if (params().isSublist("AMGnxn Parameters"))
-    {
-      preconditioner = Teuchos::rcp(new Core::LinearSolver::AmGnxnPreconditioner(params()));
-    }
-    else
-      FOUR_C_THROW(
-          "Core::LinearSolver::IterativeSolver::create_preconditioner: Unknown preconditioner for "
-          "block iterative solver chosen.");
+    preconditioner = Teuchos::rcp(
+        new Core::LinearSolver::KrylovProjectionPreconditioner(preconditioner, projector));
   }
 
   return preconditioner;

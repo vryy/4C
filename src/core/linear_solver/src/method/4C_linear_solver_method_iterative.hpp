@@ -40,8 +40,8 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    void setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
-        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
+    void setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
+        const bool refactor, const bool reset,
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
@@ -74,12 +74,10 @@ namespace Core::LinearSolver
     /*! \brief Function for creating preconditioner object
      *
      * @param solverlist liner solver parameter list
-     * @param isCrsMatrix Boolean flag to indicate Epetra_CrsMatrix (true) or block matrix (false)
      * @param projector Krylov projector
      */
     Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> create_preconditioner(
-        Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
-        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
+        Teuchos::ParameterList& solverlist, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
     //! a communicator
     const Epetra_Comm& comm_;
