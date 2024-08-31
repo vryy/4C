@@ -35,7 +35,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-
   /*!
    * @brief Solve for the inverse of a matrix and ignore any errors
    *
@@ -68,81 +67,6 @@ namespace
   }
 
   /*!
-   * @brief Evaluates and returns the transformation matrix T0^{-T} which maps the matrix M from
-   * parameter space to the material configuration
-   *
-   * For details, see Andelfinger et al., EAS-elements, 1993, doi: 10.1002/nme.1620360805.
-   *
-   * @tparam celltype : Cell type
-   * @param jacobian_centroid(in) : Jacobian mapping evaluated at the element centroid
-   * @return double : transformation matrix
-   */
-  template <Core::FE::CellType celltype>
-  Core::LinAlg::Matrix<Discret::ELEMENTS::num_str<celltype>, Discret::ELEMENTS::num_str<celltype>>
-  evaluate_t0inv_t(const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_centroid)
-  {
-    // build T0^T (based on strain-like Voigt notation: xx,yy,zz,xy,yz,xz)
-    // currently only works in 3D
-    Core::LinAlg::Matrix<Discret::ELEMENTS::num_str<celltype>, Discret::ELEMENTS::num_str<celltype>>
-        T0invT(false);
-    T0invT(0, 0) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(0, 0);
-    T0invT(1, 0) = jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(1, 0);
-    T0invT(2, 0) = jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(2, 0);
-    T0invT(3, 0) = 2 * jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(1, 0);
-    T0invT(4, 0) = 2 * jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(2, 0);
-    T0invT(5, 0) = 2 * jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(2, 0);
-
-    T0invT(0, 1) = jacobian_centroid.jacobian_(0, 1) * jacobian_centroid.jacobian_(0, 1);
-    T0invT(1, 1) = jacobian_centroid.jacobian_(1, 1) * jacobian_centroid.jacobian_(1, 1);
-    T0invT(2, 1) = jacobian_centroid.jacobian_(2, 1) * jacobian_centroid.jacobian_(2, 1);
-    T0invT(3, 1) = 2 * jacobian_centroid.jacobian_(0, 1) * jacobian_centroid.jacobian_(1, 1);
-    T0invT(4, 1) = 2 * jacobian_centroid.jacobian_(1, 1) * jacobian_centroid.jacobian_(2, 1);
-    T0invT(5, 1) = 2 * jacobian_centroid.jacobian_(0, 1) * jacobian_centroid.jacobian_(2, 1);
-
-    T0invT(0, 2) = jacobian_centroid.jacobian_(0, 2) * jacobian_centroid.jacobian_(0, 2);
-    T0invT(1, 2) = jacobian_centroid.jacobian_(1, 2) * jacobian_centroid.jacobian_(1, 2);
-    T0invT(2, 2) = jacobian_centroid.jacobian_(2, 2) * jacobian_centroid.jacobian_(2, 2);
-    T0invT(3, 2) = 2 * jacobian_centroid.jacobian_(0, 2) * jacobian_centroid.jacobian_(1, 2);
-    T0invT(4, 2) = 2 * jacobian_centroid.jacobian_(1, 2) * jacobian_centroid.jacobian_(2, 2);
-    T0invT(5, 2) = 2 * jacobian_centroid.jacobian_(0, 2) * jacobian_centroid.jacobian_(2, 2);
-
-    T0invT(0, 3) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(0, 1);
-    T0invT(1, 3) = jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(1, 1);
-    T0invT(2, 3) = jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(2, 1);
-    T0invT(3, 3) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(1, 1) +
-                   jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(0, 1);
-    T0invT(4, 3) = jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(2, 1) +
-                   jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(1, 1);
-    T0invT(5, 3) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(2, 1) +
-                   jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(0, 1);
-
-    T0invT(0, 4) = jacobian_centroid.jacobian_(0, 1) * jacobian_centroid.jacobian_(0, 2);
-    T0invT(1, 4) = jacobian_centroid.jacobian_(1, 1) * jacobian_centroid.jacobian_(1, 2);
-    T0invT(2, 4) = jacobian_centroid.jacobian_(2, 1) * jacobian_centroid.jacobian_(2, 2);
-    T0invT(3, 4) = jacobian_centroid.jacobian_(0, 1) * jacobian_centroid.jacobian_(1, 2) +
-                   jacobian_centroid.jacobian_(1, 1) * jacobian_centroid.jacobian_(0, 2);
-    T0invT(4, 4) = jacobian_centroid.jacobian_(1, 1) * jacobian_centroid.jacobian_(2, 2) +
-                   jacobian_centroid.jacobian_(2, 1) * jacobian_centroid.jacobian_(1, 2);
-    T0invT(5, 4) = jacobian_centroid.jacobian_(0, 1) * jacobian_centroid.jacobian_(2, 2) +
-                   jacobian_centroid.jacobian_(2, 1) * jacobian_centroid.jacobian_(0, 2);
-
-    T0invT(0, 5) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(0, 2);
-    T0invT(1, 5) = jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(1, 2);
-    T0invT(2, 5) = jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(2, 2);
-    T0invT(3, 5) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(1, 2) +
-                   jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(0, 2);
-    T0invT(4, 5) = jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(2, 2) +
-                   jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(1, 2);
-    T0invT(5, 5) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(2, 2) +
-                   jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(0, 2);
-
-    // evaluate the inverse T0^{-T} with solver
-    solve_for_inverse(T0invT);
-
-    return T0invT;
-  }
-
-  /*!
    * @brief Evaluates and returns the centroid transformation quantities, i.e., the jacobi
    * determinant at the element centroid and the transformation matrix T0^{-T}
    *
@@ -164,7 +88,8 @@ namespace
     centroid_transformation.detJ0_ = jacobian_mapping_centroid.determinant_;
 
     // 2) compute matrix T0^{-T}: T0^{-T} maps the matrix M from local to global coordinates
-    centroid_transformation.T0invT_ = evaluate_t0inv_t(jacobian_mapping_centroid);
+    centroid_transformation.T0invT_ =
+        evaluate_voigt_transformation_matrix(jacobian_mapping_centroid);
 
     return centroid_transformation;
   }
@@ -488,60 +413,6 @@ namespace
   }
 
   /*!
-   * @brief Compute the enhanced deformation gradient F^{enh}
-
-   * @tparam dim
-   * @param defgrd_disp(in) : displacement-based deformation gradient F^{u}
-   * @param enhanced_gl_strain(in) : enhanced Green-Lagrange strains E^{enh}
-   * @return Core::LinAlg::Matrix<dim, dim> : enhanced deformation gradient F^{enh}
-   */
-  template <unsigned dim>
-  Core::LinAlg::Matrix<dim, dim> evaluate_consistent_defgrd(
-      const Core::LinAlg::Matrix<dim, dim>& defgrd_disp,
-      const Core::LinAlg::Matrix<dim*(dim + 1) / 2, 1>& enhanced_gl_strain)
-  {
-    Core::LinAlg::Matrix<dim, dim> R;       // rotation tensor
-    Core::LinAlg::Matrix<dim, dim> U_enh;   // enhanced right stretch tensor
-    Core::LinAlg::Matrix<dim, dim> U_disp;  // displacement-based right stretch tensor
-    Core::LinAlg::Matrix<dim, dim> EW;      // temporarily store eigenvalues
-    Core::LinAlg::Matrix<dim, dim> tmp;     // temporary matrix for matrix matrix matrix products
-    Core::LinAlg::Matrix<dim, dim> tmp2;    // temporary matrix for matrix matrix matrix products
-
-    // calculate modified right stretch tensor
-    if (dim != 3) FOUR_C_THROW("stop: this currently only works for 3D");
-    for (unsigned i = 0; i < dim; i++) U_enh(i, i) = 2. * enhanced_gl_strain(i) + 1.;
-    U_enh(0, 1) = enhanced_gl_strain(dim);
-    U_enh(1, 0) = enhanced_gl_strain(dim);
-    U_enh(1, 2) = enhanced_gl_strain(4);
-    U_enh(2, 1) = enhanced_gl_strain(4);
-    U_enh(0, 2) = enhanced_gl_strain(5);
-    U_enh(2, 0) = enhanced_gl_strain(5);
-
-    Core::LinAlg::syev(U_enh, EW, U_enh);
-    for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.multiply(U_enh, EW);
-    tmp2.multiply_nt(tmp, U_enh);
-    U_enh.update(tmp2);
-
-    // calculate displacement-based right stretch tensor
-    U_disp.multiply_tn(defgrd_disp, defgrd_disp);
-
-    Core::LinAlg::syev(U_disp, EW, U_disp);
-    for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.multiply(U_disp, EW);
-    tmp2.multiply_nt(tmp, U_disp);
-    U_disp.update(tmp2);
-
-    // compose consistent deformation gradient
-    U_disp.invert();
-    R.multiply(defgrd_disp, U_disp);
-
-    Core::LinAlg::Matrix<dim, dim> defgrd_enh;
-    defgrd_enh.multiply(R, U_enh);
-    return defgrd_enh;
-  }
-
-  /*!
    * @brief Integrate the EAS stiffness matrices
    *
    * @tparam celltype, eastype
@@ -658,9 +529,10 @@ namespace
           displacement_based_spatial_material_mapping, eas_kinematics.m_tilde,
           eas_iteration_data.alpha_);
 
-      eas_kinematics.enhanced_deformation_gradient = evaluate_consistent_defgrd(
-          displacement_based_spatial_material_mapping.deformation_gradient_,
-          eas_kinematics.enhanced_gl);
+      eas_kinematics.enhanced_deformation_gradient =
+          Discret::ELEMENTS::compute_deformation_gradient_from_gl_strains(
+              displacement_based_spatial_material_mapping.deformation_gradient_,
+              eas_kinematics.enhanced_gl);
     }
     else if constexpr (kinematic_type == Inpar::Solid::KinemType::linear)
     {

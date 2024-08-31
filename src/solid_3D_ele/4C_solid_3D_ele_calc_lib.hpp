@@ -23,6 +23,7 @@
 #include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
+#include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_so3_material.hpp"
 
 #include <Epetra_Vector.h>
@@ -1058,6 +1059,139 @@ namespace Discret::ELEMENTS
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype> * Core::FE::dim<celltype>>
         d2_F_dxi_dd{};
   };
+
+  /*!
+   * @brief Evaluates and returns the transformation matrix T^{-T} which maps voigt tensors from
+   * parameter space to the material configuration
+   *
+   * For details, see Andelfinger et al., EAS-elements, 1993, doi: 10.1002/nme.1620360805.
+   *
+   * @tparam celltype : Cell type
+   * @param jacobian(in) : Jacobian mapping evaluated
+   * @return : transformation matrix
+   */
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Matrix<DETAIL::num_str<celltype>, DETAIL::num_str<celltype>>
+  evaluate_voigt_transformation_matrix(const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian)
+  {
+    // build T^T (based on strain-like Voigt notation: xx,yy,zz,xy,yz,xz)
+    // currently only works in 3D
+    Core::LinAlg::Matrix<DETAIL::num_str<celltype>, DETAIL::num_str<celltype>> TinvT(false);
+    TinvT(0, 0) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(0, 0);
+    TinvT(1, 0) = jacobian.jacobian_(1, 0) * jacobian.jacobian_(1, 0);
+    TinvT(2, 0) = jacobian.jacobian_(2, 0) * jacobian.jacobian_(2, 0);
+    TinvT(3, 0) = 2 * jacobian.jacobian_(0, 0) * jacobian.jacobian_(1, 0);
+    TinvT(4, 0) = 2 * jacobian.jacobian_(1, 0) * jacobian.jacobian_(2, 0);
+    TinvT(5, 0) = 2 * jacobian.jacobian_(0, 0) * jacobian.jacobian_(2, 0);
+
+    TinvT(0, 1) = jacobian.jacobian_(0, 1) * jacobian.jacobian_(0, 1);
+    TinvT(1, 1) = jacobian.jacobian_(1, 1) * jacobian.jacobian_(1, 1);
+    TinvT(2, 1) = jacobian.jacobian_(2, 1) * jacobian.jacobian_(2, 1);
+    TinvT(3, 1) = 2 * jacobian.jacobian_(0, 1) * jacobian.jacobian_(1, 1);
+    TinvT(4, 1) = 2 * jacobian.jacobian_(1, 1) * jacobian.jacobian_(2, 1);
+    TinvT(5, 1) = 2 * jacobian.jacobian_(0, 1) * jacobian.jacobian_(2, 1);
+
+    TinvT(0, 2) = jacobian.jacobian_(0, 2) * jacobian.jacobian_(0, 2);
+    TinvT(1, 2) = jacobian.jacobian_(1, 2) * jacobian.jacobian_(1, 2);
+    TinvT(2, 2) = jacobian.jacobian_(2, 2) * jacobian.jacobian_(2, 2);
+    TinvT(3, 2) = 2 * jacobian.jacobian_(0, 2) * jacobian.jacobian_(1, 2);
+    TinvT(4, 2) = 2 * jacobian.jacobian_(1, 2) * jacobian.jacobian_(2, 2);
+    TinvT(5, 2) = 2 * jacobian.jacobian_(0, 2) * jacobian.jacobian_(2, 2);
+
+    TinvT(0, 3) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(0, 1);
+    TinvT(1, 3) = jacobian.jacobian_(1, 0) * jacobian.jacobian_(1, 1);
+    TinvT(2, 3) = jacobian.jacobian_(2, 0) * jacobian.jacobian_(2, 1);
+    TinvT(3, 3) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(1, 1) +
+                  jacobian.jacobian_(1, 0) * jacobian.jacobian_(0, 1);
+    TinvT(4, 3) = jacobian.jacobian_(1, 0) * jacobian.jacobian_(2, 1) +
+                  jacobian.jacobian_(2, 0) * jacobian.jacobian_(1, 1);
+    TinvT(5, 3) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(2, 1) +
+                  jacobian.jacobian_(2, 0) * jacobian.jacobian_(0, 1);
+
+    TinvT(0, 4) = jacobian.jacobian_(0, 1) * jacobian.jacobian_(0, 2);
+    TinvT(1, 4) = jacobian.jacobian_(1, 1) * jacobian.jacobian_(1, 2);
+    TinvT(2, 4) = jacobian.jacobian_(2, 1) * jacobian.jacobian_(2, 2);
+    TinvT(3, 4) = jacobian.jacobian_(0, 1) * jacobian.jacobian_(1, 2) +
+                  jacobian.jacobian_(1, 1) * jacobian.jacobian_(0, 2);
+    TinvT(4, 4) = jacobian.jacobian_(1, 1) * jacobian.jacobian_(2, 2) +
+                  jacobian.jacobian_(2, 1) * jacobian.jacobian_(1, 2);
+    TinvT(5, 4) = jacobian.jacobian_(0, 1) * jacobian.jacobian_(2, 2) +
+                  jacobian.jacobian_(2, 1) * jacobian.jacobian_(0, 2);
+
+    TinvT(0, 5) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(0, 2);
+    TinvT(1, 5) = jacobian.jacobian_(1, 0) * jacobian.jacobian_(1, 2);
+    TinvT(2, 5) = jacobian.jacobian_(2, 0) * jacobian.jacobian_(2, 2);
+    TinvT(3, 5) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(1, 2) +
+                  jacobian.jacobian_(1, 0) * jacobian.jacobian_(0, 2);
+    TinvT(4, 5) = jacobian.jacobian_(1, 0) * jacobian.jacobian_(2, 2) +
+                  jacobian.jacobian_(2, 0) * jacobian.jacobian_(1, 2);
+    TinvT(5, 5) = jacobian.jacobian_(0, 0) * jacobian.jacobian_(2, 2) +
+                  jacobian.jacobian_(2, 0) * jacobian.jacobian_(0, 2);
+
+    // evaluate the inverse T0^{-T} with solver
+    Core::LinAlg::FixedSizeSerialDenseSolver<6, 6, 1> solve_for_inverse;
+    solve_for_inverse.set_matrix(TinvT);
+
+    int err_inv = solve_for_inverse.invert();
+    FOUR_C_THROW_UNLESS(!err_inv, "Inversion of matrix failed with LAPACK error code %d", err_inv);
+
+    return TinvT;
+  }
+
+
+
+  /*!
+   * @brief Compute the deformation gradient from the Green-Lagrange strain tensor
+
+   * @param defgrd_disp(in) : displacement-based deformation gradient F^{u} (needed for the
+   rotational part)
+   * @param enhanced_gl_strain(in) : Green-Lagrange strains E^{enh} to compute the deformation
+   gradient from
+   * @return Core::LinAlg::Matrix<dim, dim> : deformation gradient F^{enh} computed from GL strains
+   */
+  static inline Core::LinAlg::Matrix<3, 3> compute_deformation_gradient_from_gl_strains(
+      const Core::LinAlg::Matrix<3, 3>& defgrd_disp,
+      const Core::LinAlg::Matrix<6, 1>& enhanced_gl_strain)
+  {
+    Core::LinAlg::Matrix<3, 3> R;       // rotation tensor
+    Core::LinAlg::Matrix<3, 3> U_enh;   // enhanced right stretch tensor
+    Core::LinAlg::Matrix<3, 3> U_disp;  // displacement-based right stretch tensor
+    Core::LinAlg::Matrix<3, 3> EW;      // temporarily store eigenvalues
+    Core::LinAlg::Matrix<3, 3> tmp;     // temporary matrix for matrix matrix matrix products
+    Core::LinAlg::Matrix<3, 3> tmp2;    // temporary matrix for matrix matrix matrix products
+
+    // calculate modified right stretch tensor
+    for (unsigned i = 0; i < 3; i++) U_enh(i, i) = 2. * enhanced_gl_strain(i) + 1.;
+    U_enh(0, 1) = enhanced_gl_strain(3);
+    U_enh(1, 0) = enhanced_gl_strain(3);
+    U_enh(1, 2) = enhanced_gl_strain(4);
+    U_enh(2, 1) = enhanced_gl_strain(4);
+    U_enh(0, 2) = enhanced_gl_strain(5);
+    U_enh(2, 0) = enhanced_gl_strain(5);
+
+    Core::LinAlg::syev(U_enh, EW, U_enh);
+    for (unsigned i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
+    tmp.multiply(U_enh, EW);
+    tmp2.multiply_nt(tmp, U_enh);
+    U_enh.update(tmp2);
+
+    // calculate displacement-based right stretch tensor
+    U_disp.multiply_tn(defgrd_disp, defgrd_disp);
+
+    Core::LinAlg::syev(U_disp, EW, U_disp);
+    for (unsigned i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
+    tmp.multiply(U_disp, EW);
+    tmp2.multiply_nt(tmp, U_disp);
+    U_disp.update(tmp2);
+
+    // compose consistent deformation gradient
+    U_disp.invert();
+    R.multiply(defgrd_disp, U_disp);
+
+    Core::LinAlg::Matrix<3, 3> defgrd_enh;
+    defgrd_enh.multiply(R, U_enh);
+    return defgrd_enh;
+  }
 
 }  // namespace Discret::ELEMENTS
 
