@@ -164,12 +164,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
               new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
                   Core::IO::visualization_parameters_factory(
                       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::instance()->output_control_file(),
-                      g_state().get_time_n())));
-      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->init();
-      beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->setup(
-          beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
-              ->get_visualization_output_params_ptr());
+                      *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
+                  beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
+                      ->get_visualization_output_params_ptr()));
     }
   }
 
@@ -195,12 +192,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
               new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter(
                   Core::IO::visualization_parameters_factory(
                       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::instance()->output_control_file(),
-                      g_state().get_time_n())));
-      beam_to_solid_surface_visualization_output_writer_ptr_->init();
-      beam_to_solid_surface_visualization_output_writer_ptr_->setup(
-          beam_contact_params_ptr_->beam_to_solid_surface_meshtying_params()
-              ->get_visualization_output_params_ptr());
+                      *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
+                  beam_contact_params_ptr_->beam_to_solid_surface_meshtying_params()
+                      ->get_visualization_output_params_ptr()));
     }
   }
 

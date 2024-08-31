@@ -51,25 +51,14 @@ namespace BEAMINTERACTION
     /**
      * \brief Constructor
      */
-    BeamToFluidMeshtyingVtkOutputWriter();
+    BeamToFluidMeshtyingVtkOutputWriter(
+        const Core::IO::VisualizationParameters& visualization_params,
+        Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
 
     /**
      * \brief empty Destructor
      */
     virtual ~BeamToFluidMeshtyingVtkOutputWriter() = default;
-
-    /**
-     * \brief Initialize the object.
-     */
-    void init();
-
-    /**
-     * \brief Setup the output writer base and the desired field data.
-     * @param visualization_params (in) Parameter container for runtime output
-     * @param output_params_ptr (in) RCP to parameter container for beam to fluid output.
-     */
-    void setup(const Core::IO::VisualizationParameters& visualization_params,
-        Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
 
     /**
      * \brief Setup time step output creation, and call WriteOutputData.
@@ -104,23 +93,7 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
         double time) const;
 
-    /**
-     * \brief Checks the init and setup status.
-     */
-    void check_init_setup() const;
-
-    /**
-     * \brief Checks the init status.
-     */
-    void check_init() const;
-
    private:
-    //! Flag if object is initialized.
-    bool isinit_;
-
-    //! Flag if object is set up.
-    bool issetup_;
-
     //! Parameter container for output.
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr_;
 

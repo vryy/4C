@@ -51,24 +51,14 @@ namespace BEAMINTERACTION
      * \brief Constructor.
      */
     explicit BeamToSolidSurfaceVisualizationOutputWriter(
-        Core::IO::VisualizationParameters visualization_params);
+        Core::IO::VisualizationParameters visualization_params,
+        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+            output_params_ptr);
 
     /**
      * \brief Destructor.
      */
     virtual ~BeamToSolidSurfaceVisualizationOutputWriter() = default;
-
-    /**
-     * \brief Initialize the object.
-     */
-    void init();
-
-    /**
-     * \brief Setup the output writer base and the desired field data.
-     * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
-     */
-    void setup(Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
-            output_params_ptr);
 
     /**
      * \brief Setup time step output creation, and call WriteOutputData.
@@ -102,23 +92,7 @@ namespace BEAMINTERACTION
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const;
 
-    /**
-     * \brief Checks the init and setup status.
-     */
-    void check_init_setup() const;
-
-    /**
-     * \brief Checks the init status.
-     */
-    void check_init() const;
-
    private:
-    //! Flag if object is initialized.
-    bool isinit_;
-
-    //! Flag if object is set up.
-    bool issetup_;
-
     //! Parameter container for output.
     Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
 

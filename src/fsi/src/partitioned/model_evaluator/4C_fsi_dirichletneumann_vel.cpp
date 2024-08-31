@@ -202,13 +202,11 @@ void FSI::DirichletNeumannVel::timeloop(
   constraint_manager_->setup(structure_field(), mb_fluid_field());
   if (get_kinematic_coupling()) constraint_manager_->prepare_fluid_solve();
   visualization_output_writer_ =
-      Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter());
-  visualization_output_writer_->init();
-  visualization_output_writer_->setup(
-      Core::IO::visualization_parameters_factory(
-          Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-          *Global::Problem::instance()->output_control_file(), time()),
-      constraint_manager_->get_bridge()->get_params()->get_visualization_ouput_params_ptr());
+      Teuchos::rcp(new BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter(
+          Core::IO::visualization_parameters_factory(
+              Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+              *Global::Problem::instance()->output_control_file(), time()),
+          constraint_manager_->get_bridge()->get_params()->get_visualization_ouput_params_ptr()));
   constraint_manager_->evaluate();
   if (get_kinematic_coupling()) struct_to_fluid(Teuchos::null);
 
