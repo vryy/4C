@@ -52,7 +52,6 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::init()
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
     const Core::IO::VisualizationParameters& visualization_params,
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
 {
   check_init();
@@ -65,7 +64,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-fluid", visualization_output_params, visualization_params));
+          "beam-to-fluid", visualization_params));
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues

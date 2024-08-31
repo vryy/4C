@@ -22,12 +22,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::BeamToSolidVisualizationOutputWriterBase(
-    const std::string& base_output_name,
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
-    Core::IO::VisualizationParameters visualization_params)
-    : base_output_name_(base_output_name),
-      visualization_output_params_(visualization_output_params),
-      visualization_params_(std::move(visualization_params))
+    const std::string& base_output_name, Core::IO::VisualizationParameters visualization_params)
+    : base_output_name_(base_output_name), visualization_params_(std::move(visualization_params))
 {
 }
 
@@ -48,8 +44,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
   {
     auto new_writer = Teuchos::rcp<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
         new BEAMINTERACTION::BeamToSolidOutputWriterVisualization(
-            base_output_name_ + "-" + writer_name, visualization_params_,
-            visualization_output_params_));
+            base_output_name_ + "-" + writer_name, visualization_params_));
     visualization_writers_[writer_name_key] = new_writer;
     return new_writer;
   }

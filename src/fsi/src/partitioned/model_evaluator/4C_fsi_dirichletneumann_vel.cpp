@@ -208,8 +208,6 @@ void FSI::DirichletNeumannVel::timeloop(
       Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), time()),
-      Teuchos::rcp_dynamic_cast<Adapter::FBIStructureWrapper>(structure_field(), true)
-          ->get_io_data(),
       constraint_manager_->get_bridge()->get_params()->get_visualization_ouput_params_ptr());
   constraint_manager_->evaluate();
   if (get_kinematic_coupling()) struct_to_fluid(Teuchos::null);

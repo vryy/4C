@@ -65,12 +65,10 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup the output writer base and the desired field data.
-     * @param visualization_output_params (in) RCP to parameter container for global visualization
-     * output options.
-     * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
+     * @param visualization_params (in) Parameter container for runtime output
+     * @param output_params_ptr (in) RCP to parameter container for beam to fluid output.
      */
     void setup(const Core::IO::VisualizationParameters& visualization_params,
-        Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
 
     /**

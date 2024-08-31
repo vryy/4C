@@ -65,12 +65,9 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup the output writer base and the desired field data.
-     * @param visualization_output_params (in) RCP to parameter container for global visualization
-     * options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
-    void setup(Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+    void setup(Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
             output_params_ptr);
 
     /**

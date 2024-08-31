@@ -50,11 +50,9 @@ namespace BEAMINTERACTION
     /**
      * \brief Empty constructor, set the class variables.
      * @param base_output_name (in) Base name for the created output files.
-     * @param visualization_output_params (in) RCP to the global visualization parameter list.
      * @param visualization_params (in) visualization parameters
      */
     BeamToSolidVisualizationOutputWriterBase(const std::string& base_output_name,
-        Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
         Core::IO::VisualizationParameters visualization_params);
 
     /**
@@ -102,9 +100,6 @@ namespace BEAMINTERACTION
     //! Map of the sub output writers.
     std::map<std::string, Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>>
         visualization_writers_;
-
-    //! Pointer to the global visualization input file options.
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params_;
 
     //! visualization parameters
     const Core::IO::VisualizationParameters visualization_params_;

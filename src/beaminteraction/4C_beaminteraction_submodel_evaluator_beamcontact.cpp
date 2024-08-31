@@ -168,7 +168,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
                       g_state().get_time_n())));
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->init();
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->setup(
-          g_in_output().get_runtime_output_params(),
           beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
               ->get_visualization_output_params_ptr());
     }
@@ -200,7 +199,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
                       g_state().get_time_n())));
       beam_to_solid_surface_visualization_output_writer_ptr_->init();
       beam_to_solid_surface_visualization_output_writer_ptr_->setup(
-          g_in_output().get_runtime_output_params(),
           beam_contact_params_ptr_->beam_to_solid_surface_meshtying_params()
               ->get_visualization_output_params_ptr());
     }

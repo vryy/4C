@@ -62,7 +62,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::init()
  *
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
         output_params_ptr)
 {
@@ -74,7 +73,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-solid-surface", visualization_output_params, visualization_params_));
+          "beam-to-solid-surface", visualization_params_));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->get_write_unique_i_ds_flag();

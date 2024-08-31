@@ -58,7 +58,6 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::init(
  *
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup(
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
         output_params_ptr)
 {
@@ -70,7 +69,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-solid-volume", visualization_output_params, visualization_params_));
+          "beam-to-solid-volume", visualization_params_));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->get_write_unique_i_ds_flag();
