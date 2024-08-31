@@ -20,6 +20,8 @@ to disk
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+#include <optional>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO

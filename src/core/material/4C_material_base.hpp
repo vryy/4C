@@ -14,6 +14,7 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

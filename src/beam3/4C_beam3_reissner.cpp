@@ -12,6 +12,7 @@
 
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
@@ -440,36 +441,36 @@ void Discret::ELEMENTS::Beam3r::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, centerline_hermite_);
   add_to_pack(data, isinit_);
   add_to_pack(data, reflength_);
-  add_to_pack<3, 1>(data, theta0node_);
-  add_to_pack<3, 1>(data, Tref_);
-  add_to_pack<3, 1>(data, tcurrnode_);
-  add_to_pack<3, 1>(data, kref_gp_);
-  add_to_pack<3, 1>(data, gammaref_gp_);
+  add_to_pack(data, theta0node_);
+  add_to_pack(data, Tref_);
+  add_to_pack(data, tcurrnode_);
+  add_to_pack(data, kref_gp_);
+  add_to_pack(data, gammaref_gp_);
   add_to_pack(data, jacobi_gp_elastf_);
   add_to_pack(data, jacobi_gp_elastm_);
   add_to_pack(data, jacobi_gp_mass_);
   add_to_pack(data, jacobi_gp_dampstoch_);
   add_to_pack(data, jacobi_gp_neumannline_);
-  add_to_pack<4, 1>(data, qconvnode_);
-  add_to_pack<4, 1>(data, qnewnode_);
-  add_to_pack<4, 1>(data, qconv_gp_mass_);
-  add_to_pack<4, 1>(data, qnew_gp_mass_);
-  add_to_pack<3, 1>(data, wconv_gp_mass_);
-  add_to_pack<3, 1>(data, wnew_gp_mass_);
-  add_to_pack<3, 1>(data, aconv_gp_mass_);
-  add_to_pack<3, 1>(data, anew_gp_mass_);
-  add_to_pack<3, 1>(data, amodnew_gp_mass_);
-  add_to_pack<3, 1>(data, amodconv_gp_mass_);
-  add_to_pack<3, 1>(data, rttconv_gp_mass_);
-  add_to_pack<3, 1>(data, rttnew_gp_mass_);
-  add_to_pack<3, 1>(data, rttmodconv_gp_mass_);
-  add_to_pack<3, 1>(data, rttmodnew_gp_mass_);
-  add_to_pack<3, 1>(data, rtconv_gp_mass_);
-  add_to_pack<3, 1>(data, rtnew_gp_mass_);
-  add_to_pack<3, 1>(data, rconv_gp_mass_);
-  add_to_pack<3, 1>(data, rnew_gp_mass_);
-  add_to_pack<4, 1>(data, qconv_gp_dampstoch_);
-  add_to_pack<4, 1>(data, qnew_gp_dampstoch_);
+  add_to_pack(data, qconvnode_);
+  add_to_pack(data, qnewnode_);
+  add_to_pack(data, qconv_gp_mass_);
+  add_to_pack(data, qnew_gp_mass_);
+  add_to_pack(data, wconv_gp_mass_);
+  add_to_pack(data, wnew_gp_mass_);
+  add_to_pack(data, aconv_gp_mass_);
+  add_to_pack(data, anew_gp_mass_);
+  add_to_pack(data, amodnew_gp_mass_);
+  add_to_pack(data, amodconv_gp_mass_);
+  add_to_pack(data, rttconv_gp_mass_);
+  add_to_pack(data, rttnew_gp_mass_);
+  add_to_pack(data, rttmodconv_gp_mass_);
+  add_to_pack(data, rttmodnew_gp_mass_);
+  add_to_pack(data, rtconv_gp_mass_);
+  add_to_pack(data, rtnew_gp_mass_);
+  add_to_pack(data, rconv_gp_mass_);
+  add_to_pack(data, rnew_gp_mass_);
+  add_to_pack(data, qconv_gp_dampstoch_);
+  add_to_pack(data, qnew_gp_dampstoch_);
   return;
 }
 
@@ -492,36 +493,36 @@ void Discret::ELEMENTS::Beam3r::unpack(Core::Communication::UnpackBuffer& buffer
   centerline_hermite_ = extract_int(buffer);
   isinit_ = extract_int(buffer);
   extract_from_pack(buffer, reflength_);
-  extract_from_pack<3, 1>(buffer, theta0node_);
-  extract_from_pack<3, 1>(buffer, Tref_);
-  extract_from_pack<3, 1>(buffer, tcurrnode_);
-  extract_from_pack<3, 1>(buffer, kref_gp_);
-  extract_from_pack<3, 1>(buffer, gammaref_gp_);
+  extract_from_pack(buffer, theta0node_);
+  extract_from_pack(buffer, Tref_);
+  extract_from_pack(buffer, tcurrnode_);
+  extract_from_pack(buffer, kref_gp_);
+  extract_from_pack(buffer, gammaref_gp_);
   extract_from_pack(buffer, jacobi_gp_elastf_);
   extract_from_pack(buffer, jacobi_gp_elastm_);
   extract_from_pack(buffer, jacobi_gp_mass_);
   extract_from_pack(buffer, jacobi_gp_dampstoch_);
   extract_from_pack(buffer, jacobi_gp_neumannline_);
-  extract_from_pack<4, 1>(buffer, qconvnode_);
-  extract_from_pack<4, 1>(buffer, qnewnode_);
-  extract_from_pack<4, 1>(buffer, qconv_gp_mass_);
-  extract_from_pack<4, 1>(buffer, qnew_gp_mass_);
-  extract_from_pack<3, 1>(buffer, wconv_gp_mass_);
-  extract_from_pack<3, 1>(buffer, wnew_gp_mass_);
-  extract_from_pack<3, 1>(buffer, aconv_gp_mass_);
-  extract_from_pack<3, 1>(buffer, anew_gp_mass_);
-  extract_from_pack<3, 1>(buffer, amodconv_gp_mass_);
-  extract_from_pack<3, 1>(buffer, amodnew_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rttconv_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rttnew_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rttmodconv_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rttmodnew_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rtconv_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rtnew_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rconv_gp_mass_);
-  extract_from_pack<3, 1>(buffer, rnew_gp_mass_);
-  extract_from_pack<4, 1>(buffer, qconv_gp_dampstoch_);
-  extract_from_pack<4, 1>(buffer, qnew_gp_dampstoch_);
+  extract_from_pack(buffer, qconvnode_);
+  extract_from_pack(buffer, qnewnode_);
+  extract_from_pack(buffer, qconv_gp_mass_);
+  extract_from_pack(buffer, qnew_gp_mass_);
+  extract_from_pack(buffer, wconv_gp_mass_);
+  extract_from_pack(buffer, wnew_gp_mass_);
+  extract_from_pack(buffer, aconv_gp_mass_);
+  extract_from_pack(buffer, anew_gp_mass_);
+  extract_from_pack(buffer, amodconv_gp_mass_);
+  extract_from_pack(buffer, amodnew_gp_mass_);
+  extract_from_pack(buffer, rttconv_gp_mass_);
+  extract_from_pack(buffer, rttnew_gp_mass_);
+  extract_from_pack(buffer, rttmodconv_gp_mass_);
+  extract_from_pack(buffer, rttmodnew_gp_mass_);
+  extract_from_pack(buffer, rtconv_gp_mass_);
+  extract_from_pack(buffer, rtnew_gp_mass_);
+  extract_from_pack(buffer, rconv_gp_mass_);
+  extract_from_pack(buffer, rnew_gp_mass_);
+  extract_from_pack(buffer, qconv_gp_dampstoch_);
+  extract_from_pack(buffer, qnew_gp_dampstoch_);
 
   // NOT communicated
   eint_ = 0.0;

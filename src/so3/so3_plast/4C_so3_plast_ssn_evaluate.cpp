@@ -350,12 +350,12 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
           iostress, iostrain);
       {
         Core::Communication::PackBuffer data;
-        this->add_to_pack(data, stress);
+        add_to_pack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
         Core::Communication::PackBuffer data;
-        this->add_to_pack(data, strain);
+        add_to_pack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
 

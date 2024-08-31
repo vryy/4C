@@ -11,6 +11,7 @@
 
 #include "4C_elemag_ele.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_elemag_ele_boundary_calc.hpp"
 #include "4C_elemag_ele_intfaces_calc.hpp"

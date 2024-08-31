@@ -13,6 +13,7 @@ See the header file for a detailed description.
  *----------------------------------------------------------------------*/
 #include "4C_mat_crystal_plasticity.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_mat_par_bundle.hpp"

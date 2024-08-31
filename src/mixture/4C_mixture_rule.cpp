@@ -11,6 +11,7 @@
 
 #include "4C_mixture_rule.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_material.hpp"
@@ -101,26 +102,26 @@ MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
 void MIXTURE::MixtureRule::pack_mixture_rule(Core::Communication::PackBuffer& data) const
 {
   // Add number of Gauss points
-  Core::Communication::ParObject::add_to_pack(data, numgp_);
+  add_to_pack(data, numgp_);
 
   // Add flag whether it has already read the element
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(has_read_element_));
+  add_to_pack(data, static_cast<int>(has_read_element_));
 
   // Add flags whether it is setup
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_setup_));
+  add_to_pack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack the mixture rule
 void MIXTURE::MixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
   // Read initialized flag
-  numgp_ = Core::Communication::ParObject::extract_int(buffer);
+  numgp_ = extract_int(buffer);
 
   // Read element read flag
-  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(buffer);
+  has_read_element_ = (bool)extract_int(buffer);
 
   // Read is setup flag
-  is_setup_ = (bool)Core::Communication::ParObject::extract_int(buffer);
+  is_setup_ = (bool)extract_int(buffer);
 }
 
 // reads the element definition and set up all quantities

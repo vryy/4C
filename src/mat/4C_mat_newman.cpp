@@ -12,6 +12,7 @@ species
 
 #include "4C_mat_newman.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_function_of_time.hpp"

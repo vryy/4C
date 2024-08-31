@@ -11,6 +11,7 @@
 #include "4C_rigidsphere.hpp"
 
 #include "4C_beaminteraction_link_pinjointed.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_largerotations.hpp"

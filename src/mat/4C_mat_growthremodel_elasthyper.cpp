@@ -15,6 +15,7 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 /* headers */
 #include "4C_mat_growthremodel_elasthyper.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"

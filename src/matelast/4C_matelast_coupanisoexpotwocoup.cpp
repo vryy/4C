@@ -9,10 +9,10 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 
 #include "4C_matelast_coupanisoexpotwocoup.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_material_parameter_base.hpp"
-
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -143,8 +143,8 @@ void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::pack_anisotropy(
 {
   DefaultAnisotropyExtension::pack_anisotropy(data);
 
-  Core::Communication::ParObject::add_to_pack(data, a1a2_);
-  Core::Communication::ParObject::add_to_pack(data, a1_a2_);
+  add_to_pack(data, a1a2_);
+  add_to_pack(data, a1_a2_);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::unpack_anisotropy(
@@ -152,8 +152,8 @@ void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::unpack_anisotropy(
 {
   DefaultAnisotropyExtension::unpack_anisotropy(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, a1a2_);
-  Core::Communication::ParObject::extract_from_pack(buffer, a1_a2_);
+  extract_from_pack(buffer, a1a2_);
+  extract_from_pack(buffer, a1_a2_);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoupAnisoExtension::on_fibers_initialized()

@@ -12,6 +12,9 @@
 
 #include "4C_fluid_ele_tds.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
+#include "4C_utils_exceptions.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 

@@ -18,22 +18,17 @@ FOUR_C_NAMESPACE_OPEN
 void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
     const Discret::ELEMENTS::SolidElementProperties& properties)
 {
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(properties.kintype));
-  Core::Communication::ParObject::add_to_pack(
-      data, static_cast<int>(properties.element_technology));
-  Core::Communication::ParObject::add_to_pack(
-      data, static_cast<int>(properties.prestress_technology));
+  add_to_pack(data, static_cast<int>(properties.kintype));
+  add_to_pack(data, static_cast<int>(properties.element_technology));
+  add_to_pack(data, static_cast<int>(properties.prestress_technology));
 }
 
 void Discret::ELEMENTS::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
     Discret::ELEMENTS::SolidElementProperties& properties)
 {
-  properties.kintype =
-      static_cast<Inpar::Solid::KinemType>(Core::Communication::ParObject::extract_int(buffer));
-  properties.element_technology =
-      static_cast<ElementTechnology>(Core::Communication::ParObject::extract_int(buffer));
-  properties.prestress_technology =
-      static_cast<PrestressTechnology>(Core::Communication::ParObject::extract_int(buffer));
+  properties.kintype = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
+  properties.element_technology = static_cast<ElementTechnology>(extract_int(buffer));
+  properties.prestress_technology = static_cast<PrestressTechnology>(extract_int(buffer));
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -15,6 +15,7 @@
 /* headers */
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elementtype.hpp"

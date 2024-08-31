@@ -11,6 +11,7 @@
 #include "4C_beam3_kirchhoff.hpp"
 
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
@@ -339,12 +340,12 @@ void Discret::ELEMENTS::Beam3k::pack(Core::Communication::PackBuffer& data) cons
   // add all class variables
   add_to_pack(data, use_fad_);
   add_to_pack(data, isinit_);
-  add_to_pack<3, 1>(data, Tref_);
-  add_to_pack<3, 1>(data, t_);
-  add_to_pack<3, 1>(data, theta0_);
-  add_to_pack<4, 1>(data, qrefconv_);
-  add_to_pack<4, 1>(data, qrefnew_);
-  add_to_pack<3, 1>(data, k0_);
+  add_to_pack(data, Tref_);
+  add_to_pack(data, t_);
+  add_to_pack(data, theta0_);
+  add_to_pack(data, qrefconv_);
+  add_to_pack(data, qrefnew_);
+  add_to_pack(data, k0_);
   add_to_pack(data, length_);
   add_to_pack(data, jacobi_);
   add_to_pack(data, jacobi2_);
@@ -354,22 +355,22 @@ void Discret::ELEMENTS::Beam3k::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, weakkirchhoff_);
   add_to_pack(data, eint_);
   add_to_pack(data, ekin_);
-  add_to_pack<4, 1>(data, qconvmass_);
-  add_to_pack<4, 1>(data, qnewmass_);
-  add_to_pack<3, 1>(data, wconvmass_);
-  add_to_pack<3, 1>(data, wnewmass_);
-  add_to_pack<3, 1>(data, aconvmass_);
-  add_to_pack<3, 1>(data, anewmass_);
-  add_to_pack<3, 1>(data, amodconvmass_);
-  add_to_pack<3, 1>(data, amodnewmass_);
-  add_to_pack<3, 1>(data, rttconvmass_);
-  add_to_pack<3, 1>(data, rttnewmass_);
-  add_to_pack<3, 1>(data, rttmodconvmass_);
-  add_to_pack<3, 1>(data, rttmodnewmass_);
-  add_to_pack<3, 1>(data, rtconvmass_);
-  add_to_pack<3, 1>(data, rtnewmass_);
-  add_to_pack<3, 1>(data, rconvmass_);
-  add_to_pack<3, 1>(data, rnewmass_);
+  add_to_pack(data, qconvmass_);
+  add_to_pack(data, qnewmass_);
+  add_to_pack(data, wconvmass_);
+  add_to_pack(data, wnewmass_);
+  add_to_pack(data, aconvmass_);
+  add_to_pack(data, anewmass_);
+  add_to_pack(data, amodconvmass_);
+  add_to_pack(data, amodnewmass_);
+  add_to_pack(data, rttconvmass_);
+  add_to_pack(data, rttnewmass_);
+  add_to_pack(data, rttmodconvmass_);
+  add_to_pack(data, rttmodnewmass_);
+  add_to_pack(data, rtconvmass_);
+  add_to_pack(data, rtnewmass_);
+  add_to_pack(data, rconvmass_);
+  add_to_pack(data, rnewmass_);
   add_to_pack(data, axial_strain_gp_);
   add_to_pack(data, twist_gp_);
   add_to_pack(data, curvature_2_gp_);
@@ -398,12 +399,12 @@ void Discret::ELEMENTS::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
   // extract all class variables of beam3k element
   use_fad_ = extract_int(buffer);
   isinit_ = extract_int(buffer);
-  extract_from_pack<3, 1>(buffer, Tref_);
-  extract_from_pack<3, 1>(buffer, t_);
-  extract_from_pack<3, 1>(buffer, theta0_);
-  extract_from_pack<4, 1>(buffer, qrefconv_);
-  extract_from_pack<4, 1>(buffer, qrefnew_);
-  extract_from_pack<3, 1>(buffer, k0_);
+  extract_from_pack(buffer, Tref_);
+  extract_from_pack(buffer, t_);
+  extract_from_pack(buffer, theta0_);
+  extract_from_pack(buffer, qrefconv_);
+  extract_from_pack(buffer, qrefnew_);
+  extract_from_pack(buffer, k0_);
   extract_from_pack(buffer, length_);
   extract_from_pack(buffer, jacobi_);
   extract_from_pack(buffer, jacobi2_);
@@ -413,22 +414,22 @@ void Discret::ELEMENTS::Beam3k::unpack(Core::Communication::UnpackBuffer& buffer
   weakkirchhoff_ = extract_int(buffer);
   extract_from_pack(buffer, eint_);
   extract_from_pack(buffer, ekin_);
-  extract_from_pack<4, 1>(buffer, qconvmass_);
-  extract_from_pack<4, 1>(buffer, qnewmass_);
-  extract_from_pack<3, 1>(buffer, wconvmass_);
-  extract_from_pack<3, 1>(buffer, wnewmass_);
-  extract_from_pack<3, 1>(buffer, aconvmass_);
-  extract_from_pack<3, 1>(buffer, anewmass_);
-  extract_from_pack<3, 1>(buffer, amodconvmass_);
-  extract_from_pack<3, 1>(buffer, amodnewmass_);
-  extract_from_pack<3, 1>(buffer, rttconvmass_);
-  extract_from_pack<3, 1>(buffer, rttnewmass_);
-  extract_from_pack<3, 1>(buffer, rttmodconvmass_);
-  extract_from_pack<3, 1>(buffer, rttmodnewmass_);
-  extract_from_pack<3, 1>(buffer, rtconvmass_);
-  extract_from_pack<3, 1>(buffer, rtnewmass_);
-  extract_from_pack<3, 1>(buffer, rconvmass_);
-  extract_from_pack<3, 1>(buffer, rnewmass_);
+  extract_from_pack(buffer, qconvmass_);
+  extract_from_pack(buffer, qnewmass_);
+  extract_from_pack(buffer, wconvmass_);
+  extract_from_pack(buffer, wnewmass_);
+  extract_from_pack(buffer, aconvmass_);
+  extract_from_pack(buffer, anewmass_);
+  extract_from_pack(buffer, amodconvmass_);
+  extract_from_pack(buffer, amodnewmass_);
+  extract_from_pack(buffer, rttconvmass_);
+  extract_from_pack(buffer, rttnewmass_);
+  extract_from_pack(buffer, rttmodconvmass_);
+  extract_from_pack(buffer, rttmodnewmass_);
+  extract_from_pack(buffer, rtconvmass_);
+  extract_from_pack(buffer, rtnewmass_);
+  extract_from_pack(buffer, rconvmass_);
+  extract_from_pack(buffer, rnewmass_);
   extract_from_pack(buffer, axial_strain_gp_);
   extract_from_pack(buffer, twist_gp_);
   extract_from_pack(buffer, curvature_2_gp_);

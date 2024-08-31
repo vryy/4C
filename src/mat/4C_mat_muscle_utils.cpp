@@ -11,6 +11,7 @@
 
 #include "4C_mat_muscle_utils.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"

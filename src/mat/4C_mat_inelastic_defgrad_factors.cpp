@@ -9,6 +9,7 @@
 
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_electrode.hpp"

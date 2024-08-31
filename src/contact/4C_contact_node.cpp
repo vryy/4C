@@ -9,6 +9,7 @@
 
 #include "4C_contact_node.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -63,17 +64,17 @@ CONTACT::NodeDataContainer::NodeDataContainer()
 void CONTACT::NodeDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add txi_
-  Core::Communication::ParObject::add_to_pack(data, txi_, 3 * sizeof(double));
+  add_to_pack(data, txi_, 3 * sizeof(double));
   // add teta_
-  Core::Communication::ParObject::add_to_pack(data, teta_, 3 * sizeof(double));
+  add_to_pack(data, teta_, 3 * sizeof(double));
   // add grow_
-  Core::Communication::ParObject::add_to_pack(data, grow_);
+  add_to_pack(data, grow_);
   // add kappa_
-  Core::Communication::ParObject::add_to_pack(data, kappa_);
+  add_to_pack(data, kappa_);
   // add activeold_
-  Core::Communication::ParObject::add_to_pack(data, activeold_);
+  add_to_pack(data, activeold_);
   // add n_old_
-  Core::Communication::ParObject::add_to_pack(data, n_old_, 3 * sizeof(double));
+  add_to_pack(data, n_old_, 3 * sizeof(double));
 
   // no need to pack derivs_
   // (these will evaluated anew anyway)
@@ -88,17 +89,17 @@ void CONTACT::NodeDataContainer::pack(Core::Communication::PackBuffer& data) con
 void CONTACT::NodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // txi_
-  Core::Communication::ParObject::extract_from_pack(buffer, txi_, 3 * sizeof(double));
+  extract_from_pack(buffer, txi_, 3 * sizeof(double));
   // teta_
-  Core::Communication::ParObject::extract_from_pack(buffer, teta_, 3 * sizeof(double));
+  extract_from_pack(buffer, teta_, 3 * sizeof(double));
   // grow_
-  Core::Communication::ParObject::extract_from_pack(buffer, grow_);
+  extract_from_pack(buffer, grow_);
   // kappa_
-  Core::Communication::ParObject::extract_from_pack(buffer, kappa_);
+  extract_from_pack(buffer, kappa_);
   // activeold_
-  activeold_ = Core::Communication::ParObject::extract_int(buffer);
+  activeold_ = extract_int(buffer);
   // n_old_
-  Core::Communication::ParObject::extract_from_pack(buffer, n_old_, 3 * sizeof(double));
+  extract_from_pack(buffer, n_old_, 3 * sizeof(double));
 
   return;
 }
@@ -127,15 +128,15 @@ CONTACT::NodePoroDataContainer::NodePoroDataContainer()
 void CONTACT::NodePoroDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add fvel
-  Core::Communication::ParObject::add_to_pack(data, fvel_, 3 * sizeof(double));
+  add_to_pack(data, fvel_, 3 * sizeof(double));
   // add fpres
-  Core::Communication::ParObject::add_to_pack(data, fpres_);
+  add_to_pack(data, fpres_);
   // add svel
-  Core::Communication::ParObject::add_to_pack(data, svel_, 3 * sizeof(double));
+  add_to_pack(data, svel_, 3 * sizeof(double));
   // add poroLM
-  Core::Communication::ParObject::add_to_pack(data, porolm_, 3 * sizeof(double));
+  add_to_pack(data, porolm_, 3 * sizeof(double));
   // add ncoup
-  Core::Communication::ParObject::add_to_pack(data, ncouprow_);
+  add_to_pack(data, ncouprow_);
   return;
 }
 
@@ -146,15 +147,15 @@ void CONTACT::NodePoroDataContainer::pack(Core::Communication::PackBuffer& data)
 void CONTACT::NodePoroDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // fvel
-  Core::Communication::ParObject::extract_from_pack(buffer, fvel_, 3 * sizeof(double));
+  extract_from_pack(buffer, fvel_, 3 * sizeof(double));
   // fpres
-  Core::Communication::ParObject::extract_from_pack(buffer, fpres_);
+  extract_from_pack(buffer, fpres_);
   // svel
-  Core::Communication::ParObject::extract_from_pack(buffer, svel_, 3 * sizeof(double));
+  extract_from_pack(buffer, svel_, 3 * sizeof(double));
   // poroLM
-  Core::Communication::ParObject::extract_from_pack(buffer, porolm_, 3 * sizeof(double));
+  extract_from_pack(buffer, porolm_, 3 * sizeof(double));
   // ncoup
-  Core::Communication::ParObject::extract_from_pack(buffer, ncouprow_);
+  extract_from_pack(buffer, ncouprow_);
   return;
 }
 
@@ -173,11 +174,11 @@ CONTACT::NodeTSIDataContainer::NodeTSIDataContainer(double t_ref, double t_dam)
  *----------------------------------------------------------------------*/
 void CONTACT::NodeTSIDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::add_to_pack(data, temp_master_);
-  Core::Communication::ParObject::add_to_pack(data, t_ref_);
-  Core::Communication::ParObject::add_to_pack(data, t_dam_);
-  Core::Communication::ParObject::add_to_pack(data, derivTempMasterDisp_);
-  Core::Communication::ParObject::add_to_pack(data, derivTempMasterTemp_);
+  add_to_pack(data, temp_master_);
+  add_to_pack(data, t_ref_);
+  add_to_pack(data, t_dam_);
+  add_to_pack(data, derivTempMasterDisp_);
+  add_to_pack(data, derivTempMasterTemp_);
   return;
 }
 
@@ -187,11 +188,11 @@ void CONTACT::NodeTSIDataContainer::pack(Core::Communication::PackBuffer& data) 
  *----------------------------------------------------------------------*/
 void CONTACT::NodeTSIDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, temp_master_);
-  Core::Communication::ParObject::extract_from_pack(buffer, t_ref_);
-  Core::Communication::ParObject::extract_from_pack(buffer, t_dam_);
-  Core::Communication::ParObject::extract_from_pack(buffer, derivTempMasterDisp_);
-  Core::Communication::ParObject::extract_from_pack(buffer, derivTempMasterTemp_);
+  extract_from_pack(buffer, temp_master_);
+  extract_from_pack(buffer, t_ref_);
+  extract_from_pack(buffer, t_dam_);
+  extract_from_pack(buffer, derivTempMasterDisp_);
+  extract_from_pack(buffer, derivTempMasterTemp_);
   return;
 }
 

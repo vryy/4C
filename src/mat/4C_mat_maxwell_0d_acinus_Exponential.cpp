@@ -23,6 +23,7 @@ E1_LIN 0 TAU 0
 
 #include "4C_mat_maxwell_0d_acinus_Exponential.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_par_bundle.hpp"

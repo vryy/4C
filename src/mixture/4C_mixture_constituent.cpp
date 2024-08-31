@@ -127,9 +127,9 @@ void MIXTURE::MixtureConstituent::setup(Teuchos::ParameterList& params, const in
 // Pack everything for distribution to other processors
 void MIXTURE::MixtureConstituent::pack_constituent(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::add_to_pack(data, numgp_);
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(has_read_element_));
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_setup_));
+  add_to_pack(data, numgp_);
+  add_to_pack(data, static_cast<int>(has_read_element_));
+  add_to_pack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack base constituent data, need to be called by every derived class
@@ -140,10 +140,10 @@ void MIXTURE::MixtureConstituent::unpack_constituent(Core::Communication::Unpack
   numgp_ = 0;
   is_setup_ = false;
 
-  Core::Communication::ParObject::extract_from_pack(buffer, numgp_);
+  extract_from_pack(buffer, numgp_);
 
-  has_read_element_ = (bool)Core::Communication::ParObject::extract_int(buffer);
-  is_setup_ = (bool)Core::Communication::ParObject::extract_int(buffer);
+  has_read_element_ = (bool)extract_int(buffer);
+  is_setup_ = (bool)extract_int(buffer);
 }
 
 void MIXTURE::MixtureConstituent::evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,

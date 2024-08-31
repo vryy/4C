@@ -11,6 +11,7 @@
 #include "4C_particle_rigidbody.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_inpar_particle.hpp"
 #include "4C_io.hpp"
@@ -528,7 +529,7 @@ void ParticleRigidBody::RigidBodyHandler::extract_packed_rigid_body_states(
   Core::Communication::UnpackBuffer data(buffer);
   while (!data.at_end())
   {
-    const int rigidbody_k = Core::Communication::ParObject::extract_int(data);
+    const int rigidbody_k = extract_int(data);
 
     // get global ids of rigid bodies owned by this processor
     ownedrigidbodies_.push_back(rigidbody_k);
@@ -544,17 +545,14 @@ void ParticleRigidBody::RigidBodyHandler::extract_packed_rigid_body_states(
     std::vector<double>& angacc_k =
         rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
-    Core::Communication::ParObject::extract_from_pack(data, mass_k);
-    for (int i = 0; i < 6; ++i)
-      Core::Communication::ParObject::extract_from_pack(data, inertia_k[i]);
-    for (int i = 0; i < 3; ++i) Core::Communication::ParObject::extract_from_pack(data, pos_k[i]);
-    for (int i = 0; i < 4; ++i) Core::Communication::ParObject::extract_from_pack(data, rot_k[i]);
-    for (int i = 0; i < 3; ++i) Core::Communication::ParObject::extract_from_pack(data, vel_k[i]);
-    for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::extract_from_pack(data, angvel_k[i]);
-    for (int i = 0; i < 3; ++i) Core::Communication::ParObject::extract_from_pack(data, acc_k[i]);
-    for (int i = 0; i < 3; ++i)
-      Core::Communication::ParObject::extract_from_pack(data, angacc_k[i]);
+    extract_from_pack(data, mass_k);
+    for (int i = 0; i < 6; ++i) extract_from_pack(data, inertia_k[i]);
+    for (int i = 0; i < 3; ++i) extract_from_pack(data, pos_k[i]);
+    for (int i = 0; i < 4; ++i) extract_from_pack(data, rot_k[i]);
+    for (int i = 0; i < 3; ++i) extract_from_pack(data, vel_k[i]);
+    for (int i = 0; i < 3; ++i) extract_from_pack(data, angvel_k[i]);
+    for (int i = 0; i < 3; ++i) extract_from_pack(data, acc_k[i]);
+    for (int i = 0; i < 3; ++i) extract_from_pack(data, angacc_k[i]);
   }
 }
 
@@ -657,7 +655,7 @@ void ParticleRigidBody::RigidBodyHandler::relate_owned_rigid_bodies_to_hosting_p
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
+      const int rigidbody_k = extract_int(buffer);
 
       // insert processor id the gathered global id of rigid body is received from
       ownedrigidbodiestohostingprocs_[rigidbody_k].push_back(msgsource);
@@ -723,7 +721,7 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
+      const int rigidbody_k = extract_int(buffer);
 
       // get reference to rigid body states
       double& mass_k = rigidbodydatastate_->get_ref_mass()[rigidbody_k];
@@ -736,21 +734,14 @@ void ParticleRigidBody::RigidBodyHandler::communicate_rigid_body_states(
       std::vector<double>& angacc_k =
           rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
-      Core::Communication::ParObject::extract_from_pack(buffer, mass_k);
-      for (int i = 0; i < 6; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, inertia_k[i]);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, pos_k[i]);
-      for (int i = 0; i < 4; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, rot_k[i]);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, vel_k[i]);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, angvel_k[i]);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, acc_k[i]);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, angacc_k[i]);
+      extract_from_pack(buffer, mass_k);
+      for (int i = 0; i < 6; ++i) extract_from_pack(buffer, inertia_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, pos_k[i]);
+      for (int i = 0; i < 4; ++i) extract_from_pack(buffer, rot_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, vel_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, angvel_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, acc_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, angacc_k[i]);
     }
   }
 }
@@ -954,16 +945,14 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_mass_quantities(
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
-      double mass_k = Core::Communication::ParObject::extract_double(buffer);
+      const int rigidbody_k = extract_int(buffer);
+      double mass_k = extract_double(buffer);
 
       std::vector<double> inertia_k(6);
-      for (int i = 0; i < 6; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, inertia_k[i]);
+      for (int i = 0; i < 6; ++i) extract_from_pack(buffer, inertia_k[i]);
 
       std::vector<double> pos_k(3);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, pos_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, pos_k[i]);
 
       // append to gathered partial mass quantities
       gatheredpartialmass[rigidbody_k].push_back(mass_k);
@@ -1181,15 +1170,13 @@ void ParticleRigidBody::RigidBodyHandler::gather_partial_and_compute_full_force_
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
+      const int rigidbody_k = extract_int(buffer);
 
       std::vector<double> tmp_force_k(3);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, tmp_force_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, tmp_force_k[i]);
 
       std::vector<double> tmp_torque_k(3);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, tmp_torque_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, tmp_torque_k[i]);
 
       // get pointer to rigid body states
       double* force_k = rigidbodydatastate_->get_ref_force()[rigidbody_k].data();
@@ -1376,16 +1363,14 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_positions()
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
+      const int rigidbody_k = extract_int(buffer);
 
       // get reference to rigid body states
       std::vector<double>& pos_k = rigidbodydatastate_->get_ref_position()[rigidbody_k];
       std::vector<double>& rot_k = rigidbodydatastate_->get_ref_rotation()[rigidbody_k];
 
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, pos_k[i]);
-      for (int i = 0; i < 4; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, rot_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, pos_k[i]);
+      for (int i = 0; i < 4; ++i) extract_from_pack(buffer, rot_k[i]);
     }
   }
 }
@@ -1432,16 +1417,14 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_velocities()
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
+      const int rigidbody_k = extract_int(buffer);
 
       // get reference to rigid body states
       std::vector<double>& vel_k = rigidbodydatastate_->get_ref_velocity()[rigidbody_k];
       std::vector<double>& angvel_k = rigidbodydatastate_->get_ref_angular_velocity()[rigidbody_k];
 
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, vel_k[i]);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, angvel_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, vel_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, angvel_k[i]);
     }
   }
 }
@@ -1488,17 +1471,15 @@ void ParticleRigidBody::RigidBodyHandler::broadcast_rigid_body_accelerations()
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      const int rigidbody_k = Core::Communication::ParObject::extract_int(buffer);
+      const int rigidbody_k = extract_int(buffer);
 
       // get reference to rigid body states
       std::vector<double>& acc_k = rigidbodydatastate_->get_ref_acceleration()[rigidbody_k];
       std::vector<double>& angacc_k =
           rigidbodydatastate_->get_ref_angular_acceleration()[rigidbody_k];
 
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, acc_k[i]);
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, angacc_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, acc_k[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, angacc_k[i]);
     }
   }
 }

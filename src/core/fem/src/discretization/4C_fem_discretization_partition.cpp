@@ -175,7 +175,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
       std::vector<char> data;
       // Extract the size and raw data. This operation is asymmetric to the packing operation which
       // did store the size via a manual SizeMarker insertion.
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      extract_from_pack(buffer, data);
       // Pass on the raw data to the factory that selects the specialized implementation based on
       // the unique id stored as first entry.
       Communication::UnpackBuffer data_buffer(data);
@@ -283,7 +283,7 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
     while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      extract_from_pack(buffer, data);
       Communication::UnpackBuffer data_buffer(data);
       Core::Communication::ParObject* object = Core::Communication::factory(data_buffer);
       Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);

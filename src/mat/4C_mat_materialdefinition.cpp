@@ -14,6 +14,7 @@
 /* headers */
 #include "4C_mat_materialdefinition.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_io_line_parser.hpp"
 #include "4C_mat_par_bundle.hpp"
 

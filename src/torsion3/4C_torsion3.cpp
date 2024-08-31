@@ -10,6 +10,7 @@
 
 #include "4C_torsion3.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_so3_nullspace.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"

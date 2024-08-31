@@ -12,6 +12,7 @@
 
 #include "4C_beaminteraction_link.hpp"
 #include "4C_beaminteraction_link_beam3_reissner_line2_rigidjointed.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

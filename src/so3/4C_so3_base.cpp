@@ -11,6 +11,7 @@
 
 #include "4C_so3_base.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 

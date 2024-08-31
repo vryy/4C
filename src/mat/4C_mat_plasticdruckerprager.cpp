@@ -10,6 +10,7 @@ John Wiley & Sons, Ltd, 2008
 /*----------------------------------------------------------------------*/
 #include "4C_mat_plasticdruckerprager.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"

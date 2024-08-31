@@ -10,6 +10,7 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
 #include "4C_global_data.hpp"
@@ -360,10 +361,10 @@ void Discret::ELEMENTS::Beam3eb::pack(Core::Communication::PackBuffer& data) con
   add_to_pack(data, ekin_);
   add_to_pack(data, eint_);
   add_to_pack(data, Tref_);
-  add_to_pack<3, 1>(data, l_);
-  add_to_pack<3, 1>(data, p_);
-  add_to_pack<3, 2>(data, t0_);
-  add_to_pack<3, 2>(data, t_);
+  add_to_pack(data, l_);
+  add_to_pack(data, p_);
+  add_to_pack(data, t0_);
+  add_to_pack(data, t_);
   add_to_pack(data, kappa_max_);
   add_to_pack(data, epsilon_max_);
   add_to_pack(data, axial_strain_gp_);
@@ -390,10 +391,10 @@ void Discret::ELEMENTS::Beam3eb::unpack(Core::Communication::UnpackBuffer& buffe
   extract_from_pack(buffer, ekin_);
   extract_from_pack(buffer, eint_);
   extract_from_pack(buffer, Tref_);
-  extract_from_pack<3, 1>(buffer, l_);
-  extract_from_pack<3, 1>(buffer, p_);
-  extract_from_pack<3, 2>(buffer, t0_);
-  extract_from_pack<3, 2>(buffer, t_);
+  extract_from_pack(buffer, l_);
+  extract_from_pack(buffer, p_);
+  extract_from_pack(buffer, t0_);
+  extract_from_pack(buffer, t_);
   extract_from_pack(buffer, kappa_max_);
   extract_from_pack(buffer, epsilon_max_);
   extract_from_pack(buffer, axial_strain_gp_);

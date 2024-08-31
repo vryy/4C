@@ -91,7 +91,7 @@ namespace
     {
       // the set gets cleared at the beginning of the extract_from_pack routine!
       T rs;
-      Core::Communication::ParObject::extract_from_pack(buffer, rs);
+      extract_from_pack(buffer, rs);
       collected_data.insert(rs.begin(), rs.end());
     }
   }
@@ -151,7 +151,7 @@ namespace
   {
     Core::Communication::PackBuffer pack_data;
 
-    Core::Communication::ParObject::add_to_pack(pack_data, my_data);
+    add_to_pack(pack_data, my_data);
 
     round_robin_loop(comm, pack_data, collected_data);
   }

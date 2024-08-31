@@ -7,6 +7,7 @@
 
 #include "4C_mixture_remodelfiber.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_mixture_constituent_remodelfiber_material.hpp"
 #include "4C_mixture_growth_evolution_linear_cauchy_poisson_turnover.hpp"
@@ -141,16 +142,16 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::unpack(
   }
   else
   {
-    Core::Communication::ParObject::extract_from_pack(buffer, lambda_pre_);
+    extract_from_pack(buffer, lambda_pre_);
     sig_h_ = evaluate_fiber_cauchy_stress(1.0, 1.0 / lambda_pre_, 1.0);
 
 
     for (auto& state : states_)
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, state.growth_scalar);
-      Core::Communication::ParObject::extract_from_pack(buffer, state.lambda_r);
-      Core::Communication::ParObject::extract_from_pack(buffer, state.lambda_f);
-      Core::Communication::ParObject::extract_from_pack(buffer, state.lambda_ext);
+      extract_from_pack(buffer, state.growth_scalar);
+      extract_from_pack(buffer, state.lambda_r);
+      extract_from_pack(buffer, state.lambda_f);
+      extract_from_pack(buffer, state.lambda_ext);
     }
   }
 }

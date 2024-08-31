@@ -844,21 +844,18 @@ namespace Immersed
         // ---- unpack data -----
 
         Core::Communication::UnpackBuffer buffer(rdata);
-        matched = Core::Communication::ParObject::extract_int(buffer);
-        owner = Core::Communication::ParObject::extract_int(buffer);
-        datalength = Core::Communication::ParObject::extract_int(buffer);
+        matched = extract_int(buffer);
+        owner = extract_int(buffer);
+        datalength = extract_int(buffer);
 
-        for (int i = 0; i < globdim; ++i)
-          xvec[i] = Core::Communication::ParObject::extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) xvec[i] = extract_double(buffer);
 
         if (matched == 1)
         {
-          for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = Core::Communication::ParObject::extract_double(buffer);
+          for (int dim = 0; dim < datalength; ++dim) (*vectofill)(dim) = extract_double(buffer);
         }
 
-        for (int i = 0; i < globdim; ++i)
-          normal_vec[i] = Core::Communication::ParObject::extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) normal_vec[i] = extract_double(buffer);
 
         // wait for all communication to finish
         exporter.wait(request);
@@ -1171,17 +1168,15 @@ namespace Immersed
         // ---- unpack data -----
 
         Core::Communication::UnpackBuffer buffer(rdata);
-        matched = Core::Communication::ParObject::extract_int(buffer);
-        owner = Core::Communication::ParObject::extract_int(buffer);
-        datalength = Core::Communication::ParObject::extract_int(buffer);
+        matched = extract_int(buffer);
+        owner = extract_int(buffer);
+        datalength = extract_int(buffer);
 
-        for (int i = 0; i < globdim; ++i)
-          xvec[i] = Core::Communication::ParObject::extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) xvec[i] = extract_double(buffer);
 
         if (matched == 1)
         {
-          for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = Core::Communication::ParObject::extract_double(buffer);
+          for (int dim = 0; dim < datalength; ++dim) (*vectofill)(dim) = extract_double(buffer);
         }
 
         // wait for all communication to finish
@@ -1578,17 +1573,16 @@ namespace Immersed
         // ---- unpack data -----
 
         Core::Communication::UnpackBuffer buffer(rdata);
-        matched = Core::Communication::ParObject::extract_int(buffer);
-        owner = Core::Communication::ParObject::extract_int(buffer);
-        datalength = Core::Communication::ParObject::extract_int(buffer);
+        matched = extract_int(buffer);
+        owner = extract_int(buffer);
+        datalength = extract_int(buffer);
 
-        for (int i = 0; i < globdim; ++i)
-          fluid_node_glob_coord[i] = Core::Communication::ParObject::extract_double(buffer);
+        for (int i = 0; i < globdim; ++i) fluid_node_glob_coord[i] = extract_double(buffer);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*velnp_at_struct_point)(dim) = Core::Communication::ParObject::extract_double(buffer);
+            (*velnp_at_struct_point)(dim) = extract_double(buffer);
         }
 
         // wait for all communication to finish

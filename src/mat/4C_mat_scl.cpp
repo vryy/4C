@@ -10,6 +10,7 @@ species
 /*----------------------------------------------------------------------------*/
 #include "4C_mat_scl.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_function_of_scalar.hpp"

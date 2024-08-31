@@ -115,18 +115,18 @@ namespace Discret::ELEMENTS
     static void pack(
         const MulfHistoryData<celltype>& history_data, Core::Communication::PackBuffer& data)
     {
-      Core::Communication::ParObject::add_to_pack(data, history_data.inverse_jacobian);
-      Core::Communication::ParObject::add_to_pack(data, history_data.deformation_gradient);
-      Core::Communication::ParObject::add_to_pack(data, history_data.is_setup);
+      add_to_pack(data, history_data.inverse_jacobian);
+      add_to_pack(data, history_data.deformation_gradient);
+      add_to_pack(data, history_data.is_setup);
     }
 
     static void unpack(
         Core::Communication::UnpackBuffer& buffer, MulfHistoryData<celltype>& history_data)
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, history_data.inverse_jacobian);
-      Core::Communication::ParObject::extract_from_pack(buffer, history_data.deformation_gradient);
+      extract_from_pack(buffer, history_data.inverse_jacobian);
+      extract_from_pack(buffer, history_data.deformation_gradient);
       int is_setup_int;
-      Core::Communication::ParObject::extract_from_pack(buffer, is_setup_int);
+      extract_from_pack(buffer, is_setup_int);
       history_data.is_setup = static_cast<bool>(is_setup_int);
     }
 

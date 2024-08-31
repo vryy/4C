@@ -134,7 +134,7 @@ namespace ScaTra
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          Core::Communication::ParObject::add_to_pack(data, *x1line);
+          add_to_pack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -176,7 +176,7 @@ namespace ScaTra
           while (!buffer.at_end())
           {
             double onecoord;
-            Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+            extract_from_pack(buffer, onecoord);
             coords.insert(onecoord);
           }
         }

@@ -9,6 +9,8 @@
 
 #include "4C_fem_general_immersed_node.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 

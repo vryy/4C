@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_mat_anisotropy.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_fem_general_fiber_node_holder.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
@@ -30,20 +31,20 @@ Mat::Anisotropy::Anisotropy()
 
 void Mat::Anisotropy::pack_anisotropy(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::add_to_pack(data, numgp_);
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(element_fibers_initialized_));
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(gp_fibers_initialized_));
-  Core::Communication::ParObject::add_to_pack(data, element_fibers_);
+  add_to_pack(data, numgp_);
+  add_to_pack(data, static_cast<int>(element_fibers_initialized_));
+  add_to_pack(data, static_cast<int>(gp_fibers_initialized_));
+  add_to_pack(data, element_fibers_);
   pack_fiber_vector<Core::LinAlg::Matrix<3, 1>>(data, gp_fibers_);
 
   if (element_cylinder_coordinate_system_manager_)
   {
-    Core::Communication::ParObject::add_to_pack(data, static_cast<int>(true));
+    add_to_pack(data, static_cast<int>(true));
     element_cylinder_coordinate_system_manager_->pack(data);
   }
   else
   {
-    Core::Communication::ParObject::add_to_pack(data, static_cast<int>(false));
+    add_to_pack(data, static_cast<int>(false));
   }
 
   for (const auto& gpCylinderCoordinateSystemManager : gp_cylinder_coordinate_system_managers_)
@@ -54,14 +55,13 @@ void Mat::Anisotropy::pack_anisotropy(Core::Communication::PackBuffer& data) con
 
 void Mat::Anisotropy::unpack_anisotropy(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, numgp_);
-  element_fibers_initialized_ =
-      static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
-  gp_fibers_initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
-  Core::Communication::ParObject::extract_from_pack(buffer, element_fibers_);
+  extract_from_pack(buffer, numgp_);
+  element_fibers_initialized_ = static_cast<bool>(extract_int(buffer));
+  gp_fibers_initialized_ = static_cast<bool>(extract_int(buffer));
+  extract_from_pack(buffer, element_fibers_);
   unpack_fiber_vector<Core::LinAlg::Matrix<3, 1>>(buffer, gp_fibers_);
 
-  if (static_cast<bool>(Core::Communication::ParObject::extract_int(buffer)))
+  if (static_cast<bool>(extract_int(buffer)))
   {
     element_cylinder_coordinate_system_manager_ = CylinderCoordinateSystemManager();
     element_cylinder_coordinate_system_manager_->unpack(buffer);

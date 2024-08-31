@@ -7,6 +7,7 @@
 
 #include "4C_shell7p_ele_calc_eas.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
@@ -129,51 +130,49 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.sdc);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.thickness);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, shell_data_.num_ans);
+  add_to_pack(data, shell_data_.sdc);
+  add_to_pack(data, shell_data_.thickness);
+  add_to_pack(data, shell_data_.num_ans);
 
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, eas_iteration_data_.alpha_);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, eas_iteration_data_.RTilde_);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, eas_iteration_data_.invDTilde_);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, eas_iteration_data_.transL_);
+  add_to_pack(data, eas_iteration_data_.alpha_);
+  add_to_pack(data, eas_iteration_data_.RTilde_);
+  add_to_pack(data, eas_iteration_data_.invDTilde_);
+  add_to_pack(data, eas_iteration_data_.transL_);
 
   // number of total EAS parameters
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, locking_types_.membrane);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, locking_types_.bending);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, locking_types_.thickness);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, locking_types_.transverse_shear_strain_const);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, locking_types_.transverse_shear_strain_lin);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, locking_types_.total);
+  add_to_pack(data, locking_types_.membrane);
+  add_to_pack(data, locking_types_.bending);
+  add_to_pack(data, locking_types_.thickness);
+  add_to_pack(data, locking_types_.transverse_shear_strain_const);
+  add_to_pack(data, locking_types_.transverse_shear_strain_lin);
+  add_to_pack(data, locking_types_.total);
 
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, old_step_length_);
-  Discret::ELEMENTS::Shell7p::add_to_pack(data, cur_thickness_);
+  add_to_pack(data, old_step_length_);
+  add_to_pack(data, cur_thickness_);
 }
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.sdc);
-  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.thickness);
-  Core::Communication::ParObject::extract_from_pack(buffer, shell_data_.num_ans);
+  extract_from_pack(buffer, shell_data_.sdc);
+  extract_from_pack(buffer, shell_data_.thickness);
+  extract_from_pack(buffer, shell_data_.num_ans);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.alpha_);
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.RTilde_);
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.invDTilde_);
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.transL_);
+  extract_from_pack(buffer, eas_iteration_data_.alpha_);
+  extract_from_pack(buffer, eas_iteration_data_.RTilde_);
+  extract_from_pack(buffer, eas_iteration_data_.invDTilde_);
+  extract_from_pack(buffer, eas_iteration_data_.transL_);
   // number of total EAS parameters
-  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.membrane);
-  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.bending);
-  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.thickness);
-  Core::Communication::ParObject::extract_from_pack(
-      buffer, locking_types_.transverse_shear_strain_const);
-  Core::Communication::ParObject::extract_from_pack(
-      buffer, locking_types_.transverse_shear_strain_lin);
-  Core::Communication::ParObject::extract_from_pack(buffer, locking_types_.total);
+  extract_from_pack(buffer, locking_types_.membrane);
+  extract_from_pack(buffer, locking_types_.bending);
+  extract_from_pack(buffer, locking_types_.thickness);
+  extract_from_pack(buffer, locking_types_.transverse_shear_strain_const);
+  extract_from_pack(buffer, locking_types_.transverse_shear_strain_lin);
+  extract_from_pack(buffer, locking_types_.total);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, old_step_length_);
-  Core::Communication::ParObject::extract_from_pack(buffer, cur_thickness_);
+  extract_from_pack(buffer, old_step_length_);
+  extract_from_pack(buffer, cur_thickness_);
 }
 
 template <Core::FE::CellType distype>

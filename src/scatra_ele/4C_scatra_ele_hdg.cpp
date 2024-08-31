@@ -9,6 +9,7 @@
 
 #include "4C_scatra_ele_hdg.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization_faces.hpp"
 #include "4C_fem_discretization_hdg.hpp"
@@ -224,7 +225,7 @@ void Discret::ELEMENTS::ScaTraHDG::unpack(Core::Communication::UnpackBuffer& buf
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Transport::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Transport::unpack(basedata_buffer);
 

@@ -11,6 +11,7 @@
 #include "4C_beam3_base.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_geometric_search_bounding_volume.hpp"
 #include "4C_fem_geometric_search_params.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"

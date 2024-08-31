@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_mat_mixture.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
@@ -173,7 +174,7 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
 
     // Extract is isPreEvaluated
     std::vector<int> isPreEvaluatedInt(0);
-    Core::Communication::ParObject::extract_from_pack(buffer, isPreEvaluatedInt);
+    extract_from_pack(buffer, isPreEvaluatedInt);
     is_pre_evaluated_.resize(isPreEvaluatedInt.size());
     for (unsigned i = 0; i < isPreEvaluatedInt.size(); ++i)
     {

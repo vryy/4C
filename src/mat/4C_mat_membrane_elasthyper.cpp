@@ -15,6 +15,7 @@ MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
  *----------------------------------------------------------------------*/
 #include "4C_mat_membrane_elasthyper.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_membrane_elasthyper_service.hpp"
 #include "4C_matelast_summand.hpp"
 

@@ -12,6 +12,7 @@
 
 #include "4C_mat_myocard_fitzhugh_nagumo.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_par_bundle.hpp"

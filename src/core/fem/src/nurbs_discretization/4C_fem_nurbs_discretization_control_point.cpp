@@ -15,6 +15,8 @@
 
 #include "4C_fem_nurbs_discretization_control_point.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 Core::FE::Nurbs::ControlPointType Core::FE::Nurbs::ControlPointType::instance_;
@@ -77,11 +79,11 @@ void Core::FE::Nurbs::ControlPoint::pack(Core::Communication::PackBuffer& data) 
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  Core::Nodes::Node::add_to_pack(data, type);
+  add_to_pack(data, type);
   // add base class of control point
   Core::Nodes::Node::pack(data);
   // add weight
-  Core::Nodes::Node::add_to_pack(data, &w_, sizeof(double));
+  add_to_pack(data, &w_, sizeof(double));
 
   return;
 }
@@ -101,7 +103,7 @@ void Core::FE::Nurbs::ControlPoint::unpack(Core::Communication::UnpackBuffer& bu
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Core::Nodes::Node::unpack(basedata_buffer);
   // extract weight
-  Core::Nodes::Node::extract_from_pack(buffer, w_);
+  extract_from_pack(buffer, w_);
 
   return;
 }

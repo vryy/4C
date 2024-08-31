@@ -10,6 +10,7 @@ function)
 
 #include "4C_mat_beam_elasthyper.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -101,12 +102,12 @@ void Mat::BeamElastHyperMaterial<T>::pack(Core::Communication::PackBuffer& data)
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  this->add_to_pack(data, type);
+  add_to_pack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
-  this->add_to_pack(data, matid);
+  add_to_pack(data, matid);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -118,7 +119,7 @@ void Mat::BeamElastHyperMaterial<T>::unpack(Core::Communication::UnpackBuffer& b
 
   // matid and recover params_
   int matid;
-  this->extract_from_pack(buffer, matid);
+  extract_from_pack(buffer, matid);
   params_ = nullptr;
 
   if (Global::Problem::instance()->materials() != Teuchos::null)

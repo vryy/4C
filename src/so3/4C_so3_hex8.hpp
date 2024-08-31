@@ -13,6 +13,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_element_integration_select.hpp"

@@ -9,6 +9,7 @@
 
 #include "4C_mortar_element.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_contact_nitsche_utils.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -77,7 +78,7 @@ Mortar::MortarEleDataContainer::MortarEleDataContainer()
 void Mortar::MortarEleDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add area_
-  Core::Communication::ParObject::add_to_pack(data, area_);
+  add_to_pack(data, area_);
 
   return;
 }
@@ -89,7 +90,7 @@ void Mortar::MortarEleDataContainer::pack(Core::Communication::PackBuffer& data)
 void Mortar::MortarEleDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // area_
-  Core::Communication::ParObject::extract_from_pack(buffer, area_);
+  extract_from_pack(buffer, area_);
 
   dualshapecoeff_ = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
@@ -204,11 +205,10 @@ void Mortar::Element::pack(Core::Communication::PackBuffer& data) const
     add_to_pack(data, zero_sized_);
     // knots
     int nr = mortarknots_.size();
-    Core::Communication::ParObject::add_to_pack(data, nr);
+    add_to_pack(data, nr);
     if (nr != 0)
     {
-      for (int i = 0; i < nr; i++)
-        Core::Communication::ParObject::add_to_pack(data, (mortarknots_[i]));
+      for (int i = 0; i < nr; i++) add_to_pack(data, (mortarknots_[i]));
     }
   }
 
@@ -257,13 +257,12 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
     zero_sized_ = extract_int(buffer);
     // knots
     int nr;
-    Core::Communication::ParObject::extract_from_pack(buffer, nr);
+    extract_from_pack(buffer, nr);
 
     if (nr != 0)
     {
       mortarknots_.resize(nr);
-      for (int i = 0; i < nr; i++)
-        Core::Communication::ParObject::extract_from_pack(buffer, mortarknots_[i]);
+      for (int i = 0; i < nr; i++) extract_from_pack(buffer, mortarknots_[i]);
     }
   }
 

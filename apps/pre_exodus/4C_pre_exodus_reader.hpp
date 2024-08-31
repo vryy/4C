@@ -19,6 +19,7 @@ is handed to a c++ object mesh.
 #include "4C_utils_exceptions.hpp"
 
 #include <iostream>
+#include <set>
 #include <string>
 #include <vector>
 

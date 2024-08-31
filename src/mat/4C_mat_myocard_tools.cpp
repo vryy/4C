@@ -11,6 +11,8 @@
  *----------------------------------------------------------------------*/
 #include "4C_mat_myocard_tools.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
+
 #include <math.h> /* tanh, log */
 
 FOUR_C_NAMESPACE_OPEN

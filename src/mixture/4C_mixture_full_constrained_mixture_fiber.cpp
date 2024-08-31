@@ -8,6 +8,7 @@
 #include "4C_mixture_full_constrained_mixture_fiber.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_mixture_constituent_remodelfiber_material.hpp"
 #include "4C_mixture_full_constrained_mixture_fiber_adaptive_history.hpp"
@@ -267,43 +268,43 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::unpack(Core::Communication::U
 template <>
 void MIXTURE::FullConstrainedMixtureFiber<double>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, sig_h_);
-  Core::Communication::ParObject::extract_from_pack(buffer, lambda_pre_);
-  Core::Communication::ParObject::extract_from_pack(buffer, current_state_.lambda_f);
+  extract_from_pack(buffer, sig_h_);
+  extract_from_pack(buffer, lambda_pre_);
+  extract_from_pack(buffer, current_state_.lambda_f);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, reference_time_);
-  Core::Communication::ParObject::extract_from_pack(buffer, current_time_shift_);
+  extract_from_pack(buffer, reference_time_);
+  extract_from_pack(buffer, current_time_shift_);
 
   std::size_t size_of_history;
-  Core::Communication::ParObject::extract_from_pack(buffer, size_of_history);
+  extract_from_pack(buffer, size_of_history);
   history_.resize(size_of_history);
 
   for (auto& interval : history_)
   {
     std::size_t size_of_interval;
-    Core::Communication::ParObject::extract_from_pack(buffer, size_of_interval);
+    extract_from_pack(buffer, size_of_interval);
     interval.timesteps.resize(size_of_interval);
     for (auto& item : interval.timesteps)
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, item.reference_stretch);
-      Core::Communication::ParObject::extract_from_pack(buffer, item.growth_scalar);
-      Core::Communication::ParObject::extract_from_pack(buffer, item.growth_scalar_production_rate);
-      Core::Communication::ParObject::extract_from_pack(buffer, item.deposition_time);
+      extract_from_pack(buffer, item.reference_stretch);
+      extract_from_pack(buffer, item.growth_scalar);
+      extract_from_pack(buffer, item.growth_scalar_production_rate);
+      extract_from_pack(buffer, item.deposition_time);
     }
 
-    Core::Communication::ParObject::extract_from_pack(buffer, interval.base_dt);
+    extract_from_pack(buffer, interval.base_dt);
 
     interval.adaptivity_info.unpack(buffer);
   }
 
 
-  Core::Communication::ParObject::extract_from_pack(buffer, current_time_);
+  extract_from_pack(buffer, current_time_);
 
 
-  Core::Communication::ParObject::extract_from_pack(buffer, computed_growth_scalar_);
-  Core::Communication::ParObject::extract_from_pack(buffer, computed_sigma_);
-  Core::Communication::ParObject::extract_from_pack(buffer, computed_dgrowth_scalar_dlambda_f_sq_);
-  Core::Communication::ParObject::extract_from_pack(buffer, computed_dsigma_dlambda_f_sq_);
+  extract_from_pack(buffer, computed_growth_scalar_);
+  extract_from_pack(buffer, computed_sigma_);
+  extract_from_pack(buffer, computed_dgrowth_scalar_dlambda_f_sq_);
+  extract_from_pack(buffer, computed_dsigma_dlambda_f_sq_);
 }
 
 template <typename Number>

@@ -123,7 +123,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
          zline != zavcoords.end(); ++zline)
     {
-      Core::Communication::ParObject::add_to_pack(data, *zline);
+      add_to_pack(data, *zline);
     }
     std::swap(sblock, data());
 
@@ -166,7 +166,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
       while (!buffer.at_end())
       {
         double onecoord;
-        Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+        extract_from_pack(buffer, onecoord);
         zavcoords.insert(onecoord);
       }
     }
@@ -285,7 +285,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {
-        Core::Communication::ParObject::add_to_pack(data, *zline);
+        add_to_pack(data, *zline);
       }
       std::swap(sblock, data());
 
@@ -330,7 +330,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
         while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+          extract_from_pack(buffer, onecoord);
           ravcoords.insert(onecoord);
         }
       }

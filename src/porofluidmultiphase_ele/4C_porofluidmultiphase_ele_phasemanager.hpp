@@ -13,6 +13,7 @@
 
 #include "4C_inpar_material.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_mat_scatra_multiporo.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_utils_exceptions.hpp"

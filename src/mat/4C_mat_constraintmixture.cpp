@@ -24,6 +24,7 @@ For a detailed description see:
 
 #include "4C_mat_constraintmixture.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"  // for debug plotting with gmsh

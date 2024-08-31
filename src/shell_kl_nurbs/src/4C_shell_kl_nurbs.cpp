@@ -9,6 +9,7 @@
 
 #include "4C_shell_kl_nurbs.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"

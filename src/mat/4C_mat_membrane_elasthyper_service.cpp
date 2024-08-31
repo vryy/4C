@@ -11,6 +11,7 @@
 
 #include "4C_mat_membrane_elasthyper_service.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 
 FOUR_C_NAMESPACE_OPEN

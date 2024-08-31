@@ -1418,7 +1418,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      extract_from_pack(buffer, data);
       Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> object =
           Teuchos::rcp(Core::Communication::factory(data_buffer), true);
@@ -1449,7 +1449,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   {
     // unpack
     std::vector<char> recv_singlecontainer_data;
-    Core::Communication::ParObject::extract_from_pack(buffer, recv_singlecontainer_data);
+    extract_from_pack(buffer, recv_singlecontainer_data);
 
 
     Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
@@ -1488,7 +1488,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
 
     Core::Communication::UnpackBuffer cl_buffer(iter.second);
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(cl_buffer, data);
+    extract_from_pack(cl_buffer, data);
 
     Core::Communication::UnpackBuffer data_buffer(data);
     Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
@@ -1514,7 +1514,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   {
     // unpack
     std::vector<char> recv_singlecontainer_data;
-    Core::Communication::ParObject::extract_from_pack(beamdata_buffer, recv_singlecontainer_data);
+    extract_from_pack(beamdata_buffer, recv_singlecontainer_data);
 
     Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data =
@@ -1548,7 +1548,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   {
     std::vector<char> data;
     Core::Communication::UnpackBuffer buffer(iter.second);
-    Core::Communication::ParObject::extract_from_pack(buffer, data);
+    extract_from_pack(buffer, data);
 
     Core::Communication::UnpackBuffer data_buffer(data);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::rcp(
@@ -2090,7 +2090,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
     std::vector<char> data;
 
     Core::Communication::UnpackBuffer buffer1(iter.second);
-    Core::Communication::ParObject::extract_from_pack(buffer1, data);
+    extract_from_pack(buffer1, data);
 
     Core::Communication::UnpackBuffer buffer2(data);
     Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
@@ -2195,7 +2195,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   {
     std::vector<char> data;
     Core::Communication::UnpackBuffer buffer1(iter.second);
-    Core::Communication::ParObject::extract_from_pack(buffer1, data);
+    extract_from_pack(buffer1, data);
 
     Core::Communication::UnpackBuffer buffer2(data);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::rcp(
@@ -4015,7 +4015,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
     while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      extract_from_pack(buffer, data);
       // this Teuchos::rcp holds the memory
       Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> object =
@@ -4143,7 +4143,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
     while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      extract_from_pack(buffer, data);
 
       Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<T> data_container =

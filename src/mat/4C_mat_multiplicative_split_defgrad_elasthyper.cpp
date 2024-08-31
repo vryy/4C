@@ -10,6 +10,7 @@ multiplicatively into elastic and inelastic parts
 
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"

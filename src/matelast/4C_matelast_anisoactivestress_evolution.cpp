@@ -8,6 +8,7 @@
 
 #include "4C_matelast_anisoactivestress_evolution.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_material_factory.hpp"

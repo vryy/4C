@@ -18,6 +18,7 @@
 
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_fem_general_utils_integration.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Vector.h>

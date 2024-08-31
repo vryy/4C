@@ -10,6 +10,7 @@
 
 #include "4C_so3_weg6.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
@@ -179,7 +180,7 @@ void Discret::ELEMENTS::SoWeg6::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, time_);
   if (Prestress::is_mulf(pstype_))
   {
-    Core::Communication::ParObject::add_to_pack(data, *prestress_);
+    add_to_pack(data, *prestress_);
   }
 
   // detJ_

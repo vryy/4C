@@ -7,6 +7,7 @@
 
 #include "4C_contact_rough_node.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_global_data.hpp"

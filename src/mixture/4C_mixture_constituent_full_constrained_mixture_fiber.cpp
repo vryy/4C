@@ -7,6 +7,7 @@ equations
 /*----------------------------------------------------------------------*/
 #include "4C_mixture_constituent_full_constrained_mixture_fiber.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_material.hpp"
@@ -128,7 +129,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::pack_constituent(
   for (const FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.pack(data);
 
-  Core::Communication::ParObject::add_to_pack(data, last_lambda_f_);
+  add_to_pack(data, last_lambda_f_);
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::unpack_constituent(
@@ -142,7 +143,7 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::unpack_constituent(
   for (FullConstrainedMixtureFiber<double>& fiber : full_constrained_mixture_fiber_)
     fiber.unpack(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, last_lambda_f_);
+  extract_from_pack(buffer, last_lambda_f_);
 
   if (params_->enable_growth_)
   {

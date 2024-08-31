@@ -12,6 +12,7 @@ which govern the actual doings
 
 #include "4C_mat_list_chemoreac.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 
@@ -155,12 +156,12 @@ void Mat::MatListChemoReac::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::MatList::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Mat::MatListReactions::unpack(basedata_buffer);
 
   std::vector<char> basedata2(0);
-  Mat::MatList::extract_from_pack(buffer, basedata2);
+  extract_from_pack(buffer, basedata2);
   Core::Communication::UnpackBuffer basedata2_buffer(basedata);
   Mat::MatListChemotaxis::unpack(basedata2_buffer);
 

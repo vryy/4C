@@ -14,6 +14,8 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_linalg_serialdensevector.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_RCP.hpp>
 

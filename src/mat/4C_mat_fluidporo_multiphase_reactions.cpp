@@ -9,6 +9,7 @@
 
 #include "4C_mat_fluidporo_multiphase_reactions.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_fluidporo_multiphase_singlereaction.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -183,7 +184,7 @@ void Mat::FluidPoroMultiPhaseReactions::unpack(Core::Communication::UnpackBuffer
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::FluidPoroMultiPhase::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Mat::FluidPoroMultiPhase::unpack(basedata_buffer);
 

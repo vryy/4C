@@ -319,7 +319,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
         for (std::set<double, PlaneSortCriterion>::iterator plane = availablecoords.begin();
              plane != availablecoords.end(); ++plane)
         {
-          Core::Communication::ParObject::add_to_pack(data, *plane);
+          add_to_pack(data, *plane);
         }
         swap(sblock, data());
 
@@ -361,7 +361,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
           while (!buffer.at_end())
           {
             double onecoord;
-            Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+            extract_from_pack(buffer, onecoord);
             availablecoords.insert(onecoord);
           }
         }

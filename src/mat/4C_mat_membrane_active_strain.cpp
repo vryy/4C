@@ -16,6 +16,7 @@
  *----------------------------------------------------------------------*/
 #include "4C_mat_membrane_active_strain.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"

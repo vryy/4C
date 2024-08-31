@@ -17,6 +17,7 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_inpar_fsi.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 
 #include <NOX_Abstract_Group.H>
 #include <NOX_Abstract_Vector.H>

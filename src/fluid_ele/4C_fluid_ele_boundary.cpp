@@ -9,6 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fluid_ele.hpp"
 
 FOUR_C_NAMESPACE_OPEN

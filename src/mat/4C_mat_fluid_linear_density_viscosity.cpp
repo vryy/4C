@@ -9,6 +9,7 @@
 
 #include "4C_mat_fluid_linear_density_viscosity.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 

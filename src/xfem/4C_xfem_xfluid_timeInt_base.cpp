@@ -14,6 +14,7 @@
 
 #include "4C_bele_bele3.hpp"
 #include "4C_comm_exporter.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_cut_cutwizard.hpp"
 #include "4C_cut_elementhandle.hpp"
 #include "4C_cut_intersection.hpp"
@@ -825,10 +826,9 @@ void XFEM::XfluidTimeintBase::pack_node(
     Core::Communication::PackBuffer& dataSend, Core::Nodes::Node& node) const
 {
   const int nsd = 3;
-  Core::Communication::ParObject::add_to_pack(dataSend, node.id());
-  Core::Communication::ParObject::add_to_pack(
-      dataSend, Core::LinAlg::Matrix<nsd, 1>(node.x().data()));
-  Core::Communication::ParObject::add_to_pack(dataSend, node.owner());
+  add_to_pack(dataSend, node.id());
+  add_to_pack(dataSend, Core::LinAlg::Matrix<nsd, 1>(node.x().data()));
+  add_to_pack(dataSend, node.owner());
 }  // end packNode
 
 
@@ -845,9 +845,9 @@ void XFEM::XfluidTimeintBase::unpack_node(
   Core::LinAlg::Matrix<nsd, 1> coords;  // coordinates
   int owner;                            // processor
 
-  Core::Communication::ParObject::extract_from_pack(buffer, id);
-  Core::Communication::ParObject::extract_from_pack(buffer, coords);
-  Core::Communication::ParObject::extract_from_pack(buffer, owner);
+  extract_from_pack(buffer, id);
+  extract_from_pack(buffer, coords);
+  extract_from_pack(buffer, owner);
 
   if (owner == myrank_)  // real node with all data
   {
@@ -3224,16 +3224,16 @@ void XFEM::XfluidStd::export_start_data()
        data++)
   {
     pack_node(dataSend, data->node_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->searchedProcs_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->counter_);
-    Core::Communication::ParObject::add_to_pack(dataSend, data->dMin_);
-    Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
+    add_to_pack(dataSend, data->nds_np_);
+    add_to_pack(dataSend, data->vel_);
+    add_to_pack(dataSend, data->velDeriv_);
+    add_to_pack(dataSend, data->presDeriv_);
+    add_to_pack(dataSend, data->dispnp_);
+    add_to_pack(dataSend, data->startpoint_);
+    add_to_pack(dataSend, data->searchedProcs_);
+    add_to_pack(dataSend, data->counter_);
+    add_to_pack(dataSend, data->dMin_);
+    add_to_pack(dataSend, (int)data->type_);
   }
 
   std::vector<char> dataRecv;
@@ -3260,16 +3260,16 @@ void XFEM::XfluidStd::export_start_data()
     int newtype;                                           // type of the data
 
     unpack_node(buffer, node);
-    Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
-    Core::Communication::ParObject::extract_from_pack(buffer, vel);
-    Core::Communication::ParObject::extract_from_pack(buffer, velDeriv);
-    Core::Communication::ParObject::extract_from_pack(buffer, presDeriv);
-    Core::Communication::ParObject::extract_from_pack(buffer, dispnp);
-    Core::Communication::ParObject::extract_from_pack(buffer, startpoint);
-    Core::Communication::ParObject::extract_from_pack(buffer, searchedProcs);
-    Core::Communication::ParObject::extract_from_pack(buffer, counter);
-    Core::Communication::ParObject::extract_from_pack(buffer, dMin);
-    Core::Communication::ParObject::extract_from_pack(buffer, newtype);
+    extract_from_pack(buffer, nds_np);
+    extract_from_pack(buffer, vel);
+    extract_from_pack(buffer, velDeriv);
+    extract_from_pack(buffer, presDeriv);
+    extract_from_pack(buffer, dispnp);
+    extract_from_pack(buffer, startpoint);
+    extract_from_pack(buffer, searchedProcs);
+    extract_from_pack(buffer, counter);
+    extract_from_pack(buffer, dMin);
+    extract_from_pack(buffer, newtype);
 
     timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, startpoint,
         searchedProcs, counter, dMin, (TimeIntData::Type)newtype));
@@ -3332,12 +3332,12 @@ void XFEM::XfluidStd::export_final_data()
     for (std::vector<TimeIntData>::iterator data = dataVec[dest].begin();
          data != dataVec[dest].end(); data++)
     {
-      Core::Communication::ParObject::add_to_pack(dataSend, data->node_.id());
-      Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->velValues_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->presValues_);
-      Core::Communication::ParObject::add_to_pack(dataSend, data->type_);
+      add_to_pack(dataSend, data->node_.id());
+      add_to_pack(dataSend, data->nds_np_);
+      add_to_pack(dataSend, data->startpoint_);
+      add_to_pack(dataSend, data->velValues_);
+      add_to_pack(dataSend, data->presValues_);
+      add_to_pack(dataSend, data->type_);
     }
 
     // clear the no more needed data
@@ -3357,12 +3357,12 @@ void XFEM::XfluidStd::export_final_data()
       std::vector<double> presValues;                       // pressure values
       int newtype;                                          // type of the data
 
-      Core::Communication::ParObject::extract_from_pack(buffer, gid);
-      Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
-      Core::Communication::ParObject::extract_from_pack(buffer, startpoint);
-      Core::Communication::ParObject::extract_from_pack(buffer, velValues);
-      Core::Communication::ParObject::extract_from_pack(buffer, presValues);
-      Core::Communication::ParObject::extract_from_pack(buffer, newtype);
+      extract_from_pack(buffer, gid);
+      extract_from_pack(buffer, nds_np);
+      extract_from_pack(buffer, startpoint);
+      extract_from_pack(buffer, velValues);
+      extract_from_pack(buffer, presValues);
+      extract_from_pack(buffer, newtype);
 
       Core::LinAlg::Matrix<3, 1> nodedispnp(true);
       if (dispnp_ != Teuchos::null)  // is alefluid

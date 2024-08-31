@@ -9,6 +9,7 @@
 
 #include "4C_so3_poro_scatra.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_so3_poro_scatra_eletypes.hpp"
 
@@ -57,9 +58,9 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pack(
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  So3Ele::add_to_pack(data, type);
+  add_to_pack(data, type);
   // pack scalar transport impltype
-  So3Ele::add_to_pack(data, impltype_);
+  add_to_pack(data, impltype_);
 
   // add base class Element
   my::pack(data);
@@ -77,11 +78,11 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unpack(
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract scalar transport impltype_
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(So3Ele::extract_int(buffer));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
 
   // extract base class Element
   std::vector<char> basedata(0);
-  my::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   my::unpack(basedata_buffer);
 

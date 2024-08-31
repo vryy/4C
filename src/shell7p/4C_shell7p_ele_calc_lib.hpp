@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
@@ -1231,7 +1232,7 @@ namespace Discret::ELEMENTS::Shell
   inline void serialize(const Core::LinAlg::SerialDenseMatrix& matrix, std::vector<char>& data)
   {
     Core::Communication::PackBuffer packBuffer;
-    Core::Communication::ParObject::add_to_pack(packBuffer, matrix);
+    add_to_pack(packBuffer, matrix);
     std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(data));
   }
 

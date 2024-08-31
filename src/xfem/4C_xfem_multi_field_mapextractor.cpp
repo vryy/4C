@@ -192,7 +192,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
   for (cit_map = my_coupled_sl_dis.begin(); cit_map != my_coupled_sl_dis.end(); ++cit_map)
   {
     sendgid.push_back(cit_map->first);
-    Core::Communication::ParObject::add_to_pack(data, cit_map->second);
+    add_to_pack(data, cit_map->second);
   }
 
   // swap into std::vector<char>
@@ -292,7 +292,7 @@ void XFEM::MultiFieldMapExtractor::init(const XDisVec& dis_vec, int max_num_rese
       int gid = receivedgid[j];
       // the set gets cleared at the beginning of the extract_from_pack routine!
       std::set<int> rs;
-      Core::Communication::ParObject::extract_from_pack(buffer, rs);
+      extract_from_pack(buffer, rs);
       g_coupled_sl_dis[gid].insert(rs.begin(), rs.end());
       ++j;
     }

@@ -13,6 +13,7 @@
 
 #include "4C_beaminteraction_crosslinker_node.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_mat_crosslinkermat.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -56,9 +57,9 @@ CrossLinking::CrosslinkerNodeDataContainer::CrosslinkerNodeDataContainer() : num
 void CrossLinking::CrosslinkerNodeDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add numbond
-  Core::Communication::ParObject::add_to_pack(data, numbond_);
+  add_to_pack(data, numbond_);
   // add clbspots_
-  Core::Communication::ParObject::add_to_pack(data, clbspots_);
+  add_to_pack(data, clbspots_);
 
   return;
 }
@@ -70,9 +71,9 @@ void CrossLinking::CrosslinkerNodeDataContainer::pack(Core::Communication::PackB
 void CrossLinking::CrosslinkerNodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // numbond
-  Core::Communication::ParObject::extract_from_pack(buffer, numbond_);
+  extract_from_pack(buffer, numbond_);
   // clbspots_
-  Core::Communication::ParObject::extract_from_pack(buffer, clbspots_);
+  extract_from_pack(buffer, clbspots_);
 
   return;
 }

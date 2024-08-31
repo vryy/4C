@@ -11,6 +11,7 @@
 
 #include "4C_mixture_constituent_solidmaterial.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_mixture.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -73,7 +74,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::pack_constituent(
   // add the matid of the Mixture_SolidMaterial
   int matid = -1;
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
-  Core::Communication::ParObject::add_to_pack(data, matid);
+  add_to_pack(data, matid);
 
   // pack data of the solid material
   material_->pack(data);
@@ -91,7 +92,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
 
   // extract the matid of the Mixture_SolidMaterial
   int matid;
-  Core::Communication::ParObject::extract_from_pack(buffer, matid);
+  extract_from_pack(buffer, matid);
 
   // recover the params_ of the Mixture_SolidMaterial
   if (Global::Problem::instance()->materials() != Teuchos::null)
@@ -124,7 +125,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::unpack_constituent(
     // solid material packed: 1. the data size, 2. the packed data of size sm
     // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector
     std::vector<char> sub_vec;
-    Core::Communication::ParObject::extract_from_pack(buffer, sub_vec);
+    extract_from_pack(buffer, sub_vec);
     Core::Communication::UnpackBuffer sub_vec_buffer(sub_vec);
     material_->unpack(sub_vec_buffer);
   }

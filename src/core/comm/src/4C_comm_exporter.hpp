@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 
 #include <Epetra_Comm.h>
@@ -544,7 +545,7 @@ namespace Core::Communication
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = parobjects_.find(gid);
         if (curr != parobjects_.end())
         {
-          ParObject::add_to_pack(sendblock, *curr->second);
+          add_to_pack(sendblock, *curr->second);
           return true;
         }
         return false;
@@ -553,7 +554,7 @@ namespace Core::Communication
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
         std::vector<char> object_data;
-        ParObject::extract_from_pack(buffer, object_data);
+        extract_from_pack(buffer, object_data);
 
         UnpackBuffer object_buffer(object_data);
         ParObject* o = factory(object_buffer);
@@ -583,7 +584,7 @@ namespace Core::Communication
     /// Concrete helper class that handles Teuchos::RCPs to any object
     /**!
        The objects considered here must have a default constructor and must be
-       supported by ParObject::add_to_pack and ParObject::extract_from_pack
+       supported by add_to_pack and extract_from_pack
        functions.
 
        Ideally one would manage ParObject with this helper as well, however, the
@@ -604,7 +605,7 @@ namespace Core::Communication
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::add_to_pack(sendblock, *curr->second);
+          add_to_pack(sendblock, *curr->second);
           return true;
         }
         return false;
@@ -613,7 +614,7 @@ namespace Core::Communication
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
         Teuchos::RCP<T> obj = Teuchos::rcp(new T);
-        ParObject::extract_from_pack(buffer, *obj);
+        extract_from_pack(buffer, *obj);
 
         // add object to my map
         objects_[gid] = obj;
@@ -652,7 +653,7 @@ namespace Core::Communication
         typename std::map<int, T>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::add_to_pack(sendblock, curr->second);
+          add_to_pack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -660,7 +661,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        ParObject::extract_from_pack(buffer, objects_[gid]);
+        extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override
@@ -697,7 +698,7 @@ namespace Core::Communication
         typename std::map<int, std::vector<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::add_to_pack(sendblock, curr->second);
+          add_to_pack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -705,7 +706,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        ParObject::extract_from_pack(buffer, objects_[gid]);
+        extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override
@@ -739,7 +740,7 @@ namespace Core::Communication
         typename std::map<int, std::set<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::add_to_pack(sendblock, curr->second);
+          add_to_pack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -747,7 +748,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        ParObject::extract_from_pack(buffer, objects_[gid]);
+        extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override
@@ -782,7 +783,7 @@ namespace Core::Communication
         typename std::map<int, std::map<T, U>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
         {
-          ParObject::add_to_pack(sendblock, curr->second);
+          add_to_pack(sendblock, curr->second);
           return true;
         }
         return false;
@@ -790,7 +791,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        ParObject::extract_from_pack(buffer, objects_[gid]);
+        extract_from_pack(buffer, objects_[gid]);
       }
 
       void post_export_cleanup(Exporter* exporter) override

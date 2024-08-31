@@ -11,11 +11,11 @@
 #include "4C_particle_rigidbody_affiliation_pairs.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_io.hpp"
 #include "4C_particle_engine_communication_utils.hpp"
 #include "4C_particle_engine_interface.hpp"
-
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*
@@ -157,8 +157,8 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::unpack_affiliation_pairs(
   while (!data.at_end())
   {
     // get affiliation pair
-    const int globalid = Core::Communication::ParObject::extract_int(data);
-    const int rigidbody = Core::Communication::ParObject::extract_int(data);
+    const int globalid = extract_int(data);
+    const int rigidbody = extract_int(data);
 
     // add affiliation pair
     affiliationdata_[globalid] = rigidbody;

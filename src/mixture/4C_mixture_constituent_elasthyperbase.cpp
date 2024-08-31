@@ -75,10 +75,10 @@ void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
   // matid
   int matid = -1;
   if (params_ != nullptr) matid = params_->id();  // in case we are in post-process mode
-  Core::Communication::ParObject::add_to_pack(data, matid);
+  add_to_pack(data, matid);
   summand_properties_.pack(data);
 
-  Core::Communication::ParObject::add_to_pack(data, prestretch_);
+  add_to_pack(data, prestretch_);
 
   cosy_anisotropy_extension_.pack_anisotropy(data);
 
@@ -103,7 +103,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
 
   // matid and recover params_
   int matid;
-  Core::Communication::ParObject::extract_from_pack(buffer, matid);
+  extract_from_pack(buffer, matid);
 
   if (Global::Problem::instance()->materials() != Teuchos::null)
   {
@@ -127,7 +127,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
 
   summand_properties_.unpack(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, prestretch_);
+  extract_from_pack(buffer, prestretch_);
 
   cosy_anisotropy_extension_.unpack_anisotropy(buffer);
 

@@ -136,7 +136,7 @@ void CONTACT::Interface::round_robin_change_ownership()
 
     // check for ghosting
     const int ghost = (mele->owner() == myrank) ? 1 : 0;
-    Core::Communication::ParObject::add_to_pack(dataeles, ghost);
+    add_to_pack(dataeles, ghost);
   }
   std::swap(sdataeles, dataeles());
 
@@ -176,8 +176,8 @@ void CONTACT::Interface::round_robin_change_ownership()
     {
       std::vector<char> data;
       int ghost = -1;
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
-      Core::Communication::ParObject::extract_from_pack(buffer, ghost);
+      extract_from_pack(buffer, data);
+      extract_from_pack(buffer, ghost);
       if (ghost == -1) FOUR_C_THROW("Unpack error.");
 
       // this Teuchos::rcp holds the memory of the ele
@@ -249,7 +249,7 @@ void CONTACT::Interface::round_robin_change_ownership()
         ghost = 0;
     }
 
-    Core::Communication::ParObject::add_to_pack(datanodes, ghost);
+    add_to_pack(datanodes, ghost);
   }
   std::swap(sdatanodes, datanodes());
 
@@ -294,8 +294,8 @@ void CONTACT::Interface::round_robin_change_ownership()
       std::vector<char> data;
 
       int ghost = -1;
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
-      Core::Communication::ParObject::extract_from_pack(buffer, ghost);
+      extract_from_pack(buffer, data);
+      extract_from_pack(buffer, ghost);
       if (ghost == -1) FOUR_C_THROW("UNPACK ERROR!!!!!!!!!");
 
       // this Teuchos::rcp holds the memory of the node

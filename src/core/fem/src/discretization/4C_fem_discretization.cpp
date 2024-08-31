@@ -10,6 +10,7 @@
 
 #include "4C_fem_discretization.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_dofset_pbc.hpp"
 #include "4C_fem_dofset_proxy.hpp"
@@ -705,7 +706,7 @@ void Core::FE::Discretization::unpack_my_elements(Teuchos::RCP<std::vector<char>
   while (!buffer.at_end())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(buffer, data);
+    extract_from_pack(buffer, data);
     Communication::UnpackBuffer data_buffer(data);
     Core::Communication::ParObject* o = Core::Communication::factory(data_buffer);
     auto* ele = dynamic_cast<Core::Elements::Element*>(o);
@@ -726,7 +727,7 @@ void Core::FE::Discretization::unpack_my_nodes(Teuchos::RCP<std::vector<char>> e
   while (!buffer.at_end())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(buffer, data);
+    extract_from_pack(buffer, data);
     Communication::UnpackBuffer data_buffer(data);
     Core::Communication::ParObject* o = Core::Communication::factory(data_buffer);
     auto* node = dynamic_cast<Core::Nodes::Node*>(o);

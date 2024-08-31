@@ -18,6 +18,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include <set>
+
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations

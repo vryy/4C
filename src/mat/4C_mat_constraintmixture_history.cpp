@@ -10,6 +10,7 @@
 
 #include "4C_mat_constraintmixture_history.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN

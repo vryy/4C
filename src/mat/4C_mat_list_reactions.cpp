@@ -12,6 +12,7 @@ is just a "control instance".
 
 #include "4C_mat_list_reactions.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_scatra_reaction.hpp"
@@ -205,7 +206,7 @@ void Mat::MatListReactions::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Mat::MatList::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Mat::MatList::unpack(basedata_buffer);
 

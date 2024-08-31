@@ -9,6 +9,7 @@ space-time varying coefficients
 
 #include "4C_matelast_coupanisoneohooke_VarProp.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"

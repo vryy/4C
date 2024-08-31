@@ -250,7 +250,7 @@ void Discret::ELEMENTS::SolidPoroPressureBased::unpack(Core::Communication::Unpa
 
   poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
 
-  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
+  extract_from_pack(buffer, material_post_setup_);
 
   // reset solid and poro interfaces
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);
