@@ -154,8 +154,9 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 
               if (stiff.has_value())
               {
-                add_stiffness_matrix<ElementFormulation, celltype>(linearization, jacobian_mapping,
-                    stress, integration_factor, preparation_data, history_data_, gp, *stiff);
+                add_stiffness_matrix<ElementFormulation, celltype>(xi, shape_functions,
+                    linearization, jacobian_mapping, stress, integration_factor, preparation_data,
+                    history_data_, gp, *stiff);
               }
 
               if (mass.has_value())

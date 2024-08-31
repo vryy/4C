@@ -501,6 +501,8 @@ namespace Discret::ELEMENTS
    */
   template <typename SolidFormulation, Core::FE::CellType celltype>
   static inline void add_stiffness_matrix(
+      const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const typename SolidFormulation::LinearizationContainer& linearization,
       const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
       const double integration_factor, const PreparationData<SolidFormulation>& preparation_data,
@@ -510,8 +512,8 @@ namespace Discret::ELEMENTS
   {
     std::apply([](auto&&... args)
         { SolidFormulation::add_stiffness_matrix(std::forward<decltype(args)>(args)...); },
-        std::tuple_cat(
-            std::forward_as_tuple(linearization, jacobian_mapping, stress, integration_factor),
+        std::tuple_cat(std::forward_as_tuple(xi, shape_functions, linearization, jacobian_mapping,
+                           stress, integration_factor),
             Details::get_additional_tuple(preparation_data, history_data, gp),
             std::forward_as_tuple(stiffness_matrix)));
   }

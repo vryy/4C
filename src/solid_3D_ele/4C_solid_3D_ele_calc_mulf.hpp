@@ -100,7 +100,9 @@ namespace Discret::ELEMENTS
           linearization.Bop, stress, integration_factor, force_vector);
     }
 
-    static void add_stiffness_matrix(const MulfLinearizationContainer<celltype>& linearization,
+    static void add_stiffness_matrix(const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const MulfLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor, MulfHistoryData<celltype>& history_data,
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
