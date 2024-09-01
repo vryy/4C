@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_utils_fad.hpp"
 
 #include <functional>

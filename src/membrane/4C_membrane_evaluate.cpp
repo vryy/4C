@@ -13,6 +13,7 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_material_factory.hpp"

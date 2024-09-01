@@ -19,6 +19,7 @@
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_carreauyasuda.hpp"
 #include "4C_mat_fluidporo.hpp"

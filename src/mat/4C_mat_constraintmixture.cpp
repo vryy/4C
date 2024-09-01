@@ -34,6 +34,7 @@ For a detailed description see:
 #include "4C_io_control.hpp"       // for debug plotting with gmsh
 #include "4C_io_gmsh.hpp"          // for debug plotting with gmsh
 #include "4C_io_linedefinition.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_constraintmixture_history.hpp"
 #include "4C_mat_par_bundle.hpp"

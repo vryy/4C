@@ -19,6 +19,7 @@ rY_13 0.7
 #include "4C_mat_plasticelasthyper.hpp"
 
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_par_bundle.hpp"
