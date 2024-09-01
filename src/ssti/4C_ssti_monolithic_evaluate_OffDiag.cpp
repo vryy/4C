@@ -234,8 +234,9 @@ void SSTI::ThermoStructureOffDiagCoupling::copy_slave_to_master_thermo_structure
       mastermatrixsparse.complete(*full_map_structure_, *full_map_thermo_);
 
       // split sparse matrix to block matrix
-      auto mastermatrix_split = mastermatrixsparse.split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *blockmapstructure_, *blockmapthermo_);
+      auto mastermatrix_split =
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              mastermatrixsparse, *blockmapstructure_, *blockmapthermo_);
       mastermatrix_split->complete();
       blockmastermatrix->add(*mastermatrix_split, false, 1.0, 1.0);
 

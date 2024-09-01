@@ -13,6 +13,7 @@
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_ssi_utils.hpp"
 #include "4C_ssti_monolithic.hpp"
@@ -547,8 +548,9 @@ void SSTI::AssembleStrategyBlockBlock::assemble_scatra_thermo_interface(
   masterderiv.complete(*meshtying_thermo()->coupling_adapter()->master_dof_map(),
       *all_maps()->block_map_scatra()->full_map());
 
-  const auto blockmasterderiv = masterderiv.split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-      *all_maps()->block_map_thermo(), *all_maps()->block_map_scatra());
+  const auto blockmasterderiv =
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          masterderiv, *all_maps()->block_map_thermo(), *all_maps()->block_map_scatra());
 
   blockmasterderiv->complete();
 
@@ -843,8 +845,8 @@ void SSTI::AssembleStrategyBlockBlock::assemble_thermo_scatra_interface(
   masterflux.complete(
       *all_maps()->block_map_scatra()->full_map(), *all_maps()->block_map_thermo()->full_map());
 
-  const auto blockmasterflux = masterflux.split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-      *all_maps()->block_map_scatra(), *all_maps()->block_map_thermo());
+  const auto blockmasterflux = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      masterflux, *all_maps()->block_map_scatra(), *all_maps()->block_map_thermo());
 
   blockmasterflux->complete();
 

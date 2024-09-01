@@ -14,6 +14,7 @@
 #include "4C_fem_condition_selector.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -220,7 +221,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_matrix(
   // artery
   // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockartery =
-      sysmat_art->split<Core::LinAlg::DefaultBlockMatrixStrategy>(*(artex_), *(artex_));
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *sysmat_art, *(artex_), *(artex_));
   blockartery->complete();
 
   // inner artery dofs

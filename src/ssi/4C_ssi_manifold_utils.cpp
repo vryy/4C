@@ -551,23 +551,23 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::add_condition_contribution()
        * d: structure/displacements
        */
       auto flux_manifold_scatra_mm_block =
-          systemmatrix_manifold_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              blockmaps_manifold, blockmaps_manifold);
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *systemmatrix_manifold_cond_, blockmaps_manifold, blockmaps_manifold);
       auto flux_manifold_scatra_md_block =
-          matrix_manifold_structure_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *block_map_structure_, blockmaps_manifold);
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *matrix_manifold_structure_cond_, *block_map_structure_, blockmaps_manifold);
       auto flux_manifold_scatra_ms_block =
-          matrix_manifold_scatra_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *block_map_scatra_, blockmaps_manifold);
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *matrix_manifold_scatra_cond_, *block_map_scatra_, blockmaps_manifold);
       auto flux_manifold_scatra_sm_block =
-          matrix_scatra_manifold_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              blockmaps_manifold, *block_map_scatra_);
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *matrix_scatra_manifold_cond_, blockmaps_manifold, *block_map_scatra_);
       auto flux_manifold_scatra_sd_block =
-          matrix_scatra_structure_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *block_map_structure_, *block_map_scatra_);
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *matrix_scatra_structure_cond_, *block_map_structure_, *block_map_scatra_);
       auto flux_manifold_scatra_ss_block =
-          systemmatrix_scatra_cond_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *block_map_scatra_, *block_map_scatra_);
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *systemmatrix_scatra_cond_, *block_map_scatra_, *block_map_scatra_);
 
       flux_manifold_scatra_mm_block->complete();
       flux_manifold_scatra_md_block->complete();

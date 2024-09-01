@@ -452,8 +452,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           FOUR_C_ASSERT(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
 
           Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkss(
-              islavematrix_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                  *blockmaps_slave_, *blockmaps_slave_));
+              Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                  *islavematrix_, *blockmaps_slave_, *blockmaps_slave_));
           blockkss->complete();
 
           // assemble interface block matrix into global block system matrix
@@ -485,16 +485,16 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             kmm->complete();
 
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockksm(
-                ksm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                    *blockmaps_master_, *blockmaps_slave_));
+                Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                    *ksm, *blockmaps_master_, *blockmaps_slave_));
             blockksm->complete();
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkms(
-                kms->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                    *blockmaps_slave_, *blockmaps_master_));
+                Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                    *kms, *blockmaps_slave_, *blockmaps_master_));
             blockkms->complete();
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkmm(
-                kmm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                    *blockmaps_master_, *blockmaps_master_));
+                Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                    *kmm, *blockmaps_master_, *blockmaps_master_));
             blockkmm->complete();
 
             // assemble interface block matrices into global block system matrix
@@ -824,16 +824,16 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                       ? islavematrix_
                       : Mortar::matrix_row_transform(islavematrix_, islavemap_);
               Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockslavematrix(
-                  islavematrix->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                      *scatratimint_->block_maps(), *blockmaps_slave_));
+                  Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                      *islavematrix, *scatratimint_->block_maps(), *blockmaps_slave_));
               blockslavematrix->complete();
               const Teuchos::RCP<const Core::LinAlg::SparseMatrix> imastermatrix =
                   not imortarredistribution_
                       ? imastermatrix_
                       : Mortar::matrix_row_transform(imastermatrix_, imastermap_);
               Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockmastermatrix(
-                  imastermatrix->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                      *scatratimint_->block_maps(), *blockmaps_master_));
+                  Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                      *imastermatrix, *scatratimint_->block_maps(), *blockmaps_master_));
               blockmastermatrix->complete();
 
               // assemble interface block matrices into global block system matrix
@@ -961,8 +961,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 *islavematrix_, -1., Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kms);
             kms->complete(*icoup_->slave_dof_map(), *icoup_->master_dof_map());
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkms(
-                kms->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                    *blockmaps_slave_, *blockmaps_master_));
+                Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                    *kms, *blockmaps_slave_, *blockmaps_master_));
             blockkms->complete();
 
             // derive linearizations of master fluxes w.r.t. master dofs
@@ -973,8 +973,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
             kmm->complete();
             Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkmm(
-                kmm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                    *blockmaps_master_, *blockmaps_master_));
+                Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                    *kmm, *blockmaps_master_, *blockmaps_master_));
             blockkmm->complete();
 
             // assemble interface block matrices into global block system matrix
@@ -1242,8 +1242,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
                 // split auxiliary system matrix and assemble into global matrix block
                 const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockmastermatrix =
-                    mastermatrix.split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                        *blockmapgrowth_, *scatratimint_->block_maps());
+                    Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                        mastermatrix, *blockmapgrowth_, *scatratimint_->block_maps());
                 blockmastermatrix->complete();
                 scatragrowthblock_->add(*blockmastermatrix, false, 1., 1.);
 
@@ -1306,8 +1306,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
                 // split temporary matrix and assemble into global matrix block
                 const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockkgm(
-                    kgm.split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                        *scatratimint_->block_maps(), *blockmapgrowth_));
+                    Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+                        kgm, *scatratimint_->block_maps(), *blockmapgrowth_));
                 blockkgm->complete();
                 growthscatrablock_->add(*blockkgm, false, 1., 1.);
 
@@ -1450,8 +1450,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
       FOUR_C_ASSERT(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
 
       // prepare linearizations of slave fluxes due to capacitance w.r.t. slave dofs
-      auto blockkss = islavematrix_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *blockmaps_slave_, *blockmaps_slave_);
+      auto blockkss = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *islavematrix_, *blockmaps_slave_, *blockmaps_slave_);
       blockkss->complete();
 
       // prepare linearizations of slave fluxes due to capacitance w.r.t. master dofs
@@ -1459,8 +1459,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
       Coupling::Adapter::MatrixColTransform()(islavematrix_->row_map(), islavematrix_->col_map(),
           *islavematrix_, -1.0, Coupling::Adapter::CouplingSlaveConverter(*icoup_), *ksm);
       ksm->complete(*icoup_->master_dof_map(), *icoup_->slave_dof_map());
-      auto blockksm = ksm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *blockmaps_master_, *blockmaps_slave_);
+      auto blockksm = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *ksm, *blockmaps_master_, *blockmaps_slave_);
       blockksm->complete();
 
       // prepare linearizations of master fluxes due to capacitance w.r.t. slave dofs
@@ -1468,8 +1468,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
       Coupling::Adapter::MatrixRowTransform()(
           *imasterslavematrix_, 1.0, Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kms);
       kms->complete(*icoup_->slave_dof_map(), *icoup_->master_dof_map());
-      auto blockkms = kms->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *blockmaps_slave_, *blockmaps_master_);
+      auto blockkms = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *kms, *blockmaps_slave_, *blockmaps_master_);
       blockkms->complete();
 
       // derive linearizations of master fluxes w.r.t. master dofs
@@ -1478,8 +1478,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
           Coupling::Adapter::CouplingSlaveConverter(*icoup_),
           Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
       kmm->complete();
-      auto blockkmm = kmm->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *blockmaps_master_, *blockmaps_master_);
+      auto blockkmm = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *kmm, *blockmaps_master_, *blockmaps_master_);
       blockkmm->complete();
 
       // assemble interface block matrices into global block system matrix

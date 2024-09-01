@@ -16,6 +16,7 @@
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
@@ -381,8 +382,8 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
           *meshtying_strategy_scatra()->coupling_adapter()->master_dof_map());
 
       // split auxiliary system matrix and assemble into scatra-thermo matrix block
-      blockmastermatrix = mastermatrixsparse.split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *block_map_thermo(), *scatra_field()->block_maps());
+      blockmastermatrix = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          mastermatrixsparse, *block_map_thermo(), *scatra_field()->block_maps());
 
       // finalize master matrix
       mastermatrix->complete();
@@ -529,8 +530,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
           *meshtying_strategy_thermo()->coupling_adapter()->slave_dof_map());
 
       // split temporary matrix and assemble into thermo-scatra matrix block
-      const auto blockksm = ksm.split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          meshtying_strategy_scatra()->block_maps_master(), *block_map_thermo_interface_slave());
+      const auto blockksm = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          ksm, meshtying_strategy_scatra()->block_maps_master(),
+          *block_map_thermo_interface_slave());
       blockksm->complete();
       thermoscatrablockinterface->add(*blockksm, false, 1.0, 1.0);
 
@@ -683,10 +685,10 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
     {
       slavematrix->complete();
       mastermatrix =
-          meshtying_strategy_scatra()
-              ->master_matrix()
-              ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                  *block_map_thermo_interface(), meshtying_strategy_scatra()->block_maps_master());
+
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *meshtying_strategy_scatra()->master_matrix(), *block_map_thermo_interface(),
+              meshtying_strategy_scatra()->block_maps_master());
       mastermatrix->complete();
 
       break;

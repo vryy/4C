@@ -12,6 +12,7 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ArrayRCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -202,14 +203,14 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
     Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>>& Ablock,
     Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap)
 {
-  if (A == Teuchos::null) FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) FOUR_C_THROW("A==null on entry");
 
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
     A11rowmap = Core::LinAlg::split_map(A->RowMap(), *A22rowmap);
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = Core::LinAlg::split_map(A->RowMap(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    FOUR_C_THROW("Both A11rowmap and A22rowmap == null on entry");
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
   maps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
@@ -220,28 +221,8 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
   SparseMatrix a(A, View);
 
   // split matrix into pieces, where main diagonal blocks are square
-  Ablock = a.split<DefaultBlockMatrixStrategy>(extractor, extractor);
+  Ablock = Core::LinAlg::split_matrix<DefaultBlockMatrixStrategy>(a, extractor, extractor);
   Ablock->complete();
-
-  return true;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
-    Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
-    Teuchos::RCP<Epetra_CrsMatrix>& A11, Teuchos::RCP<Epetra_CrsMatrix>& A12,
-    Teuchos::RCP<Epetra_CrsMatrix>& A21, Teuchos::RCP<Epetra_CrsMatrix>& A22)
-{
-  Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock = Teuchos::null;
-
-  split_matrix2x2(A, Ablock, A11rowmap, A22rowmap);
-
-  // get Epetra objects out of the block matrix (prevents them from dying)
-  A11 = (*Ablock)(0, 0).epetra_matrix();
-  A12 = (*Ablock)(0, 1).epetra_matrix();
-  A21 = (*Ablock)(1, 0).epetra_matrix();
-  A22 = (*Ablock)(1, 1).epetra_matrix();
 
   return true;
 }
@@ -262,7 +243,7 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
   else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = Core::LinAlg::split_map(A->row_map(), *A11rowmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
+    FOUR_C_THROW("Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
   if (A11domainmap == Teuchos::null && A22domainmap != Teuchos::null)
@@ -270,8 +251,7 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
   else if (A11domainmap != Teuchos::null && A22domainmap == Teuchos::null)
     A22domainmap = Core::LinAlg::split_map(A->domain_map(), *A11domainmap);
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
-    FOUR_C_THROW(
-        "Core::LinAlg::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
+    FOUR_C_THROW("Both A11domainmap and A22domainmap == null on entry");
 
   // local variables
   std::vector<Teuchos::RCP<const Epetra_Map>> rangemaps(2);
@@ -284,7 +264,7 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
   Core::LinAlg::MultiMapExtractor domain(A->domain_map(), domainmaps);
 
   Teuchos::RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy>> Ablock =
-      A->split<DefaultBlockMatrixStrategy>(domain, range);
+      Core::LinAlg::split_matrix<DefaultBlockMatrixStrategy>(*A, domain, range);
 
   Ablock->complete();
   // extract internal data from Ablock in Teuchos::RCP form and let Ablock die
@@ -295,6 +275,190 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
   A22 = Teuchos::rcp(new SparseMatrix((*Ablock)(1, 1), View));
 
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void Core::LinAlg::split_matrix2x2(
+    const Core::LinAlg::SparseMatrix& ASparse, Core::LinAlg::BlockSparseMatrixBase& ABlock)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::split2x2");
+
+  if (ABlock.rows() != 2 || ABlock.cols() != 2) FOUR_C_THROW("Can only split in 2x2 system");
+  if (!ASparse.filled()) FOUR_C_THROW("SparseMatrix must be filled");
+  Teuchos::RCP<Epetra_CrsMatrix> A = ASparse.epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A11 = ABlock(0, 0).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A12 = ABlock(0, 1).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A21 = ABlock(1, 0).epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> A22 = ABlock(1, 1).epetra_matrix();
+  if (A11->Filled() || A12->Filled() || A21->Filled() || A22->Filled())
+    FOUR_C_THROW("Sub-matrices of the block operator are expected to be not filled");
+  const Epetra_Map& A11rmap = ABlock.range_map(0);
+  const Epetra_Map& A11dmap = ABlock.domain_map(0);
+  const Epetra_Map& A22rmap = ABlock.range_map(1);
+  const Epetra_Map& A22dmap = ABlock.domain_map(1);
+
+  // find out about how the column map is linked to the individual processors.
+  // this is done by filling the information about the rowmap into a vector that
+  // is then exported to the column map
+  Epetra_Vector dselector(A->DomainMap());
+  for (int i = 0; i < dselector.MyLength(); ++i)
+  {
+    const int gid = A->DomainMap().GID(i);
+    if (A11dmap.MyGID(gid))
+      dselector[i] = 0.;
+    else if (A22dmap.MyGID(gid))
+      dselector[i] = 1.;
+    else
+      dselector[i] = -1.;
+  }
+  Epetra_Vector selector(A->ColMap());
+  Core::LinAlg::export_to(dselector, selector);
+
+  std::vector<int> gcindices1(A->MaxNumEntries());
+  std::vector<double> gvalues1(A->MaxNumEntries());
+  std::vector<int> gcindices2(A->MaxNumEntries());
+  std::vector<double> gvalues2(A->MaxNumEntries());
+
+  const int length = A->NumMyRows();
+  for (int i = 0; i < length; ++i)
+  {
+    int err1 = 0;
+    int err2 = 0;
+    int count1 = 0;
+    int count2 = 0;
+    const int grid = A->GRID(i);
+    if (!A11rmap.MyGID(grid) && !A22rmap.MyGID(grid)) continue;
+    int numentries;
+    double* values;
+    int* cindices;
+    int err = A->ExtractMyRowView(i, numentries, values, cindices);
+    if (err) FOUR_C_THROW("ExtractMyRowView returned %d", err);
+    for (int j = 0; j < numentries; ++j)
+    {
+      const int gcid = A->ColMap().GID(cindices[j]);
+      FOUR_C_ASSERT(cindices[j] < selector.MyLength(), "Internal error");
+      // column is in A*1
+      if (selector[cindices[j]] == 0.)
+      {
+        gcindices1[count1] = gcid;
+        gvalues1[count1++] = values[j];
+      }
+      // column is in A*2
+      else if (selector[cindices[j]] == 1.)
+      {
+        gcindices2[count2] = gcid;
+        gvalues2[count2++] = values[j];
+      }
+      else
+        FOUR_C_THROW("Could not identify column index with block, internal error.");
+    }
+    if (A11rmap.MyGID(grid))
+    {
+      if (count1) err1 = A11->InsertGlobalValues(grid, count1, gvalues1.data(), gcindices1.data());
+      if (count2) err2 = A12->InsertGlobalValues(grid, count2, gvalues2.data(), gcindices2.data());
+    }
+    else
+    {
+      if (count1) err1 = A21->InsertGlobalValues(grid, count1, gvalues1.data(), gcindices1.data());
+      if (count2) err2 = A22->InsertGlobalValues(grid, count2, gvalues2.data(), gcindices2.data());
+    }
+
+    if (err1 < 0 || err2 < 0)
+      FOUR_C_THROW("InsertGlobalValues returned err1=%d / err2=%d", err1, err2);
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Core::LinAlg::split_matrixmxn(
+    const Core::LinAlg::SparseMatrix& ASparse, Core::LinAlg::BlockSparseMatrixBase& ABlock)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::split_mxn");
+
+  const int M = ABlock.rows();
+  const int N = ABlock.cols();
+
+  if (!ASparse.filled()) FOUR_C_THROW("SparseMatrix must be filled before splitting!");
+  for (int m = 0; m < M; ++m)
+  {
+    for (int n = 0; n < N; ++n)
+      if (ABlock(m, n).epetra_matrix()->Filled())
+        FOUR_C_THROW("BlockSparseMatrixBase must not be filled before splitting!");
+  }
+
+  const Epetra_CrsMatrix& A = *ASparse.epetra_matrix();
+
+  // associate each global column ID of SparseMatrix with corresponding block ID of
+  // BlockSparseMatrixBase this is done via an Epetra_Vector which is filled using domain map
+  // information and then exported to column map
+  Epetra_Vector dselector(ASparse.domain_map());
+  for (int collid = 0; collid < dselector.MyLength(); ++collid)
+  {
+    const int colgid = ASparse.domain_map().GID(collid);
+    if (colgid < 0) FOUR_C_THROW("Couldn't find local column ID %d in domain map!", collid);
+
+    int n(0);
+    for (n = 0; n < N; ++n)
+    {
+      if (ABlock.domain_map(n).MyGID(colgid))
+      {
+        dselector[collid] = n;
+        break;
+      }
+    }
+    if (n == N) FOUR_C_THROW("Matrix column was not found in BlockSparseMatrixBase!");
+  }
+  Epetra_Vector selector(A.ColMap());
+  Core::LinAlg::export_to(dselector, selector);
+
+  // allocate vectors storing global column indexes and values of matrix entries in a given row,
+  // separated by blocks allocation is done outside loop over all rows for efficiency to be on the
+  // safe side, we allocate more memory than we need for most rows
+  std::vector<std::vector<int>> colgids(N, std::vector<int>(A.MaxNumEntries(), -1));
+  std::vector<std::vector<double>> rowvalues(N, std::vector<double>(A.MaxNumEntries(), 0.));
+
+  for (int rowlid = 0; rowlid < A.NumMyRows(); ++rowlid)
+  {
+    int numentries(0);
+    double* values(nullptr);
+    int* indices(nullptr);
+    if (A.ExtractMyRowView(rowlid, numentries, values, indices))
+      FOUR_C_THROW("Row of SparseMatrix couldn't be extracted during splitting!");
+
+    std::vector<unsigned> counters(N, 0);
+
+    for (int j = 0; j < numentries; ++j)
+    {
+      const int collid = indices[j];
+      if (collid >= selector.MyLength()) FOUR_C_THROW("Invalid local column ID %d!", collid);
+
+      const int blockid = static_cast<int>(selector[collid]);
+      colgids[blockid][counters[blockid]] = A.ColMap().GID(collid);
+      rowvalues[blockid][counters[blockid]++] = values[j];
+    }
+
+    const int rowgid = A.GRID(rowlid);
+    int m(0);
+
+    for (m = 0; m < M; ++m)
+    {
+      if (ABlock.range_map(m).MyGID(rowgid))
+      {
+        for (int n = 0; n < N; ++n)
+        {
+          if (counters[n])
+          {
+            if (ABlock(m, n).epetra_matrix()->InsertGlobalValues(
+                    rowgid, counters[n], rowvalues[n].data(), colgids[n].data()))
+              FOUR_C_THROW("Couldn't insert matrix entries into BlockSparseMatrixBase!");
+          }
+        }
+        break;
+      }
+    }
+    if (m == M) FOUR_C_THROW("Matrix row was not found in BlockSparseMatrixBase!");
+  }
 }
 
 /*----------------------------------------------------------------------------*

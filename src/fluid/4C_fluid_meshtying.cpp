@@ -776,8 +776,8 @@ void FLD::Meshtying::split_matrix(
   // | kmn | kmm | kms |
   // | ksn | ksm | kss |
   // -------------------
-  splitmatrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(matrix)
-                    ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(extractor, extractor);
+  splitmatrix = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(matrix), extractor, extractor);
 
   // finalize resulting block sparse matrix
   splitmatrix->complete();
@@ -1675,7 +1675,8 @@ void FLD::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
           Teuchos::rcp(new Core::LinAlg::MapExtractor(
               *multifield_domainmaps_.full_map(), multifield_domainmaps_.Map(1)));
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
-          mergedmatrix->split<FLD::UTILS::InterfaceSplitStrategy>(*extractor, *extractor);
+          Core::LinAlg::split_matrix<FLD::UTILS::InterfaceSplitStrategy>(
+              *mergedmatrix, *extractor, *extractor);
       mat->set_cond_elements(multifield_condelements_);
       mat->complete();
 
@@ -1728,8 +1729,8 @@ void FLD::Meshtying::multifield_split_shape(
         Teuchos::rcp(new Core::LinAlg::MapExtractor(
             *multifield_domainmaps_shape_.full_map(), multifield_domainmaps_shape_.Map(1)));
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>
-        matshapederivatives = mergedshapederivatives->split<FLD::UTILS::InterfaceSplitStrategy>(
-            *extractor, *extractor);
+        matshapederivatives = Core::LinAlg::split_matrix<FLD::UTILS::InterfaceSplitStrategy>(
+            *mergedshapederivatives, *extractor, *extractor);
     matshapederivatives->set_cond_elements(multifield_condelements_shape_);
     matshapederivatives->complete();
     shapederivatives = matshapederivatives;

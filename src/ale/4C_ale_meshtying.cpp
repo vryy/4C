@@ -387,7 +387,8 @@ void ALE::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
             *multifield_interface_.full_map(), multifield_interface_.Map(1)));
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat =
-        mergedmatrix->split<ALE::UTILS::InterfaceSplitStrategy>(*extractor, *extractor);
+        Core::LinAlg::split_matrix<ALE::UTILS::InterfaceSplitStrategy>(
+            *mergedmatrix, *extractor, *extractor);
 
     mat->complete();
 

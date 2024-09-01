@@ -14,6 +14,7 @@
 #include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
@@ -505,7 +506,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
 
   FEmat_->complete();
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockartery =
-      FEmat_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(*globalex_, *globalex_);
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *FEmat_, *globalex_, *globalex_);
 
   blockartery->complete();
   sysmat->matrix(1, 0).add(blockartery->matrix(1, 0), false, 1.0, 0.0);

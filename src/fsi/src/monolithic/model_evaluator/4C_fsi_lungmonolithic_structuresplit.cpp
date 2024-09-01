@@ -19,6 +19,7 @@
 #include "4C_fsi_lung_overlapprec.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -244,8 +245,8 @@ void FSI::LungMonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   extractor_temp.setup(*ConstrMap_, emptymap, ConstrMap_);
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> constrstructblocks =
-      AddStructConstrMatrix_->matrix(1, 0).split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *structfield->fsi_interface(), extractor_temp);
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          AddStructConstrMatrix_->matrix(1, 0), *structfield->fsi_interface(), extractor_temp);
   constrstructblocks->complete();
 
   Core::LinAlg::SparseMatrix& csig = constrstructblocks->matrix(0, 1);
