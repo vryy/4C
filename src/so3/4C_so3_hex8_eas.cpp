@@ -332,19 +332,28 @@ void Discret::ELEMENTS::SoHex8::soh8_easupdate()
   switch (eastype_)
   {
     case Discret::ELEMENTS::SoHex8::soh8_easfull:
-      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(*alphao, *alpha);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, soh8_easfull>(*Kaainvo, *Kaainv);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, NUMDOF_SOH8>(*Kdao, *Kda);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(
+          alphao->values(), alpha->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, soh8_easfull>(
+          Kaainvo->values(), Kaainv->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, NUMDOF_SOH8>(
+          Kdao->values(), Kda->values());
       break;
     case Discret::ELEMENTS::SoHex8::soh8_easmild:
-      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(*alphao, *alpha);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, soh8_easmild>(*Kaainvo, *Kaainv);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, NUMDOF_SOH8>(*Kdao, *Kda);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(
+          alphao->values(), alpha->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, soh8_easmild>(
+          Kaainvo->values(), Kaainv->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, NUMDOF_SOH8>(
+          Kdao->values(), Kda->values());
       break;
     case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
-      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
-      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
-      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
+          alphao->values(), alpha->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(
+          Kaainvo->values(), Kaainv->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(
+          Kdao->values(), Kda->values());
       break;
     case Discret::ELEMENTS::SoHex8::soh8_easnone:
       break;
@@ -369,19 +378,28 @@ void Discret::ELEMENTS::SoHex8::soh8_easrestore()
   switch (eastype_)
   {
     case Discret::ELEMENTS::SoHex8::soh8_easfull:
-      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(*alpha, *alphao);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, soh8_easfull>(*Kaainv, *Kaainvo);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, NUMDOF_SOH8>(*Kda, *Kdao);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(
+          alpha->values(), alphao->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, soh8_easfull>(
+          Kaainv->values(), Kaainvo->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easfull, NUMDOF_SOH8>(
+          Kda->values(), Kdao->values());
       break;
     case Discret::ELEMENTS::SoHex8::soh8_easmild:
-      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(*alpha, *alphao);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, soh8_easmild>(*Kaainv, *Kaainvo);
-      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, NUMDOF_SOH8>(*Kda, *Kdao);
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(
+          alpha->values(), alphao->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, soh8_easmild>(
+          Kaainv->values(), Kaainvo->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_easmild, NUMDOF_SOH8>(
+          Kda->values(), Kdao->values());
       break;
     case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
-      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
-      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
-      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
+          alpha->values(), alphao->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(
+          Kaainv->values(), Kaainvo->values());
+      Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(
+          Kda->values(), Kdao->values());
       break;
     case Discret::ELEMENTS::SoHex8::soh8_easnone:
       break;

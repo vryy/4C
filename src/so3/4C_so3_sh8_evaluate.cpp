@@ -312,17 +312,19 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         const auto* alpha = &easdata_.alpha;  // Alpha_{n+1}
         auto* alphao = &easdata_.alphao;      // Alpha_n
         // alphao := alpha
-        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
+            alphao->values(), alpha->values());
 
         // store the EAS matrices
         const auto* Kaainv = &easdata_.invKaa;  // Kaa^{-1}_{n+1}
         auto* Kaainvo = &easdata_.invKaao;      // Kaa^{-1}_{n}
         Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(
-            *Kaainvo, *Kaainv);
+            Kaainvo->values(), Kaainv->values());
 
         const auto* Kda = &easdata_.Kda;  // Kda_{n+1}
         auto* Kdao = &easdata_.Kdao;      // Kda_{n}
-        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(
+            Kdao->values(), Kda->values());
 
         // reset EAS internal force
         Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
@@ -341,17 +343,19 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         auto* alpha = &easdata_.alpha;          // Alpha_{n+1}
         const auto* alphao = &easdata_.alphao;  // Alpha_n
         // alphao := alphao
-        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
+            alpha->values(), alphao->values());
 
         // store the EAS matrices
         auto* Kaainv = &easdata_.invKaa;          // Kaa^{-1}_{n+1}
         const auto* Kaainvo = &easdata_.invKaao;  // Kaa^{-1}_{n}
         Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(
-            *Kaainv, *Kaainvo);
+            Kaainv->values(), Kaainvo->values());
 
         const auto* Kda = &easdata_.Kda;  // Kda_{n+1}
         auto* Kdao = &easdata_.Kdao;      // Kda_{n}
-        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(
+            Kdao->values(), Kda->values());
 
         // reset EAS internal force
         Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
@@ -803,10 +807,10 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
         {
           // add Kda . res_d to feas
           Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, NUMDOF_SOH8, 1>(
-              1.0, *oldfeas, 1.0, *oldKda, res_d);
+              1.0, oldfeas->values(), 1.0, oldKda->values(), res_d.values());
           // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
           Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, soh8_eassosh8, 1>(
-              0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
+              0.0, eas_inc->values(), -1.0, oldKaainv->values(), oldfeas->values());
           Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
               1., alpha->values(), 1., eas_inc->values());
         }
@@ -1155,7 +1159,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       Core::LinAlg::SerialDenseMatrix KdaTKaa(
           NUMDOF_SOH8, soh8_eassosh8);  // temporary Kda^T.Kaa^{-1}
       Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_eassosh8, soh8_eassosh8>(
-          KdaTKaa, Kda, Kaa);
+          KdaTKaa.values(), Kda.values(), Kaa.values());
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
           1.0, stiffmatrix->data(), -1.0, KdaTKaa.values(), Kda.values());

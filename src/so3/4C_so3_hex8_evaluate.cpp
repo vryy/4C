@@ -1642,25 +1642,27 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         {
           case Discret::ELEMENTS::SoHex8::soh8_easfull:
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easfull, NUMDOF_SOH8, 1>(
-                1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+                1.0, oldfeas->values(), 1.0, oldKda->values(), res_d_eas.values());
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easfull, soh8_easfull, 1>(
-                0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
-            Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(1., *alpha, 1., *eas_inc);
+                0.0, eas_inc->values(), -1.0, oldKaainv->values(), oldfeas->values());
+            Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(
+                1., alpha->values(), 1., eas_inc->values());
             break;
           case Discret::ELEMENTS::SoHex8::soh8_easmild:
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easmild, NUMDOF_SOH8, 1>(
-                1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+                1.0, oldfeas->values(), 1.0, oldKda->values(), res_d_eas.values());
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easmild, soh8_easmild, 1>(
-                0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
-            Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(1., *alpha, 1., *eas_inc);
+                0.0, eas_inc->values(), -1.0, oldKaainv->values(), oldfeas->values());
+            Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(
+                1., alpha->values(), 1., eas_inc->values());
             break;
           case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
             Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, NUMDOF_SOH8, 1>(
-                1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+                1.0, oldfeas->values(), 1.0, oldKda->values(), res_d_eas.values());
             Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, soh8_eassosh8, 1>(
-                0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
+                0.0, eas_inc->values(), -1.0, oldKaainv->values(), oldfeas->values());
             Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
-                1., *alpha, 1., *eas_inc);
+                1., alpha->values(), 1., eas_inc->values());
             break;
           case Discret::ELEMENTS::SoHex8::soh8_easnone:
             break;
@@ -2251,7 +2253,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                 soh8_easfull>(cM.values(), cmat.data(), M.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easfull, Mat::NUM_STRESS_3D,
-                soh8_easfull>(1.0, Kaa, detJ_w, M, cM);
+                soh8_easfull>(1.0, Kaa.values(), detJ_w, M.values(), cM.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easfull, Mat::NUM_STRESS_3D,
                 NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.values(), cb.data());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easfull, Mat::NUM_STRESS_3D, 1>(
@@ -2261,7 +2263,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                 soh8_easmild>(cM.values(), cmat.data(), M.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easmild, Mat::NUM_STRESS_3D,
-                soh8_easmild>(1.0, Kaa, detJ_w, M, cM);
+                soh8_easmild>(1.0, Kaa.values(), detJ_w, M.values(), cM.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easmild, Mat::NUM_STRESS_3D,
                 NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.values(), cb.data());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easmild, Mat::NUM_STRESS_3D, 1>(
@@ -2271,7 +2273,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                 soh8_eassosh8>(cM.values(), cmat.data(), M.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
-                soh8_eassosh8>(1.0, Kaa, detJ_w, M, cM);
+                soh8_eassosh8>(1.0, Kaa.values(), detJ_w, M.values(), cM.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
                 NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.values(), cb.data());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D, 1>(
@@ -2422,7 +2424,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       {
         case Discret::ELEMENTS::SoHex8::soh8_easfull:
           Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_easfull,
-              soh8_easfull>(KdaKaa, Kda, Kaa);
+              soh8_easfull>(KdaKaa.values(), Kda.values(), Kaa.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easfull, NUMDOF_SOH8>(
               1.0, stiffmatrix->data(), -1.0, KdaKaa.values(), Kda.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easfull, 1>(
@@ -2430,7 +2432,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
           break;
         case Discret::ELEMENTS::SoHex8::soh8_easmild:
           Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_easmild,
-              soh8_easmild>(KdaKaa, Kda, Kaa);
+              soh8_easmild>(KdaKaa.values(), Kda.values(), Kaa.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easmild, NUMDOF_SOH8>(
               1.0, stiffmatrix->data(), -1.0, KdaKaa.values(), Kda.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easmild, 1>(
@@ -2438,7 +2440,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
           break;
         case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
           Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_eassosh8,
-              soh8_eassosh8>(KdaKaa, Kda, Kaa);
+              soh8_eassosh8>(KdaKaa.values(), Kda.values(), Kaa.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
               1.0, stiffmatrix->data(), -1.0, KdaKaa.values(), Kda.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, 1>(

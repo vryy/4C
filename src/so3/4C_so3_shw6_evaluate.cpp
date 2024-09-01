@@ -216,7 +216,8 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
         auto* alpha = &easdata_.alpha;    // Alpha_{n+1}
         auto* alphao = &easdata_.alphao;  // Alpha_n
         // alphao := alpha
-        Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
+        Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(
+            alphao->values(), alpha->values());
       }
       solid_material()->update();
     }
@@ -230,7 +231,8 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
         auto* alpha = &easdata_.alpha;    // Alpha_{n+1}
         auto* alphao = &easdata_.alphao;  // Alpha_n
         // alpha := alphao
-        Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
+        Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(
+            alpha->values(), alphao->values());
       }
       // Reset of history (if needed)
       solid_material()->reset_step();
@@ -357,12 +359,12 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
       {
         // add Kda . res_d to feas
         Core::LinAlg::DenseFunctions::multiply<double, soshw6_easpoisthick, NUMDOF_WEG6, 1>(
-            1.0, *oldfeas, 1.0, *oldKda, res_d);
+            1.0, oldfeas->values(), 1.0, oldKda->values(), res_d.values());
         // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
         Core::LinAlg::DenseFunctions::multiply<double, soshw6_easpoisthick, soshw6_easpoisthick, 1>(
-            0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
+            0.0, eas_inc->values(), -1.0, oldKaainv->values(), oldfeas->values());
         Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(
-            1., *alpha, 1., *eas_inc);
+            1., alpha->values(), 1., eas_inc->values());
       }
     }
     /* end of EAS Update ******************/
@@ -778,7 +780,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
       Core::LinAlg::SerialDenseMatrix KdaTKaa(
           NUMDOF_WEG6, soshw6_easpoisthick);  // temporary Kda^T.Kaa^{-1}
       Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_WEG6, soshw6_easpoisthick,
-          soshw6_easpoisthick>(KdaTKaa, Kda, Kaa);
+          soshw6_easpoisthick>(KdaTKaa.values(), Kda.values(), Kaa.values());
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_WEG6, soshw6_easpoisthick, NUMDOF_WEG6>(
@@ -1305,13 +1307,14 @@ void Discret::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residu
         1.0, oldfeas->values(), 1.0, oldKda->values(), residual.data());
     // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
     Core::LinAlg::DenseFunctions::multiply<double, soshw6_easpoisthick, soshw6_easpoisthick, 1>(
-        0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
-    Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(1., *alpha, 1., *eas_inc);
+        0.0, eas_inc->values(), -1.0, oldKaainv->values(), oldfeas->values());
+    Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(
+        1., alpha->values(), 1., eas_inc->values());
   }
   else
   {
     Core::LinAlg::DenseFunctions::update<double, soshw6_easpoisthick, 1>(
-        1., *alpha, step_length - old_step_length_, *eas_inc);
+        1., alpha->values(), step_length - old_step_length_, eas_inc->values());
   }
   old_step_length_ = step_length;
 
