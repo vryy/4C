@@ -275,8 +275,9 @@ void SSI::ScatraStructureOffDiagCoupling::
       mastermatrixsparse->complete(*full_map_structure(), *scatra_field()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
-      auto mastermatrix_split = mastermatrixsparse->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, *scatra_field()->block_maps());
+      auto mastermatrix_split =
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *mastermatrixsparse, *block_map_structure_, *scatra_field()->block_maps());
       mastermatrix_split->complete();
       blockmastermatrix->add(*mastermatrix_split, false, 1.0, 1.0);
 
@@ -558,8 +559,9 @@ void SSI::ScatraStructureOffDiagCoupling::
       mastermatrixsparse->complete(*full_map_structure(), *scatra_field()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
-      auto mastermatrix_split = mastermatrixsparse->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, *scatra_field()->block_maps());
+      auto mastermatrix_split =
+          Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+              *mastermatrixsparse, *block_map_structure_, *scatra_field()->block_maps());
       mastermatrix_split->complete();
       mastermatrix_block->add(*mastermatrix_split, false, 1.0, 1.0);
 

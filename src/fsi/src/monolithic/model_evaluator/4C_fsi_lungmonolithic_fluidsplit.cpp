@@ -20,6 +20,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_aux.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -247,8 +248,8 @@ void FSI::LungMonolithicFluidSplit::setup_rhs_firstiter(Epetra_Vector& f)
   extractor_temp.setup(*ConstrMap_, emptymap, ConstrMap_);
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> constrfluidblocks =
-      ConstrFluidMatrix_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *fluidfield->fsi_interface(), extractor_temp);
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *ConstrFluidMatrix_, *fluidfield->fsi_interface(), extractor_temp);
   constrfluidblocks->complete();
 
   Core::LinAlg::SparseMatrix& cfig = constrfluidblocks->matrix(0, 1);
@@ -394,8 +395,8 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   extractor.setup(*ConstrMap_, emptymap, ConstrMap_);
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fluidconstrblocks =
-      FluidConstrMatrix_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          extractor, *fluidfield->fsi_interface());
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *FluidConstrMatrix_, extractor, *fluidfield->fsi_interface());
 
   fluidconstrblocks->complete();
 
@@ -445,8 +446,8 @@ void FSI::LungMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpars
   // split in two blocks according to inner and fsi structure dofs
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> constrfluidblocks =
-      ConstrFluidMatrix_->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *fluidfield->fsi_interface(), extractor);
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *ConstrFluidMatrix_, *fluidfield->fsi_interface(), extractor);
   constrfluidblocks->complete();
 
   Core::LinAlg::SparseMatrix& cfii = constrfluidblocks->matrix(0, 0);

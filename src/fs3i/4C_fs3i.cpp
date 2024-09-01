@@ -31,6 +31,7 @@
 #include "4C_inpar_fs3i.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_algorithm.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -674,8 +675,8 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix()
     // structure scatra
     // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockscatra2 =
-        scatra2->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
+        Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+            *scatra2, *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
     blockscatra2->complete();
 
     scatrasystemmatrix_->assign(1, 1, Core::LinAlg::View, blockscatra2->matrix(0, 0));
@@ -709,16 +710,16 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix()
     // contribution of the respective other field
     // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> coupblock1 =
-        coup1->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *(scatrafieldexvec_[0]), *(scatrafieldexvec_[0]));
+        Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+            *coup1, *(scatrafieldexvec_[0]), *(scatrafieldexvec_[0]));
     coupblock1->complete();
     (*fbitransform_)(coupblock1->matrix(1, 1), -1.0,
         Coupling::Adapter::CouplingMasterConverter(*scatracoup_),
         scatrasystemmatrix_->matrix(1, 0));
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> coupblock2 =
-        coup2->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
+        Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+            *coup2, *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
     coupblock2->complete();
     (*sbitransform_)(coupblock2->matrix(1, 1), -1.0,
         Coupling::Adapter::CouplingSlaveConverter(*scatracoup_), scatrasystemmatrix_->matrix(0, 1));

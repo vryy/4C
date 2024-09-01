@@ -11,6 +11,7 @@
 
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_ssi_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -75,10 +76,10 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_scatra(
 
   // get scatra-scatra block matrix and complete split matrix
   const auto& scatra_scatra_blockmatrix =
-      nitsche_strategy_ssi()
-          ->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra)
-          ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_scatra());
+
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *nitsche_strategy_ssi()->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_scatra),
+          *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_scatra());
   scatra_scatra_blockmatrix->complete();
 
   scatra_scatra_matrix_block->add(*scatra_scatra_blockmatrix, false, 1.0, 1.0);
@@ -109,10 +110,10 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_structure(
 
   // get scatra-structure block matrix and complete split matrix
   const auto& scatra_struct_blockmatrix =
-      nitsche_strategy_ssi()
-          ->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_displ)
-          ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->block_map_structure(), *ssi_maps()->block_map_scatra());
+
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *nitsche_strategy_ssi()->get_matrix_block_ptr(CONTACT::MatBlockType::scatra_displ),
+          *ssi_maps()->block_map_structure(), *ssi_maps()->block_map_scatra());
   scatra_struct_blockmatrix->complete();
 
   scatra_structure_matrix_block->add(*scatra_struct_blockmatrix, false, 1.0, 1.0);
@@ -144,10 +145,10 @@ void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
 
   // get structure-scatra block matrix and complete split matrix
   const auto& struct_scatra_blockmatrix =
-      nitsche_strategy_ssi()
-          ->get_matrix_block_ptr(CONTACT::MatBlockType::displ_scatra)
-          ->split<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_structure());
+
+      Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+          *nitsche_strategy_ssi()->get_matrix_block_ptr(CONTACT::MatBlockType::displ_scatra),
+          *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_structure());
   struct_scatra_blockmatrix->complete();
 
   structure_scatra_matrix_block->add(*struct_scatra_blockmatrix, false, 1.0, 1.0);

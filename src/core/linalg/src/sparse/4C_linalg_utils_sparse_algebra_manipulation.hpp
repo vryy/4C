@@ -13,6 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"
+#include "4C_linalg_sparsematrix.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
@@ -102,30 +103,6 @@ namespace Core::LinAlg
       Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap);
 
   /*!
-   \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
-          and return the submatrices
-
-   Splits a given matrix into a 2x2 block system where the rowmap of one of the blocks is given
-   on input. Blocks A11 and A22 are assumed to be square.
-   All values on entry have to be Teuchos::null except the given rowmap and matrix A.
-   Note that either A11rowmap or A22rowmap or both have to be nonzero. In case
-   both rowmaps are supplied they have to be an exact and nonoverlapping split of A->RowMap().
-   Matrix blocks are fill_complete() on exit.
-
-   \param A         : Matrix A on input
-   \param A11rowmap : rowmap of A11 or null
-   \param A22rowmap : rowmap of A22 or null
-   \param A11       : on exit matrix block A11
-   \param A12       : on exit matrix block A12
-   \param A21       : on exit matrix block A21
-   \param A22       : on exit matrix block A22
-   */
-  bool split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A, Teuchos::RCP<Epetra_Map>& A11rowmap,
-      Teuchos::RCP<Epetra_Map>& A22rowmap, Teuchos::RCP<Epetra_CrsMatrix>& A11,
-      Teuchos::RCP<Epetra_CrsMatrix>& A12, Teuchos::RCP<Epetra_CrsMatrix>& A21,
-      Teuchos::RCP<Epetra_CrsMatrix>& A22);
-
-  /*!
    \brief split a matrix into a 2x2 block system
 
    Splits a given matrix into a 2x2 block system. All values on entry have to be
@@ -151,6 +128,53 @@ namespace Core::LinAlg
       Teuchos::RCP<Epetra_Map>& A11domainmap, Teuchos::RCP<Epetra_Map>& A22domainmap,
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& A11, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A12,
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& A21, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A22);
+
+  /*! \brief Split matrix in 2x2 blocks, where main diagonal blocks have to be square
+   *
+   *   Used by split interface method, does not call Complete() on output matrix.
+   */
+  void split_matrix2x2(
+      const Core::LinAlg::SparseMatrix& ASparse, Core::LinAlg::BlockSparseMatrixBase& ABlock);
+
+  /*! \brief Split matrix in MxN blocks
+   *
+   *   Used by split interface method, does not call Complete() on output matrix.
+   */
+  void split_matrixmxn(
+      const Core::LinAlg::SparseMatrix& ASparse, Core::LinAlg::BlockSparseMatrixBase& ABlock);
+
+  /*! \brief Split matrix in either 2x2 or NxN blocks (with N>2)
+
+    Split given sparse matrix into 2x2 or NxN block matrix and return result as templated
+    BlockSparseMatrix. The MultiMapExtractor's provided have to be 2x2 or NxN maps, otherwise
+    this method will throw an error.
+
+    \warning This is an expensive operation!
+
+    \note This method will NOT call Complete() on the output BlockSparseMatrix.
+   */
+  template <class Strategy>
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> split_matrix(
+      const Core::LinAlg::SparseMatrix& ASparse, const MultiMapExtractor& domainmaps,
+      const MultiMapExtractor& rangemaps)
+  {
+    // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
+    // all entries will be inserted at once anyway
+    Teuchos::RCP<BlockSparseMatrix<Strategy>> blockA =
+        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Strategy>(
+            domainmaps, rangemaps, 0, ASparse.explicit_dirichlet(), ASparse.save_graph()));
+
+    if (domainmaps.num_maps() == 2 && rangemaps.num_maps() == 2)
+      split_matrix2x2(ASparse, *blockA);
+    else if (domainmaps.num_maps() > 0 && rangemaps.num_maps() > 0)
+      split_matrixmxn(ASparse, *blockA);
+    else
+      FOUR_C_THROW(
+          "Invalid number %d of row blocks or %d of column blocks for splitting operation!",
+          rangemaps.num_maps(), domainmaps.num_maps());
+
+    return blockA;
+  }
 
   /** \brief Insert a diagonal row vector into a unfilled SparseMatrix
    *         on each proc without communication
@@ -274,6 +298,8 @@ namespace Core::LinAlg
    */
   void epetra_multi_vector_to_std_vector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
       std::vector<double>& stdVector, const int blockSize);
+
+
 
 }  // namespace Core::LinAlg
 

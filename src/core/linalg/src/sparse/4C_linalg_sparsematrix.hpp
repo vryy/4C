@@ -435,39 +435,9 @@ namespace Core::LinAlg
     friend Teuchos::RCP<SparseMatrix> ml_multiply(
         const SparseMatrix& A, const SparseMatrix& B, bool complete);
 
-
-    /*!
-      \brief Split matrix in either 2x2 or 3x3 blocks (3x3 not yet impl.)
-
-      Split given matrix 'this' into 2x2 block matrix and
-      return result as templated BlockSparseMatrix.
-      The MultiMapExtractor's provided have to be 2 and 2 maps,
-      otherwise this method will throw an error.
-
-      \note This is an expensive operation!
-
-      \note This method will NOT call Complete() on the output
-            BlockSparseMatrix.
-     */
-    template <class Strategy>
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> split(
-        const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
-
     //@}
 
    private:
-    /// Split matrix in 2x2 blocks, where main diagonal blocks have to be square
-    /*!
-       Used by public Split, does not call Complete() on output matrix.
-     */
-    void split2x2(BlockSparseMatrixBase& Abase) const;
-
-    /// Split matrix in MxN blocks
-    /*!
-       Used by public Split, does not call Complete() on output matrix.
-     */
-    void split_mx_n(BlockSparseMatrixBase& ABlock) const;
-
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;
 
@@ -496,44 +466,6 @@ namespace Core::LinAlg
 }  // namespace Core::LinAlg
 
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-/*!
-  \brief Split matrix in either 2x2 or NxN blocks (with N>2)
-
-  Split given matrix 'this' into 2x2 or NxN block matrix and
-  return result as templated BlockSparseMatrix.
-  The MultiMapExtractor's provided have to be 2x2 or NxN maps,
-  otherwise this method will throw an error.
-
-  \note This is an expensive operation!
-
-  \note This method will NOT call Complete() on the output
-        BlockSparseMatrix.
- */
-template <class Strategy>
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> Core::LinAlg::SparseMatrix::split(
-    const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const
-{
-  // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
-  // all entries will be inserted at once anyway
-  Teuchos::RCP<BlockSparseMatrix<Strategy>> blockA =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Strategy>(
-          domainmaps, rangemaps, 0, explicitdirichlet_, savegraph_));
-
-  // perform matrix splitting
-  if (domainmaps.num_maps() == 2 && rangemaps.num_maps() == 2)
-    this->split2x2(*blockA);
-  else if (domainmaps.num_maps() > 0 && rangemaps.num_maps() > 0)
-    this->split_mx_n(*blockA);
-  else
-    FOUR_C_THROW("Invalid number %d of row blocks or %d of column blocks for splitting operation!",
-        rangemaps.num_maps(), domainmaps.num_maps());
-
-  // return resulting BlockSparseMatrix
-  return blockA;
-}
 
 FOUR_C_NAMESPACE_CLOSE
 
