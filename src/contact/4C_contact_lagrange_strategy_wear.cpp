@@ -23,11 +23,11 @@
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_utils.hpp"
 
 #include <Epetra_FEVector.h>
@@ -599,7 +599,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
-  mhatmatrix_ = Core::LinAlg::ml_multiply(*invd, false, *mmatrix_, false, false, false, true);
+  mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd, false, *mmatrix_, false, false, false, true);
 
   /********************************************************************/
   /* (2) Add contact stiffness terms to kteff                         */
@@ -716,11 +716,11 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-        Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
-        Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
     dmatrix_ = temp2;
     invd_ = temp3;
     mhatmatrix_ = temp4;
@@ -837,7 +837,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset && iset)
-    dhat = Core::LinAlg::ml_multiply(*invda, false, *dai, false, false, false, true);
+    dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
@@ -850,7 +850,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset)
-    mhataam = Core::LinAlg::ml_multiply(*invda, false, *mmatrixa, false, false, false, true);
+    mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
@@ -882,7 +882,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kan, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
   kmnmod->add(*kmnadd, false, 1.0, 1.0);
   kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -891,7 +891,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kam, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
   kmmmod->add(*kmmadd, false, 1.0, 1.0);
   kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
@@ -902,7 +902,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kai, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
     kmimod->add(*kmiadd, false, 1.0, 1.0);
     kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
@@ -914,7 +914,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
     kmamod->add(*kmaadd, false, 1.0, 1.0);
     kmamod->complete(kma->domain_map(), kma->row_map());
   }
@@ -927,7 +927,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kan, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
     kinmod->add(*kinadd, false, -1.0, 1.0);
   }
   kinmod->complete(kin->domain_map(), kin->row_map());
@@ -939,7 +939,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kam, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
     kimmod->add(*kimadd, false, -1.0, 1.0);
   }
   kimmod->complete(kim->domain_map(), kim->row_map());
@@ -953,7 +953,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kai, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
       kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
     kiimod->complete(kii->domain_map(), kii->row_map());
@@ -966,7 +966,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
     kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
     kiamod->add(*kiaadd, false, -1.0, 1.0);
     kiamod->complete(kia->domain_map(), kia->row_map());
   }
@@ -984,26 +984,26 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   {
     if (aset)
     {
-      kgnmod = Core::LinAlg::ml_multiply(*wa, false, *invda, true, false, false, true);
-      kgnmod = Core::LinAlg::ml_multiply(*kgnmod, false, *kan, false, false, false, true);
+      kgnmod = Core::LinAlg::matrix_multiply(*wa, false, *invda, true, false, false, true);
+      kgnmod = Core::LinAlg::matrix_multiply(*kgnmod, false, *kan, false, false, false, true);
     }
 
     if (aset)
     {
-      kgmmod = Core::LinAlg::ml_multiply(*wa, false, *invda, true, false, false, true);
-      kgmmod = Core::LinAlg::ml_multiply(*kgmmod, false, *kam, false, false, false, true);
+      kgmmod = Core::LinAlg::matrix_multiply(*wa, false, *invda, true, false, false, true);
+      kgmmod = Core::LinAlg::matrix_multiply(*kgmmod, false, *kam, false, false, false, true);
     }
 
     if (aset and iset)
     {
-      kgimod = Core::LinAlg::ml_multiply(*wa, false, *invda, true, false, false, true);
-      kgimod = Core::LinAlg::ml_multiply(*kgimod, false, *kai, false, false, false, true);
+      kgimod = Core::LinAlg::matrix_multiply(*wa, false, *invda, true, false, false, true);
+      kgimod = Core::LinAlg::matrix_multiply(*kgimod, false, *kai, false, false, false, true);
     }
 
     if (aset)
     {
-      kgaamod = Core::LinAlg::ml_multiply(*wa, false, *invda, true, false, false, true);
-      kgaamod = Core::LinAlg::ml_multiply(*kgaamod, false, *kaa, false, false, false, true);
+      kgaamod = Core::LinAlg::matrix_multiply(*wa, false, *invda, true, false, false, true);
+      kgaamod = Core::LinAlg::matrix_multiply(*kgaamod, false, *kaa, false, false, false, true);
     }
   }
   //--------------------------------------------------------- FIFTH LINE
@@ -1013,40 +1013,42 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstnmod;
   if (stickset)
   {
-    kstnmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstnmod = Core::LinAlg::ml_multiply(*kstnmod, false, *kan, false, false, false, true);
+    kstnmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstnmod = Core::LinAlg::matrix_multiply(*kstnmod, false, *kan, false, false, false, true);
   }
 
   // kstm: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstmmod;
   if (stickset)
   {
-    kstmmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstmmod = Core::LinAlg::ml_multiply(*kstmmod, false, *kam, false, false, false, true);
+    kstmmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstmmod = Core::LinAlg::matrix_multiply(*kstmmod, false, *kam, false, false, false, true);
   }
 
   // ksti: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstimod;
   if (stickset && iset)
   {
-    kstimod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstimod = Core::LinAlg::ml_multiply(*kstimod, false, *kai, false, false, false, true);
+    kstimod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstimod = Core::LinAlg::matrix_multiply(*kstimod, false, *kai, false, false, false, true);
   }
 
   // kstsl: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstslmod;
   if (stickset && slipset)
   {
-    kstslmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstslmod = Core::LinAlg::ml_multiply(*kstslmod, false, *kasl, false, false, false, true);
+    kstslmod =
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstslmod = Core::LinAlg::matrix_multiply(*kstslmod, false, *kasl, false, false, false, true);
   }
 
   // kststmod: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kststmod;
   if (stickset)
   {
-    kststmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kststmod = Core::LinAlg::ml_multiply(*kststmod, false, *kast, false, false, false, true);
+    kststmod =
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kststmod = Core::LinAlg::matrix_multiply(*kststmod, false, *kast, false, false, false, true);
   }
 
   //--------------------------------------------------------- SIXTH LINE
@@ -1056,40 +1058,40 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslnmod;
   if (slipset)
   {
-    kslnmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslnmod = Core::LinAlg::ml_multiply(*kslnmod, false, *kan, false, false, false, true);
+    kslnmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslnmod = Core::LinAlg::matrix_multiply(*kslnmod, false, *kan, false, false, false, true);
   }
 
   // kslm: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslmmod;
   if (slipset)
   {
-    kslmmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslmmod = Core::LinAlg::ml_multiply(*kslmmod, false, *kam, false, false, false, true);
+    kslmmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslmmod = Core::LinAlg::matrix_multiply(*kslmmod, false, *kam, false, false, false, true);
   }
 
   // ksli: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslimod;
   if (slipset && iset)
   {
-    kslimod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslimod = Core::LinAlg::ml_multiply(*kslimod, false, *kai, false, false, false, true);
+    kslimod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslimod = Core::LinAlg::matrix_multiply(*kslimod, false, *kai, false, false, false, true);
   }
 
   // kslsl: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslslmod;
   if (slipset)
   {
-    kslslmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslslmod = Core::LinAlg::ml_multiply(*kslslmod, false, *kasl, false, false, false, true);
+    kslslmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslslmod = Core::LinAlg::matrix_multiply(*kslslmod, false, *kasl, false, false, false, true);
   }
 
   // slstmod: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslstmod;
   if (slipset && stickset)
   {
-    kslstmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslstmod = Core::LinAlg::ml_multiply(*kslstmod, false, *kast, false, false, false, true);
+    kslstmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslstmod = Core::LinAlg::matrix_multiply(*kslstmod, false, *kast, false, false, false, true);
   }
 
   // create matrices for implicit wear
@@ -1103,26 +1105,26 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   {
     if (slipset)
     {
-      kslwnmod = Core::LinAlg::ml_multiply(*wsla, false, *invda, true, false, false, true);
-      kslwnmod = Core::LinAlg::ml_multiply(*kslwnmod, false, *kan, false, false, false, true);
+      kslwnmod = Core::LinAlg::matrix_multiply(*wsla, false, *invda, true, false, false, true);
+      kslwnmod = Core::LinAlg::matrix_multiply(*kslwnmod, false, *kan, false, false, false, true);
     }
 
     if (slipset)
     {
-      kslwmmod = Core::LinAlg::ml_multiply(*wsla, false, *invda, true, false, false, true);
-      kslwmmod = Core::LinAlg::ml_multiply(*kslwmmod, false, *kam, false, false, false, true);
+      kslwmmod = Core::LinAlg::matrix_multiply(*wsla, false, *invda, true, false, false, true);
+      kslwmmod = Core::LinAlg::matrix_multiply(*kslwmmod, false, *kam, false, false, false, true);
     }
 
     if (slipset and iset)
     {
-      kslwimod = Core::LinAlg::ml_multiply(*wsla, false, *invda, true, false, false, true);
-      kslwimod = Core::LinAlg::ml_multiply(*kslwimod, false, *kai, false, false, false, true);
+      kslwimod = Core::LinAlg::matrix_multiply(*wsla, false, *invda, true, false, false, true);
+      kslwimod = Core::LinAlg::matrix_multiply(*kslwimod, false, *kai, false, false, false, true);
     }
 
     if (slipset)
     {
-      kslwaamod = Core::LinAlg::ml_multiply(*wsla, false, *invda, true, false, false, true);
-      kslwaamod = Core::LinAlg::ml_multiply(*kslwaamod, false, *kaa, false, false, false, true);
+      kslwaamod = Core::LinAlg::matrix_multiply(*wsla, false, *invda, true, false, false, true);
+      kslwaamod = Core::LinAlg::matrix_multiply(*kslwaamod, false, *kaa, false, false, false, true);
     }
   }
 
@@ -1210,7 +1212,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     {
       fgmod = Teuchos::rcp(new Epetra_Vector(*gactiven_));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::ml_multiply(*wa, false, *invda, true, false, false, true);
+          Core::LinAlg::matrix_multiply(*wa, false, *invda, true, false, false, true);
       temp1->multiply(false, *fa, *fgmod);
     }
   }
@@ -1234,7 +1236,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   {
     fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
     temp1->multiply(false, *fa, *fstmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
@@ -1252,7 +1254,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   {
     fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+        Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
     temp->multiply(false, *fa, *fslmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
@@ -1266,7 +1268,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     {
       fslwmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-          Core::LinAlg::ml_multiply(*wsla, false, *invda, true, false, false, true);
+          Core::LinAlg::matrix_multiply(*wsla, false, *invda, true, false, false, true);
       temp2->multiply(false, *fa, *fslwmod);
     }
   }
@@ -1588,7 +1590,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
-  mhatmatrix_ = Core::LinAlg::ml_multiply(*invd, false, *mmatrix_, false, false, false, true);
+  mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd, false, *mmatrix_, false, false, false, true);
 
   /********************************************************************/
   /* (2) Add contact stiffness terms to kteff                         */
@@ -1704,11 +1706,11 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-        Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
-        Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
     dmatrix_ = temp2;
     invd_ = temp3;
     mhatmatrix_ = temp4;
@@ -1799,7 +1801,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset && iset)
-    dhat = Core::LinAlg::ml_multiply(*invda, false, *dai, false, false, false, true);
+    dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
@@ -1812,7 +1814,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset)
-    mhataam = Core::LinAlg::ml_multiply(*invda, false, *mmatrixa, false, false, false, true);
+    mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
@@ -1908,7 +1910,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   /* (e) create Tn*D^-T                                               */
   /********************************************************************/
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tndt_a;
-  if (aset) tndt_a = Core::LinAlg::ml_multiply(*lintlm_a, false, *invda, true, false, false, true);
+  if (aset)
+    tndt_a = Core::LinAlg::matrix_multiply(*lintlm_a, false, *invda, true, false, false, true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> wear_dn, wear_dm, wear_di, wear_da;
 
@@ -1922,27 +1925,27 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     // dn
     if (aset)
     {
-      wear_dn = Core::LinAlg::ml_multiply(*inve, false, *tndt_a, false, false, false, true);
-      wear_dn = Core::LinAlg::ml_multiply(*wear_dn, false, *kan, false, false, false, true);
+      wear_dn = Core::LinAlg::matrix_multiply(*inve, false, *tndt_a, false, false, false, true);
+      wear_dn = Core::LinAlg::matrix_multiply(*wear_dn, false, *kan, false, false, false, true);
 
       wear_dn->scale(-1.0);
     }
     // dm
     if (aset)
     {
-      wear_dm = Core::LinAlg::ml_multiply(*inve, false, *tndt_a, false, false, false, true);
-      wear_dm = Core::LinAlg::ml_multiply(*wear_dm, false, *kam, false, false, false, true);
+      wear_dm = Core::LinAlg::matrix_multiply(*inve, false, *tndt_a, false, false, false, true);
+      wear_dm = Core::LinAlg::matrix_multiply(*wear_dm, false, *kam, false, false, false, true);
 
       wear_dm->scale(-1.0);
     }
     // da
     if (aset)
     {
-      wear_da = Core::LinAlg::ml_multiply(*inve, false, *tndt_a, false, false, false, true);
-      wear_da = Core::LinAlg::ml_multiply(*wear_da, false, *kaa, false, false, false, false);
+      wear_da = Core::LinAlg::matrix_multiply(*inve, false, *tndt_a, false, false, false, true);
+      wear_da = Core::LinAlg::matrix_multiply(*wear_da, false, *kaa, false, false, false, false);
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> inve_te;
-      inve_te = Core::LinAlg::ml_multiply(*inve, false, *linte_a, false, false, false, true);
+      inve_te = Core::LinAlg::matrix_multiply(*inve, false, *linte_a, false, false, false, true);
 
       wear_da->add(*inve_te, false, 1.0, 1.0);
       wear_da->complete(*gactivedofs_, *gslipn_);
@@ -1951,11 +1954,11 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     // di
     if (aset && iset)
     {
-      wear_di = Core::LinAlg::ml_multiply(*inve, false, *tndt_a, false, false, false, true);
-      wear_di = Core::LinAlg::ml_multiply(*wear_di, false, *kai, false, false, false, false);
+      wear_di = Core::LinAlg::matrix_multiply(*inve, false, *tndt_a, false, false, false, true);
+      wear_di = Core::LinAlg::matrix_multiply(*wear_di, false, *kai, false, false, false, false);
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> inve_te;
-      inve_te = Core::LinAlg::ml_multiply(*inve, false, *linte_i, false, false, false, true);
+      inve_te = Core::LinAlg::matrix_multiply(*inve, false, *linte_i, false, false, false, true);
 
       wear_di->add(*inve_te, false, 1.0, 1.0);
       wear_di->complete(*gidofs, *gslipn_);
@@ -2023,7 +2026,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kan, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
   kmnmod->add(*kmnadd, false, 1.0, 1.0);
   kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -2032,7 +2035,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kam, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
   kmmmod->add(*kmmadd, false, 1.0, 1.0);
   kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
@@ -2043,7 +2046,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kai, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
     kmimod->add(*kmiadd, false, 1.0, 1.0);
     kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
@@ -2055,7 +2058,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
     kmamod->add(*kmaadd, false, 1.0, 1.0);
     kmamod->complete(kma->domain_map(), kma->row_map());
   }
@@ -2069,7 +2072,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kan, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
     kinmod->add(*kinadd, false, -1.0, 1.0);
   }
   kinmod->complete(kin->domain_map(), kin->row_map());
@@ -2081,7 +2084,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kam, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
     kimmod->add(*kimadd, false, -1.0, 1.0);
   }
   kimmod->complete(kim->domain_map(), kim->row_map());
@@ -2095,7 +2098,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kai, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
       kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
     kiimod->complete(kii->domain_map(), kii->row_map());
@@ -2108,7 +2111,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
     kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
     kiamod->add(*kiaadd, false, -1.0, 1.0);
     kiamod->complete(kia->domain_map(), kia->row_map());
   }
@@ -2121,13 +2124,13 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kgaw;
 
   if (aset && slipset)
-    kgnw = Core::LinAlg::ml_multiply(*smatrixW_sl, false, *wear_dn, false, false, false, true);
+    kgnw = Core::LinAlg::matrix_multiply(*smatrixW_sl, false, *wear_dn, false, false, false, true);
   if (aset && slipset)
-    kgmw = Core::LinAlg::ml_multiply(*smatrixW_sl, false, *wear_dm, false, false, false, true);
+    kgmw = Core::LinAlg::matrix_multiply(*smatrixW_sl, false, *wear_dm, false, false, false, true);
   if (aset && slipset && iset)
-    kgiw = Core::LinAlg::ml_multiply(*smatrixW_sl, false, *wear_di, false, false, false, true);
+    kgiw = Core::LinAlg::matrix_multiply(*smatrixW_sl, false, *wear_di, false, false, false, true);
   if (aset && slipset)
-    kgaw = Core::LinAlg::ml_multiply(*smatrixW_sl, false, *wear_da, false, false, false, true);
+    kgaw = Core::LinAlg::matrix_multiply(*smatrixW_sl, false, *wear_da, false, false, false, true);
 
   //--------------------------------------------------------- FIFTH  LINE
   // blocks for complementary conditions (stick nodes)
@@ -2136,40 +2139,42 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstnmod;
   if (stickset)
   {
-    kstnmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstnmod = Core::LinAlg::ml_multiply(*kstnmod, false, *kan, false, false, false, true);
+    kstnmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstnmod = Core::LinAlg::matrix_multiply(*kstnmod, false, *kan, false, false, false, true);
   }
 
   // kstm: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstmmod;
   if (stickset)
   {
-    kstmmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstmmod = Core::LinAlg::ml_multiply(*kstmmod, false, *kam, false, false, false, true);
+    kstmmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstmmod = Core::LinAlg::matrix_multiply(*kstmmod, false, *kam, false, false, false, true);
   }
 
   // ksti: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstimod;
   if (stickset && iset)
   {
-    kstimod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstimod = Core::LinAlg::ml_multiply(*kstimod, false, *kai, false, false, false, true);
+    kstimod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstimod = Core::LinAlg::matrix_multiply(*kstimod, false, *kai, false, false, false, true);
   }
 
   // kstsl: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstslmod;
   if (stickset && slipset)
   {
-    kstslmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstslmod = Core::LinAlg::ml_multiply(*kstslmod, false, *kasl, false, false, false, true);
+    kstslmod =
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstslmod = Core::LinAlg::matrix_multiply(*kstslmod, false, *kasl, false, false, false, true);
   }
 
   // kststmod: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kststmod;
   if (stickset)
   {
-    kststmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kststmod = Core::LinAlg::ml_multiply(*kststmod, false, *kast, false, false, false, true);
+    kststmod =
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kststmod = Core::LinAlg::matrix_multiply(*kststmod, false, *kast, false, false, false, true);
   }
 
   //--------------------------------------------------------- SIXTH LINE
@@ -2179,40 +2184,40 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslnmod;
   if (slipset)
   {
-    kslnmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslnmod = Core::LinAlg::ml_multiply(*kslnmod, false, *kan, false, false, false, true);
+    kslnmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslnmod = Core::LinAlg::matrix_multiply(*kslnmod, false, *kan, false, false, false, true);
   }
 
   // kslm: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslmmod;
   if (slipset)
   {
-    kslmmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslmmod = Core::LinAlg::ml_multiply(*kslmmod, false, *kam, false, false, false, true);
+    kslmmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslmmod = Core::LinAlg::matrix_multiply(*kslmmod, false, *kam, false, false, false, true);
   }
 
   // ksli: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslimod;
   if (slipset && iset)
   {
-    kslimod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslimod = Core::LinAlg::ml_multiply(*kslimod, false, *kai, false, false, false, true);
+    kslimod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslimod = Core::LinAlg::matrix_multiply(*kslimod, false, *kai, false, false, false, true);
   }
 
   // kslsl: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslslmod;
   if (slipset)
   {
-    kslslmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslslmod = Core::LinAlg::ml_multiply(*kslslmod, false, *kasl, false, false, false, true);
+    kslslmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslslmod = Core::LinAlg::matrix_multiply(*kslslmod, false, *kasl, false, false, false, true);
   }
 
   // slstmod: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslstmod;
   if (slipset && stickset)
   {
-    kslstmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslstmod = Core::LinAlg::ml_multiply(*kslstmod, false, *kast, false, false, false, true);
+    kslstmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslstmod = Core::LinAlg::matrix_multiply(*kslstmod, false, *kast, false, false, false, true);
   }
 
   // WEARSTUFF FOR THIS LINE
@@ -2222,13 +2227,13 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslaw;
 
   if (slipset)
-    kslnw = Core::LinAlg::ml_multiply(*linslipW_sl, false, *wear_dn, false, false, false, true);
+    kslnw = Core::LinAlg::matrix_multiply(*linslipW_sl, false, *wear_dn, false, false, false, true);
   if (slipset)
-    kslmw = Core::LinAlg::ml_multiply(*linslipW_sl, false, *wear_dm, false, false, false, true);
+    kslmw = Core::LinAlg::matrix_multiply(*linslipW_sl, false, *wear_dm, false, false, false, true);
   if (slipset && iset)
-    ksliw = Core::LinAlg::ml_multiply(*linslipW_sl, false, *wear_di, false, false, false, true);
+    ksliw = Core::LinAlg::matrix_multiply(*linslipW_sl, false, *wear_di, false, false, false, true);
   if (slipset)
-    kslaw = Core::LinAlg::ml_multiply(*linslipW_sl, false, *wear_da, false, false, false, true);
+    kslaw = Core::LinAlg::matrix_multiply(*linslipW_sl, false, *wear_da, false, false, false, true);
 
   /********************************************************************/
   /* (8) Build the final f blocks                                     */
@@ -2334,7 +2339,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   {
     fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
     temp1->multiply(false, *fa, *fstmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
@@ -2351,7 +2356,7 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   {
     fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+        Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
     temp->multiply(false, *fa, *fslmod);
 
     tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
@@ -2829,7 +2834,7 @@ void Wear::LagrangeStrategyWear::evaluate_friction(
   {
     // modify lindmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
     lindmatrix_ = temp1;
   }
 
@@ -3042,7 +3047,7 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   {
     // modify dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp2;
   }
 
@@ -4752,7 +4757,7 @@ void Wear::LagrangeStrategyWear::do_read_restart(
   {
     // modify dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp;
   }
 

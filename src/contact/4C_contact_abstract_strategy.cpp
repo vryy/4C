@@ -20,12 +20,12 @@
 #include "4C_inpar_contact.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_utils.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
@@ -1476,7 +1476,7 @@ void CONTACT::AbstractStrategy::evaluate_reference_state()
     if (is_dual_quad_slave_trafo())
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempold =
-          Core::LinAlg::ml_multiply(*dold_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dold_, false, *invtrafo_, false, false, false, true);
       doldmod_ = tempold;
     }
 
@@ -1507,7 +1507,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   if (is_dual_quad_slave_trafo())
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrixmod_ = temp;
   }
 
@@ -2020,7 +2020,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   {
     // modify dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp;
   }
 

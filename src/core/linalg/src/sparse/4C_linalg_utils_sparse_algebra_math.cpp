@@ -214,19 +214,39 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
   if (!A.filled()) FOUR_C_THROW("A has to be fill_complete");
   if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
 
-  // const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
-  // a first guess for the bandwidth of C leading to much less memory consumption:
-  const int npr = std::max(A.max_num_entries(), B.max_num_entries());
+  // a first guess for the bandwidth of C leading to much less memory consumption
+  const int nnz = std::max(A.max_num_entries(), B.max_num_entries());
 
-  // now create resultmatrix with correct rowmap
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> C;
-  if (!transA)
-    C = Teuchos::rcp(new SparseMatrix(A.range_map(), npr, A.explicit_dirichlet(), A.save_graph()));
+  // now create resultmatrix C with correct rowmap
+  auto map = transA ? A.domain_map() : A.range_map();
+  auto C = Teuchos::rcp(new SparseMatrix(map, nnz, A.explicit_dirichlet(), A.save_graph()));
+
+  EpetraExt::RowMatrix_Transpose transposer;
+  Epetra_CrsMatrix* Atrans = nullptr;
+  Epetra_CrsMatrix* Btrans = nullptr;
+
+  if (transA)
+  {
+    Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*A.epetra_matrix()));
+    transA = false;
+  }
   else
-    C = Teuchos::rcp(new SparseMatrix(A.domain_map(), npr, A.explicit_dirichlet(), A.save_graph()));
+  {
+    Atrans = A.epetra_matrix().get();
+  }
+
+  if (transB)
+  {
+    Btrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*B.epetra_matrix()));
+    transB = false;
+  }
+  else
+  {
+    Btrans = B.epetra_matrix().get();
+  }
 
   int err = EpetraExt::MatrixMatrix::Multiply(
-      *A.epetra_matrix(), transA, *B.epetra_matrix(), transB, *C->epetra_matrix(), complete);
+      *Atrans, transA, *Btrans, transB, *C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = %d", err);
 
   return C;
@@ -242,19 +262,39 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const Spa
   if (!A.filled()) FOUR_C_THROW("A has to be fill_complete");
   if (!B.filled()) FOUR_C_THROW("B has to be fill_complete");
 
-  // const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
-  // a first guess for the bandwidth of C leading to much less memory consumption:
-  const int npr = std::max(A.max_num_entries(), B.max_num_entries());
+  // a first guess for the bandwidth of C leading to much less memory consumption
+  const int nnz = std::max(A.max_num_entries(), B.max_num_entries());
 
   // now create resultmatrix C with correct rowmap
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> C;
-  if (!transA)
-    C = Teuchos::rcp(new SparseMatrix(A.range_map(), npr, explicitdirichlet, savegraph));
+  auto map = transA ? A.domain_map() : A.range_map();
+  auto C = Teuchos::rcp(new SparseMatrix(map, nnz, explicitdirichlet, savegraph));
+
+  EpetraExt::RowMatrix_Transpose transposer;
+  Epetra_CrsMatrix* Atrans = nullptr;
+  Epetra_CrsMatrix* Btrans = nullptr;
+
+  if (transA)
+  {
+    Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*A.epetra_matrix()));
+    transA = false;
+  }
   else
-    C = Teuchos::rcp(new SparseMatrix(A.domain_map(), npr, explicitdirichlet, savegraph));
+  {
+    Atrans = A.epetra_matrix().get();
+  }
+
+  if (transB)
+  {
+    Btrans = dynamic_cast<Epetra_CrsMatrix*>(&transposer(*B.epetra_matrix()));
+    transB = false;
+  }
+  else
+  {
+    Btrans = B.epetra_matrix().get();
+  }
 
   int err = EpetraExt::MatrixMatrix::Multiply(
-      *A.epetra_matrix(), transA, *B.epetra_matrix(), transB, *C->epetra_matrix(), complete);
+      *Atrans, transA, *Btrans, transB, *C->epetra_matrix(), complete);
   if (err) FOUR_C_THROW("EpetraExt::MatrixMatrix::MatrixMultiply returned err = %d", err);
 
   return C;

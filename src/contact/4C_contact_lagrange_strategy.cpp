@@ -19,7 +19,6 @@
 #include "4C_contact_utils.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -263,7 +262,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
   {
     // modify lindmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
     lindmatrix_ = temp1;
   }
 
@@ -367,30 +366,30 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       // inv_dse
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum1;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::ml_multiply(*dse, false, *invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::ml_multiply(*invdS, false, *dum1, false, false, false, true);
+      dum1 = Core::LinAlg::matrix_multiply(*dse, false, *invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(*invdS, false, *dum1, false, false, false, true);
 
       // inv_dev
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum2;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::ml_multiply(*invdE, false, *dum2, false, false, false, true);
+      dum2 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(*invdE, false, *dum2, false, false, false, true);
 
       // inv_dsv part1
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum3;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum4;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum5;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dum4 = Core::LinAlg::ml_multiply(*invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::ml_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::ml_multiply(*invdS, false, *dum5, false, false, false, true);
+      dum3 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dum4 = Core::LinAlg::matrix_multiply(*invdE, false, *dum3, false, false, false, true);
+      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(*invdS, false, *dum5, false, false, false, true);
 
       // inv_dsv part2
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum6;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::ml_multiply(*dsv, false, *invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::ml_multiply(*invdS, false, *dum6, false, false, false, true);
+      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, *invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(*invdS, false, *dum6, false, false, false, true);
 
       // diagonal entries
       invd->add(*invdS, false, 1.0, 1.0);
@@ -434,7 +433,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     }
 
     // do the multiplication mhat = inv(D) * M
-    mhatmatrix_ = Core::LinAlg::ml_multiply(*invd, false, *mmatrix_, false, false, false, true);
+    mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd, false, *mmatrix_, false, false, false, true);
 
     /********************************************************************/
     /* (2) Add contact stiffness terms to kteff                         */
@@ -551,11 +550,11 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     {
       // modify dmatrix_, invd_ and mhatmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-          Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
       dmatrix_ = temp2;
       invd_ = temp3;
       mhatmatrix_ = temp4;
@@ -641,7 +640,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
     if (aset && iset)
-      dhat = Core::LinAlg::ml_multiply(*invda, false, *dai, false, false, false, true);
+      dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
     dhat->complete(*gidofs, *gactivedofs_);
 
     // active part of mmatrix
@@ -654,7 +653,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
     if (aset)
-      mhataam = Core::LinAlg::ml_multiply(*invda, false, *mmatrixa, false, false, false, true);
+      mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
     mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
     // for the case without full linearization, we still need the
@@ -686,7 +685,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmnmod->add(*kmn, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kan, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
     kmnmod->add(*kmnadd, false, 1.0, 1.0);
     kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -695,7 +694,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmmmod->add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kam, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
     kmmmod->add(*kmmadd, false, 1.0, 1.0);
     kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
@@ -706,7 +705,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
       kmimod->add(*kmi, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
-          Core::LinAlg::ml_multiply(*mhataam, true, *kai, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
       kmimod->add(*kmiadd, false, 1.0, 1.0);
       kmimod->complete(kmi->domain_map(), kmi->row_map());
     }
@@ -718,7 +717,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
       kmamod->add(*kma, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
-          Core::LinAlg::ml_multiply(*mhataam, true, *kaa, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
       kmamod->add(*kmaadd, false, 1.0, 1.0);
       kmamod->complete(kma->domain_map(), kma->row_map());
     }
@@ -731,7 +730,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (aset && iset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kan, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
       kinmod->add(*kinadd, false, -1.0, 1.0);
     }
     kinmod->complete(kin->domain_map(), kin->row_map());
@@ -743,7 +742,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (aset && iset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kam, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
       kimmod->add(*kimadd, false, -1.0, 1.0);
     }
     kimmod->complete(kim->domain_map(), kim->row_map());
@@ -757,7 +756,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       if (aset)
       {
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
-            Core::LinAlg::ml_multiply(*dhat, true, *kai, false, false, false, true);
+            Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
         kiimod->add(*kiiadd, false, -1.0, 1.0);
       }
       kiimod->complete(kii->domain_map(), kii->row_map());
@@ -770,7 +769,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
       kiamod->add(*kia, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kaa, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
       kiamod->add(*kiaadd, false, -1.0, 1.0);
       kiamod->complete(kia->domain_map(), kia->row_map());
     }
@@ -784,40 +783,45 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kstnmod;
     if (stickset)
     {
-      kstnmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-      kstnmod = Core::LinAlg::ml_multiply(*kstnmod, false, *kan, false, false, false, true);
+      kstnmod =
+          Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+      kstnmod = Core::LinAlg::matrix_multiply(*kstnmod, false, *kan, false, false, false, true);
     }
 
     // kstm: multiply with linstickLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kstmmod;
     if (stickset)
     {
-      kstmmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-      kstmmod = Core::LinAlg::ml_multiply(*kstmmod, false, *kam, false, false, false, true);
+      kstmmod =
+          Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+      kstmmod = Core::LinAlg::matrix_multiply(*kstmmod, false, *kam, false, false, false, true);
     }
 
     // ksti: multiply with linstickLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kstimod;
     if (stickset && iset)
     {
-      kstimod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-      kstimod = Core::LinAlg::ml_multiply(*kstimod, false, *kai, false, false, false, true);
+      kstimod =
+          Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+      kstimod = Core::LinAlg::matrix_multiply(*kstimod, false, *kai, false, false, false, true);
     }
 
     // kstsl: multiply with linstickLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kstslmod;
     if (stickset && slipset)
     {
-      kstslmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-      kstslmod = Core::LinAlg::ml_multiply(*kstslmod, false, *kasl, false, false, false, true);
+      kstslmod =
+          Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+      kstslmod = Core::LinAlg::matrix_multiply(*kstslmod, false, *kasl, false, false, false, true);
     }
 
     // kststmod: multiply with linstickLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kststmod;
     if (stickset)
     {
-      kststmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-      kststmod = Core::LinAlg::ml_multiply(*kststmod, false, *kast, false, false, false, true);
+      kststmod =
+          Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+      kststmod = Core::LinAlg::matrix_multiply(*kststmod, false, *kast, false, false, false, true);
     }
 
     //--------------------------------------------------------- SIXTH LINE
@@ -827,40 +831,45 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kslnmod;
     if (slipset)
     {
-      kslnmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-      kslnmod = Core::LinAlg::ml_multiply(*kslnmod, false, *kan, false, false, false, true);
+      kslnmod =
+          Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+      kslnmod = Core::LinAlg::matrix_multiply(*kslnmod, false, *kan, false, false, false, true);
     }
 
     // kslm: multiply with linslipLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kslmmod;
     if (slipset)
     {
-      kslmmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-      kslmmod = Core::LinAlg::ml_multiply(*kslmmod, false, *kam, false, false, false, true);
+      kslmmod =
+          Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+      kslmmod = Core::LinAlg::matrix_multiply(*kslmmod, false, *kam, false, false, false, true);
     }
 
     // ksli: multiply with linslipLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kslimod;
     if (slipset && iset)
     {
-      kslimod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-      kslimod = Core::LinAlg::ml_multiply(*kslimod, false, *kai, false, false, false, true);
+      kslimod =
+          Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+      kslimod = Core::LinAlg::matrix_multiply(*kslimod, false, *kai, false, false, false, true);
     }
 
     // kslsl: multiply with linslipLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kslslmod;
     if (slipset)
     {
-      kslslmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-      kslslmod = Core::LinAlg::ml_multiply(*kslslmod, false, *kasl, false, false, false, true);
+      kslslmod =
+          Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+      kslslmod = Core::LinAlg::matrix_multiply(*kslslmod, false, *kasl, false, false, false, true);
     }
 
     // slstmod: multiply with linslipLM
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kslstmod;
     if (slipset && stickset)
     {
-      kslstmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-      kslstmod = Core::LinAlg::ml_multiply(*kslstmod, false, *kast, false, false, false, true);
+      kslstmod =
+          Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+      kslstmod = Core::LinAlg::matrix_multiply(*kslstmod, false, *kast, false, false, false, true);
     }
 
     /********************************************************************/
@@ -963,7 +972,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       else
         fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+          Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
       temp1->multiply(false, *fa, *fstmod);
 
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
@@ -987,7 +996,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       else
         fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-          Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+          Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
       temp->multiply(false, *fa, *fslmod);
 
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
@@ -1217,7 +1226,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     {
       // modify dmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-          Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       dmatrix_ = temp2;
     }
 
@@ -2001,18 +2010,19 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       if (parallel_redistribution_status())
         trafo_ = Mortar::matrix_row_transform(trafo_, gsmdofrowmap_);
       lindmatrix_ =
-          Core::LinAlg::ml_multiply(*lindmatrix_, false, *trafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*lindmatrix_, false, *trafo_, false, false, false, true);
       linmmatrix_ =
-          Core::LinAlg::ml_multiply(*linmmatrix_, false, *trafo_, false, false, false, true);
-      smatrix_ = Core::LinAlg::ml_multiply(*smatrix_, false, *trafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*linmmatrix_, false, *trafo_, false, false, false, true);
+      smatrix_ =
+          Core::LinAlg::matrix_multiply(*smatrix_, false, *trafo_, false, false, false, true);
       tderivmatrix_ =
-          Core::LinAlg::ml_multiply(*tderivmatrix_, false, *trafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*tderivmatrix_, false, *trafo_, false, false, false, true);
     }
     else
     {
       // modify lindmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
       lindmatrix_ = temp1;
     }
   }
@@ -2118,30 +2128,30 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       // inv_dse
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum1;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::ml_multiply(*dse, false, *invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::ml_multiply(*invdS, false, *dum1, false, false, false, true);
+      dum1 = Core::LinAlg::matrix_multiply(*dse, false, *invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(*invdS, false, *dum1, false, false, false, true);
 
       // inv_dev
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum2;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::ml_multiply(*invdE, false, *dum2, false, false, false, true);
+      dum2 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(*invdE, false, *dum2, false, false, false, true);
 
       // inv_dsv part1
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum3;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum4;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum5;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dum4 = Core::LinAlg::ml_multiply(*invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::ml_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::ml_multiply(*invdS, false, *dum5, false, false, false, true);
+      dum3 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dum4 = Core::LinAlg::matrix_multiply(*invdE, false, *dum3, false, false, false, true);
+      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(*invdS, false, *dum5, false, false, false, true);
 
       // inv_dsv part2
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum6;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::ml_multiply(*dsv, false, *invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::ml_multiply(*invdS, false, *dum6, false, false, false, true);
+      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, *invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(*invdS, false, *dum6, false, false, false, true);
 
       // diagonal entries
       invd->add(*invdS, false, 1.0, 1.0);
@@ -2184,7 +2194,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     }
 
     // do the multiplication mhat = inv(D) * M
-    mhatmatrix_ = Core::LinAlg::ml_multiply(*invd, false, *mmatrix_, false, false, false, true);
+    mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd, false, *mmatrix_, false, false, false, true);
 
     /**********************************************************************/
     /* (2) Add contact stiffness terms to kteff                           */
@@ -2208,9 +2218,9 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
 
       // apply basis transformation to K and f
       kteffmatrix =
-          Core::LinAlg::ml_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
       kteffmatrix =
-          Core::LinAlg::ml_multiply(*systrafo, true, *kteffmatrix, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*systrafo, true, *kteffmatrix, false, false, false, true);
       systrafo->multiply(true, *feff, *feff);
     }
 
@@ -2321,11 +2331,11 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     {
       // modify dmatrix_, invd_ and mhatmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-          Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
       dmatrix_ = temp2;
       invd_ = temp3;
       mhatmatrix_ = temp4;
@@ -2381,7 +2391,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
     if (aset && iset)
-      dhat = Core::LinAlg::ml_multiply(*invda, false, *dai, false, false, false, true);
+      dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
     dhat->complete(*gidofs, *gactivedofs_);
 
     // active part of mmatrix
@@ -2394,7 +2404,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
     if (aset)
-      mhataam = Core::LinAlg::ml_multiply(*invda, false, *mmatrixa, false, false, false, true);
+      mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
     mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
     // for the case without full linearization, we still need the
@@ -2425,7 +2435,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmnmod->add(*kmn, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kan, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
     kmnmod->add(*kmnadd, false, 1.0, 1.0);
     kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -2434,7 +2444,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmmmod->add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kam, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
     kmmmod->add(*kmmadd, false, 1.0, 1.0);
     kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
@@ -2445,7 +2455,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
       kmimod->add(*kmi, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
-          Core::LinAlg::ml_multiply(*mhataam, true, *kai, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
       kmimod->add(*kmiadd, false, 1.0, 1.0);
       kmimod->complete(kmi->domain_map(), kmi->row_map());
     }
@@ -2457,7 +2467,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
       kmamod->add(*kma, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
-          Core::LinAlg::ml_multiply(*mhataam, true, *kaa, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
       kmamod->add(*kmaadd, false, 1.0, 1.0);
       kmamod->complete(kma->domain_map(), kma->row_map());
     }
@@ -2471,7 +2481,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (aset && iset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kan, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
       kinmod->add(*kinadd, false, -1.0, 1.0);
     }
     kinmod->complete(kin->domain_map(), kin->row_map());
@@ -2483,7 +2493,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (aset && iset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kam, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
       kimmod->add(*kimadd, false, -1.0, 1.0);
     }
     kimmod->complete(kim->domain_map(), kim->row_map());
@@ -2497,7 +2507,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       if (aset)
       {
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
-            Core::LinAlg::ml_multiply(*dhat, true, *kai, false, false, false, true);
+            Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
         kiimod->add(*kiiadd, false, -1.0, 1.0);
       }
       kiimod->complete(kii->domain_map(), kii->row_map());
@@ -2510,7 +2520,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
       kiamod->add(*kia, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kaa, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
       kiamod->add(*kiaadd, false, -1.0, 1.0);
       kiamod->complete(kia->domain_map(), kia->row_map());
     }
@@ -2523,32 +2533,32 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kanmod;
     if (aset)
     {
-      kanmod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-      kanmod = Core::LinAlg::ml_multiply(*kanmod, false, *kan, false, false, false, true);
+      kanmod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+      kanmod = Core::LinAlg::matrix_multiply(*kanmod, false, *kan, false, false, false, true);
     }
 
     // kam: multiply tmatrix with invda and kam
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kammod;
     if (aset)
     {
-      kammod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-      kammod = Core::LinAlg::ml_multiply(*kammod, false, *kam, false, false, false, true);
+      kammod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+      kammod = Core::LinAlg::matrix_multiply(*kammod, false, *kam, false, false, false, true);
     }
 
     // kai: multiply tmatrix with invda and kai
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kaimod;
     if (aset && iset)
     {
-      kaimod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-      kaimod = Core::LinAlg::ml_multiply(*kaimod, false, *kai, false, false, false, true);
+      kaimod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+      kaimod = Core::LinAlg::matrix_multiply(*kaimod, false, *kai, false, false, false, true);
     }
 
     // kaa: multiply tmatrix with invda and kaa
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kaamod;
     if (aset)
     {
-      kaamod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-      kaamod = Core::LinAlg::ml_multiply(*kaamod, false, *kaa, false, false, false, true);
+      kaamod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+      kaamod = Core::LinAlg::matrix_multiply(*kaamod, false, *kaa, false, false, false, true);
     }
 
     /**********************************************************************/
@@ -2640,7 +2650,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       else
         famod = Teuchos::rcp(new Epetra_Vector(*gactivet_));
 
-      tinvda = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
+      tinvda = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
       tinvda->multiply(false, *fa, *famod);
     }
 
@@ -2823,9 +2833,10 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew =
             Teuchos::rcp(new Core::LinAlg::SparseMatrix(
                 *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+        kteffnew = Core::LinAlg::matrix_multiply(
+            *kteffmatrix, false, *systrafo, false, false, false, true);
         kteffnew =
-            Core::LinAlg::ml_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
-        kteffnew = Core::LinAlg::ml_multiply(*systrafo, true, *kteffnew, false, false, false, true);
+            Core::LinAlg::matrix_multiply(*systrafo, true, *kteffnew, false, false, false, true);
         kteff = kteffnew;
         systrafo->multiply(true, *feff, *feff);
       }
@@ -3520,7 +3531,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
     {
       // modify lindmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
       lindmatrix_ = temp1;
     }
   }
@@ -3612,30 +3623,30 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
       // inv_dse
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum1;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::ml_multiply(*dse, false, *invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::ml_multiply(*invdS, false, *dum1, false, false, false, true);
+      dum1 = Core::LinAlg::matrix_multiply(*dse, false, *invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(*invdS, false, *dum1, false, false, false, true);
 
       // inv_dev
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum2;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::ml_multiply(*invdE, false, *dum2, false, false, false, true);
+      dum2 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(*invdE, false, *dum2, false, false, false, true);
 
       // inv_dsv part1
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum3;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum4;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum5;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dum4 = Core::LinAlg::ml_multiply(*invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::ml_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::ml_multiply(*invdS, false, *dum5, false, false, false, true);
+      dum3 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dum4 = Core::LinAlg::matrix_multiply(*invdE, false, *dum3, false, false, false, true);
+      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(*invdS, false, *dum5, false, false, false, true);
 
       // inv_dsv part2
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum6;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::ml_multiply(*dsv, false, *invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::ml_multiply(*invdS, false, *dum6, false, false, false, true);
+      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, *invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(*invdS, false, *dum6, false, false, false, true);
 
       // diagonal entries
       invd->add(*invdS, false, 1.0, 1.0);
@@ -3681,21 +3692,21 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
     invd_ = invd;
 
     // do the multiplication mhat = inv(D) * M
-    mhatmatrix_ = Core::LinAlg::ml_multiply(*invd, false, *mmatrix_, false, false, false, true);
+    mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd, false, *mmatrix_, false, false, false, true);
   }
 
   if (is_dual_quad_slave_trafo() && lagmultquad != Inpar::Mortar::lagmult_lin)
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp2;
     if (system_type() == Inpar::CONTACT::system_condensed)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
       invd_ = temp3;
       mhatmatrix_ = temp4;
     }
@@ -3782,7 +3793,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
     {
       // modify lindmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
       lindmatrix_ = temp1;
     }
   }
@@ -3874,30 +3885,30 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
       // inv_dse
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum1;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dse;
-      dum1 = Core::LinAlg::ml_multiply(*dse, false, *invdE, false, false, false, true);
-      dinv_dse = Core::LinAlg::ml_multiply(*invdS, false, *dum1, false, false, false, true);
+      dum1 = Core::LinAlg::matrix_multiply(*dse, false, *invdE, false, false, false, true);
+      dinv_dse = Core::LinAlg::matrix_multiply(*invdS, false, *dum1, false, false, false, true);
 
       // inv_dev
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum2;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dev;
-      dum2 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dinv_dev = Core::LinAlg::ml_multiply(*invdE, false, *dum2, false, false, false, true);
+      dum2 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dinv_dev = Core::LinAlg::matrix_multiply(*invdE, false, *dum2, false, false, false, true);
 
       // inv_dsv part1
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum3;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum4;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum5;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv1;
-      dum3 = Core::LinAlg::ml_multiply(*dev, false, *invdV, false, false, false, true);
-      dum4 = Core::LinAlg::ml_multiply(*invdE, false, *dum3, false, false, false, true);
-      dum5 = Core::LinAlg::ml_multiply(*dse, false, *dum4, false, false, false, true);
-      dinv_dsv1 = Core::LinAlg::ml_multiply(*invdS, false, *dum5, false, false, false, true);
+      dum3 = Core::LinAlg::matrix_multiply(*dev, false, *invdV, false, false, false, true);
+      dum4 = Core::LinAlg::matrix_multiply(*invdE, false, *dum3, false, false, false, true);
+      dum5 = Core::LinAlg::matrix_multiply(*dse, false, *dum4, false, false, false, true);
+      dinv_dsv1 = Core::LinAlg::matrix_multiply(*invdS, false, *dum5, false, false, false, true);
 
       // inv_dsv part2
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dum6;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> dinv_dsv2;
-      dum6 = Core::LinAlg::ml_multiply(*dsv, false, *invdV, false, false, false, true);
-      dinv_dsv2 = Core::LinAlg::ml_multiply(*invdS, false, *dum6, false, false, false, true);
+      dum6 = Core::LinAlg::matrix_multiply(*dsv, false, *invdV, false, false, false, true);
+      dinv_dsv2 = Core::LinAlg::matrix_multiply(*invdS, false, *dum6, false, false, false, true);
 
       // diagonal entries
       invd->add(*invdS, false, 1.0, 1.0);
@@ -3942,21 +3953,21 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
     invd_ = invd;
 
     // do the multiplication mhat = inv(D) * M
-    mhatmatrix_ = Core::LinAlg::ml_multiply(*invd, false, *mmatrix_, false, false, false, true);
+    mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd, false, *mmatrix_, false, false, false, true);
   }
 
   if (is_dual_quad_slave_trafo() && lagmultquad != Inpar::Mortar::lagmult_lin)
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     dmatrix_ = temp2;
     if (system_type() == Inpar::CONTACT::system_condensed)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp4 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
       invd_ = temp3;
       mhatmatrix_ = temp4;
     }
@@ -4161,7 +4172,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
       full_mat_ptr->add(*mat_ptr, false, 1., 1.);
       full_mat_ptr->complete();
       if (is_dual_quad_slave_trafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
-        full_mat_ptr = Core::LinAlg::ml_multiply(
+        full_mat_ptr = Core::LinAlg::matrix_multiply(
             *invsystrafo_, true, *full_mat_ptr, false, false, false, true);
 
       mat_ptr = full_mat_ptr;
@@ -5214,32 +5225,32 @@ void CONTACT::LagrangeStrategy::do_regularization_scaling(bool aset, bool iset,
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kanmod_n;
   if (aset)
   {
-    kanmod_n = Core::LinAlg::ml_multiply(*nmatrix_, false, *invda, true, false, false, true);
-    kanmod_n = Core::LinAlg::ml_multiply(*kanmod_n, false, *kan, false, false, false, true);
+    kanmod_n = Core::LinAlg::matrix_multiply(*nmatrix_, false, *invda, true, false, false, true);
+    kanmod_n = Core::LinAlg::matrix_multiply(*kanmod_n, false, *kan, false, false, false, true);
   }
 
   // kam: multiply tmatrix with invda and kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kammod_n;
   if (aset)
   {
-    kammod_n = Core::LinAlg::ml_multiply(*nmatrix_, false, *invda, true, false, false, true);
-    kammod_n = Core::LinAlg::ml_multiply(*kammod_n, false, *kam, false, false, false, true);
+    kammod_n = Core::LinAlg::matrix_multiply(*nmatrix_, false, *invda, true, false, false, true);
+    kammod_n = Core::LinAlg::matrix_multiply(*kammod_n, false, *kam, false, false, false, true);
   }
 
   // kai: multiply tmatrix with invda and kai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kaimod_n;
   if (aset && iset)
   {
-    kaimod_n = Core::LinAlg::ml_multiply(*nmatrix_, false, *invda, true, false, false, true);
-    kaimod_n = Core::LinAlg::ml_multiply(*kaimod_n, false, *kai, false, false, false, true);
+    kaimod_n = Core::LinAlg::matrix_multiply(*nmatrix_, false, *invda, true, false, false, true);
+    kaimod_n = Core::LinAlg::matrix_multiply(*kaimod_n, false, *kai, false, false, false, true);
   }
 
   // kaa: multiply tmatrix with invda and kaa
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kaamod_n;
   if (aset)
   {
-    kaamod_n = Core::LinAlg::ml_multiply(*nmatrix_, false, *invda, true, false, false, true);
-    kaamod_n = Core::LinAlg::ml_multiply(*kaamod_n, false, *kaa, false, false, false, true);
+    kaamod_n = Core::LinAlg::matrix_multiply(*nmatrix_, false, *invda, true, false, false, true);
+    kaamod_n = Core::LinAlg::matrix_multiply(*kaamod_n, false, *kaa, false, false, false, true);
   }
 
   /**********************************************************************/
@@ -5252,7 +5263,7 @@ void CONTACT::LagrangeStrategy::do_regularization_scaling(bool aset, bool iset,
   if (aset)
   {
     famod_n = Teuchos::rcp(new Epetra_Vector(*gactiven_));
-    ninvda = Core::LinAlg::ml_multiply(*nmatrix_, false, *invda, true, false, false, true);
+    ninvda = Core::LinAlg::matrix_multiply(*nmatrix_, false, *invda, true, false, false, true);
     ninvda->multiply(false, *fa, *famod_n);
   }
 
@@ -5643,7 +5654,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset && iset)
-    dhat = Core::LinAlg::ml_multiply(*invda, false, *dai, false, false, false, true);
+    dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
@@ -5656,7 +5667,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset)
-    mhataam = Core::LinAlg::ml_multiply(*invda, false, *mmatrixa, false, false, false, true);
+    mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
@@ -5688,7 +5699,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kan, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
   kmnmod->add(*kmnadd, false, 1.0, 1.0);
   kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -5697,7 +5708,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kam, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
   kmmmod->add(*kmmadd, false, 1.0, 1.0);
   kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
@@ -5708,7 +5719,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kai, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
     kmimod->add(*kmiadd, false, 1.0, 1.0);
     kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
@@ -5720,7 +5731,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
     kmamod->add(*kmaadd, false, 1.0, 1.0);
     kmamod->complete(kma->domain_map(), kma->row_map());
   }
@@ -5733,7 +5744,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kan, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
     kinmod->add(*kinadd, false, -1.0, 1.0);
   }
   kinmod->complete(kin->domain_map(), kin->row_map());
@@ -5745,7 +5756,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kam, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
     kimmod->add(*kimadd, false, -1.0, 1.0);
   }
   kimmod->complete(kim->domain_map(), kim->row_map());
@@ -5759,7 +5770,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kai, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
       kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
     kiimod->complete(kii->domain_map(), kii->row_map());
@@ -5772,7 +5783,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
     kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
     kiamod->add(*kiaadd, false, -1.0, 1.0);
     kiamod->complete(kia->domain_map(), kia->row_map());
   }
@@ -5786,40 +5797,42 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstnmod;
   if (stickset)
   {
-    kstnmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstnmod = Core::LinAlg::ml_multiply(*kstnmod, false, *kan, false, false, false, true);
+    kstnmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstnmod = Core::LinAlg::matrix_multiply(*kstnmod, false, *kan, false, false, false, true);
   }
 
   // kstm: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstmmod;
   if (stickset)
   {
-    kstmmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstmmod = Core::LinAlg::ml_multiply(*kstmmod, false, *kam, false, false, false, true);
+    kstmmod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstmmod = Core::LinAlg::matrix_multiply(*kstmmod, false, *kam, false, false, false, true);
   }
 
   // ksti: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstimod;
   if (stickset && iset)
   {
-    kstimod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstimod = Core::LinAlg::ml_multiply(*kstimod, false, *kai, false, false, false, true);
+    kstimod = Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstimod = Core::LinAlg::matrix_multiply(*kstimod, false, *kai, false, false, false, true);
   }
 
   // kstsl: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kstslmod;
   if (stickset && slipset)
   {
-    kstslmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kstslmod = Core::LinAlg::ml_multiply(*kstslmod, false, *kasl, false, false, false, true);
+    kstslmod =
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kstslmod = Core::LinAlg::matrix_multiply(*kstslmod, false, *kasl, false, false, false, true);
   }
 
   // kststmod: multiply with linstickLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kststmod;
   if (stickset)
   {
-    kststmod = Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
-    kststmod = Core::LinAlg::ml_multiply(*kststmod, false, *kast, false, false, false, true);
+    kststmod =
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+    kststmod = Core::LinAlg::matrix_multiply(*kststmod, false, *kast, false, false, false, true);
   }
 
   //--------------------------------------------------------- SIXTH LINE
@@ -5829,40 +5842,40 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslnmod;
   if (slipset)
   {
-    kslnmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslnmod = Core::LinAlg::ml_multiply(*kslnmod, false, *kan, false, false, false, true);
+    kslnmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslnmod = Core::LinAlg::matrix_multiply(*kslnmod, false, *kan, false, false, false, true);
   }
 
   // kslm: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslmmod;
   if (slipset)
   {
-    kslmmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslmmod = Core::LinAlg::ml_multiply(*kslmmod, false, *kam, false, false, false, true);
+    kslmmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslmmod = Core::LinAlg::matrix_multiply(*kslmmod, false, *kam, false, false, false, true);
   }
 
   // ksli: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslimod;
   if (slipset && iset)
   {
-    kslimod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslimod = Core::LinAlg::ml_multiply(*kslimod, false, *kai, false, false, false, true);
+    kslimod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslimod = Core::LinAlg::matrix_multiply(*kslimod, false, *kai, false, false, false, true);
   }
 
   // kslsl: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslslmod;
   if (slipset)
   {
-    kslslmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslslmod = Core::LinAlg::ml_multiply(*kslslmod, false, *kasl, false, false, false, true);
+    kslslmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslslmod = Core::LinAlg::matrix_multiply(*kslslmod, false, *kasl, false, false, false, true);
   }
 
   // slstmod: multiply with linslipLM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kslstmod;
   if (slipset && stickset)
   {
-    kslstmod = Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
-    kslstmod = Core::LinAlg::ml_multiply(*kslstmod, false, *kast, false, false, false, true);
+    kslstmod = Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+    kslstmod = Core::LinAlg::matrix_multiply(*kslstmod, false, *kast, false, false, false, true);
   }
 
   /********************************************************************/
@@ -5909,7 +5922,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     else
       fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::ml_multiply(*linstickLM_, false, *invdst, true, false, false, true);
+        Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
     temp1->multiply(false, *fa, *fstmod);
 
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
@@ -5933,7 +5946,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     else
       fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-        Core::LinAlg::ml_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
+        Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
     temp->multiply(false, *fa, *fslmod);
 
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
@@ -6443,7 +6456,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset && iset)
-    dhat = Core::LinAlg::ml_multiply(*invda, false, *dai, false, false, false, true);
+    dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
 
   // active part of mmatrix
@@ -6456,7 +6469,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
   if (aset)
-    mhataam = Core::LinAlg::ml_multiply(*invda, false, *mmatrixa, false, false, false, true);
+    mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
 
   // for the case without full linearization, we still need the
@@ -6487,7 +6500,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kan, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
   kmnmod->add(*kmnadd, false, 1.0, 1.0);
   kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -6496,7 +6509,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-      Core::LinAlg::ml_multiply(*mhataam, true, *kam, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
   kmmmod->add(*kmmadd, false, 1.0, 1.0);
   kmmmod->complete(kmm->domain_map(), kmm->row_map());
 
@@ -6507,7 +6520,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     kmimod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kai, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
     kmimod->add(*kmiadd, false, 1.0, 1.0);
     kmimod->complete(kmi->domain_map(), kmi->row_map());
   }
@@ -6519,7 +6532,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     kmamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
-        Core::LinAlg::ml_multiply(*mhataam, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
     kmamod->add(*kmaadd, false, 1.0, 1.0);
     kmamod->complete(kma->domain_map(), kma->row_map());
   }
@@ -6533,7 +6546,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kan, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kan, false, false, false, true);
     kinmod->add(*kinadd, false, -1.0, 1.0);
   }
   kinmod->complete(kin->domain_map(), kin->row_map());
@@ -6545,7 +6558,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (aset && iset)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kam, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kam, false, false, false, true);
     kimmod->add(*kimadd, false, -1.0, 1.0);
   }
   kimmod->complete(kim->domain_map(), kim->row_map());
@@ -6559,7 +6572,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiiadd =
-          Core::LinAlg::ml_multiply(*dhat, true, *kai, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat, true, *kai, false, false, false, true);
       kiimod->add(*kiiadd, false, -1.0, 1.0);
     }
     kiimod->complete(kii->domain_map(), kii->row_map());
@@ -6572,7 +6585,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     kiamod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
     kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
-        Core::LinAlg::ml_multiply(*dhat, true, *kaa, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
     kiamod->add(*kiaadd, false, -1.0, 1.0);
     kiamod->complete(kia->domain_map(), kia->row_map());
   }
@@ -6585,32 +6598,32 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kanmod;
   if (aset)
   {
-    kanmod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-    kanmod = Core::LinAlg::ml_multiply(*kanmod, false, *kan, false, false, false, true);
+    kanmod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+    kanmod = Core::LinAlg::matrix_multiply(*kanmod, false, *kan, false, false, false, true);
   }
 
   // kam: multiply tmatrix with invda and kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kammod;
   if (aset)
   {
-    kammod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-    kammod = Core::LinAlg::ml_multiply(*kammod, false, *kam, false, false, false, true);
+    kammod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+    kammod = Core::LinAlg::matrix_multiply(*kammod, false, *kam, false, false, false, true);
   }
 
   // kai: multiply tmatrix with invda and kai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kaimod;
   if (aset && iset)
   {
-    kaimod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-    kaimod = Core::LinAlg::ml_multiply(*kaimod, false, *kai, false, false, false, true);
+    kaimod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+    kaimod = Core::LinAlg::matrix_multiply(*kaimod, false, *kai, false, false, false, true);
   }
 
   // kaa: multiply tmatrix with invda and kaa
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kaamod;
   if (aset)
   {
-    kaamod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
-    kaamod = Core::LinAlg::ml_multiply(*kaamod, false, *kaa, false, false, false, true);
+    kaamod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
+    kaamod = Core::LinAlg::matrix_multiply(*kaamod, false, *kaa, false, false, false, true);
   }
 
   /**********************************************************************/
@@ -6647,7 +6660,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     else
       famod = Teuchos::rcp(new Epetra_Vector(*gactivet_));
 
-    tinvda = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda, true, false, false, true);
+    tinvda = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
     tinvda->multiply(false, *fa, *famod);
   }
 

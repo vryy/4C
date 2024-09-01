@@ -26,10 +26,10 @@
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_utils.hpp"
 
 #include <Epetra_Vector.h>
@@ -1093,7 +1093,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   Dinv_->complete();
 
   // do the multiplication P = inv(D) * M
-  P_ = Core::LinAlg::ml_multiply(*Dinv_, false, *M_, false, false, false, true);
+  P_ = Core::LinAlg::matrix_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
   P_->complete(*masterdofrowmap_, *slavedofrowmap_);

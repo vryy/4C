@@ -13,11 +13,11 @@
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_interface.hpp"
@@ -1040,7 +1040,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   Dinv_->complete();
 
   // do the multiplication P = inv(D) * M
-  P_ = Core::LinAlg::ml_multiply(*Dinv_, false, *M_, false, false, false, true);
+  P_ = Core::LinAlg::matrix_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
   P_->complete(*masterdofrowmap_, *slavedofrowmap_);
@@ -1237,7 +1237,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   diag->Reciprocal(*diag);
   Dinv_->replace_diagonal_values(*diag);
   Dinv_->complete(D_->range_map(), D_->domain_map());
-  P_ = ml_multiply(*Dinv_, *M_, false, false, true);
+  P_ = Core::LinAlg::matrix_multiply(*Dinv_, false, *M_, false, false, false, true);
 
   // mesh relocation if required:
   // For curved internal or fsi coupling interfaces, a mesh relocation is critical,

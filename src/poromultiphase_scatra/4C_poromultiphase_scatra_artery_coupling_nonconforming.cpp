@@ -11,7 +11,6 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -595,20 +594,20 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
 
   // kappa^{-1}*M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> km =
-      Core::LinAlg::ml_multiply(*kappaInvMat, false, *m_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*kappaInvMat, false, *m_, false, false, false, true);
   // kappa^{-1}*D
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kd =
-      Core::LinAlg::ml_multiply(*kappaInvMat, false, *d_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*kappaInvMat, false, *d_, false, false, false, true);
 
   // D^T*kappa^{-1}*D
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtkd =
-      Core::LinAlg::ml_multiply(*d_, true, *kd, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*d_, true, *kd, false, false, false, true);
   // D^T*kappa^{-1}*M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtkm =
-      Core::LinAlg::ml_multiply(*d_, true, *km, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*d_, true, *km, false, false, false, true);
   // M^T*kappa^{-1}*M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtkm =
-      Core::LinAlg::ml_multiply(*m_, true, *km, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*m_, true, *km, false, false, false, true);
 
   // add matrices
   sysmat->matrix(0, 0).add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);

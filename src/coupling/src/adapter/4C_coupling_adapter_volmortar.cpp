@@ -17,9 +17,9 @@
 #include "4C_coupling_volmortar_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
@@ -257,7 +257,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::appl
   check_setup();
   check_init();
 
-  return Core::LinAlg::ml_multiply(*mat, false, *p12_, false, false, false, true);
+  return Core::LinAlg::matrix_multiply(*mat, false, *p12_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -270,7 +270,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::appl
   check_setup();
   check_init();
 
-  return Core::LinAlg::ml_multiply(*mat, false, *p21_, false, false, false, true);
+  return Core::LinAlg::matrix_multiply(*mat, false, *p21_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*/

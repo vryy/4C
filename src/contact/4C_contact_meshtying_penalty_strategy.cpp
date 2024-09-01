@@ -10,9 +10,9 @@
 #include "4C_contact_meshtying_penalty_strategy.hpp"
 
 #include "4C_inpar_contact.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mortar_interface.hpp"
@@ -80,7 +80,7 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra
     {
       // modify dmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       dmatrix_ = temp1;
     }
     else
@@ -90,10 +90,10 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra
   }
 
   // build mortar matrix products
-  mtm_ = Core::LinAlg::ml_multiply(*mmatrix_, true, *mmatrix_, false, false, false, true);
-  mtd_ = Core::LinAlg::ml_multiply(*mmatrix_, true, *dmatrix_, false, false, false, true);
-  dtm_ = Core::LinAlg::ml_multiply(*dmatrix_, true, *mmatrix_, false, false, false, true);
-  dtd_ = Core::LinAlg::ml_multiply(*dmatrix_, true, *dmatrix_, false, false, false, true);
+  mtm_ = Core::LinAlg::matrix_multiply(*mmatrix_, true, *mmatrix_, false, false, false, true);
+  mtd_ = Core::LinAlg::matrix_multiply(*mmatrix_, true, *dmatrix_, false, false, false, true);
+  dtm_ = Core::LinAlg::matrix_multiply(*dmatrix_, true, *mmatrix_, false, false, false, true);
+  dtd_ = Core::LinAlg::matrix_multiply(*dmatrix_, true, *dmatrix_, false, false, false, true);
 
   // transform rows of mortar matrix products to parallel distribution
   // of the global problem (stored in the "p"-version of dof maps)

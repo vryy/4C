@@ -19,10 +19,10 @@
 #include "4C_contact_paramsinterface.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_utils.hpp"
 
@@ -265,9 +265,9 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   {
     // modify lindmatrix_ and dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     lindmatrix_ = temp1;
     dmatrix_ = temp2;
   }
@@ -323,9 +323,9 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
 
   // multiply Mortar matrices D and M with LinZ
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
-      Core::LinAlg::ml_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
-      Core::LinAlg::ml_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (parallel_redistribution_status())
@@ -485,9 +485,9 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(
 
   // multiply Mortar matrices D and M with LinZ
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
-      Core::LinAlg::ml_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
-      Core::LinAlg::ml_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (parallel_redistribution_status())
@@ -853,9 +853,9 @@ void CONTACT::PenaltyStrategy::assemble()
   {
     // modify lindmatrix_ and dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-        Core::LinAlg::ml_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-        Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     lindmatrix_ = temp1;
     dmatrix_ = temp2;
   }
@@ -885,9 +885,9 @@ void CONTACT::PenaltyStrategy::assemble()
 
   // multiply Mortar matrices D and M with LinZ
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
-      Core::LinAlg::ml_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
-      Core::LinAlg::ml_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (parallel_redistribution_status())
