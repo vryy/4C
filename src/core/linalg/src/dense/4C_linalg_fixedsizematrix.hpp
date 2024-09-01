@@ -11,20 +11,18 @@
 
 #include "4C_config.hpp"
 
-#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_mathoperations.hpp"
 
-#include <cmath>
-#include <cstring>
-#include <iostream>
 #include <ostream>
-#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
+  class SerialDenseMatrix;
+  class SerialDenseVector;
+
   namespace DenseFunctions
   {
     /*
@@ -785,7 +783,7 @@ namespace Core::LinAlg
     /// 1-norm
     /*!
       This function computes the norm of the whole matrix. It returns
-      a different result than Core::LinAlg::SerialDenseMatrix::Base::OneNorm(),
+      a different result than Core::LinAlg::SerialDenseMatrix::OneNorm(),
       which returns the maximum of the norms of the columns.
       The template arguments \c i and \c j are the size of the matrix.
 
@@ -809,7 +807,7 @@ namespace Core::LinAlg
 
     /// Inf-norm
     /*!
-      This function does not do the same as Core::LinAlg::SerialDenseMatrix::Base::InfNorm().
+      This function does not do the same as Core::LinAlg::SerialDenseMatrix::InfNorm().
       The template arguments \c i and \c j are the size of the matrix.
 
       \param mat
@@ -1883,6 +1881,41 @@ namespace Core::LinAlg
     }
   }  // namespace DenseFunctions
 
+  namespace Internal
+  {
+    /**
+     * Get access to the underlying values.
+     *
+     * @note This function is used to hide the details of the SerialDenseMatrix in the
+     * implementation.
+     */
+    const double* values(const Core::LinAlg::SerialDenseMatrix& matrix);
+
+    /**
+     * Get access to the underlying values.
+     *
+     * @note This function is used to hide the details of the SerialDenseMatrix in the
+     * implementation.
+     */
+    double* values(Core::LinAlg::SerialDenseMatrix& matrix);
+
+    /**
+     * Get access to the underlying values.
+     *
+     * @note This function is used to hide the details of the SerialDenseVector in the
+     * implementation.
+     */
+    const double* values(const Core::LinAlg::SerialDenseVector& vector);
+
+    /**
+     * Get access to the underlying values.
+     *
+     * @note This function is used to hide the details of the SerialDenseVector in the
+     * implementation.
+     */
+    double* values(Core::LinAlg::SerialDenseVector& vector);
+  }  // namespace Internal
+
 
   /// Serial dense matrix with templated dimensions
   /*!
@@ -1890,14 +1923,14 @@ namespace Core::LinAlg
     be fast and lightweight. The default scalar type is double.
     The value_type-array is allocated on the stack (small sizes, up to 512
     bytes or on the heap (larger sizes) and stored in
-    column-major order, just like in Core::LinAlg::SerialDenseMatrix::Base.
+    column-major order, just like in Core::LinAlg::SerialDenseMatrix.
 
-    The interface is based on that of Core::LinAlg::SerialDenseMatrix::Base and
+    The interface is based on that of Core::LinAlg::SerialDenseMatrix and
     Epetra_MultiVector. The whole View/Copy thing works a little
     different, though. See the appropriate functions for details.
 
     There is no operator[]. It behaves differently in
-    Core::LinAlg::SerialDenseMatrix::Base and Core::LinAlg::SerialDenseVector::Base, and is not
+    Core::LinAlg::SerialDenseMatrix and Core::LinAlg::SerialDenseVector::Base, and is not
     needed in either of them.
    */
   template <unsigned int rows, unsigned int cols, class ValueType = double>
@@ -1976,7 +2009,7 @@ namespace Core::LinAlg
       \param view
         whether the data is to be viewed or copied
      */
-    explicit Matrix(Core::LinAlg::SerialDenseMatrix::Base& d, bool view = false);
+    explicit Matrix(Core::LinAlg::SerialDenseMatrix& d, bool view = false);
 
     /// Constructor
     /*!
@@ -1985,7 +2018,17 @@ namespace Core::LinAlg
       \param d
         matrix to be copied
      */
-    explicit Matrix(const Core::LinAlg::SerialDenseMatrix::Base& d);
+    explicit Matrix(const Core::LinAlg::SerialDenseMatrix& d);
+
+    /**
+     * Copy or view data from SerialDenseVector. A dimension mismatch leads to a runtime error.
+     */
+    explicit Matrix(Core::LinAlg::SerialDenseVector& d, bool view = false);
+
+    /**
+     * Copy data from SerialDenseVector to Matrix. A dimension mismatch leads to a runtime error.
+     */
+    explicit Matrix(const Core::LinAlg::SerialDenseVector& d);
 
     /// Constructor
     /*!
@@ -2008,7 +2051,7 @@ namespace Core::LinAlg
     /// Copy constructor
     /*!
       Constructs a new Matrix from source. Unlike
-      the Core::LinAlg::SerialDenseMatrix::Base copy constructor this one *always*
+      the Core::LinAlg::SerialDenseMatrix copy constructor this one *always*
       copies the data, even when \e source is a view.
 
       \param source
@@ -2554,7 +2597,7 @@ namespace Core::LinAlg
 
     /// Calculate 1-norm
     /*!
-      This is *not* the same as Core::LinAlg::SerialDenseMatrix::Base::NormOne.
+      This is *not* the same as Core::LinAlg::SerialDenseMatrix::NormOne.
 
       \return 1-norm
      */
@@ -2568,7 +2611,7 @@ namespace Core::LinAlg
 
     /// Calculate inf-norm
     /*!
-      This is *not* the same as Core::LinAlg::SerialDenseMatrix::Base::NormInf.
+      This is *not* the same as Core::LinAlg::SerialDenseMatrix::NormInf.
 
       \return inf-norm
      */
@@ -3056,29 +3099,27 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, class ValueType>
-  Matrix<rows, cols, ValueType>::Matrix(Core::LinAlg::SerialDenseMatrix::Base& d, bool view)
-      : data_(nullptr), isview_(view), isreadonly_(false)
+  Matrix<rows, cols, ValueType>::Matrix(Core::LinAlg::SerialDenseMatrix& d, bool view)
+      : Matrix(Internal::values(d), view)
   {
-    if (d.values() == nullptr) return;
-    if (d.numRows() != rows or d.numCols() != cols)
-      FOUR_C_THROW("illegal matrix dimension (%d,%d)", d.numRows(), d.numCols());
-    if (isview_)
-    {
-      data_ = d.values();
-    }
-    else
-    {
-      if (allocatesmemory_)
-        data_ = new ValueType[rows * cols];
-      else
-        data_ = datafieldsmall_;
-      std::copy(d.values(), d.values() + rows * cols, data_);
-    }
   }
 
   template <unsigned int rows, unsigned int cols, class ValueType>
-  Matrix<rows, cols, ValueType>::Matrix(const Core::LinAlg::SerialDenseMatrix::Base& d)
-      : Matrix(const_cast<Core::LinAlg::SerialDenseMatrix::Base&>(d), false)
+  Matrix<rows, cols, ValueType>::Matrix(const Core::LinAlg::SerialDenseMatrix& d)
+      : Matrix(Internal::values(d), false)
+  {
+  }
+
+
+  template <unsigned int rows, unsigned int cols, class ValueType>
+  Matrix<rows, cols, ValueType>::Matrix(Core::LinAlg::SerialDenseVector& d, bool view)
+      : Matrix(Internal::values(d), view)
+  {
+  }
+
+  template <unsigned int rows, unsigned int cols, class ValueType>
+  Matrix<rows, cols, ValueType>::Matrix(const Core::LinAlg::SerialDenseVector& d)
+      : Matrix(Internal::values(d), false)
   {
   }
 

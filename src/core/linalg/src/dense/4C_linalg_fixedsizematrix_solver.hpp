@@ -14,6 +14,7 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 
+#include <Teuchos_BLAS.hpp>
 #include <Teuchos_LAPACK.hpp>
 
 FOUR_C_NAMESPACE_OPEN

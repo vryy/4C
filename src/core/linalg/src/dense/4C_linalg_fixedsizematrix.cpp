@@ -9,6 +9,9 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 
+#include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
+
 #include <Teuchos_LAPACK.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -38,6 +41,27 @@ double Core::LinAlg::DenseFunctions::determinant_large_matrix(
   for (unsigned int c = 0; c < j; ++c)
     if (static_cast<unsigned>(ipiv[c]) != c + 1) d *= -1.0;
   return d;
+}
+
+const double* Core::LinAlg::Internal::values(const Core::LinAlg::SerialDenseMatrix& matrix)
+{
+  return matrix.values();
+}
+
+double* Core::LinAlg::Internal::values(Core::LinAlg::SerialDenseMatrix& matrix)
+{
+  return matrix.values();
+}
+
+
+const double* Core::LinAlg::Internal::values(const Core::LinAlg::SerialDenseVector& vector)
+{
+  return vector.values();
+}
+
+double* Core::LinAlg::Internal::values(Core::LinAlg::SerialDenseVector& vector)
+{
+  return vector.values();
 }
 
 FOUR_C_NAMESPACE_CLOSE
