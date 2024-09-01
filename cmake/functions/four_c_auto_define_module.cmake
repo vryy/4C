@@ -56,6 +56,18 @@ function(four_c_auto_define_module)
     "_fwd\.h(pp)?|\.inst\.[hH]"
     )
 
+  # Check that every header includes 4C_config.hpp
+  foreach(_header ${_headers})
+    file(READ ${_header} _header_content)
+    string(FIND "${_header_content}" "#include \"4C_config.hpp\"" _index)
+    if(_index EQUAL -1)
+      message(
+        FATAL_ERROR
+          "The file \"${_header}\" does not include \"4C_config.hpp\". Please include the file and rerun CMake."
+        )
+    endif()
+  endforeach()
+
   # Add the headers as a file set to the interface library. This will automatically add the current directory as a search directory.
   # Since we append sources to a target successively, we need to add multiple file sets with a unique name. Use
   # the current directory name for this.
