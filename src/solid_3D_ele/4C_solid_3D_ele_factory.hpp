@@ -51,6 +51,8 @@ namespace Discret::ELEMENTS
             Inpar::Solid::KinemType::nonlinearTotLag>,
         SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_h8_21,
             Inpar::Solid::KinemType::nonlinearTotLag>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_sh8_7,
+            Inpar::Solid::KinemType::nonlinearTotLag>,
         SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_h8_9,
             Inpar::Solid::KinemType::linear>,
         SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_h8_21,
