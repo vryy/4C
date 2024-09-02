@@ -167,16 +167,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     }
   }
 
-  // Get the beam centerline GIDs.
-  Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  BEAMINTERACTION::UTILS::get_element_centerline_gid_indices(
-      discret, this->element1(), beam_centerline_gid);
-
-  // Get the patch GIDs.
-  const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
+  // GIDs of the pair and the force vector acting on the pair.
+  const auto [beam_centerline_gid, patch_gid] =
+      get_beam_to_surface_pair_gid<Beam>(discret, *this->element1(), *this->face_element_);
 
   // Get the Lagrange multiplier GIDs.
-  const auto& [lambda_gid_pos, _] = mortar_manager->location_vector(*this);
+  const auto& [lambda_gid_pos, _2] = mortar_manager->location_vector(*this);
 
   // Assemble into the matrix in the beam row and lambda column
   for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)

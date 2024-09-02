@@ -10,6 +10,7 @@ coupling terms are evaluated using FAD.
 
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_FAD.hpp"
 
+#include "4C_beaminteraction_beam_to_solid_utils.hpp"
 #include "4C_geometry_pair_element_faces.hpp"
 #include "4C_geometry_pair_line_to_surface.hpp"
 #include "4C_geometry_pair_scalar_types.hpp"
@@ -55,7 +56,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, B
   ScalarType potential = this->get_penalty_potential();
 
   // Get the pair GIDs.
-  std::vector<int> pair_gid = this->get_pair_gid(*discret);
+  const auto pair_gid = get_beam_to_surface_pair_gid_combined<Beam>(
+      *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)

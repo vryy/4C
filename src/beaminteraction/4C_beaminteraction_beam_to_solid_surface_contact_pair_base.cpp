@@ -113,32 +113,6 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::c
       this->geometry_pair_, true);
 }
 
-/**
- *
- */
-template <typename ScalarType, typename Beam, typename Surface>
-std::vector<int>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::get_pair_gid(
-    const Core::FE::Discretization& discret) const
-{
-  // Get the beam centerline GIDs.
-  Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  UTILS::get_element_centerline_gid_indices(discret, this->element1(), beam_centerline_gid);
-
-  // Get the patch (in this case just the one face element) GIDs.
-  const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
-  std::vector<int> pair_gid;
-  pair_gid.resize(Beam::n_dof_ + patch_gid.size());
-
-  // Combine beam and solid GIDs into one vector.
-  for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
-    pair_gid[i_dof_beam] = beam_centerline_gid(i_dof_beam);
-  for (unsigned int i_dof_patch = 0; i_dof_patch < patch_gid.size(); i_dof_patch++)
-    pair_gid[Beam::n_dof_ + i_dof_patch] = patch_gid[i_dof_patch];
-
-  return pair_gid;
-}
-
 
 /**
  * Explicit template initialization of template class.

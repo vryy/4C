@@ -10,6 +10,7 @@
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
+#include "4C_beaminteraction_beam_to_solid_utils.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
 #include "4C_geometry_pair_element_evaluation_functions.hpp"
@@ -110,21 +111,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
   }
 
   // Get the pair GIDs.
-  Core::LinAlg::Matrix<Beam::n_dof_ + Surface::n_dof_, 1, int> pair_gid;
-  {
-    // Get the beam centerline GIDs.
-    Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-    UTILS::get_element_centerline_gid_indices(*discret, this->element1(), beam_centerline_gid);
-
-    // Get the patch (in this case just the one face element) GIDs.
-    const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
-
-    // Combine beam and solid GIDs into one vector.
-    for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
-      pair_gid(i_dof_beam) = beam_centerline_gid(i_dof_beam);
-    for (unsigned int i_dof_solid = 0; i_dof_solid < Surface::n_dof_; i_dof_solid++)
-      pair_gid(Beam::n_dof_ + i_dof_solid) = patch_gid[i_dof_solid];
-  }
+  // Note we get the full patch GIDs here but we only use the ones for the beam and the surface, not
+  // the ones for the averaged normals
+  const auto pair_gid = get_beam_to_surface_pair_gid_combined<Beam>(
+      *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
   if (force_vector != Teuchos::null)
@@ -139,7 +129,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<Beam,
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_ + Surface::n_dof_; i_dof++)
       for (unsigned int j_dof = 0; j_dof < Beam::n_dof_ + Surface::n_dof_; j_dof++)
         stiffness_matrix->fe_assemble(Core::FADUtils::cast_to_double(force_pair(i_dof).dx(j_dof)),
-            pair_gid(i_dof), pair_gid(j_dof));
+            pair_gid[i_dof], pair_gid[j_dof]);
 }
 
 

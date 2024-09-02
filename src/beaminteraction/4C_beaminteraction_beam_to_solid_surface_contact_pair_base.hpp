@@ -117,13 +117,6 @@ namespace BEAMINTERACTION
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>
     cast_geometry_pair() const;
 
-    /**
-     * \brief Get the GIDs of the pair, i.e. first the beam GIDs and then the pair GIDs.
-     * @param discret (in) discretization.
-     * @return Vector with the GIDs of this pair.
-     */
-    std::vector<int> get_pair_gid(const Core::FE::Discretization& discret) const;
-
    protected:
     //! Pointer to the face element object which manages the positions on the surface, including the
     //! averaged nodal normals.
