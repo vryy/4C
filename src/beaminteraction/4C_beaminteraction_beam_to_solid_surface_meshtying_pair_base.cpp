@@ -79,7 +79,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
 
   // Add segmentation and integration point data.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
-      visualization_writer->get_visualization_writer("btssc-segmentation");
+      visualization_writer->get_visualization_writer("btss-coupling-segmentation");
   if (visualization_segmentation != Teuchos::null)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
-          visualization_writer->get_visualization_writer("btssc-integration-points");
+          visualization_writer->get_visualization_writer("btss-coupling-integration-points");
   if (visualization_integration_points != Teuchos::null)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>> points;
@@ -127,7 +127,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surf
 
   const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
-          "btssc-output_params_ptr");
+          "btss-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
   std::vector<int>* pair_beam_id = nullptr;
   std::vector<int>* pair_solid_id = nullptr;

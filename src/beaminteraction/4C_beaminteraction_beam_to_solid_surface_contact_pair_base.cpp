@@ -9,6 +9,7 @@
 
 #include "4C_beaminteraction_beam_to_solid_surface_contact_pair_base.hpp"
 
+#include "4C_beam3_base.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_utils.hpp"
@@ -65,6 +66,112 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surfac
   // Call pre_evaluate on the geometry Pair.
   cast_geometry_pair()->pre_evaluate(
       this->ele1pos_, this->face_element_->get_face_element_data(), this->line_to_3D_segments_);
+}
+
+/**
+ *
+ */
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
+    Surface>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                         visualization_writer,
+    Teuchos::ParameterList& visualization_params) const
+{
+  // Get visualization of base class.
+  base_class::get_pair_visualization(visualization_writer, visualization_params);
+
+  // Add segmentation and integration point data.
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
+      visualization_writer->get_visualization_writer("btss-contact-segmentation");
+  if (visualization_segmentation != Teuchos::null)
+  {
+    std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>> points;
+    for (const auto& segment : this->line_to_3D_segments_)
+      for (const auto& segmentation_point : {segment.get_start_point(), segment.get_end_point()})
+        points.push_back(segmentation_point);
+    add_visualization_integration_points(visualization_segmentation, points, visualization_params);
+  }
+
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+      visualization_integration_points =
+          visualization_writer->get_visualization_writer("btss-contact-integration-points");
+  if (visualization_integration_points != Teuchos::null)
+  {
+    std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>> points;
+    for (const auto& segment : this->line_to_3D_segments_)
+      for (const auto& segmentation_point : (segment.get_projection_points()))
+        points.push_back(segmentation_point);
+    add_visualization_integration_points(
+        visualization_integration_points, points, visualization_params);
+  }
+}
+
+/**
+ *
+ */
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
+    add_visualization_integration_points(
+        const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
+            visualization_writer,
+        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>>& points,
+        const Teuchos::ParameterList& visualization_params) const
+{
+  auto& visualization_data = visualization_writer->get_visualization_data();
+
+  // Setup variables.
+  Core::LinAlg::Matrix<3, 1, ScalarType> X_beam, u_beam;
+
+  // Get beam cross-section diameter.
+  auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1());
+  const double beam_cross_section_radius =
+      beam_ptr->get_circular_cross_section_radius_for_interactions();
+
+  // Get the visualization vectors.
+  std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
+  std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
+  std::vector<double>& surface_normal_data =
+      visualization_data.get_point_data<double>("surface_normal");
+  std::vector<double>& gap_data = visualization_data.get_point_data<double>("gap");
+  std::vector<double>& force_data = visualization_data.get_point_data<double>("force");
+
+  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
+          "btss-output_params_ptr");
+  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
+  std::vector<int>* pair_beam_id = nullptr;
+  std::vector<int>* pair_solid_id = nullptr;
+  if (write_unique_ids)
+  {
+    pair_beam_id = &(visualization_data.get_point_data<int>("uid_0_pair_beam_id"));
+    pair_solid_id = &(visualization_data.get_point_data<int>("uid_1_pair_solid_id"));
+  }
+
+  for (const auto& point : points)
+  {
+    const auto [r_beam, r_surface, surface_normal, gap] =
+        this->evaluate_contact_kinematics_at_projection_point(point, beam_cross_section_radius);
+    GEOMETRYPAIR::evaluate_position<Beam>(point.get_eta(), this->ele1posref_, X_beam);
+
+    u_beam = r_beam;
+    u_beam -= X_beam;
+    const auto force = penalty_force(gap, this->params()->beam_to_solid_surface_contact_params());
+
+    for (unsigned int dim = 0; dim < 3; dim++)
+    {
+      point_coordinates.push_back(Core::FADUtils::cast_to_double(X_beam(dim)));
+      displacement.push_back(Core::FADUtils::cast_to_double(u_beam(dim)));
+      surface_normal_data.push_back(Core::FADUtils::cast_to_double(surface_normal(dim)));
+      force_data.push_back(Core::FADUtils::cast_to_double(force * surface_normal(dim)));
+    }
+    gap_data.push_back(Core::FADUtils::cast_to_double(gap));
+
+    if (write_unique_ids)
+    {
+      pair_beam_id->push_back(this->element1()->id());
+      pair_solid_id->push_back(this->element2()->id());
+    }
+  }
 }
 
 /**

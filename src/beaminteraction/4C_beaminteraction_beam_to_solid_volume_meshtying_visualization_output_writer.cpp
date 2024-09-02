@@ -58,7 +58,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     if (output_params_ptr_->get_nodal_force_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->add_visualization_writer("nodal-forces", "btsvc-nodal-forces");
+          output_writer_base_ptr_->add_visualization_writer("nodal-forces", "btsv-nodal-forces");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
       visualization_data.register_point_data<double>("force_beam", 3);
@@ -69,7 +69,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     if (output_params_ptr_->get_mortar_lambda_discret_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->add_visualization_writer("mortar", "btsvc-mortar");
+          output_writer_base_ptr_->add_visualization_writer("mortar", "btsv-mortar");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
       visualization_data.register_point_data<double>("lambda", 3);
@@ -84,7 +84,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
-              "mortar-continuous", "btsvc-mortar-continuous");
+              "mortar-continuous", "btsv-mortar-continuous");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
       visualization_data.register_point_data<double>("lambda", 3);
@@ -101,7 +101,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->add_visualization_writer(
-              "integration-points", "btsvc-integration-points");
+              "integration-points", "btsv-integration-points");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
       visualization_data.register_point_data<double>("force", 3);
@@ -115,7 +115,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     if (output_params_ptr_->get_segmentation_output_flag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_writer =
-          output_writer_base_ptr_->add_visualization_writer("segmentation", "btsvc-segmentation");
+          output_writer_base_ptr_->add_visualization_writer("segmentation", "btsv-segmentation");
       auto& visualization_data = visualization_writer->get_visualization_data();
       visualization_data.register_point_data<double>("displacement", 3);
       if (write_unique_ids)
@@ -169,13 +169,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
   visualization_params.set<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
-      "btsvc-output_params_ptr", output_params_ptr_);
+      "btsv-output_params_ptr", output_params_ptr_);
 
 
   // Add the nodal forces resulting from beam contact. The forces are split up into beam and solid
   // nodes.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
-      output_writer_base_ptr_->get_visualization_writer("btsvc-nodal-forces");
+      output_writer_base_ptr_->get_visualization_writer("btsv-nodal-forces");
   if (visualization != Teuchos::null)
     add_beam_interaction_nodal_forces(visualization, beam_contact->discret_ptr(),
         beam_contact->beam_interaction_data_state().get_dis_np(),

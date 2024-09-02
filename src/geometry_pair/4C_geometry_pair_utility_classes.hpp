@@ -370,6 +370,21 @@ namespace GEOMETRYPAIR
     }
 
     /**
+     * \brief Return a vector with all points of this segment:
+     * {start_point, projection_point_1, projection_point_2, ..., end_point}
+     */
+    std::vector<ProjectionPoint1DTo3D<ScalarType>> get_all_segment_points() const
+    {
+      std::vector<ProjectionPoint1DTo3D<ScalarType>> all_points;
+      all_points.reserve(segment_projection_points_.size() + 2);
+      all_points.push_back(start_point_);
+      all_points.insert(
+          all_points.end(), segment_projection_points_.begin(), segment_projection_points_.end());
+      all_points.push_back(end_point_);
+      return all_points;
+    }
+
+    /**
      * \brief Overloaded $<$ operator.
      * @param lhs
      * @param rhs

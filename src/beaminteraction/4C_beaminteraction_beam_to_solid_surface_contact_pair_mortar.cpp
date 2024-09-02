@@ -296,6 +296,138 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+    Mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                        visualization_writer,
+    Teuchos::ParameterList& visualization_params) const
+{
+  // Get visualization of base method.
+  base_class::get_pair_visualization(visualization_writer, visualization_params);
+
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+      visualization_writer->get_visualization_writer("btss-contact-mortar-continuous");
+  if (visualization_continuous == Teuchos::null) return;
+
+  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
+          "btss-output_params_ptr");
+  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
+
+  if (visualization_continuous != Teuchos::null)
+  {
+    // Get beam cross-section diameter
+    const auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1());
+    const double beam_cross_section_radius =
+        beam_ptr->get_circular_cross_section_radius_for_interactions();
+
+    // Setup variables.
+    Core::LinAlg::Matrix<3, 1, ScalarType> r0_beam;
+    Core::LinAlg::Matrix<3, 1, ScalarType> u;
+    Core::LinAlg::Matrix<1, 1, ScalarType> lambda_scalar;
+
+    // Get the mortar manager and the global lambda vector, those objects will be used to get the
+    // discrete Lagrange multiplier values for this pair.
+    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+        visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+            "mortar_manager");
+    Teuchos::RCP<Epetra_Vector> lambda =
+        visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
+
+    // Get the lambda GIDs of this pair.
+    auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);
+    const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
+    std::vector<double> lambda_pair;
+    Core::FE::extract_my_values(*lambda, lambda_pair, lambda_row_pos);
+    for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
+      q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
+
+    // Add the continuous values for the Lagrange multipliers.
+    if (visualization_continuous != Teuchos::null and this->line_to_3D_segments_.size() > 0)
+    {
+      unsigned int n_points = 0;
+      for (const auto& segment : this->line_to_3D_segments_)
+      {
+        n_points += 2 + segment.get_number_of_projection_points();
+      }
+      auto& visualization_data = visualization_continuous->get_visualization_data();
+      std::vector<double>& point_coordinates =
+          visualization_data.get_point_coordinates(n_points * 3);
+      std::vector<double>& displacement =
+          visualization_data.get_point_data<double>("displacement", n_points * 3);
+      std::vector<double>& lambda_vis =
+          visualization_data.get_point_data<double>("lambda", n_points);
+      std::vector<double>& lambda_times_normal_vis =
+          visualization_data.get_point_data<double>("lambda_times_normal", n_points * 3);
+      std::vector<double>& surface_normal_vis =
+          visualization_data.get_point_data<double>("surface_normal", n_points * 3);
+      std::vector<double>& gap_vis = visualization_data.get_point_data<double>("gap", n_points);
+      std::vector<uint8_t>& cell_types = visualization_data.get_cell_types();
+      std::vector<int32_t>& cell_offsets = visualization_data.get_cell_offsets();
+
+      std::vector<int>* pair_point_beam_id = nullptr;
+      std::vector<int>* pair_point_solid_id = nullptr;
+      std::vector<int>* pair_cell_beam_id = nullptr;
+      std::vector<int>* pair_cell_solid_id = nullptr;
+      if (write_unique_ids)
+      {
+        pair_point_beam_id = &(visualization_data.get_point_data<int>("uid_0_pair_beam_id"));
+        pair_point_solid_id = &(visualization_data.get_point_data<int>("uid_1_pair_solid_id"));
+        pair_cell_beam_id = &(visualization_data.get_cell_data<int>("uid_0_pair_beam_id"));
+        pair_cell_solid_id = &(visualization_data.get_cell_data<int>("uid_1_pair_solid_id"));
+      }
+
+      for (const auto& segment : this->line_to_3D_segments_)
+      {
+        for (const auto& point : segment.get_all_segment_points())
+        {
+          const auto [r_beam, r_surface, surface_normal, gap] =
+              this->evaluate_contact_kinematics_at_projection_point(
+                  point, beam_cross_section_radius);
+
+          // Get the beam displacement
+          GEOMETRYPAIR::evaluate_position<Beam>(point.get_eta(), this->ele1posref_, r0_beam);
+          u = r_beam;
+          u -= r0_beam;
+
+          // Get the Lagrange multiplier value
+          GEOMETRYPAIR::evaluate_position<Mortar>(point.get_eta(), q_lambda, lambda_scalar);
+
+          // Add to output data.
+          lambda_vis.push_back(Core::FADUtils::cast_to_double(lambda_scalar(0)));
+          gap_vis.push_back(Core::FADUtils::cast_to_double(gap));
+          for (unsigned int dim = 0; dim < 3; dim++)
+          {
+            point_coordinates.push_back(Core::FADUtils::cast_to_double(r0_beam(dim)));
+            displacement.push_back(Core::FADUtils::cast_to_double(u(dim)));
+            lambda_times_normal_vis.push_back(
+                Core::FADUtils::cast_to_double(surface_normal(dim) * lambda_scalar(0)));
+            surface_normal_vis.push_back(Core::FADUtils::cast_to_double(surface_normal(dim)));
+          }
+          if (write_unique_ids)
+          {
+            pair_point_beam_id->push_back(this->element1()->id());
+            pair_point_solid_id->push_back(this->element2()->id());
+          }
+        }
+
+        // Add the cell for this segment (poly line).
+        cell_types.push_back(4);
+        cell_offsets.push_back(point_coordinates.size() / 3);
+
+        if (write_unique_ids)
+        {
+          pair_cell_beam_id->push_back(this->element1()->id());
+          pair_cell_solid_id->push_back(this->element2()->id());
+        }
+      }
+    }
+  }
+}
+
+/**
+ *
+ */
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
     Mortar>::get_jacobian_for_configuration(const ScalarType& eta,
     const Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn mortar_configuration) const
