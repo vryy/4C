@@ -682,11 +682,11 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        Core::Communication::ParObject::add_to_pack(data, *(*lastalpha_)[i]);
+        add_to_pack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        Core::Communication::ParObject::add_to_pack(data, *emptyalpha);
+        add_to_pack(data, *emptyalpha);
       }
     }
     output->write_vector("alpha", data(), *discret_->element_col_map());

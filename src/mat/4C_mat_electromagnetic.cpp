@@ -13,6 +13,7 @@
 
 #include "4C_mat_electromagnetic.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"

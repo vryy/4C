@@ -265,7 +265,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::pack_my_quantities(
     std::vector<char>& data) const
 {
   Core::Communication::PackBuffer packBuffer;
-  Core::Communication::ParObject::add_to_pack(packBuffer, quantities_);
+  add_to_pack(packBuffer, quantities_);
   std::swap(data, packBuffer());
 }
 
@@ -273,7 +273,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::unpack_quantities(
     Core::Communication::UnpackBuffer& buffer,
     std::unordered_map<std::string, int>& quantities) const
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, quantities);
+  extract_from_pack(buffer, quantities);
 }
 
 FOUR_C_NAMESPACE_CLOSE

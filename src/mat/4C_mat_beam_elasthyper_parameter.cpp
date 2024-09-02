@@ -9,6 +9,7 @@
 
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_beam_elasthyper.hpp"
 #include "4C_material_parameter_base.hpp"
 

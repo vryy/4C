@@ -6,6 +6,7 @@
 
 #include "4C_shell7p_ele.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_cell_type.hpp"
@@ -255,7 +256,7 @@ void Discret::ELEMENTS::Shell7p::unpack(Core::Communication::UnpackBuffer& buffe
   // nodal directors
   extract_from_pack(buffer, nodal_directors_);
   // Setup flag for material post setup
-  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
+  extract_from_pack(buffer, material_post_setup_);
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
   std::shared_ptr<Shell::Serializable> serializable_interface =

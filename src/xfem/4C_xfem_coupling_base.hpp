@@ -19,6 +19,7 @@ thereby builds the bridge between the xfluid class and the cut-library
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_xfem.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Vector.h>

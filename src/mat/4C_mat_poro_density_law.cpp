@@ -11,6 +11,7 @@
 
 #include "4C_mat_poro_density_law.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 

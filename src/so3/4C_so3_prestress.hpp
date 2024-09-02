@@ -13,6 +13,8 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

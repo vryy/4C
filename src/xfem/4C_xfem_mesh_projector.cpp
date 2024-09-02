@@ -499,10 +499,10 @@ void XFEM::MeshProjector::communicate_nodes(
 
       Core::Communication::UnpackBuffer buffer(rblock);
 
-      Core::Communication::ParObject::extract_from_pack(buffer, tar_nodepositions);
-      Core::Communication::ParObject::extract_from_pack(buffer, interpolated_vecs);
-      Core::Communication::ParObject::extract_from_pack(buffer, projection_targetnodes);
-      Core::Communication::ParObject::extract_from_pack(buffer, have_values);
+      extract_from_pack(buffer, tar_nodepositions);
+      extract_from_pack(buffer, interpolated_vecs);
+      extract_from_pack(buffer, projection_targetnodes);
+      extract_from_pack(buffer, have_values);
     }
 
     // in the last step, we keep everything on this proc
@@ -590,10 +590,10 @@ void XFEM::MeshProjector::pack_values(std::vector<Core::LinAlg::Matrix<3, 1>>& t
 {
   // Pack info into block to send
   Core::Communication::PackBuffer data;
-  Core::Communication::ParObject::add_to_pack(data, tar_nodepositions);
-  Core::Communication::ParObject::add_to_pack(data, interpolated_vecs);
-  Core::Communication::ParObject::add_to_pack(data, projection_targetnodes);
-  Core::Communication::ParObject::add_to_pack(data, have_values);
+  add_to_pack(data, tar_nodepositions);
+  add_to_pack(data, interpolated_vecs);
+  add_to_pack(data, projection_targetnodes);
+  add_to_pack(data, have_values);
   swap(sblock, data());
 }
 

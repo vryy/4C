@@ -9,6 +9,7 @@ computations
 
 #include "4C_matelast_couptransverselyisotropic.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"

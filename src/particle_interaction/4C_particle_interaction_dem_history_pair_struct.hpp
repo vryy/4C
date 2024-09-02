@@ -16,6 +16,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,10 +46,9 @@ namespace ParticleInteraction
     //! unpack history pair data
     void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, stick_);
+      extract_from_pack(buffer, stick_);
 
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, gap_t_[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, gap_t_[i]);
     }
   };
 
@@ -72,10 +72,9 @@ namespace ParticleInteraction
     //! unpack history pair data
     void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, stick_);
+      extract_from_pack(buffer, stick_);
 
-      for (int i = 0; i < 3; ++i)
-        Core::Communication::ParObject::extract_from_pack(buffer, gap_r_[i]);
+      for (int i = 0; i < 3; ++i) extract_from_pack(buffer, gap_r_[i]);
     }
   };
 
@@ -99,9 +98,9 @@ namespace ParticleInteraction
     //! unpack history pair data
     void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, surface_energy_);
+      extract_from_pack(buffer, surface_energy_);
 
-      Core::Communication::ParObject::extract_from_pack(buffer, adhesion_force_);
+      extract_from_pack(buffer, adhesion_force_);
     }
   };
 }  // namespace ParticleInteraction

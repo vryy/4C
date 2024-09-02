@@ -46,12 +46,11 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pack(
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  So3Ele::add_to_pack(data, type);
+  add_to_pack(data, type);
 
   data.add_to_pack<int>(is_init_porosity_);
 
-  if (is_init_porosity_)
-    Core::Communication::ParObject::add_to_pack<Base::numnod_, 1>(data, *init_porosity_);
+  if (is_init_porosity_) add_to_pack(data, *init_porosity_);
 
   // add base class Element
   Base::pack(data);
@@ -63,18 +62,18 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::unpack(
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
-  is_init_porosity_ = Core::Communication::ParObject::extract_int(buffer);
+  is_init_porosity_ = extract_int(buffer);
 
   if (is_init_porosity_)
   {
     init_porosity_ = Teuchos::rcp(new Core::LinAlg::Matrix<Base::numnod_, 1>(true));
-    Core::Communication::ParObject::extract_from_pack<Base::numnod_, 1>(buffer, *init_porosity_);
+    extract_from_pack(buffer, *init_porosity_);
   }
 
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Base::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Base::unpack(basedata_buffer);
 

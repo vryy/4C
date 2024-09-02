@@ -11,6 +11,7 @@
 
 #include "4C_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_anisotropy.hpp"
@@ -23,18 +24,18 @@ Mat::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = defaul
 
 void Mat::CylinderCoordinateSystemManager::pack(Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::add_to_pack(data, radial_);
-  Core::Communication::ParObject::add_to_pack(data, axial_);
-  Core::Communication::ParObject::add_to_pack(data, circumferential_);
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(is_defined_));
+  add_to_pack(data, radial_);
+  add_to_pack(data, axial_);
+  add_to_pack(data, circumferential_);
+  add_to_pack(data, static_cast<int>(is_defined_));
 }
 
 void Mat::CylinderCoordinateSystemManager::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, radial_);
-  Core::Communication::ParObject::extract_from_pack(buffer, axial_);
-  Core::Communication::ParObject::extract_from_pack(buffer, circumferential_);
-  is_defined_ = static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
+  extract_from_pack(buffer, radial_);
+  extract_from_pack(buffer, axial_);
+  extract_from_pack(buffer, circumferential_);
+  is_defined_ = static_cast<bool>(extract_int(buffer));
 }
 
 void Mat::CylinderCoordinateSystemManager::read_from_element_line_definition(

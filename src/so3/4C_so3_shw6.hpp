@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_so3_weg6.hpp"
 

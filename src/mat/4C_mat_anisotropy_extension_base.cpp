@@ -12,6 +12,7 @@
 
 #include "4C_mat_anisotropy_extension_base.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_anisotropy.hpp"
 
 FOUR_C_NAMESPACE_OPEN

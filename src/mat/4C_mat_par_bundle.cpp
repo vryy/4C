@@ -14,6 +14,7 @@
 /* headers */
 #include "4C_mat_par_bundle.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_matelast_summand.hpp"
 #include "4C_material_base.hpp"

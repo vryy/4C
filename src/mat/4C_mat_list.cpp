@@ -11,6 +11,7 @@ properties of e.g. one species in a scalar transport problem, or one phase in a 
 
 #include "4C_mat_list.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 

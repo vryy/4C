@@ -12,6 +12,7 @@
 #include "4C_beaminteraction_data.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_global_data.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -74,13 +75,13 @@ void BEAMINTERACTION::Data::CrosslinkerData::pack(Core::Communication::PackBuffe
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack id
-  Core::Communication::ParObject::add_to_pack(data, id_);
+  add_to_pack(data, id_);
   // pack position
-  Core::Communication::ParObject::add_to_pack(data, pos_);
+  add_to_pack(data, pos_);
   // pack bspot status
-  Core::Communication::ParObject::add_to_pack(data, bspots_);
+  add_to_pack(data, bspots_);
   // pack number of bonds
-  Core::Communication::ParObject::add_to_pack(data, numbond_);
+  add_to_pack(data, numbond_);
 
 
   return;
@@ -91,13 +92,13 @@ void BEAMINTERACTION::Data::CrosslinkerData::pack(Core::Communication::PackBuffe
 void BEAMINTERACTION::Data::CrosslinkerData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // id
-  Core::Communication::ParObject::extract_from_pack(buffer, id_);
+  extract_from_pack(buffer, id_);
   // position
-  Core::Communication::ParObject::extract_from_pack(buffer, pos_);
+  extract_from_pack(buffer, pos_);
   // bspot status
-  Core::Communication::ParObject::extract_from_pack(buffer, bspots_);
+  extract_from_pack(buffer, bspots_);
   // number of bonds
-  Core::Communication::ParObject::extract_from_pack(buffer, numbond_);
+  extract_from_pack(buffer, numbond_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
@@ -121,15 +122,13 @@ void BEAMINTERACTION::Data::BeamData::pack(Core::Communication::PackBuffer& data
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack id
-  Core::Communication::ParObject::add_to_pack(data, id_);
+  add_to_pack(data, id_);
   // pack bspotpos
-  Core::Communication::ParObject::add_to_pack(data, bspotpos_);
+  add_to_pack(data, bspotpos_);
   // pack bspottriad
-  Core::Communication::ParObject::add_to_pack(data, bspottriad_);
+  add_to_pack(data, bspottriad_);
   // pack bspotstatus_
-  Core::Communication::ParObject::add_to_pack(data, bspotstatus_);
-  //  // pack filamenttype
-  //  Core::Communication::ParObject::add_to_pack( data, filamenttype_ );
+  add_to_pack(data, bspotstatus_);
 
   return;
 }
@@ -139,13 +138,13 @@ void BEAMINTERACTION::Data::BeamData::pack(Core::Communication::PackBuffer& data
 void BEAMINTERACTION::Data::BeamData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // id
-  Core::Communication::ParObject::extract_from_pack(buffer, id_);
+  extract_from_pack(buffer, id_);
   // bspotpos
-  Core::Communication::ParObject::extract_from_pack(buffer, bspotpos_);
+  extract_from_pack(buffer, bspotpos_);
   // bspottriad
-  Core::Communication::ParObject::extract_from_pack(buffer, bspottriad_);
+  extract_from_pack(buffer, bspottriad_);
   // bspotstatus
-  Core::Communication::ParObject::extract_from_pack(buffer, bspotstatus_);
+  extract_from_pack(buffer, bspotstatus_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
@@ -178,15 +177,15 @@ void BEAMINTERACTION::Data::BindEventData::pack(Core::Communication::PackBuffer&
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
-  Core::Communication::ParObject::add_to_pack(data, clgid_);
+  add_to_pack(data, clgid_);
 
-  Core::Communication::ParObject::add_to_pack(data, elegid_);
+  add_to_pack(data, elegid_);
 
-  Core::Communication::ParObject::add_to_pack(data, bspotlocn_);
+  add_to_pack(data, bspotlocn_);
 
-  Core::Communication::ParObject::add_to_pack(data, requestproc_);
+  add_to_pack(data, requestproc_);
 
-  Core::Communication::ParObject::add_to_pack(data, permission_);
+  add_to_pack(data, permission_);
 
   return;
 }
@@ -195,15 +194,15 @@ void BEAMINTERACTION::Data::BindEventData::pack(Core::Communication::PackBuffer&
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::Data::BindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, clgid_);
+  extract_from_pack(buffer, clgid_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, elegid_);
+  extract_from_pack(buffer, elegid_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, bspotlocn_);
+  extract_from_pack(buffer, bspotlocn_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, requestproc_);
+  extract_from_pack(buffer, requestproc_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, permission_);
+  extract_from_pack(buffer, permission_);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 
@@ -226,11 +225,11 @@ void BEAMINTERACTION::Data::UnBindEventData::pack(Core::Communication::PackBuffe
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
-  Core::Communication::ParObject::add_to_pack(data, clgid_);
+  add_to_pack(data, clgid_);
 
-  Core::Communication::ParObject::add_to_pack(data, eletoupdate_);
+  add_to_pack(data, eletoupdate_);
 
-  Core::Communication::ParObject::add_to_pack(data, linkertype_);
+  add_to_pack(data, linkertype_);
 
   return;
 }
@@ -239,12 +238,11 @@ void BEAMINTERACTION::Data::UnBindEventData::pack(Core::Communication::PackBuffe
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::Data::UnBindEventData::unpack(Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, clgid_);
+  extract_from_pack(buffer, clgid_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, eletoupdate_);
+  extract_from_pack(buffer, eletoupdate_);
 
-  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(
-      Core::Communication::ParObject::extract_int(buffer));
+  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(extract_int(buffer));
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 

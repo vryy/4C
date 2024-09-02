@@ -7,6 +7,7 @@
 
 #include "4C_contact_element.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

@@ -104,7 +104,7 @@ void Mat::ViscoPlasticNoYieldSurface::pack(Core::Communication::PackBuffer& data
   add_to_pack(data, matid);
 
   // pack history data
-  add_to_pack<3, 3>(data, last_plastic_defgrd_inverse_);
+  add_to_pack(data, last_plastic_defgrd_inverse_);
   add_to_pack(data, last_flowres_isotropic_);
 }
 
@@ -134,7 +134,7 @@ void Mat::ViscoPlasticNoYieldSurface::unpack(Core::Communication::UnpackBuffer& 
   }
 
   // history data
-  extract_from_pack<3, 3>(buffer, last_plastic_defgrd_inverse_);
+  extract_from_pack(buffer, last_plastic_defgrd_inverse_);
   extract_from_pack(buffer, last_flowres_isotropic_);
 
   // no need to unpack this, just resize the data members

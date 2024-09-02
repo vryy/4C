@@ -907,7 +907,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
         {
           Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
               Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
-          Core::Communication::ParObject::extract_from_pack(buffer, *gpstress);
+          extract_from_pack(buffer, *gpstress);
           mapdata[discret_ptr()->element_row_map()->GID(i)] = gpstress;
         }
       }

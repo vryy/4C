@@ -9,6 +9,7 @@
 
 #include "4C_fluid_ele_hdg_weak_comp.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
 #include "4C_fluid_ele_interface.hpp"
@@ -161,7 +162,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuff
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Fluid::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Fluid::unpack(basedata_buffer);
 

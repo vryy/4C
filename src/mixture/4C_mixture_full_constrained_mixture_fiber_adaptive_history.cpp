@@ -8,6 +8,7 @@
 #include "4C_mixture_full_constrained_mixture_fiber_adaptive_history.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_fad.hpp"
@@ -68,13 +69,13 @@ void MIXTURE::TimestepAdaptivityInfo::pack(Core::Communication::PackBuffer& data
 void MIXTURE::TimestepAdaptivityInfo::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   std::size_t size_of_adaptivity_info;
-  Core::Communication::ParObject::extract_from_pack(buffer, size_of_adaptivity_info);
+  extract_from_pack(buffer, size_of_adaptivity_info);
   list_.clear();
   list_.reserve(size_of_adaptivity_info);
   for (std::size_t i = 0; i < size_of_adaptivity_info; ++i)
   {
-    const unsigned int level = Core::Communication::ParObject::extract_int(buffer);
-    const unsigned int num_intervals = Core::Communication::ParObject::extract_int(buffer);
+    const unsigned int level = extract_int(buffer);
+    const unsigned int num_intervals = extract_int(buffer);
     list_.emplace_back(level, num_intervals);
   }
 }

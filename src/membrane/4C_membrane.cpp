@@ -10,6 +10,7 @@
 *----------------------------------------------------------------------*/
 #include "4C_membrane.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"

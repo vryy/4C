@@ -10,6 +10,7 @@ function)
 
 #include "4C_mat_beam3r_plasticity.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -170,22 +171,22 @@ void Mat::BeamPlasticMaterial<T>::pack(Core::Communication::PackBuffer& data) co
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  this->add_to_pack(data, type);
+  add_to_pack(data, type);
 
   // Pack material id
   int matid = -1;
   if (this->parameter() != nullptr)
     matid = this->params().id();  // in case we are in post-process mode
 
-  this->add_to_pack(data, matid);
+  add_to_pack(data, matid);
 
   // Pack all internal variables
-  this->add_to_pack(data, numgp_force_);
-  this->add_to_pack(data, numgp_moment_);
-  this->add_to_pack(data, gammaplastaccum_);
-  this->add_to_pack(data, gammaplastconv_);
-  this->add_to_pack(data, kappaplastaccum_);
-  this->add_to_pack(data, kappaplastconv_);
+  add_to_pack(data, numgp_force_);
+  add_to_pack(data, numgp_moment_);
+  add_to_pack(data, gammaplastaccum_);
+  add_to_pack(data, gammaplastconv_);
+  add_to_pack(data, kappaplastaccum_);
+  add_to_pack(data, kappaplastconv_);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -197,15 +198,15 @@ void Mat::BeamPlasticMaterial<T>::unpack(Core::Communication::UnpackBuffer& buff
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   int matid;
-  this->extract_from_pack(buffer, matid);
+  extract_from_pack(buffer, matid);
 
-  this->extract_from_pack(buffer, numgp_force_);
-  this->extract_from_pack(buffer, numgp_moment_);
+  extract_from_pack(buffer, numgp_force_);
+  extract_from_pack(buffer, numgp_moment_);
   this->setup(numgp_force_, numgp_moment_);
-  this->extract_from_pack(buffer, gammaplastaccum_);
-  this->extract_from_pack(buffer, gammaplastconv_);
-  this->extract_from_pack(buffer, kappaplastaccum_);
-  this->extract_from_pack(buffer, kappaplastconv_);
+  extract_from_pack(buffer, gammaplastaccum_);
+  extract_from_pack(buffer, gammaplastconv_);
+  extract_from_pack(buffer, kappaplastaccum_);
+  extract_from_pack(buffer, kappaplastconv_);
 
   this->set_parameter(nullptr);
 

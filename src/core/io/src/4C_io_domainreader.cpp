@@ -11,6 +11,7 @@
 
 #include "4C_io_domainreader.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element_definition.hpp"
@@ -171,16 +172,14 @@ namespace Core::IO
     if (myrank == 0)
     {
       Core::Communication::PackBuffer buffer;
-      Core::Communication::ParObject::add_to_pack<double, 3>(
-          buffer, inputData.bottom_corner_point_);
-      Core::Communication::ParObject::add_to_pack<double, 3>(buffer, inputData.top_corner_point_);
-      Core::Communication::ParObject::add_to_pack<int, 3>(buffer, inputData.interval_);
-      Core::Communication::ParObject::add_to_pack<double, 3>(buffer, inputData.rotation_angle_);
-      Core::Communication::ParObject::add_to_pack(
-          buffer, static_cast<int>(inputData.autopartition_));
-      Core::Communication::ParObject::add_to_pack(buffer, inputData.elementtype_);
-      Core::Communication::ParObject::add_to_pack(buffer, inputData.distype_);
-      Core::Communication::ParObject::add_to_pack(buffer, inputData.elearguments_);
+      add_to_pack(buffer, inputData.bottom_corner_point_);
+      add_to_pack(buffer, inputData.top_corner_point_);
+      add_to_pack(buffer, inputData.interval_);
+      add_to_pack(buffer, inputData.rotation_angle_);
+      add_to_pack(buffer, static_cast<int>(inputData.autopartition_));
+      add_to_pack(buffer, inputData.elementtype_);
+      add_to_pack(buffer, inputData.distype_);
+      add_to_pack(buffer, inputData.elearguments_);
       std::swap(data, buffer());
     }
 
@@ -192,19 +191,16 @@ namespace Core::IO
     Communication::UnpackBuffer buffer(data);
     if (myrank != 0)
     {
-      Core::Communication::ParObject::extract_from_pack<double, 3>(
-          buffer, inputData.bottom_corner_point_);
-      Core::Communication::ParObject::extract_from_pack<double, 3>(
-          buffer, inputData.top_corner_point_);
-      Core::Communication::ParObject::extract_from_pack<int, 3>(buffer, inputData.interval_);
-      Core::Communication::ParObject::extract_from_pack<double, 3>(
-          buffer, inputData.rotation_angle_);
+      extract_from_pack(buffer, inputData.bottom_corner_point_);
+      extract_from_pack(buffer, inputData.top_corner_point_);
+      extract_from_pack(buffer, inputData.interval_);
+      extract_from_pack(buffer, inputData.rotation_angle_);
       int autopartitionInteger;
-      Core::Communication::ParObject::extract_from_pack(buffer, autopartitionInteger);
+      extract_from_pack(buffer, autopartitionInteger);
       inputData.autopartition_ = autopartitionInteger;
-      Core::Communication::ParObject::extract_from_pack(buffer, inputData.elementtype_);
-      Core::Communication::ParObject::extract_from_pack(buffer, inputData.distype_);
-      Core::Communication::ParObject::extract_from_pack(buffer, inputData.elearguments_);
+      extract_from_pack(buffer, inputData.elementtype_);
+      extract_from_pack(buffer, inputData.distype_);
+      extract_from_pack(buffer, inputData.elearguments_);
     }
   }
 

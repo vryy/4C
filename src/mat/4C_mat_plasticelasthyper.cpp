@@ -196,9 +196,9 @@ void Mat::PlasticElastHyper::pack(Core::Communication::PackBuffer& data) const
   }
 
   // plastic history data
-  add_to_pack<3, 3>(data, last_plastic_defgrd_inverse_);
+  add_to_pack(data, last_plastic_defgrd_inverse_);
   add_to_pack(data, last_alpha_isotropic_);
-  add_to_pack<3, 3>(data, last_alpha_kinematic_);
+  add_to_pack(data, last_alpha_kinematic_);
 
   add_to_pack(data, (int)activity_state_.size());
   for (int i = 0; i < (int)activity_state_.size(); ++i)
@@ -284,9 +284,9 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // plastic history data
-  extract_from_pack<3, 3>(buffer, last_plastic_defgrd_inverse_);
+  extract_from_pack(buffer, last_plastic_defgrd_inverse_);
   extract_from_pack(buffer, last_alpha_isotropic_);
-  extract_from_pack<3, 3>(buffer, last_alpha_kinematic_);
+  extract_from_pack(buffer, last_alpha_kinematic_);
 
   activity_state_.resize(extract_int(buffer));
   for (int i = 0; i < (int)activity_state_.size(); ++i)

@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_matelast_summand.hpp"
 
@@ -401,13 +402,13 @@ namespace Mat
      */
     void pack(Core::Communication::PackBuffer& data) const
     {
-      Core::Communication::ParObject::add_to_pack(data, isoprinc);
-      Core::Communication::ParObject::add_to_pack(data, isomod);
-      Core::Communication::ParObject::add_to_pack(data, anisoprinc);
-      Core::Communication::ParObject::add_to_pack(data, anisomod);
-      Core::Communication::ParObject::add_to_pack(data, coeffStretchesPrinc);
-      Core::Communication::ParObject::add_to_pack(data, coeffStretchesMod);
-      Core::Communication::ParObject::add_to_pack(data, viscoGeneral);
+      add_to_pack(data, isoprinc);
+      add_to_pack(data, isomod);
+      add_to_pack(data, anisoprinc);
+      add_to_pack(data, anisomod);
+      add_to_pack(data, coeffStretchesPrinc);
+      add_to_pack(data, coeffStretchesMod);
+      add_to_pack(data, viscoGeneral);
     }
 
     /**
@@ -417,13 +418,13 @@ namespace Mat
      */
     void unpack(Core::Communication::UnpackBuffer& buffer)
     {
-      isoprinc = (bool)Core::Communication::ParObject::extract_int(buffer);
-      isomod = (bool)Core::Communication::ParObject::extract_int(buffer);
-      anisoprinc = (bool)Core::Communication::ParObject::extract_int(buffer);
-      anisomod = (bool)Core::Communication::ParObject::extract_int(buffer);
-      coeffStretchesPrinc = (bool)Core::Communication::ParObject::extract_int(buffer);
-      coeffStretchesMod = (bool)Core::Communication::ParObject::extract_int(buffer);
-      viscoGeneral = (bool)Core::Communication::ParObject::extract_int(buffer);
+      isoprinc = (bool)extract_int(buffer);
+      isomod = (bool)extract_int(buffer);
+      anisoprinc = (bool)extract_int(buffer);
+      anisomod = (bool)extract_int(buffer);
+      coeffStretchesPrinc = (bool)extract_int(buffer);
+      coeffStretchesMod = (bool)extract_int(buffer);
+      viscoGeneral = (bool)extract_int(buffer);
     }
 
     /**

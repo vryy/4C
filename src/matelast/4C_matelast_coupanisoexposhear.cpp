@@ -8,6 +8,7 @@
 
 #include "4C_matelast_coupanisoexposhear.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 #include "4C_material_parameter_base.hpp"
@@ -24,19 +25,19 @@ Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotrop
 void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::pack_anisotropy(
     Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::add_to_pack(data, scalar_products_);
-  Core::Communication::ParObject::add_to_pack(data, structural_tensors_stress_);
-  Core::Communication::ParObject::add_to_pack(data, structural_tensors_);
-  Core::Communication::ParObject::add_to_pack(data, is_initialized_);
+  add_to_pack(data, scalar_products_);
+  add_to_pack(data, structural_tensors_stress_);
+  add_to_pack(data, structural_tensors_);
+  add_to_pack(data, is_initialized_);
 }
 
 void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::unpack_anisotropy(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, scalar_products_);
-  Core::Communication::ParObject::extract_from_pack(buffer, structural_tensors_stress_);
-  Core::Communication::ParObject::extract_from_pack(buffer, structural_tensors_);
-  is_initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
+  extract_from_pack(buffer, scalar_products_);
+  extract_from_pack(buffer, structural_tensors_stress_);
+  extract_from_pack(buffer, structural_tensors_);
+  is_initialized_ = static_cast<bool>(extract_int(buffer));
 }
 
 double Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::get_scalar_product(int gp) const

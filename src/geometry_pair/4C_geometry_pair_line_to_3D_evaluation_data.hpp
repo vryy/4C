@@ -19,6 +19,8 @@
 #include "4C_geometry_pair_utility_classes.hpp"
 #include "4C_inpar_geometry_pair.hpp"
 
+#include <set>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace GEOMETRYPAIR

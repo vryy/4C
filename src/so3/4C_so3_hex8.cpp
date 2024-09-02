@@ -226,7 +226,7 @@ void Discret::ELEMENTS::SoHex8::pack(Core::Communication::PackBuffer& data) cons
   add_to_pack(data, time_);
   if (Prestress::is_mulf(pstype_))
   {
-    Core::Communication::ParObject::add_to_pack(data, *prestress_);
+    add_to_pack(data, *prestress_);
   }
 
   // detJ_

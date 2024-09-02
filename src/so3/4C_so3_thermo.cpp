@@ -63,14 +63,14 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pack(
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  So3Ele::add_to_pack(data, type);
+  add_to_pack(data, type);
   // detJ_
-  So3Ele::add_to_pack(data, detJ_);
+  add_to_pack(data, detJ_);
 
   // invJ_
   const auto size = (int)invJ_.size();
-  So3Ele::add_to_pack(data, size);
-  for (int i = 0; i < size; ++i) So3Ele::add_to_pack(data, invJ_[i]);
+  add_to_pack(data, size);
+  for (int i = 0; i < size; ++i) add_to_pack(data, invJ_[i]);
 
   // add base class Element
   So3Ele::pack(data);
@@ -90,16 +90,16 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::unpack(
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // detJ_
-  So3Ele::extract_from_pack(buffer, detJ_);
+  extract_from_pack(buffer, detJ_);
   // invJ_
   int size = 0;
-  So3Ele::extract_from_pack(buffer, size);
+  extract_from_pack(buffer, size);
   invJ_.resize(size, Core::LinAlg::Matrix<nsd_, nsd_>(true));
-  for (int i = 0; i < size; ++i) So3Ele::extract_from_pack(buffer, invJ_[i]);
+  for (int i = 0; i < size; ++i) extract_from_pack(buffer, invJ_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
-  So3Ele::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   So3Ele::unpack(basedata_buffer);
 

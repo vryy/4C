@@ -10,6 +10,7 @@
 
 #include "4C_beaminteraction_link.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -130,9 +131,9 @@ void BEAMINTERACTION::BeamLink::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // isinit_
-  isinit_ = Core::Communication::ParObject::extract_int(buffer);
+  isinit_ = extract_int(buffer);
   // issetup
-  issetup_ = Core::Communication::ParObject::extract_int(buffer);
+  issetup_ = extract_int(buffer);
   // id_
   extract_from_pack(buffer, id_);
 

@@ -6,6 +6,7 @@
 
 #include "4C_shell7p_ele_scatra.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_cell_type.hpp"
@@ -279,10 +280,9 @@ void Discret::ELEMENTS::Shell7pScatra::unpack(Core::Communication::UnpackBuffer&
   // nodal director
   extract_from_pack(buffer, nodal_directors_);
   // Setup flag for material post setup
-  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
+  extract_from_pack(buffer, material_post_setup_);
   // extract impltype
-  impltype_ =
-      static_cast<Inpar::ScaTra::ImplType>(Core::Communication::ParObject::extract_int(buffer));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
 

@@ -159,9 +159,9 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::pack_constituent(
 {
   MixtureConstituentElastHyperBase::pack_constituent(data);
 
-  Core::Communication::ParObject::add_to_pack(data, current_reference_growth_);
+  add_to_pack(data, current_reference_growth_);
 
-  Core::Communication::ParObject::add_to_pack(data, mue_frac_);
+  add_to_pack(data, mue_frac_);
 
   anisotropy_extension_.pack_anisotropy(data);
 
@@ -178,9 +178,9 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::unpack_constituent(
 {
   MixtureConstituentElastHyperBase::unpack_constituent(buffer);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, current_reference_growth_);
+  extract_from_pack(buffer, current_reference_growth_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, mue_frac_);
+  extract_from_pack(buffer, mue_frac_);
 
   anisotropy_extension_.unpack_anisotropy(buffer);
 

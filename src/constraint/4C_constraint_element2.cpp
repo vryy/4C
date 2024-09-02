@@ -8,6 +8,8 @@
 
 #include "4C_constraint_element2.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 

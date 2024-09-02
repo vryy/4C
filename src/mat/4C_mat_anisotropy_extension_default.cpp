@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_mat_anisotropy_extension_default.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
@@ -47,7 +48,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::pack_anisotropy(
   // Call base packing
   Mat::FiberAnisotropyExtension<numfib>::pack_anisotropy(data);
 
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(initialized_));
+  add_to_pack(data, static_cast<int>(initialized_));
 }
 
 template <unsigned int numfib>
@@ -57,7 +58,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::unpack_anisotropy(
   // Call base unpacking
   Mat::FiberAnisotropyExtension<numfib>::unpack_anisotropy(buffer);
 
-  initialized_ = static_cast<bool>(Core::Communication::ParObject::extract_int(buffer));
+  initialized_ = static_cast<bool>(extract_int(buffer));
 }
 
 template <unsigned int numfib>

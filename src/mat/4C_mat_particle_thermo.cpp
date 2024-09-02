@@ -13,6 +13,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_mat_particle_thermo.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_par_bundle.hpp"
 
 FOUR_C_NAMESPACE_OPEN

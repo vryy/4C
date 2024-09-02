@@ -11,6 +11,7 @@ Nonlinear viscosity according to a modified power law
 
 #include "4C_mat_modpowerlaw.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 

@@ -8,6 +8,7 @@
 
 #include "4C_matelast_isoanisoexpo.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_service.hpp"

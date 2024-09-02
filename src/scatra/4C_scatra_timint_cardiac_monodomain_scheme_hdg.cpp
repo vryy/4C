@@ -11,6 +11,7 @@
 
 #include "4C_scatra_timint_cardiac_monodomain_scheme_hdg.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_scatra_ele_action.hpp"
@@ -205,7 +206,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::unpack_material()
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
     auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
-    hdgele->extract_from_pack(buffer, data);
+    extract_from_pack(buffer, data);
     Core::Communication::UnpackBuffer buffer_mat(data);
     hdgele->unpack_material(buffer_mat);
   }

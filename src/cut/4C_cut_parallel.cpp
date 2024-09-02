@@ -148,7 +148,7 @@ void Cut::Parallel::export_communication_finished(bool& procDone)
   {
     Core::Communication::PackBuffer dataSend;
 
-    Core::Communication::ParObject::add_to_pack(dataSend, static_cast<int>(procDone));
+    add_to_pack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -158,7 +158,7 @@ void Cut::Parallel::export_communication_finished(bool& procDone)
 
     Core::Communication::UnpackBuffer data_recv_buffer(dataRecv);
     // unpack received data
-    Core::Communication::ParObject::extract_from_pack(data_recv_buffer, allProcsDone);
+    extract_from_pack(data_recv_buffer, allProcsDone);
 
     // if the received information is allProcsDone==false, then set the current proc also to
     // procDone=false within the next round-iteration the next proc is also set to procDone=false
@@ -224,8 +224,8 @@ void Cut::Parallel::export_node_position_data()
 
       Core::Communication::PackBuffer dataSend;  // data to be sent
 
-      Core::Communication::ParObject::add_to_pack(dataSend, curr_undecided_node_pos_);
-      Core::Communication::ParObject::add_to_pack(dataSend, tmp_curr_undecidedNodePos_shadow);
+      add_to_pack(dataSend, curr_undecided_node_pos_);
+      add_to_pack(dataSend, tmp_curr_undecidedNodePos_shadow);
 
       std::vector<char> dataRecv;
       send_data(dataSend, dest, source, dataRecv);
@@ -239,10 +239,8 @@ void Cut::Parallel::export_node_position_data()
       Core::Communication::UnpackBuffer data_recv_buffer(dataRecv);
       while (!data_recv_buffer.at_end())
       {
-        Core::Communication::ParObject::extract_from_pack(
-            data_recv_buffer, curr_undecided_node_pos_);
-        Core::Communication::ParObject::extract_from_pack(
-            data_recv_buffer, tmp_curr_undecidedNodePos_shadow);
+        extract_from_pack(data_recv_buffer, curr_undecided_node_pos_);
+        extract_from_pack(data_recv_buffer, tmp_curr_undecidedNodePos_shadow);
 
         //--------------------
         // copy from std::map<std::vector<int>, int> -> std::map<plain_int_set, int>
@@ -519,11 +517,11 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
                dof_set_data_.begin();
            data != dof_set_data_.end(); data++)
       {
-        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->set_index_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (int)(*data)->inside_cell_);
+        add_to_pack(dataSend, (*data)->set_index_);
+        add_to_pack(dataSend, (int)(*data)->inside_cell_);
         pack_points(dataSend, (*data)->cut_points_coords_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->peid_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (*data)->node_dofsetnumber_map_);
+        add_to_pack(dataSend, (*data)->peid_);
+        add_to_pack(dataSend, (*data)->node_dofsetnumber_map_);
       }
 
       std::vector<char> dataRecv;
@@ -543,11 +541,11 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
         std::map<int, int> node_dofsetnumber_map;  // map <nid, current dofset number>
 
         // unpack volumecell data
-        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, set_index);
-        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, inside_cell);
+        extract_from_pack(data_recv_buffer, set_index);
+        extract_from_pack(data_recv_buffer, inside_cell);
         unpack_points(data_recv_buffer, cut_points_coords);
-        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, peid);
-        Core::Communication::ParObject::extract_from_pack(data_recv_buffer, node_dofsetnumber_map);
+        extract_from_pack(data_recv_buffer, peid);
+        extract_from_pack(data_recv_buffer, node_dofsetnumber_map);
 
         // create a new dofSetData object with unpacked data
         dof_set_data_.push_back(Teuchos::rcp(new Cut::MeshIntersection::DofSetData(
@@ -1120,13 +1118,13 @@ void Cut::Parallel::pack_points(Core::Communication::PackBuffer& dataSend,
     std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
 {
   // pack number of points for current volumecell
-  Core::Communication::ParObject::add_to_pack(dataSend, (int)points_coords.size());
+  add_to_pack(dataSend, (int)points_coords.size());
 
   for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator p = points_coords.begin();
        p != points_coords.end(); p++)
   {
     // pack xyz-coordinates
-    Core::Communication::ParObject::add_to_pack(dataSend, *p);
+    add_to_pack(dataSend, *p);
   }
 
 }  // end packNodes
@@ -1145,7 +1143,7 @@ void Cut::Parallel::unpack_points(Core::Communication::UnpackBuffer& buffer,
   int num_points = 0;
 
   // unpack number of points for current volumecell
-  Core::Communication::ParObject::extract_from_pack(buffer, num_points);
+  extract_from_pack(buffer, num_points);
 
 
   Core::LinAlg::Matrix<nsd, 1> coords(true);
@@ -1155,7 +1153,7 @@ void Cut::Parallel::unpack_points(Core::Communication::UnpackBuffer& buffer,
     coords.clear();
 
     // pack xyz-coordinates for point
-    Core::Communication::ParObject::extract_from_pack(buffer, coords);
+    extract_from_pack(buffer, coords);
 
     points_coords.push_back(coords);
   }

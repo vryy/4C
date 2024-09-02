@@ -181,7 +181,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
       for (std::set<double, LineSortCriterion>::iterator x1cline = x1cavcoords.begin();
            x1cline != x1cavcoords.end(); ++x1cline)
       {
-        Core::Communication::ParObject::add_to_pack(data, *x1cline);
+        add_to_pack(data, *x1cline);
       }
       swap(sblock, data());
 
@@ -224,7 +224,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
         while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+          extract_from_pack(buffer, onecoord);
           x1cavcoords.insert(onecoord);
         }
       }
@@ -238,7 +238,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
       for (std::set<double, LineSortCriterion>::iterator x2cline = x2cavcoords.begin();
            x2cline != x2cavcoords.end(); ++x2cline)
       {
-        Core::Communication::ParObject::add_to_pack(data, *x2cline);
+        add_to_pack(data, *x2cline);
       }
       swap(sblock, data());
 
@@ -281,7 +281,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
         while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+          extract_from_pack(buffer, onecoord);
           x2cavcoords.insert(onecoord);
         }
       }
@@ -295,7 +295,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
       for (std::set<double, LineSortCriterion>::iterator x2wline = x2wavcoords.begin();
            x2wline != x2wavcoords.end(); ++x2wline)
       {
-        Core::Communication::ParObject::add_to_pack(data, *x2wline);
+        add_to_pack(data, *x2wline);
       }
       swap(sblock, data());
 
@@ -338,7 +338,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
         while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+          extract_from_pack(buffer, onecoord);
           x2wavcoords.insert(onecoord);
         }
       }
@@ -352,7 +352,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
       for (std::set<double, LineSortCriterion>::iterator clrline = clravcoords.begin();
            clrline != clravcoords.end(); ++clrline)
       {
-        Core::Communication::ParObject::add_to_pack(data, *clrline);
+        add_to_pack(data, *clrline);
       }
       swap(sblock, data());
 
@@ -395,7 +395,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
         while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+          extract_from_pack(buffer, onecoord);
           clravcoords.insert(onecoord);
         }
       }
@@ -409,7 +409,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
       for (std::set<double, LineSortCriterion>::iterator ctbline = ctbavcoords.begin();
            ctbline != ctbavcoords.end(); ++ctbline)
       {
-        Core::Communication::ParObject::add_to_pack(data, *ctbline);
+        add_to_pack(data, *ctbline);
       }
       swap(sblock, data());
 
@@ -452,7 +452,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
         while (!buffer.at_end())
         {
           double onecoord;
-          Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+          extract_from_pack(buffer, onecoord);
           ctbavcoords.insert(onecoord);
         }
       }
@@ -472,7 +472,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
           for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
                x1line != x1avcoords.end(); ++x1line)
           {
-            Core::Communication::ParObject::add_to_pack(data, *x1line);
+            add_to_pack(data, *x1line);
           }
           swap(sblock, data());
 
@@ -515,7 +515,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
             while (!buffer.at_end())
             {
               double onecoord;
-              Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+              extract_from_pack(buffer, onecoord);
               x1avcoords.insert(onecoord);
             }
           }
@@ -529,7 +529,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
           for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
                x2line != x2avcoords.end(); ++x2line)
           {
-            Core::Communication::ParObject::add_to_pack(data, *x2line);
+            add_to_pack(data, *x2line);
           }
           swap(sblock, data());
 
@@ -572,7 +572,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
             while (!buffer.at_end())
             {
               double onecoord;
-              Core::Communication::ParObject::extract_from_pack(buffer, onecoord);
+              extract_from_pack(buffer, onecoord);
               x2avcoords.insert(onecoord);
             }
           }

@@ -11,6 +11,7 @@ class for handling of micro-macro transitions
 
 #include "4C_mat_micromaterialgp_static.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_global_data.hpp"

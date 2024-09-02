@@ -12,6 +12,7 @@
 #include "4C_beaminteraction_link_truss.hpp"
 
 #include "4C_beaminteraction_link.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

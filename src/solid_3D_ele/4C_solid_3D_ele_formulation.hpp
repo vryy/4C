@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -275,7 +275,7 @@ namespace Discret::ELEMENTS
     if constexpr (has_gauss_point_history<SolidFormulation>)
     {
       std::size_t num_gps;
-      Core::Communication::ParObject::extract_from_pack(buffer, num_gps);
+      extract_from_pack(buffer, num_gps);
       solid_formulation_history.gp_history.resize(num_gps);
       for (auto& item : solid_formulation_history.gp_history)
       {

@@ -611,7 +611,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // pack the data for postprocessing
       {
         Core::Communication::PackBuffer data;
-        So3Ele::add_to_pack(data, couplstress);
+        add_to_pack(data, couplstress);
         std::copy(data().begin(), data().end(), std::back_inserter(*couplstressdata));
       }
 

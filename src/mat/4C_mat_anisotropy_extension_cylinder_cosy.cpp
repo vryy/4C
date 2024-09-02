@@ -12,6 +12,7 @@ materials with @Mat::Anisotropy
 
 #include "4C_mat_anisotropy_extension_cylinder_cosy.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_anisotropy_coordinate_system_provider.hpp"
@@ -26,13 +27,13 @@ Mat::CylinderCoordinateSystemAnisotropyExtension::CylinderCoordinateSystemAnisot
 void Mat::CylinderCoordinateSystemAnisotropyExtension::pack_anisotropy(
     Core::Communication::PackBuffer& data) const
 {
-  Core::Communication::ParObject::add_to_pack(data, static_cast<int>(cosy_location_));
+  add_to_pack(data, static_cast<int>(cosy_location_));
 }
 
 void Mat::CylinderCoordinateSystemAnisotropyExtension::unpack_anisotropy(
     Core::Communication::UnpackBuffer& buffer)
 {
-  cosy_location_ = static_cast<CosyLocation>(Core::Communication::ParObject::extract_int(buffer));
+  cosy_location_ = static_cast<CosyLocation>(extract_int(buffer));
 }
 
 void Mat::CylinderCoordinateSystemAnisotropyExtension::on_global_data_initialized()

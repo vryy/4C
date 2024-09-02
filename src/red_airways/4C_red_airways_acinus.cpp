@@ -9,6 +9,7 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_maxwell_0d_acinus.hpp"

@@ -701,21 +701,12 @@ template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  constexpr int num_dof_per_element = Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>;
-  Core::Communication::ParObject::add_to_pack<
-      FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
-      data, eas_iteration_data_.alpha_inc_);
-  Core::Communication::ParObject::add_to_pack<
-      FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
-      data, eas_iteration_data_.alpha_);
-  Core::Communication::ParObject::add_to_pack<
-      FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(data, eas_iteration_data_.s_);
-  Core::Communication::ParObject::add_to_pack<
-      FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
-      FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.invKaa_);
-  Core::Communication::ParObject::add_to_pack<num_dof_per_element,
-      FourC::Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.Kda_);
-  Core::Communication::ParObject::add_to_pack(data, old_step_length_);
+  add_to_pack(data, eas_iteration_data_.alpha_inc_);
+  add_to_pack(data, eas_iteration_data_.alpha_);
+  add_to_pack(data, eas_iteration_data_.s_);
+  add_to_pack(data, eas_iteration_data_.invKaa_);
+  add_to_pack(data, eas_iteration_data_.Kda_);
+  add_to_pack(data, old_step_length_);
 };
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
@@ -723,12 +714,12 @@ template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
 void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.alpha_inc_);
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.alpha_);
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.s_);
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.invKaa_);
-  Core::Communication::ParObject::extract_from_pack(buffer, eas_iteration_data_.Kda_);
-  Core::Communication::ParObject::extract_from_pack(buffer, old_step_length_);
+  extract_from_pack(buffer, eas_iteration_data_.alpha_inc_);
+  extract_from_pack(buffer, eas_iteration_data_.alpha_);
+  extract_from_pack(buffer, eas_iteration_data_.s_);
+  extract_from_pack(buffer, eas_iteration_data_.invKaa_);
+  extract_from_pack(buffer, eas_iteration_data_.Kda_);
+  extract_from_pack(buffer, old_step_length_);
 };
 
 template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,

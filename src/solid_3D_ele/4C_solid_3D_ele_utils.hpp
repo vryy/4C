@@ -12,6 +12,7 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -10,6 +10,7 @@
 
 #include "4C_w1_poro_p1.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_w1_poro_p1_eletypes.hpp"
 
@@ -42,7 +43,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::pack(Core::Communication::PackBuff
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  Base::add_to_pack(data, type);
+  add_to_pack(data, type);
 
   // add base class Element
   Base::pack(data);
@@ -55,7 +56,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::unpack(Core::Communication::Unpack
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Base::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Base::unpack(basedata_buffer);
 

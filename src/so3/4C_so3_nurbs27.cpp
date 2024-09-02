@@ -10,6 +10,7 @@
 
 #include "4C_so3_nurbs27.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"

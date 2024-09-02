@@ -207,7 +207,7 @@ void Discret::ELEMENTS::SolidScatra::unpack(Core::Communication::UnpackBuffer& b
 
   Discret::ELEMENTS::extract_from_pack(buffer, properties_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
+  extract_from_pack(buffer, material_post_setup_);
 
   // reset solid and scatra interfaces
   solid_scatra_calc_variant_ =

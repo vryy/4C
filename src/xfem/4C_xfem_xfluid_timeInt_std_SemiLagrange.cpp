@@ -11,6 +11,7 @@
 
 #include "4C_xfem_xfluid_timeInt_std_SemiLagrange.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_cut_cutwizard.hpp"
 #include "4C_cut_elementhandle.hpp"
 #include "4C_cut_integrationcell.hpp"
@@ -1840,15 +1841,15 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       if (data->state_ == TimeIntData::failedSL_)
       {
         pack_node(dataSend, data->node_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initialpoint_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_eid_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_ele_owner_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
+        add_to_pack(dataSend, data->nds_np_);
+        add_to_pack(dataSend, data->vel_);
+        add_to_pack(dataSend, data->velDeriv_);
+        add_to_pack(dataSend, data->presDeriv_);
+        add_to_pack(dataSend, data->dispnp_);
+        add_to_pack(dataSend, data->initialpoint_);
+        add_to_pack(dataSend, data->initial_eid_);
+        add_to_pack(dataSend, data->initial_ele_owner_);
+        add_to_pack(dataSend, (int)data->type_);
       }
     }
 
@@ -1875,15 +1876,15 @@ void XFEM::XfluidSemiLagrange::export_alternativ_algo_data()
       int newtype;
 
       unpack_node(buffer, node);
-      Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
-      Core::Communication::ParObject::extract_from_pack(buffer, vel);
-      Core::Communication::ParObject::extract_from_pack(buffer, velDeriv);
-      Core::Communication::ParObject::extract_from_pack(buffer, presDeriv);
-      Core::Communication::ParObject::extract_from_pack(buffer, dispnp);
-      Core::Communication::ParObject::extract_from_pack(buffer, initialpoint);
-      Core::Communication::ParObject::extract_from_pack(buffer, initial_eid);
-      Core::Communication::ParObject::extract_from_pack(buffer, initial_ele_owner);
-      Core::Communication::ParObject::extract_from_pack(buffer, newtype);
+      extract_from_pack(buffer, nds_np);
+      extract_from_pack(buffer, vel);
+      extract_from_pack(buffer, velDeriv);
+      extract_from_pack(buffer, presDeriv);
+      extract_from_pack(buffer, dispnp);
+      extract_from_pack(buffer, initialpoint);
+      extract_from_pack(buffer, initial_eid);
+      extract_from_pack(buffer, initial_ele_owner);
+      extract_from_pack(buffer, newtype);
 
       timeIntData_->push_back(TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp,
           initialpoint, initial_eid, initial_ele_owner,
@@ -1926,7 +1927,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
   {
     Core::Communication::PackBuffer dataSend;
 
-    Core::Communication::ParObject::add_to_pack(dataSend, static_cast<int>(procDone));
+    add_to_pack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -1936,7 +1937,7 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
 
     // unpack received data
     Core::Communication::UnpackBuffer buffer(dataRecv);
-    Core::Communication::ParObject::extract_from_pack(buffer, allProcsDone);
+    extract_from_pack(buffer, allProcsDone);
 
     if (allProcsDone == 0) procDone = 0;
 
@@ -1958,18 +1959,18 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       if (data->state_ == TimeIntData::nextSL_)
       {
         pack_node(dataSend, data->node_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->nds_np_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->vel_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->velDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->presDeriv_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->dispnp_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initialpoint_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_eid_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->initial_ele_owner_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->startpoint_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->searchedProcs_);
-        Core::Communication::ParObject::add_to_pack(dataSend, data->counter_);
-        Core::Communication::ParObject::add_to_pack(dataSend, (int)data->type_);
+        add_to_pack(dataSend, data->nds_np_);
+        add_to_pack(dataSend, data->vel_);
+        add_to_pack(dataSend, data->velDeriv_);
+        add_to_pack(dataSend, data->presDeriv_);
+        add_to_pack(dataSend, data->dispnp_);
+        add_to_pack(dataSend, data->initialpoint_);
+        add_to_pack(dataSend, data->initial_eid_);
+        add_to_pack(dataSend, data->initial_ele_owner_);
+        add_to_pack(dataSend, data->startpoint_);
+        add_to_pack(dataSend, data->searchedProcs_);
+        add_to_pack(dataSend, data->counter_);
+        add_to_pack(dataSend, (int)data->type_);
       }
     }
 
@@ -1999,18 +2000,18 @@ void XFEM::XfluidSemiLagrange::export_iter_data(bool& procDone)
       int newtype;
 
       unpack_node(buffer, node);
-      Core::Communication::ParObject::extract_from_pack(buffer, nds_np);
-      Core::Communication::ParObject::extract_from_pack(buffer, vel);
-      Core::Communication::ParObject::extract_from_pack(buffer, velDeriv);
-      Core::Communication::ParObject::extract_from_pack(buffer, presDeriv);
-      Core::Communication::ParObject::extract_from_pack(buffer, dispnp);
-      Core::Communication::ParObject::extract_from_pack(buffer, initialpoint);
-      Core::Communication::ParObject::extract_from_pack(buffer, initial_eid);
-      Core::Communication::ParObject::extract_from_pack(buffer, initial_ele_owner);
-      Core::Communication::ParObject::extract_from_pack(buffer, startpoint);
-      Core::Communication::ParObject::extract_from_pack(buffer, searchedProcs);
-      Core::Communication::ParObject::extract_from_pack(buffer, iter);
-      Core::Communication::ParObject::extract_from_pack(buffer, newtype);
+      extract_from_pack(buffer, nds_np);
+      extract_from_pack(buffer, vel);
+      extract_from_pack(buffer, velDeriv);
+      extract_from_pack(buffer, presDeriv);
+      extract_from_pack(buffer, dispnp);
+      extract_from_pack(buffer, initialpoint);
+      extract_from_pack(buffer, initial_eid);
+      extract_from_pack(buffer, initial_ele_owner);
+      extract_from_pack(buffer, startpoint);
+      extract_from_pack(buffer, searchedProcs);
+      extract_from_pack(buffer, iter);
+      extract_from_pack(buffer, newtype);
 
       timeIntData_->push_back(
           TimeIntData(node, nds_np, vel, velDeriv, presDeriv, dispnp, initialpoint, initial_eid,

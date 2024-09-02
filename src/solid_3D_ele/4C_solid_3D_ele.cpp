@@ -196,7 +196,7 @@ void Discret::ELEMENTS::Solid::unpack(Core::Communication::UnpackBuffer& buffer)
 
   Discret::ELEMENTS::extract_from_pack(buffer, solid_ele_property_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
+  extract_from_pack(buffer, material_post_setup_);
 
   // reset solid interface
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);

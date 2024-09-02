@@ -814,10 +814,10 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
                  iter != multiplecouplings.end(); ++iter)
               mids.push_back(iter->first);
 
-            Core::Communication::ParObject::add_to_pack(data, mids);
+            add_to_pack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              Core::Communication::ParObject::add_to_pack(data, iter->second);
+              add_to_pack(data, iter->second);
 
             std::swap(sdata, data());
           }
@@ -840,12 +840,12 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
             multiplecouplings.clear();
             Core::Communication::UnpackBuffer buffer(rdata);
             std::vector<int> mids;
-            Core::Communication::ParObject::extract_from_pack(buffer, mids);
+            extract_from_pack(buffer, mids);
 
             for (int mid : mids)
             {
               std::vector<int> slvs;
-              Core::Communication::ParObject::extract_from_pack(buffer, slvs);
+              extract_from_pack(buffer, slvs);
               multiplecouplings[mid] = slvs;
             }
           }

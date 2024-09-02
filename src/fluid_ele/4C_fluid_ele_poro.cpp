@@ -12,6 +12,7 @@
 
 #include "4C_fluid_ele_poro.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -149,7 +150,7 @@ void Discret::ELEMENTS::FluidPoro::unpack(Core::Communication::UnpackBuffer& buf
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Fluid::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Fluid::unpack(basedata_buffer);
 

@@ -11,6 +11,7 @@
 #include "4C_particle_engine.hpp"
 
 #include "4C_binstrategy.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_particle.hpp"
@@ -121,7 +122,7 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
   while (!buffer.at_end())
   {
     std::vector<char> data;
-    Core::Communication::ParObject::extract_from_pack(buffer, data);
+    extract_from_pack(buffer, data);
 
     // this std::shared_ptr holds the memory
     Core::Communication::UnpackBuffer data_buffer(data);
@@ -1192,7 +1193,7 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
 
   // pack data for sending
   Core::Communication::PackBuffer data;
-  Core::Communication::ParObject::add_to_pack(data, ghostedbins_);
+  add_to_pack(data, ghostedbins_);
 
   // communicate ghosted bins between all processors
   for (int torank = 0; torank < comm_.NumProc(); ++torank)
@@ -1219,7 +1220,7 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, receivedbins);
+      extract_from_pack(buffer, receivedbins);
 
       // iterate over received bins
       for (int receivedbin : receivedbins)
@@ -1743,7 +1744,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
     while (!buffer.at_end())
     {
       std::vector<char> data;
-      Core::Communication::ParObject::extract_from_pack(buffer, data);
+      extract_from_pack(buffer, data);
 
       // this std::shared_ptr holds the memory
       Core::Communication::UnpackBuffer data_buffer(data);
@@ -1777,7 +1778,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
   for (const auto& p : directghosting)
   {
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::add_to_pack(data, p.second);
+    add_to_pack(data, p.second);
     std::swap(sdata[p.first], data());
   }
 
@@ -1800,7 +1801,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())
     {
-      Core::Communication::ParObject::extract_from_pack(buffer, receiveddirectghosting);
+      extract_from_pack(buffer, receiveddirectghosting);
 
       // iterate over particle types
       for (const auto& typeIt : receiveddirectghosting)

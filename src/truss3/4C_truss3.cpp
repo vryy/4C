@@ -10,6 +10,7 @@
 
 #include "4C_truss3.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -150,8 +151,8 @@ void Discret::ELEMENTS::Truss3::pack(Core::Communication::PackBuffer& data) cons
   // add base class Element
   Element::pack(data);
   add_to_pack(data, isinit_);
-  add_to_pack<6, 1>(data, x_);
-  add_to_pack<1, 3>(data, diff_disp_ref_);
+  add_to_pack(data, x_);
+  add_to_pack(data, diff_disp_ref_);
   add_to_pack(data, material_);
   add_to_pack(data, lrefe_);
   add_to_pack(data, jacobimass_);
@@ -176,8 +177,8 @@ void Discret::ELEMENTS::Truss3::unpack(Core::Communication::UnpackBuffer& buffer
   Core::Communication::UnpackBuffer base_buffer(basedata);
   Element::unpack(base_buffer);
   isinit_ = extract_int(buffer);
-  extract_from_pack<6, 1>(buffer, x_);
-  extract_from_pack<1, 3>(buffer, diff_disp_ref_);
+  extract_from_pack(buffer, x_);
+  extract_from_pack(buffer, diff_disp_ref_);
   extract_from_pack(buffer, material_);
   extract_from_pack(buffer, lrefe_);
   extract_from_pack(buffer, jacobimass_);

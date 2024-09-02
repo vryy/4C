@@ -302,7 +302,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBased::unpack(
 
   Discret::ELEMENTS::extract_from_pack(buffer, solid_ele_property_);
 
-  Core::Communication::ParObject::extract_from_pack(buffer, material_post_setup_);
+  extract_from_pack(buffer, material_post_setup_);
 
   // anisotropic_permeability_directions_
   int size = 0;

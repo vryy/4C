@@ -109,7 +109,7 @@ void Mat::PlasticElastHyperVCU::pack(Core::Communication::PackBuffer& data) cons
   }
 
   // plastic history data
-  add_to_pack<3, 3>(data, last_plastic_defgrd_inverse_);
+  add_to_pack(data, last_plastic_defgrd_inverse_);
   add_to_pack(data, last_alpha_isotropic_);
 
   return;
@@ -169,7 +169,7 @@ void Mat::PlasticElastHyperVCU::unpack(Core::Communication::UnpackBuffer& buffer
   }
 
   // plastic history data
-  extract_from_pack<3, 3>(buffer, last_plastic_defgrd_inverse_);
+  extract_from_pack(buffer, last_plastic_defgrd_inverse_);
   extract_from_pack(buffer, last_alpha_isotropic_);
 
   // no need to pack this

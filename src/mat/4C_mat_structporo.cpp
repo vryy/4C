@@ -8,6 +8,7 @@
 
 #include "4C_mat_structporo.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"  // for function Factory in Unpack
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"

@@ -11,6 +11,7 @@
 
 #include "4C_fluid_ele_hdg.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization_faces.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -206,7 +207,7 @@ void Discret::ELEMENTS::FluidHDG::unpack(Core::Communication::UnpackBuffer& buff
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Fluid::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Fluid::unpack(basedata_buffer);
 

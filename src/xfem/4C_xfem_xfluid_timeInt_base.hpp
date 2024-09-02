@@ -19,6 +19,7 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_inpar_xfem.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>

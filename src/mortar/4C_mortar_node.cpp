@@ -9,6 +9,7 @@
 
 #include "4C_mortar_node.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -51,15 +52,15 @@ Mortar::NodeDataContainer::NodeDataContainer()
 void Mortar::NodeDataContainer::pack(Core::Communication::PackBuffer& data) const
 {
   // add n_
-  Core::Communication::ParObject::add_to_pack(data, n_, 3 * sizeof(double));
+  add_to_pack(data, n_, 3 * sizeof(double));
   // add edgetangent_
-  Core::Communication::ParObject::add_to_pack(data, edgeTangent_, 3 * sizeof(double));
+  add_to_pack(data, edgeTangent_, 3 * sizeof(double));
   // add lm_
-  Core::Communication::ParObject::add_to_pack(data, lm_, 3 * sizeof(double));
+  add_to_pack(data, lm_, 3 * sizeof(double));
   // add lmold_
-  Core::Communication::ParObject::add_to_pack(data, lmold_, 3 * sizeof(double));
+  add_to_pack(data, lmold_, 3 * sizeof(double));
   // add lmuzawa_
-  Core::Communication::ParObject::add_to_pack(data, lmuzawa_, 3 * sizeof(double));
+  add_to_pack(data, lmuzawa_, 3 * sizeof(double));
 
   // no need to pack drows_, mrows_ and mmodrows_
   // (these will evaluated anew anyway)
@@ -71,15 +72,15 @@ void Mortar::NodeDataContainer::pack(Core::Communication::PackBuffer& data) cons
 void Mortar::NodeDataContainer::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   // n_
-  Core::Communication::ParObject::extract_from_pack(buffer, n_, 3 * sizeof(double));
+  extract_from_pack(buffer, n_, 3 * sizeof(double));
   // edgetangent_
-  Core::Communication::ParObject::extract_from_pack(buffer, edgeTangent_, 3 * sizeof(double));
+  extract_from_pack(buffer, edgeTangent_, 3 * sizeof(double));
   // lm_
-  Core::Communication::ParObject::extract_from_pack(buffer, lm_, 3 * sizeof(double));
+  extract_from_pack(buffer, lm_, 3 * sizeof(double));
   // lmold_
-  Core::Communication::ParObject::extract_from_pack(buffer, lmold_, 3 * sizeof(double));
+  extract_from_pack(buffer, lmold_, 3 * sizeof(double));
   // lmuzawa_
-  Core::Communication::ParObject::extract_from_pack(buffer, lmuzawa_, 3 * sizeof(double));
+  extract_from_pack(buffer, lmuzawa_, 3 * sizeof(double));
 }
 
 

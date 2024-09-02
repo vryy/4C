@@ -10,6 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "4C_particle_engine_unique_global_id.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -50,7 +51,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
     Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
 
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::add_to_pack(data, reusableglobalids_);
+    add_to_pack(data, reusableglobalids_);
 
     buffer->insert(buffer->end(), data().begin(), data().end());
 
@@ -74,7 +75,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
     Core::Communication::UnpackBuffer data(*buffer);
     while (!data.at_end())
     {
-      Core::Communication::ParObject::extract_from_pack(data, reusableglobalids_);
+      extract_from_pack(data, reusableglobalids_);
     }
   }
 }
@@ -128,7 +129,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
   {
     // pack data for sending
     Core::Communication::PackBuffer data;
-    Core::Communication::ParObject::add_to_pack(data, reusableglobalids_);
+    add_to_pack(data, reusableglobalids_);
 
     // clear reusable global ids
     reusableglobalids_.clear();
@@ -170,7 +171,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
       Core::Communication::UnpackBuffer buffer(rmsg);
       while (!buffer.at_end())
       {
-        Core::Communication::ParObject::extract_from_pack(buffer, receivedreusableglobalids);
+        extract_from_pack(buffer, receivedreusableglobalids);
 
         reusableglobalids_.insert(reusableglobalids_.end(), receivedreusableglobalids.begin(),
             receivedreusableglobalids.end());
@@ -288,7 +289,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
 
       // pack data for sending
       Core::Communication::PackBuffer data;
-      Core::Communication::ParObject::add_to_pack(data, tobesendglobalids[torank]);
+      add_to_pack(data, tobesendglobalids[torank]);
 
       sdata[torank].insert(sdata[torank].end(), data().begin(), data().end());
     }
@@ -319,7 +320,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::
       Core::Communication::UnpackBuffer buffer(rmsg);
       while (!buffer.at_end())
       {
-        Core::Communication::ParObject::extract_from_pack(buffer, requesteduniqueglobalids);
+        extract_from_pack(buffer, requesteduniqueglobalids);
       }
     }
   }

@@ -14,6 +14,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_inpar_mortar.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mortar_node.hpp"

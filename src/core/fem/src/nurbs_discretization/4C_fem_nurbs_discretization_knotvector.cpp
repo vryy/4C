@@ -10,6 +10,8 @@
 
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 

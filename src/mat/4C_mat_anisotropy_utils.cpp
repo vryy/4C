@@ -10,6 +10,7 @@
 #include "4C_mat_anisotropy_utils.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_parobject.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 
@@ -72,11 +73,11 @@ template <typename T>
 void Mat::pack_fiber_vector(
     Core::Communication::PackBuffer& buffer, const std::vector<std::vector<T>>& vct)
 {
-  Core::Communication::ParObject::add_to_pack(buffer, static_cast<int>(vct.size()));
+  add_to_pack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
-    Core::Communication::ParObject::add_to_pack(buffer, list);
+    add_to_pack(buffer, list);
   }
 }
 
@@ -84,13 +85,13 @@ template <typename T, unsigned int numfib>
 void Mat::pack_fiber_array(
     Core::Communication::PackBuffer& buffer, const std::vector<std::array<T, numfib>>& vct)
 {
-  Core::Communication::ParObject::add_to_pack(buffer, static_cast<int>(vct.size()));
+  add_to_pack(buffer, static_cast<int>(vct.size()));
 
   for (const auto& list : vct)
   {
     for (const auto& fiber : list)
     {
-      Core::Communication::ParObject::add_to_pack<T::num_rows(), T::num_cols()>(buffer, fiber);
+      add_to_pack(buffer, fiber);
     }
   }
 }
@@ -100,11 +101,11 @@ void Mat::unpack_fiber_vector(
     Core::Communication::UnpackBuffer& buffer, std::vector<std::vector<T>>& vct)
 {
   vct.clear();
-  int numgps = Core::Communication::ParObject::extract_int(buffer);
+  int numgps = extract_int(buffer);
   for (int i = 0; i < numgps; ++i)
   {
     std::vector<T> mat(0);
-    Core::Communication::ParObject::extract_from_pack(buffer, mat);
+    extract_from_pack(buffer, mat);
     vct.emplace_back(mat);
   }
 }
@@ -114,14 +115,13 @@ void Mat::unpack_fiber_array(
     Core::Communication::UnpackBuffer& buffer, std::vector<std::array<T, numfib>>& vct)
 {
   vct.clear();
-  int numgps = Core::Communication::ParObject::extract_int(buffer);
+  int numgps = extract_int(buffer);
   for (int i = 0; i < numgps; ++i)
   {
     std::array<T, numfib> mat;
     for (unsigned int j = 0; j < numfib; ++j)
     {
-      Core::Communication::ParObject::extract_from_pack<T::num_rows(), T::num_cols()>(
-          buffer, mat.at(j));
+      extract_from_pack(buffer, mat.at(j));
     }
     vct.emplace_back(mat);
   }

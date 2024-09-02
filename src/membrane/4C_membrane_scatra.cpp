@@ -10,6 +10,7 @@
 
 #include "4C_membrane_scatra.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_io_linedefinition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -58,10 +59,10 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pack(Core::Communication::PackB
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  Core::Communication::ParObject::add_to_pack(data, type);
+  add_to_pack(data, type);
 
   // pack scalar transport impltype_
-  Core::Communication::ParObject::add_to_pack(data, impltype_);
+  add_to_pack(data, impltype_);
 
   // add base class Element
   Membrane<distype>::pack(data);
@@ -79,12 +80,11 @@ void Discret::ELEMENTS::MembraneScatra<distype>::unpack(Core::Communication::Unp
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
   // extract scalar transport impltype
-  impltype_ =
-      static_cast<Inpar::ScaTra::ImplType>(Core::Communication::ParObject::extract_int(buffer));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
 
   // extract base class Element
   std::vector<char> basedata(0);
-  Core::Communication::ParObject::extract_from_pack(buffer, basedata);
+  extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
   Membrane<distype>::unpack(basedata_buffer);
 

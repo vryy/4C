@@ -44,7 +44,7 @@ void Discret::UTILS::i_send_receive_any(Teuchos::RCP<Core::FE::Discretization> c
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
       Core::Communication::PackBuffer data;
-      Core::Communication::ParObject::add_to_pack(data, *iter);
+      add_to_pack(data, *iter);
       sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
     }
     targetprocs[p->first] = 1;
@@ -87,7 +87,7 @@ void Discret::UTILS::i_send_receive_any(Teuchos::RCP<Core::FE::Discretization> c
       while (!buffer.at_end())
       {
         std::pair<int, std::vector<int>> pair;
-        Core::Communication::ParObject::extract_from_pack(buffer, pair);
+        extract_from_pack(buffer, pair);
         recvdata.push_back(pair);
       }
       FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not empty after unpacking");

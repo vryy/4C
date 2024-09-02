@@ -12,6 +12,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mortar_node.hpp"
 
 #include <unordered_map>

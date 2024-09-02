@@ -15,6 +15,7 @@
  *----------------------------------------------------------------------*/
 #include "4C_mat_thermostvenantkirchhoff.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"

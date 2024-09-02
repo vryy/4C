@@ -9,6 +9,7 @@
 
 #include "4C_so3_prestress.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN

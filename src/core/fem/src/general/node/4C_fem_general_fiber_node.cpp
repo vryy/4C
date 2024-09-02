@@ -8,7 +8,7 @@
 
 #include "4C_fem_general_fiber_node.hpp"
 
-#include "4C_fem_general_fiber_node_holder.hpp"
+#include "4C_comm_pack_helpers.hpp"
 
 #include <utility>
 
@@ -61,14 +61,14 @@ void Core::Nodes::FiberNode::pack(Core::Communication::PackBuffer& data) const
 
   // pack type of this instance of ParObject
   int type = unique_par_object_id();
-  Core::Nodes::Node::add_to_pack(data, type);
+  add_to_pack(data, type);
   // add base class of fiber node
   Core::Nodes::Node::pack(data);
 
   // Add fiber data
-  Core::Communication::ParObject::add_to_pack(data, fibers_);
-  Core::Communication::ParObject::add_to_pack(data, coordinateSystemDirections_);
-  Core::Communication::ParObject::add_to_pack(data, angles_);
+  add_to_pack(data, fibers_);
+  add_to_pack(data, coordinateSystemDirections_);
+  add_to_pack(data, angles_);
 }
 
 /*
@@ -87,9 +87,9 @@ void Core::Nodes::FiberNode::unpack(Core::Communication::UnpackBuffer& buffer)
   Node::unpack(basedata_buffer);
 
   // extract fiber data
-  Core::Communication::ParObject::extract_from_pack(buffer, fibers_);
-  Core::Communication::ParObject::extract_from_pack(buffer, coordinateSystemDirections_);
-  Core::Communication::ParObject::extract_from_pack(buffer, angles_);
+  extract_from_pack(buffer, fibers_);
+  extract_from_pack(buffer, coordinateSystemDirections_);
+  extract_from_pack(buffer, angles_);
 }
 
 /*

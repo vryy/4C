@@ -472,7 +472,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       {
         Core::Communication::PackBuffer data;
 
-        So3Ele::add_to_pack(data, couplstress);
+        add_to_pack(data, couplstress);
         std::copy(data().begin(), data().end(), std::back_inserter(*couplingstressdata));
       }
     }
