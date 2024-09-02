@@ -52,8 +52,7 @@ namespace BEAMINTERACTION
      * @param visualization_output_params (in) Global visualization parameter pointer.
      */
     BeamToSolidOutputWriterVisualization(const std::string& writer_full_name,
-        Core::IO::VisualizationParameters visualization_params,
-        Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params);
+        Core::IO::VisualizationParameters visualization_params);
 
     /**
      * \brief Destructor.
@@ -90,12 +89,6 @@ namespace BEAMINTERACTION
     void write(const unsigned int timestep_number, const double time);
 
    private:
-    //! Global parameters of visualization output.
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params_;
-
-    //! Full name of this visualization.
-    const std::string writer_full_name_;
-
     //! discretization based on which global dof data can be written.
     Teuchos::RCP<const Core::FE::Discretization> discret_;
 

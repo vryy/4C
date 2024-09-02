@@ -40,41 +40,17 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
     BeamToSolidSurfaceVisualizationOutputWriter(
-        Core::IO::VisualizationParameters visualization_params)
-    : isinit_(false),
-      issetup_(false),
-      output_params_ptr_(Teuchos::null),
+        Core::IO::VisualizationParameters visualization_params,
+        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+            output_params_ptr)
+    : output_params_ptr_(output_params_ptr),
       output_writer_base_ptr_(Teuchos::null),
       visualization_params_(std::move(visualization_params))
 {
-}
-
-/**
- *
- */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::init()
-{
-  issetup_ = false;
-  isinit_ = true;
-}
-
-/**
- *
- */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
-        output_params_ptr)
-{
-  check_init();
-
-  // Set beam to solid surface interactions output parameters.
-  output_params_ptr_ = output_params_ptr;
-
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-solid-surface", visualization_output_params, visualization_params_));
+          "beam-to-solid-surface", visualization_params_));
 
   // Whether or not to write unique cell and node IDs.
   const bool write_unique_ids = output_params_ptr_->get_write_unique_i_ds_flag();
@@ -171,8 +147,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
       }
     }
   }
-
-  issetup_ = true;
 }
 
 /**
@@ -181,8 +155,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact) const
 {
-  check_init_setup();
-
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
   // step.
@@ -198,8 +170,6 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_runtime_iteration(
     const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_iteration) const
 {
-  check_init_setup();
-
   if (output_params_ptr_->get_output_every_iteration())
   {
     auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
@@ -385,21 +355,5 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   output_writer_base_ptr_->write(i_step, time);
 }
 
-
-/**
- * \brief Checks the init and setup status.
- */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init_setup() const
-{
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call init() and setup() first!");
-}
-
-/**
- * \brief Checks the init status.
- */
-void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::check_init() const
-{
-  if (!isinit_) FOUR_C_THROW("init() has not been called, yet!");
-}
 
 FOUR_C_NAMESPACE_CLOSE

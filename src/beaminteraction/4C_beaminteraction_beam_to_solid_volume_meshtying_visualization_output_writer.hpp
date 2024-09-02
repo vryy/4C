@@ -51,7 +51,9 @@ namespace BEAMINTERACTION
      * \brief Constructor.
      */
     explicit BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
-        Core::IO::VisualizationParameters visualization_params);
+        Core::IO::VisualizationParameters visualization_params,
+        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+            output_params_ptr);
 
     /**
      * \brief Destructor.
@@ -65,11 +67,9 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Setup the output writer base and the desired field data.
-     * @param visualization_output_params (in) RCP to parameter container for global visualization
-     * output options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
-    void setup(Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+    void setup(
         Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr);
 
@@ -105,23 +105,7 @@ namespace BEAMINTERACTION
         const BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact* beam_contact, int i_step,
         double time) const;
 
-    /**
-     * \brief Checks the init and setup status.
-     */
-    void check_init_setup() const;
-
-    /**
-     * \brief Checks the init status.
-     */
-    void check_init() const;
-
    private:
-    //! Flag if object is initialized.
-    bool isinit_;
-
-    //! Flag if object is set up.
-    bool issetup_;
-
     //! Parameter container for output.
     Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
 

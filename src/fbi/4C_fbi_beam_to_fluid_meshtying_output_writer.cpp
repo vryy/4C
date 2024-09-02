@@ -30,42 +30,17 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOutputWriter()
-    : isinit_(false),
-      issetup_(false),
-      output_params_ptr_(Teuchos::null),
-      output_writer_base_ptr_(Teuchos::null)
-{
-}
-
-/**
- *
- */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::init()
-{
-  issetup_ = false;
-  isinit_ = true;
-}
-
-/**
- *
- */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
+BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOutputWriter(
     const Core::IO::VisualizationParameters& visualization_params,
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
+    : output_params_ptr_(output_params_ptr),
+      output_writer_base_ptr_(Teuchos::null),
+      visualization_params_(visualization_params)
 {
-  check_init();
-
-  // Set beam to solid volume mesh tying output parameters.
-  output_params_ptr_ = output_params_ptr;
-
-  visualization_params_ = visualization_params;
-
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
-          "beam-to-fluid", visualization_output_params, visualization_params));
+          "beam-to-fluid", visualization_params));
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
@@ -99,8 +74,6 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
       visualization_data.register_point_data<double>("displacement", 3);
     }
   }
-
-  issetup_ = true;
 }
 
 /**
@@ -110,8 +83,6 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
     const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
     double time) const
 {
-  check_init_setup();
-
   auto [output_time, output_step] =
       Core::IO::get_time_and_time_step_index_for_output(visualization_params_, time, i_step);
   write_output_beam_to_fluid_mesh_tying(couplingenforcer, output_step, output_time);
@@ -179,21 +150,5 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
   output_writer_base_ptr_->write(i_step, time);
 }
 
-
-/**
- * \brief Checks the init and setup status.
- */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init_setup() const
-{
-  if (!isinit_ or !issetup_) FOUR_C_THROW("Call init() and setup() first!");
-}
-
-/**
- * \brief Checks the init status.
- */
-void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::check_init() const
-{
-  if (!isinit_) FOUR_C_THROW("init() has not been called, yet!");
-}
 
 FOUR_C_NAMESPACE_CLOSE

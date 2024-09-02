@@ -23,12 +23,9 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVisualization(
-    const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params,
-    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params)
+    const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params)
     : Core::IO::VisualizationManager(std::move(visualization_params),
           *(Global::Problem::instance()->get_communicators()->global_comm()), writer_full_name),
-      visualization_output_params_(visualization_output_params),
-      writer_full_name_(writer_full_name),
       discret_(Teuchos::null),
       node_gid_map_(Teuchos::null)
 {
