@@ -60,11 +60,11 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      Core::IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
+      Core::IO::LineParser parser(*condline, "While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
 
-      parser.consume(*condline, "LAW");
-      const int id = parser.read<int>(*condline);
-      const std::string name = parser.read<std::string>(*condline);
+      parser.consume("LAW");
+      const int id = parser.read<int>();
+      const std::string name = parser.read<std::string>();
 
       // Remove the parts that were already read.
       condline->str(condline->str().erase(0, (size_t)condline->tellg()));

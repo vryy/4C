@@ -60,41 +60,41 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
 
   if (section.empty()) return;
 
-  Core::IO::LineParser parser("While reading condition section '" + sectionname_ + "': ");
-
   // First we read a header for the current section: It needs to start with the
   // geometry type followed by the number of lines:
   //
   // ("DPOINT" | "DLINE" | "DSURF" | "DVOL" ) <number>
-  {
-    std::stringstream line(section[0]);
 
-    const std::string expected_geometry_type = std::invoke(
-        [this]()
+  std::stringstream line(section[0]);
+
+  Core::IO::LineParser parser_header(
+      line, "While reading header of condition section '" + sectionname_ + "': ");
+
+  const std::string expected_geometry_type = std::invoke(
+      [this]()
+      {
+        switch (gtype_)
         {
-          switch (gtype_)
-          {
-            case Core::Conditions::geometry_type_point:
-              return "DPOINT";
-            case Core::Conditions::geometry_type_line:
-              return "DLINE";
-            case Core::Conditions::geometry_type_surface:
-              return "DSURF";
-            case Core::Conditions::geometry_type_volume:
-              return "DVOL";
-            default:
-              FOUR_C_THROW("Geometry type unspecified");
-          }
-        });
+          case Core::Conditions::geometry_type_point:
+            return "DPOINT";
+          case Core::Conditions::geometry_type_line:
+            return "DLINE";
+          case Core::Conditions::geometry_type_surface:
+            return "DSURF";
+          case Core::Conditions::geometry_type_volume:
+            return "DVOL";
+          default:
+            FOUR_C_THROW("Geometry type unspecified");
+        }
+      });
 
-    parser.consume(line, expected_geometry_type);
-    const int condition_count = parser.read<int>(line);
+  parser_header.consume(expected_geometry_type);
+  const int condition_count = parser_header.read<int>();
 
-    if (condition_count != static_cast<int>(section.size() - 1))
-    {
-      FOUR_C_THROW("Got %d condition lines but expected %d in section '%s'", section.size() - 1,
-          condition_count, sectionname_.c_str());
-    }
+  if (condition_count != static_cast<int>(section.size() - 1))
+  {
+    FOUR_C_THROW("Got %d condition lines but expected %d in section '%s'", section.size() - 1,
+        condition_count, sectionname_.c_str());
   }
 
   for (auto i = section.begin() + 1; i != section.end(); ++i)
@@ -108,10 +108,13 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
     condline->seekp(0, condline->end);
     *condline << " ";
 
-    parser.consume(*condline, "E");
+    Core::IO::LineParser parser_content(
+        *condline, "While reading content of condition section '" + sectionname_ + "': ");
+
+    parser_content.consume("E");
     // Read a one-based condition number but convert it to zero-based for internal use.
-    const int dobjid = parser.read<int>(*condline) - 1;
-    parser.consume(*condline, "-");
+    const int dobjid = parser_content.read<int>() - 1;
+    parser_content.consume("-");
 
     Teuchos::RCP<Core::Conditions::Condition> condition =
         Teuchos::rcp(new Core::Conditions::Condition(dobjid, condtype_, buildgeometry_, gtype_));

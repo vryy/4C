@@ -67,11 +67,11 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      Core::IO::LineParser parser("While reading 'MATERIALS' section: ");
+      Core::IO::LineParser parser(*condline, "While reading 'MATERIALS' section: ");
 
-      parser.consume(*condline, "MAT");
-      const int matid = parser.read<int>(*condline);
-      const std::string name = parser.read<std::string>(*condline);
+      parser.consume("MAT");
+      const int matid = parser.read<int>();
+      const std::string name = parser.read<std::string>();
 
       // Remove the parts that were already read.
       condline->str(condline->str().erase(0, (size_t)condline->tellg()));

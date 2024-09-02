@@ -12,6 +12,7 @@
 #include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <array>
 #include <istream>
 #include <string>
 
@@ -38,13 +39,16 @@ namespace Core::IO
      *   LineParser parser("While reading section MY PARAMETERS: ");
      * @endcode
      */
-    LineParser(std::string user_scope_message) : user_scope_(std::move(user_scope_message)) {}
+    LineParser(std::istream& stream, std::string user_scope_message)
+        : stream_(stream), user_scope_(std::move(user_scope_message))
+    {
+    }
 
     //! Read the next string in @p in and ensure it matches the expectation.
-    void consume(std::istream& in, const std::string& expected)
+    void consume(const std::string& expected)
     {
       std::string read_string;
-      in >> read_string;
+      stream_ >> read_string;
       if (read_string != expected)
         FOUR_C_THROW(
             "%sCould not read expected string '%s'.", user_scope_.c_str(), expected.c_str());
@@ -52,17 +56,34 @@ namespace Core::IO
 
     //! Read a single value of given type.
     template <typename T>
-    T read(std::istream& in)
+    T read()
     {
       T read_object;
-      in >> read_object;
-      if (in.fail())
+      stream_ >> read_object;
+
+      if (stream_.fail() || (!stream_.eof() && !std::isspace(stream_.peek())))
         FOUR_C_THROW("%sCould not read expected value of type '%s'.", user_scope_.c_str(),
             Core::UTILS::try_demangle(typeid(T).name()).c_str());
       return read_object;
     }
 
+    //! Read an array of a given type.
+    template <typename T, size_t n>
+    std::array<T, n> read_array()
+    {
+      std::array<T, n> array;
+      for (size_t i = 0; i < n; ++i) array[i] = read<T>();
+
+      return array;
+    }
+
+    //! Check if end of file is reached for stream.
+    bool eof() const { return stream_.eof(); }
+
    private:
+    //! The stream to read from.
+    std::istream& stream_;
+
     //! Prepend a user message for better error messages.
     std::string user_scope_{};
   };
