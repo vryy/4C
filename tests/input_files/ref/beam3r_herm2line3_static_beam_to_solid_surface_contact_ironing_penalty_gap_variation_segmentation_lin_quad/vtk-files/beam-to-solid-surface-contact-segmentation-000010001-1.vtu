@@ -1,0 +1,76 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+2.500000100000000e-01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="4" NumberOfCells="0" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="ascii">
+-7.083843500523668e-01 1.650000000000000e+00 -6.091384646390227e-02
+-7.500000000000000e-01 1.650000000000000e+00 1.000000000000000e-01
+-4.403130831638241e-01 1.650000000000000e+00 -1.097456078432961e+00
+-7.083843500523668e-01 1.650000000000000e+00 -6.091384646390227e-02
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="ascii">
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii">
+-1.093264593038712e-03 -2.156891316693439e-01 -1.804170454739147e-02
+-1.096715074648258e-03 -1.935363739705285e-01 -1.953803588256295e-02
+-7.286912268329448e-04 -3.615715022279922e-01 -8.570784023815392e-03
+-1.093264593038712e-03 -2.156891316693439e-01 -1.804170454739147e-02
+        </DataArray>
+        <DataArray type="Float64" Name="force" NumberOfComponents="3" format="ascii">
+4.135013897119909e-05 2.829713930881928e-02 -2.180541089830980e-03
+9.886077827311693e-06 4.514030092838260e-03 -3.311593110148081e-04
+-2.595105107258604e-03 2.209914375946182e-01 -2.300595075085061e-02
+4.135013897119942e-05 2.829713930881954e-02 -2.180541089831001e-03
+        </DataArray>
+        <DataArray type="Float64" Name="gap" format="ascii">
+7.617519782965959e-02
+9.048561942981243e-02
+3.333653718811908e-02
+7.617519782965948e-02
+        </DataArray>
+        <DataArray type="Float64" Name="surface_normal" NumberOfComponents="3" format="ascii">
+1.456962463124597e-03 9.970430768194745e-01 -7.683085465316905e-02
+2.184202917092691e-03 9.973174264704949e-01 -7.316542978679350e-02
+-1.167909549947049e-02 9.945570593706289e-01 -1.035367296391067e-01
+1.456962463124595e-03 9.970430768194745e-01 -7.683085465316906e-02
+        </DataArray>
+        <DataArray type="Int32" Name="uid_0_pair_beam_id" format="ascii">
+16
+16
+16
+16
+        </DataArray>
+        <DataArray type="Int32" Name="uid_1_pair_solid_id" format="ascii">
+6
+6
+7
+7
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>
