@@ -33,9 +33,9 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOutputWriter(
     const Core::IO::VisualizationParameters& visualization_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
-    : visualization_params_(visualization_params),
-      output_params_ptr_(output_params_ptr),
-      output_writer_base_ptr_(Teuchos::null)
+    : output_params_ptr_(output_params_ptr),
+      output_writer_base_ptr_(Teuchos::null),
+      visualization_params_(visualization_params)
 {
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
