@@ -132,7 +132,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<ScalarType, Line, Volume>::intersect
           delta_xi.norm2() < Constants::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
-        if (valid_parameter1_d(eta) && valid_parameter3_d<Volume>(xi))
+        if (valid_parameter_1d(eta) && valid_parameter_3d<Volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -275,7 +275,7 @@ void GEOMETRYPAIR::project_point_to_volume(const Core::LinAlg::Matrix<3, 1, Scal
       if (residuum.norm2() < Constants::local_newton_res_tol &&
           delta_xi.norm2() < Constants::projection_xi_eta_tol)
       {
-        if (valid_parameter3_d<Volume>(xi))
+        if (valid_parameter_3d<Volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;

@@ -294,7 +294,7 @@ namespace GEOMETRYPAIR
       Core::LinAlg::Matrix<3, 1, ScalarType>& xi, const double normal_influence_direction)
   {
     // We only need to check the normal distance if the coordinates are within the surface.
-    if (!valid_parameter2_d<Surface>(xi)) return false;
+    if (!valid_parameter_2d<Surface>(xi)) return false;
 
     if (normal_influence_direction < 0)
     {
