@@ -306,7 +306,7 @@ namespace GEOMETRYPAIR
    * \brief Check if the parameter coordinate xi is in the valid range for a 1D element
    */
   template <typename T>
-  bool valid_parameter1_d(const T& xi)
+  bool valid_parameter_1d(const T& xi)
   {
     const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (fabs(xi) < xi_limit)
@@ -319,7 +319,7 @@ namespace GEOMETRYPAIR
    * \brief Check if the parameter coordinate xi is in the valid range for a 2D element
    */
   template <typename ElementType, typename T>
-  bool valid_parameter2_d(const T& xi)
+  bool valid_parameter_2d(const T& xi)
   {
     const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (ElementType::geometry_type_ == DiscretizationTypeGeometry::quad)
@@ -345,7 +345,7 @@ namespace GEOMETRYPAIR
    * \brief Check if the parameter coordinate xi is in the valid range for a 3D element
    */
   template <typename ElementType, typename T>
-  bool valid_parameter3_d(const T& xi)
+  bool valid_parameter_3d(const T& xi)
   {
     const double xi_limit = 1.0 + Constants::projection_xi_eta_tol;
     if (ElementType::geometry_type_ == DiscretizationTypeGeometry::hexahedron)

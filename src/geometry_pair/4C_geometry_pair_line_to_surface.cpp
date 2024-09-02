@@ -195,7 +195,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
                Core::FADUtils::vector_norm(delta_xi) < Constants::projection_xi_eta_tol)
       {
         // System is solved, now check if the parameter coordinates are valid.
-        if (valid_parameter1_d(eta) &&
+        if (valid_parameter_1d(eta) &&
             valid_parameter_surface<ScalarType, Surface>(xi, normal_influence_direction))
           projection_result = ProjectionResult::projection_found_valid;
         else
