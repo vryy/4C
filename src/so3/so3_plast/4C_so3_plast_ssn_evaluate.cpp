@@ -1825,10 +1825,10 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-            0.0, *alpha_eas_inc_, -1.0, *KaaInv_, *feas_);
+            0.0, alpha_eas_inc_->values(), -1.0, KaaInv_->values(), feas_->values());
         Core::LinAlg::DenseFunctions::update<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-            1.0, *alpha_eas_, 1.0, *alpha_eas_inc_);
+            1.0, alpha_eas_->values(), 1.0, alpha_eas_inc_->values());
         break;
       case soh8p_easfull:
         Core::LinAlg::DenseFunctions::multiply<double,
@@ -1841,10 +1841,10 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-            0.0, *alpha_eas_inc_, -1.0, *KaaInv_, *feas_);
+            0.0, alpha_eas_inc_->values(), -1.0, KaaInv_->values(), feas_->values());
         Core::LinAlg::DenseFunctions::update<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-            1.0, *alpha_eas_, 1.0, *alpha_eas_inc_);
+            1.0, alpha_eas_->values(), 1.0, alpha_eas_inc_->values());
         break;
       case soh8p_eassosh8:
         Core::LinAlg::DenseFunctions::multiply<double,
@@ -1857,10 +1857,10 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
-            0.0, *alpha_eas_inc_, -1.0, *KaaInv_, *feas_);
+            0.0, alpha_eas_inc_->values(), -1.0, KaaInv_->values(), feas_->values());
         Core::LinAlg::DenseFunctions::update<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
-            1.0, *alpha_eas_, 1.0, *alpha_eas_inc_);
+            1.0, alpha_eas_->values(), 1.0, alpha_eas_inc_->values());
         break;
       case soh18p_eassosh18:
         Core::LinAlg::DenseFunctions::multiply<double,
@@ -1873,10 +1873,10 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh18p_eassosh18>::neas,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh18p_eassosh18>::neas, 1>(
-            0.0, *alpha_eas_inc_, -1.0, *KaaInv_, *feas_);
+            0.0, alpha_eas_inc_->values(), -1.0, KaaInv_->values(), feas_->values());
         Core::LinAlg::DenseFunctions::update<double,
             PlastEasTypeToNumEas<Discret::ELEMENTS::soh18p_eassosh18>::neas, 1>(
-            1.0, *alpha_eas_, 1.0, *alpha_eas_inc_);
+            1.0, alpha_eas_->values(), 1.0, alpha_eas_inc_->values());
         break;
       case soh8p_easnone:
         break;
@@ -1979,7 +1979,7 @@ void Discret::ELEMENTS::So3Plast<distype>::recover_plasticity(
   }  // EAS part
 
   Core::LinAlg::DenseFunctions::update<double, spintype, 1>(
-      1., dDp_last_iter_[gp], 1., dDp_inc_[gp]);
+      1., dDp_last_iter_[gp].values(), 1., dDp_inc_[gp].values());
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_plasticity,
       spintype, dDp_inc_[gp].values(), dDp_inc_[gp].values(), step_length, owner());
@@ -2808,7 +2808,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
           Core::LinAlg::DenseFunctions::multiply_tn<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, numstr_,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas>(
-              1.0, *KaaInv_, detJ_w, m_eas(), cM);
+              1.0, KaaInv_->values(), detJ_w, m_eas().values(), cM.values());
           Core::LinAlg::DenseFunctions::multiply_tn<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, numstr_,
               numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
@@ -2826,7 +2826,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
           Core::LinAlg::DenseFunctions::multiply_tn<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
-              1.0, *KaaInv_, detJ_w, m_eas(), cM);
+              1.0, KaaInv_->values(), detJ_w, m_eas().values(), cM.values());
           Core::LinAlg::DenseFunctions::multiply_tn<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
               numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
@@ -3047,10 +3047,10 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
           // calculate EAS-rate
           Core::LinAlg::DenseFunctions::update<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-              0., alpha_dot, 1., *alpha_eas_);
+              0., alpha_dot.values(), 1., alpha_eas_->values());
           Core::LinAlg::DenseFunctions::update<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-              1., alpha_dot, -1., *alpha_eas_last_timestep_);
+              1., alpha_dot.values(), -1., alpha_eas_last_timestep_->values());
           alpha_dot.scale(timefac_d);
           // enhance the strain rate
           // factor 2 because we deal with RCGrate and not GLrate
@@ -3062,10 +3062,10 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_thermo_gp(
           // calculate EAS-rate
           Core::LinAlg::DenseFunctions::update<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-              0., alpha_dot, 1., *alpha_eas_);
+              0., alpha_dot.values(), 1., alpha_eas_->values());
           Core::LinAlg::DenseFunctions::update<double,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-              1., alpha_dot, -1., *alpha_eas_last_timestep_);
+              1., alpha_dot.values(), -1., alpha_eas_last_timestep_->values());
           alpha_dot.scale(timefac_d);
           // enhance the strain rate
           // factor 2 because we deal with RCGrate and not GLrate

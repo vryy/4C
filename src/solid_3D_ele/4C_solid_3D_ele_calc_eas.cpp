@@ -13,6 +13,7 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele.hpp"

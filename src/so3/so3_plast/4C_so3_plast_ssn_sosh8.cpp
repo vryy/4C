@@ -22,6 +22,7 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
@@ -1129,7 +1130,7 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
             Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
-                1.0, *KaaInv_, detJ_w, m_eas(), cM);
+                1.0, KaaInv_->values(), detJ_w, m_eas().values(), cM.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
                 numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
@@ -1147,7 +1148,7 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
             Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
-                1.0, *KaaInv_, detJ_w, m_eas(), cM);
+                1.0, KaaInv_->values(), detJ_w, m_eas().values(), cM.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
                 numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
