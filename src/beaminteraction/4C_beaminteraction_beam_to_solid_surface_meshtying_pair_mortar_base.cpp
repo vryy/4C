@@ -47,18 +47,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
-      visualization_writer->get_visualization_writer("btssc-mortar");
+      visualization_writer->get_visualization_writer("btss-coupling-mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
-      visualization_writer->get_visualization_writer("btssc-mortar-continuous");
+      visualization_writer->get_visualization_writer("btss-coupling-mortar-continuous");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_nodal_forces =
-      visualization_writer->get_visualization_writer("btssc-nodal-forces");
+      visualization_writer->get_visualization_writer("btss-coupling-nodal-forces");
   if (visualization_discret.is_null() and visualization_continuous.is_null() and
       visualization_nodal_forces.is_null())
     return;
 
   const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
-          "btssc-output_params_ptr");
+          "btss-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
 
   if (visualization_discret != Teuchos::null or visualization_continuous != Teuchos::null or
@@ -155,7 +155,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
       const unsigned int mortar_segments =
           visualization_params
               .get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
-                  "btssc-output_params_ptr")
+                  "btss-output_params_ptr")
               ->get_mortar_lambda_continuous_segments();
       double xi;
       auto& visualization_data = visualization_continuous->get_visualization_data();

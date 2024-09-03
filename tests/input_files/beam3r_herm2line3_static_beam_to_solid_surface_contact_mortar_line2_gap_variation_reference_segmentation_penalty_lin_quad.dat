@@ -4,7 +4,7 @@ integration. The Lagrange multipliers are defined in the reference configuration
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT                    binary
+OUTPUT_DATA_FORMAT                    ascii
 INTERVAL_STEPS                        1
 EVERY_ITERATION                       yes
 -------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
@@ -19,14 +19,6 @@ USE_ABSOLUTE_POSITIONS                yes
 TRIAD_VISUALIZATIONPOINT              no
 STRAINS_GAUSSPOINT                    yes
 ELEMENT_GID                           yes
---------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
-WRITE_OUTPUT                          yes
-NODAL_FORCES                          yes
-MORTAR_LAMBDA_DISCRET                 yes
-MORTAR_LAMBDA_CONTINUOUS              yes
-MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
-SEGMENTATION                          yes
-INTEGRATION_POINTS                    yes
 -----------------------BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
@@ -36,6 +28,7 @@ MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
 SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
 AVERAGED_NORMALS                      yes
+UNIQUE_IDS                            yes
 ----------------------------------BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT
 CONSTRAINT_STRATEGY                      penalty
 CONTACT_DISCRETIZATION                   mortar

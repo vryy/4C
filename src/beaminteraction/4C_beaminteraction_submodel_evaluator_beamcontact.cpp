@@ -16,6 +16,7 @@
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_visualization_output_writer.hpp"
+#include "4C_beaminteraction_beam_to_solid_surface_visualization_output_writer_contact.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_writer.hpp"
@@ -209,6 +210,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
     contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Solid);
 
     beam_contact_params_ptr_->build_beam_to_solid_surface_contact_params();
+
+    // Build the beam to solid surface contact output writer if desired.
+    if (beam_contact_params_ptr_->beam_to_solid_surface_contact_params()
+            ->get_visualization_output_params_ptr()
+            ->get_output_flag())
+    {
+      beam_to_solid_surface_visualization_output_writer_contact_ptr_ =
+          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>(
+              new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact(
+                  Core::IO::visualization_parameters_factory(
+                      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+                      *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
+                  beam_contact_params_ptr_->beam_to_solid_surface_contact_params()
+                      ->get_visualization_output_params_ptr()));
+    }
   }
 
   // Build the container to manage beam-to-solid conditions and get all coupling conditions.
@@ -389,6 +405,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
     beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->write_output_runtime(this);
   if (beam_to_solid_surface_visualization_output_writer_ptr_ != Teuchos::null)
     beam_to_solid_surface_visualization_output_writer_ptr_->write_output_runtime(this);
+  if (beam_to_solid_surface_visualization_output_writer_contact_ptr_ != Teuchos::null)
+    beam_to_solid_surface_visualization_output_writer_contact_ptr_->write_output_runtime(this);
 
   // not repartition of binning discretization necessary
   return false;
@@ -661,6 +679,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::run_post_iterate(
   if (beam_to_solid_surface_visualization_output_writer_ptr_ != Teuchos::null)
   {
     beam_to_solid_surface_visualization_output_writer_ptr_->write_output_runtime_iteration(
+        this, solver.getNumIterations());
+  }
+  if (beam_to_solid_surface_visualization_output_writer_contact_ptr_ != Teuchos::null)
+  {
+    beam_to_solid_surface_visualization_output_writer_contact_ptr_->write_output_runtime_iteration(
         this, solver.getNumIterations());
   }
 }

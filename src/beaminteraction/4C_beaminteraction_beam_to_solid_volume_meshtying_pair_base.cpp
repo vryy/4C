@@ -148,16 +148,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_
 
   // Get the writers.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
-      visualization_writer->get_visualization_writer("btsvc-segmentation");
+      visualization_writer->get_visualization_writer("btsv-segmentation");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
-          visualization_writer->get_visualization_writer("btsvc-integration-points");
+          visualization_writer->get_visualization_writer("btsv-integration-points");
   if (visualization_segmentation.is_null() and visualization_integration_points.is_null()) return;
 
   const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
       visualization_params
           .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
-              "btsvc-output_params_ptr");
+              "btsv-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
 
   if (visualization_segmentation != Teuchos::null)

@@ -93,6 +93,19 @@ namespace BEAMINTERACTION
     void pre_evaluate() override;
 
     /**
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
+     *
+     * Create segmentation and integration points output.
+     *
+     * @param visualization_writer (out) Object that manages all visualization related data for beam
+     * to solid pairs.
+     * @param visualization_params (in) Parameter list (not used in this class).
+     */
+    void get_pair_visualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        Teuchos::ParameterList& visualization_params) const override;
+
+    /**
      * \brief Create the geometry pair for this contact pair.
      * @param element1 Pointer to the first element
      * @param element2 Pointer to the second element
@@ -116,6 +129,27 @@ namespace BEAMINTERACTION
      */
     Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>
     cast_geometry_pair() const;
+
+    /**
+     * @brief Evaluate the contact kinematics at a projection point
+     */
+    std::tuple<Core::LinAlg::Matrix<3, 1, ScalarType>, Core::LinAlg::Matrix<3, 1, ScalarType>,
+        Core::LinAlg::Matrix<3, 1, ScalarType>, ScalarType>
+    evaluate_contact_kinematics_at_projection_point(
+        const GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>& projection_point,
+        const double beam_cross_section_radius) const;
+
+   private:
+    /**
+     * \brief Add points on the beam element to an output writer.
+     * @param visualization_writer (in/out) Output writer the points are appended to.
+     * @param points (in) Vector with the projection points.
+     * @param visualization_params (in) Parameter list with visualization parameters.
+     */
+    void add_visualization_integration_points(
+        const Teuchos::RCP<BeamToSolidOutputWriterVisualization>& visualization_writer,
+        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>>& points,
+        const Teuchos::ParameterList& visualization_params) const;
 
    protected:
     //! Pointer to the face element object which manages the positions on the surface, including the

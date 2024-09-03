@@ -1,0 +1,62 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+2.500000100000000e-01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="2" NumberOfCells="0" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="ascii">
+-7.500000000000000e-01 1.650000000000000e+00 1.000000000000000e-01
+-9.719023351743792e-01 1.650000000000000e+00 9.580223626737558e-01
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="ascii">
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii">
+-1.096715074648258e-03 -1.935363739705285e-01 -1.953803588256295e-02
+-9.909521168726121e-04 -7.720906116860204e-02 -2.743150206551670e-02
+        </DataArray>
+        <DataArray type="Float64" Name="force" NumberOfComponents="3" format="ascii">
+9.886077827311693e-06 4.514030092838260e-03 -3.311593110148081e-04
+-0.000000000000000e+00 0.000000000000000e+00 -0.000000000000000e+00
+        </DataArray>
+        <DataArray type="Float64" Name="gap" format="ascii">
+9.048561942981243e-02
+1.614087366214308e-01
+        </DataArray>
+        <DataArray type="Float64" Name="surface_normal" NumberOfComponents="3" format="ascii">
+2.184202917092691e-03 9.973174264704949e-01 -7.316542978679350e-02
+-6.759893247070179e-04 9.984344446227332e-01 -5.593033907752638e-02
+        </DataArray>
+        <DataArray type="Int32" Name="uid_0_pair_beam_id" format="ascii">
+17
+17
+        </DataArray>
+        <DataArray type="Int32" Name="uid_1_pair_solid_id" format="ascii">
+6
+6
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

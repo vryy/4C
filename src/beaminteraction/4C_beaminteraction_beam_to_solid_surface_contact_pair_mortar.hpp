@@ -85,6 +85,15 @@ namespace BEAMINTERACTION
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector) override;
 
+    /**
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer.
+     *
+     * Overwritten for specific mortar output.
+     */
+    void get_pair_visualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        Teuchos::ParameterList& visualization_params) const override;
+
    private:
     /**
      * @brief Get the Jacobian for the configuration the Lagrange multipliers are defined in
