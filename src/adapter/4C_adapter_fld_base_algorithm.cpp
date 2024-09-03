@@ -149,41 +149,9 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           Global::Problem::instance()->contact_dynamic_params();
       const int mshsolver = mshparams.get<int>(
           "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
-      const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
-      const int fluidpressuresolver = fdyn.get<int>("SIMPLER_SOLVER");  // fluid pressure solver
-      if (mshsolver == (-1))
-        FOUR_C_THROW(
-            "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
-            "CONTACT DYNAMIC to a valid number!");
-      if (fluidsolver == (-1))
-        FOUR_C_THROW(
-            "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
-            "FLUID DYNAMIC to a valid number! This solver is used within block preconditioner "
-            "(e.g. BGS2x2) as \"Inverse 1\".");
-      if (fluidpressuresolver == (-1))
-        FOUR_C_THROW(
-            "no linear solver defined for fluid meshtying problem. Please set SIMPLER_SOLVER in "
-            "FLUID DYNAMIC to a valid number! This solver is used within block preconditioner "
-            "(e.g. BGS2x2) as \"Inverse 2\".");
 
-      // check, if meshtying solver is used with a valid block preconditioner
-      const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-          Global::Problem::instance()->solver_params(mshsolver), "AZPREC");
-
-      // plausibility check
-      switch (azprectype)
-      {
-        case Core::LinearSolver::PreconditionerType::cheap_simple:
-        case Core::LinearSolver::PreconditionerType::
-            block_gauss_seidel_2x2:  // block preconditioners, that are implemented in 4C
-          break;
-        default:
-          FOUR_C_THROW(
-              "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
-              "Please set AZPREC to BGS2x2 in solver block %i",
-              mshsolver);
-          break;
-      }
+      const auto solvertype = Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(
+          Global::Problem::instance()->solver_params(mshsolver), "SOLVER");
 
       // create solver objects
       solver = Teuchos::rcp(
@@ -192,39 +160,63 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
               Core::UTILS::integral_value<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY")));
 
-      // add sub block solvers/smoothers to block preconditioners
-      switch (azprectype)
+      if (solvertype == Core::LinearSolver::SolverType::belos)
       {
-        case Core::LinearSolver::PreconditionerType::cheap_simple:
-          break;  // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
-        case Core::LinearSolver::PreconditionerType::
-            block_gauss_seidel_2x2:  // block preconditioners, that are implemented in 4C
-        {
-          // set Inverse blocks for block preconditioner
-          // for BGS preconditioner
-          // This is only necessary for BGS. CheapSIMPLE has a more modern framework
-          solver->put_solver_params_to_sub_params("Inverse1",
-              Global::Problem::instance()->solver_params(fluidsolver),
-              Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-          solver->put_solver_params_to_sub_params("Inverse2",
-              Global::Problem::instance()->solver_params(fluidpressuresolver),
-              Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-        }
-        break;
-        default:
+        const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");           // fluid solver
+        const int fluidpressuresolver = fdyn.get<int>("SIMPLER_SOLVER");  // fluid pressure solver
+        if (mshsolver == (-1))
           FOUR_C_THROW(
-              "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
-              "Please set AZPREC to BGS2x2 in solver block %i",
-              mshsolver);
-          break;
-      }
+              "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
+              "CONTACT DYNAMIC to a valid number!");
+        if (fluidsolver == (-1))
+          FOUR_C_THROW(
+              "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
+              "FLUID DYNAMIC to a valid number! This solver is used within block preconditioner "
+              "(e.g. BGS2x2) as \"Inverse 1\".");
+        if (fluidpressuresolver == (-1))
+          FOUR_C_THROW(
+              "no linear solver defined for fluid meshtying problem. Please set SIMPLER_SOLVER in "
+              "FLUID DYNAMIC to a valid number! This solver is used within block preconditioner "
+              "(e.g. BGS2x2) as \"Inverse 2\".");
 
-      solver->params().set<bool>("MESHTYING", true);  // mark it as meshtying problem
+        // check, if meshtying solver is used with a valid block preconditioner
+        const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
+            Global::Problem::instance()->solver_params(mshsolver), "AZPREC");
+
+        // add sub block solvers/smoothers to block preconditioners
+        switch (azprectype)
+        {
+          case Core::LinearSolver::PreconditionerType::cheap_simple:
+            break;  // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
+          case Core::LinearSolver::PreconditionerType::
+              block_gauss_seidel_2x2:  // block preconditioners, that are implemented in 4C
+          {
+            // set Inverse blocks for block preconditioner
+            // for BGS preconditioner
+            // This is only necessary for BGS. CheapSIMPLE has a more modern framework
+            solver->put_solver_params_to_sub_params("Inverse1",
+                Global::Problem::instance()->solver_params(fluidsolver),
+                Global::Problem::instance()->solver_params_callback(),
+                Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+                    Global::Problem::instance()->io_params(), "VERBOSITY"));
+
+            solver->put_solver_params_to_sub_params("Inverse2",
+                Global::Problem::instance()->solver_params(fluidpressuresolver),
+                Global::Problem::instance()->solver_params_callback(),
+                Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+                    Global::Problem::instance()->io_params(), "VERBOSITY"));
+          }
+          break;
+          default:
+            FOUR_C_THROW(
+                "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
+                "Please set AZPREC to BGS2x2 in solver block %i",
+                mshsolver);
+            break;
+        }
+
+        solver->params().set<bool>("MESHTYING", true);  // mark it as meshtying problem
+      }
     }
     break;
     case Inpar::FLUID::condensed_smat:
