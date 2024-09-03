@@ -180,7 +180,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
       this->element1(), this->element2()};
 
   // Declare variables for evaluation of the rotational coupling terms.
-  std::array<Core::LinAlg::Matrix<n_dof_rot_, 1, int>, 2> gid_rot;
+  std::array<std::vector<int>, 2> gid_rot;
   std::array<Core::LinAlg::Matrix<4, 1, double>, 2> quaternion_ref;
   std::array<Core::LinAlg::Matrix<4, 1, scalar_type_rot>, 2> quaternion;
   std::array<Core::LinAlg::SerialDenseVector, 2> L_i = {
@@ -194,10 +194,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
   {
     // Get GIDs of the beams rotational DOF.
-    std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
-    beam_ele[i_beam]->location_vector(*discret, lm_beam, lmowner, lmstride);
-    const std::array<int, 9> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
-    for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot[i_beam](i) = lm_beam[rot_dof_indices[i]];
+    gid_rot[i_beam] = UTILS::get_element_rot_gid_indices(*discret, beam_ele[i_beam]);
 
     // Get the triad interpolation schemes for the two beams.
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
@@ -269,7 +266,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
     }
 
     if (force_vector != Teuchos::null)
-      force_vector->SumIntoGlobalValues(gid_rot[i_beam].num_rows(), gid_rot[i_beam].data(),
+      force_vector->SumIntoGlobalValues(gid_rot[i_beam].size(), gid_rot[i_beam].data(),
           Core::FADUtils::cast_to_double(moment_nodal_load[i_beam]).data());
   }
 
@@ -293,7 +290,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
         for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
           for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)
             stiffness_matrix->fe_assemble(
-                moment_stiff_temp(i_dof, j_dof), gid_rot[i_beam](i_dof), gid_rot[j_beam](j_dof));
+                moment_stiff_temp(i_dof, j_dof), gid_rot[i_beam][i_dof], gid_rot[j_beam][j_dof]);
       }
     }
   }

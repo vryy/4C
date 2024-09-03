@@ -253,7 +253,7 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Get the local indices of the centerline DOFs of an element.
-     * @param discret (in) Pointer to the discretization.
+     * @param discret (in) Reference to the discretization.
      * @param ele (in) Pointer to the element.
      * @param ele_centerline_dof_indices (out) Vector with local indices of centerline DOFs in the
      * element.
@@ -262,6 +262,16 @@ namespace BEAMINTERACTION
     void get_element_centerline_dof_indices(Core::FE::Discretization const& discret,
         const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
         unsigned int& num_dof);
+
+    /**
+     * \brief Get the GID of the rotational DOFs of an element
+     * @param discret (in) Reference to the discretization.
+     * @param ele (in) Pointer to the element.
+     * @return element_rot_gid_indices (out) Vector with GID of rotational DOFs in the
+     * element.
+     */
+    std::vector<int> get_element_rot_gid_indices(
+        const Core::FE::Discretization& discret, const Core::Elements::Element* element);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/

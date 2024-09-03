@@ -268,10 +268,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
   for (unsigned int i = 0; i < Solid::n_dof_; i++) gid_pair(i + Beam::n_dof_) = lm[i];
 
   // Beam rot GIDs.
-  this->element1()->location_vector(*discret, lm, lmowner, lmstride);
-  std::array<int, 9> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
+  const auto rot_gid = UTILS::get_element_rot_gid_indices(*discret, this->element1());
   for (unsigned int i = 0; i < n_dof_rot_; i++)
-    gid_pair(i + Beam::n_dof_ + Solid::n_dof_) = lm[rot_dof_indices[i]];
+    gid_pair(i + Beam::n_dof_ + Solid::n_dof_) = rot_gid[i];
 
   // If given, assemble force terms into the global force vector.
   if (force_vector != Teuchos::null)

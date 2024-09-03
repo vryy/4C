@@ -107,13 +107,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
         local_kappa);
 
   // Get the GIDs of the solid and beam.
-  std::vector<int> lm_beam, gid_solid, lmowner, lmstride;
-  this->element1()->location_vector(discret, lm_beam, lmowner, lmstride);
+  const auto rot_dof_gid = UTILS::get_element_rot_gid_indices(discret, this->element1());
+  std::vector<int> gid_solid, lmowner, lmstride;
   this->element2()->location_vector(discret, gid_solid, lmowner, lmstride);
-  // Local indices of rotational DOFs for the Simo--Reissner beam element.
-  const int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
-  Core::LinAlg::Matrix<n_dof_rot_, 1, int> gid_rot;
-  for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
 
   // Get the Lagrange multiplier GIDs.
   const auto& [_, lambda_gid_rot] = mortar_manager->location_vector(*this);
@@ -133,9 +129,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
     for (unsigned int i_dof_rot = 0; i_dof_rot < n_dof_rot_; i_dof_rot++)
     {
       global_constraint_lin_beam.fe_assemble(
-          local_G_B(i_dof_lambda, i_dof_rot), lambda_gid_rot[i_dof_lambda], gid_rot(i_dof_rot));
-      global_force_beam_lin_lambda.fe_assemble(
-          local_FB_L(i_dof_rot, i_dof_lambda), gid_rot(i_dof_rot), lambda_gid_rot[i_dof_lambda]);
+          local_G_B(i_dof_lambda, i_dof_rot), lambda_gid_rot[i_dof_lambda], rot_dof_gid[i_dof_rot]);
+      global_force_beam_lin_lambda.fe_assemble(local_FB_L(i_dof_rot, i_dof_lambda),
+          rot_dof_gid[i_dof_rot], lambda_gid_rot[i_dof_lambda]);
     }
     for (unsigned int i_dof_solid = 0; i_dof_solid < Solid::n_dof_; i_dof_solid++)
     {
@@ -400,28 +396,25 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
         local_stiff_SB, local_stiff_SS);
 
   // Get the GIDs of the solid and beam.
-  std::vector<int> lm_beam, gid_solid, lmowner, lmstride;
-  this->element1()->location_vector(discret, lm_beam, lmowner, lmstride);
+  const auto rot_dof_gid = UTILS::get_element_rot_gid_indices(discret, this->element1());
+  std::vector<int> gid_solid, lmowner, lmstride;
   this->element2()->location_vector(discret, gid_solid, lmowner, lmstride);
-  int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
-  Core::LinAlg::Matrix<n_dof_rot_, 1, int> gid_rot;
-  for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
 
   // Assemble into global matrix.
   for (unsigned int i_dof_beam = 0; i_dof_beam < n_dof_rot_; i_dof_beam++)
   {
     for (unsigned int j_dof_beam = 0; j_dof_beam < n_dof_rot_; j_dof_beam++)
       stiffness_matrix->fe_assemble(
-          local_stiff_BB(i_dof_beam, j_dof_beam), gid_rot(i_dof_beam), gid_rot(j_dof_beam));
+          local_stiff_BB(i_dof_beam, j_dof_beam), rot_dof_gid[i_dof_beam], rot_dof_gid[j_dof_beam]);
     for (unsigned int j_dof_solid = 0; j_dof_solid < Solid::n_dof_; j_dof_solid++)
       stiffness_matrix->fe_assemble(
-          local_stiff_BS(i_dof_beam, j_dof_solid), gid_rot(i_dof_beam), gid_solid[j_dof_solid]);
+          local_stiff_BS(i_dof_beam, j_dof_solid), rot_dof_gid[i_dof_beam], gid_solid[j_dof_solid]);
   }
   for (unsigned int i_dof_solid = 0; i_dof_solid < Solid::n_dof_; i_dof_solid++)
   {
     for (unsigned int j_dof_beam = 0; j_dof_beam < n_dof_rot_; j_dof_beam++)
       stiffness_matrix->fe_assemble(
-          local_stiff_SB(i_dof_solid, j_dof_beam), gid_solid[i_dof_solid], gid_rot(j_dof_beam));
+          local_stiff_SB(i_dof_solid, j_dof_beam), gid_solid[i_dof_solid], rot_dof_gid[j_dof_beam]);
     for (unsigned int j_dof_solid = 0; j_dof_solid < Solid::n_dof_; j_dof_solid++)
       stiffness_matrix->fe_assemble(
           local_stiff_SS(i_dof_solid, j_dof_solid), gid_solid[i_dof_solid], gid_solid[j_dof_solid]);

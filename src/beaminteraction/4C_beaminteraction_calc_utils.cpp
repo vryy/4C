@@ -10,6 +10,7 @@
 #include "4C_beaminteraction_calc_utils.hpp"
 
 #include "4C_beam3_base.hpp"
+#include "4C_beam3_reissner.hpp"
 #include "4C_beaminteraction_crosslinking_params.hpp"
 #include "4C_beaminteraction_link.hpp"
 #include "4C_beaminteraction_spherebeamlinking_params.hpp"
@@ -29,6 +30,7 @@
 #include "4C_shell_kl_nurbs.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_solid_3D_ele.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
 
@@ -712,6 +714,39 @@ namespace BEAMINTERACTION
         ele_centerline_dof_indices.resize(num_dof);
         for (unsigned int i = 0; i < num_dof; ++i) ele_centerline_dof_indices[i] = i;
       }
+    }
+
+    /**
+     *
+     */
+    std::vector<int> get_element_rot_gid_indices(
+        const Core::FE::Discretization& discret, const Core::Elements::Element* element)
+    {
+      const auto* beam_sr_element = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
+      if (beam_sr_element == nullptr)
+        FOUR_C_THROW(
+            "The function get_element_rot_gid_indices is only implemented for Simo-Reissner beam "
+            "elements!");
+
+      if (not(beam_sr_element->num_node() == 3 and
+              beam_sr_element->hermite_centerline_interpolation()))
+        FOUR_C_THROW(
+            "The function get_element_rot_gid_indices is only implemented for Simo-Reissner beam "
+            "elements with hermite3line2 interpolation!");
+
+      // Get all GID of the element
+      std::vector<int> lm_beam, gid_solid, lmowner, lmstride;
+      beam_sr_element->location_vector(discret, lm_beam, lmowner, lmstride);
+
+      // Local indices of the rotational DOF
+      constexpr auto n_dof_rot = 9;
+      std::array<int, n_dof_rot> rot_dof_indices{3, 4, 5, 12, 13, 14, 18, 19, 20};
+
+      // Gather the GID of the rotational DOF
+      std::vector<int> element_rot_gid_indices(9, -1);
+      for (unsigned int i = 0; i < n_dof_rot; i++)
+        element_rot_gid_indices[i] = lm_beam[rot_dof_indices[i]];
+      return element_rot_gid_indices;
     }
 
     /*----------------------------------------------------------------------------*
