@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Internal classes to read lines from files
+\brief Internal classes to read values from files
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_IO_LINE_PARSER_HPP
-#define FOUR_C_IO_LINE_PARSER_HPP
+#ifndef FOUR_C_IO_VALUE_PARSER_HPP
+#define FOUR_C_IO_VALUE_PARSER_HPP
 
 #include "4C_config.hpp"
 
@@ -21,14 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::IO
 {
   /**
-   * A helper to parse lines as defined in the dat file format into C++ data. This
+   * A helper to parse values as defined in the .dat file format into C++ data. This
    * is a low-level class intended for use inside more user-friendly input mechanisms.
    * The main reason why this is a class instead of a collection of functions, is to attach some
    * context in the constructor. For instance, you can pass the section name for better error
-   * messages. This parser does not store any internal state related to the parsing because the
-   * lines we want to parse follow a very simple grammar without recursion or nesting.
+   * messages.
    */
-  class LineParser
+  class ValueParser
   {
    public:
     /**
@@ -36,10 +35,10 @@ namespace Core::IO
      * prepended to all error messages. Example:
      *
      * @code
-     *   LineParser parser("While reading section MY PARAMETERS: ");
+     *   ValueParser parser(stream_in, "While reading section MY PARAMETERS: ");
      * @endcode
      */
-    LineParser(std::istream& stream, std::string user_scope_message)
+    ValueParser(std::istream& stream, std::string user_scope_message)
         : stream_(stream), user_scope_(std::move(user_scope_message))
     {
     }

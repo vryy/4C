@@ -1,84 +1,84 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief Unittests for line parser
+\brief Unittests for value parser
 \level 1
 */
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "4C_io_line_parser.hpp"
+#include "4C_io_value_parser.hpp"
 namespace
 {
 
   using namespace FourC;
 
-  TEST(LineParser, ConsumeSuccess)
+  TEST(ValueParser, ConsumeSuccess)
   {
     std::istringstream string_stream("expected");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
     parser.consume("expected");
   }
 
-  TEST(LineParser, ConsumeFail)
+  TEST(ValueParser, ConsumeFail)
   {
     std::istringstream string_stream("unexpected");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
     EXPECT_ANY_THROW(parser.consume("expected"));
   }
 
-  TEST(LineParser, ReadDoubleSuccess)
+  TEST(ValueParser, ReadDoubleSuccess)
   {
     std::istringstream string_stream("11.3");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_EQ(parser.read<double>(), 11.3);
   }
 
-  TEST(LineParser, ReadIntSuccess)
+  TEST(ValueParser, ReadIntSuccess)
   {
     std::istringstream string_stream("42");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_EQ(parser.read<int>(), 42);
   }
 
-  TEST(LineParser, ReadDoubleFromIntSuccess)
+  TEST(ValueParser, ReadDoubleFromIntSuccess)
   {
     std::istringstream string_stream("42");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_EQ(parser.read<double>(), 42);
   }
 
-  TEST(LineParser, ReadIntFromDoubleFail)
+  TEST(ValueParser, ReadIntFromDoubleFail)
   {
     std::istringstream string_stream("11.3");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_ANY_THROW(parser.read<int>());
   }
 
-  TEST(LineParser, ReadFailWithExtraCharacters)
+  TEST(ValueParser, ReadFailWithExtraCharacters)
   {
     std::istringstream string_stream("11.3*2");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_ANY_THROW(parser.read<double>());
   }
 
-  TEST(LineParser, ReadExtraCharactersAfterWhitespaceCheckEOF)
+  TEST(ValueParser, ReadExtraCharactersAfterWhitespaceCheckEOF)
   {
     std::istringstream string_stream("11.3 3");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_EQ(parser.read<double>(), 11.3);
     EXPECT_FALSE(parser.eof());
   }
 
-  TEST(LineParser, ReadIntArraySuccess)
+  TEST(ValueParser, ReadIntArraySuccess)
   {
     std::istringstream string_stream("1 2 3");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     const auto array = parser.read_array<int, 3>();
 
@@ -88,35 +88,35 @@ namespace
     EXPECT_TRUE(parser.eof());
   }
 
-  TEST(LineParser, ReadIntArrayFailTooLong)
+  TEST(ValueParser, ReadIntArrayFailTooLong)
   {
     std::istringstream string_stream("1 2 3 4");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     parser.read_array<int, 3>();
     EXPECT_FALSE(parser.eof());
   }
 
-  TEST(LineParser, ReadIntArrayFailTooShort)
+  TEST(ValueParser, ReadIntArrayFailTooShort)
   {
     std::istringstream string_stream("1 2");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_ANY_THROW((parser.read_array<int, 3>()));
   }
 
-  TEST(LineParser, ReadIntArrayFailOtherCharacters)
+  TEST(ValueParser, ReadIntArrayFailOtherCharacters)
   {
     std::istringstream string_stream("1 2 a");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     EXPECT_ANY_THROW((parser.read_array<int, 3>()));
   }
 
-  TEST(LineParser, ReadCombinedIntStringArraySuccess)
+  TEST(ValueParser, ReadCombinedIntStringArraySuccess)
   {
     std::istringstream string_stream("1 2 3 a b c");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     const auto ints = parser.read_array<int, 3>();
     const auto strings = parser.read_array<std::string, 3>();
@@ -130,11 +130,11 @@ namespace
     EXPECT_TRUE(parser.eof());
   }
 
-  TEST(LineParser, ReadDoubleVectorSuccess)
+  TEST(ValueParser, ReadDoubleVectorSuccess)
   {
     // read a vector of doubles with not specified size
     std::istringstream string_stream("0.1 0.2 0.3 0.4 0.5 0.6");
-    Core::IO::LineParser parser(string_stream, "While reading section MY PARAMETERS: ");
+    Core::IO::ValueParser parser(string_stream, "While reading section MY PARAMETERS: ");
 
     std::vector<double> vec;
 

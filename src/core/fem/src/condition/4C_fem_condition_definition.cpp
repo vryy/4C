@@ -13,8 +13,8 @@
 #include "4C_fem_condition_definition.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_io_line_parser.hpp"
 #include "4C_io_linecomponent.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <algorithm>
@@ -67,7 +67,7 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
 
   std::stringstream line(section[0]);
 
-  Core::IO::LineParser parser_header(
+  Core::IO::ValueParser parser_header(
       line, "While reading header of condition section '" + sectionname_ + "': ");
 
   const std::string expected_geometry_type = std::invoke(
@@ -108,7 +108,7 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
     condline->seekp(0, condline->end);
     *condline << " ";
 
-    Core::IO::LineParser parser_content(
+    Core::IO::ValueParser parser_content(
         *condline, "While reading content of condition section '" + sectionname_ + "': ");
 
     parser_content.consume("E");

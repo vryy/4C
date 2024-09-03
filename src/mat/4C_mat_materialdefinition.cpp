@@ -15,7 +15,7 @@
 #include "4C_mat_materialdefinition.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
-#include "4C_io_line_parser.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_mat_par_bundle.hpp"
 
 #include <iostream>
@@ -67,7 +67,7 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      Core::IO::LineParser parser(*condline, "While reading 'MATERIALS' section: ");
+      Core::IO::ValueParser parser(*condline, "While reading 'MATERIALS' section: ");
 
       parser.consume("MAT");
       const int matid = parser.read<int>();
