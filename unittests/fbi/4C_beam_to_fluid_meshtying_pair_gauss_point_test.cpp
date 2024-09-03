@@ -62,8 +62,6 @@ namespace
         const Core::LinAlg::Matrix<FluidType::n_dof_, BeamType::n_dof_, double> results_kfs,
         const Core::LinAlg::Matrix<FluidType::n_dof_, FluidType::n_dof_, double> results_kff)
     {
-      using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<BeamType, FluidType>;
-
       // Create the mesh tying mortar pair.
       BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType> pair =
           BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType>();
@@ -101,14 +99,14 @@ namespace
       pair.create_geometry_pair(pair_elements[0], pair_elements[1], evaluation_data_);
       pair.init(intersection_params, pair_elements);
 
-      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<BeamType, scalar_type>::initialize(
-          beam_element.get());
+      pair.ele1pos_ =
+          GEOMETRYPAIR::InitializeElementData<BeamType, double>::initialize(beam_element.get());
       pair.ele1posref_ =
           GEOMETRYPAIR::InitializeElementData<BeamType, double>::initialize(beam_element.get());
       pair.ele1poscur_ =
           GEOMETRYPAIR::InitializeElementData<BeamType, double>::initialize(beam_element.get());
-      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<BeamType, scalar_type>::initialize(
-          beam_element.get());
+      pair.ele1vel_ =
+          GEOMETRYPAIR::InitializeElementData<BeamType, double>::initialize(beam_element.get());
       pair.ele1posref_.element_position_ = q_beam;
       pair.ele2posref_.element_position_ = q_fluid;
 

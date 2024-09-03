@@ -45,11 +45,12 @@ namespace BEAMINTERACTION
    * \param[in] fluid Type from GEOMETRYPAIR::ElementDiscretization representing the fluid.
    */
   template <typename Beam, typename Fluid>
-  class BeamToFluidMeshtyingPairBase : public BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>
+  class BeamToFluidMeshtyingPairBase
+      : public BeamToSolidVolumeMeshtyingPairBase<double, Beam, Fluid>
   {
    protected:
     //! Shortcut to base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<double, Beam, Fluid>;
 
     //! Scalar type for FAD variables.
     using scalar_type = typename base_class::scalar_type;

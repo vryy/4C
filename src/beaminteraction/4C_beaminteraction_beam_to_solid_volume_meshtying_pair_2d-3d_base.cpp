@@ -20,9 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>::create_geometry_pair(
-    const Core::Elements::Element* element1, const Core::Elements::Element* element2,
+template <typename ScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
+    Solid>::create_geometry_pair(const Core::Elements::Element* element1,
+    const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Cast the geometry evaluation data to the correct format.
@@ -44,8 +45,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>::creat
 /**
  *
  */
-template <typename Beam, typename Solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam,
+template <typename ScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
     Solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                               integration_point,
     Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
@@ -82,11 +83,22 @@ namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
 
-  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_hex8>;
-  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_hex20>;
-  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_hex27>;
-  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_tet4>;
-  template class BeamToSolidVolumeMeshtyingPair2D3DBase<t_hermite, t_tet10>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<double, t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<double, t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<double, t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<double, t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<double, t_hermite, t_tet10>;
+
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<
+      line_to_volume_scalar_type<t_hermite, t_hex8>, t_hermite, t_hex8>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<
+      line_to_volume_scalar_type<t_hermite, t_hex20>, t_hermite, t_hex20>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<
+      line_to_volume_scalar_type<t_hermite, t_hex27>, t_hermite, t_hex27>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<
+      line_to_volume_scalar_type<t_hermite, t_tet4>, t_hermite, t_tet4>;
+  template class BeamToSolidVolumeMeshtyingPair2D3DBase<
+      line_to_volume_scalar_type<t_hermite, t_tet10>, t_hermite, t_tet10>;
 }  // namespace BEAMINTERACTION
 
 FOUR_C_NAMESPACE_CLOSE

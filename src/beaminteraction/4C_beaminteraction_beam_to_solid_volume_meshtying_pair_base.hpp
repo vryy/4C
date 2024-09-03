@@ -39,27 +39,26 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Class for beam to solid meshtying.
-   * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
-   * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
+   * @tparam ScalarType Scalar FAD type to be used in this pair.
+   * @tparam Beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
+   * @tparam Solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename Beam, typename Solid>
+  template <typename ScalarType, typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPairBase
-      : public BeamToSolidPairBase<GEOMETRYPAIR::line_to_volume_scalar_type<Beam, Solid>, double,
-            Beam, Solid>
+      : public BeamToSolidPairBase<ScalarType, double, Beam, Solid>
   {
    protected:
     //! Type to be used for scalar AD variables.
-    using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<Beam, Solid>;
+    using scalar_type = ScalarType;
 
     //! Shortcut to the base class.
-    using base_class = BeamToSolidPairBase<scalar_type, double, Beam, Solid>;
+    using base_class = BeamToSolidPairBase<ScalarType, double, Beam, Solid>;
 
    public:
     /**
      * \brief Standard Constructor
      */
     BeamToSolidVolumeMeshtyingPairBase();
-
 
     /**
      * \brief Setup the contact pair (derived).
@@ -165,7 +164,7 @@ namespace BEAMINTERACTION
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the solid.
-    GEOMETRYPAIR::ElementData<Solid, scalar_type> ele2pos_;
+    GEOMETRYPAIR::ElementData<Solid, ScalarType> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the solid.
     GEOMETRYPAIR::ElementData<Solid, double> ele2posref_;

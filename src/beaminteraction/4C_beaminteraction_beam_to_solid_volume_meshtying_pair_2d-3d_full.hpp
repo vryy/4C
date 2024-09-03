@@ -29,11 +29,13 @@ namespace BEAMINTERACTION
    */
   template <typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPair2D3DFull
-      : public BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>
+      : public BeamToSolidVolumeMeshtyingPair2D3DBase<
+            GEOMETRYPAIR::line_to_volume_scalar_type<Beam, Solid>, Beam, Solid>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<
+        GEOMETRYPAIR::line_to_volume_scalar_type<Beam, Solid>, Beam, Solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;

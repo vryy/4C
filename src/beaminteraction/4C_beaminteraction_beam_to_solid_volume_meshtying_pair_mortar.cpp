@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 template <typename Beam, typename Solid, typename Mortar>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Mortar>::BeamToSolidVolumeMeshtyingPairMortar()
-    : BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>(), n_mortar_rot_(0)
+    : base_class(), n_mortar_rot_(0)
 {
   // Empty constructor.
 }
@@ -93,8 +93,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
-  BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_visualization(
-      visualization_writer, visualization_params);
+  base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_discret =
       visualization_writer->get_visualization_writer("btsvc-mortar");
