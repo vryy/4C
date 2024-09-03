@@ -13,8 +13,10 @@
 
 
 #include "4C_global_data.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
+#include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,7 +32,7 @@ Solid::ModelEvaluator::BrownianDynData::BrownianDynData()
       maxrandforce_(0.0),
       timeintconstrandnumb_(0.0),
       beam_damping_coeff_specified_via_(Inpar::BrownianDynamics::vague),
-      beams_damping_coefficient_prefactors_perunitlength_(0),
+      beams_damping_coefficient_prefactors_perunitlength_{0.0, 0.0, 0.0},
       randomforces_(Teuchos::null)
 {
   // empty constructor
@@ -68,34 +70,23 @@ void Solid::ModelEvaluator::BrownianDynData::init(
     std::istringstream input_file_linecontent(Teuchos::getNumericStringParameter(
         browndyn_params_list, "BEAMS_DAMPING_COEFF_PER_UNITLENGTH"));
 
-    std::string word;
-    char* input;
-    while (input_file_linecontent >> word)
-      beams_damping_coefficient_prefactors_perunitlength_.push_back(
-          std::strtod(word.c_str(), &input));
+    Core::IO::ValueParser beam_dampening_coefficients_parser(input_file_linecontent,
+        "While reading beam damping "
+        "coefficient values: ");
 
-    if (not beams_damping_coefficient_prefactors_perunitlength_.empty())
+    beams_damping_coefficient_prefactors_perunitlength_ =
+        beam_dampening_coefficients_parser.read_array<double, 3>();
+
+    if (!beam_dampening_coefficients_parser.eof())
     {
-      if (beams_damping_coefficient_prefactors_perunitlength_.size() != 3)
-      {
-        std::cout << "\ngiven beam damping coefficient values: ";
-        for (unsigned int i = 0; i < beams_damping_coefficient_prefactors_perunitlength_.size();
-             ++i)
-          std::cout << beams_damping_coefficient_prefactors_perunitlength_[i] << " ";
-
-
-        FOUR_C_THROW(
-            "Expected 3 values for beam damping coefficients if specified via input file "
-            "but got %d! Check your input file!",
-            beams_damping_coefficient_prefactors_perunitlength_.size());
-      }
-
-      FOUR_C_THROW_UNLESS(
-          std::all_of(beams_damping_coefficient_prefactors_perunitlength_.begin(),
-              beams_damping_coefficient_prefactors_perunitlength_.end(),
-              [](double damping_coefficient) { return damping_coefficient >= 0.0; }),
-          "The damping coefficients for beams must not be negative!");
+      FOUR_C_THROW(
+          "Too many values for beam damping coefficients are provided within the input file!");
     }
+
+    FOUR_C_THROW_UNLESS(std::all_of(beams_damping_coefficient_prefactors_perunitlength_.begin(),
+                            beams_damping_coefficient_prefactors_perunitlength_.end(),
+                            [](double damping_coefficient) { return damping_coefficient >= 0.0; }),
+        "The damping coefficients for beams must not be negative!");
   }
   // safety check for valid input parameter
   else if (beam_damping_coeff_specified_via_ == Inpar::BrownianDynamics::vague)

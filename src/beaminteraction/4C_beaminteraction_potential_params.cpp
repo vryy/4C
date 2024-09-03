@@ -13,6 +13,7 @@
 #include "4C_beaminteraction_potential_runtime_visualization_output_params.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -60,30 +61,40 @@ void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
   pot_law_exponents_->clear();
   // read potential law parameters from input and check
   {
-    std::istringstream PL(
+    std::istringstream pot_law_exponents_stream(
         Teuchos::getNumericStringParameter(beam_potential_params_list, "POT_LAW_EXPONENT"));
-    std::string word;
-    char* input;
-    while (PL >> word) pot_law_exponents_->push_back(std::strtod(word.c_str(), &input));
+
+    Core::IO::ValueParser pot_law_exponents_parser(
+        pot_law_exponents_stream, "While reading potential law exponents: ");
+
+    while (!pot_law_exponents_parser.eof())
+    {
+      pot_law_exponents_->push_back(pot_law_exponents_parser.read<double>());
+    }
   }
   {
-    std::istringstream PL(
+    std::istringstream pot_law_prefactors_stream(
         Teuchos::getNumericStringParameter(beam_potential_params_list, "POT_LAW_PREFACTOR"));
-    std::string word;
-    char* input;
-    while (PL >> word) pot_law_prefactors_->push_back(std::strtod(word.c_str(), &input));
+
+    Core::IO::ValueParser pot_law_prefactors_parser(
+        pot_law_prefactors_stream, "While reading potential law prefactors: ");
+
+    while (!pot_law_prefactors_parser.eof())
+    {
+      pot_law_prefactors_->push_back(pot_law_prefactors_parser.read<double>());
+    }
   }
   if (!pot_law_prefactors_->empty())
   {
     if (pot_law_prefactors_->size() != pot_law_exponents_->size())
       FOUR_C_THROW(
-          "number of potential law prefactors does not match number of potential law exponents."
+          "Number of potential law prefactors does not match number of potential law exponents."
           " Check your input file!");
 
     for (unsigned int i = 0; i < pot_law_exponents_->size(); ++i)
       if (pot_law_exponents_->at(i) <= 0)
         FOUR_C_THROW(
-            "only positive values are allowed for potential law exponent."
+            "Only positive values are allowed for potential law exponent."
             " Check your input file");
   }
 

@@ -12,6 +12,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_inpar_beaminteraction.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_mat_crosslinkermat.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
@@ -54,41 +55,53 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
     own_deltatime_ = false;
     deltatime_ = (*gstate.get_delta_time())[0];
     if (gstate.get_my_rank() == 0)
+    {
       std::cout << " Time step " << (*gstate.get_delta_time())[0]
                 << " from Structural Dynamic section "
                    "used for sphere beam link.\n"
                    "Force dependent unbinding of beam-sphere linker is activated for dt > 0"
                 << std::endl;
+    }
   }
 
   // number of linker in simulation volume
   {
     maxnumlinkerpertype_.clear();
-    std::istringstream PL(
+    std::istringstream max_num_linker_per_type_stream(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "MAXNUMLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word) maxnumlinkerpertype_.push_back(std::strtod(word.c_str(), &input));
+
+    Core::IO::ValueParser max_num_linker_per_type_parser(
+        max_num_linker_per_type_stream, "While reading max number of linker per type: ");
+
+    while (!max_num_linker_per_type_parser.eof())
+    {
+      maxnumlinkerpertype_.push_back(max_num_linker_per_type_parser.read<int>());
+    }
 
     // safety check
     for (unsigned int i = 0; i < maxnumlinkerpertype_.size(); ++i)
       if (maxnumlinkerpertype_[i] < 0)
-        FOUR_C_THROW(" negative number of linker does not make sense.");
+        FOUR_C_THROW("Negative number of linker does not make sense!");
   }
 
   // material numbers for crosslinker types
   {
     matlinkerpertype_.clear();
-    std::istringstream PL(
+    std::istringstream material_linker_per_type_stream(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "MATLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word) matlinkerpertype_.push_back(std::strtod(word.c_str(), &input));
+
+    Core::IO::ValueParser material_linker_per_type_parser(
+        material_linker_per_type_stream, "While reading material number for linker type: ");
+
+    while (!material_linker_per_type_parser.eof())
+    {
+      matlinkerpertype_.push_back(material_linker_per_type_parser.read<int>());
+    }
 
     for (unsigned int i = 0; i < matlinkerpertype_.size(); ++i)
     {
       // safety check
-      if (matlinkerpertype_[i] < 0) FOUR_C_THROW(" negative material number does not make sense.");
+      if (matlinkerpertype_[i] < 0) FOUR_C_THROW("Negative material number does not make sense!");
 
       // store materials
       mat_.push_back(
@@ -100,7 +113,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
 
   // safety check
   if (maxnumlinkerpertype_.size() != matlinkerpertype_.size())
-    FOUR_C_THROW("number of crosslinker types does not fit number of assigned materials");
+    FOUR_C_THROW("Number of crosslinker types does not fit number of assigned materials");
 
   // store number of different linker types
   linkertypes_.clear();
@@ -108,22 +121,26 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
   {
     if (not(std::find(linkertypes_.begin(), linkertypes_.end(), matlinkerpertype_[type_i]) !=
             linkertypes_.end()))
+    {
       linkertypes_.push_back(
           Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::factory(matlinkerpertype_[type_i]))
               ->linker_type());
+    }
   }
 
   // store contraction rate, each linker type (not material) can have its own
   {
     contractionrate_.clear();
-    std::istringstream PL(
+    std::istringstream contraction_rate_stream(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "CONTRACTIONRATE"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser contraction_rate_parser(
+        contraction_rate_stream, "While reading contraction rate: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!contraction_rate_parser.eof())
     {
-      contractionrate_[linkertypes_[count]] = std::strtod(word.c_str(), &input);
+      contractionrate_[linkertypes_[count]] = contraction_rate_parser.read<double>();
       ++count;
     }
   }
@@ -134,14 +151,18 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
   // distance between the two binding spots on each filament the same
   {
     filamentbspotintervalglobal_.clear();
-    std::istringstream PL(Teuchos::getNumericStringParameter(
+    std::istringstream filament_bspot_interval_global_stream(Teuchos::getNumericStringParameter(
         spherebeamlink_params_list, "FILAMENTBSPOTINTERVALGLOBAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_bspot_interval_global_parser(
+        filament_bspot_interval_global_stream,
+        "While reading filament binding spot interval global: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_bspot_interval_global_parser.eof())
     {
-      filamentbspotintervalglobal_[linkertypes_[count]] = std::strtod(word.c_str(), &input);
+      filamentbspotintervalglobal_[linkertypes_[count]] =
+          filament_bspot_interval_global_parser.read<double>();
       ++count;
     }
   }
@@ -150,21 +171,24 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
   // reference length
   {
     filamentbspotintervallocal_.clear();
-    std::istringstream PL(Teuchos::getNumericStringParameter(
+    std::istringstream filament_bspot_interval_local_stream(Teuchos::getNumericStringParameter(
         spherebeamlink_params_list, "FILAMENTBSPOTINTERVALLOCAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_bspot_interval_local_parser(filament_bspot_interval_local_stream,
+        "While reading filament binding spot interval local: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_bspot_interval_local_parser.eof())
     {
-      filamentbspotintervallocal_[linkertypes_[count]] = std::strtod(word.c_str(), &input);
+      filamentbspotintervallocal_[linkertypes_[count]] =
+          filament_bspot_interval_local_parser.read<double>();
       ++count;
     }
   }
 
   if (linkertypes_.size() != filamentbspotintervalglobal_.size() and
       linkertypes_.size() != filamentbspotintervallocal_.size())
-    FOUR_C_THROW("You need to specify filament binding spots for all your linker types");
+    FOUR_C_THROW("You need to specify filament binding spots for all your linker types!");
 
   // safety checks for feasibility of input
   if (filamentbspotintervalglobal_.size() == filamentbspotintervallocal_.size())
@@ -185,17 +209,19 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangeglobal_.clear();
-    std::istringstream PL(
+    std::istringstream filament_bspot_range_global_stream(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "FILAMENTBSPOTRANGEGLOBAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_bspot_range_global_parser(
+        filament_bspot_range_global_stream, "While reading filament binding spot range global: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_bspot_range_global_parser.eof())
     {
       std::pair<double, double> pair;
-      pair.first = std::strtod(word.c_str(), &input);
-      if (PL >> word)
-        pair.second = std::strtod(word.c_str(), &input);
+      pair.first = filament_bspot_range_global_parser.read<double>();
+      if (!filament_bspot_range_global_parser.eof())
+        pair.second = filament_bspot_range_global_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
 
@@ -212,17 +238,19 @@ void BEAMINTERACTION::SphereBeamLinkingParams::init(
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangelocal_.clear();
-    std::istringstream PL(
+    std::istringstream filament_bspot_range_local_stream(
         Teuchos::getNumericStringParameter(spherebeamlink_params_list, "FILAMENTBSPOTRANGELOCAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_bspot_range_local_parser(
+        filament_bspot_range_local_stream, "While reading filament binding spot range local: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_bspot_range_local_parser.eof())
     {
       std::pair<double, double> pair;
-      pair.first = std::strtod(word.c_str(), &input);
-      if (PL >> word)
-        pair.second = std::strtod(word.c_str(), &input);
+      pair.first = filament_bspot_range_local_parser.read<double>();
+      if (!filament_bspot_range_local_parser.eof())
+        pair.second = filament_bspot_range_local_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
 

@@ -237,7 +237,7 @@ namespace BrownianDynamics
     how_beam_damping_coefficients_are_specified() const = 0;
 
     /// get prefactors for damping coefficients of beams if they are specified via input file
-    virtual std::vector<double> const& get_beam_damping_coefficient_prefactors_from_input_file()
+    virtual std::array<double, 3> const& get_beam_damping_coefficient_prefactors_from_input_file()
         const = 0;
 
     //! get vector holding periodic bounding box object
