@@ -148,19 +148,6 @@ int Core::LinAlg::SparseMatrixBase::replace_diagonal_values(const Epetra_Vector&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::replace_row_map(const Epetra_BlockMap& newmap)
-{
-  const int err = sysmat_->ReplaceRowMap(newmap);
-  if (err) return err;
-
-  // see method description
-  const_cast<Epetra_BlockMap&>(sysmat_->Map()) = newmap;
-
-  return 0;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrixBase::extract_diagonal_copy(Epetra_Vector& Diagonal) const
 {
   return sysmat_->ExtractDiagonalCopy(Diagonal);

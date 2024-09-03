@@ -492,7 +492,7 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
       Core::LinAlg::matrix_multiply(*subtrafo_, false, *sysmat, false, true);
   // put transformed rows back into global matrix
-  sysmat->put(*temp, 1.0, locsysdofmap_);
+  Core::LinAlg::matrix_put(*temp, 1.0, locsysdofmap_, *sysmat);
 }
 
 
@@ -507,7 +507,7 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
       *subtrafo_, false, *sysmat, false, sysmat->explicit_dirichlet(), sysmat->save_graph(), true);
 
   // put transformed rows back into global matrix
-  sysmat->put(*temp, 1.0, locsysdofmap_);
+  Core::LinAlg::matrix_put(*temp, 1.0, locsysdofmap_, *sysmat);
 }
 
 /*----------------------------------------------------------------------*

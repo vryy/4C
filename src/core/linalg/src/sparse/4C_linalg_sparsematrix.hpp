@@ -349,11 +349,6 @@ namespace Core::LinAlg
      */
     Teuchos::RCP<SparseMatrix> transpose();
 
-    /// derived
-    int replace_row_map(const Epetra_BlockMap& newmap) override;
-
-    using SparseMatrixBase::add;
-
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
     /*!
 
@@ -369,24 +364,9 @@ namespace Core::LinAlg
     \param scalarA    (in)     : scaling factor for A
     \param scalarB    (in)     : scaling factor for B
     */
+    using SparseMatrixBase::add;
     void add(const SparseMatrixBase& A, const bool transposeA, const double scalarA,
         const double scalarB);
-
-    /// Put a Epetra_CrsMatrix (partially) onto another: (*this) = B*scalarB
-    /*!
-
-    Put one matrix onto another. The matrix (*this) to be added to must not be
-    completed. Sparsity patterns of A and (*this) need not match and A and (*this) can be
-    nonsymmetric in value and pattern.  Row map of A has to be a
-    processor-local subset of the row map of (*this).
-
-    \param A          (in)     : Matrix to add to this (must have Filled()==true)
-    \param scalarA    (in)     : scaling factor for #A
-    \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
-    */
-
-    void put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
-        Teuchos::RCP<const Epetra_Map> rowmap);
 
     //@}
 

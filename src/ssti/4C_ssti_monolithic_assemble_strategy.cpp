@@ -14,6 +14,7 @@
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_ssi_utils.hpp"
 #include "4C_ssti_monolithic.hpp"
@@ -1242,7 +1243,8 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
     locsysmanager_structure->rotate_local_to_global(systemmatrix_structure);
 
     // assemble structural rows of global system matrix back into global system matrix
-    systemmatrix_sparse->put(*systemmatrix_structure, 1.0, dofrowmap_structure);
+    Core::LinAlg::matrix_put(
+        *systemmatrix_structure, 1.0, dofrowmap_structure, *systemmatrix_sparse);
   }
 }
 
