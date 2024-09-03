@@ -280,12 +280,6 @@ void FSI::MonolithicLinearSystem::softreset(Teuchos::ParameterList& linearSolver
   }
   maxAgeOfPrec = linearSolverParams.get("Max Age Of Prec", 1);
   precQueryCounter = 0;
-
-#ifdef HAVE_NOX_DEBUG
-#ifdef HAVE_NOX_EPETRAEXT
-  linearSolveCount = 0;
-#endif
-#endif
 }
 
 FOUR_C_NAMESPACE_CLOSE
