@@ -388,53 +388,6 @@ namespace Core::LinAlg
     void put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
         Teuchos::RCP<const Epetra_Map> rowmap);
 
-    /*! @brief Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
-
-      \pre Both matrices must be completed.
-      \pre Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
-
-      \note This is a true parallel multiplication, even in the transposed case.
-
-      \note Uses ML as multiplication kernel.
-
-      \note In this version the flags explicitdirichlet and savegraph must be handed in.
-            Thus, they can be defined explicitly, while in the standard version of Multipliy()
-            above, result matrix C automatically inherits these flags from input matrix A
-
-      \note This function allocates memory for the output matrix C.
-
-      \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
-      \param transA         (in)     : flag indicating whether transposed of A should be used
-      \param B              (in)     : Matrix to multiply with A (must have Filled()==true)
-      \param transB         (in)     : flag indicating whether transposed of B should be used
-      \param explicitdirichlet (in)  : flag deciding on explicitdirichlet flag of output matrix C
-      \param savegraph      (in)     : flag deciding on savegraph flag of output matrix C
-      \param completeoutput (in)     : flag indicating whether output matrix C shall be Complete'd
-      upon output \return Matrix product A(^T)*B(^T)
-    */
-    friend Teuchos::RCP<SparseMatrix> ml_multiply(const SparseMatrix& A, bool transA,
-        const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
-        bool completeoutput);
-
-    /*! @brief Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
-
-      \pre Both matrices must be completed.
-      \pre Respective Range, Row and Domain maps of A(^T) and B(^T) have to match.
-
-      \note This is a true parallel multiplication, even in the transposed case.
-
-      \note Uses ML as multiplication kernel.
-
-      \note This function allocates memory for the output matrix C.
-
-      \param A              (in)     : Matrix to multiply with B (must have Filled()==true)
-      \param B              (in)     : Matrix to multiply with A (must have Filled()==true)
-      \param completeoutput (in)     : flag indicating whether output matrix C shall be Complete'd
-      upon output \return Matrix product A*B
-    */
-    friend Teuchos::RCP<SparseMatrix> ml_multiply(
-        const SparseMatrix& A, const SparseMatrix& B, bool complete);
-
     //@}
 
    private:

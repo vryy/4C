@@ -16,10 +16,10 @@
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -457,7 +457,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // get dinv * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvMa =
-      Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*dInvA, false, *mA, false, false, false, true);
 
   // we need to add another term, since AssembleLinStick/Slip assumes that we solve
   // for the Lagrange multiplier increments. However, we solve for the LM directly.
@@ -496,7 +496,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
       dInvA->replace_diagonal_values(*diag);
-      dInvMa = Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
+      dInvMa = Core::LinAlg::matrix_multiply(*dInvA, false, *mA, false, false, false, true);
     }
   }
 
@@ -544,10 +544,10 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // (3) condensed parts
   // second row
-  kss_new.add(
-      *Core::LinAlg::ml_multiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
-  kst_new.add(
-      *Core::LinAlg::ml_multiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
+  kss_new.add(*Core::LinAlg::matrix_multiply(*dInvMa, true, *kss_a, false, false, false, true),
+      false, 1., 1.);
+  kst_new.add(*Core::LinAlg::matrix_multiply(*dInvMa, true, *kst_a, false, false, false, true),
+      false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->master_row_dofs()));
   if (dInvMa->multiply(true, *rsa, *tmpv)) FOUR_C_THROW("multiply failed");
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
@@ -555,11 +555,11 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // third row
   Teuchos::RCP<Core::LinAlg::SparseMatrix> wDinv =
-      Core::LinAlg::ml_multiply(*dcsdLMc, false, *dInvA, true, false, false, true);
-  kss_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kss_a, false, false, false, true), false,
-      -1. / (1. - alphaf_), 1.);
-  kst_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kst_a, false, false, false, true), false,
-      -1. / (1. - alphaf_), 1.);
+      Core::LinAlg::matrix_multiply(*dcsdLMc, false, *dInvA, true, false, false, true);
+  kss_new.add(*Core::LinAlg::matrix_multiply(*wDinv, false, *kss_a, false, false, false, true),
+      false, -1. / (1. - alphaf_), 1.);
+  kst_new.add(*Core::LinAlg::matrix_multiply(*wDinv, false, *kst_a, false, false, false, true),
+      false, -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*interface_->active_dofs()));
   wDinv->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));

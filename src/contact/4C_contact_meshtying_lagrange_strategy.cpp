@@ -13,10 +13,10 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_mortar.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"  // mesh initialization :-(
 #include "4C_mortar_defines.hpp"
@@ -87,7 +87,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
-  mhatmatrix_ = Core::LinAlg::ml_multiply(*invd_, false, *mmatrix_, false, false, false, true);
+  mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd_, false, *mmatrix_, false, false, false, true);
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -113,11 +113,11 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
     {
       // modify dmatrix_, invd_ and mhatmatrix_
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
-          Core::LinAlg::ml_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *invd_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *invd_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp3 =
-          Core::LinAlg::ml_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*trafo_, false, *mhatmatrix_, false, false, false, true);
       dmatrix_ = temp1;
       invd_ = temp2;
       mhatmatrix_ = temp3;
@@ -232,9 +232,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
       Teuchos::RCP<Core::LinAlg::SparseMatrix> lhs =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> direct =
-          Core::LinAlg::ml_multiply(*dmatrix_, false, *it_ss, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dmatrix_, false, *it_ss, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> mixed =
-          Core::LinAlg::ml_multiply(*mmatrix_, false, *it_ms, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mmatrix_, false, *it_ms, false, false, false, true);
       lhs->add(*direct, false, 1.0, 1.0);
       lhs->add(*mixed, false, -1.0, 1.0);
       lhs->complete();
@@ -339,7 +339,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
   // do the multiplication M^ = inv(D) * M
-  mhatmatrix_ = Core::LinAlg::ml_multiply(*invd_, false, *mmatrix_, false, false, false, true);
+  mhatmatrix_ = Core::LinAlg::matrix_multiply(*invd_, false, *mmatrix_, false, false, false, true);
 
   // return xslavemod for global problem
   return Xslavemod;
@@ -414,9 +414,9 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
 
       // apply basis transformation to K and f
       kteffmatrix =
-          Core::LinAlg::ml_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
       kteffmatrix =
-          Core::LinAlg::ml_multiply(*systrafo, true, *kteffmatrix, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*systrafo, true, *kteffmatrix, false, false, false, true);
       systrafo->multiply(true, *feff, *feff);
     }
 
@@ -497,7 +497,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       knmmod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gndofrowmap_, 100));
       knmmod->add(*knm, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> knmadd =
-          Core::LinAlg::ml_multiply(*kns, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*kns, false, *mhatmatrix_, false, false, false, true);
       knmmod->add(*knmadd, false, 1.0, 1.0);
       knmmod->complete(knm->domain_map(), knm->row_map());
     }
@@ -507,7 +507,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmnmod->add(*kmn, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
-        Core::LinAlg::ml_multiply(*mhatmatrix_, true, *ksn, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhatmatrix_, true, *ksn, false, false, false, true);
     kmnmod->add(*kmnadd, false, 1.0, 1.0);
     kmnmod->complete(kmn->domain_map(), kmn->row_map());
 
@@ -516,18 +516,18 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmmmod->add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
-        Core::LinAlg::ml_multiply(*mhatmatrix_, true, *ksm, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*mhatmatrix_, true, *ksm, false, false, false, true);
     kmmmod->add(*kmmadd, false, 1.0, 1.0);
     if (systype == Inpar::CONTACT::system_condensed)
     {
       // kmm: add kms*mbar + T(mbar)*kss*mbar - additionally
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd2 =
-          Core::LinAlg::ml_multiply(*kms, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*kms, false, *mhatmatrix_, false, false, false, true);
       kmmmod->add(*kmmadd2, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmtemp =
-          Core::LinAlg::ml_multiply(*kss, false, *mhatmatrix_, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*kss, false, *mhatmatrix_, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd3 =
-          Core::LinAlg::ml_multiply(*mhatmatrix_, true, *kmmtemp, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mhatmatrix_, true, *kmmtemp, false, false, false, true);
       kmmmod->add(*kmmadd3, false, 1.0, 1.0);
     }
     kmmmod->complete(kmm->domain_map(), kmm->row_map());
@@ -544,7 +544,7 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
       kmsmod = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
       kmsmod->add(*kms, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmsadd =
-          Core::LinAlg::ml_multiply(*mhatmatrix_, true, *kss, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mhatmatrix_, true, *kss, false, false, false, true);
       kmsmod->add(*kmsadd, false, 1.0, 1.0);
       kmsmod->complete(kms->domain_map(), kms->row_map());
     }
@@ -702,8 +702,9 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(
               *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
       kteffnew =
-          Core::LinAlg::ml_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
-      kteffnew = Core::LinAlg::ml_multiply(*systrafo, true, *kteffnew, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*kteffmatrix, false, *systrafo, false, false, false, true);
+      kteffnew =
+          Core::LinAlg::matrix_multiply(*systrafo, true, *kteffnew, false, false, false, true);
       kteff = kteffnew;
       systrafo->multiply(true, *feff, *feff);
     }
@@ -1161,8 +1162,8 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
     if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
     {
       // apply basis transformation to K and f
-      k = Core::LinAlg::ml_multiply(*k, false, *systrafo_, false, false, false, true);
-      k = Core::LinAlg::ml_multiply(*systrafo_, true, *k, false, false, false, true);
+      k = Core::LinAlg::matrix_multiply(*k, false, *systrafo_, false, false, false, true);
+      k = Core::LinAlg::matrix_multiply(*systrafo_, true, *k, false, false, false, true);
       systrafo_->multiply(true, *r, *r);
     }
 

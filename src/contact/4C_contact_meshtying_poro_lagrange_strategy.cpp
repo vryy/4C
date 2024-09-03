@@ -13,8 +13,8 @@
 #include "4C_contact_meshtying_poro_lagrange_strategy.hpp"
 
 #include "4C_inpar_contact.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_SerialComm.h>
 
@@ -137,7 +137,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     cmmod->add(*cm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cmadd =
-        Core::LinAlg::ml_multiply(*get_m_hat(), true, *cs, false, false, false, true);
+        Core::LinAlg::matrix_multiply(*get_m_hat(), true, *cs, false, false, false, true);
     cmmod->add(*cmadd, false, 1.0, 1.0);
     cmmod->complete(cm->domain_map(), cm->row_map());
 

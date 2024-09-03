@@ -18,9 +18,9 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fbi.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_FEVector.h>
 
@@ -510,17 +510,17 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->complete();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> global_D_scaled =
-      Core::LinAlg::ml_multiply(*kappa_inv_mat, false, *global_d_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*kappa_inv_mat, false, *global_d_, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> global_M_scaled =
-      Core::LinAlg::ml_multiply(*kappa_inv_mat, false, *global_m_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*kappa_inv_mat, false, *global_m_, false, false, false, true);
 
   // Calculate the needed submatrices.
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Dt_kappa_D =
-      Core::LinAlg::ml_multiply(*global_d_, true, *global_D_scaled, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*global_d_, true, *global_D_scaled, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Dt_kappa_M =
-      Core::LinAlg::ml_multiply(*global_d_, true, *global_M_scaled, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*global_d_, true, *global_M_scaled, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Mt_kappa_M =
-      Core::LinAlg::ml_multiply(*global_m_, true, *global_M_scaled, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*global_m_, true, *global_M_scaled, false, false, false, true);
 
   if (kff != Teuchos::null) kff->add(*Mt_kappa_M, false, 1.0, 1.0);
 

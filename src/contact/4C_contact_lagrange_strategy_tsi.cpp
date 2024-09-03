@@ -20,10 +20,10 @@
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_thermo.hpp"
 #include "4C_io.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mortar_utils.hpp"
 
 #include <Epetra_SerialComm.h>
@@ -628,7 +628,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // get dinv * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvMa =
-      Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*dInvA, false, *mA, false, false, false, true);
 
   // get dinv * M on the thermal dofs
   Core::LinAlg::SparseMatrix dInvMaThr(
@@ -653,7 +653,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
       dInvA->replace_diagonal_values(*diag);
-      dInvMa = Core::LinAlg::ml_multiply(*dInvA, false, *mA, false, false, false, true);
+      dInvMa = Core::LinAlg::matrix_multiply(*dInvA, false, *mA, false, false, false, true);
     }
   }
 
@@ -714,10 +714,10 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // (3) condensed parts
   // second row
-  kss_new.add(
-      *Core::LinAlg::ml_multiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
-  kst_new.add(
-      *Core::LinAlg::ml_multiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
+  kss_new.add(*Core::LinAlg::matrix_multiply(*dInvMa, true, *kss_a, false, false, false, true),
+      false, 1., 1.);
+  kst_new.add(*Core::LinAlg::matrix_multiply(*dInvMa, true, *kst_a, false, false, false, true),
+      false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   dInvMa->multiply(true, *rsa, *tmpv);
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
@@ -725,11 +725,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // third row
   Teuchos::RCP<Core::LinAlg::SparseMatrix> wDinv =
-      Core::LinAlg::ml_multiply(*dcsdLMc, false, *dInvA, true, false, false, true);
-  kss_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kss_a, false, false, false, true), false,
-      -1. / (1. - alphaf_), 1.);
-  kst_new.add(*Core::LinAlg::ml_multiply(*wDinv, false, *kst_a, false, false, false, true), false,
-      -1. / (1. - alphaf_), 1.);
+      Core::LinAlg::matrix_multiply(*dcsdLMc, false, *dInvA, true, false, false, true);
+  kss_new.add(*Core::LinAlg::matrix_multiply(*wDinv, false, *kss_a, false, false, false, true),
+      false, -1. / (1. - alphaf_), 1.);
+  kst_new.add(*Core::LinAlg::matrix_multiply(*wDinv, false, *kst_a, false, false, false, true),
+      false, -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   wDinv->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));
@@ -741,11 +741,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // fifth row
   tmp = Teuchos::null;
-  tmp = Core::LinAlg::ml_multiply(
+  tmp = Core::LinAlg::matrix_multiply(
       m_LinDissContactLM_thrRow, false, *dInvA, false, false, false, true);
-  kts_new.add(*Core::LinAlg::ml_multiply(*tmp, false, *kss_a, false, false, false, true), false,
+  kts_new.add(*Core::LinAlg::matrix_multiply(*tmp, false, *kss_a, false, false, false, true), false,
       -tsi_alpha_ / (1. - alphaf_), 1.);
-  ktt_new.add(*Core::LinAlg::ml_multiply(*tmp, false, *kst_a, false, false, false, true), false,
+  ktt_new.add(*Core::LinAlg::matrix_multiply(*tmp, false, *kst_a, false, false, false, true), false,
       -tsi_alpha_ / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   tmp->multiply(false, *rsa, *tmpv);
@@ -753,10 +753,10 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
-  kts_new.add(*Core::LinAlg::ml_multiply(dInvMaThr, true, *kts_a, false, false, false, true), false,
-      1., 1.);
-  ktt_new.add(*Core::LinAlg::ml_multiply(dInvMaThr, true, *ktt_a, false, false, false, true), false,
-      1., 1.);
+  kts_new.add(*Core::LinAlg::matrix_multiply(dInvMaThr, true, *kts_a, false, false, false, true),
+      false, 1., 1.);
+  ktt_new.add(*Core::LinAlg::matrix_multiply(dInvMaThr, true, *ktt_a, false, false, false, true),
+      false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   dInvMaThr.multiply(true, *rta, *tmpv);
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
@@ -764,11 +764,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 
   // sixth row
   Teuchos::RCP<Core::LinAlg::SparseMatrix> yDinv =
-      Core::LinAlg::ml_multiply(dcTdLMc_thr, false, *dInvA, false, false, false, true);
-  kts_new.add(*Core::LinAlg::ml_multiply(*yDinv, false, *kss_a, false, false, false, true), false,
-      -1. / (1. - alphaf_), 1.);
-  ktt_new.add(*Core::LinAlg::ml_multiply(*yDinv, false, *kst_a, false, false, false, true), false,
-      -1. / (1. - alphaf_), 1.);
+      Core::LinAlg::matrix_multiply(dcTdLMc_thr, false, *dInvA, false, false, false, true);
+  kts_new.add(*Core::LinAlg::matrix_multiply(*yDinv, false, *kss_a, false, false, false, true),
+      false, -1. / (1. - alphaf_), 1.);
+  ktt_new.add(*Core::LinAlg::matrix_multiply(*yDinv, false, *kst_a, false, false, false, true),
+      false, -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   yDinv->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));
@@ -776,11 +776,11 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   tmpv = Teuchos::null;
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> gDinv =
-      Core::LinAlg::ml_multiply(dcTdLMt_thr, false, *dInvaThr, false, false, false, true);
-  kts_new.add(*Core::LinAlg::ml_multiply(*gDinv, false, *kts_a, false, false, false, true), false,
-      -1. / (tsi_alpha_), 1.);
-  ktt_new.add(*Core::LinAlg::ml_multiply(*gDinv, false, *ktt_a, false, false, false, true), false,
-      -1. / (tsi_alpha_), 1.);
+      Core::LinAlg::matrix_multiply(dcTdLMt_thr, false, *dInvaThr, false, false, false, true);
+  kts_new.add(*Core::LinAlg::matrix_multiply(*gDinv, false, *kts_a, false, false, false, true),
+      false, -1. / (tsi_alpha_), 1.);
+  ktt_new.add(*Core::LinAlg::matrix_multiply(*gDinv, false, *ktt_a, false, false, false, true),
+      false, -1. / (tsi_alpha_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   gDinv->multiply(false, *rta, *tmpv);
   tmpv->Scale(-1. / tsi_alpha_);

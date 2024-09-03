@@ -15,8 +15,8 @@ to be called!
 
 #include "4C_contact_monocoupled_lagrange_strategy.hpp"
 
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_SerialComm.h>
 
@@ -199,7 +199,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmadd =
-          Core::LinAlg::ml_multiply(*mhataam_, true, *ka, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*mhataam_, true, *ka, false, false, false, true);
       kmmod->add(*kmadd, false, 1.0, 1.0);
     }
     kmmod->complete(kteff->domain_map(), km->row_map());
@@ -217,7 +217,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiadd =
-          Core::LinAlg::ml_multiply(*dhat_, true, *ka, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*dhat_, true, *ka, false, false, false, true);
       kimod->add(*kiadd, false, -1.0, 1.0);
     }
     kimod->complete(kteff->domain_map(), ki->row_map());
@@ -230,8 +230,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kamod;
     if (aset)
     {
-      kamod = Core::LinAlg::ml_multiply(*tmatrix_, false, *invda_, true, false, false, true);
-      kamod = Core::LinAlg::ml_multiply(*kamod, false, *ka, false, false, false, true);
+      kamod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda_, true, false, false, true);
+      kamod = Core::LinAlg::matrix_multiply(*kamod, false, *ka, false, false, false, true);
     }
 
     /********************************************************************/

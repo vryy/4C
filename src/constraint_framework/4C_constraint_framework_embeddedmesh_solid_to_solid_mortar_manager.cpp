@@ -13,8 +13,8 @@
 #include "4C_constraint_framework_embeddedmesh_solid_to_solid_utils.hpp"
 #include "4C_cut_cutwizard.hpp"
 #include "4C_io_visualization_manager.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_MultiVector.h>
@@ -387,19 +387,19 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_penalty_kappa_inv));
     penalty_kappa_inv_mat->complete();
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BL_scaled = Core::LinAlg::ml_multiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BL_scaled = Core::LinAlg::matrix_multiply(
         *penalty_kappa_inv_mat, false, *global_g_bl_, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BG_scaled = Core::LinAlg::ml_multiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BG_scaled = Core::LinAlg::matrix_multiply(
         *penalty_kappa_inv_mat, false, *global_g_bg_, false, false, false, true);
 
     // Calculate the needed submatrices.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BL = Core::LinAlg::ml_multiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BL = Core::LinAlg::matrix_multiply(
         *global_fbl_l_, false, *global_G_BL_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BG = Core::LinAlg::ml_multiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BG = Core::LinAlg::matrix_multiply(
         *global_fbl_l_, false, *global_G_BG_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BL = Core::LinAlg::ml_multiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BL = Core::LinAlg::matrix_multiply(
         *global_fbg_l_, false, *global_G_BL_scaled, false, false, false, true);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BG = Core::LinAlg::ml_multiply(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> FBG_L_times_G_BG = Core::LinAlg::matrix_multiply(
         *global_fbg_l_, false, *global_G_BG_scaled, false, false, false, true);
 
     // Add contributions to the global stiffness matrix.

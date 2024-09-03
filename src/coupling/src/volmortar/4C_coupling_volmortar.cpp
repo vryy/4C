@@ -25,10 +25,10 @@
 #include "4C_fem_geometry_searchtree.hpp"
 #include "4C_fem_geometry_searchtree_service.hpp"
 #include "4C_linalg_mapextractor.hpp"
-#include "4C_linalg_multiply.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mortar_calc_utils.hpp"
@@ -3698,7 +3698,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 
   // do the multiplication P = inv(D) * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux12 =
-      Core::LinAlg::ml_multiply(*invd1, false, *m12_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*invd1, false, *m12_, false, false, false, true);
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         B               */
@@ -3723,13 +3723,13 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
 
   // do the multiplication P = inv(D) * M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> aux21 =
-      Core::LinAlg::ml_multiply(*invd2, false, *m21_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(*invd2, false, *m21_, false, false, false, true);
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != dualquad_no_mod)
   {
-    p12_ = Core::LinAlg::ml_multiply(*t1_, false, *aux12, false, false, false, true);
-    p21_ = Core::LinAlg::ml_multiply(*t2_, false, *aux21, false, false, false, true);
+    p12_ = Core::LinAlg::matrix_multiply(*t1_, false, *aux12, false, false, false, true);
+    p21_ = Core::LinAlg::matrix_multiply(*t2_, false, *aux21, false, false, false, true);
   }
   else
   {
