@@ -162,16 +162,6 @@ namespace Core::LinAlg
     /// Replaces diagonal values of the matrix with those in the user-provided vector.
     int replace_diagonal_values(const Epetra_Vector& Diagonal);
 
-    /** \brief Replace the row map of the underlying Epetra_CrsMatrix
-     *
-     *  \note The map in Epetra_DistObject has to be replaced as well,
-     *  otherwise a possible communication call (e.g. Import) will fail.
-     *
-     *  \param newmap (in) : new row map
-     *
-     *  \pre RowMap().PointSameAs(newmap)==true */
-    virtual int replace_row_map(const Epetra_BlockMap& newmap);
-
     //@}
 
     /** \name Extraction methods */

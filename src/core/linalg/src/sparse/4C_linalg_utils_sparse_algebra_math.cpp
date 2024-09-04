@@ -173,36 +173,48 @@ void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   }
 }
 
-
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
-    Epetra_CrsMatrix& B, const double scalarB)
+void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
+    Teuchos::RCP<const Epetra_Map> rowmap, Core::LinAlg::SparseMatrixBase& B)
 {
-  if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
+  // put values onto sysmat
+  if (A.get_matrixtype() != Core::LinAlg::SparseMatrix::CRS_MATRIX)
+    FOUR_C_THROW("Please check code and see wether it is save to apply it to matrix type %d",
+        A.get_matrixtype());
+  Epetra_CrsMatrix* Aprime = const_cast<Epetra_CrsMatrix*>(&(*(A.epetra_matrix())));
+  if (Aprime == nullptr) FOUR_C_THROW("Cast failed");
 
-  Epetra_CrsMatrix* Aprime = nullptr;
-  Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
-  if (transposeA)
-  {
-    Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
-    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
-  }
+  // Loop over Aprime's rows, extract row content and replace respective row in sysmat
+  const int MaxNumEntries = EPETRA_MAX(Aprime->MaxNumEntries(), B.max_num_entries());
+
+  // define row map to tackle
+  // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is perfomed
+  const Epetra_Map* tomap = nullptr;
+  if (rowmap != Teuchos::null)
+    tomap = &(*rowmap);
   else
+    tomap = &(B.row_map());
+
+  // working variables
+  int NumEntries;
+  std::vector<int> Indices(MaxNumEntries);
+  std::vector<double> Values(MaxNumEntries);
+  int err;
+
+  // loop rows in #tomap and replace the rows of #this->sysmat_ with provided input matrix #A
+  for (int lid = 0; lid < tomap->NumMyElements(); ++lid)
   {
-    Aprime = const_cast<Epetra_CrsMatrix*>(&A);
+    const int Row = tomap->GID(lid);
+    if (Row < 0) FOUR_C_THROW("DOF not found on processor.");
+    err =
+        Aprime->ExtractGlobalRowCopy(Row, MaxNumEntries, NumEntries, Values.data(), Indices.data());
+    if (err) FOUR_C_THROW("ExtractGlobalRowCopy returned err=%d", err);
+    if (scalarA != 1.0)
+      for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;
+    err = B.epetra_matrix()->ReplaceGlobalValues(Row, NumEntries, Values.data(), Indices.data());
+    if (err) FOUR_C_THROW("ReplaceGlobalValues returned err=%d", err);
   }
-
-  if (scalarB == 0.)
-    B.PutScalar(0.0);
-  else if (scalarB != 1.0)
-    B.Scale(scalarB);
-
-  int rowsAdded = do_add(*Aprime, scalarA, B, scalarB);
-  if (rowsAdded != Aprime->RowMap().NumMyElements())
-    FOUR_C_THROW("Core::LinAlg::Add: Could not add all entries from A into B in row %d",
-        Aprime->RowMap().GID(rowsAdded));
 }
 
 /*----------------------------------------------------------------------*

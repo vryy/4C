@@ -1413,74 +1413,11 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::transpose()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrix::replace_row_map(const Epetra_BlockMap& newmap)
-{
-  const int err = Core::LinAlg::SparseMatrixBase::replace_row_map(newmap);
-
-  // change mask as well
-  if ((not err) and savegraph_ and graph_ != Teuchos::null)
-  {
-    if (graph_.strong_count() > 1)
-      FOUR_C_THROW("The graph_ can not be changed! (strong_count = %d)", graph_.strong_count());
-
-    graph_ = Teuchos::rcp(new Epetra_CrsGraph(sysmat_->Graph()));
-  }
-
-  return err;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void Core::LinAlg::SparseMatrix::add(const Core::LinAlg::SparseMatrixBase& A, const bool transposeA,
     const double scalarA, const double scalarB)
 {
   Core::LinAlg::add(*A.epetra_matrix(), transposeA, scalarA, *this, scalarB);
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
-    Teuchos::RCP<const Epetra_Map> rowmap)
-{
-  // put values onto sysmat
-  if (A.get_matrixtype() != Core::LinAlg::SparseMatrix::CRS_MATRIX)
-    FOUR_C_THROW("Please check code and see wether it is save to apply it to matrix type %d",
-        A.get_matrixtype());
-  Epetra_CrsMatrix* Aprime = const_cast<Epetra_CrsMatrix*>(&(*(A.epetra_matrix())));
-  if (Aprime == nullptr) FOUR_C_THROW("Cast failed");
-
-  // Loop over Aprime's rows, extract row content and replace respective row in sysmat
-  const int MaxNumEntries = EPETRA_MAX(Aprime->MaxNumEntries(), sysmat_->MaxNumEntries());
-
-  // define row map to tackle
-  // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is perfomed
-  const Epetra_Map* tomap = nullptr;
-  if (rowmap != Teuchos::null)
-    tomap = &(*rowmap);
-  else
-    tomap = &(row_map());
-
-  // working variables
-  int NumEntries;
-  std::vector<int> Indices(MaxNumEntries);
-  std::vector<double> Values(MaxNumEntries);
-  int err;
-
-  // loop rows in #tomap and replace the rows of #this->sysmat_ with provided input matrix #A
-  for (int lid = 0; lid < tomap->NumMyElements(); ++lid)
-  {
-    const int Row = tomap->GID(lid);
-    if (Row < 0) FOUR_C_THROW("DOF not found on processor.");
-    err =
-        Aprime->ExtractGlobalRowCopy(Row, MaxNumEntries, NumEntries, Values.data(), Indices.data());
-    if (err) FOUR_C_THROW("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
-    if (scalarA != 1.0)
-      for (int j = 0; j < NumEntries; ++j) Values[j] *= scalarA;
-    err = sysmat_->ReplaceGlobalValues(Row, NumEntries, Values.data(), Indices.data());
-    if (err) FOUR_C_THROW("Epetra_CrsMatrix::ReplaceGlobalValues returned err=%d", err);
-  }
-}
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

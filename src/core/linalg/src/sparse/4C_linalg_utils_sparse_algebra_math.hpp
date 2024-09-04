@@ -117,6 +117,21 @@ namespace Core::LinAlg
       Core::LinAlg::SparseMatrixBase& B, const double scalarB);
 
   /*!
+   \brief Put a sparse matrix (partially) onto another: B(rowmap) = A(rowmap)*scalarA
+
+  Put one matrix onto another. The matrix B to be added to must not be completed.
+  Sparsity patterns of A and B need not match and A and B can be nonsymmetric in value and pattern.
+  Row map of A has to be a processor-local subset of the row map of B.
+
+  \param A          (in)     : Matrix to add to this (must have Filled()==true)
+  \param scalarA    (in)     : scaling factor for #A
+  \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
+  \param B          (in/out) : Matrix to be added to (must have Filled()==false)
+  */
+  void matrix_put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
+      Teuchos::RCP<const Epetra_Map> rowmap, Core::LinAlg::SparseMatrixBase& B);
+
+  /*!
    \brief Multiply a (transposed) sparse matrix with another (transposed): C = A(^T)*B(^T)
 
    Multiply one matrix with another. Both matrices must be completed. Sparsity

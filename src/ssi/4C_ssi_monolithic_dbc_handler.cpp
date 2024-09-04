@@ -14,6 +14,7 @@
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_ssi_monolithic.hpp"
 #include "4C_ssi_utils.hpp"
@@ -157,7 +158,7 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
   locsysmanager_structure->rotate_local_to_global(systemmatrix_structure);
 
   // assemble structure rows of global system matrix back into global system matrix
-  systemmatrix_sparse->put(*systemmatrix_structure, 1.0, dofrowmap_structure);
+  Core::LinAlg::matrix_put(*systemmatrix_structure, 1.0, dofrowmap_structure, *systemmatrix_sparse);
 }
 
 /*-------------------------------------------------------------------------*
