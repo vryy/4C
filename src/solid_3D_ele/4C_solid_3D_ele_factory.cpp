@@ -110,6 +110,18 @@ namespace
   };
 
   /*!
+   * @brief Nonlinear total lagrangian formulation with shell EAS for hex8
+   */
+  template <>
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8,
+      Inpar::Solid::KinemType::nonlinearTotLag, Discret::ELEMENTS::ElementTechnology::shell_eas,
+      Discret::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
+        Solid::ELEMENTS::EasType::eastype_sh8_7, Inpar::Solid::KinemType::nonlinearTotLag>;
+  };
+
+  /*!
    * @brief Nonlinear total lagrangian formulation with F-Bar for hex8 and pyramid 5
    */
   template <Core::FE::CellType celltype>

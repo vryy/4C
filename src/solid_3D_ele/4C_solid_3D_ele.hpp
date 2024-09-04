@@ -167,7 +167,8 @@ namespace Discret::ELEMENTS
     [[nodiscard]] bool have_eas() const
     {
       return solid_ele_property_.element_technology == ElementTechnology::eas_full ||
-             solid_ele_property_.element_technology == ElementTechnology::eas_mild;
+             solid_ele_property_.element_technology == ElementTechnology::eas_mild ||
+             solid_ele_property_.element_technology == ElementTechnology::shell_eas;
     }
 
     void vis_names(std::map<std::string, int>& names) override;

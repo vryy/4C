@@ -31,7 +31,8 @@ namespace Discret::ELEMENTS
     none,
     fbar,
     eas_mild,
-    eas_full
+    eas_full,
+    shell_eas
   };
 
   static inline std::string element_technology_string(const ElementTechnology ele_tech)
@@ -46,6 +47,8 @@ namespace Discret::ELEMENTS
         return "eas_mild";
       case ElementTechnology::eas_full:
         return "eas_full";
+      case ElementTechnology::shell_eas:
+        return "shell_eas";
     }
 
     FOUR_C_THROW("Unknown element technology %d", ele_tech);
@@ -64,6 +67,8 @@ namespace Discret::ELEMENTS
         return fct(std::integral_constant<ElementTechnology, ElementTechnology::eas_mild>{});
       case ElementTechnology::eas_full:
         return fct(std::integral_constant<ElementTechnology, ElementTechnology::eas_full>{});
+      case ElementTechnology::shell_eas:
+        return fct(std::integral_constant<ElementTechnology, ElementTechnology::shell_eas>{});
     }
 
     FOUR_C_THROW("Your element technology is unknown: %d", eletech);
