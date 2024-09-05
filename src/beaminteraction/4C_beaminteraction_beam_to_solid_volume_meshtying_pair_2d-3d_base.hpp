@@ -31,16 +31,17 @@ namespace BEAMINTERACTION
 {
   /**
    * \brief Base class for 2D-3D beam to solid volume mesh tying
+   * @tparam ScalarType Scalar FAD type to be used in this pair.
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename Beam, typename Solid>
+  template <typename ScalarType, typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPair2D3DBase
-      : public BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>
+      : public BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam, Solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;

@@ -37,14 +37,14 @@ namespace BEAMINTERACTION
    */
   template <typename Beam, typename Solid, typename Mortar>
   class BeamToSolidVolumeMeshtyingPairMortar
-      : public BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>
+      : public BeamToSolidVolumeMeshtyingPairBase<double, Beam, Solid>
   {
     //! Define the unit test class as friend so it can set up a valid pair state for the test cases.
     friend BeamToSolidVolumeMeshtyingPairMortarTest;
 
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<double, Beam, Solid>;
 
     //! Type to be used for scalar AD variables.
     using scalar_type = typename base_class::scalar_type;

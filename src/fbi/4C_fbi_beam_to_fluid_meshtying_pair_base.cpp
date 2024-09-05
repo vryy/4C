@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <typename Beam, typename Fluid>
 BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::BeamToFluidMeshtyingPairBase()
-    : BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>()
+    : base_class()
 {
   // Empty constructor.
 }
@@ -47,7 +47,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::setup()
 {
   this->check_init();
 
-  BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>::setup();
+  base_class::setup();
 
   // Initialize the element data containers
   ele1vel_ = GEOMETRYPAIR::InitializeElementData<Beam, scalar_type>::initialize(this->element1());

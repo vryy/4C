@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 template <typename Beam, typename Solid>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
     Solid>::BeamToSolidVolumeMeshtyingPairGaussPoint()
-    : BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>()
+    : base_class()
 {
   // Empty constructor.
 }
