@@ -339,8 +339,8 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
 
               if (stiff.has_value())
               {
-                add_stiffness_matrix(linearization, jacobian_mapping, stress, integration_factor,
-                    preparation_data, history_data_, gp, *stiff);
+                add_stiffness_matrix(xi, shape_functions, linearization, jacobian_mapping, stress,
+                    integration_factor, preparation_data, history_data_, gp, *stiff);
               }
 
               if (mass.has_value())

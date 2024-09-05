@@ -15,6 +15,7 @@
 #include "4C_solid_3D_ele_calc_fbar.hpp"
 #include "4C_solid_3D_ele_calc_mulf.hpp"
 #include "4C_solid_3D_ele_calc_mulf_fbar.hpp"
+#include "4C_solid_3D_ele_calc_shell_ans.hpp"
 #include "4C_solid_3D_ele_properties.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -131,6 +132,17 @@ namespace
                        celltype == Core::FE::CellType::pyramid5>>
   {
     using type = Discret::ELEMENTS::FBarSolidIntegrator<celltype>;
+  };
+
+  /*!
+   * @brief Nonlinear total lagrangian solid-shell formulation with ANS
+   */
+  template <>
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8,
+      Inpar::Solid::KinemType::nonlinearTotLag, Discret::ELEMENTS::ElementTechnology::shell_ans,
+      Discret::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = Discret::ELEMENTS::ANSSolidShellIntegrator<Core::FE::CellType::hex8>;
   };
 
   /*!

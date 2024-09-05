@@ -22,6 +22,7 @@ formulation
 #include "4C_solid_3D_ele_calc_lib_nitsche.hpp"
 #include "4C_solid_3D_ele_calc_mulf.hpp"
 #include "4C_solid_3D_ele_calc_mulf_fbar.hpp"
+#include "4C_solid_3D_ele_calc_shell_ans.hpp"
 #include "4C_solid_3D_ele_formulation.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_utils_demangle.hpp"
@@ -154,8 +155,9 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 
               if (stiff.has_value())
               {
-                add_stiffness_matrix<ElementFormulation, celltype>(linearization, jacobian_mapping,
-                    stress, integration_factor, preparation_data, history_data_, gp, *stiff);
+                add_stiffness_matrix<ElementFormulation, celltype>(xi, shape_functions,
+                    linearization, jacobian_mapping, stress, integration_factor, preparation_data,
+                    history_data_, gp, *stiff);
               }
 
               if (mass.has_value())
@@ -557,5 +559,9 @@ template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
     Discret::ELEMENTS::MulfFBarFormulation<Core::FE::CellType::hex8>>;
 template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::pyramid5,
     Discret::ELEMENTS::MulfFBarFormulation<Core::FE::CellType::pyramid5>>;
+
+// explicit instantiations for shell_ans
+template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::ELEMENTS::ShellANSFormulation<Core::FE::CellType::hex8>>;
 
 FOUR_C_NAMESPACE_CLOSE

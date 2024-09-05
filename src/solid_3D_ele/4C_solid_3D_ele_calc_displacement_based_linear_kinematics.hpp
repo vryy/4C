@@ -126,7 +126,8 @@ namespace Discret::ELEMENTS
           linearization.linear_b_operator_, stress, integration_factor, force_vector);
     }
 
-    static void add_stiffness_matrix(
+    static void add_stiffness_matrix(const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const DisplacementBasedLinearKinematicsLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor,
