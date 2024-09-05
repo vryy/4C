@@ -36,6 +36,12 @@ Core::LinearSolver::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& m
 void Core::LinearSolver::MLPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
+  if (matrix->Comm().MyPID() == 0)
+    std::cout << "WARNING: The 4C interface to the multigrid package ML of Trilinos "
+                 "is deprecated and will be removed soon. Switch to an appropriate "
+                 "xml-file using MueLu."
+              << std::endl;
+
   if (create)
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
