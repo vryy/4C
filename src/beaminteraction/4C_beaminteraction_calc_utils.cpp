@@ -738,7 +738,7 @@ namespace BEAMINTERACTION
       std::vector<int> lm_beam, gid_solid, lmowner, lmstride;
       beam_sr_element->location_vector(discret, lm_beam, lmowner, lmstride);
 
-      // Local indices of the rotational DOF
+      // Local indices of the rotational DOFs for the Simo-Reissner beam element.
       constexpr auto n_dof_rot = 9;
       std::array<int, n_dof_rot> rot_dof_indices{3, 4, 5, 12, 13, 14, 18, 19, 20};
 
