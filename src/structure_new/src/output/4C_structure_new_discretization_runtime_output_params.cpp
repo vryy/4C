@@ -51,6 +51,8 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
       Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
   output_element_gid_ =
       Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
+  output_element_material_id_ =
+      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_MAT_ID");
   output_element_ghosting_ =
       Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GHOSTING");
   output_node_gid_ =

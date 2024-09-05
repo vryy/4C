@@ -73,6 +73,13 @@ namespace Discret
         return output_element_gid_;
       };
 
+      /// whether to write the material IDs of elements
+      bool output_element_material_id() const
+      {
+        check_init_setup();
+        return output_element_material_id_;
+      };
+
       /// whether to write the ghosting information of elements
       bool output_element_ghosting() const
       {
@@ -135,6 +142,9 @@ namespace Discret
 
       /// whether to write the element GIDs
       bool output_element_gid_;
+
+      /// whether to write the element material IDs
+      bool output_element_material_id_;
 
       /// whether to write the element ghosting information
       bool output_element_ghosting_;

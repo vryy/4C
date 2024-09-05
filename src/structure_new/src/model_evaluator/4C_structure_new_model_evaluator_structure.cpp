@@ -728,6 +728,10 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
   if (structure_output_params.output_element_gid())
     vtu_writer_ptr_->append_element_gid("element_gid");
 
+  // append element material IDs if desired
+  if (structure_output_params.output_element_material_id())
+    vtu_writer_ptr_->append_element_material_id();
+
   // append element ghosting information if desired
   if (structure_output_params.output_element_ghosting())
     vtu_writer_ptr_->append_element_ghosting_information();

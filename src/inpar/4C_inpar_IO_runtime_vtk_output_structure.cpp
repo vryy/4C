@@ -66,6 +66,10 @@ namespace Inpar
         Core::UTILS::bool_parameter(
             "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_VTK_structure);
 
+        // write element material IDs
+        Core::UTILS::bool_parameter("ELEMENT_MAT_ID", "No",
+            "Output of the material id of each element", &sublist_IO_VTK_structure);
+
         // whether to write stress and / or strain data
         Core::UTILS::bool_parameter("STRESS_STRAIN", "No",
             "Write element stress and / or strain  data. The type of stress / strain has to be "
