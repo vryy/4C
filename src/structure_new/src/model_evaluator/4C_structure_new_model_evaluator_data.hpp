@@ -27,6 +27,7 @@
 #include <Epetra_MultiVector.h>
 #include <NOX_Abstract_Vector.H>
 
+#include <array>
 #include <unordered_map>
 
 // forward declarations
@@ -1398,7 +1399,7 @@ namespace Solid
       }
 
       /// get prefactors for damping coefficients of beams if they are specified via input file
-      [[nodiscard]] std::vector<double> const&
+      [[nodiscard]] std::array<double, 3> const&
       get_beam_damping_coefficient_prefactors_from_input_file() const override
       {
         check_init_setup();
@@ -1457,7 +1458,7 @@ namespace Solid
 
       /// prefactors for damping coefficients of beams if they are specified via input file
       /// (per unit length, NOT yet multiplied by viscosity)
-      std::vector<double> beams_damping_coefficient_prefactors_perunitlength_;
+      std::array<double, 3> beams_damping_coefficient_prefactors_perunitlength_;
 
       /// multiVector holding random forces
       Teuchos::RCP<Epetra_MultiVector> randomforces_;

@@ -26,6 +26,7 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -277,18 +278,28 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     mi_->clear();
     // read potential law parameters from input and check
     {
-      std::istringstream PL(
+      std::istringstream pot_law_exponents_stream(
           Teuchos::getNumericStringParameter(sbeampotential_, "POT_LAW_EXPONENT"));
-      std::string word;
-      char* input;
-      while (PL >> word) mi_->push_back(std::strtod(word.c_str(), &input));
+
+      Core::IO::ValueParser pot_law_exponents_parser(
+          pot_law_exponents_stream, "While reading potential law exponents: ");
+
+      while (!pot_law_exponents_parser.eof())
+      {
+        mi_->push_back(pot_law_exponents_parser.read<double>());
+      }
     }
     {
-      std::istringstream PL(
+      std::istringstream pot_law_prefactors_stream(
           Teuchos::getNumericStringParameter(sbeampotential_, "POT_LAW_PREFACTOR"));
-      std::string word;
-      char* input;
-      while (PL >> word) ki_->push_back(std::strtod(word.c_str(), &input));
+
+      Core::IO::ValueParser pot_law_prefactors_parser(
+          pot_law_prefactors_stream, "While reading potential law prefactors: ");
+
+      while (!pot_law_prefactors_parser.eof())
+      {
+        ki_->push_back(pot_law_prefactors_parser.read<double>());
+      }
     }
     if (!ki_->empty())
     {

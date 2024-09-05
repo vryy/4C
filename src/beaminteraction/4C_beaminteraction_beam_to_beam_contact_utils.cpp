@@ -14,6 +14,7 @@
 #include "4C_beam3_kirchhoff.hpp"
 #include "4C_beam3_reissner.hpp"
 #include "4C_beamcontact_beam3contact_manager.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_rigidsphere.hpp"
 #include "4C_utils_fad.hpp"
 
@@ -308,10 +309,17 @@ double BEAMINTERACTION::determine_searchbox_inc(Teuchos::ParameterList& beamcont
   double searchboxinc = 0.0;
 
   std::vector<double> extval(0);
-  std::istringstream PL(Teuchos::getNumericStringParameter(beamcontactparams, "BEAMS_EXTVAL"));
-  std::string word;
-  char* input;
-  while (PL >> word) extval.push_back(std::strtod(word.c_str(), &input));
+  std::istringstream extrusion_value_stream(
+      Teuchos::getNumericStringParameter(beamcontactparams, "BEAMS_EXTVAL"));
+
+  Core::IO::ValueParser extrusionvalue_parser(
+      extrusion_value_stream, "While reading extrusion values: ");
+
+  while (!extrusionvalue_parser.eof())
+  {
+    extval.push_back(extrusionvalue_parser.read<double>());
+  }
+
   if ((int)extval.size() > 2)
     FOUR_C_THROW("BEAMS_EXTVAL should contain no more than two values. Check your input file.");
   if (extval.size() == 1)

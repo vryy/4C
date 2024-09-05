@@ -10,6 +10,7 @@
 #include "4C_beaminteraction_crosslinking_params.hpp"
 
 #include "4C_global_data.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_mat_crosslinkermat.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
@@ -61,9 +62,11 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
       if (init_box_stream >> value)
         init_box_(row, col) = value;
       else
+      {
         FOUR_C_THROW(
             " Specify six values for bounding box in three dimensional problem."
             " Fix your input file.");
+      }
     }
   }
 
@@ -84,9 +87,11 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
         if (pbb_stream >> value)
           init_box_(row, col) = value;
         else
+        {
           FOUR_C_THROW(
               " Specify six values for bounding box in three dimensional problem."
               " Fix your input file.");
+        }
       }
     }
   }
@@ -97,20 +102,27 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   {
     deltatime_ = (*gstate.get_delta_time())[0];
     if (gstate.get_my_rank() == 0)
+    {
       std::cout << " Time step " << (*gstate.get_delta_time())[0]
                 << " form Structural Dynamic section "
                    "used for crosslinking.\n"
                 << std::endl;
+    }
   }
 
   // number of linker in simulation volume
   {
     numcrosslinkerpertype_.clear();
-    std::istringstream PL(
+    std::istringstream crosslinker_type_stream(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "NUMCROSSLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word) numcrosslinkerpertype_.push_back(std::strtod(word.c_str(), &input));
+
+    Core::IO::ValueParser crosslinker_type_parser(
+        crosslinker_type_stream, "While reading crosslinker type: ");
+
+    while (!crosslinker_type_parser.eof())
+    {
+      numcrosslinkerpertype_.push_back(crosslinker_type_parser.read<int>());
+    }
 
     // safety check
     for (int i = 0; i < static_cast<int>(numcrosslinkerpertype_.size()); ++i)
@@ -121,11 +133,16 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // material numbers for crosslinker types
   {
     matcrosslinkerpertype_.clear();
-    std::istringstream PL(
+    std::istringstream crosslinker_material_stream(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "MATCROSSLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word) matcrosslinkerpertype_.push_back(std::strtod(word.c_str(), &input));
+
+    Core::IO::ValueParser crosslinker_material_parser(
+        crosslinker_material_stream, "While reading crosslinker material: ");
+
+    while (!crosslinker_material_parser.eof())
+    {
+      matcrosslinkerpertype_.push_back(crosslinker_material_parser.read<int>());
+    }
 
     // safety check
     for (int i = 0; i < static_cast<int>(matcrosslinkerpertype_.size()); ++i)
@@ -143,20 +160,27 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   {
     if (not(std::find(linkertypes_.begin(), linkertypes_.end(), matcrosslinkerpertype_[type_i]) !=
             linkertypes_.end()))
+    {
       linkertypes_.push_back(Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(
           Mat::factory(matcrosslinkerpertype_[type_i]))
                                  ->linker_type());
+    }
   }
 
   // number of initially set linker
   {
     maxnum_init_crosslinker_pertype_.clear();
     std::vector<int> maxnuminitcrosslinkerpertype;
-    std::istringstream PL(Teuchos::getNumericStringParameter(
+    std::istringstream num_crosslinker_per_type_stream(Teuchos::getNumericStringParameter(
         crosslinking_params_list, "MAXNUMINITCROSSLINKERPERTYPE"));
-    std::string word;
-    char* input;
-    while (PL >> word) maxnuminitcrosslinkerpertype.push_back(std::strtod(word.c_str(), &input));
+
+    Core::IO::ValueParser num_crosslinker_per_type_parser(
+        num_crosslinker_per_type_stream, "While reading number of initial crosslinker: ");
+
+    while (!num_crosslinker_per_type_parser.eof())
+    {
+      maxnuminitcrosslinkerpertype.push_back(num_crosslinker_per_type_parser.read<int>());
+    }
 
     if (maxnuminitcrosslinkerpertype.size() > 1 or maxnuminitcrosslinkerpertype[0] != 0)
     {
@@ -177,36 +201,45 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // maximal number of bonds per filament binding spot
   {
     max_num_bonds_per_filament_bspot_.clear();
-    std::istringstream PL(Teuchos::getNumericStringParameter(
+    std::istringstream max_num_bonds_per_filament_bspot_stream(Teuchos::getNumericStringParameter(
         crosslinking_params_list, "MAXNUMBONDSPERFILAMENTBSPOT"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser max_num_bonds_per_filament_bspot_parser(
+        max_num_bonds_per_filament_bspot_stream,
+        "While reading max number of bonds per filament binding spot: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!max_num_bonds_per_filament_bspot_parser.eof())
     {
-      max_num_bonds_per_filament_bspot_[linkertypes_[count]] = std::strtod(word.c_str(), &input);
+      max_num_bonds_per_filament_bspot_[linkertypes_[count]] =
+          max_num_bonds_per_filament_bspot_parser.read<int>();
       if (max_num_bonds_per_filament_bspot_.at(linkertypes_[count]) < 0)
         FOUR_C_THROW(" Choose a number of bonds per filament binding spot type >= 0. ");
       ++count;
     }
 
     if (max_num_bonds_per_filament_bspot_.size() != linkertypes_.size())
+    {
       FOUR_C_THROW(
           " Num linker types %i does not match num input for MAXNUMBONDSPERFILAMENTBSPOT %i. ",
           linkertypes_.size(), max_num_bonds_per_filament_bspot_.size());
+    }
   }
 
   // distance between the two binding spots on each filament the same
   {
     filamentbspotintervalglobal_.clear();
-    std::istringstream PL(Teuchos::getNumericStringParameter(
+    std::istringstream filament_interval_bspot_stream(Teuchos::getNumericStringParameter(
         crosslinking_params_list, "FILAMENTBSPOTINTERVALGLOBAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_interval_bspot_parser(
+        filament_interval_bspot_stream, "While reading filament binding spot interval global: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_interval_bspot_parser.eof())
     {
-      filamentbspotintervalglobal_[linkertypes_[count]] = std::strtod(word.c_str(), &input);
+      filamentbspotintervalglobal_[linkertypes_[count]] =
+          filament_interval_bspot_parser.read<double>();
       ++count;
     }
   }
@@ -215,14 +248,17 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // reference length
   {
     filamentbspotintervallocal_.clear();
-    std::istringstream PL(
+    std::istringstream filament_bspot_interval_local_stream(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "FILAMENTBSPOTINTERVALLOCAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_bspot_interval_local_parser(filament_bspot_interval_local_stream,
+        "While reading filament binding spot interval local: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_bspot_interval_local_parser.eof())
     {
-      filamentbspotintervallocal_[linkertypes_[count]] = std::strtod(word.c_str(), &input);
+      filamentbspotintervallocal_[linkertypes_[count]] =
+          filament_bspot_interval_local_parser.read<double>();
       ++count;
     }
   }
@@ -250,17 +286,19 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangeglobal_.clear();
-    std::istringstream PL(
+    std::istringstream filament_bspot_range_global_stream(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "FILAMENTBSPOTRANGEGLOBAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_bspot_range_global_parser(
+        filament_bspot_range_global_stream, "While reading filament binding spot range global: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_bspot_range_global_parser.eof())
     {
       std::pair<double, double> pair;
-      pair.first = std::strtod(word.c_str(), &input);
-      if (PL >> word)
-        pair.second = std::strtod(word.c_str(), &input);
+      pair.first = filament_bspot_range_global_parser.read<double>();
+      if (!filament_bspot_range_global_parser.eof())
+        pair.second = filament_bspot_range_global_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
       filamentbspotrangeglobal_[linkertypes_[count]] = pair;
@@ -275,17 +313,19 @@ void BEAMINTERACTION::CrosslinkingParams::init(Solid::TimeInt::BaseDataGlobalSta
   // start and end arc parameter for binding spots on a filament
   {
     filamentbspotrangelocal_.clear();
-    std::istringstream PL(
+    std::istringstream filament_bspot_range_local_stream(
         Teuchos::getNumericStringParameter(crosslinking_params_list, "FILAMENTBSPOTRANGELOCAL"));
-    std::string word;
-    char* input;
+
+    Core::IO::ValueParser filament_bspot_range_local_parser(
+        filament_bspot_range_local_stream, "While reading filament binding spot range local: ");
+
     int count = 0;
-    while (PL >> word)
+    while (!filament_bspot_range_local_parser.eof())
     {
       std::pair<double, double> pair;
-      pair.first = std::strtod(word.c_str(), &input);
-      if (PL >> word)
-        pair.second = std::strtod(word.c_str(), &input);
+      pair.first = filament_bspot_range_local_parser.read<double>();
+      if (!filament_bspot_range_local_parser.eof())
+        pair.second = filament_bspot_range_local_parser.read<double>();
       else
         FOUR_C_THROW("Filament binding spot range needs to be specified via two values");
       filamentbspotrangelocal_[linkertypes_[count]] = pair;

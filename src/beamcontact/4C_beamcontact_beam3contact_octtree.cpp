@@ -19,6 +19,7 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_contact.hpp"
+#include "4C_io_value_parser.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rigidsphere.hpp"
@@ -76,10 +77,16 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
     // COBB: 1. value for axial extrusion, 2. value for radial extrusion
     // SPBB: one value for radial extrusion
 
-    std::istringstream PL(Teuchos::getNumericStringParameter(params, "BEAMS_EXTVAL"));
-    std::string word;
-    char* input;
-    while (PL >> word) extrusionvalue_->push_back(std::strtod(word.c_str(), &input));
+    std::istringstream extrusion_value_stream(
+        Teuchos::getNumericStringParameter(params, "BEAMS_EXTVAL"));
+
+    Core::IO::ValueParser extrusionvalue_parser(
+        extrusion_value_stream, "While reading extrusion values: ");
+
+    while (!extrusionvalue_parser.eof())
+    {
+      extrusionvalue_->push_back(extrusionvalue_parser.read<double>());
+    }
 
     // max tree depth
     maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
