@@ -538,7 +538,6 @@ void Global::read_fields(
       break;
     }
     case Core::ProblemType::fluid_ale:
-    case Core::ProblemType::freesurf:
     {
       if (distype == Core::FE::ShapeFunctionType::hdg)
       {

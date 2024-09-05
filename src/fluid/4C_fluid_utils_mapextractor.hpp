@@ -36,7 +36,6 @@ namespace FLD
       {
         cond_other = 0,
         cond_fsi = 1,
-        cond_fs = 2,
         cond_lung_asi = 3,
         cond_mortar = 4,
         cond_au = 5
@@ -66,7 +65,6 @@ namespace FLD
 
       MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(fsi_cond, cond_fsi)
-      MAP_EXTRACTOR_VECTOR_METHODS(fs_cond, cond_fs)
       MAP_EXTRACTOR_VECTOR_METHODS(lung_asi_cond, cond_lung_asi)
       MAP_EXTRACTOR_VECTOR_METHODS(mortar_cond, cond_mortar)
       MAP_EXTRACTOR_VECTOR_METHODS(au_cond, cond_au)

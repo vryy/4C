@@ -267,7 +267,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
       ale_ = Teuchos::rcp(new Adapter::AleFpsiWrapper(ale));
       break;
     }
-    case Core::ProblemType::freesurf:
     case Core::ProblemType::fluid_ale:
     case Core::ProblemType::elch:
     case Core::ProblemType::fluid_xfem:

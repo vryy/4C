@@ -227,16 +227,6 @@ void FSI::MonolithicStructureSplit::setup_system()
   // call SetupSystem in base class
   FSI::Monolithic::setup_system();
 
-  // we might have a free surface
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    const int ndim = Global::Problem::instance()->n_dim();
-
-    fscoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-        fluid_field()->interface()->fs_cond_map(), *ale_field()->discretization(),
-        ale_field()->interface()->fs_cond_map(), "FREESURFCoupling", ndim);
-  }
-
   // create combined map
   create_combined_dof_row_map();
 
@@ -594,45 +584,6 @@ void FSI::MonolithicStructureSplit::setup_rhs_firstiter(Epetra_Vector& f)
   // -----------------------------------------------------
   // Now, all contributions/terms to rhs in the first Newton iteration are added.
 
-  // if there is a free surface
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    // here we extract the free surface submatrices from position 2
-    const Core::LinAlg::SparseMatrix& afsig = blocka->matrix(0, 2);
-
-    // extract fluid free surface velocities.
-    Teuchos::RCP<Epetra_Vector> fveln = fluid_field()->extract_free_surface_veln();
-    Teuchos::RCP<Epetra_Vector> aveln = interface_fluid_ale_coupling().master_to_slave(fveln);
-
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(afsig.row_map()));
-    aig.Apply(*aveln, *rhs);
-
-    rhs->Scale(-1. * dt());
-
-    extractor().add_vector(*rhs, 1, f);
-
-    // shape derivatives
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->shape_derivatives();
-    if (mmm != Teuchos::null)
-    {
-      // here we extract the free surface submatrices from position 2
-      Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 2);
-      Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(2, 2);
-
-      rhs = Teuchos::rcp(new Epetra_Vector(fmig.row_map()));
-      fmig.Apply(*fveln, *rhs);
-      Teuchos::RCP<Epetra_Vector> veln = fluid_field()->interface()->insert_other_vector(rhs);
-
-      rhs = Teuchos::rcp(new Epetra_Vector(fmgg.row_map()));
-      fmgg.Apply(*fveln, *rhs);
-      fluid_field()->interface()->insert_fs_cond_vector(rhs, veln);
-
-      veln->Scale(-1. * dt());
-
-      extractor().add_vector(*veln, 0, f);
-    }
-  }
-
   // Reset quantities for previous iteration step since they still store values from the last time
   // step
   ddiinc_ = Core::LinAlg::create_vector(*structure_field()->interface()->other_map(), true);
@@ -747,34 +698,6 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
     lfmgi->complete(aii.domain_map(), f->range_map());
 
     mat.assign(1, 2, Core::LinAlg::View, *lfmgi);
-  }
-
-  // if there is a free surface
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    // here we extract the free surface submatrices from position 2
-    Core::LinAlg::SparseMatrix& aig = a->matrix(0, 2);
-
-    (*fsaigtransform_)(a->full_row_map(), a->full_col_map(), aig, 1. / timescale,
-        Coupling::Adapter::CouplingSlaveConverter(*fscoupfa_), mat.matrix(2, 1));
-
-    if (mmm != Teuchos::null)
-    {
-      // We assume there is some space between fsi interface and free
-      // surface. Thus the matrices mmm->Matrix(1,2) and mmm->Matrix(2,1) are
-      // zero.
-
-      // here we extract the free surface submatrices from position 2
-      Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 2);
-      Core::LinAlg::SparseMatrix& fmgi = mmm->matrix(2, 0);
-      Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(2, 2);
-
-      mat.matrix(1, 1).add(fmgg, false, 1. / timescale, 1.0);
-      mat.matrix(1, 1).add(fmig, false, 1. / timescale, 1.0);
-
-      (*fsmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-          Coupling::Adapter::CouplingMasterConverter(coupfa), mat.matrix(1, 2), false, false);
-    }
   }
 
   f->complete();
@@ -1174,17 +1097,6 @@ void FSI::MonolithicStructureSplit::extract_field_vectors(Teuchos::RCP<const Epe
   // put inner and interface ALE solution increments together
   Teuchos::RCP<Epetra_Vector> a = ale_field()->interface()->insert_other_vector(aox);
   ale_field()->interface()->insert_fsi_cond_vector(acx, a);
-
-  // if there is a free surface
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    Teuchos::RCP<Epetra_Vector> fcx = fluid_field()->interface()->extract_fs_cond_vector(fx);
-    fluid_field()->free_surf_velocity_to_displacement(fcx);
-
-    Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->master_to_slave(fcx);
-    ale_field()->interface()->insert_fs_cond_vector(acx, a);
-  }
-
   ax = a;
 
   // ---------------------------------------------------------------------------

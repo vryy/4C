@@ -42,7 +42,6 @@
 #include "4C_fsi_fluidfluidmonolithic_fluidsplit_nonox.hpp"
 #include "4C_fsi_fluidfluidmonolithic_structuresplit.hpp"
 #include "4C_fsi_fluidfluidmonolithic_structuresplit_nonox.hpp"
-#include "4C_fsi_free_surface_monolithic.hpp"
 #include "4C_fsi_lungmonolithic.hpp"
 #include "4C_fsi_lungmonolithic_fluidsplit.hpp"
 #include "4C_fsi_lungmonolithic_structuresplit.hpp"
@@ -234,91 +233,6 @@ void fluid_xfem_drt()
   }
 }
 
-/*----------------------------------------------------------------------*/
-// entry point for (pure) free surface in DRT
-/*----------------------------------------------------------------------*/
-void fluid_freesurf_drt()
-{
-  const Epetra_Comm& comm = Global::Problem::instance()->get_dis("fluid")->get_comm();
-
-  Global::Problem* problem = Global::Problem::instance();
-
-  // make sure the three discretizations are filled in the right order
-  // this creates dof numbers with
-  //
-  //       fluid dof < ale dof
-  //
-  // We rely on this ordering in certain non-intuitive places!
-
-  problem->get_dis("fluid")->fill_complete();
-  problem->get_dis("ale")->fill_complete();
-
-  // get discretizations
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
-  Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
-
-  // create ale elements if the ale discretization is empty
-  if (aledis->num_global_nodes() == 0)
-  {
-    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-        fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
-    aledis->fill_complete();
-    // setup material in every ALE element
-    Teuchos::ParameterList params;
-    params.set<std::string>("action", "setup_material");
-    aledis->evaluate(params);
-  }
-  else  // filled ale discretization
-  {
-    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
-      FOUR_C_THROW(
-          "Fluid and ALE nodes have the same node numbers. "
-          "This it not allowed since it causes problems with Dirichlet BCs. "
-          "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
-  }
-
-  const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
-
-  int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
-  switch (coupling)
-  {
-    case fsi_iter_monolithicfluidsplit:
-    case fsi_iter_monolithicstructuresplit:
-    {
-      Teuchos::RCP<FSI::MonolithicMainFS> fsi;
-
-      // Monolithic Free Surface Algorithm
-
-      fsi = Teuchos::rcp(new FSI::MonolithicFS(comm, fsidyn));
-
-      const int restart = Global::Problem::instance()->restart();
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        fsi->read_restart(restart);
-      }
-
-      fsi->timeloop(fsi);
-
-      Global::Problem::instance()->add_field_test(fsi->fluid_field()->create_field_test());
-      Global::Problem::instance()->test_all(comm);
-      break;
-    }
-    default:
-    {
-      Teuchos::RCP<FSI::FluidAleAlgorithm> fluid;
-
-      // Partitioned FS Algorithm
-      fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
-
-      fluid->timeloop();
-
-      Global::Problem::instance()->add_field_test(fluid->mb_fluid_field()->create_field_test());
-      Global::Problem::instance()->test_all(comm);
-      break;
-    }
-  }
-}
 /*----------------------------------------------------------------------*/
 // entry point for FSI using multidimensional immersed method (FBI)
 /*----------------------------------------------------------------------*/

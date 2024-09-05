@@ -23,7 +23,6 @@
 #include "4C_fluid_result_test.hpp"
 #include "4C_fluid_utils.hpp"
 #include "4C_fsi_dyn.hpp"
-#include "4C_fsi_free_surface_monolithic.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
 #include "4C_fsi_utils.hpp"

@@ -261,14 +261,6 @@ void FSI::SlidingMonolithicFluidSplit::setup_system()
         fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
         ale_field()->interface()->fsi_cond_map(), "FSICoupling", ndim);
 
-    // we might have a free surface
-    if (fluid_field()->interface()->fs_cond_relevant())
-    {
-      fscoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-          fluid_field()->interface()->fs_cond_map(), *ale_field()->discretization(),
-          ale_field()->interface()->fs_cond_map(), "FREESURFCoupling", ndim);
-    }
-
     Coupling::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
     // the fluid-ale coupling always matches

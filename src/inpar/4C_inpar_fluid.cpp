@@ -1577,34 +1577,6 @@ void Inpar::FLUID::set_valid_conditions(
   condlist.push_back(surftension);
 
   /*--------------------------------------------------------------------*/
-  // FREESURF
-
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefreesurf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-          "DESIGN FLUID FREE SURFACE LINE CONDITIONS", "FREESURFCoupling", "FREESURF Coupling",
-          Core::Conditions::FREESURFCoupling, true, Core::Conditions::geometry_type_line));
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffreesurf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
-          "DESIGN FLUID FREE SURFACE SURF CONDITIONS", "FREESURFCoupling", "FREESURF Coupling",
-          Core::Conditions::FREESURFCoupling, true, Core::Conditions::geometry_type_surface));
-
-  for (const auto& cond : {linefreesurf, surffreesurf})
-  {
-    add_named_selection_component(cond, "FIELD", "", "fluid",
-        Teuchos::tuple<std::string>("fluid", "ale"), Teuchos::tuple<std::string>("fluid", "ale"));
-    add_named_selection_component(cond, "COUPLING", "", "lagrange",
-        Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
-            "meantangentialvelocity", "meantangentialvelocityscaled"),
-        Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
-            "meantangentialvelocity", "meantangentialvelocityscaled"),
-        true);
-    add_named_real(cond, "VAL");
-    add_named_int(cond, "NODENORMALFUNCT");
-
-    condlist.push_back(cond);
-  }
-
-  /*--------------------------------------------------------------------*/
   // fluid stress
 
 
