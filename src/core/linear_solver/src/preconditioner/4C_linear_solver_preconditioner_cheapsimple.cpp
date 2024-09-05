@@ -36,6 +36,12 @@ Core::LinearSolver::CheapSimpleBlockPreconditioner::CheapSimpleBlockPrecondition
       alpha_(SIMPLER_ALPHA),
       label_(setup_label())
 {
+  if (A->Comm().MyPID() == 0)
+    std::cout << "WARNING: The native 4C implementation of the SIMPLE block preconditioner "
+                 "is deprecated and will be removed soon. Switch to an appropriate "
+                 "xml-file using Teko."
+              << std::endl;
+
   setup(A, predict_list, correct_list);
 }
 
