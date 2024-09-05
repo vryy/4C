@@ -1,0 +1,56 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+1.000000000000000e+00 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="16" NumberOfCells="2" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
+1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+2.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+2.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
+1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
+1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+2.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+2.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
+1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+8 16 
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="ascii">
+12 12 
+        </DataArray>
+      </Cells>
+
+  <CellData>
+        <DataArray type="Int32" Name="material_id" format="ascii">
+1
+2
+        </DataArray>
+      </CellData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>
