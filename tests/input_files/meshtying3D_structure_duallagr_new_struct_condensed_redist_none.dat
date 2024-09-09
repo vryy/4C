@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------TITLE
-3D finite deformation meshtying test
+3D finite deformation contact test
 // - first-order interpolation (hex8 elements)
-// - penalty solution scheme
-// - standard Lagrange multiplier interpolation
+// - standard Newton solution scheme
+// - dual Lagrange multiplier interpolation
 // - quasi-static problem
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        341
@@ -19,6 +19,7 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
@@ -27,19 +28,21 @@ NLNSOL                          fullnewton
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1.0
-TOLRES                          1.0E-6
+TOLRES                          1.0E-8
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
-INT_STRATEGY                    Standard
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-STRATEGY                        Penalty
-PENALTYPARAM                    1.0e6
+STRATEGY                        Lagrange
+SYSTEM                          Condensed
 -------------------------------------------------------------MORTAR COUPLING
-LM_SHAPEFCN                     Standard
+LM_SHAPEFCN                     Dual
+-------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+PARALLEL_REDIST                 None
+MIN_ELEPROC                     0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -53,12 +56,12 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 2000 VALUES 0 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 3.92176597285693707e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 7.01434296747784236e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 6.63600380177390536e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.97800794729877283e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 7.78867723044044835e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 4.94154563642801581e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 3.92152496739107737e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 7.01220989797458172e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 6.63363881791205645e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.98057903892079512e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 7.79212745350494562e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 4.94710970341323997e-01 TOLERANCE 1e-10
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
