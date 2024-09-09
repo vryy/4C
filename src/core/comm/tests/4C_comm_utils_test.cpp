@@ -141,6 +141,87 @@ namespace
     Teuchos::RCP<Epetra_CrsMatrix> epetraCrsMatrix_;
   };
 
+  /**
+   * Class to setup parallel rectangular matrices which are compared.
+   */
+  class SetupCompareParallelRectangularMatricesTest : public ::testing::Test
+
+  {
+   public:
+    /**
+     * \brief Set up the testing environment.
+     */
+    SetupCompareParallelRectangularMatricesTest()
+    {
+      communicators_ = mock_up_communicators();
+      Core::IO::cout.setup(
+          false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
+
+      // create arbitrary distributed map within each group
+      Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(
+          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
+      Teuchos::RCP<Epetra_Map> colmap = Teuchos::rcp(
+          new Epetra_Map(2 * numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
+      int approximateNumberOfNonZeroesPerRow = 6;
+      epetraCrsMatrix_ = Teuchos::rcp(
+          new Epetra_CrsMatrix(::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false));
+
+      // fill rectangular Epetra_CrsMatrix
+      double* values = new double[6];
+      int* columnIndices = new int[6];
+      int numMyEles = rowmap->NumMyElements();
+      for (int lid = 0; lid < numMyEles; ++lid)
+      {
+        int rowgid = rowmap->GID(lid);
+        if (rowgid == 0)  // first global row
+        {
+          int colIndicesFirstRow[4] = {
+              0, 1, numberOfElementsToDistribute_, numberOfElementsToDistribute_ + 1};
+          double valuesFirstRow[4] = {static_cast<double>(rowgid) + colIndicesFirstRow[0],
+              static_cast<double>(rowgid) + colIndicesFirstRow[1],
+              static_cast<double>(rowgid) + colIndicesFirstRow[0],
+              static_cast<double>(rowgid) + colIndicesFirstRow[1]};
+          epetraCrsMatrix_->InsertGlobalValues(rowgid, 4, valuesFirstRow, colIndicesFirstRow);
+        }
+        else if (rowgid == numberOfElementsToDistribute_ - 1)  // last global row
+        {
+          rowgid = rowmap->GID(numMyEles - 1);
+          int colIndicesLastRow[4] = {rowgid - 1, rowgid,
+              rowgid - 1 + numberOfElementsToDistribute_, rowgid + numberOfElementsToDistribute_};
+          double valuesLastRow[4] = {static_cast<double>(rowgid) + colIndicesLastRow[0],
+              static_cast<double>(rowgid) + colIndicesLastRow[1],
+              static_cast<double>(rowgid) + colIndicesLastRow[0],
+              static_cast<double>(rowgid) + colIndicesLastRow[1]};
+          epetraCrsMatrix_->InsertGlobalValues(rowgid, 4, valuesLastRow, colIndicesLastRow);
+        }
+        else  // all rows in between
+        {
+          columnIndices[0] = rowgid - 1;
+          columnIndices[1] = rowgid;
+          columnIndices[2] = rowgid + 1;
+          columnIndices[3] = rowgid - 1 + numberOfElementsToDistribute_;
+          columnIndices[4] = rowgid + numberOfElementsToDistribute_;
+          columnIndices[5] = rowgid + 1 + numberOfElementsToDistribute_;
+          values[0] = static_cast<double>(rowgid) + columnIndices[0];
+          values[1] = static_cast<double>(rowgid) + columnIndices[1];
+          values[2] = static_cast<double>(rowgid) + columnIndices[2];
+          values[3] = values[0];
+          values[4] = values[1];
+          values[5] = values[2];
+          epetraCrsMatrix_->InsertGlobalValues(rowgid, 6, values, columnIndices);
+        }
+      }
+      epetraCrsMatrix_->FillComplete(*colmap, *rowmap);
+    }
+
+    void TearDown() override { Core::IO::cout.close(); }
+
+   public:
+    Teuchos::RCP<Core::Communication::Communicators> communicators_;
+    const int numberOfElementsToDistribute_ = 673;
+    Teuchos::RCP<Epetra_CrsMatrix> epetraCrsMatrix_;
+  };
+
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)
   {
     bool success =
@@ -180,6 +261,13 @@ namespace
     EXPECT_THROW(Core::Communication::are_distributed_sparse_matrices_identical(
                      *communicators_, epetraCrsMatrix_, "epetraCrsMatrix"),
         Core::Exception);
+  }
+
+  TEST_F(SetupCompareParallelRectangularMatricesTest, PositiveTestCompareRectangularMatrices)
+  {
+    bool success = Core::Communication::are_distributed_sparse_matrices_identical(
+        *communicators_, epetraCrsMatrix_, "rectangularEpetraCrsMatrix");
+    EXPECT_EQ(success, true);
   }
 
 }  // namespace
