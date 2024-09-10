@@ -134,20 +134,6 @@ namespace Discret
           const std::vector<double>& edispnp, std::vector<double>& enormals);
 
       /*!
-        \brief Integrate surface tension
-
-        \param elevec1   (out)    : RHS contribution of surface tension effect
-        \param edispnp   (in)     : Displacement-vector
-        \param enormals  (in)     : Node normals
-        \param curvature (in)     : Interpolated curvature
-      */
-      void element_surface_tension(Discret::ELEMENTS::FluidBoundary* ele,
-          Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
-          const std::vector<double>& edispnp, std::vector<double>& enormals,
-          std::vector<double>& ecurvature);
-
-      /*!
       brief integrate elemental areas over a surface
 
       \param params (in/out)    : ParameterList for communication between control routine
