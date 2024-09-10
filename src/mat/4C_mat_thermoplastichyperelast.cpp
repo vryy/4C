@@ -925,7 +925,7 @@ void Mat::ThermoPlasticHyperElast::setup_cmat_elasto_plastic(
     Core::LinAlg::Matrix<3, 3> invdefgrdcurr, Core::LinAlg::Matrix<3, 3> n,
     double bulk,  // bulk modulus
     int gp        // current Gauss point
-)
+) const
 {
   // ---------------------------------------------- intialise material tangents
   Core::LinAlg::Matrix<6, 6> Cmat(true);
@@ -1143,7 +1143,7 @@ void Mat::ThermoPlasticHyperElast::evaluate(const Core::LinAlg::Matrix<1, 1>& Nt
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
 void Mat::ThermoPlasticHyperElast::setup_cmat_thermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
-    Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params)
+    Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params) const
 {
   // temperature-dependent material tangent
   // cmat_T = cmat_vol,dT = dstresstemp/dE = 2 dstresstemp/dC
@@ -1193,7 +1193,7 @@ void Mat::ThermoPlasticHyperElast::setup_cmat_thermo(const Core::LinAlg::Matrix<
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
 void Mat::ThermoPlasticHyperElast::setup_cthermo(
-    Core::LinAlg::Matrix<6, 1>& ctemp, Teuchos::ParameterList& params)
+    Core::LinAlg::Matrix<6, 1>& ctemp, Teuchos::ParameterList& params) const
 {
   // temperature-dependent material tangent
   // C_T = m_0/2.0 . (J + 1/J) . Cinv
@@ -1220,7 +1220,7 @@ void Mat::ThermoPlasticHyperElast::setup_cthermo(
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus m_0                 dano 09/13 |
  *----------------------------------------------------------------------*/
-double Mat::ThermoPlasticHyperElast::st_modulus()
+double Mat::ThermoPlasticHyperElast::st_modulus() const
 {
   // m_0 := -(2 . mu + 3 . lambda) . alpha_T = - 3 . bulk . alpha_T
 
@@ -1241,7 +1241,7 @@ double Mat::ThermoPlasticHyperElast::st_modulus()
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticHyperElast::vis_names(std::map<std::string, int>& names)
+void Mat::ThermoPlasticHyperElast::vis_names(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -1258,7 +1258,7 @@ void Mat::ThermoPlasticHyperElast::vis_names(std::map<std::string, int>& names)
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
 bool Mat::ThermoPlasticHyperElast::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   // accumulated strain
   if (name == "accumulatedstrain")

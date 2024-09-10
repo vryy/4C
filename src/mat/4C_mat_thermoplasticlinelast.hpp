@@ -199,19 +199,19 @@ namespace Mat
     void stress(const double p,                                   //!< volumetric stress tensor
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
-    );
+    ) const;
 
     //! calculate relative/over strees
     void rel_dev_stress(
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
-    );
+    ) const;
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
     void setup_cmat(
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
-    );
+    ) const;
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
     void setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
@@ -224,30 +224,30 @@ namespace Mat
         double heaviside,                                         //!< Heaviside function
         double Hiso,                                              //!< isotropic hardening modulus
         double Hkin                                               //!< kinematic hardening modulus
-    );
+    ) const;
 
     //! computes isotropic elastoplastic tensor in matrix notation for 3d
     void setup_cmat_elasto_plastic2(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        double Dgamma, double q, Core::LinAlg::Matrix<NUM_STRESS_3D, 1> unitflow);
+        double Dgamma, double q, Core::LinAlg::Matrix<NUM_STRESS_3D, 1> unitflow) const;
 
     //! computes continuum elastoplastic tensor in matrix notation for 3d
     void setup_continuum_cmat_elasto_plastic(
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat, double Dgamma, double q,
-        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> unitflow);
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> unitflow) const;
 
     //! calculates the derivative of get_sigma_y_at_strainbarnp() w.r.t. astrain_{n+1}
     //! and returns the isotropic hardening modulus
     double get_iso_hard_at_strainbarnp(
         const double strainbar_p  //!< current accumulated strain
                                   //!< or if damage!=0: isotropic hardening internal variable
-    );
+    ) const;
 
     //! calculates current yield stress from (sigma_y-astrain)-samples which
     //! describe a piecewise constant function
     double get_sigma_y_at_strainbarnp(
         const double strainbar_p  //!< current accumulated strain, in case of dependent hardening
                                   //!< or if damage!=0: isotropic hardening internal variable
-    );
+    ) const;
 
     //! return density
     double density() const override { return params_->density_; }
@@ -291,10 +291,10 @@ namespace Mat
     //! notion for 3d
     void setup_cthermo(
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp  //!< temperature dependent material tangent
-    );
+    ) const;
 
     //! calculates stress-temperature modulus
-    double st_modulus();
+    double st_modulus() const;
 
     //! initial temperature
     double init_temp() const { return params_->thetainit_; }
@@ -361,11 +361,11 @@ namespace Mat
     //@}
 
     /// Return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     /// Return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
 
    private:

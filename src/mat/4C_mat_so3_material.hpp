@@ -79,7 +79,7 @@ namespace Mat
      * @param[in] eleGID   Global element ID
      */
     virtual void strain_energy(
-        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
+        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) const
     {
       FOUR_C_THROW("Material of type %d does not support calculation of strain energy",
           this->material_type());
@@ -252,7 +252,7 @@ namespace Mat
      *
      * @param[in] names Names of the data to export
      */
-    virtual void vis_names(std::map<std::string, int>& names) {}
+    virtual void vis_names(std::map<std::string, int>& names) const {}
 
     /*!
      * @brief Return visualization data
@@ -261,7 +261,7 @@ namespace Mat
      * @param[in] data  Data to export
      * @param[in] numgp Gauss point
      */
-    virtual bool vis_data(const std::string& name, std::vector<double>& data, int numgp)
+    virtual bool vis_data(const std::string& name, std::vector<double>& data, int numgp) const
     {
       return false;
     }
@@ -274,7 +274,8 @@ namespace Mat
      * @param[in] numgp Gauss point
      * @param[in] eleId Element ID
      */
-    virtual bool vis_data(const std::string& name, std::vector<double>& data, int numgp, int eleId)
+    virtual bool vis_data(
+        const std::string& name, std::vector<double>& data, int numgp, int eleId) const
     {
       return false;
     }
@@ -310,7 +311,7 @@ namespace Mat
     /*!
      * @brief Return whether the material requires the deformation gradient for its evaluation
      */
-    virtual bool needs_defgrd() { return false; }
+    virtual bool needs_defgrd() const { return false; }
     //@}
   };
 }  // namespace Mat

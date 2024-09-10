@@ -1021,7 +1021,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)           hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void Mat::SuperElasticSMA::vis_names(std::map<std::string, int>& names)
+void Mat::SuperElasticSMA::vis_names(std::map<std::string, int>& names) const
 {
   names["martensiticfraction"] = 1;  // scalar
   names["druckerprager"] = 1;        // scalar
@@ -1132,7 +1132,7 @@ Mat::SuperElasticSMA::LoadingData Mat::SuperElasticSMA::compute_local_newton_loa
  | return visualization data (public)                    hemmler 09/16 |
  *---------------------------------------------------------------------*/
 bool Mat::SuperElasticSMA::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "martensiticfraction")
   {
@@ -1158,7 +1158,7 @@ bool Mat::SuperElasticSMA::vis_data(
  |  calculate strain energy                                hemmler 11/16|
  *----------------------------------------------------------------------*/
 void Mat::SuperElasticSMA::strain_energy(
-    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID) const
 {
   psi = strainenergy_;
   return;

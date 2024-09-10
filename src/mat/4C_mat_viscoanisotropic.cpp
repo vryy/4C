@@ -703,7 +703,7 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::ViscoAnisotropic::vis_names(std::map<std::string, int>& names)
+void Mat::ViscoAnisotropic::vis_names(std::map<std::string, int>& names) const
 {
   std::string fiber = "Fiber1";
   names[fiber] = 3;  // 3-dim vector
@@ -714,7 +714,7 @@ void Mat::ViscoAnisotropic::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Mat::ViscoAnisotropic::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   std::vector<double> a1 = geta1()->at(0);  // get a1 of first gp
   std::vector<double> a2 = geta2()->at(0);  // get a2 of first gp

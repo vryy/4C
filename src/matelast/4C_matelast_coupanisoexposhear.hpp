@@ -171,7 +171,7 @@ namespace Mat
       /// Get fiber directions
       void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-          ) override;
+      ) const override;
 
      protected:
       const CoupAnisoExpoBaseInterface& get_coup_aniso_expo_base_interface() const override

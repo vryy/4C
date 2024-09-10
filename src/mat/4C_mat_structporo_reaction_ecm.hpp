@@ -146,11 +146,11 @@ namespace Mat
     //! @name Visualization methods
 
     /// Return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     /// Return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
    protected:
     void reaction(const double porosity, const double J, Teuchos::RCP<std::vector<double>> scalars,

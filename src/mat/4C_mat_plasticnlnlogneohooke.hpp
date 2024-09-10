@@ -204,11 +204,11 @@ namespace Mat
     bool initialized() const { return (isinit_ and !accplstraincurr_.empty()); }
 
     //! return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     //! return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     //! return names of visualization data available for direct VTK output
     void register_output_data_names(
@@ -219,7 +219,7 @@ namespace Mat
         const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool needs_defgrd() override { return true; };
+    bool needs_defgrd() const override { return true; };
 
     //@}
 

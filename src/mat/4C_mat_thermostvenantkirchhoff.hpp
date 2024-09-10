@@ -171,7 +171,7 @@ namespace Mat
         double& psi,                                                ///< strain energy functions
         int gp,                                                     ///< Gauss point
         int eleGID                                                  ///< element GID
-        ) override;
+    ) const override;
 
     //! return true if Young's modulus is temperature dependent
     bool youngs_is_temp_dependent() const { return this->params_->youngs_.size() > 1; }
@@ -229,11 +229,11 @@ namespace Mat
 
    private:
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat);
+    void setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat) const;
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void setup_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp);
+    void setup_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp) const;
 
     //! calculates stress-temperature modulus
     double st_modulus() const;
@@ -243,13 +243,13 @@ namespace Mat
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 6>& derivcmat);
+    void get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 6>& derivcmat) const;
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void get_cthermo_at_tempnp_t(
         Core::LinAlg::Matrix<6, 1>& derivctemp  //!< linearisation of ctemp w.r.t. T
-    );
+    ) const;
 
     //! calculate temperature dependent material parameter and return value
     double get_mat_parameter_at_tempnp(

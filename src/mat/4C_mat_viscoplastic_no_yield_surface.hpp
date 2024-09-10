@@ -308,7 +308,7 @@ namespace Mat
 
     void update() override;
 
-    bool needs_defgrd() override { return true; };
+    bool needs_defgrd() const override { return true; };
 
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 

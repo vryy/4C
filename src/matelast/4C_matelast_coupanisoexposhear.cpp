@@ -212,7 +212,7 @@ void Mat::Elastic::CoupAnisoExpoShear::unpack_summand(Core::Communication::Unpac
 }
 
 void Mat::Elastic::CoupAnisoExpoShear::get_fiber_vecs(
-    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
+    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs) const
 {
   // no fibers to export here
 }

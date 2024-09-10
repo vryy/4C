@@ -186,7 +186,7 @@ void Mat::StructPoroReactionECM::update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReactionECM::vis_names(std::map<std::string, int>& names)
+void Mat::StructPoroReactionECM::vis_names(std::map<std::string, int>& names) const
 {
   // call base class
   StructPoroReaction::vis_names(names);
@@ -198,7 +198,7 @@ void Mat::StructPoroReactionECM::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Mat::StructPoroReactionECM::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   // call base class
   if (StructPoroReaction::vis_data(name, data, numgp, eleID)) return true;

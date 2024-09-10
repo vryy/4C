@@ -430,7 +430,7 @@ namespace Mat
     virtual Mat::PAR::PlasticElastHyper* mat_params() const { return params_; }
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool needs_defgrd() override { return true; };
+    bool needs_defgrd() const override { return true; };
 
     /// get plastic algorithm parameters
     virtual void get_params(double s, double cpl)
@@ -463,11 +463,11 @@ namespace Mat
     }
 
     //! return names of visualization data
-    virtual void vis_names(std::map<std::string, int>& names) const;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     //! return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;

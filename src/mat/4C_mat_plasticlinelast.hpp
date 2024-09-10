@@ -191,7 +191,7 @@ namespace Mat
     //! computes isotropic elasticity tensor in matrix notion for 3d
     void setup_cmat(
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
-    );
+    ) const;
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
     void setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
@@ -203,7 +203,7 @@ namespace Mat
         double heaviside,  //!< heaviside function: decide if loading/unloading
         double Hiso,       //!< isotropic hardening modulus
         double Hkin        //!< kinematic hardening modulus
-    );
+    ) const;
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
     void setup_cmat_elasto_plastic2(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
@@ -211,14 +211,14 @@ namespace Mat
         double Dgamma,                                   //!< plastic multiplier
         double q,                                        //!< effective stress
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1> unitflow  //!< unit flow vector
-    );
+    ) const;
 
     void setup_continuum_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
                                                  cmat,   //!< elasto-plastic material tangent
         double Dgamma,                                   //!< plastic multiplier
         double q,                                        //!< effective stress
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1> unitflow  //!< unit flow vector
-    );
+    ) const;
 
     //! return density
     double density() const override { return params_->density_; }
@@ -241,11 +241,11 @@ namespace Mat
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     //! return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     //! finite difference check for debugging purposes
     void fd_check(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress,  //!< updated stress sigma_n+1

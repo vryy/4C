@@ -2649,7 +2649,7 @@ void Mat::Damage::setup_cmat_elasto_plastic_full_lemaitre(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)              dano 09/13 |
  *---------------------------------------------------------------------*/
-void Mat::Damage::vis_names(std::map<std::string, int>& names)
+void Mat::Damage::vis_names(std::map<std::string, int>& names) const
 {
   std::string variablename = "accumulatedstrain";
   names[variablename] = 1;  // scalar
@@ -2669,7 +2669,8 @@ void Mat::Damage::vis_names(std::map<std::string, int>& names)
 /*---------------------------------------------------------------------*
  | return visualization data (public)                       dano 09/13 |
  *---------------------------------------------------------------------*/
-bool Mat::Damage::vis_data(const std::string& name, std::vector<double>& data, int numgp, int eleID)
+bool Mat::Damage::vis_data(
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "accumulatedstrain")
   {

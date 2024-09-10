@@ -291,7 +291,7 @@ namespace Mat
     }
 
     void strain_energy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
-        const int EleID) override
+        const int EleID) const override
     {
       mat_->strain_energy(glstrain, psi, gp, EleID);
     }
@@ -336,10 +336,10 @@ namespace Mat
 
     //! @name Visualization methods
 
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     //!@}
 

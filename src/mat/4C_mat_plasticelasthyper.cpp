@@ -2318,7 +2318,7 @@ void Mat::PlasticElastHyper::vis_names(std::map<std::string, int>& names) const
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
 bool Mat::PlasticElastHyper::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "accumulatedstrain")
   {

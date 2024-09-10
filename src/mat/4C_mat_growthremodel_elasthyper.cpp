@@ -1699,7 +1699,7 @@ double Mat::GrowthRemodelElastHyper::evaluate_membrane_thickness_stretch(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::GrowthRemodelElastHyper::vis_names(std::map<std::string, int>& names)
+void Mat::GrowthRemodelElastHyper::vis_names(std::map<std::string, int>& names) const
 {
   std::string result_mass_fraction_el;
   result_mass_fraction_el = "mass_fraction_el";
@@ -1734,7 +1734,7 @@ void Mat::GrowthRemodelElastHyper::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool Mat::GrowthRemodelElastHyper::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   int return_val = 0;
 

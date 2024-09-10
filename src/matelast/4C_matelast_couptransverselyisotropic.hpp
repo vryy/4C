@@ -195,7 +195,7 @@ namespace Mat
       /// Get fiber directions
       void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-          ) override;
+      ) const override;
 
       /*!
        * \brief Indicator for formulation

@@ -263,7 +263,7 @@ void Mat::Elastic::CoupAnisoExpoActive::add_stress_aniso_principal(
 }
 
 void Mat::Elastic::CoupAnisoExpoActive::get_fiber_vecs(
-    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
+    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs) const
 {
   // this method does not support Gauss point fibers
   fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT, 0));

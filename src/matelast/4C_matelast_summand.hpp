@@ -714,7 +714,7 @@ namespace Mat
       //! Get fiber directions
       virtual void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      ){};
+      ) const {};
 
       //! Read FIBERn
       void read_fiber(const Core::IO::InputParameterContainer& container,

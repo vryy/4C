@@ -320,7 +320,7 @@ void Mat::ScalarDepInterp::reset_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ScalarDepInterp::vis_names(std::map<std::string, int>& names)
+void Mat::ScalarDepInterp::vis_names(std::map<std::string, int>& names) const
 {
   std::string fiber = "lambda";
   names[fiber] = 1;  // 1-dim vector
@@ -332,7 +332,7 @@ void Mat::ScalarDepInterp::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool Mat::ScalarDepInterp::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "lambda")
   {
@@ -356,7 +356,7 @@ bool Mat::ScalarDepInterp::vis_data(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::ScalarDepInterp::strain_energy(
-    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID) const
 {
   // evaluate strain energy functions
   double psi_lambda_zero = 0.0;

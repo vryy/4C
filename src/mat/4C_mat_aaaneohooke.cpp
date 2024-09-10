@@ -340,7 +340,7 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
  |  calculate strain energy                                hemmler 02/17|
  *----------------------------------------------------------------------*/
 void Mat::AAAneohooke::strain_energy(
-    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID) const
 {
   // material parameters for isochoric part
   const double youngs = params_->get_parameter(params_->young, eleGID);  // Young's modulus
@@ -380,7 +380,7 @@ void Mat::AAAneohooke::strain_energy(
 
 
 
-void Mat::AAAneohooke::vis_names(std::map<std::string, int>& names)
+void Mat::AAAneohooke::vis_names(std::map<std::string, int>& names) const
 {
   std::string fiber = "beta";
   names[fiber] = 1;  // scalar
@@ -392,7 +392,7 @@ void Mat::AAAneohooke::vis_names(std::map<std::string, int>& names)
 
 
 bool Mat::AAAneohooke::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleGID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleGID) const
 {
   if (name == "beta")
   {

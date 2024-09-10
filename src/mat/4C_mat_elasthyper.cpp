@@ -292,7 +292,7 @@ void Mat::ElastHyper::update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::get_fiber_vecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
+void Mat::ElastHyper::get_fiber_vecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs) const
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
@@ -320,7 +320,7 @@ void Mat::ElastHyper::evaluate_fiber_vecs(const double newgamma,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mat::ElastHyper::strain_energy(
-    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID) const
 {
   static Core::LinAlg::Matrix<6, 1> C_strain(true);
   C_strain.clear();
@@ -804,7 +804,7 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::ElastHyper::vis_names(std::map<std::string, int>& names)
+void Mat::ElastHyper::vis_names(std::map<std::string, int>& names) const
 {
   if (anisotropic_principal() or anisotropic_modified())
   {
@@ -831,7 +831,7 @@ void Mat::ElastHyper::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool Mat::ElastHyper::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   //
   int return_val = 0;

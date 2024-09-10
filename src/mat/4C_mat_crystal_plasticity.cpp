@@ -1693,7 +1693,7 @@ void Mat::CrystalPlasticity::setup_flow_rule(Core::LinAlg::Matrix<3, 3> deform_g
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::CrystalPlasticity::vis_names(std::map<std::string, int>& names)
+void Mat::CrystalPlasticity::vis_names(std::map<std::string, int>& names) const
 {
   // temporary string variable for assembling the output names
   std::string ID;
@@ -1745,7 +1745,7 @@ void Mat::CrystalPlasticity::vis_names(std::map<std::string, int>& names)
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
 bool Mat::CrystalPlasticity::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   // plastic shears gamma
   for (int sys = 0; sys < def_system_count_; sys++)

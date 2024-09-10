@@ -226,7 +226,7 @@ namespace Mat
         double& psi,                                                ///< Strain energy function
         int gp,                                                     ///< Gauss point
         int eleGID                                                  ///< Element GID
-        ) override;
+    ) const override;
 
     /*!
      * \brief Hyperelastic stress response plus elasticity tensor
@@ -331,7 +331,7 @@ namespace Mat
     virtual bool anisotropic_modified() const { return summandProperties_.anisomod; }
 
     /// get fiber vectors
-    virtual void get_fiber_vecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs);
+    virtual void get_fiber_vecs(std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs) const;
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
     virtual void evaluate_fiber_vecs(double newgamma,  ///< new angle
@@ -347,14 +347,14 @@ namespace Mat
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// Return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     /// Return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool needs_defgrd() override
+    bool needs_defgrd() const override
     {
       // only the polyconvexity check needs the deformation gradient. Regular materials don't need
       // it

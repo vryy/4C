@@ -199,7 +199,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
 
 void Mat::Elastic::AnisoActiveStressEvolution::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-)
+) const
 {
   if (params_->init_ == DefaultAnisotropyExtension<1>::INIT_MODE_NODAL_FIBERS)
   {

@@ -678,7 +678,7 @@ void Mat::PlasticElastHyperVCU::comp_elast_quant(const Core::LinAlg::Matrix<3, 3
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::vis_names(std::map<std::string, int>& names)
+void Mat::PlasticElastHyperVCU::vis_names(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -690,7 +690,7 @@ void Mat::PlasticElastHyperVCU::vis_names(std::map<std::string, int>& names)
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
 bool Mat::PlasticElastHyperVCU::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "accumulatedstrain")
   {

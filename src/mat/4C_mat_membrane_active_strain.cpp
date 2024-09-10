@@ -374,7 +374,7 @@ void Mat::MembraneActiveStrain::reset_step()
 /*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void Mat::MembraneActiveStrain::vis_names(std::map<std::string, int>& names)
+void Mat::MembraneActiveStrain::vis_names(std::map<std::string, int>& names) const
 {
   matpassive_->vis_names(names);
   names["voltage"] = 1;     // scalar
@@ -385,7 +385,7 @@ void Mat::MembraneActiveStrain::vis_names(std::map<std::string, int>& names)
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
 bool Mat::MembraneActiveStrain::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "voltage")
   {

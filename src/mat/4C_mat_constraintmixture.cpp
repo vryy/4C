@@ -2066,7 +2066,7 @@ void Mat::ConstraintMixture::degradation(double t, double& degr)
  |  elastin_degradation                            (private)        05/13|
  *----------------------------------------------------------------------*/
 void Mat::ConstraintMixture::elastin_degradation(
-    Core::LinAlg::Matrix<3, 1> coord, double& elastin_survival)
+    Core::LinAlg::Matrix<3, 1> coord, double& elastin_survival) const
 {
   if (params_->elastindegrad_ == "Rectangle")
   {
@@ -2942,7 +2942,7 @@ void Mat::ConstraintMixture::evaluate_fiber_vecs(const int gp,
 /*----------------------------------------------------------------------*
  |  Return names of visualization data            (public)         03/13|
  *----------------------------------------------------------------------*/
-void Mat::ConstraintMixture::vis_names(std::map<std::string, int>& names)
+void Mat::ConstraintMixture::vis_names(std::map<std::string, int>& names) const
 {
   std::string fiber = "MassStress";
   names[fiber] = 3;
@@ -2970,7 +2970,7 @@ void Mat::ConstraintMixture::vis_names(std::map<std::string, int>& names)
  |  Return visualization data                     (public)         03/13|
  *----------------------------------------------------------------------*/
 bool Mat::ConstraintMixture::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "MassStress")
   {
