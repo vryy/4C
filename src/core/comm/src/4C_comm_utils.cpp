@@ -494,22 +494,29 @@ namespace Core::Communication
       return false;
     }
 
-    const Epetra_Map& originalmap = matrix->RowMap();
+    const Epetra_Map& rowmap = matrix->RowMap();
+    const Epetra_Map& domainmap = matrix->DomainMap();
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
-    Teuchos::RCP<Epetra_Map> serialmap;
+    Teuchos::RCP<Epetra_Map> serialrowmap;
     if (lcomm->MyPID() == gcomm->MyPID())
-      serialmap = Core::LinAlg::allreduce_overlapping_e_map(originalmap, 0);
+      serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, 0);
     else
-      serialmap = Core::LinAlg::allreduce_overlapping_e_map(originalmap, lcomm->NumProc() - 1);
+      serialrowmap = Core::LinAlg::allreduce_overlapping_e_map(rowmap, lcomm->NumProc() - 1);
+
+    Teuchos::RCP<Epetra_Map> serialdomainmap;
+    if (lcomm->MyPID() == gcomm->MyPID())
+      serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, 0);
+    else
+      serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, lcomm->NumProc() - 1);
 
     // export full matrices to the two desired processors
     Teuchos::RCP<Epetra_Import> serialimporter =
-        Teuchos::rcp(new Epetra_Import(*serialmap, originalmap));
+        Teuchos::rcp(new Epetra_Import(*serialrowmap, rowmap));
     Teuchos::RCP<Epetra_CrsMatrix> serialCrsMatrix =
-        Teuchos::rcp(new Epetra_CrsMatrix(Copy, *serialmap, 0));
+        Teuchos::rcp(new Epetra_CrsMatrix(Copy, *serialrowmap, 0));
     serialCrsMatrix->Import(*matrix, *serialimporter, Insert);
-    serialCrsMatrix->FillComplete();
+    serialCrsMatrix->FillComplete(*serialdomainmap, *serialrowmap);
 
     // fill data of matrices to container which can be easily communicated via MPI
     std::vector<int> data_indices;
@@ -518,9 +525,9 @@ namespace Core::Communication
     data_values.reserve(serialCrsMatrix->NumMyNonzeros());
     if (myglobalrank == 0 || myglobalrank == gcomm->NumProc() - 1)
     {
-      for (int i = 0; i < serialmap->NumMyElements(); ++i)
+      for (int i = 0; i < serialrowmap->NumMyElements(); ++i)
       {
-        int rowgid = serialmap->GID(i);
+        int rowgid = serialrowmap->GID(i);
         int NumEntries;
         double* Values;
         int* Indices;
