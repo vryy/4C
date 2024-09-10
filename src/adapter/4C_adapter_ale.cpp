@@ -171,8 +171,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
       int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
-          coupling == fsi_iter_lung_monolithicfluidsplit or
-          coupling == fsi_iter_lung_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
@@ -201,23 +199,6 @@ void Adapter::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
         ale_ = Teuchos::rcp(new Adapter::AleFluidWrapper(ale));
-      }
-      else
-      {
-        FOUR_C_THROW(
-            "No ALE adapter available yet for your chosen FSI coupling "
-            "algorithm!");
-      }
-      break;
-    }
-    case Core::ProblemType::fsi_lung:
-    {
-      const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-      int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
-      if (coupling == fsi_iter_lung_monolithicfluidsplit or
-          coupling == fsi_iter_lung_monolithicstructuresplit)
-      {
-        ale_ = Teuchos::rcp(new Adapter::AleFsiWrapper(ale));
       }
       else
       {

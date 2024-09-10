@@ -40,8 +40,6 @@ typedef enum FsiCoupling
   fsi_iter_stagg_Newton_I = 11,
   fsi_iter_monolithicfluidsplit = 13,
   fsi_iter_monolithicstructuresplit,
-  fsi_iter_lung_monolithicstructuresplit,
-  fsi_iter_lung_monolithicfluidsplit,
   fsi_iter_mortar_monolithicstructuresplit,
   fsi_iter_mortar_monolithicfluidsplit,
   fsi_iter_xfem_monolithic,

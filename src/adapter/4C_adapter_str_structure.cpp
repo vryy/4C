@@ -368,14 +368,10 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     {
       case Core::ProblemType::fsi:
       case Core::ProblemType::fsi_redmodels:
-      case Core::ProblemType::fsi_lung:
       case Core::ProblemType::gas_fsi:
       case Core::ProblemType::biofilm_fsi:
       case Core::ProblemType::thermo_fsi:
       {
-        const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
-        const int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
-
         if ((actdis->get_comm()).MyPID() == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
@@ -386,13 +382,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
         }
         else
         {
-          if (coupling == fsi_iter_lung_monolithicstructuresplit or
-              coupling == fsi_iter_lung_monolithicfluidsplit)
-            structure_ = Teuchos::rcp(
-                new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
-          else
-            structure_ = Teuchos::rcp(
-                new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+          structure_ = Teuchos::rcp(
+              new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
         }
       }
       break;

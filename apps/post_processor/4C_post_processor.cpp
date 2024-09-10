@@ -29,7 +29,6 @@ namespace
     {
       case Core::ProblemType::fsi:
       case Core::ProblemType::fsi_redmodels:
-      case Core::ProblemType::fsi_lung:
       {
         std::string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);

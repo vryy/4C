@@ -423,9 +423,9 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
       Core::UTILS::integral_value<Inpar::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
   // sanity checks and default flags
-  if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_lung or
-      probtype == Core::ProblemType::gas_fsi or probtype == Core::ProblemType::biofilm_fsi or
-      probtype == Core::ProblemType::thermo_fsi or probtype == Core::ProblemType::fsi_xfem or
+  if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::gas_fsi or
+      probtype == Core::ProblemType::biofilm_fsi or probtype == Core::ProblemType::thermo_fsi or
+      probtype == Core::ProblemType::fsi_xfem or
       (probtype == Core::ProblemType::fpsi_xfem and disname == "fluid") or
       probtype == Core::ProblemType::fsi_redmodels)
   {
@@ -440,20 +440,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         "interface second order", Core::UTILS::integral_value<int>(fsidyn, "SECONDORDER"));
     fluidtimeparams->set<bool>(
         "shape derivatives", Core::UTILS::integral_value<int>(fsimono, "SHAPEDERIVATIVES"));
-
-    const int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
-
-    if (coupling == fsi_iter_lung_monolithicstructuresplit or
-        coupling == fsi_iter_lung_monolithicfluidsplit)
-    {
-      // No explicit predictor for these monolithic FSI schemes, yet.
-      // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
-      // an error.
-      if (fluidtimeparams->get<std::string>("predictor") != "steady_state")
-        FOUR_C_THROW(
-            "No fluid predictor allowed for current monolithic FSI scheme, yet. Use "
-            "'steady_state', instead!");
-    }
   }
 
   // sanity checks and default flags
@@ -592,17 +578,15 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
     fluidtimeparams->set<bool>("ost new", ostnew);
 
     bool dirichletcond = true;
-    if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::fsi_lung or
-        probtype == Core::ProblemType::gas_fsi or probtype == Core::ProblemType::biofilm_fsi or
-        probtype == Core::ProblemType::thermo_fsi or probtype == Core::ProblemType::fsi_redmodels)
+    if (probtype == Core::ProblemType::fsi or probtype == Core::ProblemType::gas_fsi or
+        probtype == Core::ProblemType::biofilm_fsi or probtype == Core::ProblemType::thermo_fsi or
+        probtype == Core::ProblemType::fsi_redmodels)
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
       const int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
       if (coupling == fsi_iter_monolithicfluidsplit or
           coupling == fsi_iter_monolithicstructuresplit or
-          coupling == fsi_iter_lung_monolithicstructuresplit or
-          coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint or
@@ -1004,28 +988,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         fluid_ = Teuchos::rcp(
             new FluidFSI(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
-      }
-      break;
-      case Core::ProblemType::fsi_lung:
-      {
-        Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-        if (timeint == Inpar::FLUID::timeint_stationary)
-          tmpfluid = Teuchos::rcp(
-              new FLD::TimIntRedModelsStat(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-          tmpfluid = Teuchos::rcp(
-              new FLD::TimIntRedModelsOst(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == Inpar::FLUID::timeint_afgenalpha or
-                 timeint == Inpar::FLUID::timeint_npgenalpha)
-          tmpfluid = Teuchos::rcp(
-              new FLD::TimIntRedModelsGenAlpha(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == Inpar::FLUID::timeint_bdf2)
-          tmpfluid = Teuchos::rcp(
-              new FLD::TimIntRedModelsBDF2(actdis, solver, fluidtimeparams, output, isale));
-        else
-          FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
-        fluid_ = Teuchos::rcp(
-            new FluidLung(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
       }
       break;
       case Core::ProblemType::poroelast:
