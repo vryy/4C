@@ -222,7 +222,7 @@ namespace Mat
         int eleGID) override;
 
     void stress_temperature_modulus_and_deriv(
-        Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT) override;
+        Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT, int gp) override;
 
     //! general thermal tangent of material law depending on stress-temperature modulus
     static void fill_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp, double m);

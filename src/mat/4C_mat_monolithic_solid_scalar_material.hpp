@@ -37,7 +37,6 @@ namespace Mat
   };
 }  // namespace Mat
 
-
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

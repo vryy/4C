@@ -15,6 +15,7 @@
 #define FOUR_C_MAT_TRAIT_THERMO_SOLID_HPP
 
 FOUR_C_NAMESPACE_OPEN
+
 namespace Mat
 {
   namespace Trait
@@ -42,7 +43,7 @@ namespace Mat
        * @param stm_deriv tensor to be filled with derivatives
        */
       virtual void stress_temperature_modulus_and_deriv(
-          Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT) = 0;
+          Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT, int gp) = 0;
     };
   }  // namespace Trait
 }  // namespace Mat

@@ -17,8 +17,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
-
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                           mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -50,8 +48,6 @@ void Core::FE::Discretization::reset(bool killdofs, bool killcond)
       fool->second->clear_geometry();
     }
   }
-
-  return;
 }
 
 

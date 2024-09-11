@@ -1027,6 +1027,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::valid_ma
     add_named_real_vector(
         m, "EPSBAR_P", "accumulated plastic strain corresponding to SIGMA_Y", "SAMPLENUM");
     add_named_real(m, "TOL", "tolerance for local Newton iteration");
+    add_named_int(m, "THERMOMAT", "mat id of thermal material part", -1, true);
 
     Mat::append_material_definition(matlist, m);
   }
@@ -1123,6 +1124,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::valid_ma
     add_named_real(m, "HARDSOFT",
         "thermal hardening softening (acting on SATHARDENING and ISOHARD)", 0., true);
     add_named_real(m, "TOL", "tolerance for local Newton iteration", 1.e-8, true);
+    add_named_int(m, "THERMOMAT", "mat id of thermal material part", -1, true);
 
     Mat::append_material_definition(matlist, m);
   }
@@ -1225,6 +1227,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::valid_ma
     add_named_int(m, "BETANUM", "number of 'beta' in list");
     add_named_real_vector(m, "BETA", "beta", "BETANUM");
     add_named_real(m, "H_FACT", "'H'");
+    add_named_int(m, "THERMOMAT", "mat id of thermal material part", -1, true);
 
     Mat::append_material_definition(matlist, m);
   }

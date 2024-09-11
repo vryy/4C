@@ -85,7 +85,8 @@ Mat::PAR::Robinson::Robinson(const Core::Mat::PAR::Parameter::Data& matdata)
       g0_(matdata.parameters.get<double>("G0")),
       m_(matdata.parameters.get<double>("M_EXPO")),
       beta_((matdata.parameters.get<std::vector<double>>("BETA"))),
-      h_(matdata.parameters.get<double>("H_FACT"))
+      h_(matdata.parameters.get<double>("H_FACT")),
+      thermomat_(matdata.parameters.get<int>("THERMOMAT"))
 {
 }
 
@@ -119,13 +120,23 @@ Core::Communication::ParObject* Mat::RobinsonType::create(Core::Communication::U
 /*----------------------------------------------------------------------*
  | constructor (public) --> called in Create()               dano 11/11 |
  *----------------------------------------------------------------------*/
-Mat::Robinson::Robinson() : params_(nullptr) {}
+Mat::Robinson::Robinson() : params_(nullptr), thermo_(Teuchos::null) {}
 
 
 /*----------------------------------------------------------------------*
  | copy-constructor (public) --> called in create_material()  dano 11/11 |
  *----------------------------------------------------------------------*/
-Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : plastic_step(false), params_(params) {}
+Mat::Robinson::Robinson(Mat::PAR::Robinson* params)
+    : params_(params), thermo_(Teuchos::null), plastic_step_(false)
+{
+  const int thermoMatId = this->params_->thermomat_;
+  if (thermoMatId != -1)
+  {
+    auto mat = Mat::factory(thermoMatId);
+    if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
+    thermo_ = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(mat);
+  }
+}
 
 
 /*----------------------------------------------------------------------*
@@ -530,13 +541,43 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
 }  // evaluate()
 
+/*----------------------------------------------------------------------*
+ | Set current quantities for this material                             |
+ *----------------------------------------------------------------------*/
+void Mat::Robinson::reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp)
+{
+  reinit(temperature, gp);
+}
+
+/*----------------------------------------------------------------------*
+ | calculate stress-temperature modulus and thermal derivative          |
+ |   for coupled thermomechanics                                        |
+ *----------------------------------------------------------------------*/
+void Mat::Robinson::stress_temperature_modulus_and_deriv(
+    Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT, int gp)
+{
+  stm.clear();
+  stm_dT.clear();
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluates the added derivatives of the stress w.r.t. all scalars    |
+ *----------------------------------------------------------------------*/
+Core::LinAlg::Matrix<6, 1> Mat::Robinson::evaluate_d_stress_d_scalar(
+    const Core::LinAlg::Matrix<3, 3>& defgrad, const Core::LinAlg::Matrix<6, 1>& glstrain,
+    Teuchos::ParameterList& params, int gp, int eleGID)
+{
+  Core::LinAlg::Matrix<6, 1> dS_dT(true);
+  return dS_dT;
+}
 
 /*----------------------------------------------------------------------*
  | computes isotropic elasticity tensor in matrix notion     dano 11/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void Mat::Robinson::setup_cmat(
-    double tempnp, Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& cmat)
+    double tempnp, Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& cmat) const
 {
   // get material parameters
   // Young's modulus
@@ -581,7 +622,7 @@ void Mat::Robinson::setup_cmat(
 void Mat::Robinson::stress(const double p,                         //!< volumetric stress
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
-)
+) const
 {
   // total stress = deviatoric + hydrostatic pressure . I
   // sigma = s + p . I
@@ -598,7 +639,7 @@ void Mat::Robinson::rel_dev_stress(
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& devstress,  // (i) deviatoric stress tensor
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& backstress_n,  // (i) back stress tensor
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& eta                  // (o) relative stress
-)
+) const
 {
   // relative stress = deviatoric - back stress
   // eta = s - backstress
@@ -623,7 +664,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& kve,  // (i,o)
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& kvv,  // (i,o)
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& kva   // (i,o)
-)
+) const
 {
   // strain_pn' = f^v in a plastic load step
   // at the end of a time step, i.e. equilibrium, the residual has to vanish
@@ -894,7 +935,7 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& backstress_res,
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& kae,
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& kav,
-    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& kaa)
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& kaa) const
 {
   // backstress_n' = f^alpha in a plastic load step
   // at the end of a time step, i.e. equilibrium, the residual has to vanish
@@ -1160,7 +1201,7 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
 double Mat::Robinson::get_mat_parameter_at_tempnp(
     const std::vector<double>* paramvector,  // (i) given parameter is a vector
     const double& tempnp                     // tmpr (i) current temperature
-)
+) const
 {
   // polynomial type
 
@@ -1190,7 +1231,7 @@ double Mat::Robinson::get_mat_parameter_at_tempnp(
 double Mat::Robinson::get_mat_parameter_at_tempnp(
     const double paramconst,  // (i) given parameter is a constant
     const double& tempnp      // tmpr (i) current temperature
-)
+) const
 {
   // initialise the temperature dependent material parameter
   double parambytempnp = 0.0;
@@ -1229,7 +1270,7 @@ void Mat::Robinson::calculate_condensed_system(
     Core::LinAlg::Matrix<(2 * Mat::NUM_STRESS_3D), 1>& kvarva,  // (io) solved/condensed residual
     Core::LinAlg::Matrix<(2 * Mat::NUM_STRESS_3D), Mat::NUM_STRESS_3D>&
         kvakvae  // (io) solved/condensed tangent
-)
+) const
 {
   // update vector for material internal variables (MIV) iterative increments
   // (stored as Fortranesque vector 2*NUMSTR_SOLID3x1)
@@ -1462,6 +1503,59 @@ void Mat::Robinson::iterative_update_of_internal_variables(const int gp,
 
 }  // iterative_update_of_internal_variables()
 
+/*----------------------------------------------------------------------*/
+
+void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
+    Core::LinAlg::Matrix<3, 3>& cmat, Core::LinAlg::Matrix<3, 1>& heatflux) const
+{
+  thermo_->evaluate(gradtemp, cmat, heatflux);
+}
+
+void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
+    Core::LinAlg::Matrix<2, 2>& cmat, Core::LinAlg::Matrix<2, 1>& heatflux) const
+{
+  thermo_->evaluate(gradtemp, cmat, heatflux);
+}
+
+void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
+    Core::LinAlg::Matrix<1, 1>& cmat, Core::LinAlg::Matrix<1, 1>& heatflux) const
+{
+  thermo_->evaluate(gradtemp, cmat, heatflux);
+}
+
+void Mat::Robinson::conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const
+{
+  thermo_->conductivity_deriv_t(dCondDT);
+}
+
+void Mat::Robinson::conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const
+{
+  thermo_->conductivity_deriv_t(dCondDT);
+}
+
+void Mat::Robinson::conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const
+{
+  thermo_->conductivity_deriv_t(dCondDT);
+}
+
+double Mat::Robinson::capacity() const { return thermo_->capacity(); }
+
+double Mat::Robinson::capacity_deriv_t() const { return thermo_->capacity_deriv_t(); }
+
+void Mat::Robinson::reinit(double temperature, unsigned gp)
+{
+  current_temperature_ = temperature;
+  if (thermo_ != Teuchos::null) thermo_->reinit(temperature, gp);
+}
+void Mat::Robinson::reset_current_state()
+{
+  if (thermo_ != Teuchos::null) thermo_->reset_current_state();
+}
+
+void Mat::Robinson::commit_current_state()
+{
+  if (thermo_ != Teuchos::null) thermo_->commit_current_state();
+}
 
 /*----------------------------------------------------------------------*/
 

@@ -15,7 +15,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 namespace Mat
 {
   /*!
@@ -29,7 +28,6 @@ namespace Mat
   };
 
 }  // namespace Mat
-
 
 FOUR_C_NAMESPACE_CLOSE
 

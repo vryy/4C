@@ -283,7 +283,7 @@ Core::LinAlg::Matrix<6, 1> Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_sca
   Core::LinAlg::Matrix<6, 6> cmat_T(false);
   get_cmat_at_tempnp_t(cmat_T);
 
-  // evaluate meachnical stress part
+  // evaluate mechanical stress part
   // \f \sigma = {\mathbf C}_{,T} \,\varepsilon_{\rm GL} \f
   dS_dT.multiply_nn(cmat_T, glstrain);
 
@@ -306,7 +306,7 @@ Core::LinAlg::Matrix<6, 1> Mat::ThermoStVenantKirchhoff::evaluate_d_stress_d_sca
 }
 
 void Mat::ThermoStVenantKirchhoff::stress_temperature_modulus_and_deriv(
-    Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT)
+    Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT, int gp)
 {
   setup_cthermo(stm);
   get_cthermo_at_tempnp_t(stm_dT);
@@ -495,7 +495,6 @@ double Mat::ThermoStVenantKirchhoff::get_st_modulus_t() const
   // m = - (2 . mu + 3 . lambda) . varalpha_T
   //   = - (2 . nu / ((1+nu)(1-2nu)) + 3 / (2 . (1+nu))) . varalpha_T . E(T)
   double stmodulus_T = 0.0;
-
 
   if (youngs_is_temp_dependent())
   {

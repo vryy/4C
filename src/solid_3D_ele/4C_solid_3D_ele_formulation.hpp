@@ -317,8 +317,15 @@ namespace Discret::ELEMENTS
   }
 
   /*!
-   * @brief Evaluate the deformation gradient and Green-Lagrange strain tensor for the solid element
-   * formulation.
+   * @brief The purpose of this function is to evaluate a solid formulation for a given element. It
+   * combines all necessary data (element, nodes, local coordinates, shape functions, Jacobian,
+   * preparation data, history data, and an evaluator) and calls the evaluate method of the
+   * SolidFormulation with these parameters. The use of perfect forwarding ensures that the
+   * arguments are passed efficiently, preserving their value categories (lvalue or rvalue).
+   *
+   * In a more specific context, i.e., for displacement-based nonlinear kinematics element, it
+   * evaluates the deformation gradient and Green-Lagrange strain tensor for the solid element
+   * formulation and pass them to the Evaluator to compute the internal forces and linearization.
    *
    * @note: This method does not support solid formulation with Gauss point history since the method
    * does not necessarily be called on a Gauss point. If called on a Gauss point, prefer the other

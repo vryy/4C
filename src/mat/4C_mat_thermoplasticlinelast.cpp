@@ -62,7 +62,8 @@ Mat::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(
       kinhard_(matdata.parameters.get<double>("KINHARD")),
       sigma_y_((matdata.parameters.get<std::vector<double>>("SIGMA_Y"))),
       strainbar_p_ref_((matdata.parameters.get<std::vector<double>>("EPSBAR_P"))),
-      abstol_(matdata.parameters.get<double>("TOL"))
+      abstol_(matdata.parameters.get<double>("TOL")),
+      thermomat_(matdata.parameters.get<int>("THERMOMAT"))
 {
 }
 
@@ -94,7 +95,7 @@ Core::Communication::ParObject* Mat::ThermoPlasticLinElastType::create(
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 08/11 |
  *----------------------------------------------------------------------*/
-Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr) {}
+Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr), thermo_(Teuchos::null) {}
 
 
 /*----------------------------------------------------------------------*
@@ -102,8 +103,15 @@ Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr) {}
  | called in ReadMaterials --> create_material                           |
  *----------------------------------------------------------------------*/
 Mat::ThermoPlasticLinElast::ThermoPlasticLinElast(Mat::PAR::ThermoPlasticLinElast* params)
-    : params_(params), plastic_step_(false)
+    : params_(params), thermo_(Teuchos::null), plastic_step_(false)
 {
+  const int thermoMatId = this->params_->thermomat_;
+  if (thermoMatId != -1)
+  {
+    auto mat = Mat::factory(thermoMatId);
+    if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
+    thermo_ = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(mat);
+  }
 }
 
 
@@ -812,6 +820,35 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   }  // elastic step
 
+  // -------------------------------- add the temperature dependent stress part
+  // be aware: it will make this constitutive law incompatible
+  //  with old SOLIDXXTHERMO element
+
+  const double temperature = [&]()
+  {
+    if (params.isParameter("temperature"))
+    {
+      return params.get<double>("temperature");
+    }
+    else
+    {
+      return params_->thetainit_;
+    }
+  }();
+
+  // calculate the temperature difference
+  // Delta T = T - T_0
+  Core::LinAlg::Matrix<1, 1> deltaT(false);
+  deltaT(0, 0) = temperature - params_->thetainit_;
+
+  // temperature dependent stress
+  // sigma = C_theta * Delta T = (m*I) * Delta T
+  Core::LinAlg::Matrix<6, 1> ctemp(true);
+  setup_cthermo(ctemp);
+  Core::LinAlg::Matrix<6, 1> stresstemp(false);
+  stresstemp.multiply_nn(ctemp, deltaT);
+  stress->update(1.0, stresstemp, 1.0);
+
   //---------------------------------------------------------------------------
   // --------------------------------- consistent elastoplastic tangent modulus
   //---------------------------------------------------------------------------
@@ -879,11 +916,46 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   plstrain = strainplcurr_->at(gp);
   // save the plastic strain for postprocessing
   params.set<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>("plglstrain", plstrain);
-
-  return;
-
 }  // evaluate()
 
+/*----------------------------------------------------------------------*
+ | Set current quantities for this material                             |
+ *----------------------------------------------------------------------*/
+void Mat::ThermoPlasticLinElast::reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp)
+{
+  reinit(temperature, gp);
+}
+
+/*----------------------------------------------------------------------*
+ | calculate stress-temperature modulus and thermal derivative          |
+ |   for coupled thermomechanics                                        |
+ *----------------------------------------------------------------------*/
+void Mat::ThermoPlasticLinElast::stress_temperature_modulus_and_deriv(
+    Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT, int gp)
+{
+  setup_cthermo(stm);
+  stm_dT.clear();
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluates the added derivatives of the stress w.r.t. all scalars    |
+ *----------------------------------------------------------------------*/
+Core::LinAlg::Matrix<6, 1> Mat::ThermoPlasticLinElast::evaluate_d_stress_d_scalar(
+    const Core::LinAlg::Matrix<3, 3>& defgrad, const Core::LinAlg::Matrix<6, 1>& glstrain,
+    Teuchos::ParameterList& params, int gp, int eleGID)
+{
+  Core::LinAlg::Matrix<6, 1> dS_dT(true);
+
+  // get the temperature-dependent material tangent
+  Core::LinAlg::Matrix<6, 1> ctemp(true);
+  setup_cthermo(ctemp);
+
+  // add the derivatives of thermal stress w.r.t temperature
+  dS_dT.update(1.0, ctemp, 1.0);
+
+  return dS_dT;
+}
 
 /*----------------------------------------------------------------------*
  | computes linear stress tensor                             dano 05/11 |
@@ -1088,9 +1160,9 @@ void Mat::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
 /*----------------------------------------------------------------------*
  | split given strain rate into elastic and plastic term     dano 08/11 |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::strain_rate_split(int gp,  // current Gauss point
-    const double stepsize,                                  // step size
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& strainrate      // total strain rate, i.e. B d'
+void Mat::ThermoPlasticLinElast::strain_rate_split(int gp,    // current Gauss point
+    const double stepsize,                                    // step size
+    const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& strainrate  // total strain rate, i.e. B d'
 )
 {
   // elastic strain rate strain^e'
@@ -1114,8 +1186,8 @@ void Mat::ThermoPlasticLinElast::strain_rate_split(int gp,  // current Gauss poi
 void Mat::ThermoPlasticLinElast::dissipation(int gp,  // current Gauss point
     double sigma_yiso,                                // isotropic work hardening von Mises stress
     double Dgamma,                                    // plastic multiplier/increment
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> N,         // flow vector
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stress     // total mechanical stress
+    const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& N,  // flow vector
+    const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress  // total mechanical stress
 )
 {
   // D_mech = stress : strain^p' + beta : d(Phi)/d(beta) Dgamma
@@ -1142,7 +1214,7 @@ void Mat::ThermoPlasticLinElast::dissipation(int gp,  // current Gauss point
   // kappa(strainbar^p) . strainbar^p' = sigma_yiso . Dgamma/dt
   double isotropicdis = sigma_yiso * Dgamma;
 
-  // return mechanical disspiation term due to mixed hardening hardening
+  // return mechanical dissipation term due to mixed hardening hardening
   dmech_->at(gp) = -stressIncstrainpl + isotropicdis;
   // time step not yet considered, i.e., Dmech_ is an energy, not a power
   // accumulated plastic strain
@@ -1154,17 +1226,17 @@ void Mat::ThermoPlasticLinElast::dissipation(int gp,  // current Gauss point
  | compute linearisation of internal dissipation for k_Td    dano 04/13 |
  *----------------------------------------------------------------------*/
 void Mat::ThermoPlasticLinElast::dissipation_coupl_cond(
-    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-        cmat,                                       // elasto-plastic tangent modulus (out)
-    int gp,                                         // current Gauss point
-    double G,                                       // shear modulus
-    double Hiso,                                    // isotropic hardening modulus
-    double Hkin,                                    // kinematic hardening modulus
-    double heaviside,                               // Heaviside function
-    double etanorm,                                 // norm of eta^{trial}_{n+1}
-    double Dgamma,                                  // plastic multiplier
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& N,      // flow vector
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress  // flow vector
+    const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+        cmat,                                             // elasto-plastic tangent modulus (out)
+    int gp,                                               // current Gauss point
+    double G,                                             // shear modulus
+    double Hiso,                                          // isotropic hardening modulus
+    double Hkin,                                          // kinematic hardening modulus
+    double heaviside,                                     // Heaviside function
+    double etanorm,                                       // norm of eta^{trial}_{n+1}
+    double Dgamma,                                        // plastic multiplier
+    const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& N,      // flow vector
+    const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress  // flow vector
 )
 {
   // ----------------------------------- linearisation of D_mech for k_Td
@@ -1562,6 +1634,59 @@ bool Mat::ThermoPlasticLinElast::vis_data(
   return true;
 }  // vis_data()
 
+/*----------------------------------------------------------------------*/
+
+void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
+    Core::LinAlg::Matrix<3, 3>& cmat, Core::LinAlg::Matrix<3, 1>& heatflux) const
+{
+  thermo_->evaluate(gradtemp, cmat, heatflux);
+}
+
+void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
+    Core::LinAlg::Matrix<2, 2>& cmat, Core::LinAlg::Matrix<2, 1>& heatflux) const
+{
+  thermo_->evaluate(gradtemp, cmat, heatflux);
+}
+
+void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
+    Core::LinAlg::Matrix<1, 1>& cmat, Core::LinAlg::Matrix<1, 1>& heatflux) const
+{
+  thermo_->evaluate(gradtemp, cmat, heatflux);
+}
+
+void Mat::ThermoPlasticLinElast::conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const
+{
+  thermo_->conductivity_deriv_t(dCondDT);
+}
+
+void Mat::ThermoPlasticLinElast::conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const
+{
+  thermo_->conductivity_deriv_t(dCondDT);
+}
+
+void Mat::ThermoPlasticLinElast::conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const
+{
+  thermo_->conductivity_deriv_t(dCondDT);
+}
+
+double Mat::ThermoPlasticLinElast::capacity() const { return thermo_->capacity(); }
+
+double Mat::ThermoPlasticLinElast::capacity_deriv_t() const { return thermo_->capacity_deriv_t(); }
+
+void Mat::ThermoPlasticLinElast::reinit(double temperature, unsigned gp)
+{
+  current_temperature_ = temperature;
+  if (thermo_ != Teuchos::null) thermo_->reinit(temperature, gp);
+}
+void Mat::ThermoPlasticLinElast::reset_current_state()
+{
+  if (thermo_ != Teuchos::null) thermo_->reset_current_state();
+}
+
+void Mat::ThermoPlasticLinElast::commit_current_state()
+{
+  if (thermo_ != Teuchos::null) thermo_->commit_current_state();
+}
 
 /*----------------------------------------------------------------------*/
 
