@@ -891,7 +891,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 void Mat::ThermoPlasticLinElast::stress(const double p,       // volumetric stress
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            // 2nd PK-stress
-)
+) const
 {
   // total stress = deviatoric + hydrostatic pressure . I
   // sigma = s + p . I
@@ -908,7 +908,7 @@ void Mat::ThermoPlasticLinElast::rel_dev_stress(
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  // deviatoric stress tensor
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& beta,       // back stress tensor
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               // relative stress
-)
+) const
 {
   // relative stress = deviatoric - back stress
   // eta = s - beta
@@ -922,7 +922,7 @@ void Mat::ThermoPlasticLinElast::rel_dev_stress(
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void Mat::ThermoPlasticLinElast::setup_cmat(
-    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat) const
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -976,7 +976,7 @@ void Mat::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
     double heaviside,                                   // Heaviside function
     double Hiso,                                        // isotropic hardening modulus
     double Hkin                                         // kinematic hardening modulus
-)
+) const
 {
   // incremental constitutive function for the stress tensor
   // sigma_{n+1} = [ cmat - (Dgamma 6 G^2/q) I_d ] : strain^{e,trial}_{n+1}
@@ -1342,7 +1342,7 @@ void Mat::ThermoPlasticLinElast::evaluate(
  | computes temperature dependent isotropic                  dano 05/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::setup_cthermo(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp)
+void Mat::ThermoPlasticLinElast::setup_cthermo(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp) const
 {
   double m = st_modulus();
 
@@ -1371,7 +1371,7 @@ void Mat::ThermoPlasticLinElast::setup_cthermo(Core::LinAlg::Matrix<NUM_STRESS_3
 /*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 08/11 |
  *----------------------------------------------------------------------*/
-double Mat::ThermoPlasticLinElast::st_modulus()
+double Mat::ThermoPlasticLinElast::st_modulus() const
 {
   // initialise the parameters for the lame constants
   const double ym = params_->youngs_;
@@ -1416,7 +1416,7 @@ double Mat::ThermoPlasticLinElast::st_modulus()
  *----------------------------------------------------------------------*/
 double Mat::ThermoPlasticLinElast::get_iso_hard_at_strainbarnp(
     const double strainbar_p  // current accumulated strain
-)
+) const
 {
   // Hiso = d sigma_y / d astrain^p_{n+1}
   double Hiso = 0.0;
@@ -1475,7 +1475,7 @@ double Mat::ThermoPlasticLinElast::get_iso_hard_at_strainbarnp(
 double Mat::ThermoPlasticLinElast::get_sigma_y_at_strainbarnp(
     const double strainbar_p  // current accumulated strain, in case of dependent hardening
                               // if damage!=0: isotropic hardening internal variable
-)
+) const
 {
   // extract vectors of samples
   const std::vector<double> sigma_y_ref = params_->sigma_y_;
@@ -1539,7 +1539,7 @@ double Mat::ThermoPlasticLinElast::get_sigma_y_at_strainbarnp(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)              dano 03/13 |
  *---------------------------------------------------------------------*/
-void Mat::ThermoPlasticLinElast::vis_names(std::map<std::string, int>& names)
+void Mat::ThermoPlasticLinElast::vis_names(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -1550,7 +1550,7 @@ void Mat::ThermoPlasticLinElast::vis_names(std::map<std::string, int>& names)
  | return visualization data (public)                       dano 03/13 |
  *---------------------------------------------------------------------*/
 bool Mat::ThermoPlasticLinElast::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "accumulatedstrain")
   {

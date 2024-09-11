@@ -336,11 +336,11 @@ namespace Mat
     [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     //! return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     //! return names of visualization data available for direct VTK output
     void register_output_data_names(

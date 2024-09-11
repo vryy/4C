@@ -213,14 +213,14 @@ namespace Mat
     bool initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     //! return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool needs_defgrd() override { return true; };
+    bool needs_defgrd() const override { return true; };
 
     //@}
 
@@ -240,8 +240,7 @@ namespace Mat
 
     /// evaluate strain energy function
     void strain_energy(
-        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
-
+        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) const override;
 
     //@}
 

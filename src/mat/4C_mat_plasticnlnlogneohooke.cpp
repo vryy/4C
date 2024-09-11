@@ -672,7 +672,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void Mat::PlasticNlnLogNeoHooke::vis_names(std::map<std::string, int>& names)
+void Mat::PlasticNlnLogNeoHooke::vis_names(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -696,7 +696,7 @@ void Mat::PlasticNlnLogNeoHooke::register_output_data_names(
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
 bool Mat::PlasticNlnLogNeoHooke::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "accumulatedstrain")
   {

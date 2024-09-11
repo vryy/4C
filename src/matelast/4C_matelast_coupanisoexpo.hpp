@@ -163,7 +163,7 @@ namespace Mat
       /// Get fiber directions
       void get_fiber_vecs(
           std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-          ) override;
+      ) const override;
 
       /*!
        * \brief Returns the reference to the Mat::FiberAnisotropyExtension

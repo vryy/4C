@@ -109,7 +109,7 @@ void Mat::StVenantKirchhoff::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
 // computes isotropic elasticity tensor in matrix notion for 3d
  *----------------------------------------------------------------------*/
-void Mat::StVenantKirchhoff::setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat)
+void Mat::StVenantKirchhoff::setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat) const
 {
   // get material parameters
   const double Emod = params_->youngs_;      // Young's modulus (modulus of elasticity)
@@ -187,7 +187,7 @@ void Mat::StVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
  |  Calculate strain energy                                    gee 10/09|
  *----------------------------------------------------------------------*/
 void Mat::StVenantKirchhoff::strain_energy(
-    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID) const
 {
   Core::LinAlg::Matrix<6, 6> cmat(true);
   setup_cmat(cmat);

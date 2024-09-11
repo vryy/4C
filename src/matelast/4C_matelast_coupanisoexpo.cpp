@@ -83,7 +83,7 @@ void Mat::Elastic::CoupAnisoExpo::unpack_summand(Core::Communication::UnpackBuff
 
 void Mat::Elastic::CoupAnisoExpo::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-)
+) const
 {
   if (anisotropy_extension_.fibers_initialized())
     fibervecs.push_back(anisotropy_extension_.get_fiber(BaseAnisotropyExtension::GPDEFAULT));

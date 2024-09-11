@@ -124,7 +124,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::unpack_summand(
 }
 
 void Mat::Elastic::CoupTransverselyIsotropic::get_fiber_vecs(
-    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
+    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs) const
 {
   fibervecs.push_back(a_);
 }

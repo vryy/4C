@@ -144,9 +144,9 @@ namespace Mat
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID);
     template <typename T>
     void stress(const T p, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& devstress,
-        Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& stress);
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& stress) const;
 
-    void setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
+    void setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat) const;
     /**
      * \brief setup the elastoplasticity tensor in matrix notation for 3d return to cone
      *
@@ -162,7 +162,7 @@ namespace Mat
      */
     void setup_cmat_elasto_plastic_cone(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
         double Dgamma, double G, double Kappa, Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain,
-        double xi, double Hiso, double eta, double etabar);
+        double xi, double Hiso, double eta, double etabar) const;
     /**
      * \brief setup the elastoplasticity tensor in matrix notation for 3d return to apex
      *
@@ -182,7 +182,7 @@ namespace Mat
         double Hiso,                                        // isotropic hardening modulus
         double eta,                                         // Mohr-Coulomb parameter
         double etabar                                       // Mohr-Coulomb parameter
-    );
+    ) const;
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
     double density() const override { return params_->density_; }
     template <typename T>

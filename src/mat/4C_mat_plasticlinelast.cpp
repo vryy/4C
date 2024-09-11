@@ -807,7 +807,8 @@ void Mat::PlasticLinElast::rel_stress(
  | computes isotropic elasticity tensor in matrix notion     dano 04/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void Mat::PlasticLinElast::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
+void Mat::PlasticLinElast::setup_cmat(
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat) const
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -860,7 +861,7 @@ void Mat::PlasticLinElast::setup_cmat_elasto_plastic(
     double heaviside,                             // Heaviside function
     double Hiso,                                  // isotropic hardening modulus
     double Hkin                                   // kinematic hardening modulus
-)
+) const
 {
   // incremental constitutive function for the stress tensor
   // sigma_{n+1} = [ cmat - (Dgamma 6 G^2/q) I_d ] : strain^{e,trial}_{n+1}
@@ -1116,7 +1117,7 @@ void Mat::PlasticLinElast::fd_check(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)              dano 03/13 |
  *---------------------------------------------------------------------*/
-void Mat::PlasticLinElast::vis_names(std::map<std::string, int>& names)
+void Mat::PlasticLinElast::vis_names(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -1127,7 +1128,7 @@ void Mat::PlasticLinElast::vis_names(std::map<std::string, int>& names)
  | return visualization data (public)                       dano 03/13 |
  *---------------------------------------------------------------------*/
 bool Mat::PlasticLinElast::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   if (name == "accumulatedstrain")
   {

@@ -177,7 +177,7 @@ void Mat::Elastic::CoupAnisoExpoBase::add_stress_aniso_principal(
 }
 
 void Mat::Elastic::CoupAnisoExpoBase::get_fiber_vecs(
-    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs)
+    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs) const
 {
   FOUR_C_THROW("Getting the fiber vectors is not implemented in the base version of CoupAnisoExpo");
 }

@@ -188,7 +188,7 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* de
  | calculates strain energy                                 seitz 11/15 |
  *----------------------------------------------------------------------*/
 void Mat::ThermoStVenantKirchhoff::strain_energy(
-    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID) const
 {
   if (youngs_is_temp_dependent())
     FOUR_C_THROW("Calculation of strain energy only for constant Young's modulus");
@@ -316,7 +316,7 @@ void Mat::ThermoStVenantKirchhoff::stress_temperature_modulus_and_deriv(
  | computes isotropic elasticity tensor in matrix notion     dano 02/10 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat)
+void Mat::ThermoStVenantKirchhoff::setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat) const
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -384,7 +384,7 @@ double Mat::ThermoStVenantKirchhoff::st_modulus() const
  | computes temperature dependent isotropic                  dano 05/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::setup_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp)
+void Mat::ThermoStVenantKirchhoff::setup_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp) const
 {
   double m = st_modulus();
   fill_cthermo(ctemp, m);
@@ -538,7 +538,7 @@ double Mat::ThermoStVenantKirchhoff::get_st_modulus_t() const
  | computes thermal derivative of the isotropic elasticity   dano 01/13 |
  | tensor in matrix notion for 3d for k_dT                              |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 6>& derivcmat)
+void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 6>& derivcmat) const
 {
   // clear the material tangent, identical to PutScalar(0.0)
   derivcmat.clear();
@@ -558,7 +558,8 @@ void Mat::ThermoStVenantKirchhoff::get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 
  | computes linearisation of temperature-dependent isotropic dano 01/13 |
  | elasticity tensor in matrix notion for 3d, 2nd order tensor          |
  *----------------------------------------------------------------------*/
-void Mat::ThermoStVenantKirchhoff::get_cthermo_at_tempnp_t(Core::LinAlg::Matrix<6, 1>& derivctemp)
+void Mat::ThermoStVenantKirchhoff::get_cthermo_at_tempnp_t(
+    Core::LinAlg::Matrix<6, 1>& derivctemp) const
 {
   double m_T = get_st_modulus_t();
 

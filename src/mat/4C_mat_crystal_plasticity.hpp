@@ -355,11 +355,11 @@ namespace Mat
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     //! return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -448,7 +448,7 @@ namespace Mat
     );
 
     //! Return whether or not the material requires the deformation gradient for its evaluation
-    bool needs_defgrd() override { return true; };
+    bool needs_defgrd() const override { return true; };
 
 
     //-----------------------------------------------------------------------------

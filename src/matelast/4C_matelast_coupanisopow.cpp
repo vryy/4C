@@ -154,7 +154,7 @@ void Mat::Elastic::CoupAnisoPow::add_stress_aniso_principal(const Core::LinAlg::
 
 void Mat::Elastic::CoupAnisoPow::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-)
+) const
 {
   fibervecs.push_back(a_);
 }

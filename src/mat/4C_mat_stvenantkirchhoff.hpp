@@ -132,10 +132,10 @@ namespace Mat
         int eleGID) override;
 
     void strain_energy(
-        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
+        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) const override;
 
     // computes isotropic elasticity tensor in matrix notion for 3d
-    void setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat);
+    void setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat) const;
     //@}
 
     //! general setup of constitutive tensor based on Young's and poisson's ratio

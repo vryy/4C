@@ -190,17 +190,17 @@ namespace Mat
 
     /// evaluate strain energy function
     void strain_energy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
-        const int eleGID) override;
+        const int eleGID) const override;
 
     /// Return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     /// Return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     /// Return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleGID) const override;
 
    private:
     /// my material parameters

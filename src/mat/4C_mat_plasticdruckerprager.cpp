@@ -151,7 +151,8 @@ void Mat::PlasticDruckerPrager::update()
   std::fill(strainbarplcurr_.begin(), strainbarplcurr_.end(), 0.0);
 }
 
-void Mat::PlasticDruckerPrager::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat)
+void Mat::PlasticDruckerPrager::setup_cmat(
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat) const
 {
   double young = params_->youngs_;
 
@@ -163,7 +164,7 @@ void Mat::PlasticDruckerPrager::setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, N
 void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_cone(
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat, double Dgamma, double G, double Kappa,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain, double xi, double Hiso, double eta,
-    double etabar)
+    double etabar) const
 {
   cmat.clear();
 
@@ -226,7 +227,7 @@ void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_cone(
 void Mat::PlasticDruckerPrager::setup_cmat_elasto_plastic_apex(
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat, double Kappa,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain, double xi, double Hiso, double eta,
-    double etabar)
+    double etabar) const
 {
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> id2(true);
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
@@ -409,7 +410,7 @@ bool Mat::PlasticDruckerPrager::evaluate_output_data(
 template <typename T>
 void Mat::PlasticDruckerPrager::stress(const T p,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& devstress,
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& stress)
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& stress) const
 {
   stress.update(devstress);
   for (int i = 0; i < 3; ++i) stress(i) += p;
@@ -453,10 +454,10 @@ template void Mat::PlasticDruckerPrager::evaluate_fad<FAD>(const Core::LinAlg::M
     Core::LinAlg::Matrix<6, 1, FAD>*, Core::LinAlg::Matrix<6, 6>*, int gp, int eleGID);
 template void Mat::PlasticDruckerPrager::stress<double>(const double p,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, double>& devstress,
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1, double>& stress);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1, double>& stress) const;
 template void Mat::PlasticDruckerPrager::stress<FAD>(const FAD p,
     const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, FAD>& devstress,
-    Core::LinAlg::Matrix<NUM_STRESS_3D, 1, FAD>& stress);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1, FAD>& stress) const;
 template std::pair<double, double>
 Mat::PlasticDruckerPrager::return_to_cone_funct_and_deriv<double>(
     double Dgamma, double G, double kappa, double Phi_trial);

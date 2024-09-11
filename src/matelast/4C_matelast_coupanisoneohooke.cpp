@@ -109,7 +109,7 @@ void Mat::Elastic::CoupAnisoNeoHooke::add_stress_aniso_principal(
 
 void Mat::Elastic::CoupAnisoNeoHooke::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-)
+) const
 {
   fibervecs.push_back(a_);
 }

@@ -166,7 +166,7 @@ void Mat::Elastic::IsoAnisoExpo::get_derivatives_aniso(Core::LinAlg::Matrix<2, 1
 
 void Mat::Elastic::IsoAnisoExpo::get_fiber_vecs(
     std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-)
+) const
 {
   fibervecs.push_back(a_);
 }

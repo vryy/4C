@@ -260,11 +260,11 @@ namespace Mat
     bool initialized() const { return (isinit_ and (defgrdcurr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    void vis_names(std::map<std::string, int>& names) override;
+    void vis_names(std::map<std::string, int>& names) const override;
 
     //! return visualization data
     bool vis_data(
-        const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
+        const std::string& name, std::vector<double>& data, int numgp, int eleID) const override;
 
     //@}
 
@@ -304,7 +304,7 @@ namespace Mat
         Core::LinAlg::Matrix<3, 3> n,              //!< spatial flow vector
         double bulk,                               //!< bulk modulus
         int gp                                     //!< current Gauss-point
-    );
+    ) const;
 
     //! calculate updated value of bebar_{n+1}
     void calculate_current_bebar(const Core::LinAlg::Matrix<3, 3>& devtau,  //!< s_{n+1}
@@ -330,15 +330,15 @@ namespace Mat
     void setup_cthermo(
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature dependent material tangent
         Teuchos::ParameterList& params                  //!< parameter list
-    );
+    ) const;
 
     //! computes temperature-dependent isotropic mechanical elasticity tensor in
     //! matrix notion for 3d
     void setup_cmat_thermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
-        Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params);
+        Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params) const;
 
     //! calculates stress-temperature modulus
-    double st_modulus();
+    double st_modulus() const;
 
     //! finite difference check of material tangent
     void fd_check(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress,  // updated stress sigma_n+1
@@ -351,7 +351,7 @@ namespace Mat
     );
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    bool needs_defgrd() override { return true; };
+    bool needs_defgrd() const override { return true; };
 
     //@}
 

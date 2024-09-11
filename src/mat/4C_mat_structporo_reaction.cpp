@@ -222,7 +222,7 @@ double Mat::StructPoroReaction::ref_porosity_av() const { return refporosity_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::StructPoroReaction::vis_names(std::map<std::string, int>& names)
+void Mat::StructPoroReaction::vis_names(std::map<std::string, int>& names) const
 {
   // call base class
   StructPoro::vis_names(names);
@@ -233,7 +233,7 @@ void Mat::StructPoroReaction::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Mat::StructPoroReaction::vis_data(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
+    const std::string& name, std::vector<double>& data, int numgp, int eleID) const
 {
   // call base class
   if (StructPoro::vis_data(name, data, numgp, eleID)) return true;
