@@ -37,7 +37,6 @@ namespace Core
     fpsi,             // fluid porous structure interaction problem
     fpsi_xfem,       // fluid poro structure interaction problem including XFEM interfaces (atm just
                      // for FSI Interface!)
-    freesurf,        // free surface fluid
     fsi,             // fluid structure interaction problem
     fsi_lung,        // airway fsi problem with attached parenchyma balloon
     fsi_redmodels,   // fluid structure interaction problem

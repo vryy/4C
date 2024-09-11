@@ -463,32 +463,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
             "'steady_state', instead!");
     }
   }
-  if (probtype == Core::ProblemType::freesurf)
-  {
-    // in case of FSI calculations we do not want a stationary fluid solver
-    if (timeint == Inpar::FLUID::timeint_stationary)
-      FOUR_C_THROW("Stationary fluid solver not allowed for free surface problem.");
-
-    const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-
-    fluidtimeparams->set<bool>(
-        "interface second order", Core::UTILS::integral_value<int>(fsidyn, "SECONDORDER"));
-    fluidtimeparams->set<bool>(
-        "shape derivatives", Core::UTILS::integral_value<int>(fsimono, "SHAPEDERIVATIVES"));
-
-    const int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
-    if (coupling == fsi_iter_monolithicfluidsplit or coupling == fsi_iter_monolithicstructuresplit)
-    {
-      // No explicit predictor for monolithic free surface flow schemes, yet.
-      // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
-      // an error.
-      if (fluidtimeparams->get<std::string>("predictor") != "steady_state")
-        FOUR_C_THROW(
-            "No fluid predictor allowed for current monolithic free surface scheme, yet. Use "
-            "'steady_state', instead!");
-    }
-  }
 
   // sanity checks and default flags
   if (probtype == Core::ProblemType::fluid_xfem)
@@ -913,7 +887,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
       case Core::ProblemType::biofilm_fsi:
       case Core::ProblemType::fbi:
       case Core::ProblemType::fluid_ale:
-      case Core::ProblemType::freesurf:
       {  //
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (Global::Problem::instance()->spatial_approximation_type() ==

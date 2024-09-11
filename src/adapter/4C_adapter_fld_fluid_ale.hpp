@@ -130,9 +130,6 @@ namespace Adapter
     /// coupling of fluid and ale (interface or volume...)
     Teuchos::RCP<Coupling::Adapter::CouplingBase> icoupfa_;
 
-    /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Coupling::Adapter::Coupling> fscoupfa_;
-
     /// coupling of fluid and ale for the ale update condition
     Teuchos::RCP<Coupling::Adapter::Coupling> aucoupfa_;
 

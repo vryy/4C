@@ -930,11 +930,6 @@ void FLD::FluidImplicitTimeInt::solve()
     stopnonliniter = convergence_check(itnum, itmax, velrestol, velinctol, presrestol, presinctol);
 
     // -------------------------------------------------------------------
-    // Do the free surface flow Ale update
-    // -------------------------------------------------------------------
-    ale_update("FREESURFCoupling");
-
-    // -------------------------------------------------------------------
     // Do the Ale update conditions update
     // -------------------------------------------------------------------
     ale_update("ALEUPDATECoupling");
@@ -1113,11 +1108,6 @@ void FLD::FluidImplicitTimeInt::assemble_mat_and_rhs()
   {
     apply_nonlinear_boundary_conditions();
   }
-
-  //----------------------------------------------------------------------
-  // update surface tension (free surface flow only)
-  //----------------------------------------------------------------------
-  free_surface_flow_surface_tension_update();
 
   // scaling to get true residual vector
   trueresidual_->Update(residual_scaling(), *residual_, 0.0);
@@ -2027,34 +2017,6 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- | update surface tension                               rasthofer 06/13 |
- *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::free_surface_flow_surface_tension_update()
-{
-  if (alefluid_ and surfacesplitter_->fs_cond_relevant())
-  {
-    // employs the divergence theorem acc. to Saksono eq. (24) and does
-    // not require second derivatives.
-
-    // select free surface elements
-    std::string condname = "FREESURFCoupling";
-
-    Teuchos::ParameterList eleparams;
-
-    // set action for elements
-    eleparams.set<int>("action", FLD::calc_surface_tension);
-
-    discret_->clear_state();
-    discret_->set_state(ndsale_, "dispnp", dispnp_);
-    discret_->evaluate_condition(
-        eleparams, Teuchos::null, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
-    discret_->clear_state();
-  }
-}
-
-
 /*----------------------------------------------------------------------*
  | application of Dirichlet boundary conditions to system      vg 09/11 |
  | overloaded in TimIntRedModels                              bk 12/13 |
@@ -2477,11 +2439,7 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
 void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 {
   // Preparation: Check, if an Ale update needs to be done
-  if (condName == "FREESURFCoupling")
-  {
-    if (not(alefluid_ and surfacesplitter_->fs_cond_relevant())) return;
-  }
-  else if (condName == "ALEUPDATECoupling")
+  if (condName == "ALEUPDATECoupling")
   {
     if (not(alefluid_ and surfacesplitter_->au_cond_relevant())) return;
   }
@@ -2534,11 +2492,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
     // Get condition name
     std::string condName;
-    if (selectedCond[0]->type() == Core::Conditions::FREESURFCoupling)
-    {
-      condName = "FREESURFCoupling";
-    }
-    else if (selectedCond[0]->type() == Core::Conditions::ALEUPDATECoupling)
+    if (selectedCond[0]->type() == Core::Conditions::ALEUPDATECoupling)
     {
       condName = "ALEUPDATECoupling";
     }
@@ -2576,14 +2530,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     Teuchos::RCP<Epetra_Vector> dispnp;
 
     // Set variables depending on condition
-    if (condName == "FREESURFCoupling")
-    {
-      velnp = surfacesplitter_->extract_fs_cond_vector(velnp_);
-      gridv = surfacesplitter_->extract_fs_cond_vector(gridv_);
-      disp = surfacesplitter_->extract_fs_cond_vector(dispn_);
-      dispnp = surfacesplitter_->extract_fs_cond_vector(dispnp_);
-    }
-    else if (condName == "ALEUPDATECoupling")
+    if (condName == "ALEUPDATECoupling")
     {
       velnp = surfacesplitter_->extract_au_cond_vector(velnp_);
       gridv = surfacesplitter_->extract_au_cond_vector(gridv_);
@@ -2636,12 +2583,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
         // Obtain node normals and initialize node tangents for current condition
         // (vector only contain the nodes in the condition).
-        if (condName == "FREESURFCoupling")
-        {
-          nodeNormals = surfacesplitter_->extract_fs_cond_vector(globalNodeNormals);
-          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->fs_cond_map()));
-        }
-        else if (condName == "ALEUPDATECoupling")
+        if (condName == "ALEUPDATECoupling")
         {
           nodeNormals = surfacesplitter_->extract_au_cond_vector(globalNodeNormals);
           nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->au_cond_map()));
@@ -2649,12 +2591,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
       }
       else
       {  // Obtain node normals from function
-        if (condName == "FREESURFCoupling")
-        {
-          nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->fs_cond_map()));
-          nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->fs_cond_map()));
-        }
-        else if (condName == "ALEUPDATECoupling")
+        if (condName == "ALEUPDATECoupling")
         {
           nodeNormals = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->au_cond_map()));
           nodeTangents = Teuchos::rcp(new Epetra_Vector(*surfacesplitter_->au_cond_map()));
@@ -2988,12 +2925,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     dispnp->Update(1.0, *disp, dta_, *gridv, 0.0);
 
     // Insert calculated displacements and velocities at n+1 into global Ale variables
-    if (condName == "FREESURFCoupling")
-    {
-      surfacesplitter_->insert_fs_cond_vector(dispnp, dispnp_);
-      surfacesplitter_->insert_fs_cond_vector(gridv, gridv_);
-    }
-    else if (condName == "ALEUPDATECoupling")
+    if (condName == "ALEUPDATECoupling")
     {
       surfacesplitter_->insert_au_cond_vector(dispnp, dispnp_);
       surfacesplitter_->insert_au_cond_vector(gridv, gridv_);
@@ -3974,9 +3906,6 @@ void FLD::FluidImplicitTimeInt::update_gridv()
   // Set proper grid velocities at the free-surface and for the ale update conditions
   Teuchos::RCP<Epetra_Vector> auveln = surfacesplitter_->extract_au_cond_vector(veln_);
   surfacesplitter_->insert_au_cond_vector(auveln, gridv_);
-
-  Teuchos::RCP<Epetra_Vector> fsveln = surfacesplitter_->extract_fs_cond_vector(veln_);
-  surfacesplitter_->insert_fs_cond_vector(fsveln, gridv_);
 }
 
 

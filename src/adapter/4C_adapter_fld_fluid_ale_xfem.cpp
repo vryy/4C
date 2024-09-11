@@ -83,15 +83,6 @@ void Adapter::FluidAleXFEM::nonlinear_solve(
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
 
-  // Update the free-surface part
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp =
-        fluid_field()->interface()->extract_fs_cond_vector(dispnp);
-    ale_field()->apply_free_surface_displacements(fscoupfa_->master_to_slave(fsdispnp));
-  }
-
   // Note: We do not look for moving ale boundaries (outside the coupling
   // interface) on the fluid side. Thus if you prescribe time variable ale
   // Dirichlet conditions the according fluid Dirichlet conditions will not

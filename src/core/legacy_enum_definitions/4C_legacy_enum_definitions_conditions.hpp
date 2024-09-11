@@ -74,7 +74,6 @@ namespace Core::Conditions
     IMMERSEDCoupling,
     FSICouplingNoSlide,
     FSICouplingCenterDisp,
-    FREESURFCoupling,
     ALEUPDATECoupling,
     SurfaceTension,
     Surfactant,

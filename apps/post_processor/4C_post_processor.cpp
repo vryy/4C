@@ -208,7 +208,6 @@ namespace
         [[fallthrough]];
       }
       case Core::ProblemType::fluid_ale:
-      case Core::ProblemType::freesurf:
       {
         PostField* field = problem.get_discretization(0);
         FluidFilter writer(field, problem.outname());

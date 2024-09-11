@@ -1054,12 +1054,6 @@ namespace FLD
     virtual void predict_tang_vel_consist_acc();
 
     /*!
-    \brief update surface tension (free surface flow only)
-
-    */
-    virtual void free_surface_flow_surface_tension_update();
-
-    /*!
     \brief Update of an Ale field based on the fluid state
 
     */

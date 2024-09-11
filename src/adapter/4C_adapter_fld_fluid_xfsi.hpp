@@ -148,10 +148,10 @@ namespace Adapter
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::XFluid> xfluid_;
 
-    /// the interface map setup for fsi interface, free surface, interior translation
+    /// the interface map setup for fsi interface, interior translation
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
 
-    /// the interface map setup for fsi interface, free surface, interior translation
+    /// the interface map setup for fsi interface, interior translation
     Teuchos::RCP<FLD::UTILS::MapExtractor> structinterface_;
 
     /// the interface map setup for fpsi interface

@@ -220,13 +220,6 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_interface_veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidFSI::extract_free_surface_veln()
-{
-  return interface()->extract_fs_cond_vector(veln());
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void Adapter::FluidFSI::apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   // apply the interface velocities
@@ -344,36 +337,6 @@ void Adapter::FluidFSI::velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx
    */
   const double tau = 1. / time_scaling();
   fcx->Update(dt(), *veln_vector, tau);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Adapter::FluidFSI::free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx)
-{
-  // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln_vector = interface()->extract_fs_cond_vector(veln());
-
-  // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
-  //
-  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
-  //
-  double timescale = time_scaling();
-  fcx->Update(-timescale * dt(), *veln_vector, timescale);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Adapter::FluidFSI::free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx)
-{
-  // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln_vector = interface()->extract_fs_cond_vector(veln());
-
-  // We convert Delta u(n+1,i+1) to Delta d(n+1,i+1) here.
-  //
-  // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
-  //
-  double timescale = 1. / time_scaling();
-  fcx->Update(dt(), *veln_vector, timescale);
 }
 
 /*----------------------------------------------------------------------*/

@@ -82,9 +82,6 @@ void ntacal()
     case Core::ProblemType::fluid_ale:
       fluid_ale_drt();
       break;
-    case Core::ProblemType::freesurf:
-      fluid_freesurf_drt();
-      break;
 
     case Core::ProblemType::fsi:
     case Core::ProblemType::fsi_redmodels:

@@ -91,8 +91,6 @@ namespace Adapter
     /// Return interface velocity at old time level n
     Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
 
-    Teuchos::RCP<Epetra_Vector> extract_free_surface_veln() override;
-
     void apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// Apply initial mesh displacement
@@ -129,10 +127,6 @@ namespace Adapter
     void velocity_to_displacement(
         Teuchos::RCP<Epetra_Vector> fcx  ///< interface velocity step increment at interface
         ) override;
-
-    void free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx) override;
-
-    void free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx) override;
 
     //@}
 
@@ -239,7 +233,7 @@ namespace Adapter
     bool dirichletcond_;
     //@}
 
-    //! \brief interface map setup for fsi interface, free surface, interior translation
+    //! \brief interface map setup for fsi interface, interior translation
     //!
     //! Note: full map contains velocity AND pressure DOFs
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;

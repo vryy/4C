@@ -34,7 +34,6 @@ Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
   {
     case Core::ProblemType::fsi:
     case Core::ProblemType::fluid_ale:
-    case Core::ProblemType::freesurf:
     case Core::ProblemType::fsi_redmodels:
     {
       // std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;

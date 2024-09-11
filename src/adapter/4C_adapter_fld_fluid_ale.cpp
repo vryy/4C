@@ -165,12 +165,6 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     icoupfa_ = icoupfa;
   }
 
-  fscoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
-  fscoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
-      fluid_field()->interface()->fs_cond_map(), *ale_field()->discretization(),
-      ale_field()->interface()->fs_cond_map(), "FREESURFCoupling", ndim, true, nds_master,
-      nds_slave);
-
   aucoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
   aucoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->interface()->au_cond_map(), *ale_field()->discretization(),
@@ -271,15 +265,6 @@ void Adapter::FluidAle::nonlinear_solve(
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
 
-  // Update the free-surface part
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp =
-        fluid_field()->interface()->extract_fs_cond_vector(dispnp);
-    ale_field()->apply_free_surface_displacements(fscoupfa_->master_to_slave(fsdispnp));
-  }
-
   // Note: We do not look for moving ale boundaries (outside the coupling
   // interface) on the fluid side. Thus if you prescribe time variable ale
   // Dirichlet conditions the according fluid Dirichlet conditions will not
@@ -313,15 +298,6 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> id
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
 
-  // Update the free-surface part
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp =
-        fluid_field()->interface()->extract_fs_cond_vector(dispnp);
-    ale_field()->apply_free_surface_displacements(fscoupfa_->master_to_slave(fsdispnp));
-  }
-
   // Note: We do not look for moving ale boundaries (outside the coupling
   // interface) on the fluid side. Thus if you prescribe time variable ale
   // Dirichlet conditions the according fluid Dirichlet conditions will not
@@ -346,14 +322,6 @@ void Adapter::FluidAle::apply_interface_values(
     // if we have values at the interface we need to apply them
     ale_field()->apply_interface_displacements(fluid_to_ale(idisp));
     fluid_field()->apply_interface_velocities(ivel);
-  }
-
-  if (fluid_field()->interface()->fs_cond_relevant())
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp =
-        fluid_field()->interface()->extract_fs_cond_vector(dispnp);
-    ale_field()->apply_free_surface_displacements(fscoupfa_->master_to_slave(fsdispnp));
   }
 
   Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());

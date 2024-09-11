@@ -105,8 +105,6 @@ std::string_view Core::Conditions::to_string(const Core::Conditions::ConditionTy
       return "Line LIFTDRAG condition";
     case Core::Conditions::SurfLIFTDRAG:
       return "Surf LIFTDRAG condition";
-    case Core::Conditions::FREESURFCoupling:
-      return "Free surface condition";
     case Core::Conditions::ALEUPDATECoupling:
       return "Ale update condition";
     case Core::Conditions::SurfaceTension:
