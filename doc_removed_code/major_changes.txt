@@ -4,7 +4,7 @@ Lung monolithic fluid-structure interaction
 - The lung monolithic fluid-structure interaction implemenation is removed. In addition the special block
   preconditioner taylored to this problem type is deleted.
 - reasons: unused in current research, difficult to port to Tpetra
-- removed in commit d4600358d4463a2ae5704858852dd0677a1c8a8c
+- removed in commit 1dcaf89dc1a01d1c060ce77aaf3ca48678a5959b
 - removed by Max Firmbach
 
 Free surface flow
