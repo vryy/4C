@@ -674,7 +674,6 @@ void PoroElast::Monolithic::create_linear_solver()
 
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
     case Core::LinearSolver::PreconditionerType::multigrid_nxn:
     {
       structure_field()->discretization()->compute_null_space_if_necessary(

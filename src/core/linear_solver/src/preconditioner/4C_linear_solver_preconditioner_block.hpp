@@ -39,6 +39,8 @@ namespace Core::LinearSolver
     Teuchos::RCP<Epetra_Operator> p_;
   };
 
-  FOUR_C_NAMESPACE_CLOSE
+}  // namespace Core::LinearSolver
+
+FOUR_C_NAMESPACE_CLOSE
 
 #endif

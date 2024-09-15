@@ -294,7 +294,6 @@ void TSI::Monolithic::create_linear_solver()
 
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
     case Core::LinearSolver::PreconditionerType::cheap_simple:
     {
       // get parameter list of structural dynamics
