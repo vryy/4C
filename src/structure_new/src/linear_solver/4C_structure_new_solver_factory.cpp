@@ -23,6 +23,7 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_so3_base.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -249,10 +250,8 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
       {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
         if (prec != Core::LinearSolver::PreconditionerType::cheap_simple &&
-            prec !=
-                Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)  // TODO adapt
-                                                                                    // error
-                                                                                    // message
+            prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp &&
+            prec != Core::LinearSolver::PreconditionerType::block_teko)
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
               "formulation you have to choose a block preconditioner such as SIMPLE. Choose "
@@ -291,6 +290,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
         }
         else if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
+        }
+        else if (prec == Core::LinearSolver::PreconditionerType::block_teko)
+        {
+          Core::LinearSolver::Parameters::compute_solver_parameters(
+              actdis, linsolver->params().sublist("Inverse1"));
         }
       }
     }
@@ -395,8 +399,15 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
 
           linsolver->params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
           linsolver->params().set("CONSTRAINT", true);
+
+          break;
         }
-        break;
+        case Core::LinearSolver::PreconditionerType::block_teko:
+        {
+          Core::LinearSolver::Parameters::compute_solver_parameters(
+              actdis, linsolver->params().sublist("Inverse1"));
+          break;
+        }
         default:
           // do nothing
           break;

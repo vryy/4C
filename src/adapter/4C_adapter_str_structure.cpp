@@ -36,6 +36,7 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_structure_timada_create.hpp"
 #include "4C_structure_timint_create.hpp"
@@ -520,7 +521,8 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
       {
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != Core::LinearSolver::PreconditionerType::cheap_simple &&
-            prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
+            prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp &&
+            prec != Core::LinearSolver::PreconditionerType::block_teko)
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "
@@ -571,6 +573,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
         }
         else if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
+        }
+        else if (prec == Core::LinearSolver::PreconditionerType::block_teko)
+        {
+          Core::LinearSolver::Parameters::compute_solver_parameters(
+              *actdis, solver->params().sublist("Inverse1"));
         }
       }
     }
