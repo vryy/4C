@@ -236,8 +236,13 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           inv_Prt = 0.0;
         }
         else
+        {
           inv_Prt = LkMk / MkMk;
-        if (inv_Prt < 0.0) inv_Prt = 0.0;
+        }
+        if (inv_Prt < 0.0)
+        {
+          inv_Prt = 0.0;
+        }
 
         // set all values in parameter list
         params.set<double>("LkMk", LkMk);
@@ -248,7 +253,9 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         params.set<double>("ele_Prt", inv_Prt);
       }
       else
+      {
         FOUR_C_THROW("action 'calc_turbulent_prandtl_number' is a 3D specific action");
+      }
 
       break;
     }
@@ -283,14 +290,15 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           {
             FOUR_C_THROW("Unknown element type for vreman scatra application\n");
           }
-          break;
         }
 
         elevec1_epetra(0) = dt_numerator;
         elevec1_epetra(1) = dt_denominator;
       }
       else
+      {
         FOUR_C_THROW("action 'calc_vreman_scatra' is a 3D specific action");
+      }
 
 
       break;
@@ -437,20 +445,16 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (numscal_ > 1)
       {
         std::cout << "#############################################################################"
-                     "##############################"
-                  << std::endl;
+                     "##############################\n";
         std::cout << "#                                                 WARNING:                   "
-                     "                             #"
-                  << std::endl;
+                     "                             #\n";
         std::cout << "# More scalars than the levelset are transported. Mass center calculations "
-                     "have NOT been tested for this. #"
-                  << std::endl;
+                     "have NOT been tested for this. #\n";
         std::cout << "#                                                                            "
-                     "                             # "
-                  << std::endl;
+                     "                             # \n";
         std::cout << "#############################################################################"
-                     "##############################"
-                  << std::endl;
+                     "##############################\n";
+        std::cout << std::endl;
       }
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->owner() == discretization.get_comm().MyPID())
@@ -685,7 +689,10 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         Core::LinAlg::Matrix<nsd_, 1> x_eval;
         for (unsigned int d = 0; d < nsd_; ++d)
         {
-          for (unsigned int n = 0; n < nen_; ++n) x_eval(d, 0) += funct_(n, 0) * xyze_(d, n);
+          for (unsigned int n = 0; n < nen_; ++n)
+          {
+            x_eval(d, 0) += funct_(n, 0) * xyze_(d, n);
+          }
           x_eval(d, 0) -= x_real(d, 0);
         }
         diff.multiply_tn(xij_, x_eval);
@@ -693,24 +700,40 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         for (unsigned int d = 0; d < nsd_; ++d)
         {
           xsi_(d, 0) -= diff(d, 0);
-          if (xsi_(d, 0) > 10.0 || xsi_(d, 0) < -10.0) inside = false;
+          if (xsi_(d, 0) > 10.0 || xsi_(d, 0) < -10.0)
+          {
+            inside = false;
+          }
         }
       } while (count < 20 && diff.norm1() > 1.0e-10 && inside);
 
       inside = true;
       for (unsigned int d = 0; d < nsd_; ++d)
-        if (xsi_(d, 0) > 1.0 || xsi_(d, 0) < -1.0) inside = false;
+      {
+        if (xsi_(d, 0) > 1.0 || xsi_(d, 0) < -1.0)
+        {
+          inside = false;
+        }
+      }
 
-      double pointarr[nsd_];
+      std::array<double, nsd_> pointarr;
       if (!inside)
       {
-        for (unsigned int d = 0; d < nsd_; ++d) pointarr[d] = -123.0;
+        for (unsigned int d = 0; d < nsd_; ++d)
+        {
+          pointarr[d] = -123.0;
+        }
       }
       else
       {
-        for (unsigned int d = 0; d < nsd_; ++d) pointarr[d] = xsi_(d, 0);
+        for (unsigned int d = 0; d < nsd_; ++d)
+        {
+          pointarr[d] = xsi_(d, 0);
+        }
       }
-      params.set<double*>("point", pointarr);
+
+      params.set<std::array<double, nsd_>>("point", pointarr);
+
       params.set<bool>("inside", inside);
 
       break;
@@ -727,9 +750,11 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (params.get<int>("NUMSCAL") > numscal_)
+      {
         FOUR_C_THROW(
             "you requested the pointvalue of the %d-th scalar but there is only %d scalars",
             params.get<int>("NUMSCAL"), numscal_);
+      }
 
       const double value = funct_.dot(ephinp_[params.get<int>("NUMSCAL")]);
 
@@ -741,7 +766,6 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
     default:
     {
       FOUR_C_THROW("Not acting on this action. Forgot implementation?");
-      break;
     }
   }  // switch(action)
 
@@ -792,7 +816,9 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_service(
     update_node_coordinates();
   }
   else
+  {
     edispnp_.clear();
+  }
 
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -873,7 +899,6 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
     default:
     {
       FOUR_C_THROW("Unknown element type for box filter application\n");
-      break;
     }
   }
 
@@ -1175,7 +1200,6 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
         break;
       default:
         FOUR_C_THROW("received illegal flag inside flux evaluation for whole domain");
-        break;
     }
     // q at integration point
 
@@ -1492,7 +1516,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
                                   scatrapara_->fd_check_eps();
       }
       else
+      {
         ephinp_[idof](inode, 0) += scatrapara_->fd_check_eps();
+      }
 
       // calculate element right-hand side vector for perturbed state
       sysmat(ele, emat_dummy, erhs_perturbed, subgrdiff_dummy);
@@ -1535,7 +1561,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
         // evaluate first comparison
         if (abs(relerr1) > scatrapara_->fd_check_tol())
         {
-          if (!counter) std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
+          if (!counter) std::cout << " --> FAILED AS FOLLOWS:\n";
           std::cout << "emat[" << row << "," << col << "]:  " << entry << "   ";
           std::cout << "finite difference suggestion:  " << fdval << "   ";
           std::cout << "absolute error:  " << abserr1 << "   ";
@@ -1570,7 +1596,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
           // evaluate second comparison
           if (abs(relerr2) > scatrapara_->fd_check_tol())
           {
-            if (!counter) std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
+            if (!counter) std::cout << " --> FAILED AS FOLLOWS:\n";
             std::cout << "emat[" << row << "," << col << "]-erhs[" << row << "]/eps:  " << left
                       << "   ";
             std::cout << "-erhs_perturbed[" << row << "]/eps:  " << right << "   ";
