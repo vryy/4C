@@ -180,6 +180,20 @@ namespace Core::LinAlg
       const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
       bool complete = true);
 
+
+  /*!
+   \brief Compute transposed matrix of a sparse matrix explicitly
+
+   \warning This is an expensive operation!
+
+   \pre Matrix needs to be completed for this operation.
+
+   \param A (in) : Matrix to transpose
+
+   \return matrix_transpose of the input matrix A.
+   */
+  Teuchos::RCP<SparseMatrix> matrix_transpose(const SparseMatrix& A);
+
 }  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE

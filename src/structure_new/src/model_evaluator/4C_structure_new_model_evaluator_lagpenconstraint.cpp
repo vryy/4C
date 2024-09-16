@@ -19,6 +19,7 @@
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_utils.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -202,9 +203,9 @@ bool Solid::ModelEvaluator::LagPenConstraint::assemble_jacobian(
     block_ptr = Teuchos::null;
 
     // --- Kzd - block - no scaling of this block (cf. diss Kloeppel p78)
-    block_ptr = (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
-                     constrman_->get_constr_matrix(), true))
-                    ->transpose();
+    block_ptr =
+        Core::LinAlg::matrix_transpose(*Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
+            constrman_->get_constr_matrix(), true));
     global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_displ);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;

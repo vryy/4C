@@ -27,6 +27,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
@@ -1029,7 +1030,8 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     // use BlockMatrix
     blockmat->assign(0, 0, Core::LinAlg::View, *mat_structstiff_R);
     blockmat->assign(1, 0, Core::LinAlg::View, *mat_dcardvasc0d_dd_R);
-    blockmat->assign(0, 1, Core::LinAlg::View, *mat_dstruct_dcv0ddof_R->transpose());
+    blockmat->assign(
+        0, 1, Core::LinAlg::View, *Core::LinAlg::matrix_transpose(*mat_dstruct_dcv0ddof_R));
     blockmat->assign(1, 1, Core::LinAlg::View, *mat_cardvasc0dstiff);
     blockmat->complete();
 
@@ -1052,7 +1054,8 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
     // use BlockMatrix
     blockmat->assign(0, 0, Core::LinAlg::View, *mat_structstiff);
-    blockmat->assign(1, 0, Core::LinAlg::View, *mat_dcardvasc0d_dd->transpose());
+    blockmat->assign(
+        1, 0, Core::LinAlg::View, *Core::LinAlg::matrix_transpose(*mat_dcardvasc0d_dd));
     blockmat->assign(0, 1, Core::LinAlg::View, *mat_dstruct_dcv0ddof);
     blockmat->assign(1, 1, Core::LinAlg::View, *mat_cardvasc0dstiff);
     blockmat->complete();

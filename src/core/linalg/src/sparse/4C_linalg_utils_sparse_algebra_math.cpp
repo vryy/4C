@@ -312,4 +312,20 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const Spa
   return C;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_transpose(const SparseMatrix& A)
+{
+  if (not A.filled()) FOUR_C_THROW("fill_complete was not called on matrix");
+
+  EpetraExt::RowMatrix_Transpose transposer;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix = Teuchos::null;
+
+  Epetra_CrsMatrix* a_prime = &(dynamic_cast<Epetra_CrsMatrix&>(transposer(*A.epetra_matrix())));
+  matrix = Teuchos::rcp(new SparseMatrix(
+      Teuchos::rcp(a_prime, false), Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph()));
+
+  return matrix;
+}
+
 FOUR_C_NAMESPACE_CLOSE

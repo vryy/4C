@@ -17,6 +17,7 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_integrator.hpp"
@@ -194,7 +195,7 @@ bool Solid::ModelEvaluator::Cardiovascular0D::assemble_jacobian(
   block_ptr = Teuchos::null;
 
   // --- Kzd - block - already scaled correctly by 0D model !-----------
-  block_ptr = cardvasc0dman_->get_mat_dcardvasc0d_dd()->transpose();
+  block_ptr = Core::LinAlg::matrix_transpose(*cardvasc0dman_->get_mat_dcardvasc0d_dd());
   global_state().assign_model_block(jac, *block_ptr, type(), MatBlockType::lm_displ);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
