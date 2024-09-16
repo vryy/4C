@@ -18,6 +18,7 @@ attached parenchyma balloon
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_structure_aux.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -379,7 +380,7 @@ void Adapter::StructureLung::evaluate_vol_con(
   }
 
   StructMatrix->complete();
-  StructMatrix->matrix(1, 0) = *StructMatrix->matrix(0, 1).transpose();
+  StructMatrix->matrix(1, 0) = *Core::LinAlg::matrix_transpose(StructMatrix->matrix(0, 1));
 
   // Apply Dirichlet BC to stiffness matrix and rhs vector and
   // exclude all forces on the outflow boundary (except those at the fsi

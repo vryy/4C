@@ -22,6 +22,7 @@ parenchyma balloon
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -323,7 +324,7 @@ void Adapter::FluidLung::evaluate_vol_con(
 
   // transposed "ale" constraint matrix -> linearization of constraint equation
   for (int i = 0; i < interface()->num_maps(); ++i)
-    ConstrAleMatrix->matrix(0, i) = *AleConstrMatrix->matrix(i, 0).transpose();
+    ConstrAleMatrix->matrix(0, i) = *Core::LinAlg::matrix_transpose(AleConstrMatrix->matrix(i, 0));
   ConstrAleMatrix->complete();
 
   // Note: there is no contribution of the FSI boundary to the overall
@@ -342,7 +343,7 @@ void Adapter::FluidLung::evaluate_vol_con(
   FluidConstrMatrix->apply_dirichlet(*outflowfsimap, false);
 
   // transposed fluid constraint matrix -> linearization of constraint equation
-  *ConstrFluidMatrix = *FluidConstrMatrix->transpose();
+  *ConstrFluidMatrix = *Core::LinAlg::matrix_transpose(*FluidConstrMatrix);
   ConstrFluidMatrix->complete(fluidmap, constrmap);
   FluidConstrMatrix->scale(invresscale);
   ConstrFluidMatrix->scale(dttheta);

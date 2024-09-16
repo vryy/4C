@@ -343,12 +343,6 @@ namespace Core::LinAlg
     /** \name Utility functions */
     //@{
 
-    /// Compute transposed matrix explicitly
-    /*!
-      \note This is an expensive operation!
-     */
-    Teuchos::RCP<SparseMatrix> transpose();
-
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
     /*!
 

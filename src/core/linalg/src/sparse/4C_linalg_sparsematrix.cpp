@@ -11,7 +11,6 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
-#include <EpetraExt_Transpose_RowMatrix.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -1382,34 +1381,6 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dir
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const char* Core::LinAlg::SparseMatrix::Label() const { return "Core::LinAlg::SparseMatrix"; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::transpose()
-{
-  if (not filled()) FOUR_C_THROW("fill_complete was not called on matrix");
-
-  EpetraExt::RowMatrix_Transpose trans;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix = Teuchos::null;
-
-  if (matrixtype_ == CRS_MATRIX)
-  {
-    Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(trans(*sysmat_)));
-    matrix = Teuchos::rcp(new SparseMatrix(
-        Teuchos::rcp(Aprime, false), Core::LinAlg::Copy, explicitdirichlet_, savegraph_));
-  }
-  else if (matrixtype_ == FE_MATRIX)
-  {
-    Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(trans(*sysmat_)));
-    matrix = Teuchos::rcp(new SparseMatrix(Teuchos::rcp(Aprime, false), Core::LinAlg::Copy,
-        explicitdirichlet_, savegraph_, FE_MATRIX));
-  }
-  else
-    FOUR_C_THROW("matrix type is not correct");
-
-  return matrix;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
