@@ -30,6 +30,7 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 #include <stdio.h>
 #include <Teuchos_ParameterList.hpp>
@@ -1112,6 +1113,23 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
           solver_->params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
           solver_->params().set("CONSTRAINT", true);
+        }
+        break;
+        case Core::LinearSolver::PreconditionerType::block_teko:
+        {
+          solver_->put_solver_params_to_sub_params("Inverse1",
+              Global::Problem::instance()->solver_params(linsolvernumber),
+              Global::Problem::instance()->solver_params_callback(),
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+          actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse1"), true);
+
+          solver_->put_solver_params_to_sub_params("Inverse2",
+              Global::Problem::instance()->solver_params(linsolvernumber),
+              Global::Problem::instance()->solver_params_callback(),
+              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+                  Global::Problem::instance()->io_params(), "VERBOSITY"));
+          actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse2"), true);
         }
         break;
         default:
