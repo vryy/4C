@@ -85,7 +85,6 @@ void ntacal()
 
     case Core::ProblemType::fsi:
     case Core::ProblemType::fsi_redmodels:
-    case Core::ProblemType::fsi_lung:
       fsi_ale_drt();
       break;
     case Core::ProblemType::fsi_xfem:

@@ -26,8 +26,8 @@ void Inpar::FSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Fluid Structure Interaction\n"
       "FSI solver with various coupling methods");
 
-  Teuchos::Tuple<std::string, 23> name;
-  Teuchos::Tuple<int, 23> label;
+  Teuchos::Tuple<std::string, 21> name;
+  Teuchos::Tuple<int, 21> label;
 
   name[0] = "basic_sequ_stagg";
   label[0] = fsi_basic_sequ_stagg;
@@ -51,30 +51,26 @@ void Inpar::FSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
   label[9] = fsi_iter_monolithicfluidsplit;
   name[10] = "iter_monolithicstructuresplit";
   label[10] = fsi_iter_monolithicstructuresplit;
-  name[11] = "iter_lung_monolithicstructuresplit";
-  label[11] = fsi_iter_lung_monolithicstructuresplit;
-  name[12] = "iter_lung_monolithicfluidsplit";
-  label[12] = fsi_iter_lung_monolithicfluidsplit;
-  name[13] = "iter_xfem_monolithic";
-  label[13] = fsi_iter_xfem_monolithic;
-  name[14] = "iter_mortar_monolithicstructuresplit";
-  label[14] = fsi_iter_mortar_monolithicstructuresplit;
-  name[15] = "iter_mortar_monolithicfluidsplit";
-  label[15] = fsi_iter_mortar_monolithicfluidsplit;
-  name[16] = "iter_fluidfluid_monolithicstructuresplit";
-  label[16] = fsi_iter_fluidfluid_monolithicstructuresplit;
-  name[17] = "iter_fluidfluid_monolithicfluidsplit";
-  label[17] = fsi_iter_fluidfluid_monolithicfluidsplit;
-  name[18] = "iter_fluidfluid_monolithicstructuresplit_nonox";
-  label[18] = fsi_iter_fluidfluid_monolithicstructuresplit_nonox;
-  name[19] = "iter_fluidfluid_monolithicfluidsplit_nonox";
-  label[19] = fsi_iter_fluidfluid_monolithicfluidsplit_nonox;
-  name[20] = "iter_sliding_monolithicfluidsplit";
-  label[20] = fsi_iter_sliding_monolithicfluidsplit;
-  name[21] = "iter_sliding_monolithicstructuresplit";
-  label[21] = fsi_iter_sliding_monolithicstructuresplit;
-  name[22] = "iter_mortar_monolithicfluidsplit_saddlepoint";
-  label[22] = fsi_iter_mortar_monolithicfluidsplit_saddlepoint;
+  name[11] = "iter_xfem_monolithic";
+  label[11] = fsi_iter_xfem_monolithic;
+  name[12] = "iter_mortar_monolithicstructuresplit";
+  label[12] = fsi_iter_mortar_monolithicstructuresplit;
+  name[13] = "iter_mortar_monolithicfluidsplit";
+  label[13] = fsi_iter_mortar_monolithicfluidsplit;
+  name[14] = "iter_fluidfluid_monolithicstructuresplit";
+  label[14] = fsi_iter_fluidfluid_monolithicstructuresplit;
+  name[15] = "iter_fluidfluid_monolithicfluidsplit";
+  label[15] = fsi_iter_fluidfluid_monolithicfluidsplit;
+  name[16] = "iter_fluidfluid_monolithicstructuresplit_nonox";
+  label[16] = fsi_iter_fluidfluid_monolithicstructuresplit_nonox;
+  name[17] = "iter_fluidfluid_monolithicfluidsplit_nonox";
+  label[17] = fsi_iter_fluidfluid_monolithicfluidsplit_nonox;
+  name[18] = "iter_sliding_monolithicfluidsplit";
+  label[18] = fsi_iter_sliding_monolithicfluidsplit;
+  name[19] = "iter_sliding_monolithicstructuresplit";
+  label[19] = fsi_iter_sliding_monolithicstructuresplit;
+  name[20] = "iter_mortar_monolithicfluidsplit_saddlepoint";
+  label[20] = fsi_iter_mortar_monolithicfluidsplit_saddlepoint;
 
 
   setStringToIntegralParameter<int>("COUPALGO", "iter_stagg_AITKEN_rel_param",

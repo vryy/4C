@@ -1825,7 +1825,6 @@ int main(int argc, char** argv)
   {
     case Core::ProblemType::fsi:
     case Core::ProblemType::fsi_redmodels:
-    case Core::ProblemType::fsi_lung:
     {
       if (infieldtype == "fluid")
       {

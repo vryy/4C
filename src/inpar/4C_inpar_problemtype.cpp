@@ -83,7 +83,6 @@ std::map<std::string, Core::ProblemType> Inpar::PROBLEMTYPE::string_to_problem_t
     string2prbtype["Fluid_Porous_Structure_Scalar_Scalar_Interaction"] = Core::ProblemType::fps3i;
     string2prbtype["Fluid_RedModels"] = Core::ProblemType::fluid_redmodels;
     string2prbtype["Fluid_Structure_Interaction"] = Core::ProblemType::fsi;
-    string2prbtype["Fluid_Structure_Interaction_Lung"] = Core::ProblemType::fsi_lung;
     string2prbtype["Fluid_Structure_Interaction_RedModels"] = Core::ProblemType::fsi_redmodels;
     string2prbtype["Fluid_Structure_Interaction_XFEM"] = Core::ProblemType::fsi_xfem;
     string2prbtype["Fluid_XFEM"] = Core::ProblemType::fluid_xfem;

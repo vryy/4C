@@ -37,7 +37,6 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
-        case (Core::ProblemType::fsi_lung):
           if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") ==
               Inpar::FSI::CoupVarPart::vel)
           {
@@ -58,7 +57,6 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
-        case (Core::ProblemType::fsi_lung):
           if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") ==
               Inpar::FSI::CoupVarPart::vel)
           {
@@ -79,7 +77,6 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
-        case (Core::ProblemType::fsi_lung):
         case (Core::ProblemType::fsi_xfem):
           if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") ==
               Inpar::FSI::CoupVarPart::vel)

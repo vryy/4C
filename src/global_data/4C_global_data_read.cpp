@@ -83,7 +83,6 @@ void Global::read_fields(
   {
     case Core::ProblemType::fsi:
     case Core::ProblemType::fsi_redmodels:
-    case Core::ProblemType::fsi_lung:
     {
       if (distype == Core::FE::ShapeFunctionType::nurbs)
       {
@@ -1393,7 +1392,6 @@ void Global::read_fields(
   switch (problem.get_problem_type())
   {
     case Core::ProblemType::fsi_redmodels:
-    case Core::ProblemType::fsi_lung:
     case Core::ProblemType::fluid_ale:
     case Core::ProblemType::fluid_redmodels:
     {
@@ -1435,7 +1433,6 @@ void Global::read_fields(
       case Core::ProblemType::elch:
       case Core::ProblemType::fsi:
       case Core::ProblemType::fsi_redmodels:
-      case Core::ProblemType::fsi_lung:
       case Core::ProblemType::scatra:
       case Core::ProblemType::structure:
       {

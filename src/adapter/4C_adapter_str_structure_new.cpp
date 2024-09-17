@@ -441,7 +441,6 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
     case Core::ProblemType::immersed_fsi:
     case Core::ProblemType::fbi:
     case Core::ProblemType::fsi_redmodels:
-    case Core::ProblemType::fsi_lung:
     case Core::ProblemType::gas_fsi:
     case Core::ProblemType::biofilm_fsi:
     case Core::ProblemType::thermo_fsi:
@@ -842,15 +841,11 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
   {
     case Core::ProblemType::fsi:
     case Core::ProblemType::fsi_redmodels:
-    case Core::ProblemType::fsi_lung:
     case Core::ProblemType::gas_fsi:
     case Core::ProblemType::biofilm_fsi:
     case Core::ProblemType::thermo_fsi:
     case Core::ProblemType::fsi_xfem:
     {
-      const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
-      const int coupling = Core::UTILS::integral_value<int>(fsidyn, "COUPALGO");
-
       // Are there any constraint conditions active?
       const std::set<Inpar::Solid::ModelType>& modeltypes =
           ti_strategy->get_data_sdyn().get_model_types();
@@ -864,19 +859,8 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
       }
       else
       {
-        if (coupling == fsi_iter_lung_monolithicstructuresplit or
-            coupling == fsi_iter_lung_monolithicfluidsplit)
-        {
-          if ((actdis_->get_comm()).MyPID() == 0)
-            Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
-          str_wrapper_ = Teuchos::rcp(
-              new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
-        }
-        else
-        {
-          str_wrapper_ =
-              Teuchos::rcp(new FSIStructureWrapper(ti_strategy));  // case of partitioned fsi
-        }
+        // case of partitioned fsi
+        str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(ti_strategy));
       }
       break;
     }

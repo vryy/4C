@@ -1,5 +1,12 @@
 List of major features that were removed from 4C, including date and revision where code was removed
 
+Lung monolithic fluid-structure interaction
+- The lung monolithic fluid-structure interaction implemenation is removed. In addition the special block
+  preconditioner taylored to this problem type is deleted.
+- reasons: unused in current research, difficult to port to Tpetra
+- removed in commit 1dcaf89dc1a01d1c060ce77aaf3ca48678a5959b
+- removed by Max Firmbach
+
 Free surface flow
 - The free surface flow formulation is removed and with it a special block Gauss-Seidel formulation
 - reasons: unused in current research, difficult to port to Tpetra

@@ -42,9 +42,6 @@
 #include "4C_fsi_fluidfluidmonolithic_fluidsplit_nonox.hpp"
 #include "4C_fsi_fluidfluidmonolithic_structuresplit.hpp"
 #include "4C_fsi_fluidfluidmonolithic_structuresplit_nonox.hpp"
-#include "4C_fsi_lungmonolithic.hpp"
-#include "4C_fsi_lungmonolithic_fluidsplit.hpp"
-#include "4C_fsi_lungmonolithic_structuresplit.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
 #include "4C_fsi_mortarmonolithic_fluidsplit.hpp"
@@ -492,8 +489,6 @@ void fsi_ale_drt()
   {
     case fsi_iter_monolithicfluidsplit:
     case fsi_iter_monolithicstructuresplit:
-    case fsi_iter_lung_monolithicstructuresplit:
-    case fsi_iter_lung_monolithicfluidsplit:
     case fsi_iter_mortar_monolithicstructuresplit:
     case fsi_iter_mortar_monolithicfluidsplit:
     case fsi_iter_mortar_monolithicfluidsplit_saddlepoint:
@@ -518,14 +513,6 @@ void fsi_ale_drt()
       else if (coupling == fsi_iter_monolithicstructuresplit)
       {
         fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm, fsidyn));
-      }
-      else if (coupling == fsi_iter_lung_monolithicstructuresplit)
-      {
-        fsi = Teuchos::rcp(new FSI::LungMonolithicStructureSplit(comm, fsidyn));
-      }
-      else if (coupling == fsi_iter_lung_monolithicfluidsplit)
-      {
-        fsi = Teuchos::rcp(new FSI::LungMonolithicFluidSplit(comm, fsidyn));
       }
       else if (coupling == fsi_iter_mortar_monolithicstructuresplit)
       {
