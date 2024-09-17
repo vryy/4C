@@ -55,7 +55,7 @@ namespace Core::LinearSolver
     bool factored_;
 
     //! a linear problem wrapper class used by Trilinos and for scaling of the system
-    Teuchos::RCP<Epetra_LinearProblem> lp_;
+    Teuchos::RCP<Epetra_LinearProblem> linear_problem_;
 
     //! initial guess and solution
     Teuchos::RCP<VectorType> x_;
@@ -67,7 +67,7 @@ namespace Core::LinearSolver
     Teuchos::RCP<MatrixType> a_;
 
     //! an abstract amesos solver that can be any of the amesos concrete implementations
-    Teuchos::RCP<Amesos_BaseSolver> amesos_;
+    Teuchos::RCP<Amesos_BaseSolver> solver_;
 
     //! reindex linear problem for amesos
     Teuchos::RCP<EpetraExt::LinearProblem_Reindex2> reindexer_;
