@@ -740,7 +740,6 @@ AZOUTPUT                        0
 //                              DownwindGaussSeidel
 //                              AMG(Braess-Sarazin)
 //                              AMG
-//                              BGS2x2
 //                              BGSnxn
 //                              TekoSIMPLE
 //                              CheapSIMPLE
@@ -765,20 +764,7 @@ AZSOLVE                         GMRES
 AZSUB                           300
 //
 // tolerance in (un)scaled residual
-AZTOL                           1e-08
-//
-// damping parameter for BGS2X2 preconditioner block1
-BGS2X2_BLOCK1_DAMPING           1
-//
-// damping parameter for BGS2X2 preconditioner block2
-BGS2X2_BLOCK2_DAMPING           1
-//
-// BGS2x2 flip order parameter
-//                              block0_block1_order,block1_block0_order
-BGS2X2_FLIPORDER                block0_block1_order
-//
-// damping parameter for BGS2X2 preconditioner
-BGS2X2_GLOBAL_DAMPING           1
+AZTOL                           1e-08        1
 //
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
@@ -945,7 +931,6 @@ AZOUTPUT                        0
 //                              DownwindGaussSeidel
 //                              AMG(Braess-Sarazin)
 //                              AMG
-//                              BGS2x2
 //                              BGSnxn
 //                              TekoSIMPLE
 //                              CheapSIMPLE
@@ -971,19 +956,6 @@ AZSUB                           300
 //
 // tolerance in (un)scaled residual
 AZTOL                           1e-12
-//
-// damping parameter for BGS2X2 preconditioner block1
-BGS2X2_BLOCK1_DAMPING           1
-//
-// damping parameter for BGS2X2 preconditioner block2
-BGS2X2_BLOCK2_DAMPING           1
-//
-// BGS2x2 flip order parameter
-//                              block0_block1_order,block1_block0_order
-BGS2X2_FLIPORDER                block0_block1_order
-//
-// damping parameter for BGS2X2 preconditioner
-BGS2X2_GLOBAL_DAMPING           1
 //
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
@@ -1150,7 +1122,6 @@ AZOUTPUT                        0
 //                              DownwindGaussSeidel
 //                              AMG(Braess-Sarazin)
 //                              AMG
-//                              BGS2x2
 //                              BGSnxn
 //                              TekoSIMPLE
 //                              CheapSIMPLE
@@ -1176,19 +1147,6 @@ AZSUB                           300
 //
 // tolerance in (un)scaled residual
 AZTOL                           1e-08
-//
-// damping parameter for BGS2X2 preconditioner block1
-BGS2X2_BLOCK1_DAMPING           1
-//
-// damping parameter for BGS2X2 preconditioner block2
-BGS2X2_BLOCK2_DAMPING           1
-//
-// BGS2x2 flip order parameter
-//                              block0_block1_order,block1_block0_order
-BGS2X2_FLIPORDER                block0_block1_order
-//
-// damping parameter for BGS2X2 preconditioner
-BGS2X2_GLOBAL_DAMPING           1
 //
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
