@@ -60,7 +60,6 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
   projector_ = projector;
   if (projector_ != Teuchos::null)
   {
-    // solve P^T A P x_tilda = P^T b
     Core::LinAlg::SparseMatrix A_view(crsA, Core::LinAlg::View);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> A2 = projector_->project(A_view);
 
@@ -114,11 +113,7 @@ int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::solve()
 
   solver_->Solve();
 
-  if (projector_ != Teuchos::null)
-  {
-    // get x from x = P x_tilda
-    projector_->apply_p(*x_);
-  }
+  if (projector_ != Teuchos::null) projector_->apply_p(*x_);
 
   return 0;
 }
