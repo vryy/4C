@@ -19,6 +19,7 @@ NUMSTRUCDIS                     1
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
+VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
@@ -36,7 +37,7 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   4
+LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
 TOLLAGR                         1.0E-8
@@ -45,58 +46,23 @@ LM_SHAPEFCN                     Standard
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Belos
-AZOUTPUT                        100
 AZSOLVE                         GMRES
-AZPREC                          ILU
-AZREUSE                         0
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/elasticity_template.xml
 AZTOL                           1.0E-10
 AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           50
-AZOMEGA                         0.67
-AZGRAPH                         1
+AZREUSE                         0
+AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 2
-NAME                            Contact_Simpler_Solver_predict
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          ILU
-AZREUSE                         0
-AZTOL                           1.0E-10
-AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           50
-AZOMEGA                         0.67
-AZGRAPH                         1
---------------------------------------------------------------------SOLVER 3
-NAME                            Contact_Simpler_Solver
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          ILU
-AZREUSE                         0
-AZTOL                           1.0E-10
-AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           50
-AZOMEGA                         0.67
-AZGRAPH                         1
---------------------------------------------------------------------SOLVER 4
 NAME                            Meshtying_Solver
 SOLVER                          Belos
-AZOUTPUT                        100
 AZSOLVE                         GMRES
-AZPREC                          CheapSIMPLE
-AZREUSE                         0
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/contact.xml
 AZTOL                           1.0E-10
 AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           50
-AZOMEGA                         0.67
-AZGRAPH                         1
-IFPACKOVERLAP                   0
-SUB_SOLVER1                     2
-SUB_SOLVER2                     3
+AZREUSE                         0
+AZOUTPUT                        100
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6
 MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
@@ -107,7 +73,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 2000 VALUES 0 2
 STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 3.92176628029872298e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 7.01434329653051192e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 6.63600533116916913e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.97800845002964643e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.97800845003131620e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 7.78867675435034879e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 4.94154829059914757e-01 TOLERANCE 1e-10
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS

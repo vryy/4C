@@ -13,7 +13,9 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -326,49 +328,32 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   Teuchos::RCP<Epetra_Vector> dirichzeros = dbcmaps_->extract_cond_vector(zeros);
   Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*rhsstand));
 
-  // FIXME: The solver should not be taken from the contact dynamic section here,
-  // but must be specified somewhere else instead (popp 11/2012)
-
-  /*
-  //make solver CheapSIMPLE-ready
-  // meshtying/contact for structure
-  const Teuchos::ParameterList& mcparams = Global::Problem::instance()->contact_dynamic_params();
-  // get the solver number used for meshtying/contact problems
-  const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
-  // check if the meshtying/contact solver has a valid solver number
-  if (linsolvernumber == (-1))
-   FOUR_C_THROW("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in
-  CONTACT DYNAMIC to a valid number!");
-   */
-
-  Teuchos::ParameterList sfparams =
-      solver_->params();  // save copy of original solver parameter list
+  Teuchos::ParameterList sfparams = solver_->params();
   const Teuchos::ParameterList& mcparams = Global::Problem::instance()->contact_dynamic_params();
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
-  solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(
-      Global::Problem::instance()->solver_params(linsolvernumber),
+
+  const Teuchos::ParameterList& solverparams =
+      Global::Problem::instance()->solver_params(linsolvernumber);
+
+  solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(solverparams,
       Global::Problem::instance()->solver_params_callback(),
       Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-  // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
-  // list solver_->Params() =
-  // Core::LinAlg::Solver::translate_solver_parameters(Global::Problem::instance()->SolverParams(linsolvernumber));
-  if (!solver_->params().isSublist("Belos Parameters")) FOUR_C_THROW("Iterative solver expected!");
+  const auto prectype =
+      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
 
-  solver_->params().set<bool>(
-      "CONSTRAINT", true);  // handling of constraint null space within Simple type preconditioners
-  solver_->params().sublist(
-      "CheapSIMPLE Parameters");  // this automatically sets preconditioner to CheapSIMPLE!
-  /*solver_->Params().sublist("Inverse1") = sfparams;
-  // get the solver number used for meshtying/contact problems
-  const int simplersolvernumber = mcparams.get<int>("SIMPLER_SOLVER");
-  // check if the SIMPLER solver has a valid solver number
-  if (simplersolvernumber == (-1))
-    FOUR_C_THROW("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in
-  CONTACT DYNAMIC to a valid number!"); solver_->put_solver_params_to_sub_params("Inverse2",
-      Global::Problem::instance()->SolverParams(simplersolvernumber));
-  */
+  switch (prectype)
+  {
+    case Core::LinearSolver::PreconditionerType::block_teko:
+    {
+      Core::LinearSolver::Parameters::compute_solver_parameters(
+          *actdisc_, solver_->params().sublist("Inverse1"));
+      break;
+    }
+    default:
+      FOUR_C_THROW("Expected a block preconditioner for saddle point systems.");
+  }
 
   // build block matrix for SIMPLE
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> mat =
