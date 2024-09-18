@@ -19,7 +19,6 @@ using XFEM
 #include "4C_fem_discretization.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_debugwriter.hpp"
-#include "4C_fsi_monolithic_linearsystem.hpp"
 #include "4C_fsi_statustest.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
