@@ -280,11 +280,6 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
   {
     preconditioner = Teuchos::rcp(new Core::LinearSolver::SimplePreconditioner(params()));
   }
-  else if (params().isSublist("BGS Parameters"))
-  {
-    preconditioner = Teuchos::rcp(
-        new Core::LinearSolver::BGSPreconditioner(params(), params().sublist("BGS Parameters")));
-  }
   else if (params().isSublist("Teko Parameters"))
   {
     preconditioner = Teuchos::rcp(new Core::LinearSolver::TekoPreconditioner(params()));

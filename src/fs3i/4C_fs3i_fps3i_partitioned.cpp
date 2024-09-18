@@ -525,8 +525,7 @@ void FS3I::PartFPS3I::setup_system()
   const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
       coupledscatrasolvparams, "AZPREC");
 
-  if (azprectype != Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2 and
-      azprectype != Core::LinearSolver::PreconditionerType::block_teko)
+  if (azprectype != Core::LinearSolver::PreconditionerType::block_teko)
     FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
@@ -559,18 +558,7 @@ void FS3I::PartFPS3I::setup_system()
       Core::UTILS::integral_value<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-  if (azprectype == Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2)
-  {
-    (scatravec_[0])
-        ->scatra_field()
-        ->discretization()
-        ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse1"));
-    (scatravec_[1])
-        ->scatra_field()
-        ->discretization()
-        ->compute_null_space_if_necessary(scatrasolver_->params().sublist("Inverse2"));
-  }
-  else if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
+  if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
   {
     Core::LinearSolver::Parameters::compute_solver_parameters(
         *(scatravec_[0])->scatra_field()->discretization(),

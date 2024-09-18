@@ -39,26 +39,6 @@ namespace Core::LinearSolver
     Teuchos::RCP<Epetra_Operator> p_;
   };
 
-  /// General purpose block gauss-seidel preconditioner
-  /*!
-    2x2 block preconditioner
-   */
-  class BGSPreconditioner : public PreconditionerTypeBase
-  {
-   public:
-    BGSPreconditioner(Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist);
-
-    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
-
-    /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> prec_operator() const override { return p_; }
-
-   private:
-    Teuchos::ParameterList& params_;
-    Teuchos::ParameterList& bgslist_;
-    Teuchos::RCP<Epetra_Operator> p_;
-  };
 }  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE

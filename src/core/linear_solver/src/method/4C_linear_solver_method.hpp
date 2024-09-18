@@ -73,8 +73,7 @@ namespace Core::LinearSolver
                                 ///< problems (MueLu package)
     multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)
     block_teko,     ///< block preconditioning (Teko package, recommended!)
-    block_gauss_seidel_2x2,  ///< block Gauss-Seidel for 2x2 system (inhouse implementation)
-    cheap_simple             ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)
+    cheap_simple    ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)
   };
 
   /// linear solver type base class

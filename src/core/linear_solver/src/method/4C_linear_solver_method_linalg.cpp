@@ -684,9 +684,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     case Core::LinearSolver::PreconditionerType::multigrid_nxn:
       beloslist.set("Preconditioner Type", "AMGnxn");
       break;
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
-      beloslist.set("Preconditioner Type", "ML");
-      break;
     case Core::LinearSolver::PreconditionerType::cheap_simple:
       beloslist.set("Preconditioner Type", "CheapSIMPLE");
       break;
@@ -739,29 +736,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
     muelulist = translate_four_c_to_muelu(inparams, &beloslist);
-  }
-  if (azprectyp == Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2)
-  {
-    Teuchos::ParameterList& bgslist = outparams.sublist("BGS Parameters");
-    bgslist.set("numblocks", 2);
-
-    // currently, the number of Gauss-Seidel iterations and the relaxation
-    // parameter on the global level are set to 1 and 1.0, respectively
-    bgslist.set("global_iter", 1);
-    bgslist.set("global_omega", inparams.get<double>("BGS2X2_GLOBAL_DAMPING"));
-
-    // the order of blocks in the given EpetraOperator can be changed in the
-    // Gauss-Seidel procedure,
-    // default: fliporder == 0, i.e., solve block1 --> block2
-    std::string fliporder = inparams.get<std::string>("BGS2X2_FLIPORDER");
-    bgslist.set("fliporder", (fliporder == "block1_block0_order") ? true : false);
-
-    // currently, the number of Richardson iteratios and the relaxation
-    // parameter on the individual block level are set to 1 and 1.0, respectively
-    bgslist.set("block1_iter", 1);
-    bgslist.set("block1_omega", inparams.get<double>("BGS2X2_BLOCK1_DAMPING"));
-    bgslist.set("block2_iter", 1);
-    bgslist.set("block2_omega", inparams.get<double>("BGS2X2_BLOCK2_DAMPING"));
   }
   if (azprectyp == Core::LinearSolver::PreconditionerType::block_teko)
   {

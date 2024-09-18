@@ -1007,7 +1007,6 @@ AZSOLVE                         GMRES
 //     MLAPI
 //     GaussSeidel
 //     DownwindGaussSeidel
-//     BGS2x2
 //     BGSnxn
 //     TekoSIMPLE
 //     CheapSIMPLE
@@ -1156,19 +1155,6 @@ SUB_SOLVER1                     -1
 //
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
-//
-// BGS2x2 flip order parameter
-//     block0_block1_order,block1_block0_order
-BGS2X2_FLIPORDER                block0_block1_order
-//
-// damping parameter for BGS2X2 preconditioner
-BGS2X2_GLOBAL_DAMPING           1
-//
-// damping parameter for BGS2X2 preconditioner block1
-BGS2X2_BLOCK1_DAMPING           1
-//
-// damping parameter for BGS2X2 preconditioner block2
-BGS2X2_BLOCK2_DAMPING           1
 //
 // User specified name for solver block
 NAME                            Fluid solver

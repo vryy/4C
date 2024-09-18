@@ -52,7 +52,7 @@ namespace Inpar::SOLVER
           "supports the Epetra_RowMatrix interface and the client does not pass\n"
           "in an external preconditioner!",
           Teuchos::tuple<std::string>("ILU", "ML", "MLFLUID2", "MueLu", "MueLu_contactSP",
-              "MueLu_BeamSolid", "AMGnxn", "BGS2x2", "CheapSIMPLE", "Teko"),
+              "MueLu_BeamSolid", "AMGnxn", "CheapSIMPLE", "Teko"),
           Teuchos::tuple<Core::LinearSolver::PreconditionerType>(
               Core::LinearSolver::PreconditionerType::ilu,
               Core::LinearSolver::PreconditionerType::multigrid_ml,
@@ -61,7 +61,6 @@ namespace Inpar::SOLVER
               Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp,
               Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid,
               Core::LinearSolver::PreconditionerType::multigrid_nxn,
-              Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2,
               Core::LinearSolver::PreconditionerType::cheap_simple,
               Core::LinearSolver::PreconditionerType::block_teko),
           &list);
@@ -181,23 +180,6 @@ namespace Inpar::SOLVER
     {
       Core::UTILS::string_parameter(
           "TEKO_XML_FILE", "none", "xml file defining any Teko preconditioner", &list);
-    }
-
-    // BGS2x2 options
-    {
-      // switch order of blocks in BGS2x2 preconditioner
-      Teuchos::setStringToIntegralParameter<int>("BGS2X2_FLIPORDER", "block0_block1_order",
-          "BGS2x2 flip order parameter",
-          Teuchos::tuple<std::string>("block0_block1_order", "block1_block0_order"),
-          Teuchos::tuple<int>(0, 1), &list);
-
-      // damping parameter for BGS2X2
-      Core::UTILS::double_parameter(
-          "BGS2X2_GLOBAL_DAMPING", 1., "damping parameter for BGS2X2 preconditioner", &list);
-      Core::UTILS::double_parameter(
-          "BGS2X2_BLOCK1_DAMPING", 1., "damping parameter for BGS2X2 preconditioner block1", &list);
-      Core::UTILS::double_parameter(
-          "BGS2X2_BLOCK2_DAMPING", 1., "damping parameter for BGS2X2 preconditioner block2", &list);
     }
 
     // user-given name of solver block (just for beauty)

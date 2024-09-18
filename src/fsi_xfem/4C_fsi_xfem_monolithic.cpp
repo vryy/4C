@@ -2100,7 +2100,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // plausibility check
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
     case Core::LinearSolver::PreconditionerType::block_teko:
       break;
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
@@ -2122,7 +2121,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
     case Core::LinearSolver::PreconditionerType::multigrid_nxn:
     case Core::LinearSolver::PreconditionerType::cheap_simple:
     {

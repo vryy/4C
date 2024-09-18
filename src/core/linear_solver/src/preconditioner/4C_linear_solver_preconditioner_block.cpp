@@ -11,7 +11,6 @@
 #include "4C_linear_solver_preconditioner_block.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
-#include "4C_linear_solver_preconditioner_bgs2x2.hpp"       // Lena's BGS implementation
 #include "4C_linear_solver_preconditioner_cheapsimple.hpp"  // Tobias' CheapSIMPLE
 #include "4C_utils_exceptions.hpp"
 
@@ -245,50 +244,6 @@ void Core::LinearSolver::SimplePreconditioner::setup(
       // ),params_,params_.sublist("SIMPLER"),outfile_));
       FOUR_C_THROW("old SIMPLE not supported any more");
     }
-  }
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-Core::LinearSolver::BGSPreconditioner::BGSPreconditioner(
-    Teuchos::ParameterList& params, Teuchos::ParameterList& bgslist)
-    : params_(params), bgslist_(bgslist)
-{
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-void Core::LinearSolver::BGSPreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
-{
-  if (create)
-  {
-    p_ = Teuchos::null;
-
-    int numblocks = bgslist_.get<int>("numblocks");
-
-    if (numblocks == 2)  // BGS2x2
-    {
-      // check whether sublists for individual block solvers are present
-      bool haveprec1 = params_.isSublist("Inverse1");
-      bool haveprec2 = params_.isSublist("Inverse2");
-      if (!haveprec1 or !haveprec2)
-        FOUR_C_THROW("individual block solvers for BGS2x2 need to be specified");
-
-      int global_iter = bgslist_.get<int>("global_iter");
-      double global_omega = bgslist_.get<double>("global_omega");
-      int block1_iter = bgslist_.get<int>("block1_iter");
-      double block1_omega = bgslist_.get<double>("block1_omega");
-      int block2_iter = bgslist_.get<int>("block2_iter");
-      double block2_omega = bgslist_.get<double>("block2_omega");
-      bool fliporder = bgslist_.get<bool>("fliporder");
-
-      p_ = Teuchos::rcp(new Core::LinAlg::BgS2x2Operator(Teuchos::rcp(matrix, false),
-          params_.sublist("Inverse1"), params_.sublist("Inverse2"), global_iter, global_omega,
-          block1_iter, block1_omega, block2_iter, block2_omega, fliporder));
-    }
-    else
-      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system.");
   }
 }
 

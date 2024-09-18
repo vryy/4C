@@ -188,25 +188,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         {
           case Core::LinearSolver::PreconditionerType::cheap_simple:
             break;  // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
-          case Core::LinearSolver::PreconditionerType::
-              block_gauss_seidel_2x2:  // block preconditioners, that are implemented in 4C
-          {
-            // set Inverse blocks for block preconditioner
-            // for BGS preconditioner
-            // This is only necessary for BGS. CheapSIMPLE has a more modern framework
-            solver->put_solver_params_to_sub_params("Inverse1",
-                Global::Problem::instance()->solver_params(fluidsolver),
-                Global::Problem::instance()->solver_params_callback(),
-                Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                    Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-            solver->put_solver_params_to_sub_params("Inverse2",
-                Global::Problem::instance()->solver_params(fluidpressuresolver),
-                Global::Problem::instance()->solver_params_callback(),
-                Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                    Global::Problem::instance()->io_params(), "VERBOSITY"));
-          }
-          break;
           default:
             FOUR_C_THROW(
                 "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
@@ -291,12 +272,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
                 solver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
             actdis->compute_null_space_if_necessary(
                 solver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
-          }
-          break;
-          case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
-          {
-            actdis->compute_null_space_if_necessary(solver->params().sublist("Inverse1"), true);
-            actdis->compute_null_space_if_necessary(solver->params().sublist("Inverse2"), true);
           }
           break;
           default:
