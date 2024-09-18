@@ -8,18 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Amesos_Klu.h>
-#include <Amesos_Lapack.h>
-#ifdef HAVE_AMESOS_UMFPACK
-#include <Amesos_Umfpack.h>
-#endif
-#ifdef HAVE_AMESOS_SUPERLUDIST
-#include <Amesos_Superludist.h>
-#endif
+#include "4C_linear_solver_method_direct.hpp"
 
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
-#include "4C_linear_solver_method_direct.hpp"
+
+#include <Amesos_Klu.h>
+#include <Amesos_Superludist.h>
+#include <Amesos_Umfpack.h>
+#include <Epetra_LinearProblem.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,14 +26,11 @@ template <class MatrixType, class VectorType>
 Core::LinearSolver::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string solvertype)
     : solvertype_(solvertype),
       factored_(false),
-      x_(Teuchos::null),
-      b_(Teuchos::null),
-      a_(Teuchos::null),
-      amesos_(Teuchos::null),
+      solver_(Teuchos::null),
       reindexer_(Teuchos::null),
       projector_(Teuchos::null)
 {
-  lp_ = Teuchos::rcp(new Epetra_LinearProblem());
+  linear_problem_ = Teuchos::rcp(new Epetra_LinearProblem());
 }
 
 //----------------------------------------------------------------------------------
@@ -46,122 +40,59 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
     Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
     const bool refactor, const bool reset, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {
-  // Assume the input matrix to be a single block matrix
-  bool bIsCrsMatrix = true;
-
-  // try to cast input matrix to a Epetra_CrsMatrix
-  // if the cast fails, the input matrix is a blocked operator which cannot be handled by a direct
-  // solver unless the matrix is merged. This is a very expensive operation
   Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
-  if (crsA == Teuchos::null) bIsCrsMatrix = false;
 
-  // store projector in internal member variable
-  // If no projector is used it is Teuchos::null
+  // 1. merge the block system matrix into a standard sparse matrix if necessary
+  if (crsA.is_null())
+  {
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Ablock =
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(matrix);
+
+    int matrixDim = Ablock->full_range_map().NumGlobalElements();
+    if (matrixDim > 50000)
+      std::cout << "\n WARNING: Direct linear solver is merging matrix, this is very expensive! \n";
+
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->merge();
+    crsA = Ablock_merged->epetra_matrix();
+  }
+
+  // 2. project the linear system if close to being singular and set the final matrix and vectors
   projector_ = projector;
-
-  // Set internal member variables (store system matrix, rhs vector and solution vector)
   if (projector_ != Teuchos::null)
   {
-    // instead of
-    //
-    // A x = b
-    //
-    // solve
-    //
-    // P^T A P x_tilda = P^T b
-    //
-
-    // cast system matrix to Core::LinAlg::SparseMatrix
-    // check whether cast was successfull
-    if (crsA == Teuchos::null)
-    {
-      FOUR_C_THROW("Could not cast system matrix to Epetra_CrsMatrix.");
-    }
-    // get view on systemmatrix as Core::LinAlg::SparseMatrix - this is no copy!
     Core::LinAlg::SparseMatrix A_view(crsA, Core::LinAlg::View);
-
-    // apply projection to A without computing projection matrix thus avoiding
-    // matrix-matrix multiplication
     Teuchos::RCP<Core::LinAlg::SparseMatrix> A2 = projector_->project(A_view);
 
-    // hand matrix over to A_
-    a_ = A2->epetra_matrix();
-    // hand over to b_ and project to (P^T b)
-    b_ = b;
-    projector_->apply_pt(*b_);
-    // hand over x_ as x_tilda (only zeros yet, )
-    x_ = x;
-  }
-  else
-  {
-    if (bIsCrsMatrix == true)
-    {
-      a_ = matrix;
-    }
-    else
-    {
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Ablock =
-          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(matrix);
-
-      int matrixDim = Ablock->full_range_map().NumGlobalElements();
-      if (matrixDim > 50000)
-      {
-        Teuchos::RCP<Teuchos::FancyOStream> fos =
-            Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-        fos->setOutputToRootOnly(0);
-        *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
-        *fos << "  Merging a " << Ablock->rows() << " x " << Ablock->cols() << " block matrix "
-             << std::endl;
-        *fos << "  of size " << matrixDim << " is a very expensive operation. " << std::endl;
-        *fos << "  For performance reasons, try iterative solvers instead!" << std::endl;
-        *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
-      }
-
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->merge();
-      a_ = Ablock_merged->epetra_matrix();
-    }
-    x_ = x;
-    b_ = b;
+    crsA = A2->epetra_matrix();
+    projector_->apply_pt(*b);
   }
 
-  // fill the linear problem
-  lp_->SetRHS(b_.get());
-  lp_->SetLHS(x_.get());
-  lp_->SetOperator(a_.get());
+  x_ = x;
+  b_ = b;
+  a_ = crsA;
 
-  /* update reindexing of vectors: Doing so, we don't need to reset the solver
-   * to enforce reindexing of the entire Epetra_LinearProblem. This allows for
-   * reuse of the factorization.
-   */
+  // 3. Do a GID reindexing of the overall problem and create the direct solver
+  linear_problem_->SetRHS(b_.get());
+  linear_problem_->SetLHS(x_.get());
+  linear_problem_->SetOperator(a_.get());
+
   if (not reindexer_.is_null() and not(reset or refactor)) reindexer_->fwd();
 
   if (reset or refactor or not is_factored())
   {
-    amesos_ = Teuchos::null;
-
     reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex2(nullptr));
 
     if (solvertype_ == "umfpack")
     {
-#ifdef HAVE_AMESOS_UMFPACK
-      amesos_ = Teuchos::rcp(new Amesos_Umfpack((*reindexer_)(*lp_)));
-#else
-      FOUR_C_THROW(
-          "UMFPACK was chosen as linear solver, but is not available in the configuration!");
-#endif
+      solver_ = Teuchos::rcp(new Amesos_Umfpack((*reindexer_)(*linear_problem_)));
     }
     else if (solvertype_ == "superlu")
     {
-#ifdef HAVE_AMESOS_SUPERLUDIST
-      amesos_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
-#else
-      FOUR_C_THROW(
-          "Superlu was chosen as linear solver, but is not available in the configuration!");
-#endif
+      solver_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*linear_problem_)));
     }
     else
     {
-      FOUR_C_THROW("UMFPACK or Superlu have to be available to use a direct linear solver.");
+      solver_ = Teuchos::rcp(new Amesos_Klu((*reindexer_)(*linear_problem_)));
     }
 
     factored_ = false;
@@ -173,29 +104,17 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
 template <class MatrixType, class VectorType>
 int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::solve()
 {
-  if (amesos_ == Teuchos::null) FOUR_C_THROW("No solver allocated");
-
-  // Problem has not been factorized before
   if (not is_factored())
   {
-    int err = amesos_->SymbolicFactorization();
-    if (err) FOUR_C_THROW("Amesos::SymbolicFactorization returned an err");
-    err = amesos_->NumericFactorization();
-    if (err) FOUR_C_THROW("Amesos::NumericFactorization returned an err");
-
+    solver_->SymbolicFactorization();
+    solver_->NumericFactorization();
     factored_ = true;
   }
 
-  int err = amesos_->Solve();
+  solver_->Solve();
 
-  if (err) FOUR_C_THROW("Amesos::Solve returned an err");
+  if (projector_ != Teuchos::null) projector_->apply_p(*x_);
 
-  if (projector_ != Teuchos::null)
-  {
-    // get x from x = P x_tilda
-    projector_->apply_p(*x_);
-  }
-  // direct solver does not support errorcodes
   return 0;
 }
 
