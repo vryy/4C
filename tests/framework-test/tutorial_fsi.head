@@ -764,7 +764,7 @@ AZSOLVE                         GMRES
 AZSUB                           300
 //
 // tolerance in (un)scaled residual
-AZTOL                           1e-08        1
+AZTOL                           1e-08
 //
 // Combine mode for Ifpack Additive Schwarz
 //                              Add,Insert,Zero
