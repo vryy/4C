@@ -1,13 +1,15 @@
 <ParameterList name="Teko">
   <!--
-  For contact, constraint and meshtying problems in saddle point form, these are the recommended settings for the block preconditioner
-  consisting of a block Gauss-Seidel from Teko, using MueLu as multigrid preconditioner for the solid field and
-  Ifpack for a incomplete factorization on the Lagrange multiplier field.
+  For fluid problems in saddle point form, these are the recommended settings for the block preconditioner
+  consisting of a block Gauss-Seidel from Teko, using MueLu as multigrid preconditioner for the velocity field
+  and pressure field.
   -->
   <!-- ===========  BLOCK PRECONDITIONER ================ -->
   <!-- Definition of the block preconditioner, which has to be defined under sub-list "Preconditioner",
        which is used by Teko. The single field inverse approximation methods have to be given under
        sub-lists "Inverse<1..n>". -->
+  <Parameter name="Strided Blocking" type="string" value="2 1"/>
+  <Parameter name="Test Block Operator" type="bool" value="yes"/>
   <Parameter name="Inverse Type" type="string" value="Preconditioner"/>
   <ParameterList name="Inverse Factory Library">
     <ParameterList name="Preconditioner">
@@ -15,7 +17,7 @@
       <Parameter name="Inverse Velocity Type" type="string" value="Inverse1"/>
       <Parameter name="Inverse Pressure Type" type="string" value="Inverse2"/>
     </ParameterList>
-    <!-- ===========  SINGLE FIELD PRECONDITIONER FOR SOLID ================ -->
+    <!-- ===========  SINGLE FIELD PRECONDITIONER FOR VELOCITY ================ -->
     <ParameterList name="Inverse1">
       <Parameter name="Type" type="string" value="MueLu"/>
       <Parameter name="multigrid algorithm" type="string" value="sa"/>
@@ -28,9 +30,18 @@
         <Parameter name="relaxation: damping factor" type="double" value="0.8"/>
       </ParameterList>
     </ParameterList>
-    <!-- ===========  SINGLE FIELD PRECONDITIONER FOR LAGRANGE MULTIPLIER ================ -->
+    <!-- ===========  SINGLE FIELD PRECONDITIONER FOR PRESSURE ================ -->
     <ParameterList name="Inverse2">
-      <Parameter name="Type" type="string" value="Ifpack"/>
+      <Parameter name="Type" type="string" value="MueLu"/>
+      <Parameter name="multigrid algorithm" type="string" value="sa"/>
+      <Parameter name="verbosity" type="string" value="None"/>
+      <Parameter name="coarse: max size" type="int" value="200"/>
+      <Parameter name="smoother: type" type="string" value="RELAXATION"/>
+      <ParameterList name="smoother: params">
+        <Parameter name="relaxation: type" type="string" value="Symmetric Gauss-Seidel"/>
+        <Parameter name="relaxation: sweeps" type="int" value="3"/>
+        <Parameter name="relaxation: damping factor" type="double" value="0.8"/>
+      </ParameterList>
     </ParameterList>
   </ParameterList>
 </ParameterList>
