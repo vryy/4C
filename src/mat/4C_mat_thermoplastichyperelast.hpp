@@ -36,7 +36,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_mat_so3_material.hpp"
+#include "4C_mat_thermomechanical.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -80,6 +80,8 @@ namespace Mat
       const double hardsoft_;
       //! tolerance for local Newton iteration
       const double abstol_;
+      //! thermal material id, -1 if not used (old interface)
+      const int thermomat_;
 
       //@}
 
@@ -107,7 +109,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   //! wrapper for finite strain elasto-plastic material
-  class ThermoPlasticHyperElast : public So3Material
+  class ThermoPlasticHyperElast : public ThermoMechanicalMaterial
   {
    public:
     //! construct empty material object
@@ -214,6 +216,16 @@ namespace Mat
     //! initial, reference temperature
     virtual double init_temp() const { return params_->inittemp_; }
 
+    void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
+
+    void stress_temperature_modulus_and_deriv(
+        Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT, int gp) override;
+
+    Core::LinAlg::Matrix<6, 1> evaluate_d_stress_d_scalar(const Core::LinAlg::Matrix<3, 3>& defgrad,
+        const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
+
     //! return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
@@ -313,7 +325,6 @@ namespace Mat
         int gp                                  //!< current Gauss-point
     );
 
-
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
     void evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< temperature of element
@@ -329,13 +340,15 @@ namespace Mat
     //! matrix notion for 3d
     void setup_cthermo(
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature dependent material tangent
-        Teuchos::ParameterList& params                  //!< parameter list
+        const double J,                                 //!< determinant of deformation gradient
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&
+            Cinv_vct  //!< inverse of Cauchy-Green tensor (vector)
     ) const;
 
     //! computes temperature-dependent isotropic mechanical elasticity tensor in
     //! matrix notion for 3d
-    void setup_cmat_thermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
-        Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params) const;
+    void setup_cmat_thermo(const double temperature, Core::LinAlg::Matrix<6, 6>& cmat_T,
+        const Core::LinAlg::Matrix<3, 3>& defgrd) const;
 
     //! calculates stress-temperature modulus
     double st_modulus() const;
@@ -345,19 +358,54 @@ namespace Mat
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmat,  // material tangent calculated with FD of stresses
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-            cmatFD,                               // material tangent calculated with FD of stresses
-        const Core::LinAlg::Matrix<1, 1>& Ntemp,  // scalar-valued current temperature
-        Teuchos::ParameterList& params            // parameter list including F,C^{-1},...
-    );
+            cmatFD,                           // material tangent calculated with FD of stresses
+        const double temperature,             // scalar-valued current temperature
+        const Teuchos::ParameterList& params  // parameter list including F,C^{-1},...
+    ) const;
 
     /// Return whether the material requires the deformation gradient for its evaluation
     bool needs_defgrd() const override { return true; };
 
     //@}
 
+    //! @name thermo material interface
+
+    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+        Core::LinAlg::Matrix<3, 1>& heatflux) const override;
+
+    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+        Core::LinAlg::Matrix<2, 1>& heatflux) const override;
+
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+        Core::LinAlg::Matrix<1, 1>& heatflux) const override;
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const override;
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const override;
+
+    double capacity() const override;
+
+    double capacity_deriv_t() const override;
+
+    void reinit(double temperature, unsigned gp) override;
+
+    void reset_current_state() override;
+
+    void commit_current_state() override;
+
+    //@}
+
    private:
     //! my material parameters
     Mat::PAR::ThermoPlasticHyperElast* params_;
+
+    //! pointer to the internal thermal material
+    Teuchos::RCP<Mat::Trait::Thermo> thermo_;
+
+    //! current temperature (set by Reinit())
+    double current_temperature_{};
 
     //! @name Internal / history variables
 
@@ -411,7 +459,6 @@ namespace Mat
     int plastic_ele_id_;
 
   };  // class ThermoPlasticHyperElast
-
 }  // namespace Mat
 
 /*----------------------------------------------------------------------*/

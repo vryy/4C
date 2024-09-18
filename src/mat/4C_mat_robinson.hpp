@@ -31,7 +31,7 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_mat_so3_material.hpp"
+#include "4C_mat_thermomechanical.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_ParameterList.hpp>
@@ -94,6 +94,8 @@ namespace Mat
       //! Arya_NarloyZ: \f$H = 1.67e4 . (6.895)^(beta - 1) / (3 . K_0^2)\f$ [N^3/m^6]
       //! Arya_CrMoSteel: [N/m^2]
       const double h_;
+      //! thermal material id, -1 if not used (old interface)
+      const int thermomat_;
 
       //@}
 
@@ -122,7 +124,7 @@ namespace Mat
 
   /*----------------------------------------------------------------------*/
   //! wrapper for visco-plastic Robinson's material
-  class Robinson : public So3Material
+  class Robinson : public ThermoMechanicalMaterial
   {
    public:
     //! construct empty material object
@@ -200,19 +202,19 @@ namespace Mat
     void stress(const double p,                                   //!< volumetric stress tensor
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
-    );
+    ) const;
 
     //! computes relative stress eta = stress - back stress
     void rel_dev_stress(
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>&,            //!< back stress tensor
         Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
-    );
+    ) const;
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
     void setup_cmat(double temp,                                  //!< current temperature
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< material tangent
-    );
+    ) const;
 
     //! \brief calculate visco-plastic strain rate governed by the evolution law
     void calc_be_viscous_strain_rate(const double dt,  //!< (i) time step size
@@ -236,7 +238,7 @@ namespace Mat
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             kva  //!< (o) \f$\dfrac{\partial f_{res}^v}{\partial \Delta\alpha}\f$
                  //!< tangent of viscous strain residual with respect to back stresses iinc al
-    );
+    ) const;
 
     //! \brief residual of BE-discretised back stress according to the flow rule
     //!        at Gauss point
@@ -262,7 +264,7 @@ namespace Mat
         Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             kaa  //!< (o) \f$\dfrac{\partial f_{res}^{al}}{\partial \Delta\alpha}\f$
                  //!< tangent of back stress residual with respect to back stresses iinc al
-    );
+    ) const;
 
     //! Reduce (statically condense) system in eps,eps^v,al to purely eps
     /*!
@@ -343,7 +345,7 @@ namespace Mat
             kvarva,  //!< (12x1) (o) condensed matrix of residual
         Core::LinAlg::Matrix<(2 * NUM_STRESS_3D), NUM_STRESS_3D>&
             kvakvae  //!< (12x6) (o) condensed matrix of tangent
-    );
+    ) const;
 
     //! \brief iterative update of material internal variables
     //!
@@ -366,11 +368,18 @@ namespace Mat
     //! check if history variables are already initialised
     bool initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
+    void reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
+
+    void stress_temperature_modulus_and_deriv(
+        Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT, int gp) override;
+
+    Core::LinAlg::Matrix<6, 1> evaluate_d_stress_d_scalar(const Core::LinAlg::Matrix<3, 3>& defgrad,
+        const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
+
     //! return quick accessible material parameter data
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
-
-    //! flag plastic step was called
-    bool plastic_step;
 
     //! @name temperature specific methods
     //@{
@@ -379,28 +388,45 @@ namespace Mat
     double get_mat_parameter_at_tempnp(
         const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
         const double& tempnp                     //!< (i) current temperature
-    );
+    ) const;
 
     //! calculate temperature dependent material parameter
     double get_mat_parameter_at_tempnp(
         const double paramconst,  //!< (i) given parameter is a constant
         const double& tempnp      //!< (i) current temperature
-    );
+    ) const;
 
     //! Initial temperature \f$ \theta_0 \f$
     double init_temp() const { return params_->inittemp_; }
 
     //@}
 
-    //! @name specific methods for TSI and plastic material
-    //@{
+    //! @name thermo material interface
 
-    //! material call to determine stress and constitutive tensor ctemp
-    void evaluate(
-        const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< scalar-valued temperature of curr. element
-        Core::LinAlg::Matrix<6, 1>& ctemp,        //!< temperature dependent material tangent
-        Core::LinAlg::Matrix<6, 1>& stresstemp    //!< stress term dependent on temperature
-    );
+    void evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+        Core::LinAlg::Matrix<3, 1>& heatflux) const override;
+
+    void evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+        Core::LinAlg::Matrix<2, 1>& heatflux) const override;
+
+    void evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+        Core::LinAlg::Matrix<1, 1>& heatflux) const override;
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<2, 2>& dCondDT) const override;
+
+    void conductivity_deriv_t(Core::LinAlg::Matrix<1, 1>& dCondDT) const override;
+
+    double capacity() const override;
+
+    double capacity_deriv_t() const override;
+
+    void reinit(double temperature, unsigned gp) override;
+
+    void reset_current_state() override;
+
+    void commit_current_state() override;
 
     //@}
 
@@ -410,6 +436,15 @@ namespace Mat
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
+
+    //! pointer to the internal thermal material
+    Teuchos::RCP<Mat::Trait::Thermo> thermo_;
+
+    //! current temperature (set by Reinit())
+    double current_temperature_{};
+
+    //! flag plastic step was called
+    bool plastic_step_;
 
     //! robinson's material requires the following internal variables:
     //! - visco-plastic strain vector (at t_n, t_n+1^i)
@@ -449,7 +484,6 @@ namespace Mat
 
   };  // class Robinson : public Core::Mat::Material
 }  // namespace Mat
-
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

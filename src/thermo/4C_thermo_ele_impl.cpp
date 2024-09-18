@@ -1019,7 +1019,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_disp_contribution(
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
-      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT);
+      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT, iquad);
 
       Core::LinAlg::Matrix<nen_, 6> Ndctemp_dT(false);  // (8x1)(1x6)
       Ndctemp_dT.multiply_nt(funct_, dctemp_dT);
@@ -1247,7 +1247,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
-      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT);
+      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT, iquad);
     }
     else if (structmat->material_type() == Core::Materials::m_thermopllinelast)
     {
@@ -1413,7 +1413,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
-      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT);
+      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT, iquad);
       // scalar product: dctemp_dTCdot = dC_T/dT : 1/2 C'
       double dctemp_dTCdot = 0.0;
       for (int i = 0; i < 6; ++i)
@@ -1435,7 +1435,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
         econd->multiply_nt(-fac_, Ndctemp_dTCrateNT, funct_, 1.0);
       }  // (econd != nullptr)
     }
-    else if (structmat->material_type() == Core::Materials::m_thermoplhyperelast)
+    if (structmat->material_type() == Core::Materials::m_thermoplhyperelast)
     {
       Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(structmat, true);
@@ -1449,7 +1449,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
 
       // --------------------(non-dissipative) thermoelastic heating term
       // H_e := N_T^T . N_T . T . (-C_T) : 1/2 C'
-      thermoplhyperelast->setup_cthermo(ctemp, params);
+      thermoplhyperelast->setup_cthermo(ctemp, defgrd.determinant(), Cinvvct);
 
       // --------------------(non-dissipative) thermoplastic heating term
       // H_p := - N^T_T . N_T . T . dkappa/dT . sqrt(2/3) . Dgamma/Dt
@@ -1826,9 +1826,9 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
-      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT);
+      thermoSolid->stress_temperature_modulus_and_deriv(ctemp, dctemp_dT, iquad);
     }
-    else if (structmat->material_type() == Core::Materials::m_thermoplhyperelast)
+    if (structmat->material_type() == Core::Materials::m_thermoplhyperelast)
     {
       // C_T = m_0 . (J + 1/J) . C^{-1}
       // thermoelastic heating term
@@ -1842,7 +1842,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
       J = defgrd.determinant();
 
       // H_e := - N_T^T . N_T . T . C_T : 1/2 C'
-      thermoplhyperelast->setup_cthermo(ctemp, params);
+      thermoplhyperelast->setup_cthermo(ctemp, J, Cinvvct);
     }
     // N_T^T . N_T . T . ctemp
     Core::LinAlg::Matrix<nen_, 6> NNTC(false);  // (8x1)(1x6)

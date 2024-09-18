@@ -82,7 +82,6 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate(Teuchos::ParameterLi
   // set the pointer to the parameter list in element
   So3Ele::set_params_interface_ptr(params);
 
-
   // what actions are available
   // (action == "calc_struct_stifftemp")
   // (action == "calc_struct_stress")
@@ -133,7 +132,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate(Teuchos::ParameterLi
       if (la.size() > 1)
       {
         evaluate_coupl_with_thr(params, discretization,
-            la,  // coupled TSI is considered, i.e. pass the compled location array
+            la,  // coupled TSI is considered, i.e. pass the completed location array
             elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
       }
       break;
@@ -1101,7 +1100,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
   // vector of the current element temperatures
   Core::LinAlg::Matrix<nen_, 1> etemp;
 
-
   for (int i = 0; i < nen_; ++i)
   {
     const auto& x = nodes()[i]->x();
@@ -1492,7 +1490,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
       Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(material(), true);
       // get thermal material tangent
-      thermoplhyperelast->setup_cthermo(ctemp, params);
+      thermoplhyperelast->setup_cthermo(ctemp, defgrd.determinant(), Cinv_vct);
     }  // m_thermoplhyperelast
 
     // get thermal material tangent
@@ -1565,7 +1563,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
     Core::LinAlg::Matrix<nen_, nsd_> xcurr(false);  // x, current  coord. of element
     // vector of the current element temperatures
     Core::LinAlg::Matrix<nen_, 1> etemp(false);
-
 
     for (int i = 0; i < nen_; ++i)
     {
@@ -2139,7 +2136,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::materialize(
     // visco-plastic Robinson's material
     case Core::Materials::m_vp_robinson:
     {
-      // no temperature-dependent terms
+      // no temperature-dependent stress terms
       return;
       break;
     }
@@ -2197,7 +2194,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::compute_ctemp(
     {
       Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
           Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(material(), true);
-      thermoplhyperelast->setup_cthermo(*ctemp, params);
+      Core::LinAlg::Matrix<3, 3> defgrd = params.get<Core::LinAlg::Matrix<3, 3>>("defgrd");
+      Core::LinAlg::Matrix<6, 1> Cinv = params.get<Core::LinAlg::Matrix<6, 1>>("Cinv_vct");
+      thermoplhyperelast->setup_cthermo(*ctemp, defgrd.determinant(), Cinv);
       return;
       break;
     }
