@@ -35,17 +35,16 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
       cardiovascular0dcond_(0),
       cardiovascular0dstructcoupcond_(0),
       cardiovascular0dtype_(none),
-      atrium_model_(Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DAtriumModel>(
+      atrium_model_(Teuchos::getIntegralValue<Inpar::Cardiovascular0D::Cardvasc0DAtriumModel>(
           Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
               "SYS-PUL CIRCULATION PARAMETERS"),
           "ATRIUM_MODEL")),
-      ventricle_model_(
-          Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DVentricleModel>(
-              Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
-                  "SYS-PUL CIRCULATION PARAMETERS"),
-              "VENTRICLE_MODEL")),
+      ventricle_model_(Teuchos::getIntegralValue<Inpar::Cardiovascular0D::Cardvasc0DVentricleModel>(
+          Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
+              "SYS-PUL CIRCULATION PARAMETERS"),
+          "VENTRICLE_MODEL")),
       respiratory_model_(
-          Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DRespiratoryModel>(
+          Teuchos::getIntegralValue<Inpar::Cardiovascular0D::Cardvasc0DRespiratoryModel>(
               Global::Problem::instance()->cardiovascular0_d_structural_params().sublist(
                   "RESPIRATORY PARAMETERS"),
               "RESPIRATORY_MODEL")),

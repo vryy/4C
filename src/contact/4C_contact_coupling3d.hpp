@@ -156,7 +156,7 @@ namespace CONTACT
      */
     Inpar::Wear::WearType wear_type()
     {
-      return Core::UTILS::integral_value<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
+      return Teuchos::getIntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
     }
 
     //@}
@@ -230,7 +230,7 @@ namespace CONTACT
      */
     Inpar::Mortar::LagMultQuad lag_mult_quad() override
     {
-      return Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
+      return Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     //@}
@@ -312,7 +312,7 @@ namespace CONTACT
      */
     Inpar::Mortar::IntType int_type()
     {
-      return Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
+      return Teuchos::getIntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
     };
 
     /*!
@@ -327,7 +327,7 @@ namespace CONTACT
      */
     Inpar::Mortar::LagMultQuad lag_mult_quad()
     {
-      return Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
+      return Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!
@@ -354,7 +354,7 @@ namespace CONTACT
      */
     Inpar::Mortar::ShapeFcn shape_fcn()
     {
-      return Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     /*!

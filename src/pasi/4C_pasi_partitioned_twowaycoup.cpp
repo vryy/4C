@@ -35,7 +35,7 @@ PaSI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(
       convtolscaleddisp_(params.get<double>("CONVTOLSCALEDDISP")),
       convtolrelativeforce_(params.get<double>("CONVTOLRELATIVEFORCE")),
       convtolscaledforce_(params.get<double>("CONVTOLSCALEDFORCE")),
-      ignoreconvcheck_(Core::UTILS::integral_value<bool>(params, "IGNORE_CONV_CHECK")),
+      ignoreconvcheck_(params.get<bool>("IGNORE_CONV_CHECK")),
       writerestartevery_(params.get<int>("RESTARTEVRY"))
 {
   // empty constructor

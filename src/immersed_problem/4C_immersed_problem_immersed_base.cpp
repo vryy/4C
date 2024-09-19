@@ -258,7 +258,7 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::FE::Discretization> dis, Core::FE::AssembleStrategy* strategy,
     std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
-    std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action,
+    std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action,
     bool evaluateonlyboundary)
 {
   // pointer to element
@@ -283,11 +283,11 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
       int row = strategy->first_dof_set();
       int col = strategy->second_dof_set();
 
-      params.set<int>("action", action);
+      params.set<FLD::Action>("action", action);
       params.set<Teuchos::RCP<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
       params.set<std::map<int, Core::LinAlg::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
-      params.set<int>("Physical Type", Inpar::FLUID::poro_p1);
+      params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
 
       Core::Elements::Element::LocationArray la(1);
       immersedelebase->location_vector(*dis, la, false);
@@ -316,7 +316,7 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
 void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::FE::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
-    std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action)
+    std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action)
 {
   // pointer to element
   Core::Elements::Element* ele;
@@ -337,11 +337,11 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
             "failed");
 
       // provide important objects to ParameterList
-      params.set<int>("action", action);
+      params.set<FLD::Action>("action", action);
       params.set<Teuchos::RCP<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
       params.set<std::map<int, Core::LinAlg::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
-      params.set<int>("Physical Type", Inpar::FLUID::poro_p1);
+      params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
       if (dis->name() == "fluid")
         params.set<std::string>("immerseddisname", "structure");
       else if (dis->name() == "porofluid")
@@ -400,7 +400,7 @@ void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
       params.set<Teuchos::RCP<Core::Geo::SearchTree>>("structsearchtree_rcp", structsearchtree);
       params.set<std::map<int, Core::LinAlg::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
-      params.set<int>("Physical Type", Inpar::FLUID::poro_p1);
+      params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
 
       Core::Elements::Element::LocationArray la(dis->num_dof_sets());
       ele->location_vector(*dis, la, false);

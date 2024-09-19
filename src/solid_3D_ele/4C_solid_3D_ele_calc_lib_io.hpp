@@ -84,7 +84,7 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::get_as_enum<Inpar::Solid::StressType>(params, "iostress");
+      return Teuchos::getIntegralValue<Inpar::Solid::StressType>(params, "iostress");
     }
   }
 
@@ -98,7 +98,7 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(params, "iostrain");
+      return Teuchos::getIntegralValue<Inpar::Solid::StrainType>(params, "iostrain");
     }
   }
 

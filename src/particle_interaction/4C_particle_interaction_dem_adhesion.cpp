@@ -37,8 +37,7 @@ FOUR_C_NAMESPACE_OPEN
 ParticleInteraction::DEMAdhesion::DEMAdhesion(const Teuchos::ParameterList& params)
     : params_dem_(params),
       adhesion_distance_(params_dem_.get<double>("ADHESION_DISTANCE")),
-      writeparticlewallinteraction_(
-          Core::UTILS::integral_value<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
+      writeparticlewallinteraction_(params_dem_.get<bool>("WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -105,8 +104,8 @@ void ParticleInteraction::DEMAdhesion::add_force_contribution()
 void ParticleInteraction::DEMAdhesion::init_adhesion_law_handler()
 {
   // get type of adhesion law
-  Inpar::PARTICLE::AdhesionLaw adhesionlaw =
-      Core::UTILS::integral_value<Inpar::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
+  auto adhesionlaw =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
 
   // create adhesion law handler
   switch (adhesionlaw)
@@ -137,8 +136,8 @@ void ParticleInteraction::DEMAdhesion::init_adhesion_law_handler()
 void ParticleInteraction::DEMAdhesion::init_adhesion_surface_energy_handler()
 {
   // get type of adhesion surface energy distribution
-  Inpar::PARTICLE::SurfaceEnergyDistribution surfaceenergydistributiontype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::SurfaceEnergyDistribution>(
+  auto surfaceenergydistributiontype =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::SurfaceEnergyDistribution>(
           params_dem_, "ADHESION_SURFACE_ENERGY_DISTRIBUTION");
 
   // create adhesion surface energy handler

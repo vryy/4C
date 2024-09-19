@@ -29,7 +29,8 @@ FLD::Boxfilter::Boxfilter(
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type")),
+      physicaltype_(
+          Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type")),
       //  available control settings
       apply_dynamic_smagorinsky_(false),
       vreman_dynamic_(false),
@@ -171,7 +172,7 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Epetra_Vector> ve
   // generate a parameterlist for communication and control
   Teuchos::ParameterList filterparams;
   // action for elements
-  filterparams.set<int>("action", FLD::calc_fluid_box_filter);
+  filterparams.set<FLD::Action>("action", FLD::calc_fluid_box_filter);
   filterparams.set("thermpress", thermpress);
 
   // set state vector to pass distributed vector to the element

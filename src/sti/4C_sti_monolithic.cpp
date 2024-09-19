@@ -38,7 +38,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     : Algorithm(comm, stidyn, scatradyn, solverparams_scatra, solverparams_thermo),
       restol_(fieldparameters_->sublist("NONLINEAR").get<double>("ABSTOLRES")),
       maps_(Teuchos::null),
-      condensationthermo_(Core::UTILS::integral_value<bool>(stidyn, "THERMO_CONDENSATION")),
+      condensationthermo_(stidyn.get<bool>("THERMO_CONDENSATION")),
       systemmatrix_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(
           stidyn.sublist("MONOLITHIC"), "MATRIXTYPE")),
@@ -54,7 +54,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       dtsolve_(0.),
       solver_(Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")))),
       invrowsums_(Teuchos::null),
       icoupscatra_(Teuchos::null),
@@ -91,7 +91,9 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
         *strategythermo_->interface_maps()->Map(0), *strategythermo_->interface_maps()->Map(2));
   }
   else
+  {
     mapthermo = thermo_field()->dof_row_map();
+  }
 
   // initialize global map extractor
   maps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
@@ -908,7 +910,6 @@ void STI::Monolithic::assemble_mat_and_rhs()
                     .add(*Core::LinAlg::matrix_multiply(
                              thermothermocolsslave, false, *strategythermo_->p(), false, true),
                         false, 1.0, 1.0);
-
                 break;
               }
               default:
@@ -921,8 +922,10 @@ void STI::Monolithic::assemble_mat_and_rhs()
 
           // assign thermo-thermo matrix block directly
           else
+          {
             blocksystemmatrix->assign(nblockmapsscatra, nblockmapsscatra, Core::LinAlg::View,
                 *thermo_field()->system_matrix());
+          }
 
           break;
         }
@@ -1010,7 +1013,6 @@ void STI::Monolithic::assemble_mat_and_rhs()
                     *Core::LinAlg::matrix_multiply(
                         thermothermocolsslave, false, *strategythermo_->p(), false, true),
                     false, 1.0, 1.0);
-
                 break;
               }
 
@@ -1118,7 +1120,6 @@ void STI::Monolithic::assemble_mat_and_rhs()
             systemmatrix->add(*Core::LinAlg::matrix_multiply(
                                   systemmatrixcolsslave, false, *strategythermo_->p(), false, true),
                 false, 1.0, 1.0);
-
             break;
           }
 
@@ -1137,7 +1138,6 @@ void STI::Monolithic::assemble_mat_and_rhs()
         systemmatrix->add(*thermoscatra_domain_interface, false, 1.0, 1.0);
         systemmatrix->add(*thermo_field()->system_matrix(), false, 1.0, 1.0);
       }
-
       break;
     }
 
@@ -1160,7 +1160,9 @@ void STI::Monolithic::assemble_mat_and_rhs()
     Core::LinAlg::export_to(*thermo_field()->residual(), *thermoresidual);
   }
   else
+  {
     thermoresidual = thermo_field()->residual();
+  }
   maps_->insert_vector(thermoresidual, 1, residual_);
 }  // STI::Monolithic::assemble_mat_and_rhs()
 
@@ -1560,7 +1562,7 @@ void STI::Monolithic::solve()
     get_comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
     // output performance statistics associated with linear solver into text file if applicable
-    if (Core::UTILS::integral_value<int>(*fieldparameters_, "OUTPUTLINSOLVERSTATS"))
+    if (fieldparameters_->get<bool>("OUTPUTLINSOLVERSTATS"))
       scatra_field()->output_lin_solver_stats(*solver_, dtsolve_, step(), static_cast<int>(iter_),
           residual_->Map().NumGlobalElements());
 
@@ -1600,7 +1602,9 @@ void STI::Monolithic::solve()
       strategythermo_->interface_maps()->insert_vector(slaveincrement, 1, thermoincrement);
     }
     else
+    {
       thermoincrement = maps_->extract_vector(increment_, 1);
+    }
     thermo_field()->update_iter(thermoincrement);
     thermo_field()->compute_intermediate_values();
   }  // Newton-Raphson iteration

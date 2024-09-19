@@ -119,8 +119,8 @@ namespace Inpar
         default:
           FOUR_C_THROW("Cannot make std::string for time integrator %d", name);
           return "";
-      }  // end switch (name)
-    }    // MidAverageString
+      }
+    }
 
     //@}
 

@@ -54,7 +54,7 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
   // do some checks
   {
     auto structtimealgo =
-        Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP");
+        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP");
     if (structtimealgo == Inpar::Solid::dyna_statics)
     {
       FOUR_C_THROW(
@@ -63,7 +63,7 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
           "the deformations will not be applied to the scalar transport problem!");
     }
 
-    auto convform = Core::UTILS::integral_value<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
+    auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
     if (convform == Inpar::ScaTra::convform_convective)
     {
       // get scatra discretization
@@ -136,8 +136,7 @@ void SSI::SSIPart2WC::timeloop()
     get_comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (Core::UTILS::integral_value<int>(
-            *scatra_field()->scatra_parameter_list(), "OUTPUTNONLINSOLVERSTATS"))
+    if (scatra_field()->scatra_parameter_list()->get<bool>("OUTPUTNONLINSOLVERSTATS"))
       scatra_field()->output_nonlin_solver_stats(
           iteration_count(), dtnonlinsolve, step(), get_comm());
 

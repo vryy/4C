@@ -27,14 +27,17 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
 
   Teuchos::ParameterList& beamcontact = list->sublist("BEAM CONTACT", false, "");
 
-  setStringToIntegralParameter<int>("BEAMS_STRATEGY", "None", "Type of employed solving strategy",
+  setStringToIntegralParameter<Inpar::BEAMCONTACT::Strategy>("BEAMS_STRATEGY", "None",
+      "Type of employed solving strategy",
       tuple<std::string>("None", "none", "Penalty", "penalty", "Gmshonly", "gmshonly"),
-      tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty, bstr_gmshonly, bstr_gmshonly),
+      tuple<Inpar::BEAMCONTACT::Strategy>(
+          bstr_none, bstr_none, bstr_penalty, bstr_penalty, bstr_gmshonly, bstr_gmshonly),
       &beamcontact);
 
-  setStringToIntegralParameter<int>("MODELEVALUATOR", "old", "Type of model evaluator",
-      tuple<std::string>("Old", "old", "Standard", "standard"),
-      tuple<int>(bstr_old, bstr_old, bstr_standard, bstr_standard), &beamcontact);
+  setStringToIntegralParameter<Inpar::BEAMCONTACT::Modelevaluator>("MODELEVALUATOR", "old",
+      "Type of model evaluator", tuple<std::string>("Old", "old", "Standard", "standard"),
+      tuple<Inpar::BEAMCONTACT::Modelevaluator>(bstr_old, bstr_old, bstr_standard, bstr_standard),
+      &beamcontact);
 
   Core::UTILS::bool_parameter(
       "BEAMS_NEWGAP", "No", "choose between original or enhanced gapfunction", &beamcontact);
@@ -58,13 +61,13 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
   Core::UTILS::bool_parameter("BEAMS_ENDPOINTPENALTY", "No",
       "Additional consideration of endpoint-line and endpoint-endpoint contacts", &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_SMOOTHING", "None",
+  setStringToIntegralParameter<Inpar::BEAMCONTACT::Smoothing>("BEAMS_SMOOTHING", "None",
       "Application of smoothed tangent field", tuple<std::string>("None", "none", "Cpp", "cpp"),
-      tuple<int>(bsm_none, bsm_none, bsm_cpp, bsm_cpp), &beamcontact);
+      tuple<Inpar::BEAMCONTACT::Smoothing>(bsm_none, bsm_none, bsm_cpp, bsm_cpp), &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_DAMPING", "No", "Application of a contact damping force",
-      tuple<std::string>("No", "no", "Yes", "yes"), tuple<int>(bd_no, bd_no, bd_yes, bd_yes),
-      &beamcontact);
+  setStringToIntegralParameter<Inpar::BEAMCONTACT::Damping>("BEAMS_DAMPING", "No",
+      "Application of a contact damping force", tuple<std::string>("No", "no", "Yes", "yes"),
+      tuple<Inpar::BEAMCONTACT::Damping>(bd_no, bd_no, bd_yes, bd_yes), &beamcontact);
 
   Core::UTILS::double_parameter("BEAMS_BTBPENALTYPARAM", 0.0,
       "Penalty parameter for beam-to-beam point contact", &beamcontact);
@@ -100,10 +103,13 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
   Core::UTILS::int_parameter("BEAMS_NUMINTEGRATIONINTERVAL", 1,
       "Number of integration intervals per element", &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_PENALTYLAW", "LinPen", "Applied Penalty Law",
+  setStringToIntegralParameter<Inpar::BEAMCONTACT::PenaltyLaw>("BEAMS_PENALTYLAW", "LinPen",
+      "Applied Penalty Law",
       tuple<std::string>("LinPen", "QuadPen", "LinNegQuadPen", "LinPosQuadPen", "LinPosCubPen",
           "LinPosDoubleQuadPen", "LinPosExpPen"),
-      tuple<int>(pl_lp, pl_qp, pl_lnqp, pl_lpqp, pl_lpcp, pl_lpdqp, pl_lpep), &beamcontact);
+      tuple<Inpar::BEAMCONTACT::PenaltyLaw>(
+          pl_lp, pl_qp, pl_lnqp, pl_lpqp, pl_lpcp, pl_lpdqp, pl_lpep),
+      &beamcontact);
 
   Core::UTILS::double_parameter("BEAMS_PENREGPARAM_G0", -1.0,
       "First penalty regularization parameter G0 >=0: For gap<G0 contact is active!", &beamcontact);
@@ -124,11 +130,12 @@ void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
 
   // enable octree search and determine type of bounding box (aabb = axis aligned, cobb =
   // cylindrical oriented)
-  setStringToIntegralParameter<int>("BEAMS_OCTREE", "None",
+  setStringToIntegralParameter<Inpar::BEAMCONTACT::OctreeType>("BEAMS_OCTREE", "None",
       "octree and bounding box type for octree search routine",
       tuple<std::string>(
           "None", "none", "octree_axisaligned", "octree_cylorient", "octree_spherical"),
-      tuple<int>(boct_none, boct_none, boct_aabb, boct_cobb, boct_spbb), &beamcontact);
+      tuple<Inpar::BEAMCONTACT::OctreeType>(boct_none, boct_none, boct_aabb, boct_cobb, boct_spbb),
+      &beamcontact);
 
   Core::UTILS::bool_parameter("BEAMS_ADDITEXT", "Yes",
       "Switch between No==multiplicative extrusion factor and Yes==additive extrusion factor",

@@ -2114,7 +2114,7 @@ namespace Cut::Kernel
           break;
         default:
           FOUR_C_THROW(
-              "unsupported element type in GmshSideDump."
+              "unsupported element type in gmsh_side_dump."
               " Please feel free to extend the functionality if necessary.");
       }
 

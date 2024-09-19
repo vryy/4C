@@ -68,7 +68,7 @@ Thermo::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
-      midavg_(Core::UTILS::integral_value<Inpar::Thermo::MidAverageEnum>(
+      midavg_(Teuchos::getIntegralValue<Inpar::Thermo::MidAverageEnum>(
           tdynparams.sublist("GENALPHA"), "GENAVG")),
       /* iterupditer_(false), */
       gamma_(tdynparams.sublist("GENALPHA").get<double>("GAMMA")),
@@ -416,7 +416,7 @@ void Thermo::TimIntGenAlpha::update_step_element()
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
   // action for elements
-  p.set<int>("action", Thermo::calc_thermo_update_istep);
+  p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 

@@ -403,7 +403,7 @@ namespace Cut
 
     /*!
     \brief Transform the scalar variable either from local coordinates to the global coordinates
-    or the other way specified by TransformType which can be "local_to_global" or "GlobalToLocal".
+    or the other way specified by TransformType which can be "local_to_global" or "global_to_local".
     If set shadow = true, then the mapping is done w.r to the parent Quad element from which this
     shadow element is derived
      */
@@ -448,7 +448,7 @@ namespace Cut
       double VarReturn = 0.0;
       if (transformType == "local_to_global")
         VarReturn = scalar * det;
-      else if (transformType == "GlobalToLocal")
+      else if (transformType == "global_to_local")
         VarReturn = scalar / det;
       else
         FOUR_C_THROW("Undefined transformation option");

@@ -237,10 +237,8 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
 
-        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "iostrain", Inpar::Solid::strain_none);
+        iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+        iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
       }
 
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
@@ -373,8 +371,10 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
               1.0 / (dxds1.dot(dxds1) * dxds2.dot(dxds2) - std::pow(dxds1.dot(dxds2), 2.0)));
         }
         else
+        {
           FOUR_C_THROW(
               "Type of material not implemented for evaluation of strain energy for membranes!");
+        }
 
         // surface deformation gradient in 3 dimensions in global coordinates
         mem_defgrd_global(dXds1, dXds2, dxds1, dxds2, lambda3, defgrd_glob);
@@ -386,7 +386,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
          | right cauchygreen tensor in local coordinates                                 |
          *===============================================================================*/
 
-        // calculate three dimensional right cauchy-green strain tensor in orthonormal base
+        // calculate three-dimensional right cauchy-green strain tensor in orthonormal base
         Core::LinAlg::Matrix<noddof_, noddof_> cauchygreen_loc(true);
         cauchygreen_loc.multiply_tn(1.0, defgrd_loc, defgrd_loc, 0.0);
 
@@ -404,8 +404,10 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
               ->strain_energy(cauchygreen_loc, psi, gp, id());
         }
         else
+        {
           FOUR_C_THROW(
               "Type of material not implemented for evaluation of strain energy for membranes!");
+        }
 
         // add gauss point contribution to internal energy
         double fac = gpweight * thickness_ * G1G2_cn;
@@ -471,7 +473,9 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         }
       }
       else
+      {
         FOUR_C_THROW("unknown type of thickness output on element level");
+      }
     }
     break;
 
@@ -541,9 +545,11 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
   {
     const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
     if (functnum > 0)
+    {
       functfacs[i] = Global::Problem::instance()
                          ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
                          .evaluate(time);
+    }
   }
 
   // determine current pressure
@@ -1112,10 +1118,12 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
             // tempCG computed with every combination of eigenvector orientations -- up to nine
             // comparisons
             if (diffCG(i, j) > 1e-10)
+            {
               FOUR_C_THROW(
                   "eigenvector orientation error with the diffCG giving problems: %10.5e \n BUILD "
                   "SOLUTION TO FIX IT",
                   diffCG(i, j));
+            }
           }
         }
 
@@ -1201,8 +1209,6 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
         break;
     }
   }
-  return;
-
 }  // Discret::ELEMENTS::Membrane::membrane_nlnstiffmass
 
 /*----------------------------------------------------------------------*
@@ -1217,8 +1223,6 @@ void Discret::ELEMENTS::Membrane<distype>::vis_names(std::map<std::string, int>&
 
 
   solid_material()->vis_names(names);
-
-  return;
 
 }  // Discret::ELEMENTS::Membrane::vis_names
 
@@ -1270,9 +1274,6 @@ void Discret::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<d
     xcurr(i, 1) = xrefe(i, 1) + disp[i * noddof_ + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * noddof_ + 2];
   }
-
-  return;
-
 }  // Discret::ELEMENTS::Membrane::mem_configuration
 
 /*------------------------------------------------------------------------------------------------------*
@@ -1390,8 +1391,6 @@ void Discret::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   Q_localToGlobal(1, 2) = tn(1);
   Q_localToGlobal(2, 2) = tn(2);
 
-  return;
-
 }  // Discret::ELEMENTS::Membrane::mem_orthonormalbase
 
 /*-------------------------------------------------------------------------------------------------*
@@ -1413,8 +1412,6 @@ void Discret::ELEMENTS::Membrane<distype>::mem_p_k2to_cauchy(
   Core::LinAlg::Matrix<noddof_, noddof_> temp;
   temp.multiply((1.0 / detF), defgrd, pkstress_global, 0.0);
   cauchy.multiply_nt(1.0, temp, defgrd, 1.0);
-
-  return;
 
 }  // Discret::ELEMENTS::Membrane::mem_p_k2to_cauchy
 
@@ -1440,8 +1437,6 @@ void Discret::ELEMENTS::Membrane<distype>::mem_g_lto_ea(
   Core::LinAlg::Matrix<noddof_, noddof_> temp;
   temp.multiply(1.0, glstrain_global, invdefgrd, 0.0);
   euler_almansi.multiply_tn(1.0, invdefgrd, temp, 1.0);
-
-  return;
 
 }  // Discret::ELEMENTS::Membrane::mem_g_lto_ea
 
@@ -1476,8 +1471,6 @@ void Discret::ELEMENTS::Membrane<distype>::mem_defgrd_global(
   defgrd_glob.multiply_nt(1.0, dxds2, dXds2, 1.0);
   // scale third dimension by sqrt(rcg33), that equals the principle stretch lambda_3
   defgrd_glob.multiply_nt(lambda3, xcurr_cross, xrefe_cross, 1.0);
-
-  return;
 
 }  // Discret::ELEMENTS::Membrane::mem_defgrd_global
 
@@ -1606,8 +1599,6 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
   }
 
   solid_material()->update();
-
-  return;
 }
 
 template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>;

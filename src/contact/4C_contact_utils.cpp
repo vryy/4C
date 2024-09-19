@@ -200,7 +200,9 @@ void CONTACT::UTILS::get_master_slave_side_info(std::vector<bool>& isslave,
       isself[j] = true;
     }
     else
+    {
       FOUR_C_THROW("Unknown contact side qualifier!");
+    }
   }
 
   if (!hasslave) FOUR_C_THROW("Slave side missing in contact condition group!");
@@ -327,11 +329,11 @@ void CONTACT::UTILS::get_initialization_info(bool& Two_half_pass,
         (problemtype != Core::ProblemType::fpsi_xfem) and (problemtype != Core::ProblemType::ssi))
       FOUR_C_THROW(
           "two half pass algorithm only implemented in structural, fsi/fpsi and ssi problems");
-    if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
+    if (Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
         Inpar::CONTACT::solution_nitsche)
       FOUR_C_THROW("two half pass algorithm only with nitsche contact formulation");
-    if (Core::UTILS::integral_value<Inpar::CONTACT::NitscheWeighting>(
-            contact, "NITSCHE_WEIGHTING") != Inpar::CONTACT::NitWgt_harmonic)
+    if (Teuchos::getIntegralValue<Inpar::CONTACT::NitscheWeighting>(contact, "NITSCHE_WEIGHTING") !=
+        Inpar::CONTACT::NitWgt_harmonic)
       FOUR_C_THROW("two half pass algorithm only with harmonic weighting");
   }
 
@@ -346,7 +348,7 @@ void CONTACT::UTILS::get_initialization_info(bool& Two_half_pass,
         "approach so far!");
   }
 
-  if (Two_half_pass && (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(
+  if (Two_half_pass && (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(
                             mortar, "ALGORITHM") != Inpar::Mortar::algorithm_gpts))
   {
     FOUR_C_THROW(
@@ -355,8 +357,7 @@ void CONTACT::UTILS::get_initialization_info(bool& Two_half_pass,
   }
 
 
-  if (Check_nonsmooth_selfcontactsurface &&
-      (!Core::UTILS::integral_value<int>(contact, "NONSMOOTH_CONTACT_SURFACE")))
+  if (Check_nonsmooth_selfcontactsurface && (!contact.get<bool>("NONSMOOTH_CONTACT_SURFACE")))
   {
     FOUR_C_THROW(
         "ERROR: You activated the self contact condition reference configuration check for "
@@ -469,7 +470,6 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
         }
         default:
           FOUR_C_THROW("Unknown dbc_handlin enum %d", dbc_handling);
-          exit(EXIT_FAILURE);
       }
     }
   }

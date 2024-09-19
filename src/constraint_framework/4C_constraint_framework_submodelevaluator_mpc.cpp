@@ -125,10 +125,10 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::check_input
 
   mpc_parameter_list_ = Global::Problem::instance()->rve_multi_point_constraint_params();
 
-  rve_ref_type_ = Core::UTILS::integral_value<Inpar::RveMpc::RveReferenceDeformationDefinition>(
+  rve_ref_type_ = Teuchos::getIntegralValue<Inpar::RveMpc::RveReferenceDeformationDefinition>(
       mpc_parameter_list_, "RVE_REFERENCE_POINTS");
 
-  strategy_ = Core::UTILS::integral_value<Inpar::RveMpc::EnforcementStrategy>(
+  strategy_ = Teuchos::getIntegralValue<Inpar::RveMpc::EnforcementStrategy>(
       mpc_parameter_list_, "ENFORCEMENT");
 
 

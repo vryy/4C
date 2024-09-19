@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::Coupling3d::Coupling3d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : Mortar::Coupling3d(idiscret, dim, quad, params, sele, mele),
-      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
 
@@ -93,8 +93,8 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
   /* the current integration cell of the slave / master element pair    */
   /**********************************************************************/
 
-  static const Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  static const auto algo =
+      Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   // do nothing if there are no cells
   if (cells().size() == 0) return false;
@@ -1067,7 +1067,7 @@ CONTACT::Coupling3dManager::Coupling3dManager(Core::FE::Discretization& idiscret
       sele_(sele),
       mele_(mele),
       ncells_(0),
-      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   return;
 }
@@ -1094,8 +1094,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
     const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // get algorithm
-  Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   // prepare linearizations
   if (algo == Inpar::Mortar::algorithm_mortar)
@@ -1247,8 +1246,7 @@ bool CONTACT::Coupling3dManager::evaluate_coupling(
     const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
-  Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1278,7 +1276,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // get algorithm type
-  Inpar::Mortar::AlgorithmType algo = Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(
+  auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(
       Mortar::Coupling3dQuadManager::imortar_, "ALGORITHM");
 
   // prepare linearizations
@@ -1449,8 +1447,7 @@ bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
     const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
-  Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM");
+  auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1473,15 +1470,14 @@ bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dManager::consist_dual_shape()
 {
-  static const Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  static const auto algo =
+      Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
   if (algo != Inpar::Mortar::algorithm_mortar) return;
 
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  Inpar::Mortar::ConsistentDualType consistent =
-      Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
-          imortar_, "LM_DUAL_CONSISTENT");
+  auto consistent =
+      Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
     return;
 

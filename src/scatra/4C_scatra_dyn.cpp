@@ -68,12 +68,12 @@ void scatra_dyn(int restart)
   scatradis->fill_complete(true, true, true);
 
   // determine coupling type
-  const auto fieldcoupling = Core::UTILS::integral_value<Inpar::ScaTra::FieldCoupling>(
+  const auto fieldcoupling = Teuchos::getIntegralValue<Inpar::ScaTra::FieldCoupling>(
       Global::Problem::instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING");
 
   // determine velocity type
   const auto veltype =
-      Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+      Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   if (scatradis->num_global_nodes() == 0)
   {
@@ -312,15 +312,13 @@ void scatra_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if (Core::UTILS::integral_value<int>(
-                fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") and
+        if (fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW") and
             restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
           algo->read_inflow_restart(restart);
         else
           algo->read_restart(restart);
       }
-      else if (Core::UTILS::integral_value<int>(
-                   fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW"))
+      else if (fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW"))
       {
         FOUR_C_THROW(
             "Turbulent inflow generation for passive scalar transport should be performed as fluid "

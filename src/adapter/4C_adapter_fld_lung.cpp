@@ -158,7 +158,7 @@ void Adapter::FluidLung::initialize_vol_con(
     Teuchos::ParameterList params;
     params.set("ConditionID", condID);
     params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
-    params.set<int>("action", FLD::flowratederiv);
+    params.set<FLD::BoundaryAction>("action", FLD::flowratederiv);
     params.set("flowrateonly", true);
     params.set("dt", dt());
 
@@ -261,7 +261,7 @@ void Adapter::FluidLung::evaluate_vol_con(
     std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
 
     // define element action
-    params.set<int>("action", FLD::flowratederiv);
+    params.set<FLD::BoundaryAction>("action", FLD::flowratederiv);
 
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {

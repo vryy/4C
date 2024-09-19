@@ -413,7 +413,8 @@ namespace GEOMETRYPAIR
         // The element is a direct surface element, e.g., shell
         const bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
             *(discretization), element, shape_function_data.myknots_, shape_function_data.weights_);
-        if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+        if (zero_size)
+          FOUR_C_THROW("get_my_nurbs_knots_and_weights has to return a non zero size.");
         shape_function_data.surface_normal_factor_ = 1.0;
       }
       else
@@ -426,7 +427,8 @@ namespace GEOMETRYPAIR
             *(discretization), my_parent_knots, shape_function_data.myknots_,
             shape_function_data.weights_, shape_function_data.surface_normal_factor_);
         if (zero_size)
-          FOUR_C_THROW("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
+          FOUR_C_THROW(
+              "get_knot_vector_and_weights_for_nurbs_boundary has to return a non zero size.");
       }
     }
   };
@@ -448,7 +450,7 @@ namespace GEOMETRYPAIR
 
       const bool zero_size = Core::FE::Nurbs::get_my_nurbs_knots_and_weights(
           *discretization, element, shape_function_data.myknots_, shape_function_data.weights_);
-      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+      if (zero_size) FOUR_C_THROW("get_my_nurbs_knots_and_weights has to return a non zero size.");
     }
   };
 

@@ -235,7 +235,7 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& A11, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A12,
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& A21, Teuchos::RCP<Core::LinAlg::SparseMatrix>& A22)
 {
-  if (A == Teuchos::null) FOUR_C_THROW("Core::LinAlg::SplitMatrix2x2: A==null on entry");
+  if (A == Teuchos::null) FOUR_C_THROW("Core::LinAlg::split_matrix2x2: A==null on entry");
 
   // check and complete input row maps
   if (A11rowmap == Teuchos::null && A22rowmap != Teuchos::null)
@@ -543,11 +543,11 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::merge_map(
 {
   // check for unique GIDs and for identity
   // if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
-  //  FOUR_C_THROW("Core::LinAlg::MergeMap: One or both input maps are not unique");
+  //  FOUR_C_THROW("Core::LinAlg::merge_map: One or both input maps are not unique");
   if (map1.SameAs(map2))
   {
     if ((overlap == false) && map1.NumGlobalElements() > 0)
-      FOUR_C_THROW("Core::LinAlg::MergeMap: Result map is overlapping");
+      FOUR_C_THROW("Core::LinAlg::merge_map: Result map is overlapping");
     else
       return Teuchos::rcp(new Epetra_Map(map1));
   }
@@ -564,7 +564,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::merge_map(
     // check for overlap
     if (map1.MyGID(map2.GID(i)))
     {
-      if (overlap == false) FOUR_C_THROW("Core::LinAlg::MergeMap: Result map is overlapping");
+      if (overlap == false) FOUR_C_THROW("Core::LinAlg::merge_map: Result map is overlapping");
     }
     // add new GIDs to mygids
     else

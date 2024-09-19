@@ -88,7 +88,7 @@ void ScaTra::TimIntBDF2::setup()
       homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
-          Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
+          Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
 }

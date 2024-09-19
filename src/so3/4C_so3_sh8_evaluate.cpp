@@ -6,20 +6,14 @@
 
 */
 /*----------------------------------------------------------------------*/
+
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
-#include "4C_fem_general_utils_fem_shapefunctions.hpp"
-#include "4C_io_gmsh.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_linalg_utils_densematrix_inverse.hpp"
-#include "4C_linalg_utils_densematrix_multiply.hpp"
-#include "4C_mat_elasthyper.hpp"
-#include "4C_mat_micromaterial.hpp"
 #include "4C_mat_viscoanisotropic.hpp"
-#include "4C_mat_viscoelasthyper.hpp"
 #include "4C_mat_visconeohooke.hpp"
 #include "4C_so3_prestress_service.hpp"
 #include "4C_so3_sh8.hpp"
@@ -258,12 +252,10 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
 
-      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-          params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-          params, "iostrain", Inpar::Solid::strain_none);
-      auto ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-          params, "ioplstrain", Inpar::Solid::strain_none);
+      auto iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+      auto iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
+      auto ioplstrain =
+          params.get<Inpar::Solid::StrainType>("ioplstrain", Inpar::Solid::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
@@ -410,7 +402,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::shell_calc_stc_matrix:
     {
       const auto stc_scaling =
-          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Teuchos::getIntegralValue<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
@@ -425,7 +417,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::shell_calc_stc_matrix_inverse:
     {
       const auto stc_scaling =
-          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Teuchos::getIntegralValue<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "

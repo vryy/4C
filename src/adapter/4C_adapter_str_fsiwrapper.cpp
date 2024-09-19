@@ -46,7 +46,7 @@ Adapter::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  predictor_ = Core::UTILS::integral_value<int>(fsipart, "PREDICTOR");
+  predictor_ = fsipart.get<std::string>("PREDICTOR");
 }
 
 /*------------------------------------------------------------------------------------*
@@ -89,63 +89,54 @@ Teuchos::RCP<Epetra_Vector> Adapter::FSIStructureWrapper::predict_interface_disp
   // prestressing business
   Teuchos::RCP<Epetra_Vector> idis;
 
-  switch (predictor_)
+  if (predictor_ == "d(n)")
   {
-    case 1:
+    // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
+    if (prestress_is_active(time()))
     {
-      // d(n)
-      // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
-      if (prestress_is_active(time()))
-      {
-        idis = Teuchos::rcp(new Epetra_Vector(*interface_->fsi_cond_map(), true));
-      }
-      else
-      {
-        idis = interface_->extract_fsi_cond_vector(dispn());
-      }
-      break;
+      idis = Teuchos::rcp(new Epetra_Vector(*interface_->fsi_cond_map(), true));
     }
-    case 2:
-      // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-      FOUR_C_THROW("interface velocity v(n-1) not available");
-      break;
-    case 3:
+    else
     {
-      // d(n)+dt*v(n)
-      if (prestress_is_active(time()))
-        FOUR_C_THROW("only constant interface predictor useful for prestressing");
-
-      double current_dt = dt();
-
       idis = interface_->extract_fsi_cond_vector(dispn());
-      Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_fsi_cond_vector(veln());
-
-      idis->Update(current_dt, *ivel, 1.0);
-      break;
     }
-    case 4:
-    {
-      // d(n)+dt*v(n)+0.5*dt^2*a(n)
-      if (prestress_is_active(time()))
-        FOUR_C_THROW("only constant interface predictor useful for prestressing");
+  }
+  else if (predictor_ == "d(n)+dt*(1.5*v(n)-0.5*v(n-1))")
+  {
+    FOUR_C_THROW("interface velocity v(n-1) not available");
+  }
+  else if (predictor_ == "d(n)+dt*v(n)")
+  {
+    if (prestress_is_active(time()))
+      FOUR_C_THROW("only constant interface predictor useful for prestressing");
 
-      double current_dt = dt();
+    double current_dt = dt();
 
-      idis = interface_->extract_fsi_cond_vector(dispn());
-      Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_fsi_cond_vector(veln());
-      Teuchos::RCP<Epetra_Vector> iacc = interface_->extract_fsi_cond_vector(accn());
+    idis = interface_->extract_fsi_cond_vector(dispn());
+    Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_fsi_cond_vector(veln());
 
-      idis->Update(current_dt, *ivel, 0.5 * current_dt * current_dt, *iacc, 1.0);
-      break;
-    }
-    default:
-      FOUR_C_THROW(
-          "unknown interface displacement predictor '%s'", Global::Problem::instance()
-                                                               ->fsi_dynamic_params()
-                                                               .sublist("PARTITIONED SOLVER")
-                                                               .get<std::string>("PREDICTOR")
-                                                               .c_str());
-      break;
+    idis->Update(current_dt, *ivel, 1.0);
+  }
+  else if (predictor_ == "d(n)+dt*v(n)+0.5*dt^2*a(n)")
+  {
+    if (prestress_is_active(time()))
+      FOUR_C_THROW("only constant interface predictor useful for prestressing");
+
+    double current_dt = dt();
+
+    idis = interface_->extract_fsi_cond_vector(dispn());
+    Teuchos::RCP<Epetra_Vector> ivel = interface_->extract_fsi_cond_vector(veln());
+    Teuchos::RCP<Epetra_Vector> iacc = interface_->extract_fsi_cond_vector(accn());
+
+    idis->Update(current_dt, *ivel, 0.5 * current_dt * current_dt, *iacc, 1.0);
+  }
+  else
+  {
+    FOUR_C_THROW("unknown interface displacement predictor '%s'", Global::Problem::instance()
+                                                                      ->fsi_dynamic_params()
+                                                                      .sublist("PARTITIONED SOLVER")
+                                                                      .get<std::string>("PREDICTOR")
+                                                                      .c_str());
   }
 
   return idis;

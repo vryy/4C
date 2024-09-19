@@ -211,11 +211,11 @@ void Inpar::SSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::bool_parameter("MESHTYING_MANIFOLD", "no",
       "activate meshtying betweeen all manifold fields in case they intersect?", &ssidynmanifold);
 
-  setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
+  setStringToIntegralParameter<Inpar::ScaTra::InitialField>("INITIALFIELD", "zero_field",
       "Initial field for scalar transport on manifold",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
-      tuple<int>(Inpar::ScaTra::initfield_zero_field, Inpar::ScaTra::initfield_field_by_function,
-          Inpar::ScaTra::initfield_field_by_condition),
+      tuple<Inpar::ScaTra::InitialField>(Inpar::ScaTra::initfield_zero_field,
+          Inpar::ScaTra::initfield_field_by_function, Inpar::ScaTra::initfield_field_by_condition),
       &ssidynmanifold);
 
   Core::UTILS::int_parameter("INITFUNCNO", -1,

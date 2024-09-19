@@ -45,14 +45,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
-      diff_time_step_size_(
-          static_cast<int>(Core::UTILS::integral_value<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
+      diff_time_step_size_(globaltimeparams.get<bool>("DIFFTIMESTEPSIZE")),
       fieldcoupling_(Teuchos::getIntegralValue<Inpar::SSI::FieldCoupling>(
           Global::Problem::instance()->ssi_control_params(), "FIELDCOUPLING")),
-      is_scatra_manifold_(
-          Core::UTILS::integral_value<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
-      is_manifold_meshtying_(Core::UTILS::integral_value<bool>(
-          globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
+      is_scatra_manifold_(globaltimeparams.sublist("MANIFOLD").get<bool>("ADD_MANIFOLD")),
+      is_manifold_meshtying_(globaltimeparams.sublist("MANIFOLD").get<bool>("MESHTYING_MANIFOLD")),
       is_s2i_kinetic_with_pseudo_contact_(
           check_s2_i_kinetics_condition_for_pseudo_contact("structure")),
       macro_scale_(Global::Problem::instance()->materials()->first_id_by_type(
@@ -67,8 +64,10 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
                                  ->get_condition("ssi_interface_meshtying") != nullptr),
       temperature_funct_num_(
           Global::Problem::instance()->elch_control_params().get<int>("TEMPERATURE_FROM_FUNCT")),
-      use_old_structure_(Global::Problem::instance()->structural_dynamic_params().get<std::string>(
-                             "INT_STRATEGY") == "Old")
+      use_old_structure_(Global::Problem::instance()
+                             ->structural_dynamic_params()
+                             .get<Inpar::Solid::IntegrationStrategy>("INT_STRATEGY") ==
+                         Inpar::Solid::IntegrationStrategy::int_old)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -88,8 +87,8 @@ void SSI::SSIBase::init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   set_is_setup(false);
 
   // do discretization specific setup (e.g. clone discr. scatra from structure)
-  init_discretizations(comm, struct_disname, scatra_disname,
-      Core::UTILS::integral_value<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
+  init_discretizations(
+      comm, struct_disname, scatra_disname, globaltimeparams.get<bool>("REDISTRIBUTE_SOLID"));
 
   init_time_integrators(
       globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
@@ -283,7 +282,7 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
         conditions_to_copy.emplace_back(temp_map);
       }
 
-      const auto output_scalar_type = Core::UTILS::integral_value<Inpar::ScaTra::OutputScalarType>(
+      const auto output_scalar_type = Teuchos::getIntegralValue<Inpar::ScaTra::OutputScalarType>(
           problem->scalar_transport_dynamic_params(), "OUTPUTSCALARS");
       if (output_scalar_type == Inpar::ScaTra::outputscalars_condition or
           output_scalar_type == Inpar::ScaTra::outputscalars_entiredomain_condition)
@@ -411,7 +410,7 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
     {
       const Teuchos::ParameterList& volmortarparams =
           Global::Problem::instance()->volmortar_params();
-      if (Core::UTILS::integral_value<Coupling::VolMortar::CouplingType>(
+      if (Teuchos::getIntegralValue<Coupling::VolMortar::CouplingType>(
               volmortarparams, "COUPLINGTYPE") != Coupling::VolMortar::couplingtype_coninter)
       {
         FOUR_C_THROW(
@@ -465,8 +464,7 @@ void SSI::SSIBase::read_restart(int restart)
     structure_->read_restart(restart);
 
     const Teuchos::ParameterList& ssidyn = Global::Problem::instance()->ssi_control_params();
-    const bool restartfromstructure =
-        Core::UTILS::integral_value<int>(ssidyn, "RESTART_FROM_STRUCTURE");
+    const bool restartfromstructure = ssidyn.get<bool>("RESTART_FROM_STRUCTURE");
 
     if (not restartfromstructure)  // standard restart
     {
@@ -624,8 +622,8 @@ void SSI::SSIBase::check_ssi_flags() const
     }
   }
 
-  const bool is_nitsche_penalty_adaptive(Core::UTILS::integral_value<int>(
-      Global::Problem::instance()->contact_dynamic_params(), "NITSCHE_PENALTY_ADAPTIVE"));
+  const bool is_nitsche_penalty_adaptive(
+      Global::Problem::instance()->contact_dynamic_params().get<bool>("NITSCHE_PENALTY_ADAPTIVE"));
 
   if (ssi_interface_contact() and is_nitsche_penalty_adaptive)
     FOUR_C_THROW("Adaptive nitsche penalty parameter currently not supported!");
@@ -747,7 +745,8 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     auto structdis = problem->get_dis(struct_disname);
 
     // build structure based on new structural time integration
-    if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
+    if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
+            structparams, "INT_STRATEGY") == Inpar::Solid::IntegrationStrategy::int_standard)
     {
       struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(structparams);
 
@@ -756,7 +755,8 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
     }
     // build structure based on old structural time integration
-    else if (structparams.get<std::string>("INT_STRATEGY") == "Old")
+    else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
+                 structparams, "INT_STRATEGY") == Inpar::Solid::IntegrationStrategy::int_old)
     {
       auto structure = Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
@@ -798,7 +798,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   }
 
   // do checks if adaptive time stepping is activated
-  if (Core::UTILS::integral_value<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
+  if (globaltimeparams.get<bool>("ADAPTIVE_TIMESTEPPING"))
     check_adaptive_time_stepping(scatraparams, structparams);
 }
 
@@ -807,8 +807,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
 bool SSI::SSIBase::do_calculate_initial_potential_field() const
 {
   const auto ssi_params = Global::Problem::instance()->ssi_control_params();
-  const bool init_pot_calc =
-      Core::UTILS::integral_value<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+  const bool init_pot_calc = ssi_params.sublist("ELCH").get<bool>("INITPOTCALC");
 
   return init_pot_calc and is_elch_scatra_tim_int_type();
 }
@@ -842,16 +841,17 @@ void SSI::SSIBase::check_adaptive_time_stepping(
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams)
 {
   // safety check: adaptive time stepping in one of the sub problems
-  if (!Core::UTILS::integral_value<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+  if (!scatraparams.get<bool>("ADAPTIVE_TIMESTEPPING"))
   {
     FOUR_C_THROW(
         "Must provide adaptive time stepping algorithm in one of the sub problems. (Currently "
         "just ScaTra)");
   }
-  if (Core::UTILS::integral_value<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
-      Inpar::Solid::timada_kind_none)
+  if (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(
+          structparams.sublist("TIMEADAPTIVITY"), "KIND") != Inpar::Solid::timada_kind_none)
     FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-  if (Core::UTILS::integral_value<int>(structparams, "DYNAMICTYP") == Inpar::Solid::dyna_ab2)
+  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP") ==
+      Inpar::Solid::dyna_ab2)
     FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
 }
 
@@ -893,7 +893,7 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
   }
 
   const bool do_output_cauchy_stress =
-      Core::UTILS::integral_value<Inpar::Solid::StressType>(
+      Teuchos::getIntegralValue<Inpar::Solid::StressType>(
           Global::Problem::instance()->io_params(), "STRUCT_STRESS") == Inpar::Solid::stress_cauchy;
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
@@ -954,12 +954,12 @@ void SSI::SSIBase::setup_model_evaluator()
 void SSI::SSIBase::setup_contact_strategy()
 {
   // get the contact solution strategy
-  auto contact_solution_type = Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
+  auto contact_solution_type = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
       Global::Problem::instance()->contact_dynamic_params(), "STRATEGY");
 
   if (contact_solution_type == Inpar::CONTACT::solution_nitsche)
   {
-    if (Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(
+    if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
             Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") !=
         Inpar::Solid::int_standard)
       FOUR_C_THROW("ssi contact only with new structural time integration");

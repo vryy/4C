@@ -4,13 +4,10 @@
 
 \level 1
 
-*/
-
+ */
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
+
 #include "4C_structure_timint_genalpha.hpp"
 
 #include "4C_fem_condition_locsys.hpp"
@@ -21,7 +18,6 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_structure_aux.hpp"
 #include "4C_structure_new_impl_genalpha.hpp"
-#include "4C_structure_new_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -92,7 +88,7 @@ Solid::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      midavg_(Core::UTILS::integral_value<Inpar::Solid::MidAverageEnum>(
+      midavg_(Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(
           sdynparams.sublist("GENALPHA"), "GENAVG")),
       beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
       gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),

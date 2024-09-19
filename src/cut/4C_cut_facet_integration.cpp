@@ -174,12 +174,12 @@ void Cut::FacetIntegration::is_clockwise(
     {
       case Core::FE::CellType::hex8:
       {
-        elecen = Core::FE::getLocalCenterPosition<3>(Core::FE::CellType::hex8);
+        elecen = Core::FE::get_local_center_position<3>(Core::FE::CellType::hex8);
         break;
       }
       case Core::FE::CellType::tet4:
       {
-        elecen = Core::FE::getLocalCenterPosition<3>(Core::FE::CellType::tet4);
+        elecen = Core::FE::get_local_center_position<3>(Core::FE::CellType::tet4);
         break;
       }
       default:

@@ -108,11 +108,11 @@ void setup_parallel_output(
 
   // configure the parallel output environment
   const Teuchos::ParameterList& io = Global::Problem::instance()->io_params();
-  bool screen = Core::UTILS::integral_value<int>(io, "WRITE_TO_SCREEN");
-  bool file = Core::UTILS::integral_value<int>(io, "WRITE_TO_FILE");
-  bool preGrpID = Core::UTILS::integral_value<int>(io, "PREFIX_GROUP_ID");
+  bool screen = io.get<bool>("WRITE_TO_SCREEN");
+  bool file = io.get<bool>("WRITE_TO_FILE");
+  bool preGrpID = io.get<bool>("PREFIX_GROUP_ID");
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
-  auto level = Core::UTILS::integral_value<Core::IO::Verbositylevel>(io, "VERBOSITY");
+  auto level = Teuchos::getIntegralValue<Core::IO::Verbositylevel>(io, "VERBOSITY");
 
   Core::IO::cout.setup(
       screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);

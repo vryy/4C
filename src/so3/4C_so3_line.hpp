@@ -45,7 +45,6 @@ namespace Discret
       {
         Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
-        return nullspace;
       }
 
      private:

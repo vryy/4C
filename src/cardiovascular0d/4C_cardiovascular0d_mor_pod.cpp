@@ -79,7 +79,7 @@ Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
       Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(), 0, full_model_dof_row_map_->Comm()));
   redstructmapr_ = Teuchos::rcp(new Epetra_Map(
       projmatrix_->NumVectors(), projmatrix_->NumVectors(), 0, full_model_dof_row_map_->Comm()));
-  // Core::LinAlg::AllreduceEMap cant't be used here, because NumGlobalElements will be choosen
+  // Core::LinAlg::allreduce_e_map cant't be used here, because NumGlobalElements will be choosen
   // wrong
 
   // importers for reduced system

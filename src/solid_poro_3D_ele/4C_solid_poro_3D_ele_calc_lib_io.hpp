@@ -35,7 +35,7 @@ namespace Discret::ELEMENTS
 
   template <typename T>
   inline Inpar::Solid::StressType get_io_couplstress_type(
-      const T& ele, const Teuchos::ParameterList& params)
+      const T& ele, Teuchos::ParameterList& params)
   {
     if (ele.is_solid_params_interface())
     {
@@ -43,8 +43,8 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-          params, "iocouplstress", Inpar::Solid::stress_none);
+      return params.get<Inpar::Solid::StressType>(
+          "iocouplstress", Inpar::Solid::StressType::stress_none);
     }
   }
 

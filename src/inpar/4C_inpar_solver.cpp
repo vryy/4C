@@ -74,16 +74,16 @@ namespace Inpar::SOLVER
       Core::UTILS::int_parameter("IFPACKGFILL", 0,
           "The amount of fill allowed for an internal \"ilu\" preconditioner.", &list);
 
-      Teuchos::setStringToIntegralParameter<int>("IFPACKCOMBINE", "Add",
-          "Combine mode for Ifpack Additive Schwarz",
-          Teuchos::tuple<std::string>("Add", "Insert", "Zero"), Teuchos::tuple<int>(0, 1, 2),
-          &list);
+      std::vector<std::string> ifpack_combine_valid_input = {"Add", "Insert", "Zero"};
+      Core::UTILS::string_parameter("IFPACKCOMBINE", "Add",
+          "Combine mode for Ifpack Additive Schwarz", &list, ifpack_combine_valid_input);
     }
 
     // Iterative solver options
     {
       Core::UTILS::int_parameter("AZITER", 1000,
-          "The maximum number of iterations the underlying iterative solver is allowed to perform",
+          "The maximum number of iterations the underlying iterative solver is allowed to "
+          "perform",
           &list);
 
       Core::UTILS::double_parameter("AZTOL", 1e-8,
@@ -136,27 +136,29 @@ namespace Inpar::SOLVER
           "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",
           &list);
 
-      Teuchos::setStringToIntegralParameter<int>("ML_COARSEN", "UC", "",
-          Teuchos::tuple<std::string>("UC", "METIS", "VBMETIS", "MIS"),
-          Teuchos::tuple<int>(0, 1, 2, 3), &list);
+      std::vector<std::string> ml_coarsen_valid_input = {"UC", "METIS", "VBMETIS", "MIS"};
+      Core::UTILS::string_parameter("ML_COARSEN", "UC", "", &list, ml_coarsen_valid_input);
 
       Core::UTILS::bool_parameter("ML_REBALANCE", "Yes",
           "Performe ML-internal rebalancing of coarse level operators.", &list);
 
-      Teuchos::setStringToIntegralParameter<int>("ML_SMOOTHERFINE", "ILU", "",
-          Teuchos::tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu",
-              "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
-          Teuchos::tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
+      std::vector<std::string> ml_smootherfine_valid_input = {"SGS", "Jacobi", "Chebychev", "MLS",
+          "ILU", "KLU", "Superlu", "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD",
+          "Uzawa"};
+      Core::UTILS::string_parameter(
+          "ML_SMOOTHERFINE", "ILU", "", &list, ml_smootherfine_valid_input);
 
-      Teuchos::setStringToIntegralParameter<int>("ML_SMOOTHERMED", "ILU", "",
-          Teuchos::tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu",
-              "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
-          Teuchos::tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
+      std::vector<std::string> ml_smoothermed_valid_input = {"SGS", "Jacobi", "Chebychev", "MLS",
+          "ILU", "KLU", "Superlu", "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD",
+          "Uzawa"};
+      Core::UTILS::string_parameter("ML_SMOOTHERMED", "ILU", "", &list, ml_smoothermed_valid_input);
 
-      Teuchos::setStringToIntegralParameter<int>("ML_SMOOTHERCOARSE", "Umfpack", "",
-          Teuchos::tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu",
-              "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
-          Teuchos::tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
+      std::vector<std::string> ml_smoothercoarse_valid_input = {"SGS", "Jacobi", "Chebychev", "MLS",
+          "ILU", "KLU", "Superlu", "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD",
+          "Uzawa"};
+      Core::UTILS::string_parameter(
+          "ML_SMOOTHERCOARSE", "Umfpack", "", &list, ml_smoothercoarse_valid_input);
+
 
       Core::UTILS::int_parameter("SUB_SOLVER1", -1,
           "sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable "

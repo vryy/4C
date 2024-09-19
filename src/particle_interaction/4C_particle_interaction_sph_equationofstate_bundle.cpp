@@ -31,9 +31,8 @@ void ParticleInteraction::SPHEquationOfStateBundle::init(
     const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial)
 {
   // get type of smoothed particle hydrodynamics equation of state
-  Inpar::PARTICLE::EquationOfStateType equationofstatetype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::EquationOfStateType>(
-          params_sph_, "EQUATIONOFSTATE");
+  auto equationofstatetype = Teuchos::getIntegralValue<Inpar::PARTICLE::EquationOfStateType>(
+      params_sph_, "EQUATIONOFSTATE");
 
   // determine size of vector indexed by particle types
   const int typevectorsize = *(--particlematerial->get_particle_types().end()) + 1;

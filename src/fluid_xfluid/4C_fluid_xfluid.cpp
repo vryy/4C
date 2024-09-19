@@ -16,7 +16,6 @@ interface
 #include "4C_cut_elementhandle.hpp"
 #include "4C_cut_sidehandle.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_fem_condition_utils.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fem_dofset_transparent_independent.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
@@ -264,7 +263,7 @@ void FLD::XFluid::init(bool createinitialstate)
   // -------------------------------------------------------------------
 
   // load GMSH output flags
-  if (Core::UTILS::integral_value<int>(Global::Problem::instance()->io_params(), "OUTPUT_GMSH"))
+  if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_GMSH"))
   {
     output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(
         params_->sublist("XFEM"), xdiscret_, condition_manager_, include_inner_));
@@ -347,12 +346,12 @@ void FLD::XFluid::set_x_fluid_params()
   // get the maximal number of dofsets that are possible to use
   maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
-  xfluid_timintapproach_ = Core::UTILS::integral_value<Inpar::XFEM::XFluidTimeIntScheme>(
-      params_xf_gen, "XFLUID_TIMEINT");
+  xfluid_timintapproach_ =
+      Teuchos::getIntegralValue<Inpar::XFEM::XFluidTimeIntScheme>(params_xf_gen, "XFLUID_TIMEINT");
   xfluid_timint_check_interfacetips_ =
-      (bool)Core::UTILS::integral_value<int>(params_xf_gen, "XFLUID_TIMEINT_CHECK_INTERFACETIPS");
-  xfluid_timint_check_sliding_on_surface_ = (bool)Core::UTILS::integral_value<int>(
-      params_xf_gen, "XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
+      params_xf_gen.get<bool>("XFLUID_TIMEINT_CHECK_INTERFACETIPS");
+  xfluid_timint_check_sliding_on_surface_ =
+      params_xf_gen.get<bool>("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
 
   // for monolithic problems with xfluid (varying dofrowmaps)
   permutation_map_ = Teuchos::rcp(new std::map<int, int>);
@@ -360,41 +359,42 @@ void FLD::XFluid::set_x_fluid_params()
 
   // get interface stabilization specific parameters
   coupling_method_ =
-      Core::UTILS::integral_value<Inpar::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
+      Teuchos::getIntegralValue<Inpar::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   {
     bool edge_based =
-        (params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE") ==
-                "edge_based" or
-            params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_PRES") != "none" or
-            params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_CONV_STREAM") !=
-                "none" or
-            params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_CONV_CROSS") !=
-                "none" or
-            params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_DIV") != "none");
+        (params_->sublist("RESIDUAL-BASED STABILIZATION").get<Inpar::FLUID::StabType>("STABTYPE") ==
+                Inpar::FLUID::StabType::stabtype_edgebased or
+            params_->sublist("EDGE-BASED STABILIZATION").get<Inpar::FLUID::EosPres>("EOS_PRES") !=
+                Inpar::FLUID::EosPres::EOS_PRES_none or
+            params_->sublist("EDGE-BASED STABILIZATION")
+                    .get<Inpar::FLUID::EosConvStream>("EOS_CONV_STREAM") !=
+                Inpar::FLUID::EosConvStream::EOS_CONV_STREAM_none or
+            params_->sublist("EDGE-BASED STABILIZATION")
+                    .get<Inpar::FLUID::EosConvCross>("EOS_CONV_CROSS") !=
+                Inpar::FLUID::EosConvCross::EOS_CONV_CROSS_none or
+            params_->sublist("EDGE-BASED STABILIZATION").get<Inpar::FLUID::EosDiv>("EOS_DIV") !=
+                Inpar::FLUID::EosDiv::EOS_DIV_none);
 
     // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to
     // Nitsche's method has to be integrated
-    bool ghost_penalty =
-        ((bool)Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_STAB") or
-            (bool)
-                Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_TRANSIENT_STAB") or
-            (bool) Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_2nd_STAB"));
+    bool ghost_penalty = (params_xf_stab.get<bool>("GHOST_PENALTY_STAB") or
+                          params_xf_stab.get<bool>("GHOST_PENALTY_TRANSIENT_STAB") or
+                          params_xf_stab.get<bool>("GHOST_PENALTY_2nd_STAB"));
 
     // determine, whether face-based stabilizing terms are active
     eval_eos_ = edge_based || ghost_penalty;
 
-    ghost_penalty_add_inner_faces_ =
-        (bool)Core::UTILS::integral_value<int>(params_xf_stab, "GHOST_PENALTY_ADD_INNER_FACES");
+    ghost_penalty_add_inner_faces_ = params_xf_stab.get<bool>("GHOST_PENALTY_ADD_INNER_FACES");
   }
 
   if (myrank_ == 0)
   {
     std::cout << "\nVolume:   Gauss point generating method = "
-              << params_xfem.get<std::string>("VOLUME_GAUSS_POINTS_BY");
+              << params_xfem.get<Cut::VCellGaussPts>("VOLUME_GAUSS_POINTS_BY");
     std::cout << "\nBoundary: Gauss point generating method = "
-              << params_xfem.get<std::string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
+              << params_xfem.get<Cut::BCellGaussPts>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
   }
 
   // set XFEM-related parameters on element level
@@ -411,15 +411,14 @@ void FLD::XFluid::set_element_general_fluid_xfem_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action",
-      FLD::set_general_fluid_xfem_parameter);  // do not call another action as then another object
-                                               // of the std-class will be created
+  // do not call another action as then another object of the std-class will be created
+  eleparams.set<FLD::Action>("action", FLD::set_general_fluid_xfem_parameter);
 
   //------------------------------------------------------------------------------------------------------
   // set general element parameters
   eleparams.set("form of convective term", convform_);
-  eleparams.set<int>("Linearisation", newton_);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<Inpar::FLUID::LinearisationAction>("Linearisation", newton_);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") =
@@ -430,7 +429,7 @@ void FLD::XFluid::set_element_general_fluid_xfem_parameter()
     eleparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
   // set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
 
   //------------------------------------------------------------------------------------------------------
   // set general parameters for turbulent flow
@@ -469,15 +468,15 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
   {
     Teuchos::ParameterList faceparams;
 
-    faceparams.set<int>("action", FLD::set_general_face_fluid_parameter);
+    faceparams.set<FLD::Action>("action", FLD::set_general_face_fluid_parameter);
 
     faceparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
-    faceparams.set<int>(
-        "STABTYPE", Core::UTILS::integral_value<Inpar::FLUID::StabType>(
+    faceparams.set<Inpar::FLUID::StabType>(
+        "STABTYPE", Teuchos::getIntegralValue<Inpar::FLUID::StabType>(
                         params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
-    faceparams.set<int>("Physical Type", physicaltype_);
+    faceparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
     // get function number of given Oseen advective field if necessary
     if (physicaltype_ == Inpar::FLUID::oseen)
@@ -492,7 +491,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
   {
     Teuchos::ParameterList faceparams;
 
-    faceparams.set<int>("action", FLD::set_general_face_xfem_parameter);
+    faceparams.set<FLD::Action>("action", FLD::set_general_face_xfem_parameter);
 
     // set general fluid face parameters are contained in the following two sublists
     faceparams.sublist("XFLUID DYNAMIC/STABILIZATION") =
@@ -514,9 +513,9 @@ void FLD::XFluid::set_element_time_parameter()
   Teuchos::ParameterList eleparams;
 
   // set action
-  eleparams.set<int>("action", FLD::set_time_parameter);
+  eleparams.set<FLD::Action>("action", FLD::set_time_parameter);
   // set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
   // set general element parameters
   eleparams.set("dt", dta_);
   eleparams.set("theta", theta_);
@@ -537,7 +536,8 @@ void FLD::XFluid::set_element_time_parameter()
   else
   {
     eleparams.set("total time", time_);
-    eleparams.set<int>("ost cont and press", params_->get<int>("ost cont and press"));
+    eleparams.set<Inpar::FLUID::OstContAndPress>(
+        "ost cont and press", params_->get<Inpar::FLUID::OstContAndPress>("ost cont and press"));
     eleparams.set<bool>("ost new", params_->get<bool>("ost new"));
   }
 
@@ -1322,7 +1322,7 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
           dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
       if (face_ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
 
-      bool gmsh_EOS_out(Core::UTILS::integral_value<int>(params_->sublist("XFEM"), "GMSH_EOS_OUT"));
+      const bool gmsh_EOS_out(params_->sublist("XFEM").get<bool>("GMSH_EOS_OUT"));
       edgestab_->evaluate_edge_stab_ghost_penalty(faceparams, discret_, face_ele, sysmat,
           residual_col, wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
     }
@@ -1418,7 +1418,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
           Core::LinAlg::SerialDenseVector elevec2;
           Core::LinAlg::SerialDenseVector elevec3;
           Teuchos::ParameterList params;
-          params.set<int>("action", FLD::integrate_shape);
+          params.set<FLD::Action>("action", FLD::integrate_shape);
           Teuchos::RCP<Core::Mat::Material> mat = ele->material();
           int err = impl->evaluate_service(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
               strategy.elevector1(), elevec2, elevec3);
@@ -1486,7 +1486,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
       Core::LinAlg::SerialDenseVector elevec2;
       Core::LinAlg::SerialDenseVector elevec3;
       Teuchos::ParameterList params;
-      params.set<int>("action", FLD::integrate_shape);
+      params.set<FLD::Action>("action", FLD::integrate_shape);
       Teuchos::RCP<Core::Mat::Material> mat = ele->material();
       int err = impl->evaluate_service(ele, params, mat, discret, la[0].lm_, elemat1, elemat2,
           strategy.elevector1(), elevec2, elevec3);
@@ -1649,8 +1649,8 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
   // file
 
   // how is the analytical solution available (implemented of via function?)
-  Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   if (calcerr != Inpar::FLUID::no_error_calculation)
   {
@@ -1784,7 +1784,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
         std::cout.precision(8);
         Core::IO::cout << Core::IO::endl
                        << "---- error norm for analytical solution Nr. "
-                       << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
+                       << Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(
                               *params_, "calculate error")
                        << " ----------" << Core::IO::endl;
         Core::IO::cout << "-------------- domain error norms -----------------------"
@@ -2024,7 +2024,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
             Core::LinAlg::SerialDenseMatrix elemat2;
             Core::LinAlg::SerialDenseVector elevec2;
             Core::LinAlg::SerialDenseVector elevec3;
-            params_->set<int>("action", FLD::calc_fluid_error);
+            params_->set<FLD::Action>("action", FLD::calc_fluid_error);
             impl->evaluate_service(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
                 ele_dom_norms, elevec2, elevec3);
           }
@@ -2066,7 +2066,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
       Core::LinAlg::SerialDenseMatrix elemat2;
       Core::LinAlg::SerialDenseVector elevec2;
       Core::LinAlg::SerialDenseVector elevec3;
-      params_->set<int>("action", FLD::calc_fluid_error);
+      params_->set<FLD::Action>("action", FLD::calc_fluid_error);
       impl->evaluate_service(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
           ele_dom_norms, elevec2, elevec3);
     }
@@ -2106,8 +2106,8 @@ void FLD::XFluid::check_x_fluid_params() const
 
   Teuchos::ParameterList& params_xfem = params_->sublist("XFEM");
   if (ghost_penalty_add_inner_faces_ &&
-      !(Core::UTILS::integral_value<Cut::NodalDofSetStrategy>(params_xfem,
-            "NODAL_DOFSET_STRATEGY") == Cut::NDS_Strategy_OneDofset_PerNodeAndPosition))
+      !(Teuchos::getIntegralValue<Cut::NodalDofSetStrategy>(params_xfem, "NODAL_DOFSET_STRATEGY") ==
+          Cut::NDS_Strategy_OneDofset_PerNodeAndPosition))
     FOUR_C_THROW(
         "The option GHOST_PENALTY_ADD_INNER_FACES is only availabe if you use max 1 nodal dofset!");
 
@@ -2853,7 +2853,7 @@ void FLD::XFluid::update_krylov_space_projection()
     // create parameter list for condition evaluate and ...
     Teuchos::ParameterList mode_params;
     // ... set action for elements to integration of shape functions
-    mode_params.set<int>("action", FLD::integrate_shape);
+    mode_params.set<FLD::Action>("action", FLD::integrate_shape);
 
     if (alefluid_)
     {
@@ -3037,7 +3037,7 @@ void FLD::XFluid::evaluate(
   //    //   the DBCs are set again in velnp
   //
   //    Teuchos::RCP<Epetra_Vector> velnp_tmp =
-  //    Core::LinAlg::CreateVector(*discret_->dof_row_map(),true);
+  //    Core::LinAlg::create_vector(*discret_->dof_row_map(),true);
   //
   //    state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
   //    state_->incvel_->Update(1.0, *state_->veln_, 1.0);
@@ -3136,7 +3136,8 @@ void FLD::XFluid::time_update()
 
   Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
-  if (stabparams->get<std::string>("TDS") == "time_dependent")
+  if (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(*stabparams, "TDS") ==
+      Inpar::FLUID::SubscalesTD::subscales_time_dependent)
   {
     FOUR_C_THROW("check this implementation");
     const double tcpu = Teuchos::Time::wallTime();
@@ -4137,7 +4138,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
   Teuchos::RCP<Core::LinAlg::Solver> solver_gp = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
       discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"),
       false));
 
@@ -5282,7 +5283,7 @@ void FLD::XFluid::update_gridv()
   // from input file data
   const Teuchos::ParameterList& fluiddynparams =
       Global::Problem::instance()->fluid_dynamic_params();
-  const int order = Core::UTILS::integral_value<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+  const auto order = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   Teuchos::RCP<Epetra_Vector> gridv = Teuchos::rcp(new Epetra_Vector(dispnp_->Map(), true));
 

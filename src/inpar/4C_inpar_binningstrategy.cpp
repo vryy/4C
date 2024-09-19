@@ -46,11 +46,11 @@ void Inpar::BINSTRATEGY::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
       "points",
       &binningstrategy);
 
-  setStringToIntegralParameter<int>("WRITEBINS", "none",
+  setStringToIntegralParameter<Core::Binstrategy::WriteBins>("WRITEBINS", "none",
       "Write none, row or column bins for visualization",
       tuple<std::string>("none", "rows", "cols"),
-      tuple<int>(Core::Binstrategy::WriteBins::none, Core::Binstrategy::WriteBins::rows,
-          Core::Binstrategy::WriteBins::cols),
+      tuple<Core::Binstrategy::WriteBins>(Core::Binstrategy::WriteBins::none,
+          Core::Binstrategy::WriteBins::rows, Core::Binstrategy::WriteBins::cols),
       &binningstrategy);
 }
 

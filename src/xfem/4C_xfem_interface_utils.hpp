@@ -75,7 +75,7 @@ namespace XFEM
         double& NIT_visc_stab_fac      ///< viscous part of Nitsche's penalty term
     );
 
-    //! @name GetNavierSlipStabilizationParameters
+    //! @name get_navier_slip_stabilization_parameters
     /*!
     \brief Get NavierSlip Stabilization Parameters for tangential direction
      */

@@ -87,37 +87,37 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
-  if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           Inpar::CONTACT::solution_penalty &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
     FOUR_C_THROW("Penalty parameter eps = 0, must be greater than 0");
 
-  if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           Inpar::CONTACT::solution_uzawa &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
     FOUR_C_THROW("Penalty parameter eps = 0, must be greater than 0");
 
-  if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           Inpar::CONTACT::solution_uzawa &&
       meshtying.get<int>("UZAWAMAXSTEPS") < 2)
     FOUR_C_THROW("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
-  if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           Inpar::CONTACT::solution_uzawa &&
       meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
     FOUR_C_THROW("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
-  if (onlymeshtying && Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(
+  if (onlymeshtying && Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(
                            meshtying, "FRICTION") != Inpar::CONTACT::friction_none)
     FOUR_C_THROW("Friction law supplied for mortar meshtying");
 
-  if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
+  if (Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           Inpar::CONTACT::solution_lagmult &&
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+      Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           Inpar::Mortar::shape_standard &&
-      (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") ==
+      (Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") ==
               Inpar::CONTACT::system_condensed ||
-          Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") ==
+          Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") ==
               Inpar::CONTACT::system_condensed_lagmult))
     FOUR_C_THROW("Condensation of linear system only possible for dual Lagrange multipliers");
 
@@ -132,42 +132,41 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
     FOUR_C_THROW(
         "ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if (Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
-          mortar, "LM_DUAL_CONSISTENT") != Inpar::Mortar::consistent_none &&
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
+          Inpar::Mortar::consistent_none &&
+      Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
           Inpar::CONTACT::solution_lagmult &&
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+      Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
           Inpar::Mortar::shape_standard)
     FOUR_C_THROW(
         "ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier "
         "strategy.");
 
-  if (Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
-          mortar, "LM_DUAL_CONSISTENT") != Inpar::Mortar::consistent_none &&
-      Core::UTILS::integral_value<Inpar::Mortar::IntType>(mortar, "INTTYPE") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") !=
+          Inpar::Mortar::consistent_none &&
+      Teuchos::getIntegralValue<Inpar::Mortar::IntType>(mortar, "INTTYPE") ==
           Inpar::Mortar::inttype_elements &&
-      (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+      (Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
               Inpar::Mortar::shape_dual ||
-          Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+          Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
               Inpar::Mortar::shape_petrovgalerkin))
 
     // *********************************************************************
     // not (yet) implemented combinations
     // *********************************************************************
-    if (Core::UTILS::integral_value<int>(mortar, "CROSSPOINTS") == true && dim == 3)
+    if (mortar.get<bool>("CROSSPOINTS") && dim == 3)
       FOUR_C_THROW("Crosspoints / edge node modification not yet implemented for 3D");
 
-  if (Core::UTILS::integral_value<int>(mortar, "CROSSPOINTS") == true &&
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(mortar, "LM_QUAD") ==
-          Inpar::Mortar::lagmult_lin)
+  if (mortar.get<bool>("CROSSPOINTS") && Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(
+                                             mortar, "LM_QUAD") == Inpar::Mortar::lagmult_lin)
     FOUR_C_THROW("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
-  if (Core::UTILS::integral_value<int>(mortar, "CROSSPOINTS") == true &&
+  if (mortar.get<bool>("CROSSPOINTS") &&
       Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none)
     FOUR_C_THROW("Crosspoints and parallel redistribution not yet compatible");
 
-  if (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           Inpar::Mortar::shape_petrovgalerkin and
       onlymeshtying)
     FOUR_C_THROW("Petrov-Galerkin approach makes no sense for meshtying");
@@ -175,9 +174,9 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if (Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(mortar, "LM_QUAD") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(mortar, "LM_QUAD") ==
           Inpar::Mortar::lagmult_pwlin &&
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
+      Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           Inpar::Mortar::shape_dual)
     FOUR_C_THROW(
         "ERROR: No pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape "
@@ -186,8 +185,7 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   // *********************************************************************
   // element-based vs. segment-based mortar integration
   // *********************************************************************
-  Inpar::Mortar::IntType inttype =
-      Core::UTILS::integral_value<Inpar::Mortar::IntType>(mortar, "INTTYPE");
+  auto inttype = Teuchos::getIntegralValue<Inpar::Mortar::IntType>(mortar, "INTTYPE");
 
   if (inttype == Inpar::Mortar::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     FOUR_C_THROW("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
@@ -226,15 +224,18 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
     // set options for mortar coupling
     params.set<std::string>("SEARCH_ALGORITHM", "Binarytree");
     params.set<double>("SEARCH_PARAM", 0.3);
-    params.set<std::string>("SEARCH_USE_AUX_POS", "no");
+    params.set<bool>("SEARCH_USE_AUX_POS", false);
     params.set<std::string>("LM_SHAPEFCN", "dual");
-    params.set<std::string>("SYSTEM", "condensed");
+    params.set<Inpar::CONTACT::SystemType>("SYSTEM", Inpar::CONTACT::SystemType::system_condensed);
     params.set<bool>("NURBS", false);
     params.set<int>("NUMGP_PER_DIM", -1);
-    params.set<std::string>("STRATEGY", "LagrangianMultipliers");
+    params.set<Inpar::CONTACT::SolvingStrategy>(
+        "STRATEGY", Inpar::CONTACT::SolvingStrategy::solution_lagmult);
     params.set<std::string>("INTTYPE", "segments");
     params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("REDUNDANT_STORAGE", "Master");
-    params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "static");
+    params.sublist("PARALLEL REDISTRIBUTION")
+        .set<Inpar::Mortar::ParallelRedist>(
+            "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_static);
   }
   // *********************************************************************
   // smooth interfaces
@@ -259,9 +260,9 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
   // *********************************************************************
   if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
           problemtype == Core::ProblemType::fpsi_xfem) &&
-      (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+      (Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               Inpar::Mortar::shape_dual &&
-          Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
+          Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
               Inpar::Mortar::shape_petrovgalerkin))
     FOUR_C_THROW("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
@@ -276,13 +277,13 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
 
   if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
           problemtype == Core::ProblemType::fpsi_xfem) &&
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
+      Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") !=
           Inpar::CONTACT::solution_lagmult)
     FOUR_C_THROW("POROCONTACT: Use Lagrangean Strategy for poro meshtying!");
 
   if ((problemtype == Core::ProblemType::poroelast || problemtype == Core::ProblemType::fpsi ||
           problemtype == Core::ProblemType::fpsi_xfem) &&
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") !=
+      Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(meshtying, "SYSTEM") !=
           Inpar::CONTACT::system_condensed_lagmult)
     FOUR_C_THROW("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
 
@@ -291,7 +292,7 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
       (dim != 3) && (dim != 2))
   {
     const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
-    if (Core::UTILS::integral_value<int>(porodyn, "CONTACTNOPEN"))
+    if (porodyn.get<bool>("CONTACTNOPEN"))
       FOUR_C_THROW("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
   }
 
@@ -299,7 +300,9 @@ void Mortar::STRATEGY::FactoryMT::read_and_check_input(Teuchos::ParameterList& p
 
   // no parallel redistribution in the serial case
   if (get_comm().NumProc() == 1)
-    params.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "None");
+    params.sublist("PARALLEL REDISTRIBUTION")
+        .set<Inpar::Mortar::ParallelRedist>(
+            "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_none);
 
   return;
 }
@@ -574,8 +577,7 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_str
     const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
     const int& dof_offset, std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const
 {
-  const Inpar::CONTACT::SolvingStrategy stype =
-      Core::UTILS::integral_value<enum Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY");
+  const auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY");
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,

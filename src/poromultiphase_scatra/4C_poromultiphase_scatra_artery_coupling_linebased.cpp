@@ -70,13 +70,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::setup()
   if (contdis_->name() == "porofluid" && has_varying_diam_) fill_unaffected_integrated_diam();
 
   // calculate blood vessel volume fraction (only porofluid needs to do this)
-  if (contdis_->name() == "porofluid" &&
-      (Core::UTILS::integral_value<int>(couplingparams_, "OUTPUT_BLOODVESSELVOLFRAC")))
+  if (contdis_->name() == "porofluid" && couplingparams_.get<bool>("OUTPUT_BLOODVESSELVOLFRAC"))
     calculate_blood_vessel_volume_fraction();
 
   // print out summary of pairs
-  if (contdis_->name() == "porofluid" &&
-      (Core::UTILS::integral_value<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+  if (contdis_->name() == "porofluid" && couplingparams_.get<bool>("PRINT_OUT_SUMMARY_PAIRS"))
     output_summary();
 
   issetup_ = true;

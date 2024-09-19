@@ -859,7 +859,7 @@ void XFEM::UTILS::nit_compute_full_penalty_stabfac(
     bool error_calc             ///< when called in error calculation, don't add the inflow terms
 )
 {
-  // TEUCHOS_FUNC_TIME_MONITOR("XFEM::UTILS::::NIT_Compute_FullPenalty_Stabfac");
+  // TEUCHOS_FUNC_TIME_MONITOR("XFEM::UTILS::::nit_compute_full_penalty_stabfac");
 
   //------------------------------------------------------------------------------
   // compute the full Nitsche parameter

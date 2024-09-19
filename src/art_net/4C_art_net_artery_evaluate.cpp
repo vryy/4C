@@ -31,7 +31,7 @@ int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // check for the action parameter
-  const Arteries::Action action = Core::UTILS::get_as_enum<Arteries::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<Arteries::Action>(params, "action");
   /*
   Here must add the steps for evaluating an element
   */

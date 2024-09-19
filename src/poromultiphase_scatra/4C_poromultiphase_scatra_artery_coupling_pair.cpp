@@ -95,16 +95,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
 {
   // init stuff
   couplmethod_ =
-      Core::UTILS::integral_value<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+      Teuchos::getIntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
           couplingparams, "ARTERY_COUPLING_METHOD");
 
   condname_ = condname;
 
-  evaluate_in_ref_config_ =
-      Core::UTILS::integral_value<int>(fluidcouplingparams, "EVALUATE_IN_REF_CONFIG");
+  evaluate_in_ref_config_ = fluidcouplingparams.get<bool>("EVALUATE_IN_REF_CONFIG");
 
-  evaluate_on_lateral_surface_ =
-      Core::UTILS::integral_value<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
+  evaluate_on_lateral_surface_ = fluidcouplingparams.get<bool>("LATERAL_SURFACE_COUPLING");
 
   coupling_element_type_ = couplingtype;
 
@@ -845,7 +843,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
               *contscalarnp, econtscalarnp_, la[3].lm_);
         }
         else
+        {
           FOUR_C_THROW("Cannot get state vector 'scalars'");
+        }
       }
       break;
     }
@@ -870,7 +870,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
             *artpressnp, earterypressurenp_, la[ndsscatra_artery_].lm_);
       }
       else
+      {
         FOUR_C_THROW("Cannot get arterypressure from artery-scatra discretization");
+      }
       break;
     }
     default:

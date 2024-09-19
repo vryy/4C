@@ -82,8 +82,8 @@ void CONTACT::Interface::round_robin_change_ownership()
   // interface and exclude the friction node packing from here
 
   // get friction type
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // change master-side proc ownership
   // some local variables

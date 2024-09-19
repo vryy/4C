@@ -57,7 +57,7 @@ RESULTSEVRY                     1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         0.001
 CONVTOL                         1.0E-06
-COUPMETHOD                      mtr
+COUPMETHOD                      mortar
 COUPVARIABLE                    Displacement
 ITEMAX                          100
 MAXOMEGA                        0

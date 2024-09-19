@@ -729,29 +729,29 @@ void Cut::Point::dump_connectivity_info()
         file << "// original intersection was and because of it" << std::endl;
         std::stringstream side_section_name;
         side_section_name << "OriginalSide" << pre << counter;
-        Cut::Output::GmshNewSection(file, side_section_name.str());
-        Cut::Output::GmshSideDump(file, original_connection.first, false, nullptr);
-        Cut::Output::GmshEndSection(file, false);
+        Cut::Output::gmsh_new_section(file, side_section_name.str());
+        Cut::Output::gmsh_side_dump(file, original_connection.first, false, nullptr);
+        Cut::Output::gmsh_end_section(file, false);
 
         std::stringstream edge_section_name;
         edge_section_name << "OriginalEdge" << pre << counter;
-        Cut::Output::GmshNewSection(file, edge_section_name.str());
+        Cut::Output::gmsh_new_section(file, edge_section_name.str());
         Cut::Output::GmshEdgeDump(file, original_connection.second, false, nullptr);
-        Cut::Output::GmshEndSection(file, false);
+        Cut::Output::gmsh_end_section(file, false);
         or_cut = original_connection;
         file << "// " << GetCreationInfo(or_cut) << "\n";
         file << "// following connection is added later" << std::endl;
       }
       std::stringstream edge_section_name;
       edge_section_name << "Edge" << pre << counter;
-      Cut::Output::GmshNewSection(file, edge_section_name.str());
+      Cut::Output::gmsh_new_section(file, edge_section_name.str());
       Cut::Output::GmshEdgeDump(file, (*it).second);
-      Cut::Output::GmshEndSection(file, false);
+      Cut::Output::gmsh_end_section(file, false);
       std::stringstream side_section_name;
       side_section_name << "Side" << pre << counter;
-      Cut::Output::GmshNewSection(file, side_section_name.str());
-      Cut::Output::GmshSideDump(file, (*it).first);
-      Cut::Output::GmshEndSection(file, false);
+      Cut::Output::gmsh_new_section(file, side_section_name.str());
+      Cut::Output::gmsh_side_dump(file, (*it).first);
+      Cut::Output::gmsh_end_section(file, false);
       file << "// " << GetCreationInfo(*it) << "\n";
 
       std::map<std::pair<Side*, Edge*>, std::pair<Core::LinAlg::Matrix<3, 1>, bool>>::iterator
@@ -767,8 +767,8 @@ void Cut::Point::dump_connectivity_info()
           Cut::Output::GmshWriteCoords(file, merged_coord.first, false, nullptr);
           file << "){";
           file << 0;
-          Cut::Output::GmshEndSection(file, false);
-          Cut::Output::GmshEndSection(file, false);
+          Cut::Output::gmsh_end_section(file, false);
+          Cut::Output::gmsh_end_section(file, false);
           file << "// Norm2 between point and merged is "
                << Cut::DistanceBetweenPoints(this, merged_coord.first) << std::endl;
         }
@@ -791,9 +791,9 @@ void Cut::Point::dump_connectivity_info()
       {
         std::stringstream section_name;
         section_name << "IndividualEdge" << counter;
-        Cut::Output::GmshNewSection(file, section_name.str());
+        Cut::Output::gmsh_new_section(file, section_name.str());
         Cut::Output::GmshEdgeDump(file, (*it));
-        Cut::Output::GmshEndSection(file, false);
+        Cut::Output::gmsh_end_section(file, false);
         if (not NodalPoint((*it)->Nodes())) file << "// it is not a nodal point!" << std::endl;
       }
     }
@@ -804,9 +804,9 @@ void Cut::Point::dump_connectivity_info()
       {
         std::stringstream section_name;
         section_name << "IndividualSide" << counter;
-        Cut::Output::GmshNewSection(file, section_name.str());
-        Cut::Output::GmshSideDump(file, (*it));
-        Cut::Output::GmshEndSection(file, false);
+        Cut::Output::gmsh_new_section(file, section_name.str());
+        Cut::Output::gmsh_side_dump(file, (*it));
+        Cut::Output::gmsh_end_section(file, false);
         if (not NodalPoint((*it)->Nodes())) file << " // it is not a nodal point!" << std::endl;
       }
     }

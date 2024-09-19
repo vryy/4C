@@ -51,13 +51,13 @@ namespace CONTACT
         : Integrator(params, eletype, comm),
           theta_(params.get<double>("NITSCHE_THETA")),
           theta_2_(params.get<double>("NITSCHE_THETA_2")),
-          nit_wgt_(Core::UTILS::integral_value<Inpar::CONTACT::NitscheWeighting>(
+          nit_wgt_(Teuchos::getIntegralValue<Inpar::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING")),
           ppn_(imortar_.get<double>("PENALTYPARAM")),
           ppt_(imortar_.get<double>("PENALTYPARAMTAN")),
           frcoeff_(imortar_.get<double>("FRCOEFF", -1.)),
           frbound_(imortar_.get<double>("FRBOUND", -1.)),
-          frtype_(Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(imortar_, "FRICTION")),
+          frtype_(Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(imortar_, "FRICTION")),
           dt_(imortar_.get<double>("TIMESTEP")),
           two_half_pass_(imortar_.get<bool>("Two_half_pass"))
     {
@@ -217,7 +217,7 @@ namespace CONTACT
     void map_gp_to_parent(Mortar::Element& moEle, double* boundary_gpcoord, double wgt,
         Core::LinAlg::Matrix<dim, 1>& pxsi, Core::LinAlg::Matrix<dim, dim>& derivtravo_slave);
 
-    //! templated version of map_gp_to_parent
+    //! templated version of MapGPtoParent
     template <Core::FE::CellType parentdistype, int dim>
     void inline so_ele_gp(Mortar::Element& sele, double wgt, const double* gpcoord,
         Core::LinAlg::Matrix<dim, 1>& pxsi, Core::LinAlg::Matrix<dim, dim>& derivtrafo);

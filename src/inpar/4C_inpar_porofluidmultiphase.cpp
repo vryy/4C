@@ -35,20 +35,15 @@ void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Para
 
   Core::UTILS::double_parameter(
       "THETA", 0.5, "One-step-theta time integration factor", &porofluidmultiphasedyn);
-  //  Core::UTILS::DoubleParameter("ALPHA_M",0.5,"Generalized-alpha time integration
-  //  factor",&porofluidmultiphasedyn);
-  //  Core::UTILS::DoubleParameter("ALPHA_F",0.5,"Generalized-alpha time integration
-  //  factor",&porofluidmultiphasedyn); Core::UTILS::DoubleParameter("GAMMA",0.5,"Generalized-alpha
-  //  time integration factor",&porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("TIMEINTEGR", "One_Step_Theta", "Time Integration Scheme",
-      tuple<std::string>("One_Step_Theta"), tuple<int>(timeint_one_step_theta),
-      &porofluidmultiphasedyn);
+  setStringToIntegralParameter<TimeIntegrationScheme>("TIMEINTEGR", "One_Step_Theta",
+      "Time Integration Scheme", tuple<std::string>("One_Step_Theta"),
+      tuple<TimeIntegrationScheme>(timeint_one_step_theta), &porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("CALCERROR", "No",
+  setStringToIntegralParameter<CalcError>("CALCERROR", "No",
       "compute error compared to analytical solution",
-      tuple<std::string>("No", "error_by_function"), tuple<int>(calcerror_no, calcerror_byfunction),
-      &porofluidmultiphasedyn);
+      tuple<std::string>("No", "error_by_function"),
+      tuple<CalcError>(calcerror_no, calcerror_byfunction), &porofluidmultiphasedyn);
 
   Core::UTILS::int_parameter("CALCERRORNO", -1,
       "function number for porofluidmultiphase error computation", &porofluidmultiphasedyn);
@@ -73,11 +68,11 @@ void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Para
       &porofluidmultiphasedyn);
 
   // parameters for finite difference check
-  setStringToIntegralParameter<int>("FDCHECK", "none",
+  setStringToIntegralParameter<FdCheck>("FDCHECK", "none",
       "flag for finite difference check: none, local, or global",
       tuple<std::string>("none",
           "global"),  // perform finite difference check on time integrator level
-      tuple<int>(fdcheck_none, fdcheck_global), &porofluidmultiphasedyn);
+      tuple<FdCheck>(fdcheck_none, fdcheck_global), &porofluidmultiphasedyn);
   Core::UTILS::double_parameter("FDCHECKEPS", 1.e-6,
       "dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, "
       "whereas smaller values don't)",
@@ -102,20 +97,20 @@ void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Para
       "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
       &porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("VECTORNORM_RESF", "L2",
+  setStringToIntegralParameter<VectorNorm>("VECTORNORM_RESF", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::POROFLUIDMULTIPHASE::norm_l1, Inpar::POROFLUIDMULTIPHASE::norm_l1_scaled,
-          Inpar::POROFLUIDMULTIPHASE::norm_l2, Inpar::POROFLUIDMULTIPHASE::norm_rms,
-          Inpar::POROFLUIDMULTIPHASE::norm_inf),
+      tuple<VectorNorm>(Inpar::POROFLUIDMULTIPHASE::norm_l1,
+          Inpar::POROFLUIDMULTIPHASE::norm_l1_scaled, Inpar::POROFLUIDMULTIPHASE::norm_l2,
+          Inpar::POROFLUIDMULTIPHASE::norm_rms, Inpar::POROFLUIDMULTIPHASE::norm_inf),
       &porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("VECTORNORM_INC", "L2",
+  setStringToIntegralParameter<VectorNorm>("VECTORNORM_INC", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::POROFLUIDMULTIPHASE::norm_l1, Inpar::POROFLUIDMULTIPHASE::norm_l1_scaled,
-          Inpar::POROFLUIDMULTIPHASE::norm_l2, Inpar::POROFLUIDMULTIPHASE::norm_rms,
-          Inpar::POROFLUIDMULTIPHASE::norm_inf),
+      tuple<VectorNorm>(Inpar::POROFLUIDMULTIPHASE::norm_l1,
+          Inpar::POROFLUIDMULTIPHASE::norm_l1_scaled, Inpar::POROFLUIDMULTIPHASE::norm_l2,
+          Inpar::POROFLUIDMULTIPHASE::norm_rms, Inpar::POROFLUIDMULTIPHASE::norm_inf),
       &porofluidmultiphasedyn);
 
   // Iterationparameters
@@ -124,35 +119,30 @@ void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Para
   Core::UTILS::double_parameter("TOLINC", 1e-6,
       "tolerance in the increment norm for the Newton iteration", &porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
+  setStringToIntegralParameter<InitialField>("INITIALFIELD", "zero_field",
       "Initial Field for transport problem",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
-      tuple<int>(initfield_zero_field, initfield_field_by_function, initfield_field_by_condition),
+      tuple<InitialField>(
+          initfield_zero_field, initfield_field_by_function, initfield_field_by_condition),
       &porofluidmultiphasedyn);
 
   Core::UTILS::int_parameter("INITFUNCNO", -1, "function number for scalar transport initial field",
       &porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("DIVERCONT", "stop",
+  setStringToIntegralParameter<DivContAct>("DIVERCONT", "stop",
       "What to do with time integration when Newton-Raphson iteration failed",
-      tuple<std::string>("stop", "continue"), tuple<int>(divcont_stop, divcont_continue),
+      tuple<std::string>("stop", "continue"), tuple<DivContAct>(divcont_stop, divcont_continue),
       &porofluidmultiphasedyn);
 
   Core::UTILS::int_parameter("FLUX_PROJ_SOLVER", -1,
       "Number of linear solver used for L2 projection", &porofluidmultiphasedyn);
 
-  setStringToIntegralParameter<int>("FLUX_PROJ_METHOD", "none",
-      "Flag to (de)activate flux reconstruction.",
-      tuple<std::string>("none",
-          //  "superconvergent_patch_recovery",
-          "L2_projection"),
-      tuple<std::string>("no gradient reconstruction",
-          // "gradient reconstruction via superconvergent patch recovery",
-          "gracient reconstruction via l2-projection"),
-      tuple<int>(gradreco_none,  // no convective streamline edge-based stabilization
-                                 //   gradreco_spr,    // convective streamline edge-based
-                                 //   stabilization on the entire domain
-          gradreco_l2  // pressure edge-based stabilization as ghost penalty around cut elements
+  setStringToIntegralParameter<FluxReconstructionMethod>("FLUX_PROJ_METHOD", "none",
+      "Flag to (de)activate flux reconstruction.", tuple<std::string>("none", "L2_projection"),
+      tuple<std::string>("no gradient reconstruction", "gracient reconstruction via l2-projection"),
+      tuple<FluxReconstructionMethod>(
+          gradreco_none,  // no convective streamline edge-based stabilization
+          gradreco_l2     // pressure edge-based stabilization as ghost penalty around cut elements
           ),
       &porofluidmultiphasedyn);
 
@@ -187,18 +177,17 @@ void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Para
   Core::UTILS::double_parameter(
       "PENALTY", 1000.0, "Penalty parameter for line-based coupling", &porofluidmultiphasemshtdyn);
 
-  setStringToIntegralParameter<int>("ARTERY_COUPLING_METHOD", "None",
-      "Coupling method for artery coupling.",
+  setStringToIntegralParameter<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+      "ARTERY_COUPLING_METHOD", "None", "Coupling method for artery coupling.",
       tuple<std::string>("None", "Nodal", "GPTS", "MP", "NTP"),
       tuple<std::string>("none", "Nodal Coupling", "Gauss-Point-To-Segment Approach",
           "Mortar Penalty Approach", "1D node-to-point in 2D/3D Approach"),
-      tuple<int>(Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::none,  // none
+      tuple<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+          Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::none,   // none
           Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::nodal,  // Nodal Coupling
           Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::
               gpts,  // Gauss-Point-To-Segment
-                     // Approach
           Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp,  // Mortar Penalty
-                                                                               // Approach
           Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp  // 1Dnode-to-point in
                                                                                // 2D/3D
           ),

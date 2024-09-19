@@ -212,7 +212,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
 {
   const Teuchos::ParameterList& sdynparams =
       Global::Problem::instance()->structural_dynamic_params();
-  solveradapttol_ = (Core::UTILS::integral_value<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (sdynparams.get<bool>("ADAPTCONV"));
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   // hydraulic conductivity (needed for coupling in case of probtype fps3i)
@@ -237,7 +237,8 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
   }
 
   // Check for valid predictors
-  if (sdynparams.get<std::string>("PREDICT") != "ConstDis")
+  if (Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(sdynparams, "PREDICT") !=
+      Inpar::Solid::PredEnum::pred_constdis)
     FOUR_C_THROW(
         "No Structural Predictor for FPSI implemented at the moment, choose <PREDICT = ConstDis> "
         "in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors "
@@ -521,7 +522,7 @@ void FPSI::Monolithic::setup_solver()
   if (directsolve_)
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
   else
     // create a linear solver
@@ -531,11 +532,11 @@ void FPSI::Monolithic::setup_solver()
   maximumiterations_ = fpsidynamicparams.get<int>("ITEMAX");
   minimumiterations_ = fpsidynamicparams.get<int>("ITEMIN");
   normtypeinc_ =
-      Core::UTILS::integral_value<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
+      Teuchos::getIntegralValue<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
   normtypefres_ =
-      Core::UTILS::integral_value<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
+      Teuchos::getIntegralValue<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
   combinedconvergence_ =
-      Core::UTILS::integral_value<Inpar::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
+      Teuchos::getIntegralValue<Inpar::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
 
   {
     std::istringstream tolresstream(
@@ -558,8 +559,8 @@ void FPSI::Monolithic::setup_solver()
 
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
-  linesearch_ = Core::UTILS::integral_value<int>(fpsidynparams, "LineSearch");
-  if (linesearch_ == 1)
+  linesearch_ = fpsidynparams.get<bool>("LineSearch");
+  if (linesearch_)
     FOUR_C_THROW(
         "Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"
         "Though the framework for a line search algorithm is implemented in fpsi_monolithic.cpp, \n"
@@ -656,7 +657,7 @@ void FPSI::Monolithic::create_linear_solver()
 
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(fpsisolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // use solver blocks for structure and fluid
@@ -672,22 +673,22 @@ void FPSI::Monolithic::create_linear_solver()
   // poro/structure
   solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // poro fluid
   solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // fluid
   solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   // ale
   solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   // prescribe rigid body modes
@@ -751,7 +752,7 @@ void FPSI::Monolithic::linear_solve()
   }
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
-  if (Teuchos::getIntegralValue<int>(fpsidynparams, "FDCheck"))
+  if (fpsidynparams.get<bool>("FDCheck"))
   {
     fpsifd_check();
   }

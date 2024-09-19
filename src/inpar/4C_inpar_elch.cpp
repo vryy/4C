@@ -42,12 +42,13 @@ void Inpar::ElCh::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::double_parameter("GAS_CONSTANT", 8.314472,
       "(universal) gas constant (in unit system as chosen in input file)", &elchcontrol);
   // parameter for possible types of ELCH algorithms for deforming meshes
-  setStringToIntegralParameter<int>("MOVINGBOUNDARY", "No", "ELCH algorithm for deforming meshes",
+  setStringToIntegralParameter<Inpar::ElCh::ElchMovingBoundary>("MOVINGBOUNDARY", "No",
+      "ELCH algorithm for deforming meshes",
       tuple<std::string>("No", "pseudo-transient", "fully-transient"),
       tuple<std::string>("no moving boundary algorithm",
           "pseudo-transient moving boundary algorithm",
           "full moving boundary algorithm including fluid solve"),
-      tuple<int>(
+      tuple<Inpar::ElCh::ElchMovingBoundary>(
           elch_mov_bndry_no, elch_mov_bndry_pseudo_transient, elch_mov_bndry_fully_transient),
       &elchcontrol);
   Core::UTILS::double_parameter(
@@ -55,12 +56,12 @@ void Inpar::ElCh::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::double_parameter("MOVBOUNDARYTHETA", 0.0,
       "One-step-theta factor in electrode shape change computations", &elchcontrol);
   Core::UTILS::bool_parameter("GALVANOSTATIC", "No", "flag for galvanostatic mode", &elchcontrol);
-  setStringToIntegralParameter<int>("GSTAT_APPROX_ELECT_RESIST", "relation_pot_cur",
-      "relation of potential and current flow",
+  setStringToIntegralParameter<Inpar::ElCh::ApproxElectResist>("GSTAT_APPROX_ELECT_RESIST",
+      "relation_pot_cur", "relation of potential and current flow",
       tuple<std::string>("relation_pot_cur", "effective_length_with_initial_cond",
           "effective_length_with_integrated_cond"),
-      tuple<int>(approxelctresist_relpotcur, approxelctresist_effleninitcond,
-          approxelctresist_efflenintegcond),
+      tuple<Inpar::ElCh::ApproxElectResist>(approxelctresist_relpotcur,
+          approxelctresist_effleninitcond, approxelctresist_efflenintegcond),
       &elchcontrol);
   Core::UTILS::int_parameter(
       "GSTATCONDID_CATHODE", 0, "condition id of electrode kinetics for cathode", &elchcontrol);
@@ -76,12 +77,12 @@ void Inpar::ElCh::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::double_parameter(
       "GSTAT_LENGTH_CURRENTPATH", 0.0, "average length of the current path", &elchcontrol);
 
-  setStringToIntegralParameter<int>("EQUPOT", "Undefined",
+  setStringToIntegralParameter<Inpar::ElCh::EquPot>("EQUPOT", "Undefined",
       "type of closing equation for electric potential",
       tuple<std::string>(
           "Undefined", "ENC", "ENC_PDE", "ENC_PDE_ELIM", "Poisson", "Laplace", "divi"),
-      tuple<int>(equpot_undefined, equpot_enc, equpot_enc_pde, equpot_enc_pde_elim, equpot_poisson,
-          equpot_laplace, equpot_divi),
+      tuple<Inpar::ElCh::EquPot>(equpot_undefined, equpot_enc, equpot_enc_pde, equpot_enc_pde_elim,
+          equpot_poisson, equpot_laplace, equpot_divi),
       &elchcontrol);
   Core::UTILS::bool_parameter("BLOCKPRECOND", "NO",
       "Switch to block-preconditioned family of solvers, only works with block preconditioners "
@@ -159,10 +160,10 @@ void Inpar::ElCh::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
       "time step when time step size should be updated to 'ADAPTED_TIME_STEP_SIZE'.", &sclcontrol);
   Core::UTILS::double_parameter("ADAPTED_TIME_STEP_SIZE", -1.0, "new time step size.", &sclcontrol);
 
-  setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
+  setStringToIntegralParameter<ScaTra::InitialField>("INITIALFIELD", "zero_field",
       "Initial Field for scalar transport problem",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
-      tuple<int>(ScaTra::initfield_zero_field, ScaTra::initfield_field_by_function,
+      tuple<ScaTra::InitialField>(ScaTra::initfield_zero_field, ScaTra::initfield_field_by_function,
           ScaTra::initfield_field_by_condition),
       &sclcontrol);
 

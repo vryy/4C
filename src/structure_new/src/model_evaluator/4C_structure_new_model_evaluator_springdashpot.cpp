@@ -334,7 +334,7 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   }
 
   // write spring stress if defined in io-flag
-  if (Core::UTILS::integral_value<bool>(Global::Problem::instance()->io_params(), "OUTPUT_SPRING"))
+  if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
     iowriter.write_vector("springstress", springstress);
 }
 

@@ -141,7 +141,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
 
     pstype_ = Prestress::get_type();
     pstime_ = Prestress::get_prestress_time();
-    if (Core::UTILS::integral_value<int>(sdyn, "MATERIALTANGENT"))
+    if (sdyn.get<std::string>("MATERIALTANGENT") != "analytical")
       analyticalmaterialtangent_ = false;
   }
   if (Prestress::is_mulf(pstype_))

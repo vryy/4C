@@ -49,7 +49,7 @@ void Solid::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
   // call init() in base class
   Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto dyntype = Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
+  auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
   const Inpar::Solid::PreStress pre_stress_type =
       Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
           Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
@@ -144,7 +144,6 @@ void Solid::TimIntStatics::predict_const_vel_consist_acc()
     disi_->PutScalar(0.0);
     return;
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -177,7 +176,6 @@ void Solid::TimIntStatics::predict_const_acc()
     disi_->PutScalar(0.0);
     return;
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*/

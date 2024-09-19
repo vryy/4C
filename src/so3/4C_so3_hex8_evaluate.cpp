@@ -318,7 +318,6 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       volume_mat = volume_ref;
       mass_mat = mass_ref;
 
-
       elevec1(0) = volume_ref;
       elevec1(1) = volume_mat;
       elevec1(2) = volume_cur;
@@ -404,14 +403,11 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "iostrain", Inpar::Solid::strain_none);
+        iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+        iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
         // in case of small strain materials calculate plastic strains for post processing
         plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-        ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "ioplstrain", Inpar::Solid::strain_none);
+        ioplstrain = params.get<Inpar::Solid::StrainType>("ioplstrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
@@ -427,7 +423,6 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, nullptr, nullptr, nullptr, nullptr, nullptr,
           &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
-
       {
         Core::Communication::PackBuffer data;
 
@@ -1081,12 +1076,10 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
         Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
-        auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
-        auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "iostrain", Inpar::Solid::strain_none);
-        auto ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "ioplstrain", Inpar::Solid::strain_none);
+        auto iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+        auto iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
+        auto ioplstrain =
+            params.get<Inpar::Solid::StrainType>("ioplstrain", Inpar::Solid::strain_none);
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, nullptr, nullptr, nullptr, nullptr,
             nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
@@ -2076,7 +2069,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     }
 
     // if output is requested only active stresses are written.
-    params.set<int>("iostress", iostress);
+    params.set<Inpar::Solid::StressType>("iostress", iostress);
 
     Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(material());
     so3mat->evaluate(&defgrd_mod, &glstrain, params, &stress, &cmat, gp, id());
@@ -2307,7 +2300,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         }
       }
 
-      // check for non constant mass matrix
+      // check for non-constant mass matrix
       if (so3mat->varying_density())
       {
         /*

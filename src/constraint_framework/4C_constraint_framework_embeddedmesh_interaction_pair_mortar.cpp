@@ -473,7 +473,7 @@ void get_nurbs_information(const Core::Elements::Element& interface_element,
       normalfac);
   if (zero_size)
     FOUR_C_THROW(
-        "GetKnotVectorAndWeightsForNurbsBoundary has to return a non "
+        "get_knot_vector_and_weights_for_nurbs_boundary has to return a non "
         "zero size.");
 }
 

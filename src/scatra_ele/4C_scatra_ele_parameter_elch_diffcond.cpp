@@ -73,12 +73,11 @@ void Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::set_parameters(
   Teuchos::ParameterList& diffcondparams = parameters.sublist("DIFFCOND");
 
   // flag if current is used as a solution variable
-  cursolvar_ = Core::UTILS::integral_value<int>(diffcondparams, "CURRENT_SOLUTION_VAR");
+  cursolvar_ = diffcondparams.get<bool>("CURRENT_SOLUTION_VAR");
 
   // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference
   // number
-  diffusioncoefbased_ =
-      Core::UTILS::integral_value<Inpar::ElCh::EquPot>(diffcondparams, "MAT_DIFFCOND_DIFFBASED");
+  diffusioncoefbased_ = diffcondparams.get<bool>("MAT_DIFFCOND_DIFFBASED");
 
   // switch for dilute and concentrated solution theory (diffusion potential in current equation):
   //    A          B

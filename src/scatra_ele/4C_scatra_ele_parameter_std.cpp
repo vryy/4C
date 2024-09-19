@@ -107,15 +107,14 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
   is_ale_ = parameters.get<bool>("isale", false);
 
   // set flag for conservative form
-  const Inpar::ScaTra::ConvForm convform =
-      Core::UTILS::get_as_enum<Inpar::ScaTra::ConvForm>(parameters, "convform");
+  const auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(parameters, "convform");
 
   is_conservative_ = false;
   if (convform == Inpar::ScaTra::convform_conservative) is_conservative_ = true;
 
   // flag for writing the flux vector fields
   calcflux_domain_ =
-      Core::UTILS::get_as_enum<Inpar::ScaTra::FluxType>(parameters, "calcflux_domain");
+      Teuchos::getIntegralValue<Inpar::ScaTra::FluxType>(parameters, "calcflux_domain");
 
   //! vector containing ids of scalars for which flux vectors are calculated
   if (calcflux_domain_ != Inpar::ScaTra::flux_none)
@@ -125,7 +124,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
   Teuchos::ParameterList& stablist = parameters.sublist("stabilization");
 
   // get definition for stabilization parameter tau
-  whichtau_ = Core::UTILS::integral_value<Inpar::ScaTra::TauType>(stablist, "DEFINITION_TAU");
+  whichtau_ = Teuchos::getIntegralValue<Inpar::ScaTra::TauType>(stablist, "DEFINITION_TAU");
 
   // set correct stationary definition for stabilization parameter automatically
   // and ensure that exact stabilization parameter is only used in stationary case
@@ -153,12 +152,12 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
 
   // get characteristic element length for stabilization parameter definition
   charelelength_ =
-      Core::UTILS::integral_value<Inpar::ScaTra::CharEleLength>(stablist, "CHARELELENGTH");
+      Teuchos::getIntegralValue<Inpar::ScaTra::CharEleLength>(stablist, "CHARELELENGTH");
 
   // set (sign) factor for diffusive and reactive stabilization terms
   // (factor is zero for SUPG) and overwrite tau definition when there
   // is no stabilization
-  stabtype_ = Core::UTILS::integral_value<Inpar::ScaTra::StabType>(stablist, "STABTYPE");
+  stabtype_ = Teuchos::getIntegralValue<Inpar::ScaTra::StabType>(stablist, "STABTYPE");
   switch (stabtype_)
   {
     case Inpar::ScaTra::stabtype_no_stabilization:
@@ -186,19 +185,17 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
 
   // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
   // (default: "false" for both flags)
-  sgvel_ = Core::UTILS::integral_value<int>(stablist, "SUGRVEL");
-  assgd_ = Core::UTILS::integral_value<int>(stablist, "ASSUGRDIFF");
+  sgvel_ = stablist.get<bool>("SUGRVEL");
+  assgd_ = stablist.get<bool>("ASSUGRDIFF");
 
   // select type of all-scale subgrid diffusivity if included
-  whichassgd_ = Core::UTILS::integral_value<Inpar::ScaTra::AssgdType>(stablist, "DEFINITION_ASSGD");
+  whichassgd_ = Teuchos::getIntegralValue<Inpar::ScaTra::AssgdType>(stablist, "DEFINITION_ASSGD");
 
   // set flags for potential evaluation of tau and material law at int. point
-  const Inpar::ScaTra::EvalTau tauloc =
-      Core::UTILS::integral_value<Inpar::ScaTra::EvalTau>(stablist, "EVALUATION_TAU");
+  const auto tauloc = Teuchos::getIntegralValue<Inpar::ScaTra::EvalTau>(stablist, "EVALUATION_TAU");
   tau_gp_ = (tauloc == Inpar::ScaTra::evaltau_integration_point);  // set true/false
 
-  const Inpar::ScaTra::EvalMat matloc =
-      Core::UTILS::integral_value<Inpar::ScaTra::EvalMat>(stablist, "EVALUATION_MAT");
+  const auto matloc = Teuchos::getIntegralValue<Inpar::ScaTra::EvalMat>(stablist, "EVALUATION_MAT");
   mat_gp_ = (matloc == Inpar::ScaTra::evalmat_integration_point);  // set true/false
 
   // check for illegal combinations
@@ -212,7 +209,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
   }
 
   // get quantities for finite difference check
-  fdcheck_ = Core::UTILS::get_as_enum<Inpar::ScaTra::FdCheck>(parameters, "fdcheck");
+  fdcheck_ = Teuchos::getIntegralValue<Inpar::ScaTra::FdCheck>(parameters, "fdcheck");
   fdcheckeps_ = parameters.get<double>("fdcheckeps");
   fdchecktol_ = parameters.get<double>("fdchecktol");
 

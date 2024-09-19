@@ -689,7 +689,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     probdim>::cal_error_compared_to_analyt_solution(const Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& errors)
 {
-  switch (Core::UTILS::get_as_enum<Inpar::ScaTra::CalcError>(params, "calcerrorflag"))
+  switch (Teuchos::getIntegralValue<Inpar::ScaTra::CalcError>(params, "calcerrorflag"))
   {
     case Inpar::ScaTra::calcerror_Kwok_Wu:
     {

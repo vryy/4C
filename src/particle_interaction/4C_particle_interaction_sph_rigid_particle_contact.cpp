@@ -33,8 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 ParticleInteraction::SPHRigidParticleContactBase::SPHRigidParticleContactBase(
     const Teuchos::ParameterList& params)
     : params_sph_(params),
-      writeparticlewallinteraction_(
-          Core::UTILS::integral_value<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
+      writeparticlewallinteraction_(params_sph_.get<bool>("WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }

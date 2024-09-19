@@ -16,7 +16,6 @@
 #include "4C_contact_meshtying_contact_bridge.hpp"
 #include "4C_contact_meshtying_poro_lagrange_strategy.hpp"
 #include "4C_contact_nitsche_strategy_poro.hpp"
-#include "4C_fem_condition_utils.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_general_elements_paramsminimal.hpp"
 #include "4C_fluid_ele_action.hpp"
@@ -94,7 +93,7 @@ PoroElast::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
-  solveradapttol_ = (Core::UTILS::integral_value<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (sdynparams.get<bool>("ADAPTCONV"));
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   const Teuchos::ParameterList& poroparams =
@@ -102,7 +101,7 @@ PoroElast::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
   equilibration_method_ =
       Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
-  strmethodname_ = Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
+  strmethodname_ = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
   no_penetration_ = false;
   nit_contact_ = false;
   // if inpar is set to nopenetration for contact!!! to be done!
@@ -654,7 +653,7 @@ void PoroElast::Monolithic::create_linear_solver()
 
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(porosolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // use solver blocks for structure and fluid
@@ -665,11 +664,11 @@ void PoroElast::Monolithic::create_linear_solver()
 
   solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   switch (azprectype)
@@ -692,7 +691,6 @@ void PoroElast::Monolithic::create_linear_solver()
     break;
     default:
       FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
-      break;
   }
 }
 
@@ -1030,9 +1028,9 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
   // create the parameters for the discretization
   Teuchos::ParameterList fparams;
   // action for elements
-  fparams.set<int>("action", FLD::calc_porousflow_fluid_coupling);
+  fparams.set<FLD::Action>("action", FLD::calc_porousflow_fluid_coupling);
   // physical type
-  fparams.set<int>("Physical Type", fluid_field()->physical_type());
+  fparams.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
   // other parameters that might be needed by the elements
   fparams.set("delta time", dt());
   fparams.set("total time", time());
@@ -1081,12 +1079,12 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
     // create the parameters for the discretization
     Teuchos::ParameterList params;
     // action for elements
-    params.set<int>("action", FLD::poro_boundary);
+    params.set<FLD::BoundaryAction>("action", FLD::poro_boundary);
     params.set("total time", time());
     params.set("delta time", dt());
     params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidstructure);
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<int>("Physical Type", fluid_field()->physical_type());
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->dispnp());
@@ -1103,9 +1101,9 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
     // create the parameters for the discretization
     Teuchos::ParameterList params;
     // action for elements
-    params.set<int>("action", FLD::poro_prescoupl);
+    params.set<FLD::BoundaryAction>("action", FLD::poro_prescoupl);
     params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidstructure);
-    params.set<int>("Physical Type", fluid_field()->physical_type());
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->dispnp());
@@ -1584,7 +1582,7 @@ bool PoroElast::Monolithic::setup_solver()
   {
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
   }
   else
@@ -1594,15 +1592,14 @@ bool PoroElast::Monolithic::setup_solver()
   // Get the parameters for the Newton iteration
   itermax_ = poroelastdyn.get<int>("ITEMAX");
   itermin_ = poroelastdyn.get<int>("ITEMIN");
-  normtypeinc_ = Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_INC");
-  normtypefres_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_RESF");
+  normtypeinc_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_INC");
+  normtypefres_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroelastdyn, "NORM_RESF");
   combincfres_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
+      Teuchos::getIntegralValue<Inpar::PoroElast::BinaryOp>(poroelastdyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
+      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
+      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroelastdyn, "VECTORNORM_INC");
 
   tolinc_ = poroelastdyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroelastdyn.get<double>("TOLRES_GLOBAL");

@@ -425,8 +425,8 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
       }
       else
       {
-        iocouplingstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iocouplstress", Inpar::Solid::stress_none);
+        iocouplingstress =
+            params.get<Inpar::Solid::StressType>("iocouplstress", Inpar::Solid::stress_none);
 
         // check for output of coupling stress
         if (iocouplingstress == Inpar::Solid::stress_none)

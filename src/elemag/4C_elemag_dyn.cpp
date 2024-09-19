@@ -100,7 +100,7 @@ void electromagnetics_drt()
   Teuchos::RCP<Core::LinAlg::Solver> solver =
       Teuchos::rcp(new Core::LinAlg::Solver(problem->solver_params(linsolvernumber_elemag), comm,
           Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // declare output writer
@@ -115,8 +115,7 @@ void electromagnetics_drt()
   params->set<int>("restart", restart);
 
   // create algorithm depending on time-integration scheme
-  Inpar::EleMag::DynamicType elemagdyna =
-      Core::UTILS::integral_value<Inpar::EleMag::DynamicType>(elemagparams, "TIMEINT");
+  auto elemagdyna = Teuchos::getIntegralValue<Inpar::EleMag::DynamicType>(elemagparams, "TIMEINT");
   Teuchos::RCP<EleMag::ElemagTimeInt> elemagalgo;
   switch (elemagdyna)
   {
@@ -171,8 +170,8 @@ void electromagnetics_drt()
     elemagalgo->read_restart(restart);
   else
   {
-    Inpar::EleMag::InitialField init =
-        Core::UTILS::integral_value<Inpar::EleMag::InitialField>(elemagparams, "INITIALFIELD");
+    auto init =
+        Teuchos::getIntegralValue<Inpar::EleMag::InitialField>(elemagparams, "INITIALFIELD");
 
     bool ishdg = false;
 
@@ -224,8 +223,8 @@ void electromagnetics_drt()
             Global::Problem::instance()->scalar_transport_dynamic_params();
 
         // do the scatra
-        const Inpar::ScaTra::VelocityField veltype =
-            Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+        const auto veltype =
+            Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
         switch (veltype)
         {
           case Inpar::ScaTra::velocity_zero:  // zero  (see case 1)
@@ -262,7 +261,8 @@ void electromagnetics_drt()
 
             // The solver type still has to be fixed as the problem is linear but the steady state
             // does not always behave correctly with linear solvers.
-            scatraparams->set("SOLVERTYPE", "nonlinear");
+            scatraparams->set<Inpar::ScaTra::SolverType>(
+                "SOLVERTYPE", Inpar::ScaTra::SolverType::solvertype_nonlinear);
 
             // create necessary extra parameter list for scatra
             Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
@@ -287,7 +287,7 @@ void electromagnetics_drt()
             Teuchos::RCP<Core::LinAlg::Solver> scatrasolver = Teuchos::rcp(new Core::LinAlg::Solver(
                 Global::Problem::instance()->solver_params(scatraparams->get<int>("LINEAR_SOLVER")),
                 scatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-                Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+                Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
                     Global::Problem::instance()->io_params(), "VERBOSITY")));
 
             // create instance of scalar transport basis algorithm (empty fluid discretization)
@@ -295,8 +295,10 @@ void electromagnetics_drt()
             if (ishdg)
             {
               // Add parameters for HDG
-              scatraparams->sublist("STABILIZATION").set("STABTYPE", "centered");
-              scatraparams->sublist("STABILIZATION").set("DEFINITION_TAU", "Numerical_Value");
+              scatraparams->sublist("STABILIZATION")
+                  .set("STABTYPE", Inpar::ScaTra::StabType::stabtype_hdg_centered);
+              scatraparams->sublist("STABILIZATION")
+                  .set("DEFINITION_TAU", Inpar::ScaTra::TauType::tau_numerical_value);
               // If the input file does not specify a tau parameter then use the one given to the
               // elemag discretization
               if (scatraparams->sublist("STABILIZATION").get<double>("TAU_VALUE") == 0.0)
@@ -310,7 +312,9 @@ void electromagnetics_drt()
             {
               // Add parameters for CG
               // There is no need for stabilization as the problem is a pure diffusion problem
-              scatraparams->sublist("STABILIZATION").set("STABTYPE", "no_stabilization");
+              scatraparams->sublist("STABILIZATION")
+                  .set<Inpar::ScaTra::StabType>(
+                      "STABTYPE", Inpar::ScaTra::StabType::stabtype_no_stabilization);
               scatraalgo = Teuchos::rcp(new ScaTra::TimIntStationary(
                   scatradis, scatrasolver, scatraparams, scatraextraparams, output));
             }
@@ -373,7 +377,7 @@ void electromagnetics_drt()
   elemagalgo->integrate();
 
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
-  if (Core::UTILS::integral_value<bool>(elemagparams, "CALCERR"))
+  if (elemagparams.get<bool>("CALCERR"))
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors = elemagalgo->compute_error();
     elemagalgo->print_errors(errors);

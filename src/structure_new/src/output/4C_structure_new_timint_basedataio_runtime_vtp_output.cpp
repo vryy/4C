@@ -27,22 +27,18 @@ void Solid::TimeInt::ParamsRuntimeVtpOutput::init(
 
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_every_iteration_ =
-      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
+  output_every_iteration_ = IO_vtp_structure_paramslist.get<bool>("EVERY_ITERATION");
 
   if (output_every_iteration_)
     FOUR_C_THROW("Every iteration output not implemented for structure vtp output!");
 
-  output_owner_ = (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "OWNER");
+  output_owner_ = IO_vtp_structure_paramslist.get<bool>("OWNER");
 
-  output_orientationandlength_ =
-      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
+  output_orientationandlength_ = IO_vtp_structure_paramslist.get<bool>("ORIENTATIONANDLENGTH");
 
-  output_numberofbonds_ =
-      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
+  output_numberofbonds_ = IO_vtp_structure_paramslist.get<bool>("NUMBEROFBONDS");
 
-  output_linkingforce_ =
-      (bool)Core::UTILS::integral_value<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
+  output_linkingforce_ = IO_vtp_structure_paramslist.get<bool>("LINKINGFORCE");
 
 
   isinit_ = true;

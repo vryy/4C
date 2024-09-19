@@ -55,7 +55,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
       sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
       sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
       errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-      errnorm_(Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM")),
+      errnorm_(Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM")),
       errtol_(tap.get<double>("LOCERRTOL")),
       errorder_(1),  // CHANGE THIS CONSTANT
       adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),

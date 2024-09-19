@@ -622,7 +622,7 @@ namespace Mortar
         // solve equation
         if (abs(xjm.determinant()) < 1e-15)
         {
-          std::cout << "WARNING !!! jacobi determinant singular! In GlobalToLocal(...)"
+          std::cout << "WARNING !!! jacobi determinant singular! In global_to_local(...)"
                     << std::endl;
           std::cout << "JAC= " << xjm.determinant() << std::endl;
           std::cout << "CONVERGED= " << converged << std::endl;

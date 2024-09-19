@@ -30,10 +30,10 @@ void Inpar::FPSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::Tuple<int, 1> fpsilabel;
 
   Teuchos::Array<std::string> name(1);
-  Teuchos::Array<int> label(1);
+  Teuchos::Array<FpsiCouplingType> label(1);
   name[0] = "fpsi_monolithic_plain";
   label[0] = fpsi_monolithic_plain;
-  setStringToIntegralParameter<int>("COUPALGO", "fpsi_monolithic_plain",
+  setStringToIntegralParameter<FpsiCouplingType>("COUPALGO", "fpsi_monolithic_plain",
       "Iteration Scheme over the fields", name, label, &fpsidyn);
 
   Core::UTILS::bool_parameter("SHAPEDERIVATIVES", "No",
@@ -47,10 +47,11 @@ void Inpar::FPSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
       "Supported in monolithic FPSI for now.",
       &fpsidyn);
 
-  setStringToIntegralParameter<int>("PARTITIONED", "RobinNeumann",
-      "Coupling strategies for partitioned FPSI solvers.",
+  setStringToIntegralParameter<Inpar::FPSI::PartitionedCouplingMethod>("PARTITIONED",
+      "RobinNeumann", "Coupling strategies for partitioned FPSI solvers.",
       tuple<std::string>("RobinNeumann", "monolithic", "nocoupling"),
-      tuple<int>(RobinNeumann, monolithic, nocoupling), &fpsidyn);
+      tuple<Inpar::FPSI::PartitionedCouplingMethod>(RobinNeumann, monolithic, nocoupling),
+      &fpsidyn);
 
   Core::UTILS::bool_parameter(
       "SECONDORDER", "No", "Second order coupling at the interface.", &fpsidyn);
@@ -70,35 +71,34 @@ void Inpar::FPSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
       "fluidpressure, ale",
       &fpsidyn);
 
-  setStringToIntegralParameter<int>("NORM_INC", "Abs",
+  setStringToIntegralParameter<Inpar::FPSI::ConvergenceNorm>("NORM_INC", "Abs",
       "Type of norm for primary variables convergence check.  \n"
       "Abs: absolute values, Abs_sys_split: absolute values with correction of systemsize for "
       "every field seperate, Rel_sys: relative values with correction of systemsize.",
       tuple<std::string>("Abs", "Abs_sys_split", "Rel_sys"),
-      tuple<int>(
+      tuple<Inpar::FPSI::ConvergenceNorm>(
           absoluteconvergencenorm, absoluteconvergencenorm_sys_split, relativconvergencenorm_sys),
       &fpsidyn);
 
-  setStringToIntegralParameter<int>("NORM_RESF", "Abs",
+  setStringToIntegralParameter<Inpar::FPSI::ConvergenceNorm>("NORM_RESF", "Abs",
       "Type of norm for primary variables convergence check. \n"
       "Abs: absolute values, Abs_sys_split: absolute values with correction of systemsize for "
       "every field seperate, Rel_sys: relative values with correction of systemsize.",
       tuple<std::string>("Abs", "Abs_sys_split", "Rel_sys"),
-      tuple<int>(
+      tuple<Inpar::FPSI::ConvergenceNorm>(
           absoluteconvergencenorm, absoluteconvergencenorm_sys_split, relativconvergencenorm_sys),
       &fpsidyn);
 
-  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC", "And",
+  setStringToIntegralParameter<Inpar::FPSI::BinaryOp>("NORMCOMBI_RESFINC", "And",
       "binary operator to combine primary variables and residual force values",
-      tuple<std::string>("And", "Or"), tuple<int>(bop_and, bop_or), &fpsidyn);
+      tuple<std::string>("And", "Or"), tuple<Inpar::FPSI::BinaryOp>(bop_and, bop_or), &fpsidyn);
 
-  setStringToIntegralParameter<int>("LineSearch", "No",
+  Core::UTILS::bool_parameter("LineSearch", "No",
       "adapt increment in case of non-monotonic residual convergence or residual oscillations",
-      tuple<std::string>("Yes", "No"), tuple<int>(1, 0), &fpsidyn);
+      &fpsidyn);
 
-  setStringToIntegralParameter<int>("FDCheck", "No",
-      "perform FPSIFDCheck() finite difference check", tuple<std::string>("Yes", "No"),
-      tuple<int>(1, 0), &fpsidyn);
+  Core::UTILS::bool_parameter(
+      "FDCheck", "No", "perform FPSIFDCheck() finite difference check", &fpsidyn);
 
   // number of linear solver used for poroelasticity
   Core::UTILS::int_parameter(

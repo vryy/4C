@@ -90,8 +90,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_s
   Core::FE::IntPointsAndWeights<nsd_> intpoints(
       ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const Inpar::ScaTra::CalcErrorLevelSet errortype =
-      Core::UTILS::get_as_enum<Inpar::ScaTra::CalcErrorLevelSet>(params, "calcerrorflag");
+  const auto errortype =
+      Teuchos::getIntegralValue<Inpar::ScaTra::CalcErrorLevelSet>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::ScaTra::calcerror_initial_field:

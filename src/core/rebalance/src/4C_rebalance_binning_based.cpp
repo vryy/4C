@@ -88,7 +88,7 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
   else
     for (const auto& curr_dis : vector_of_discretizations) curr_dis->fill_complete();
 
-}  // Core::Rebalance::RebalanceDiscretizationsByBinning
+}  // Core::Rebalance::rebalance_discretizations_by_binning
 
 /*----------------------------------------------------------------------*
  |  Ghost input discr. redundantly on all procs             rauch 09/16 |
@@ -174,7 +174,7 @@ void Core::Rebalance::ghost_discretization_on_all_procs(
           "Fix this!");
   }
 #endif
-}  // Core::Rebalance::GhostDiscretizationOnAllProcs
+}  // Core::Rebalance::ghost_discretization_on_all_procs
 
 /*---------------------------------------------------------------------*
 |  Rebalance Elements Matching Template discretization     rauch 09/16 |
@@ -258,7 +258,7 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
     // print to screen
     Core::Rebalance::UTILS::print_parallel_distribution(dis_to_rebalance);
   }  // if more than one proc
-}  // Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations
+}  // Core::Rebalance::match_element_distribution_of_matching_discretizations
 
 
 /*---------------------------------------------------------------------*
@@ -542,7 +542,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     Core::Rebalance::UTILS::print_parallel_distribution(dis_to_rebalance);
 
   }  // if more than one proc
-}  // MatchElementDistributionOfMatchingConditionedElements
+}  // match_element_distribution_of_matching_conditioned_elements
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -571,7 +571,7 @@ Teuchos::RCP<const Epetra_Vector> Core::Rebalance::get_col_version_of_row_vector
     Core::LinAlg::export_to(*state, *tmp);
     return tmp;
   }
-}  // GetColVersionOfRowVector
+}  // get_col_version_of_row_vector
 
 /*----------------------------------------------------------------------*
  |(private)                                                   tk 06/10  |

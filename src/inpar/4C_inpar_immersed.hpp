@@ -33,7 +33,7 @@ namespace Inpar
       monolithic
     };
 
-    typedef enum ParitionedScheme
+    typedef enum PartitionedScheme
     {
       cell_coupling_undefined = 0,
       cell_basic_sequ_stagg = 1,

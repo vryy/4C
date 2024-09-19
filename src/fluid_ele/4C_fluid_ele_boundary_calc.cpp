@@ -68,7 +68,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::BoundaryAction act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::BoundaryAction>(params, "action");
 
   // get status of Ale
   const bool isale = ele1->parent_element()->is_ale();
@@ -881,7 +881,6 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     }
 
     // get shape derivatives at this node
-    // shape_function_2D_deriv1(deriv_, e0, e1, distype);
     Core::FE::shape_function<distype>(xsi_node, funct_);
 
     // the metric tensor and its determinant
@@ -1399,7 +1398,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
 
   // order of accuracy of grid velocity determination
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
-  const int gridvel = Core::UTILS::integral_value<Inpar::FLUID::Gridvel>(fdyn, "GRIDVEL");
+  const auto gridvel = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fdyn, "GRIDVEL");
 
   // normal vector
   Core::LinAlg::Matrix<nsd_, 1> normal(true);

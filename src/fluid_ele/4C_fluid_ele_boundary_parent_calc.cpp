@@ -2116,13 +2116,6 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
     Core::FE::shape_function<pdistype>(pxsi, pfunct);
     Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
-    // NURBS shape functions and derivatives of parent element at integration point
-    // (currently not activated)
-    /*if (pdistype == Core::FE::CellType::nurbs27)
-      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);
-    else if (pdistype == Core::FE::CellType::nurbs9)
-      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);*/
-
     // shape functions and derivatives of boundary element at integration point
     Core::FE::shape_function<bdistype>(xsi, funct);
     Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
@@ -4258,34 +4251,13 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
     }
   }
 
-  //  std::cout << Bmat << std::endl;
-
-
-  //---------------------------------------------------------------
-  // save matrix in matlab-format
-  // std::ostringstream sa;
-  // sa << "sparsematrixA" << surfele->parent_element()->Id() << ".mtl";
-  // std::string fname1(sa.str());
-  // std::ostringstream sb;
-  // sb << "sparsematrixB" << surfele->parent_element()->Id() << ".mtl";
-  // std::string fname2(sb.str());
-  // Core::LinAlg::PrintSerialDenseMatrixInMatlabFormat(fname2,(elemat_epetra2));
-  // Core::LinAlg::PrintSerialDenseMatrixInMatlabFormat(fname1,(elemat_epetra1));
-
-  // Solve the local eigen value problem Ax = lambda Bx. The function GeneralizedEigen
+  // Solve the local eigen value problem Ax = lambda Bx. The function generalized_eigen
   // returns the maximum Eigenvalue of the problem.
   const double maxeigenvalue = Core::LinAlg::generalized_eigen(elemat_epetra1, elemat_epetra2);
 
   // fill the map: every side id has it's own parameter beta
   (*params.get<Teuchos::RCP<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map"))[surfele->id()] = maxeigenvalue;
-
-  //---------------------------------------------------------------
-  //  std::cout << "solving eigenvalue-problem for element" << parent->Id() << std::endl;
-  //  std::cout << "computed eigenvalue approximating C*meas(surf)/meas(vol): " << maxeigenvalue <<
-  //  std::endl; std::cout << "meas_vol " << meas_vol << std::endl; std::cout << "meas_surf " <<
-  //  meas_surf << std::endl; std::cout << "resulting C without element-length contribution: " <<
-  //  maxeigenvalue *meas_vol/meas_surf << std::endl;
 
   return;
 }

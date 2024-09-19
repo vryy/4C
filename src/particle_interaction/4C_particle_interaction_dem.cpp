@@ -34,7 +34,7 @@ ParticleInteraction::ParticleInteractionDEM::ParticleInteractionDEM(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : ParticleInteraction::ParticleInteractionBase(comm, params),
       params_dem_(params.sublist("DEM")),
-      writeparticleenergy_(Core::UTILS::integral_value<int>(params_dem_, "WRITE_PARTICLE_ENERGY"))
+      writeparticleenergy_(params_dem_.get<bool>("WRITE_PARTICLE_ENERGY"))
 {
   // empty constructor
 }
@@ -242,8 +242,8 @@ void ParticleInteraction::ParticleInteractionDEM::init_contact_handler()
 void ParticleInteraction::ParticleInteractionDEM::init_adhesion_handler()
 {
   // get type of adhesion law
-  Inpar::PARTICLE::AdhesionLaw adhesionlaw =
-      Core::UTILS::integral_value<Inpar::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
+  auto adhesionlaw =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
 
   // create adhesion handler
   if (adhesionlaw != Inpar::PARTICLE::NoAdhesion)
@@ -285,9 +285,8 @@ void ParticleInteraction::ParticleInteractionDEM::set_initial_radius()
     FOUR_C_THROW("minimum allowed particle radius larger than maximum allowed particle radius!");
 
   // get type of initial particle radius assignment
-  Inpar::PARTICLE::InitialRadiusAssignment radiusdistributiontype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::InitialRadiusAssignment>(
-          params_dem_, "INITIAL_RADIUS");
+  auto radiusdistributiontype = Teuchos::getIntegralValue<Inpar::PARTICLE::InitialRadiusAssignment>(
+      params_dem_, "INITIAL_RADIUS");
 
   switch (radiusdistributiontype)
   {

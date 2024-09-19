@@ -15,6 +15,7 @@
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_geometry_element_volume.hpp"
 #include "4C_global_data.hpp"
+#include "4C_inpar_IO_monitor_structure_dbc.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_every_iteration_writer.hpp"
@@ -130,8 +131,8 @@ void Solid::MonitorDbc::setup()
   const Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
       Global::Problem::instance()->io_params().sublist("MONITOR STRUCTURE DBC");
 
-  std::string filetype = sublist_IO_monitor_structure_dbc.get<std::string>("FILE_TYPE");
-
+  std::string filetype = Teuchos::getStringValue<Inpar::IOMonitorStructureDBC::FileType>(
+      sublist_IO_monitor_structure_dbc, "FILE_TYPE");
   if (isempty_)
   {
     issetup_ = true;
@@ -161,8 +162,8 @@ void Solid::MonitorDbc::setup()
   // ... create files paths ...
   full_filepaths_ = create_file_paths(rconds, full_dirpath, filename_only_prefix, filetype);
   // ... clear them and write header
-  clear_files_and_write_header(rconds, full_filepaths_,
-      Core::UTILS::integral_value<int>(sublist_IO_monitor_structure_dbc, "WRITE_HEADER"));
+  clear_files_and_write_header(
+      rconds, full_filepaths_, sublist_IO_monitor_structure_dbc.get<bool>("WRITE_HEADER"));
 
   // handle restart
   if (Global::Problem::instance()->restart())

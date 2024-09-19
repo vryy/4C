@@ -235,7 +235,7 @@ void Thermo::TimIntStatics::update_step_element()
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
   // action for elements
-  p.set<int>("action", Thermo::calc_thermo_update_istep);
+  p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 

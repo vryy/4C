@@ -39,20 +39,8 @@ namespace Adapter
     /// constructor
     explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
 
-    /// return the combined interface (matching fsi + immersed)
-    Teuchos::RCP<Core::LinAlg::MapExtractor> combined_interface() { return combinedinterface_; };
-
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
     virtual Teuchos::RCP<Epetra_Vector> extract_immersed_interface_dispnp();
-
-    /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface + fsi interface
-    virtual Teuchos::RCP<Epetra_Vector> extract_full_interface_dispnp();
-
-    /// Predictor for interface displacements at immersed interface
-    Teuchos::RCP<Epetra_Vector> predict_immersed_interface_dispnp();
-
-    /// Predictor for interface displacements at immersed and fsi interface
-    Teuchos::RCP<Epetra_Vector> predict_full_interface_dispnp();
 
     /// Get mutable reference to DBC object
     Solid::Dbc& get_dbc();

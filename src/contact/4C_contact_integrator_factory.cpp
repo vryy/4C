@@ -72,7 +72,7 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
     case Inpar::CONTACT::solution_penalty:
     case Inpar::CONTACT::solution_multiscale:
     {
-      if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(mortar_params, "ALGORITHM") ==
+      if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(mortar_params, "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts)
         integrator = Teuchos::rcp(new CONTACT::IntegratorNitsche(mortar_params, slave_type, comm));
       else

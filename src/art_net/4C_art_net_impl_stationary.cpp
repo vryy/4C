@@ -129,7 +129,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   // set initial field
   // -------------------------------------------------------------------
   set_initial_field(
-      Core::UTILS::integral_value<Inpar::ArtDyn::InitialField>(arteryparams, "INITIALFIELD"),
+      Teuchos::getIntegralValue<Inpar::ArtDyn::InitialField>(arteryparams, "INITIALFIELD"),
       arteryparams.get<int>("INITFUNCNO"));
 
 
@@ -137,8 +137,8 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   {
     const Teuchos::ParameterList& myscatraparams =
         Global::Problem::instance()->scalar_transport_dynamic_params();
-    if (Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(
-            myscatraparams, "VELOCITYFIELD") != Inpar::ScaTra::velocity_zero)
+    if (Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
+        Inpar::ScaTra::velocity_zero)
       FOUR_C_THROW("set your velocity field to zero!");
     // construct the scatra problem
     scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
@@ -261,7 +261,7 @@ void Arteries::ArtNetImplStationary::assemble_mat_and_rhs()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", Arteries::calc_sys_matrix_rhs);
+  eleparams.set<Arteries::Action>("action", Arteries::calc_sys_matrix_rhs);
 
   // set vector values needed by elements
   discret_->clear_state();
@@ -560,7 +560,7 @@ void Arteries::ArtNetImplStationary::output_flow()
 
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
-    p.set<int>("action", Arteries::calc_flow_pressurebased);
+    p.set<Arteries::Action>("action", Arteries::calc_flow_pressurebased);
 
     Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
     actele->location_vector(*discret_, la, false);

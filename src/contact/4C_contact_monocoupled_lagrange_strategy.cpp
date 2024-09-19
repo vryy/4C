@@ -97,12 +97,10 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
   Teuchos::RCP<Epetra_Map> domainmap = Teuchos::rcp(new Epetra_Map(kteff->domain_map()));
 
   // system type
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // shape function
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -142,11 +140,6 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     if (parallel_redistribution_status())  // TODO Check if how to modify
     {
       FOUR_C_THROW("parallel_redistribution_status(): CHECK ME!");
-      // split and transform to redistributed maps
-      //      Core::LinAlg::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-      //      ksmsm = Mortar::matrix_row_col_transform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-      //      ksmn  = Mortar::MatrixRowTransform(ksmn,gsmdofrowmap_);
-      //      knsm  = Mortar::MatrixColTransform(knsm,gsmdofrowmap_);
     }
     else
     {
@@ -246,36 +239,6 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     if (parallel_redistribution_status())  // check what to do
     {
       FOUR_C_THROW("not checked so far!!!");
-      //----------------------------------------------------------- FIRST LINE
-      // nothing to do (ndof-map independent of redistribution)
-
-      //      //---------------------------------------------------------- SECOND LINE
-      //      kmnmod = Mortar::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-      //      kmmmod = Mortar::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-      //      if (iset) kmimod = Mortar::MatrixRowTransform(kmimod,pgmdofrowmap_);
-      //      if (aset) kmamod = Mortar::MatrixRowTransform(kmamod,pgmdofrowmap_);
-      //
-      //      //----------------------------------------------------------- THIRD LINE
-      //      if (iset)
-      //      {
-      //        kinmod = Mortar::MatrixRowTransform(kinmod,pgsdofrowmap_);
-      //        kimmod = Mortar::MatrixRowTransform(kimmod,pgsdofrowmap_);
-      //        kiimod = Mortar::MatrixRowTransform(kiimod,pgsdofrowmap_);
-      //        if (aset) kiamod = Mortar::MatrixRowTransform(kiamod,pgsdofrowmap_);
-      //      }
-      //
-      //      //---------------------------------------------------------- FOURTH LINE
-      //      if (aset) smatrix_ = Mortar::MatrixRowTransform(smatrix_,pgsdofrowmap_);
-      //
-      //      //----------------------------------------------------------- FIFTH LINE
-      //      if (aset)
-      //      {
-      //        kanmod = Mortar::MatrixRowTransform(kanmod,pgsdofrowmap_);
-      //        kammod = Mortar::MatrixRowTransform(kammod,pgsdofrowmap_);
-      //        kaamod = Mortar::MatrixRowTransform(kaamod,pgsdofrowmap_);
-      //        if (iset) kaimod = Mortar::MatrixRowTransform(kaimod,pgsdofrowmap_);
-      //        pmatrix_ = Mortar::MatrixRowTransform(pmatrix_,pgsdofrowmap_);
-      //      }
     }
 
     /**********************************************************************/
@@ -332,10 +295,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     return;  // done already here if there are no off-diag blocks
 
   // shape function and system types
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   //**********************************************************************
   //**********************************************************************

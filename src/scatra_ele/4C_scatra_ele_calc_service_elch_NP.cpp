@@ -289,8 +289,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
   const Core::FE::IntPointsAndWeights<nsd_> intpoints(
       ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const Inpar::ScaTra::CalcError errortype =
-      Core::UTILS::get_as_enum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
+  const auto errortype =
+      Teuchos::getIntegralValue<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::ScaTra::calcerror_Kwok_Wu:

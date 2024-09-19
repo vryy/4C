@@ -62,7 +62,7 @@ int SSI::UTILS::check_time_stepping(double dt1, double dt2)
 void SSI::UTILS::change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
     Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn)
 {
-  bool difftimestep = Core::UTILS::integral_value<int>(ssiparams, "DIFFTIMESTEPSIZE");
+  bool difftimestep = ssiparams.get<bool>("DIFFTIMESTEPSIZE");
 
   if (difftimestep)  // Create subproblems with different time steps
   {
@@ -167,7 +167,7 @@ Teuchos::ParameterList SSI::UTILS::clone_sca_tra_manifold_params(
 {
   Teuchos::ParameterList scatra_manifold_params(scatraparams);
 
-  switch (Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(
+  switch (Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(
       sublist_manifold_params, "INITIALFIELD"))
   {
     case Inpar::ScaTra::initfield_zero_field:
@@ -193,13 +193,13 @@ Teuchos::ParameterList SSI::UTILS::clone_sca_tra_manifold_params(
       break;
   }
 
-  if (Core::UTILS::integral_value<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       Inpar::ScaTra::outputscalars_none)
     scatra_manifold_params.set<bool>("output_file_name_discretization", true);
 
-  scatra_manifold_params.set<std::string>("OUTPUTSCALARSMEANGRAD", "No");
+  scatra_manifold_params.set<bool>("OUTPUTSCALARSMEANGRAD", false);
 
-  scatra_manifold_params.set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
+  scatra_manifold_params.set<bool>("ADAPTIVE_TIMESTEPPING", false);
 
   return scatra_manifold_params;
 }
@@ -210,7 +210,7 @@ Teuchos::ParameterList SSI::UTILS::modify_sca_tra_params(const Teuchos::Paramete
 {
   auto scatraparams_mutable = Teuchos::ParameterList(scatraparams);
 
-  if (Core::UTILS::integral_value<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       Inpar::ScaTra::outputscalars_none)
     scatraparams_mutable.set<bool>("output_file_name_discretization", true);
 

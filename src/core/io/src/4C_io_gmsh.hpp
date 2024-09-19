@@ -154,7 +154,7 @@ namespace Core::IO
     );
 
     //! write scalar field to Gmsh postprocessing file
-    //  Can we replace the ScalarFieldToGmsh function with this (nds=0)?
+    //  Can we replace the scalar_field_to_gmsh function with this (nds=0)?
     void scalar_field_dof_based_to_gmsh(
         const Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
         const Teuchos::RCP<const Epetra_Vector> scalarfield,   ///< scalar field to output

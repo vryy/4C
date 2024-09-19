@@ -105,9 +105,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
   // build runtime visualization writer if desired
-  if ((bool)Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT"),
-          "VTK_OUTPUT_BEAM_CONTACT"))
+  if (Global::Problem::instance()
+          ->beam_contact_params()
+          .sublist("RUNTIME VTK OUTPUT")
+          .get<bool>("VTK_OUTPUT_BEAM_CONTACT"))
   {
     beam_contact_params_ptr_->build_beam_contact_runtime_output_params(g_state().get_time_n());
 
@@ -117,7 +118,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
 
   contactelementtypes_.clear();
 
-  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
@@ -134,7 +135,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
     contactelementtypes_.push_back(Core::Binstrategy::Utils::BinContentType::Beam);
   }
 
-  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {

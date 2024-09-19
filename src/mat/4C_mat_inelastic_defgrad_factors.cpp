@@ -9,7 +9,6 @@
 
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 
-#include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_electrode.hpp"
@@ -194,7 +193,6 @@ Mat::InelasticDefgradFactors::InelasticDefgradFactors(Core::Mat::PAR::Parameter*
 {
 }
 
-
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory(int matnum)
@@ -209,7 +207,7 @@ Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory
 
   // check correct masslin type
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  if (Core::UTILS::integral_value<Inpar::Solid::MassLin>(sdyn, "MASSLIN") != Inpar::Solid::ml_none)
+  if (Teuchos::getIntegralValue<Inpar::Solid::MassLin>(sdyn, "MASSLIN") != Inpar::Solid::ml_none)
   {
     FOUR_C_THROW(
         "If you use the material 'InelasticDefgradFactors' please set 'MASSLIN' in the "

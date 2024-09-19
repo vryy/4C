@@ -29,7 +29,7 @@ void Inpar::Immersed::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> 
       list->sublist("IMMERSED METHOD", false, "General parameters for any immersed problem");
 
   Teuchos::Tuple<std::string, 3> coupname;
-  Teuchos::Tuple<int, 3> couplabel;
+  Teuchos::Tuple<Inpar::Immersed::PartitionedScheme, 3> couplabel;
 
   coupname[0] = "basic_sequ_stagg";
   couplabel[0] = cell_basic_sequ_stagg;
@@ -38,41 +38,40 @@ void Inpar::Immersed::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> 
   coupname[2] = "iter_stagg_AITKEN_rel_param";
   couplabel[2] = cell_iter_stagg_AITKEN_rel_param;
 
-
-
-  setStringToIntegralParameter<int>("COUPALGO", "partitioned",
+  setStringToIntegralParameter<Inpar::Immersed::ImmersedCoupling>("COUPALGO", "partitioned",
       "Coupling strategies for immersed method.", tuple<std::string>("partitioned", "monolithic"),
-      tuple<int>(partitioned, monolithic), &immersedmethod);
+      tuple<Inpar::Immersed::ImmersedCoupling>(partitioned, monolithic), &immersedmethod);
 
-  setStringToIntegralParameter<int>("SCHEME", "dirichletneumann",
-      "Coupling schemes for partitioned immersed method.",
+  setStringToIntegralParameter<Inpar::Immersed::ImmersedCouplingScheme>("SCHEME",
+      "dirichletneumann", "Coupling schemes for partitioned immersed method.",
       tuple<std::string>("neumannneumann", "dirichletneumann"),
-      tuple<int>(neumannneumann, dirichletneumann), &immersedmethod);
-
-  setStringToIntegralParameter<int>("DIVERCONT", "stop", "What to do after maxiter is reached.",
-      tuple<std::string>("stop", "continue"), tuple<int>(nlnsolver_stop, nlnsolver_continue),
+      tuple<Inpar::Immersed::ImmersedCouplingScheme>(neumannneumann, dirichletneumann),
       &immersedmethod);
 
-  setStringToIntegralParameter<int>("OUTPUT_EVRY_NLNITER", "no",
-      "write output after every solution step of the nonlin. part. iter. scheme",
-      tuple<std::string>("yes", "no"), tuple<int>(1, 0), &immersedmethod);
+  setStringToIntegralParameter<Inpar::Immersed::ImmersedNlnsolver>("DIVERCONT", "stop",
+      "What to do after maxiter is reached.", tuple<std::string>("stop", "continue"),
+      tuple<Inpar::Immersed::ImmersedNlnsolver>(nlnsolver_stop, nlnsolver_continue),
+      &immersedmethod);
 
-  setStringToIntegralParameter<int>("CORRECT_BOUNDARY_VELOCITIES", "no",
-      "correct velocities in fluid elements cut by surface of immersed structure",
-      tuple<std::string>("yes", "no"), tuple<int>(1, 0), &immersedmethod);
+  Core::UTILS::bool_parameter("OUTPUT_EVRY_NLNITER", "no",
+      "write output after every solution step of the nonlin. part. iter. scheme", &immersedmethod);
 
-  setStringToIntegralParameter<int>("DEFORM_BACKGROUND_MESH", "no",
-      "switch between immersed with fixed or deformable background mesh",
-      tuple<std::string>("yes", "no"), tuple<int>(1, 0), &immersedmethod);
+  Core::UTILS::bool_parameter("CORRECT_BOUNDARY_VELOCITIES", "no",
+      "correct velocities in fluid elements cut by surface of immersed structure", &immersedmethod);
 
-  setStringToIntegralParameter<int>("TIMESTATS", "everyiter",
-      "summarize time monitor every nln iteration", tuple<std::string>("everyiter", "endofsim"),
-      tuple<int>(1, 0), &immersedmethod);
+  Core::UTILS::bool_parameter("DEFORM_BACKGROUND_MESH", "no",
+      "switch between immersed with fixed or deformable background mesh", &immersedmethod);
+
+  std::vector<std::string> timestats_valid_input = {"everyiter", "endofsim"};
+  Core::UTILS::string_parameter("TIMESTATS", "everyiter",
+      "summarize time monitor every nln iteration", &immersedmethod, timestats_valid_input);
 
   Core::UTILS::double_parameter(
       "FLD_SRCHRADIUS_FAC", 1.0, "fac times fluid ele. diag. length", &immersedmethod);
+
   Core::UTILS::double_parameter(
       "STRCT_SRCHRADIUS_FAC", 0.5, "fac times structure bounding box diagonal", &immersedmethod);
+
   Core::UTILS::int_parameter("NUM_GP_FLUID_BOUND", 8,
       "number of gp in fluid elements cut by surface of immersed structure (higher number yields "
       "better mass conservation)",
@@ -82,17 +81,19 @@ void Inpar::Immersed::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> 
   /* parameters for paritioned immersed solvers */
   Teuchos::ParameterList& immersedpart = immersedmethod.sublist("PARTITIONED SOLVER", false, "");
 
-  setStringToIntegralParameter<int>("COUPALGO", "iter_stagg_fixed_rel_param",
-      "Iteration Scheme over the fields", coupname, couplabel, &immersedpart);
+  setStringToIntegralParameter<Inpar::Immersed::PartitionedScheme>("COUPALGO",
+      "iter_stagg_fixed_rel_param", "Iteration Scheme over the fields", coupname, couplabel,
+      &immersedpart);
 
-  setStringToIntegralParameter<int>("PREDICTOR", "d(n)", "Predictor for interface displacements",
-      tuple<std::string>(
-          "d(n)", "d(n)+dt*(1.5*v(n)-0.5*v(n-1))", "d(n)+dt*v(n)", "d(n)+dt*v(n)+0.5*dt^2*a(n)"),
-      tuple<int>(1, 2, 3, 4), &immersedpart);
+  std::vector<std::string> predictor_valid_input = {
+      "d(n)", "d(n)+dt*(1.5*v(n)-0.5*v(n-1))", "d(n)+dt*v(n)", "d(n)+dt*v(n)+0.5*dt^2*a(n)"};
+  Core::UTILS::string_parameter("PREDICTOR", "d(n)", "Predictor for interface displacements",
+      &immersedpart, predictor_valid_input);
 
-  setStringToIntegralParameter<int>("COUPVARIABLE", "Displacement",
-      "Coupling variable at the fsi interface", tuple<std::string>("Displacement", "Force"),
-      tuple<int>(0, 1), &immersedpart);
+  std::vector<std::string> coupvariable_valid_input = {"Displacement", "Force"};
+  Core::UTILS::string_parameter("COUPVARIABLE", "Displacement",
+      "Coupling variable at the fsi interface", &immersedpart, coupvariable_valid_input);
+
 
   Core::UTILS::double_parameter("CONVTOL", 1e-6,
       "Tolerance for iteration over fields in case of partitioned scheme", &immersedpart);

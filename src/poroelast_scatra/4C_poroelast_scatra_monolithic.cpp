@@ -53,7 +53,7 @@ PoroElastScaTra::PoroScatraMono::PoroScatraMono(
 
   // some solver paramaters are red form the structure dynamic list (this is not the best way to do
   // it ...)
-  solveradapttol_ = (Core::UTILS::integral_value<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradapttol_ = (sdynparams.get<bool>("ADAPTCONV"));
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
@@ -579,7 +579,7 @@ bool PoroElastScaTra::PoroScatraMono::setup_solver()
   {
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
   }
   else
@@ -590,16 +590,15 @@ bool PoroElastScaTra::PoroScatraMono::setup_solver()
   // Get the parameters for the Newton iteration
   itermax_ = poroscatradyn.get<int>("ITEMAX");
   itermin_ = poroscatradyn.get<int>("ITEMIN");
-  normtypeinc_ = Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypeinc_ = Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
-  normtypefres_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_RESF");
+  normtypeinc_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypeinc_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_INC");
+  normtypefres_ = Teuchos::getIntegralValue<Inpar::PoroElast::ConvNorm>(poroscatradyn, "NORM_RESF");
   combincfres_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
+      Teuchos::getIntegralValue<Inpar::PoroElast::BinaryOp>(poroscatradyn, "NORMCOMBI_RESFINC");
   vectornormfres_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
+      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_RESF");
   vectornorminc_ =
-      Core::UTILS::integral_value<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
+      Teuchos::getIntegralValue<Inpar::PoroElast::VectorNorm>(poroscatradyn, "VECTORNORM_INC");
 
   tolinc_ = poroscatradyn.get<double>("TOLINC_GLOBAL");
   tolfres_ = poroscatradyn.get<double>("TOLRES_GLOBAL");
@@ -1058,9 +1057,10 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_poro()
   // create the parameters for the discretization
   Teuchos::ParameterList fparams;
   // action for elements
-  fparams.set<int>("action", FLD::calc_poroscatra_mono_odblock);
+  fparams.set<FLD::Action>("action", FLD::calc_poroscatra_mono_odblock);
   // physical type
-  fparams.set<int>("Physical Type", poro_field()->fluid_field()->physical_type());
+  fparams.set<Inpar::FLUID::PhysicalType>(
+      "Physical Type", poro_field()->fluid_field()->physical_type());
 
   // other parameters that might be needed by the elements
   fparams.set("delta time", dt());

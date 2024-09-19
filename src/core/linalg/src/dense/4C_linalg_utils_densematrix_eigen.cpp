@@ -84,8 +84,6 @@ void Core::LinAlg::symmetric_eigen(Core::LinAlg::SerialDenseMatrix& A,
           << std::endl;
     if (info < 0) std::cout << "Illegal value in Lapack syevd call" << std::endl;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -26,14 +26,12 @@
 
 #include "4C_ale_ale3.hpp"
 #include "4C_comm_utils.hpp"
-#include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization_faces.hpp"
 #include "4C_fem_discretization_hdg.hpp"
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
-#include "4C_fem_geometry_position_array.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_initial_condition.hpp"
 #include "4C_fluid_DbcHDG.hpp"
@@ -86,10 +84,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     : TimInt(actdis, solver, params, output),
       // call constructor for "nontrivial" objects
       alefluid_(alefluid),
-      writestresses_(params_->get<int>("write stresses", 0)),
-      write_wall_shear_stresses_(params_->get<int>("write wall shear stresses", 0)),
-      write_eledata_everystep_(params_->get<int>("write element data in every step", 0)),
-      write_nodedata_first_step_(params_->get<int>("write node data in first step")),
+      writestresses_(params_->get<bool>("write stresses", false)),
+      write_wall_shear_stresses_(params_->get<bool>("write wall shear stresses", false)),
+      write_eledata_everystep_(params_->get<bool>("write element data in every step", false)),
+      write_nodedata_first_step_(params_->get<bool>("write node data in first step")),
       dtele_(0.0),
       dtfilter_(0.0),
       dtsolve_(0.0),
@@ -134,7 +132,7 @@ void FLD::FluidImplicitTimeInt::init()
   theta_ = params_->get<double>("theta");
 
   // cfl computation type and cfl number for adaptive time stepping
-  cfl_estimator_ = Core::UTILS::integral_value<Inpar::FLUID::AdaptiveTimeStepEstimator>(
+  cfl_estimator_ = Teuchos::getIntegralValue<Inpar::FLUID::AdaptiveTimeStepEstimator>(
       (params_->sublist("TIMEADAPTIVITY")), "ADAPTIVE_TIME_STEP_ESTIMATOR");
   cfl_ = params_->sublist("TIMEADAPTIVITY").get<double>("CFL_NUMBER", -1.0);
   if (cfl_estimator_ == Inpar::FLUID::cfl_number && cfl_ < 0.0)
@@ -144,7 +142,7 @@ void FLD::FluidImplicitTimeInt::init()
   numstasteps_ = params_->get<int>("number of start steps");
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = Core::UTILS::get_as_enum<Inpar::FLUID::LinearisationAction>(*params_, "Linearisation");
+  newton_ = Teuchos::getIntegralValue<Inpar::FLUID::LinearisationAction>(*params_, "Linearisation");
 
   predictor_ = params_->get<std::string>("predictor", "steady_state_predictor");
 
@@ -269,7 +267,7 @@ void FLD::FluidImplicitTimeInt::init()
 
   {
     // XWall: enrichment with spaldings law
-    if (Core::UTILS::integral_value<int>(params_->sublist("WALL MODEL"), "X_WALL"))
+    if (params_->sublist("WALL MODEL").get<bool>("X_WALL"))
     {
       if (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fsi ||
           Global::Problem::instance()->get_problem_type() == Core::ProblemType::fluid_ale)
@@ -284,7 +282,8 @@ void FLD::FluidImplicitTimeInt::init()
 
   if (!params_->get<bool>("BLOCKMATRIX"))
   {
-    if (params_->get<int>("MESHTYING") == Inpar::FLUID::no_meshtying)
+    if (Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*params_, "MESHTYING") ==
+        Inpar::FLUID::no_meshtying)
     {
       // initialize standard (stabilized) system matrix (construct its graph already)
       // off_proc_assembly_ requires an EpetraFECrs matrix
@@ -298,7 +297,8 @@ void FLD::FluidImplicitTimeInt::init()
         sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
       }
     }
-    else if (params_->get<int>("MESHTYING") != Inpar::FLUID::no_meshtying)
+    else if (Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*params_, "MESHTYING") !=
+             Inpar::FLUID::no_meshtying)
     {
       setup_meshtying();
       if (off_proc_assembly_)
@@ -376,12 +376,11 @@ void FLD::FluidImplicitTimeInt::init()
 
   // for the case of edge-oriented stabilization
   Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  if (Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
-      Inpar::FLUID::stabtype_edgebased)
+  if (stabparams->get<Inpar::FLUID::StabType>("STABTYPE") == Inpar::FLUID::stabtype_edgebased)
   {
     create_faces_extension();
   }
-  reconstructder_ = Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der");
+  reconstructder_ = stabparams->get<bool>("Reconstruct_Sec_Der");
 
 }  // FluidImplicitTimeInt::init()
 
@@ -461,7 +460,7 @@ void FLD::FluidImplicitTimeInt::init_nonlinear_bc()
     isimpedancebc_ = true;  // Set bool to true since there is an impedance BC
 
     // Test if also AVM3 is used
-    fssgv_ = Core::UTILS::integral_value<Inpar::FLUID::FineSubgridVisc>(
+    fssgv_ = Teuchos::getIntegralValue<Inpar::FLUID::FineSubgridVisc>(
         params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC");
     if (fssgv_ != Inpar::FLUID::no_fssgv)
     {
@@ -493,7 +492,8 @@ void FLD::FluidImplicitTimeInt::complete_general_init()
   set_element_turbulence_parameters();
 
   // set special parameter for faces/edges when using edge-based fluid stabilizations
-  if (params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE") == "edge_based")
+  if (params_->sublist("RESIDUAL-BASED STABILIZATION").get<Inpar::FLUID::StabType>("STABTYPE") ==
+      Inpar::FLUID::StabType::stabtype_edgebased)
     set_face_general_fluid_parameter();
 
   // sysmat might be singular (if we have a purely Dirichlet constrained
@@ -654,11 +654,12 @@ void FLD::FluidImplicitTimeInt::setup_locsys_dirichlet_bc(double time)
         if (numdim_ == 2)
           FOUR_C_THROW("Locsys: Node Normal for type 'ale', only 3D case is implemented.");
         else
-          nodeNormalParams.set<int>("action", Discret::ELEMENTS::Ale3::ba_calc_ale_node_normal);
+          nodeNormalParams.set<Discret::ELEMENTS::Ale3::ActionType>(
+              "action", Discret::ELEMENTS::Ale3::ba_calc_ale_node_normal);
       }
       else
       {
-        nodeNormalParams.set<int>("action", FLD::ba_calc_node_normal);
+        nodeNormalParams.set<FLD::BoundaryAction>("action", FLD::ba_calc_node_normal);
       }
       discret_->evaluate_condition(nodeNormalParams, loc_sys_node_normals[i], "Locsys", i);
     }
@@ -1015,7 +1016,7 @@ void FLD::FluidImplicitTimeInt::assemble_mat_and_rhs()
   }
 
   // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
-  if (Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(
+  if (Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
           params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE") == Inpar::FLUID::fixed_power_input)
   {
     // calculate required forcing
@@ -1035,8 +1036,8 @@ void FLD::FluidImplicitTimeInt::assemble_mat_and_rhs()
   Teuchos::ParameterList eleparams;
 
   // set action type
-  eleparams.set<int>("action", FLD::calc_fluid_systemmat_and_residual);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<FLD::Action>("action", FLD::calc_fluid_systemmat_and_residual);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set parameters for turbulence models
   treat_turbulence_models(eleparams);
@@ -1218,7 +1219,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mass_matrix()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", FLD::calc_mass_matrix);
+  eleparams.set<FLD::Action>("action", FLD::calc_mass_matrix);
 
   if (alefluid_) discret_->set_state(ndsale_, "dispnp", dispnp_);
 
@@ -1304,7 +1305,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     Teuchos::ParameterList neuminparams;
 
     // set action for elements
-    neuminparams.set<int>("action", FLD::calc_Neumann_inflow);
+    neuminparams.set<FLD::BoundaryAction>("action", FLD::calc_Neumann_inflow);
 
     // set thermodynamic pressure
     set_custom_ele_params_apply_nonlinear_boundary_conditions(neuminparams);
@@ -1442,7 +1443,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       // a) flow rate
       //--------------------------------------------------------------------
       // set action for elements
-      flowdeppressureparams.set<int>("action", FLD::calc_flowrate);
+      flowdeppressureparams.set<FLD::BoundaryAction>("action", FLD::calc_flowrate);
 
       // create vector and initialize with zeros
       Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -1498,7 +1499,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       // c) surface area
       //--------------------------------------------------------------------
       // set action and parameter for elements
-      flowdeppressureparams.set<int>("action", FLD::calc_area);
+      flowdeppressureparams.set<FLD::BoundaryAction>("action", FLD::calc_area);
       flowdeppressureparams.set<double>("area", 0.0);
 
       // set required state vectors
@@ -1521,7 +1522,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       // d) pressure integral
       //--------------------------------------------------------------------
       // set action for elements
-      flowdeppressureparams.set<int>("action", FLD::calc_pressure_bou_int);
+      flowdeppressureparams.set<FLD::BoundaryAction>("action", FLD::calc_pressure_bou_int);
       flowdeppressureparams.set<double>("pressure boundary integral", 0.0);
 
       // set required state vectors
@@ -1586,7 +1587,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       Teuchos::ParameterList flowdeppressureparams;
 
       // set action for elements
-      flowdeppressureparams.set<int>("action", FLD::flow_dep_pressure_bc);
+      flowdeppressureparams.set<FLD::BoundaryAction>("action", FLD::flow_dep_pressure_bc);
 
       // set thermodynamic pressure
       set_custom_ele_params_apply_nonlinear_boundary_conditions(flowdeppressureparams);
@@ -1632,7 +1633,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     Teuchos::ParameterList weakdbcparams;
 
     // set action for elements
-    weakdbcparams.set<int>("action", FLD::enforce_weak_dbc);
+    weakdbcparams.set<FLD::BoundaryAction>("action", FLD::enforce_weak_dbc);
 
     // set required state vectors
     set_state_tim_int();
@@ -1665,7 +1666,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     Teuchos::ParameterList mhdbcparams;
 
     // set action for elements
-    mhdbcparams.set<int>("action", FLD::mixed_hybrid_dbc);
+    mhdbcparams.set<FLD::BoundaryAction>("action", FLD::mixed_hybrid_dbc);
 
     // set required state vectors
     set_state_tim_int();
@@ -1755,7 +1756,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       Teuchos::ParameterList slipsuppparams;
 
       // set action for elements
-      slipsuppparams.set<int>("action", FLD::slip_supp_bc);
+      slipsuppparams.set<FLD::BoundaryAction>("action", FLD::slip_supp_bc);
 
       // set required state vectors
       set_state_tim_int();
@@ -1839,7 +1840,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
       Teuchos::ParameterList navierslipparams;
 
       // set action for elements
-      navierslipparams.set<int>("action", FLD::navier_slip_bc);
+      navierslipparams.set<FLD::BoundaryAction>("action", FLD::navier_slip_bc);
 
       // set required state vectors
       set_state_tim_int();
@@ -1867,7 +1868,9 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
 void FLD::FluidImplicitTimeInt::assemble_edge_based_matand_rhs()
 {
   // add edged-based stabilization, if selected
-  if (params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE") == "edge_based")
+  if (Teuchos::getIntegralValue<Inpar::FLUID::StabType>(
+          params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE") ==
+      Inpar::FLUID::StabType::stabtype_edgebased)
   {
     // set the only required state vectors
     set_state_tim_int();
@@ -1882,7 +1885,7 @@ void FLD::FluidImplicitTimeInt::assemble_edge_based_matand_rhs()
     if (params_->sublist("RESIDUAL-BASED STABILIZATION").isParameter("POROUS-FLOW STABILIZATION"))
       params.set<Inpar::XFEM::FaceType>("FaceType", Inpar::XFEM::face_type_porof);
     // set action for elements
-    params.set<int>("action", FLD::EOS_and_GhostPenalty_stabilization);
+    params.set<FLD::IntFaceAction>("action", FLD::EOS_and_GhostPenalty_stabilization);
     evaluate_fluid_edge_based(sysmat_, residual_, params);
 
     discret_->clear_state();
@@ -2171,7 +2174,7 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
     // create parameter list for condition evaluate and ...
     Teuchos::ParameterList mode_params;
     // ... set action for elements to integration of shape functions
-    mode_params.set<int>("action", FLD::integrate_shape);
+    mode_params.set<FLD::Action>("action", FLD::integrate_shape);
 
     if (alefluid_) discret_->set_state(ndsale_, "dispnp", dispnp_);
 
@@ -2568,7 +2571,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
       {  // Obtain node normals from element (mass-consistent node normal)
         // Define corresponding parameter list
         Teuchos::ParameterList eleparams;
-        eleparams.set<int>("action", FLD::ba_calc_node_normal);
+        eleparams.set<FLD::BoundaryAction>("action", FLD::ba_calc_node_normal);
 
         // Initialize global node normals vector
         Teuchos::RCP<Epetra_Vector> globalNodeNormals =
@@ -3054,9 +3057,11 @@ void FLD::FluidImplicitTimeInt::time_update()
   Teuchos::ParameterList* stabparams;
   stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
-  if (stabparams->get<std::string>("STABTYPE") == "residual_based")
+  if (Teuchos::getIntegralValue<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
+      Inpar::FLUID::StabType::stabtype_residualbased)
   {
-    if (stabparams->get<std::string>("TDS") == "time_dependent")
+    if (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(*stabparams, "TDS") ==
+        Inpar::FLUID::SubscalesTD::subscales_time_dependent)
     {
       const double tcpu = Teuchos::Time::wallTime();
 
@@ -3074,7 +3079,7 @@ void FLD::FluidImplicitTimeInt::time_update()
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
       // action for elements
-      eleparams.set<int>("action", FLD::calc_fluid_genalpha_update_for_subscales);
+      eleparams.set<FLD::Action>("action", FLD::calc_fluid_genalpha_update_for_subscales);
 
       // update time parameters
       set_gamma(eleparams);
@@ -3235,7 +3240,7 @@ void FLD::FluidImplicitTimeInt::calc_intermediate_solution()
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
-      Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
+      Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
   {
     bool activate = true;
@@ -3526,9 +3531,9 @@ void FLD::FluidImplicitTimeInt::output()
       // But never do this for step 0 (visualization of initial field) since
       // it would lead to writing the mesh twice for step 0
       // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
-      if ((step_ != 0) and
-          ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) !=
-              "quasistatic"))
+      if ((step_ != 0) and (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(
+                                params_->sublist("RESIDUAL-BASED STABILIZATION"), "TDS") !=
+                               Inpar::FLUID::SubscalesTD::subscales_quasistatic))
         output_->write_mesh(step_, time_);
 
       if (discret_->get_comm().MyPID() == 0)
@@ -3562,9 +3567,9 @@ void FLD::FluidImplicitTimeInt::output()
     // But never do this for step 0 (visualization of initial field) since
     // it would lead to writing the mesh twice for step 0
     // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
-    if ((step_ != 0) and
-        ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) !=
-            "quasistatic"))
+    if ((step_ != 0) and (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(
+                              params_->sublist("RESIDUAL-BASED STABILIZATION"), "TDS") !=
+                             Inpar::FLUID::SubscalesTD::subscales_quasistatic))
       output_->write_mesh(step_, time_);
 
     // only perform stress calculation when output is needed
@@ -3818,7 +3823,9 @@ void FLD::FluidImplicitTimeInt::read_restart(int step)
 
   // read the previously written elements including the history data
   // only avalaible+required for time-dependent subgrid scales!
-  if ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) != "quasistatic")
+  if (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(
+          params_->sublist("RESIDUAL-BASED STABILIZATION"), "TDS") !=
+      Inpar::FLUID::SubscalesTD::subscales_quasistatic)
     reader.read_history_data(step_);
 
   // ensure that the overall dof numbering is identical to the one
@@ -3869,7 +3876,7 @@ void FLD::FluidImplicitTimeInt::update_gridv()
   // from input file data
   const Teuchos::ParameterList& fluiddynparams =
       Global::Problem::instance()->fluid_dynamic_params();
-  const int gridvel = Core::UTILS::integral_value<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+  const auto gridvel = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   switch (gridvel)
   {
@@ -3963,8 +3970,8 @@ void FLD::FluidImplicitTimeInt::avm3_assemble_mat_and_rhs(Teuchos::ParameterList
   residual_->Update(1.0, *neumann_loads_, 1.0);
 
   // set action type
-  eleparams.set<int>("action", FLD::calc_fluid_systemmat_and_residual);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<FLD::Action>("action", FLD::calc_fluid_systemmat_and_residual);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // parameters for turbulence approach
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -4036,9 +4043,9 @@ void FLD::FluidImplicitTimeInt::avm3_assemble_mat_and_rhs(Teuchos::ParameterList
 
 
 /*----------------------------------------------------------------------*
- | prepare AVM3-based scale separation:                         vg 10/08 |
- | get scale separation matrix                                  bk 12/13 |
- *----------------------------------------------------------------------*/
+| prepare AVM3-based scale separation:                                  |
+| get scale separation matrix                                           |
+*----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::avm3_get_scale_separation_matrix()
 {
   Teuchos::ParameterList params;
@@ -4085,7 +4092,7 @@ void FLD::FluidImplicitTimeInt::avm3_get_scale_separation_matrix()
 }
 
 /*----------------------------------------------------------------------*
- | AVM3-based scale separation                                 vg 10/08 |
+ | AVM3-based scale separation                                          |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::avm3_separation()
 {
@@ -4101,7 +4108,7 @@ void FLD::FluidImplicitTimeInt::avm3_separation()
 
 
 /*----------------------------------------------------------------------*
- |  set initial flow field for test cases                    gammi 04/07|
+ |  set initial flow field for test cases                               |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::set_initial_flow_field(
     const Inpar::FLUID::InitialField initfield, const int startfuncno)
@@ -4138,8 +4145,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
     {
       const Teuchos::ParameterList& nurbs_params = Global::Problem::instance()->nurbs_params();
 
-      const bool is_ls_dbc_needed =
-          Core::UTILS::integral_value<bool>(nurbs_params, "DO_LS_DBC_PROJECTION");
+      const bool is_ls_dbc_needed = nurbs_params.get<bool>("DO_LS_DBC_PROJECTION");
 
       if (is_ls_dbc_needed)
       {
@@ -4703,7 +4709,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::extract_pressure_pa
 Teuchos::RCP<std::vector<double>>
 FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
 {
-  auto calcerr = Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  auto calcerr = Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -4731,9 +4737,9 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
       Teuchos::ParameterList eleparams;
 
       // action for elements
-      eleparams.set<int>("action", FLD::calc_fluid_error);
-      eleparams.set<int>("Physical Type", physicaltype_);
-      eleparams.set<int>("calculate error", calcerr);
+      eleparams.set<FLD::Action>("action", FLD::calc_fluid_error);
+      eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+      eleparams.set<Inpar::FLUID::CalcError>("calculate error", calcerr);
 
       const int errorfunctno = params_->get<int>("error function number", -1);
       eleparams.set<int>("error function number", errorfunctno);
@@ -4769,7 +4775,7 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
         {
           std::cout << std::endl
                     << "Warning: H_1 velocity error norm for analytical solution Nr. "
-                    << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
+                    << Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(
                            *params_, "calculate error")
                     << " is not implemented yet!!" << std::endl;
         }
@@ -4781,7 +4787,7 @@ FLD::FluidImplicitTimeInt::evaluate_error_compared_to_analytical_sol()
           std::cout.precision(8);
           std::cout << std::endl
                     << "---- error norm for analytical solution Nr. "
-                    << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
+                    << Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(
                            *params_, "calculate error")
                     << " ----------" << std::endl;
           std::cout << "| relative L_2 velocity error norm:     " << (*relerror)[0] << std::endl;
@@ -4873,7 +4879,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::evaluate_div_u()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", FLD::calc_div_u);
+    eleparams.set<FLD::Action>("action", FLD::calc_div_u);
 
     if (xwall_ != Teuchos::null) xwall_->set_x_wall_params(eleparams);
 
@@ -4955,7 +4961,7 @@ double FLD::FluidImplicitTimeInt::evaluate_dt_via_cfl_if_applicable()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", FLD::calc_dt_via_cfl);
+    eleparams.set<FLD::Action>("action", FLD::calc_dt_via_cfl);
 
     if (xwall_ != Teuchos::null) xwall_->set_x_wall_params(eleparams);
 
@@ -5094,7 +5100,6 @@ void FLD::FluidImplicitTimeInt::compute_flow_rates() const
     if (discret_->get_comm().MyPID() == 0)
     {
       FLD::UTILS::write_doubles_to_file(time_, step_, flowrates, "flowrate");
-      // FLD::UTILS::WriteDoublesToFile(time_, step_, volume,"volume" );
     }
   }
   else
@@ -5115,7 +5120,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::integrate_interface_shape
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
-  eleparams.set<int>("action", FLD::integrate_Shapefunction);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::integrate_Shapefunction);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -5286,8 +5291,8 @@ void FLD::FluidImplicitTimeInt::linear_relaxation_solve(Teuchos::RCP<Epetra_Vect
     discret_->set_state(ndsale_, "dispnp", griddisp);
     discret_->set_state(ndsale_, "gridv", zeros_);
 
-    eleparams.set<int>("action", FLD::calc_fluid_systemmat_and_residual);
-    eleparams.set<int>("Physical Type", physicaltype_);
+    eleparams.set<FLD::Action>("action", FLD::calc_fluid_systemmat_and_residual);
+    eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
     // set scheme-specific element parameters and vector values
     set_state_tim_int();
 
@@ -5427,12 +5432,12 @@ void FLD::FluidImplicitTimeInt::set_element_general_fluid_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_general_fluid_parameter);
+  eleparams.set<FLD::Action>("action", FLD::set_general_fluid_parameter);
 
   // set general element parameters
   eleparams.set("form of convective term", convform_);
-  eleparams.set<int>("Linearisation", newton_);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<Inpar::FLUID::LinearisationAction>("Linearisation", newton_);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") =
@@ -5455,8 +5460,8 @@ void FLD::FluidImplicitTimeInt::set_element_turbulence_parameters()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_turbulence_parameter);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<FLD::Action>("action", FLD::set_turbulence_parameter);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set general parameters for turbulent flow
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -5478,16 +5483,16 @@ void FLD::FluidImplicitTimeInt::set_face_general_fluid_parameter()
 {
   Teuchos::ParameterList faceparams;
 
-  faceparams.set<int>("action", FLD::set_general_face_fluid_parameter);
+  faceparams.set<FLD::Action>("action", FLD::set_general_face_fluid_parameter);
 
   // set general fluid face parameters are contained in the following two sublists
   faceparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
-  faceparams.set<int>(
-      "STABTYPE", Core::UTILS::integral_value<Inpar::FLUID::StabType>(
+  faceparams.set<Inpar::FLUID::StabType>(
+      "STABTYPE", Teuchos::getIntegralValue<Inpar::FLUID::StabType>(
                       params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
-  faceparams.set<int>("Physical Type", physicaltype_);
+  faceparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // get function number of given Oseen advective field if necessary
   if (physicaltype_ == Inpar::FLUID::oseen)
@@ -5518,8 +5523,7 @@ void FLD::FluidImplicitTimeInt::set_general_turbulence_parameters()
   scale_sep_ = Inpar::FLUID::no_scale_sep;
 
   // fine-scale subgrid viscosity?
-  fssgv_ = Core::UTILS::integral_value<Inpar::FLUID::FineSubgridVisc>(
-      params_->sublist("TURBULENCE MODEL"), "FSSUGRVISC");
+  fssgv_ = params_->sublist("TURBULENCE MODEL").get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC");
 
   // warning if classical (all-scale) turbulence model and fine-scale
   // subgrid-viscosity approach are intended to be used simultaneously
@@ -5691,25 +5695,30 @@ void FLD::FluidImplicitTimeInt::print_stabilization_details() const
   Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
   if (myrank_ == 0)
   {
-    std::cout << "Stabilization type         : " << stabparams->get<std::string>("STABTYPE")
-              << "\n";
+    std::cout << "Stabilization type         : "
+              << Teuchos::getStringValue<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") << "\n";
     std::cout << "                             "
               << "Evaluation Tau  = " << stabparams->get<std::string>("EVALUATION_TAU") << "\n";
     std::cout << "                             "
               << "Evaluation Mat  = " << stabparams->get<std::string>("EVALUATION_MAT") << "\n";
     std::cout << "\n";
 
-    if (Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
+    if (Teuchos::getIntegralValue<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
         Inpar::FLUID::stabtype_residualbased)
     {
-      std::cout << "                             " << stabparams->get<std::string>("TDS") << "\n";
+      std::cout << "                             "
+                << Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(*stabparams, "TDS") << "\n";
       std::cout << "\n";
       std::cout << "                             "
-                << "Tau Type        = " << stabparams->get<std::string>("DEFINITION_TAU") << "\n";
+                << "Tau Type        = "
+                << Teuchos::getStringValue<Inpar::FLUID::TauType>(*stabparams, "DEFINITION_TAU")
+                << "\n";
 
-      if (stabparams->get<std::string>("TDS") == "quasistatic")
+      if (Teuchos::getIntegralValue<Inpar::FLUID::SubscalesTD>(*stabparams, "TDS") ==
+          Inpar::FLUID::SubscalesTD::subscales_quasistatic)
       {
-        if (stabparams->get<std::string>("TRANSIENT") == "yes_transient")
+        if (Teuchos::getIntegralValue<Inpar::FLUID::Transient>(*stabparams, "TRANSIENT") ==
+            Inpar::FLUID::Transient::inertia_stab_keep)
         {
           FOUR_C_THROW(
               "The quasistatic version of the residual-based stabilization currently does not "
@@ -5718,25 +5727,37 @@ void FLD::FluidImplicitTimeInt::print_stabilization_details() const
       }
 
       std::cout << "                             "
-                << "SUPG            = " << stabparams->get<std::string>("SUPG") << "\n";
+                << "SUPG            = " << Teuchos::getStringValue<bool>(*stabparams, "SUPG")
+                << "\n";
       std::cout << "                             "
-                << "PSPG            = " << stabparams->get<std::string>("PSPG") << "\n";
+                << "PSPG            = " << Teuchos::getStringValue<bool>(*stabparams, "PSPG")
+                << "\n";
       std::cout << "                             "
-                << "GRAD_DIV        = " << stabparams->get<std::string>("GRAD_DIV") << "\n";
+                << "GRAD_DIV        = " << Teuchos::getStringValue<bool>(*stabparams, "GRAD_DIV")
+                << "\n";
       std::cout << "                             "
-                << "CROSS-STRESS    = " << stabparams->get<std::string>("CROSS-STRESS") << "\n";
+                << "CROSS-STRESS    = "
+                << Teuchos::getStringValue<Inpar::FLUID::CrossStress>(*stabparams, "CROSS-STRESS")
+                << "\n";
       std::cout << "                             "
-                << "REYNOLDS-STRESS = " << stabparams->get<std::string>("REYNOLDS-STRESS") << "\n";
+                << "REYNOLDS-STRESS = "
+                << Teuchos::getStringValue<Inpar::FLUID::ReynoldsStress>(
+                       *stabparams, "REYNOLDS-STRESS")
+                << "\n";
       std::cout << "                             "
-                << "VSTAB           = " << stabparams->get<std::string>("VSTAB") << "\n";
+                << "VSTAB           = "
+                << Teuchos::getStringValue<Inpar::FLUID::VStab>(*stabparams, "VSTAB") << "\n";
       std::cout << "                             "
-                << "RSTAB           = " << stabparams->get<std::string>("RSTAB") << "\n";
+                << "RSTAB           = "
+                << Teuchos::getStringValue<Inpar::FLUID::RStab>(*stabparams, "RSTAB") << "\n";
       std::cout << "                             "
-                << "TRANSIENT       = " << stabparams->get<std::string>("TRANSIENT") << "\n";
+                << "TRANSIENT       = "
+                << Teuchos::getStringValue<Inpar::FLUID::Transient>(*stabparams, "TRANSIENT")
+                << "\n";
       std::cout << "\n";
       std::cout << std::endl;
     }
-    else if (Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
+    else if (Teuchos::getIntegralValue<Inpar::FLUID::StabType>(*stabparams, "STABTYPE") ==
              Inpar::FLUID::stabtype_edgebased)
     {
       Teuchos::ParameterList* stabparams_edgebased =
@@ -5746,23 +5767,34 @@ void FLD::FluidImplicitTimeInt::print_stabilization_details() const
                 << "\n";
 
       std::cout << "                    "
-                << "EOS_PRES             = " << stabparams_edgebased->get<std::string>("EOS_PRES")
+                << "EOS_PRES             = "
+                << Teuchos::getStringValue<Inpar::FLUID::EosPres>(
+                       *stabparams_edgebased, ("EOS_PRES"))
                 << "\n";
       std::cout << "                    "
                 << "EOS_CONV_STREAM      = "
-                << stabparams_edgebased->get<std::string>("EOS_CONV_STREAM") << "\n";
+                << Teuchos::getStringValue<Inpar::FLUID::EosConvStream>(
+                       *stabparams_edgebased, "EOS_CONV_STREAM")
+                << "\n";
       std::cout << "                    "
                 << "EOS_CONV_CROSS       = "
-                << stabparams_edgebased->get<std::string>("EOS_CONV_CROSS") << "\n";
+                << Teuchos::getStringValue<Inpar::FLUID::EosConvCross>(
+                       *stabparams_edgebased, "EOS_CONV_CROSS")
+                << "\n";
       std::cout << "                    "
-                << "EOS_DIV              = " << stabparams_edgebased->get<std::string>("EOS_DIV")
+                << "EOS_DIV              = "
+                << Teuchos::getStringValue<Inpar::FLUID::EosDiv>(*stabparams_edgebased, "EOS_DIV")
                 << "\n";
       std::cout << "                    "
                 << "EOS_DEFINITION_TAU   = "
-                << stabparams_edgebased->get<std::string>("EOS_DEFINITION_TAU") << "\n";
+                << Teuchos::getStringValue<Inpar::FLUID::EosTauType>(
+                       *stabparams_edgebased, "EOS_DEFINITION_TAU")
+                << "\n";
       std::cout << "                    "
                 << "EOS_H_DEFINITION     = "
-                << stabparams_edgebased->get<std::string>("EOS_H_DEFINITION") << "\n";
+                << Teuchos::getStringValue<Inpar::FLUID::EosElementLength>(
+                       *stabparams_edgebased, "EOS_H_DEFINITION")
+                << "\n";
       std::cout
           << "+---------------------------------------------------------------------------------+\n"
           << std::endl;
@@ -5829,7 +5861,7 @@ void FLD::FluidImplicitTimeInt::print_turbulence_model()
       std::cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
       std::cout << "- Scale separation:  " << modelparams->get<std::string>("SCALE_SEPARATION")
                 << "\n";
-      if ((Core::UTILS::integral_value<int>(*modelparams, "CALC_N")))
+      if (modelparams->get<bool>("CALC_N"))
       {
         std::cout << "- Re_length:         " << modelparams->get<std::string>("REF_LENGTH") << "\n";
         std::cout << "- Re_vel:            " << modelparams->get<std::string>("REF_VELOCITY")
@@ -5838,14 +5870,12 @@ void FLD::FluidImplicitTimeInt::print_turbulence_model()
       }
       else
         std::cout << "- N:                 " << modelparams->get<double>("N") << "\n";
-      std::cout << "- near-wall limit:   "
-                << Core::UTILS::integral_value<int>(*modelparams, "NEAR_WALL_LIMIT") << "\n";
+      std::cout << "- near-wall limit:   " << modelparams->get<bool>("NEAR_WALL_LIMIT") << "\n";
       std::cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
       std::cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
       std::cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
-      if ((Core::UTILS::integral_value<int>(*modelparams, "SET_FINE_SCALE_VEL")))
-        std::cout << "WARNING: fine-scale velocity is set for nightly tests!"
-                  << "\n";
+      if (modelparams->get<bool>("SET_FINE_SCALE_VEL"))
+        std::cout << "WARNING: fine-scale velocity is set for nightly tests!\n";
       std::cout << &std::endl;
     }
     else if (turbmodel_ == Inpar::FLUID::vreman)
@@ -5853,10 +5883,10 @@ void FLD::FluidImplicitTimeInt::print_turbulence_model()
       std::cout << "                             ";
       std::cout << "\n";
       std::cout << "- Vreman model with constant coefficient\n";
-      std::cout
-          << "- Use filter width method:  "
-          << params_->sublist("SUBGRID VISCOSITY").get<std::string>("FILTER_WIDTH", "CubeRootVol")
-          << "\n";
+      std::cout << "- Use filter width method:  "
+                << Teuchos::getStringValue<Inpar::FLUID::VremanFiMethod>(
+                       params_->sublist("SUBGRID VISCOSITY"), "FILTER_WIDTH")
+                << "\n";
       std::cout << &std::endl;
     }
     else if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
@@ -5910,8 +5940,7 @@ void FLD::FluidImplicitTimeInt::apply_scale_separation_for_les()
         // set fine-scale velocity for parallel nigthly tests
         // separation matrix depends on the number of proc here
         if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
-            (Core::UTILS::integral_value<int>(
-                params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
+            (params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("SET_FINE_SCALE_VEL")))
           fsvelaf_->PutScalar(0.01);
 
         break;
@@ -5953,8 +5982,7 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
   // is seen by the scalar field. However, note that vel_n ~ vel_np ~ vel_af for statistically
   // stationary flow. Hence, the expected error is marginal, but another computation is avoided.
 
-  if (Core::UTILS::integral_value<int>(
-          params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "ADAPT_CSGS_PHI"))
+  if (params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("ADAPT_CSGS_PHI"))
   {
     // mean Cai
     double meanCai = 0.0;
@@ -5977,8 +6005,8 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
     // generate a parameterlist for communication and control
     Teuchos::ParameterList myparams;
     // action for elements
-    myparams.set<int>("action", FLD::calc_mean_Cai);
-    myparams.set<int>("Physical Type", physicaltype_);
+    myparams.set<FLD::Action>("action", FLD::calc_mean_Cai);
+    myparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
     // set state vector to pass distributed vector to the element
     // set velocity
@@ -6035,7 +6063,7 @@ void FLD::FluidImplicitTimeInt::recompute_mean_csgs_b()
     }
 
     // store value in element parameter list
-    myparams.set<int>("action", FLD::set_mean_Cai);
+    myparams.set<FLD::Action>("action", FLD::set_mean_Cai);
     myparams.set<double>("meanCai", meanCai);
     for (int nele = 0; nele < discret_->num_my_row_elements(); ++nele)
     {
@@ -6115,7 +6143,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::calc_div_op()
 {
   // set action in order to calculate the integrated divergence operator
   Teuchos::ParameterList params;
-  params.set<int>("action", FLD::calc_divop);
+  params.set<FLD::Action>("action", FLD::calc_divop);
 
   // integrated divergence operator B in vector form
   Teuchos::RCP<Epetra_Vector> divop = Teuchos::rcp(new Epetra_Vector(velnp_->Map(), true));
@@ -6309,7 +6337,7 @@ void FLD::FluidImplicitTimeInt::set_fld_gr_disp(Teuchos::RCP<Epetra_Vector> flui
 // overloaded in TimIntRedModels bk 12/13
 void FLD::FluidImplicitTimeInt::setup_meshtying()
 {
-  msht_ = Core::UTILS::get_as_enum<Inpar::FLUID::MeshTying>(*params_, "MESHTYING");
+  msht_ = Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*params_, "MESHTYING");
   bool alldofcoupled = params_->get<bool>("ALLDOFCOUPLED");
 
   // meshtying: all dofs (velocity + pressure) are coupled
@@ -6649,7 +6677,8 @@ void FLD::FluidImplicitTimeInt::set_coupling_contributions(
   the additional contributions to the system matrix within every Newton step, this structure has to
   be the same. Make sure you hand in the correct derived type!
    */
-    if (params_->get<int>("MESHTYING") == Inpar::FLUID::no_meshtying)
+    if (Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*params_, "MESHTYING") ==
+        Inpar::FLUID::no_meshtying)
     {
       if (Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseMatrix>(contributing_matrix, false) ==
           Teuchos::null)

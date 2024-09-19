@@ -78,7 +78,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // -> no default paramter possible any more
   auto solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, discret->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // -------------------------------------------------------------------
@@ -119,12 +119,12 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       // scatra2 (=structure scalar) get's inputs from FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION,
       // hence we have to replace it
       scatratimeparams->sublist("STABILIZATION") = prbdyn.sublist("STRUCTURE SCALAR STABILIZATION");
-      scatratimeparams->set<std::string>(
-          "CONVFORM", prbdyn.get<std::string>("STRUCTSCAL_CONVFORM"));
+      scatratimeparams->set<Inpar::ScaTra::ConvForm>(
+          "CONVFORM", prbdyn.get<Inpar::ScaTra::ConvForm>("STRUCTSCAL_CONVFORM"));
 
       // scatra2 get's in initial functions from FS3I DYNAMICS
-      switch (Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(
-          prbdyn, "STRUCTSCAL_INITIALFIELD"))
+      switch (
+          Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(prbdyn, "STRUCTSCAL_INITIALFIELD"))
       {
         case Inpar::ScaTra::initfield_zero_field:
           scatratimeparams->set<std::string>("INITIALFIELD",
@@ -143,12 +143,12 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
       }
 
       // structure scatra does not require any Neumann inflow boundary conditions
-      scatratimeparams->set<std::string>("NEUMANNINFLOW", "no");
+      scatratimeparams->set<bool>("NEUMANNINFLOW", false);
     }
     else if (disname == "scatra1")  // fluid_scatra discretisation
     {
       // fluid scatra does not require any convective heat transfer boundary conditions
-      scatratimeparams->set<std::string>("CONV_HEAT_TRANS", "no");
+      scatratimeparams->set<bool>("CONV_HEAT_TRANS", false);
     }
   }
 
@@ -169,8 +169,8 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   extraparams->sublist("TURBULENT INFLOW") = fdyn.sublist("TURBULENT INFLOW");
 
   // ------------------------------------get electromagnetic parameters
-  extraparams->set<bool>("ELECTROMAGNETICDIFFUSION",
-      Core::UTILS::integral_value<int>(scatradyn, "ELECTROMAGNETICDIFFUSION"));
+  extraparams->set<bool>(
+      "ELECTROMAGNETICDIFFUSION", scatradyn.get<bool>("ELECTROMAGNETICDIFFUSION"));
   extraparams->set<int>("EMDSOURCE", scatradyn.get<int>("EMDSOURCE"));
 
   // -------------------------------------------------------------------
@@ -178,7 +178,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
   auto timintscheme =
-      Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+      Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
 
   // low Mach number flow
   if (probtype == Core::ProblemType::loma or probtype == Core::ProblemType::thermo_fsi)
@@ -223,8 +223,7 @@ Adapter::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& 
     {
       case Inpar::ScaTra::timeint_one_step_theta:
       {
-        if (Core::UTILS::integral_value<bool>(
-                elchparams->sublist("SCL"), "ADD_MICRO_MACRO_COUPLING"))
+        if (elchparams->sublist("SCL").get<bool>("ADD_MICRO_MACRO_COUPLING"))
         {
           if (disname == "scatra")
           {
@@ -549,7 +548,7 @@ void Adapter::ScaTraBaseAlgorithm::setup()
         new Teuchos::ParameterList(Global::Problem::instance()->elch_control_params()));
 
     // create a 2nd solver for block-preconditioning if chosen from input
-    if (Core::UTILS::integral_value<int>(*elchparams, "BLOCKPRECOND"))
+    if (elchparams->get<bool>("BLOCKPRECOND"))
     {
       const auto& solver = scatra_->solver();
 

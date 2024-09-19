@@ -31,13 +31,17 @@ void Inpar::CONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> l
   Core::UTILS::bool_parameter("RESTART_WITH_CONTACT", "No",
       "Must be chosen if a non-contact simulation is to be restarted with contact", &scontact);
 
-  setStringToIntegralParameter<int>("ADHESION", "None", "Type of adhesion law",
-      tuple<std::string>("None", "none", "bounded", "b"),
-      tuple<int>(adhesion_none, adhesion_none, adhesion_bound, adhesion_bound), &scontact);
+  setStringToIntegralParameter<Inpar::CONTACT::AdhesionType>("ADHESION", "None",
+      "Type of adhesion law", tuple<std::string>("None", "none", "bounded", "b"),
+      tuple<Inpar::CONTACT::AdhesionType>(
+          adhesion_none, adhesion_none, adhesion_bound, adhesion_bound),
+      &scontact);
 
-  setStringToIntegralParameter<int>("FRICTION", "None", "Type of friction law",
-      tuple<std::string>("None", "Stick", "Tresca", "Coulomb"),
-      tuple<int>(friction_none, friction_stick, friction_tresca, friction_coulomb), &scontact);
+  setStringToIntegralParameter<Inpar::CONTACT::FrictionType>("FRICTION", "None",
+      "Type of friction law", tuple<std::string>("None", "Stick", "Tresca", "Coulomb"),
+      tuple<Inpar::CONTACT::FrictionType>(
+          friction_none, friction_stick, friction_tresca, friction_coulomb),
+      &scontact);
 
   Core::UTILS::bool_parameter("FRLESS_FIRST", "No",
       "If chosen the first time step of a newly in contact slave node is regarded as frictionless",
@@ -48,20 +52,23 @@ void Inpar::CONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> l
       "but this would be consistent to wear and tsi calculations.",
       &scontact);
 
-  setStringToIntegralParameter<int>("STRATEGY", "LagrangianMultipliers",
+  setStringToIntegralParameter<Inpar::CONTACT::SolvingStrategy>("STRATEGY", "LagrangianMultipliers",
       "Type of employed solving strategy",
       tuple<std::string>("LagrangianMultipliers", "lagrange", "Lagrange", "penalty", "Penalty",
           "Uzawa", "Nitsche", "Ehl", "MultiScale"),
-      tuple<int>(solution_lagmult, solution_lagmult, solution_lagmult, solution_penalty,
-          solution_penalty, solution_uzawa, solution_nitsche, solution_ehl, solution_multiscale),
+      tuple<Inpar::CONTACT::SolvingStrategy>(solution_lagmult, solution_lagmult, solution_lagmult,
+          solution_penalty, solution_penalty, solution_uzawa, solution_nitsche, solution_ehl,
+          solution_multiscale),
       &scontact);
 
-  setStringToIntegralParameter<int>("SYSTEM", "Condensed", "Type of linear system setup / solution",
+  setStringToIntegralParameter<Inpar::CONTACT::SystemType>("SYSTEM", "Condensed",
+      "Type of linear system setup / solution",
       tuple<std::string>("Condensed", "condensed", "cond", "Condensedlagmult", "condensedlagmult",
           "condlm", "SaddlePoint", "Saddlepoint", "saddlepoint", "sp", "none"),
-      tuple<int>(system_condensed, system_condensed, system_condensed, system_condensed_lagmult,
-          system_condensed_lagmult, system_condensed_lagmult, system_saddlepoint,
-          system_saddlepoint, system_saddlepoint, system_saddlepoint, system_none),
+      tuple<Inpar::CONTACT::SystemType>(system_condensed, system_condensed, system_condensed,
+          system_condensed_lagmult, system_condensed_lagmult, system_condensed_lagmult,
+          system_saddlepoint, system_saddlepoint, system_saddlepoint, system_saddlepoint,
+          system_none),
       &scontact);
 
   Core::UTILS::double_parameter("PENALTYPARAM", 0.0,
@@ -89,11 +96,12 @@ void Inpar::CONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> l
   Core::UTILS::bool_parameter(
       "VELOCITY_UPDATE", "No", "If chosen, velocity update method is applied", &scontact);
 
-  setStringToIntegralParameter<int>("EMOUTPUT", "None", "Type of energy and momentum output",
+  setStringToIntegralParameter<Inpar::CONTACT::EmOutputType>("EMOUTPUT", "None",
+      "Type of energy and momentum output",
       tuple<std::string>(
           "None", "none", "No", "no", "Screen", "screen", "File", "file", "Both", "both"),
-      tuple<int>(output_none, output_none, output_none, output_none, output_screen, output_screen,
-          output_file, output_file, output_both, output_both),
+      tuple<Inpar::CONTACT::EmOutputType>(output_none, output_none, output_none, output_none,
+          output_screen, output_screen, output_file, output_file, output_both, output_both),
       &scontact);
 
   Core::UTILS::bool_parameter(
@@ -103,15 +111,15 @@ void Inpar::CONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> l
       "Value for initialization of init contact set with gap vector", &scontact);
 
   // solver convergence test parameters for contact/meshtying in saddlepoint formulation
-  setStringToIntegralParameter<int>("NORMCOMBI_RESFCONTCONSTR", "And",
+  setStringToIntegralParameter<Inpar::Solid::BinaryOp>("NORMCOMBI_RESFCONTCONSTR", "And",
       "binary operator to combine contact constraints and residual force values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
-      &scontact);
+      tuple<std::string>("And", "Or"),
+      tuple<Inpar::Solid::BinaryOp>(Inpar::Solid::bop_and, Inpar::Solid::bop_or), &scontact);
 
-  setStringToIntegralParameter<int>("NORMCOMBI_DISPLAGR", "And",
+  setStringToIntegralParameter<Inpar::Solid::BinaryOp>("NORMCOMBI_DISPLAGR", "And",
       "binary operator to combine displacement increments and Lagrange multiplier increment values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
-      &scontact);
+      tuple<std::string>("And", "Or"),
+      tuple<Inpar::Solid::BinaryOp>(Inpar::Solid::bop_and, Inpar::Solid::bop_or), &scontact);
 
   Core::UTILS::double_parameter("TOLCONTCONSTR", 1.0E-6,
       "tolerance in the contact constraint norm for the newton iteration (saddlepoint formulation "
@@ -121,12 +129,14 @@ void Inpar::CONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> l
       "tolerance in the LM norm for the newton iteration (saddlepoint formulation only)",
       &scontact);
 
-  setStringToIntegralParameter<int>("CONSTRAINT_DIRECTIONS", "ntt",
+  setStringToIntegralParameter<Inpar::CONTACT::ConstraintDirection>("CONSTRAINT_DIRECTIONS", "ntt",
       "formulation of constraints in normal/tangential or xyz-direction",
-      tuple<std::string>("ntt", "xyz"), tuple<int>(constr_ntt, constr_xyz), &scontact);
+      tuple<std::string>("ntt", "xyz"),
+      tuple<Inpar::CONTACT::ConstraintDirection>(constr_ntt, constr_xyz), &scontact);
 
-  setStringToIntegralParameter<int>("CONTACT_REGULARIZATION", "no", "use regularized contact",
-      tuple<std::string>("no", "tanh"), tuple<int>(reg_none, reg_tanh), &scontact);
+  setStringToIntegralParameter<Inpar::CONTACT::Regularization>("CONTACT_REGULARIZATION", "no",
+      "use regularized contact", tuple<std::string>("no", "tanh"),
+      tuple<Inpar::CONTACT::Regularization>(reg_none, reg_tanh), &scontact);
 
   Core::UTILS::bool_parameter("NONSMOOTH_GEOMETRIES", "No",
       "If chosen the contact algorithm combines mortar and nts formulations. This is needed if "
@@ -160,10 +170,11 @@ void Inpar::CONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> l
   Core::UTILS::double_parameter("NITSCHE_THETA_2", 1.0,
       "+1: Chouly-type, 0: Burman penalty-free (only with theta=-1)", &scontact);
 
-  setStringToIntegralParameter<int>("NITSCHE_WEIGHTING", "harmonic",
+  setStringToIntegralParameter<Inpar::CONTACT::NitscheWeighting>("NITSCHE_WEIGHTING", "harmonic",
       "how to weight consistency terms in Nitsche contact formulation",
       tuple<std::string>("slave", "master", "harmonic"),
-      tuple<int>(NitWgt_slave, NitWgt_master, NitWgt_harmonic), &scontact);
+      tuple<Inpar::CONTACT::NitscheWeighting>(NitWgt_slave, NitWgt_master, NitWgt_harmonic),
+      &scontact);
 
   Core::UTILS::bool_parameter("NITSCHE_PENALTY_ADAPTIVE", "yes",
       "adapt penalty parameter after each converged time step", &scontact);

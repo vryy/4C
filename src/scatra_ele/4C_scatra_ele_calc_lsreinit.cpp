@@ -185,7 +185,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       }
 
       // get action
-      const ScaTra::Action action = Core::UTILS::get_as_enum<ScaTra::Action>(params, "action");
+      const auto action = Teuchos::getIntegralValue<ScaTra::Action>(params, "action");
       // ----------------------------------------------------------------------
       // calculate element coefficient matrix and/or rhs
       // ----------------------------------------------------------------------

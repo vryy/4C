@@ -7,9 +7,7 @@
 
 \level 2
 
-
 *----------------------------------------------------------------------*/
-
 
 #include "4C_fs3i.hpp"
 
@@ -18,10 +16,7 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
 #include "4C_fem_condition_selector.hpp"
-#include "4C_fem_condition_utils.hpp"
 #include "4C_fluid_implicit_integration.hpp"
-#include "4C_fluid_result_test.hpp"
-#include "4C_fluid_utils.hpp"
 #include "4C_fsi_dyn.hpp"
 #include "4C_fsi_monolithicfluidsplit.hpp"
 #include "4C_fsi_monolithicstructuresplit.hpp"
@@ -34,17 +29,13 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_scatra_algorithm.hpp"
 #include "4C_scatra_timint_implicit.hpp"
-#include "4C_ssi_clonestrategy.hpp"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::FS3IBase::FS3IBase()
-    : infperm_(Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->f_s3_i_dynamic_params(), "INF_PERM")),
+    : infperm_(Global::Problem::instance()->f_s3_i_dynamic_params().get<bool>("INF_PERM")),
       timemax_(Global::Problem::instance()->f_s3_i_dynamic_params().get<double>("MAXTIME")),
       numstep_(Global::Problem::instance()->f_s3_i_dynamic_params().get<int>("NUMSTEP")),
       dt_(Global::Problem::instance()->f_s3_i_dynamic_params().get<double>("TIMESTEP")),
@@ -175,14 +166,12 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
   // (including parameter theta itself in case of one-step-theta scheme)
   // and rule out unsupported versions of generalized-alpha time-integration
   // scheme (as well as other inappropriate schemes) for fluid subproblem
-  Inpar::ScaTra::TimeIntegrationScheme scatratimealgo =
-      Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(
-          scatradynparams, "TIMEINTEGR");
-  Inpar::FLUID::TimeIntegrationScheme fluidtimealgo =
-      Core::UTILS::integral_value<Inpar::FLUID::TimeIntegrationScheme>(
-          fluiddynparams, "TIMEINTEGR");
-  Inpar::Solid::DynamicType structtimealgo =
-      Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP");
+  auto scatratimealgo = Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(
+      scatradynparams, "TIMEINTEGR");
+  auto fluidtimealgo =
+      Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddynparams, "TIMEINTEGR");
+  auto structtimealgo =
+      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {
@@ -232,10 +221,10 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
 
 
   // is scatra calculated conservative?
-  if (Core::UTILS::integral_value<Inpar::ScaTra::ConvForm>(fs3idyn, "STRUCTSCAL_CONVFORM") ==
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(fs3idyn, "STRUCTSCAL_CONVFORM") ==
           Inpar::ScaTra::convform_convective and
-      Core::UTILS::integral_value<Inpar::FS3I::VolumeCoupling>(
-          fs3idyn, "STRUCTSCAL_FIELDCOUPLING") == Inpar::FS3I::coupling_match)
+      Teuchos::getIntegralValue<Inpar::FS3I::VolumeCoupling>(fs3idyn, "STRUCTSCAL_FIELDCOUPLING") ==
+          Inpar::FS3I::coupling_match)
   {
     // get structure discretization
     Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
@@ -249,10 +238,10 @@ void FS3I::FS3IBase::check_f_s3_i_inputs()
             "since the velocity field in the structure is NOT divergence free!");
     }
   }
-  Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
+  auto pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
       Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
-  if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP") ==
+  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP") ==
           Inpar::Solid::dyna_statics and
       pstype != Inpar::Solid::PreStress::mulf)
     FOUR_C_THROW(

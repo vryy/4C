@@ -37,7 +37,8 @@ Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::Factory::bu
   const Teuchos::ParameterList& solverOptionsList =
       noxNlnGlobalData.get_nln_parameter_list().sublist("Solver Options");
 
-  const std::string& mftype = solverOptionsList.get<std::string>("Merit Function");
+  const auto& mftype =
+      solverOptionsList.get<NOX::Nln::MeritFunction::MeritFctName>("Merit Function");
 
   if (noxNlnGlobalData.is_constrained())
     mrtFctPtr = build_constrained_merit_function(mftype, noxNlnGlobalData);
@@ -51,11 +52,12 @@ Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::Factory::bu
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::MeritFunction::Generic>
 NOX::Nln::MeritFunction::Factory::build_unconstrained_merit_function(
-    const std::string& mftype, const NOX::Nln::GlobalData& noxNlnGlobalData) const
+    const NOX::Nln::MeritFunction::MeritFctName& mftype,
+    const NOX::Nln::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
 
-  if (mftype == "Sum of Squares")
+  if (mftype == NOX::Nln::MeritFunction::MeritFctName::mrtfct_sum_of_squares)
   {
     // default NOX case, no pointer necessary
     mrtFctPtr = Teuchos::null;
@@ -78,16 +80,17 @@ NOX::Nln::MeritFunction::Factory::build_unconstrained_merit_function(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::MeritFunction::Generic>
 NOX::Nln::MeritFunction::Factory::build_constrained_merit_function(
-    const std::string& mftype, const NOX::Nln::GlobalData& noxNlnGlobalData) const
+    const NOX::Nln::MeritFunction::MeritFctName& mftype,
+    const NOX::Nln::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr = Teuchos::null;
 
-  if (mftype == "Sum of Squares")
+  if (mftype == NOX::Nln::MeritFunction::MeritFctName::mrtfct_sum_of_squares)
   {
     // default NOX case, no pointer necessary
     mrtFctPtr = Teuchos::null;
   }
-  else if (mftype.substr(0, 10) == "Lagrangian")
+  else if (mftype == mrtfct_lagrangian || mftype == mrtfct_lagrangian_active)
   {
     mrtFctPtr = Teuchos::rcp(new Lagrangian(mftype, noxNlnGlobalData.get_nox_utils_ptr()));
   }

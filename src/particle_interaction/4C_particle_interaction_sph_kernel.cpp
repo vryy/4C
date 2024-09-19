@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 ParticleInteraction::SPHKernelBase::SPHKernelBase(const Teuchos::ParameterList& params)
-    : kernelspacedim_(Core::UTILS::integral_value<Inpar::PARTICLE::KernelSpaceDimension>(
+    : kernelspacedim_(Teuchos::getIntegralValue<Inpar::PARTICLE::KernelSpaceDimension>(
           params, "KERNEL_SPACE_DIM"))
 {
   // empty constructor

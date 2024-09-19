@@ -49,14 +49,14 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
 
     // get coupling method
     auto arterycoupl =
-        Core::UTILS::integral_value<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+        Teuchos::getIntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
             problem->poro_fluid_multi_phase_dynamic_params().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
 
     // lateral surface coupling active?
-    const bool evaluate_on_lateral_surface = Core::UTILS::integral_value<int>(
-        problem->poro_fluid_multi_phase_dynamic_params().sublist("ARTERY COUPLING"),
-        "LATERAL_SURFACE_COUPLING");
+    const bool evaluate_on_lateral_surface = problem->poro_fluid_multi_phase_dynamic_params()
+                                                 .sublist("ARTERY COUPLING")
+                                                 .get<bool>("LATERAL_SURFACE_COUPLING");
 
     // get MAXNUMSEGPERARTELE
     const int maxnumsegperele = problem->poro_fluid_multi_phase_dynamic_params()
@@ -169,7 +169,7 @@ POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
     }
     case Inpar::POROMULTIPHASE::solscheme_twoway_monolithic:
     {
-      const bool artery_coupl = Core::UTILS::integral_value<int>(timeparams, "ARTERY_COUPLING");
+      const bool artery_coupl = timeparams.get<bool>("ARTERY_COUPLING");
       if (!artery_coupl)
       {
         // call constructor

@@ -239,15 +239,15 @@ Cut::Point* Cut::OctTreeNode::get_point(const double* x, Edge* cut_edge, Side* c
 
           if (cut_side)
           {
-            Cut::Output::GmshNewSection(file, "InterSides");
-            Cut::Output::GmshSideDump(file, cut_side, false, nullptr);
-            Cut::Output::GmshEndSection(file, false);
+            Cut::Output::gmsh_new_section(file, "InterSides");
+            Cut::Output::gmsh_side_dump(file, cut_side, false, nullptr);
+            Cut::Output::gmsh_end_section(file, false);
           }
           if (cut_edge)
           {
-            Cut::Output::GmshNewSection(file, "InterEdges");
+            Cut::Output::gmsh_new_section(file, "InterEdges");
             Cut::Output::GmshEdgeDump(file, cut_edge, false, nullptr);
-            Cut::Output::GmshEndSection(file, false);
+            Cut::Output::gmsh_end_section(file, false);
           }
 
           file.close();

@@ -275,17 +275,19 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
-          "SPHEREBEAMLINKING"))
+  if (Global::Problem::instance()
+          ->beam_interaction_params()
+          .sublist("SPHERE BEAM LINK")
+          .get<bool>("SPHEREBEAMLINKING"))
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_spherebeamlink);
 
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if (Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->beam_interaction_params().sublist("CROSSLINKING"),
-          "CROSSLINKER"))
+  if (Global::Problem::instance()
+          ->beam_interaction_params()
+          .sublist("CROSSLINKING")
+          .get<bool>("CROSSLINKER"))
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_crosslinking);
 
   // ---------------------------------------------------------------------------
@@ -301,10 +303,10 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   // ---------------------------------------------------------------------------
   // check for beam contact
   // ---------------------------------------------------------------------------
-  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
-      Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
+      Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
       Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
@@ -330,7 +332,7 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
     submodeltypes_->insert(Inpar::BEAMINTERACTION::submodel_potential);
 
   // Check if all all combinations of submodel evaluators work
-  if (Core::UTILS::integral_value<Inpar::BEAMINTERACTION::Strategy>(
+  if (Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::Strategy>(
           Global::Problem::instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
           "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none and
       beampenaltycouplingconditions.size() > 0)
@@ -799,9 +801,8 @@ void Solid::ModelEvaluator::BeamInteraction::read_restart(Core::IO::Discretizati
   const Teuchos::ParameterList& beam_interaction_params =
       Global::Problem::instance()->beam_interaction_params();
   if (have_sub_model_type(Inpar::BEAMINTERACTION::submodel_beamcontact) &&
-      (bool)Core::UTILS::integral_value<int>(
-          beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING"),
-          "COUPLE_RESTART_STATE"))
+      beam_interaction_params.sublist("BEAM TO SOLID VOLUME MESHTYING")
+          .get<bool>("COUPLE_RESTART_STATE"))
   {
     ia_state_ptr_->set_restart_coupling_flag(true);
     ia_state_ptr_->get_dis_restart() =

@@ -944,7 +944,6 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
           });
     };
 
-    // Postprocess the result vectors.
     if (global_in_output().get_stress_output_type() != Inpar::Solid::stress_none)
     {
       std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> gp_stress_data =
@@ -2123,10 +2122,12 @@ void Solid::ModelEvaluator::Structure::params_interface2_parameter_list(
   params.set<Teuchos::RCP<std::vector<char>>>("plstrain", interface_ptr->plastic_strain_data_ptr());
   params.set<Teuchos::RCP<std::vector<char>>>(
       "optquantity", interface_ptr->opt_quantity_data_ptr());
-  params.set<int>("iostress", (int)interface_ptr->get_stress_output_type());
-  params.set<int>("iostrain", (int)interface_ptr->get_strain_output_type());
-  params.set<int>("ioplstrain", (int)interface_ptr->get_plastic_strain_output_type());
-  params.set<int>("iooptquantity", (int)interface_ptr->get_opt_quantity_output_type());
+  params.set<Inpar::Solid::StressType>("iostress", interface_ptr->get_stress_output_type());
+  params.set<Inpar::Solid::StrainType>("iostrain", interface_ptr->get_strain_output_type());
+  params.set<Inpar::Solid::StrainType>(
+      "ioplstrain", interface_ptr->get_plastic_strain_output_type());
+  params.set<Inpar::Solid::OptQuantityType>(
+      "iooptquantity", interface_ptr->get_opt_quantity_output_type());
 }
 
 /*----------------------------------------------------------------------------*

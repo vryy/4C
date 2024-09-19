@@ -24,8 +24,6 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include <cstdlib>
-#include <ctime>
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN
@@ -77,7 +75,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
   }
 
   // create specific time integrator
-  switch (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // Static analysis
     case Inpar::Solid::dyna_statics:
@@ -136,7 +134,7 @@ Teuchos::RCP<Solid::TimIntExpl> Solid::tim_int_expl_create(const Teuchos::Parame
   }
 
   // create specific time integrator
-  switch (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     // forward Euler time integration
     case Inpar::Solid::dyna_expleuler:

@@ -26,7 +26,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::imp
 {
   // Decide, if beam contact with subsegment creation (beam3contact) or pure element based beam
   // contact (beam3contactnew) should be applied
-  bool beamssegcon = Core::UTILS::integral_value<int>(beamcontactparams, "BEAMS_SEGCON");
+  const bool beamssegcon = beamcontactparams.get<bool>("BEAMS_SEGCON");
 
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
 

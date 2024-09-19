@@ -19,6 +19,7 @@
 #include "4C_contact_paramsinterface.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -179,8 +180,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
     interface_[i]->assemble_reg_normal_forces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
-    Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+    auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
     if (friction_ and (soltype == Inpar::CONTACT::solution_penalty or
                           soltype == Inpar::CONTACT::solution_multiscale))
@@ -273,8 +273,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   }
 
 #ifdef CONTACTFDPENALTYTRAC
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(Params(), "FRICTION");
+  auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // check derivatives of penalty traction
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -404,8 +403,7 @@ void CONTACT::PenaltyStrategy::evaluate_friction(
   // one difference
 
   // check if friction should be applied
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
+  auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
 
   // coulomb friction case
   if (ftype == Inpar::CONTACT::friction_coulomb || ftype == Inpar::CONTACT::friction_stick)
@@ -622,8 +620,7 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
     // adaptive update of penalty parameter
     // (only for Uzawa Augmented Lagrange strategy)
     //********************************************************************
-    Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+    auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
     if (soltype == Inpar::CONTACT::solution_uzawa)
     {
@@ -771,8 +768,7 @@ void CONTACT::PenaltyStrategy::assemble()
     interface_[i]->assemble_reg_normal_forces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
-    Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+    auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
     if (friction_ and (soltype == Inpar::CONTACT::solution_penalty or
                           soltype == Inpar::CONTACT::solution_multiscale))
@@ -1073,8 +1069,9 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::PenaltyStrategy::get_matrix_bl
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_n(
     const bool& redist) const
 {
-  if (Global::Problem::instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
-      "Old")
+  auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
+  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Inpar::Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lagrange_multiplier_n(redist);
   else
     return Teuchos::null;
@@ -1085,8 +1082,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_np(
     const bool& redist) const
 {
-  if (Global::Problem::instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
-      "Old")
+  auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
+  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Inpar::Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lagrange_multiplier_np(redist);
   else
     return Teuchos::null;
@@ -1096,8 +1094,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_old()
 {
-  if (Global::Problem::instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
-      "Old")
+  auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
+  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Inpar::Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lagrange_multiplier_old();
   else
     return Teuchos::null;
@@ -1108,8 +1107,9 @@ Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_old()
 Teuchos::RCP<const Epetra_Map> CONTACT::PenaltyStrategy::lm_dof_row_map_ptr(
     const bool& redist) const
 {
-  if (Global::Problem::instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
-      "Old")
+  auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
+  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==
+      Inpar::Solid::IntegrationStrategy::int_old)
     return CONTACT::AbstractStrategy::lm_dof_row_map_ptr(redist);
   else
     return Teuchos::null;

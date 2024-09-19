@@ -67,8 +67,9 @@ void Adapter::FBIConstraintenforcer::setup(Teuchos::RCP<Adapter::FSIStructureWra
   Core::LinAlg::create_map_extractor_from_discretization(
       *(fluid_->discretization()), 3, *velocity_pressure_splitter_);
 
-  bool meshtying =
-      (Global::Problem::instance()->fluid_dynamic_params().get<std::string>("MESHTYING") != "no");
+  const bool meshtying =
+      (Global::Problem::instance()->fluid_dynamic_params().get<Inpar::FLUID::MeshTying>(
+          "MESHTYING"));
 
   Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix(Teuchos::null);
 

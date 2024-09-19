@@ -252,8 +252,8 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     // therefore now the Row-Maps of the created Sparse Matrixes are to big! --- Leads to problems
     // for Matrix - Multiplications where the Row - Map is used!
     //
-    // At the moment this is solved by using SplitMatrix2x2 to cut out just the relevant part of the
-    // matrix, but this shouldn't be the final solution!
+    // At the moment this is solved by using split_matrix2x2 to cut out just the relevant part of
+    // the matrix, but this shouldn't be the final solution!
     //
     //************************************************************************************************
     //
@@ -446,8 +446,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   nopenalpha_ = alphaf_;  // to use different alpha for nopen condition (not used at the moment)
 
   // shape function
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -504,11 +503,6 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
-    // split and transform to redistributed maps
-    //        Core::LinAlg::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-    //        ksmsm = Mortar::matrix_row_col_transform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-    //        ksmn  = Mortar::MatrixRowTransform(ksmn,gsmdofrowmap_);
-    //        knsm  = Mortar::MatrixColTransform(knsm,gsmdofrowmap_);
   }
   else
   {
@@ -848,36 +842,6 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
-    //        //----------------------------------------------------------- FIRST LINE
-    //        // nothing to do (ndof-map independent of redistribution)
-    //
-    //        //---------------------------------------------------------- SECOND LINE
-    //        kmnmod = Mortar::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-    //        kmmmod = Mortar::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-    //        if (iset) kmimod = Mortar::MatrixRowTransform(kmimod,pgmdofrowmap_);
-    //        if (aset) kmamod = Mortar::MatrixRowTransform(kmamod,pgmdofrowmap_);
-    //
-    //        //----------------------------------------------------------- THIRD LINE
-    //        if (iset)
-    //        {
-    //          kinmod = Mortar::MatrixRowTransform(kinmod,pgsdofrowmap_);
-    //          kimmod = Mortar::MatrixRowTransform(kimmod,pgsdofrowmap_);
-    //          kiimod = Mortar::MatrixRowTransform(kiimod,pgsdofrowmap_);
-    //          if (aset) kiamod = Mortar::MatrixRowTransform(kiamod,pgsdofrowmap_);
-    //        }
-    //
-    //        //---------------------------------------------------------- FOURTH LINE
-    //        if (aset) smatrix_ = Mortar::MatrixRowTransform(smatrix_,pgsdofrowmap_);
-    //
-    //        //----------------------------------------------------------- FIFTH LINE
-    //        if (aset)
-    //        {
-    //          kanmod = Mortar::MatrixRowTransform(kanmod,pgsdofrowmap_);
-    //          kammod = Mortar::MatrixRowTransform(kammod,pgsdofrowmap_);
-    //          kaamod = Mortar::MatrixRowTransform(kaamod,pgsdofrowmap_);
-    //          if (iset) kaimod = Mortar::MatrixRowTransform(kaimod,pgsdofrowmap_);
-    //          tderivmatrix_ = Mortar::MatrixRowTransform(tderivmatrix_,pgsdofrowmap_);
-    //        }
   }
   /**********************************************************************/
   /* (10) Global setup of kteffnew (including contact)                  */
@@ -1002,8 +966,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   Teuchos::RCP<Epetra_Map> domainmap = Teuchos::rcp(new Epetra_Map(Feff->domain_map()));
 
   // shape function
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -1040,11 +1003,6 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
-    // split and transform to redistributed maps
-    //        Core::LinAlg::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-    //        ksmsm = Mortar::matrix_row_col_transform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
-    //        ksmn  = Mortar::MatrixRowTransform(ksmn,gsmdofrowmap_);
-    //        knsm  = Mortar::MatrixColTransform(knsm,gsmdofrowmap_);
   }
   else
   {
@@ -1081,7 +1039,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   int iset = fgidofs->NumGlobalElements();
 
   // abbreviations for slave  and master set
-  // int sset = fgsdofrowmap_->NumGlobalElements(); //usally slave should anyway exist!
+  // int sset = fgsdofrowmap_->NumGlobalElements(); // usually slave should anyway exist!
   int mset = fgmdofrowmap_->NumGlobalElements();
 
   /**********************************************************************/
@@ -1092,7 +1050,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   //----------------------------------------------------------- FIRST LINE
   // kn: nothing to do
   //---------------------------------------------------------- SECOND LINE --- Will just exist when
-  // starting with two sided poro contact!!!
+  // starting with two-sided poro contact!!!
   // km: add T(mhataam)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> F_mmod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*fgmdofrowmap_, 100));
@@ -1108,7 +1066,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   //----------------------------------------------------------- THIRD LINE
   //------------------- FOR 3D QUADRATIC CASE ----------------------------
 
-  //--- For using non diagonal D-Matrix, it should be checked if this assumtion isn't anywhere
+  //--- For using non-diagonal D-Matrix, it should be checked if this assumption isn't anywhere
   // else!!!
 
   // kin: subtract T(dhat)*kan --
@@ -1145,36 +1103,6 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
-    //        //----------------------------------------------------------- FIRST LINE
-    //        // nothing to do (ndof-map independent of redistribution)
-    //
-    //        //---------------------------------------------------------- SECOND LINE
-    //        kmnmod = Mortar::MatrixRowTransform(kmnmod,pgmdofrowmap_);
-    //        kmmmod = Mortar::MatrixRowTransform(kmmmod,pgmdofrowmap_);
-    //        if (iset) kmimod = Mortar::MatrixRowTransform(kmimod,pgmdofrowmap_);
-    //        if (aset) kmamod = Mortar::MatrixRowTransform(kmamod,pgmdofrowmap_);
-    //
-    //        //----------------------------------------------------------- THIRD LINE
-    //        if (iset)
-    //        {
-    //          kinmod = Mortar::MatrixRowTransform(kinmod,pgsdofrowmap_);
-    //          kimmod = Mortar::MatrixRowTransform(kimmod,pgsdofrowmap_);
-    //          kiimod = Mortar::MatrixRowTransform(kiimod,pgsdofrowmap_);
-    //          if (aset) kiamod = Mortar::MatrixRowTransform(kiamod,pgsdofrowmap_);
-    //        }
-    //
-    //        //---------------------------------------------------------- FOURTH LINE
-    //        if (aset) smatrix_ = Mortar::MatrixRowTransform(smatrix_,pgsdofrowmap_);
-    //
-    //        //----------------------------------------------------------- FIFTH LINE
-    //        if (aset)
-    //        {
-    //          kanmod = Mortar::MatrixRowTransform(kanmod,pgsdofrowmap_);
-    //          kammod = Mortar::MatrixRowTransform(kammod,pgsdofrowmap_);
-    //          kaamod = Mortar::MatrixRowTransform(kaamod,pgsdofrowmap_);
-    //          if (iset) kaimod = Mortar::MatrixRowTransform(kaimod,pgsdofrowmap_);
-    //          pmatrix_ = Mortar::MatrixRowTransform(tderivmatrix_,pgsdofrowmap_);
-    //        }
   }
   /**********************************************************************/
   /* (10) Global setup of kteffnew (including contact)                  */
@@ -1233,8 +1161,7 @@ void CONTACT::LagrangeStrategyPoro::recover_poro_no_pen(
     return;
 
   // shape function and system types
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************

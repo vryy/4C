@@ -58,7 +58,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::init(
       fluidparams, struct_disname, fluid_disname, isale, nds_disp, nds_vel, nds_solidpressure,
       ndsporofluid_scatra, nearbyelepairs);
 
-  artery_coupling_active_ = Core::UTILS::integral_value<int>(fluidparams, "ARTERY_COUPLING");
+  artery_coupling_active_ = fluidparams.get<bool>("ARTERY_COUPLING");
 
   // initialize increment vectors
   phiincnp_ = Core::LinAlg::create_vector(*fluid_field()->dof_row_map(0), true);
@@ -87,7 +87,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::init(
   omegamin_ = algoparams.sublist("PARTITIONED").get<double>("MINOMEGA");
   omegamax_ = algoparams.sublist("PARTITIONED").get<double>("MAXOMEGA");
 
-  relaxationmethod_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::RelaxationMethods>(
+  relaxationmethod_ = Teuchos::getIntegralValue<Inpar::POROMULTIPHASE::RelaxationMethods>(
       algoparams.sublist("PARTITIONED"), "RELAXATION");
 }
 

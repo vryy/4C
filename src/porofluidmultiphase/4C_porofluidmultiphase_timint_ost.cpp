@@ -38,7 +38,7 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::set_element_time_step_parameter() 
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::set_timestep_parameter);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::set_timestep_parameter);
 
   // the total time definitely changes
   eleparams.set<double>("total time", time_);

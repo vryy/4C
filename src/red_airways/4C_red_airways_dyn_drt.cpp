@@ -85,7 +85,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->params());
 
@@ -107,24 +107,24 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   airwaystimeparams.set("write solution every", rawdyn.get<int>("RESULTSEVRY"));
 
   // Solver type
-  airwaystimeparams.set("solver type", rawdyn.get<std::string>("SOLVERTYPE"));
+  airwaystimeparams.set("solver type", rawdyn.get<RedAirwaysDyntype>("SOLVERTYPE"));
   // Tolerance
   airwaystimeparams.set("tolerance", rawdyn.get<double>("TOLERANCE"));
   // Maximum number of iterations
   airwaystimeparams.set("maximum iteration steps", rawdyn.get<int>("MAXITERATIONS"));
   // SolveScatra
-  if (rawdyn.get<std::string>("SOLVESCATRA") == "yes")
+  if (rawdyn.get<bool>("SOLVESCATRA"))
     airwaystimeparams.set("SolveScatra", true);
   else
     airwaystimeparams.set("SolveScatra", false);
   // compute Interdependency
-  if (rawdyn.get<std::string>("COMPAWACINTER") == "yes")
+  if (rawdyn.get<bool>("COMPAWACINTER"))
     airwaystimeparams.set("CompAwAcInter", true);
   else
     airwaystimeparams.set("CompAwAcInter", false);
 
   // Adjust acini volume with pre-stress condition
-  if (rawdyn.get<std::string>("CALCV0PRESTRESS") == "yes")
+  if (rawdyn.get<bool>("CALCV0PRESTRESS"))
   {
     airwaystimeparams.set("CalcV0PreStress", true);
     airwaystimeparams.set("transpulmpress", rawdyn.get<double>("TRANSPULMPRESS"));

@@ -61,17 +61,18 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     const std::string struct_disname, const std::string lubrication_disname)
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
-      solveradapttol_(
-          Core::UTILS::integral_value<int>(
-              ((Global::Problem::instance()->elasto_hydro_dynamic_params()).sublist("MONOLITHIC")),
-              "ADAPTCONV") == 1),
-      solveradaptolbetter_(
-          ((Global::Problem::instance()->elasto_hydro_dynamic_params()).sublist("MONOLITHIC"))
-              .get<double>("ADAPTCONV_BETTER")),
+      solveradapttol_(Global::Problem::instance()
+                          ->elasto_hydro_dynamic_params()
+                          .sublist("MONOLITHIC")
+                          .get<bool>("ADAPTCONV")),
+      solveradaptolbetter_(Global::Problem::instance()
+                               ->elasto_hydro_dynamic_params()
+                               .sublist("MONOLITHIC")
+                               .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(
-          Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP")),
+          Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP")),
       ehldyn_(Global::Problem::instance()->elasto_hydro_dynamic_params()),
       ehldynmono_(
           (Global::Problem::instance()->elasto_hydro_dynamic_params()).sublist("MONOLITHIC")),
@@ -79,7 +80,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       systemmatrix_(Teuchos::null),
       k_sl_(Teuchos::null),
       k_ls_(Teuchos::null),
-      iternorm_(Core::UTILS::integral_value<Inpar::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
+      iternorm_(Teuchos::getIntegralValue<Inpar::EHL::VectorNorm>(ehldynmono_, "ITERNORM")),
       iter_(0),
       sdyn_(structparams),
       timernewton_("EHL_Monolithic_newton", true)
@@ -98,7 +99,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, Monolithic::get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
 }  // Monolithic()
@@ -291,7 +292,7 @@ void EHL::Monolithic::newton_full()
   {
     print_newton_conv();
   }
-  else if (Core::UTILS::integral_value<Inpar::Solid::DivContAct>(sdyn_, "DIVERCONT") ==
+  else if (Teuchos::getIntegralValue<Inpar::Solid::DivContAct>(sdyn_, "DIVERCONT") ==
            Inpar::Solid::divcont_continue)
     ;
   else if (iter_ >= itermax_)
@@ -441,7 +442,7 @@ void EHL::Monolithic::setup_system_matrix()
 
   // Time integration specific parameters..
   double alphaf = -1.;
-  switch (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn_, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn_, "DYNAMICTYP"))
   {
     case Inpar::Solid::dyna_genalpha:
     {
@@ -1228,7 +1229,7 @@ void EHL::Monolithic::apply_lubrication_coupl_matrix(
   Teuchos::ParameterList lparams;
   // action for elements
   LUBRICATION::Action action = LUBRICATION::calc_lubrication_coupltang;
-  lparams.set<int>("action", action);
+  lparams.set<LUBRICATION::Action>("action", action);
   // other parameters that might be needed by the elements
   lparams.set("delta time", dt());
 
@@ -1286,8 +1287,7 @@ Teuchos::RCP<Epetra_Map> EHL::Monolithic::combined_dbc_map()
 void EHL::Monolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const bool scaling_infnorm =
-      (bool)Core::UTILS::integral_value<int>(ehldynmono_, "INFNORMSCALING");
+  const bool scaling_infnorm = ehldynmono_.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1331,8 +1331,7 @@ void EHL::Monolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epe
 void EHL::Monolithic::unscale_solution(
     Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const bool scaling_infnorm =
-      (bool)Core::UTILS::integral_value<int>(ehldynmono_, "INFNORMSCALING");
+  const bool scaling_infnorm = ehldynmono_.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1444,20 +1443,19 @@ void EHL::Monolithic::set_default_parameters()
   itermin_ = ehldyn_.get<int>("ITEMIN");
 
   // what kind of norm do we wanna test for coupled EHL problem
-  normtypeinc_ = Core::UTILS::integral_value<Inpar::EHL::ConvNorm>(ehldynmono_, "NORM_INC");
-  normtyperhs_ = Core::UTILS::integral_value<Inpar::EHL::ConvNorm>(ehldynmono_, "NORM_RESF");
+  normtypeinc_ = Teuchos::getIntegralValue<Inpar::EHL::ConvNorm>(ehldynmono_, "NORM_INC");
+  normtyperhs_ = Teuchos::getIntegralValue<Inpar::EHL::ConvNorm>(ehldynmono_, "NORM_RESF");
   // what kind of norm do we wanna test for the single fields
-  normtypedisi_ = Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdyn_, "NORM_DISP");
-  normtypestrrhs_ = Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdyn_, "NORM_RESF");
-  enum Inpar::Solid::VectorNorm striternorm =
-      Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(sdyn_, "ITERNORM");
-  normtypeprei_ = Core::UTILS::integral_value<Inpar::LUBRICATION::ConvNorm>(ldyn, "NORM_PRE");
+  normtypedisi_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_, "NORM_DISP");
+  normtypestrrhs_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_, "NORM_RESF");
+  auto striternorm = Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sdyn_, "ITERNORM");
+  normtypeprei_ = Teuchos::getIntegralValue<Inpar::LUBRICATION::ConvNorm>(ldyn, "NORM_PRE");
   normtypelubricationrhs_ =
-      Core::UTILS::integral_value<Inpar::LUBRICATION::ConvNorm>(ldyn, "NORM_RESF");
-  enum Inpar::LUBRICATION::VectorNorm lubricationiternorm =
-      Core::UTILS::integral_value<Inpar::LUBRICATION::VectorNorm>(ldyn, "ITERNORM");
+      Teuchos::getIntegralValue<Inpar::LUBRICATION::ConvNorm>(ldyn, "NORM_RESF");
+  auto lubricationiternorm =
+      Teuchos::getIntegralValue<Inpar::LUBRICATION::VectorNorm>(ldyn, "ITERNORM");
   // in total when do we reach a converged state for complete problem
-  combincrhs_ = Core::UTILS::integral_value<Inpar::EHL::BinaryOp>(ehldynmono_, "NORMCOMBI_RESFINC");
+  combincrhs_ = Teuchos::getIntegralValue<Inpar::EHL::BinaryOp>(ehldynmono_, "NORMCOMBI_RESFINC");
 
   switch (combincrhs_)
   {

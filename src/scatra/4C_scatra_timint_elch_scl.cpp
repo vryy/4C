@@ -22,12 +22,10 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_rebalance_binning_based.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_resulttest_elch.hpp"
 #include "4C_scatra_timint_elch_service.hpp"
 #include "4C_scatra_timint_meshtying_strategy_s2i_elch.hpp"
-#include "4C_utils_function_of_time.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -47,13 +45,13 @@ ScaTra::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<Core::FE::Discreti
       matrixtype_elch_scl_ != Core::LinAlg::MatrixType::block_field)
     FOUR_C_THROW("Only sparse and block field matrices supported in SCL computations");
 
-  if (Core::UTILS::integral_value<int>(*elchparams_, "INITPOTCALC"))
+  if (elchparams_->get<bool>("INITPOTCALC"))
   {
     FOUR_C_THROW(
         "Must disable INITPOTCALC for a coupled SCL problem. Use INITPOTCALC in the SCL section "
         "instead.");
   }
-  if (!Core::UTILS::integral_value<bool>(*params_, "SKIPINITDER"))
+  if (!params_->get<bool>("SKIPINITDER"))
   {
     FOUR_C_THROW(
         "Must enable SKIPINITDER. Currently, Neumann BCs are not supported in the SCL formulation "
@@ -75,7 +73,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
       Teuchos::rcp(new Teuchos::ParameterList(problem->scalar_transport_dynamic_params()));
 
   std::string initial_field_type;
-  switch (Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(
+  switch (Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(
       elchparams_->sublist("SCL"), "INITIALFIELD"))
   {
     case Inpar::ScaTra::initfield_zero_field:
@@ -176,7 +174,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   solver_elch_scl_ = Teuchos::rcp(new Core::LinAlg::Solver(
       problem->solver_params(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   switch (matrixtype_elch_scl_)
@@ -748,7 +746,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     my_micro_permuted_node_gids.emplace_back(mirco_node_gid);
   }
 
-  if (Core::UTILS::integral_value<bool>(elchparams_->sublist("SCL"), "COUPLING_OUTPUT"))
+  if (elchparams_->sublist("SCL").get<bool>("COUPLING_OUTPUT"))
     write_coupling_to_csv(
         glob_macro_micro_coupled_node_gids, glob_macro_slave_node_master_node_gids);
 
@@ -1092,8 +1090,7 @@ void ScaTra::ScaTraTimIntElchSCL::prepare_time_loop()
   // call base class routine
   ScaTraTimIntElch::prepare_time_loop();
 
-  if (Core::UTILS::integral_value<int>(elchparams_->sublist("SCL"), "INITPOTCALC"))
-    calc_initial_potential_field();
+  if (elchparams_->sublist("SCL").get<bool>("INITPOTCALC")) calc_initial_potential_field();
 }
 
 /*----------------------------------------------------------------------*

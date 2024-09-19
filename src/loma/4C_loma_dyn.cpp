@@ -63,8 +63,8 @@ void loma_dyn(int restart)
   const Teuchos::ParameterList& fdyn = problem->fluid_dynamic_params();
 
   // identify type of velocity field
-  const Inpar::ScaTra::VelocityField veltype =
-      Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+  const auto veltype =
+      Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   // choose algorithm depending on type of velocity field
   switch (veltype)
@@ -131,8 +131,7 @@ void loma_dyn(int restart)
       // to generate turbulent flow in the inflow section only, it is not necessary to
       // solve the transport equation for the temperature
       // therefore, use problem type fluid
-      if ((Core::UTILS::integral_value<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
-              true) and
+      if ((fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")) and
           (restart < fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
         FOUR_C_THROW("Choose problem type fluid to generate turbulent flow in the inflow section!");
 
@@ -182,8 +181,7 @@ void loma_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if ((Core::UTILS::integral_value<int>(
-                 fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") == true) and
+        if ((fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")) and
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
           loma->read_inflow_restart(restart);
         else

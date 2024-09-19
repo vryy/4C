@@ -46,11 +46,13 @@ namespace Inpar
           &sublist_IO_monitor_structure_dbc);
 
       // type of written output file
-      setStringToIntegralParameter<int>("FILE_TYPE", "csv", "type of written output file",
+      setStringToIntegralParameter<Inpar::IOMonitorStructureDBC::FileType>("FILE_TYPE", "csv",
+          "type of written output file",
           tuple<std::string>("csv", "CSV", "Csv", "data", "Data", "DATA"),
-          tuple<int>(Inpar::IOMonitorStructureDBC::csv, Inpar::IOMonitorStructureDBC::csv,
-              Inpar::IOMonitorStructureDBC::csv, Inpar::IOMonitorStructureDBC::data,
-              Inpar::IOMonitorStructureDBC::data, Inpar::IOMonitorStructureDBC::data),
+          tuple<Inpar::IOMonitorStructureDBC::FileType>(Inpar::IOMonitorStructureDBC::csv,
+              Inpar::IOMonitorStructureDBC::csv, Inpar::IOMonitorStructureDBC::csv,
+              Inpar::IOMonitorStructureDBC::data, Inpar::IOMonitorStructureDBC::data,
+              Inpar::IOMonitorStructureDBC::data),
           &sublist_IO_monitor_structure_dbc);
 
       // whether to write output in every iteration of the nonlinear solver

@@ -30,38 +30,37 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& snox = list->sublist("STRUCT NOX", false, "");
 
   {
-    Teuchos::Array<std::string> st =
-        Teuchos::tuple<std::string>("Line Search Based", "Pseudo Transient", "Trust Region Based",
-            "Inexact Trust Region Based", "Tensor Based", "Single Step");
-    Teuchos::setStringToIntegralParameter<int>("Nonlinear Solver", "Line Search Based", "", st,
-        Teuchos::tuple<int>(0, 1, 2, 3, 4, 5), &snox);
+    std::vector<std::string> nonlinear_solver_valid_input = {"Line Search Based",
+        "Pseudo Transient", "Trust Region Based", "Inexact Trust Region Based", "Tensor Based",
+        "Single Step"};
+
+    Core::UTILS::string_parameter("Nonlinear Solver", "Line Search Based",
+        "Choose a nonlinear solver method.", &snox, nonlinear_solver_valid_input);
   }
 
   // sub-list direction
   Teuchos::ParameterList& direction = snox.sublist("Direction", false, "");
 
   {
-    Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
-        "Newton", "Steepest Descent", "NonlinearCG", "Broyden", "User Defined");
-    Teuchos::setStringToIntegralParameter<int>("Method", "Newton",
-        "Choose a direction method for the nonlinear solver.", st,
-        Teuchos::tuple<int>(0, 1, 2, 3, 4), &direction);
+    std::vector<std::string> newton_method_valid_input = {
+        "Newton", "Steepest Descent", "NonlinearCG", "Broyden", "User Defined"};
+    Core::UTILS::string_parameter("Method", "Newton",
+        "Choose a direction method for the nonlinear solver.", &direction,
+        newton_method_valid_input);
 
-    Teuchos::Array<std::string> user_methods =
-        Teuchos::tuple<std::string>("Newton", "Modified Newton");
-    Teuchos::setStringToIntegralParameter<int>("User Defined Method", "Modified Newton",
-        "Choose a user-defined direction method.", user_methods, Teuchos::tuple<int>(0, 1),
-        &direction);
+    std::vector<std::string> user_defined_method_valid_input = {"Newton", "Modified Newton"};
+    Core::UTILS::string_parameter("User Defined Method", "Modified Newton",
+        "Choose a user-defined direction method.", &direction, user_defined_method_valid_input);
   }
 
   // sub-sub-list "Newton"
   Teuchos::ParameterList& newton = direction.sublist("Newton", false, "");
 
   {
-    Teuchos::Array<std::string> forcingtermmethod =
-        Teuchos::tuple<std::string>("Constant", "Type 1", "Type 2");
-    Teuchos::setStringToIntegralParameter<int>("Forcing Term Method", "Constant", "",
-        forcingtermmethod, Teuchos::tuple<int>(0, 1, 2), &newton);
+    std::vector<std::string> forcing_term_valid_input = {"Constant", "Type 1", "Type 2"};
+    Core::UTILS::string_parameter(
+        "Forcing Term Method", "Constant", "", &newton, forcing_term_valid_input);
+
     Core::UTILS::double_parameter(
         "Forcing Term Initial Tolerance", 0.1, "initial linear solver tolerance", &newton);
     Core::UTILS::double_parameter("Forcing Term Minimum Tolerance", 1.0e-6, "", &newton);
@@ -79,11 +78,10 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   Teuchos::ParameterList& steepestdescent = direction.sublist("Steepest Descent", false, "");
 
   {
-    Teuchos::Array<std::string> scalingtype =
-        Teuchos::tuple<std::string>("2-Norm", "Quadratic Model Min", "F 2-Norm", "None");
-
-    Teuchos::setStringToIntegralParameter<int>(
-        "Scaling Type", "None", "", scalingtype, Teuchos::tuple<int>(0, 1, 2, 3), &steepestdescent);
+    std::vector<std::string> scaling_type_valid_input = {
+        "2-Norm", "Quadratic Model Min", "F 2-Norm", "None"};
+    Core::UTILS::string_parameter(
+        "Scaling Type", "None", "", &steepestdescent, scaling_type_valid_input);
   }
 
   // sub-sub-sub-list "Modified Newton"
@@ -141,36 +139,35 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
         "Max Number of PTC Iterations", std::numeric_limits<int>::max(), "", &ptc);
     Core::UTILS::double_parameter("SER_alpha", 1.0, "Exponent of SER.", &ptc);
     Core::UTILS::double_parameter("ScalingFactor", 1.0, "Scaling Factor for ptc matrix.", &ptc);
-    Teuchos::Array<std::string> time_step_control =
-        Teuchos::tuple<std::string>("SER", "Switched Evolution Relaxation", "TTE",
-            "Temporal Truncation Error", "MRR", "Model Reduction Ratio");
-    Teuchos::setStringToIntegralParameter<int>("Time Step Control", "SER", "", time_step_control,
-        Teuchos::tuple<int>(0, 0, 1, 1, 2, 2), &ptc);
-    Teuchos::Array<std::string> tsc_norm_type =
-        Teuchos::tuple<std::string>("Two Norm", "One Norm", "Max Norm");
-    Teuchos::setStringToIntegralParameter<int>("Norm Type for TSC", "Max Norm",
-        "Norm Type for the time step control", tsc_norm_type, Teuchos::tuple<int>(0, 1, 2), &ptc);
-    Teuchos::Array<std::string> scaling_op =
-        Teuchos::tuple<std::string>("Identity", "CFL Diagonal", "Lumped Mass", "Element based");
-    Teuchos::setStringToIntegralParameter<int>("Scaling Type", "Identity",
-        "Type of the scaling matrix for the PTC method.", scaling_op,
-        Teuchos::tuple<int>(0, 1, 2, 3), &ptc);
-    // Build scaling Operator every iteration or every timestep
-    Teuchos::Array<std::string> build_scale_op =
-        Teuchos::tuple<std::string>("every iter", "every timestep");
-    Teuchos::setStringToIntegralParameter<int>("Build scaling operator", "every timestep",
-        "Build scaling operator in every iteration or timestep", build_scale_op,
-        Teuchos::tuple<int>(0, 1), &ptc);
+
+    std::vector<std::string> time_step_control_valid_input = {"SER",
+        "Switched Evolution Relaxation", "TTE", "Temporal Truncation Error", "MRR",
+        "Model Reduction Ratio"};
+    Core::UTILS::string_parameter(
+        "Time Step Control", "SER", "", &ptc, time_step_control_valid_input);
+
+    std::vector<std::string> tsc_norm_type_valid_input = {"Two Norm", "One Norm", "Max Norm"};
+    Core::UTILS::string_parameter("Norm Type for TSC", "Max Norm",
+        "Norm Type for the time step control", &ptc, tsc_norm_type_valid_input);
+
+    std::vector<std::string> scaling_op_valid_input = {
+        "Identity", "CFL Diagonal", "Lumped Mass", "Element based"};
+    Core::UTILS::string_parameter("Scaling Type", "Identity",
+        "Type of the scaling matrix for the PTC method.", &ptc, scaling_op_valid_input);
+
+    std::vector<std::string> build_scale_op_valid_input = {"every iter", "every timestep"};
+    Core::UTILS::string_parameter("Build scaling operator", "every timestep",
+        "Build scaling operator in every iteration or timestep", &ptc, build_scale_op_valid_input);
   }
 
   // sub-list "Line Search"
   Teuchos::ParameterList& linesearch = snox.sublist("Line Search", false, "");
 
   {
-    Teuchos::Array<std::string> method = Teuchos::tuple<std::string>(
-        "Full Step", "Backtrack", "Polynomial", "More'-Thuente", "User Defined");
-    Teuchos::setStringToIntegralParameter<int>(
-        "Method", "Full Step", "", method, Teuchos::tuple<int>(0, 1, 2, 3, 4), &linesearch);
+    std::vector<std::string> method_valid_input = {
+        "Full Step", "Backtrack", "Polynomial", "More'-Thuente", "User Defined"};
+    Core::UTILS::string_parameter("Method", "Full Step", "", &linesearch, method_valid_input);
+
 
     Teuchos::Array<std::string> checktypes =
         Teuchos::tuple<std::string>("Complete", "Minimal", "None");
@@ -224,20 +221,21 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
         "Minimum acceptable step length. The search fails if the computed \f$\\lambda_k\f$ "
         "is less than this value",
         &polynomial);
-    Teuchos::Array<std::string> recoverysteptype =
-        Teuchos::tuple<std::string>("Constant", "Last Computed Step");
-    Teuchos::setStringToIntegralParameter<int>("Recovery Step Type", "Constant",
-        "Determines the step size to take when the line search fails", recoverysteptype,
-        Teuchos::tuple<int>(0, 1), &polynomial);
+
+    std::vector<std::string> recovery_step_type_valid_input = {"Constant", "Last Computed Step"};
+    Core::UTILS::string_parameter("Recovery Step Type", "Constant",
+        "Determines the step size to take when the line search fails", &polynomial,
+        recovery_step_type_valid_input);
+
     Core::UTILS::double_parameter("Recovery Step", 1.0,
         "The value of the step to take when the line search fails. Only used if the \"Recovery "
         "Step Type\" is set to \"Constant\"",
         &polynomial);
-    Teuchos::Array<std::string> interpolationtype =
-        Teuchos::tuple<std::string>("Quadratic", "Quadratic3", "Cubic");
-    Teuchos::setStringToIntegralParameter<int>("Interpolation Type", "Cubic",
-        "Type of interpolation that should be used", interpolationtype,
-        Teuchos::tuple<int>(0, 1, 2), &polynomial);
+
+    std::vector<std::string> interpolation_type_valid_input = {"Quadratic", "Quadratic3", "Cubic"};
+    Core::UTILS::string_parameter("Interpolation Type", "Cubic",
+        "Type of interpolation that should be used", &polynomial, interpolation_type_valid_input);
+
     Core::UTILS::double_parameter("Min Bounds Factor", 0.1,
         "Choice for \f$\\gamma_{\\min}\f$, i.e., the factor that limits the minimum size "
         "of the new step based on the previous step",
@@ -246,11 +244,13 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
         "Choice for \f$\\gamma_{\\max}\f$, i.e., the factor that limits the maximum size "
         "of the new step based on the previous step",
         &polynomial);
-    Teuchos::Array<std::string> sufficientdecreasecondition =
-        Teuchos::tuple<std::string>("Armijo-Goldstein", "Ared/Pred", "None");
-    Teuchos::setStringToIntegralParameter<int>("Sufficient Decrease Condition", "Armijo-Goldstein",
-        "Choice to use for the sufficient decrease condition", sufficientdecreasecondition,
-        Teuchos::tuple<int>(0, 1, 2), &polynomial);
+
+    std::vector<std::string> sufficient_decrease_condition_valid_input = {
+        "Armijo-Goldstein", "Ared/Pred", "None"};
+    Core::UTILS::string_parameter("Sufficient Decrease Condition", "Armijo-Goldstein",
+        "Choice to use for the sufficient decrease condition", &polynomial,
+        sufficient_decrease_condition_valid_input);
+
     Core::UTILS::double_parameter(
         "Alpha Factor", 1.0e-4, "Parameter choice for sufficient decrease condition", &polynomial);
     Core::UTILS::bool_parameter("Force Interpolation", "No",
@@ -286,20 +286,23 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
     Core::UTILS::int_parameter("Max Iters", 20,
         "maximum number of right-hand-side and corresponding Jacobian evaluations", &morethuente);
     Core::UTILS::double_parameter("Default Step", 1.0, "starting step length", &morethuente);
-    Teuchos::Array<std::string> recoverysteptype =
-        Teuchos::tuple<std::string>("Constant", "Last Computed Step");
-    Teuchos::setStringToIntegralParameter<int>("Recovery Step Type", "Constant",
-        "Determines the step size to take when the line search fails", recoverysteptype,
-        Teuchos::tuple<int>(0, 1), &morethuente);
+
+    std::vector<std::string> recovery_step_type_valid_input = {"Constant", "Last Computed Step"};
+    Core::UTILS::string_parameter("Recovery Step Type", "Constant",
+        "Determines the step size to take when the line search fails", &morethuente,
+        recovery_step_type_valid_input);
+
     Core::UTILS::double_parameter("Recovery Step", 1.0,
         "The value of the step to take when the line search fails. Only used if the \"Recovery "
         "Step Type\" is set to \"Constant\"",
         &morethuente);
-    Teuchos::Array<std::string> sufficientdecreasecondition =
-        Teuchos::tuple<std::string>("Armijo-Goldstein", "Ared/Pred", "None");
-    Teuchos::setStringToIntegralParameter<int>("Sufficient Decrease Condition", "Armijo-Goldstein",
-        "Choice to use for the sufficient decrease condition", sufficientdecreasecondition,
-        Teuchos::tuple<int>(0, 1, 2), &morethuente);
+
+    std::vector<std::string> sufficient_decrease_condition_valid_input = {
+        "Armijo-Goldstein", "Ared/Pred", "None"};
+    Core::UTILS::string_parameter("Sufficient Decrease Condition", "Armijo-Goldstein",
+        "Choice to use for the sufficient decrease condition", &morethuente,
+        sufficient_decrease_condition_valid_input);
+
     Core::UTILS::bool_parameter("Optimize Slope Calculation", "No",
         "Boolean value. If set to true the value of \f$s^T J^T F\f$ is estimated using a "
         "directional derivative in a call to ::NOX::LineSearch::Common::computeSlopeWithOutJac. "
@@ -366,16 +369,17 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   {
     Teuchos::Array<std::string> meritFct =
         Teuchos::tuple<std::string>("Sum of Squares", "Lagrangian", "Lagrangian Active");
-    Teuchos::setStringToIntegralParameter<int>("Merit Function", "Sum of Squares", "", meritFct,
-        Teuchos::tuple<int>(NOX::Nln::MeritFunction::mrtfct_sum_of_squares,
+    Teuchos::setStringToIntegralParameter<NOX::Nln::MeritFunction::MeritFctName>("Merit Function",
+        "Sum of Squares", "", meritFct,
+        Teuchos::tuple<NOX::Nln::MeritFunction::MeritFctName>(
+            NOX::Nln::MeritFunction::mrtfct_sum_of_squares,
             NOX::Nln::MeritFunction::mrtfct_lagrangian,
             NOX::Nln::MeritFunction::mrtfct_lagrangian_active),
         &solverOptions);
 
-    Teuchos::Array<std::string> scTestType =
-        Teuchos::tuple<std::string>("Complete", "Minimal", "None");
-    Teuchos::setStringToIntegralParameter<int>("Status Test Check Type", "Complete", "", scTestType,
-        Teuchos::tuple<int>(0, 1, 2), &solverOptions);
+    std::vector<std::string> status_test_check_type_valid_input = {"Complete", "Minimal", "None"};
+    Core::UTILS::string_parameter("Status Test Check Type", "Complete", "", &solverOptions,
+        status_test_check_type_valid_input);
   }
 
   // sub-sub-sub-list "Linear Solver"

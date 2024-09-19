@@ -12,7 +12,6 @@
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -54,8 +53,7 @@ void Core::IO::EveryIterationWriter::init(const Core::IO::DiscretizationWriter* 
 
   run_number_ = params.get<int>("RUN_NUMBER");
   write_only_this_step_ = params.get<int>("STEP_NP_NUMBER");
-  write_owner_each_newton_iteration_ =
-      Core::UTILS::integral_value<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
+  write_owner_each_newton_iteration_ = params.get<bool>("WRITE_OWNER_EACH_NEWTON_ITER");
 
   isinit_ = true;
 }

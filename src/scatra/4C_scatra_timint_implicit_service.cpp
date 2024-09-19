@@ -25,7 +25,6 @@
 #include "4C_linear_solver_method_parameters.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_timint_implicit.hpp"
-#include "4C_scatra_timint_meshtying_strategy_base.hpp"
 #include "4C_scatra_turbulence_hit_scalar_forcing.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -970,7 +969,7 @@ void ScaTra::ScaTraTimIntImpl::compute_null_space_if_necessary() const
   Teuchos::ParameterList& solverparams = solver_->params();
 
   // compute point-based null space information if applicable
-  if (Core::UTILS::integral_value<bool>(*params_, "NULLSPACE_POINTBASED"))
+  if (params_->get<bool>("NULLSPACE_POINTBASED"))
   {
     // MueLu preconditioner
     if (solverparams.isSublist("MueLu Parameters"))
@@ -1152,13 +1151,6 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
       "solution_field_scalar", disc_writer()->output()->file_name(), step, 500, screen_out,
       discret_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
-  //    // draw scalar field 'Phindtp' for every element
-  //    Core::IO::Gmsh::ScalarFieldToGmsh(discret_,phin_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -1167,20 +1159,6 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
     Core::IO::Gmsh::scalar_field_to_gmsh(discret_, phinp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
-  //    // draw scalar field 'Phindtn' for every element
-  //    Core::IO::Gmsh::ScalarFieldToGmsh(discret_,phidtn_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Phidtnp \" {" << std::endl;
-  //    // draw scalar field 'Phindtp' for every element
-  //    Core::IO::Gmsh::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -1214,6 +1192,7 @@ void ScaTra::ScaTraTimIntImpl::write_restart() const
   // output restart information associated with mesh tying strategy
   strategy_->write_restart();
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1567,8 +1546,7 @@ void ScaTra::ScaTraTimIntImpl::read_restart(
  *-------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
 {
-  if (Core::UTILS::integral_value<int>(
-          extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"), "ADAPT_CSGS_PHI"))
+  if (extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("ADAPT_CSGS_PHI"))
   {
     // mean Cai
     double meanCai = 0.0;
@@ -1662,7 +1640,7 @@ void ScaTra::ScaTraTimIntImpl::calc_intermediate_solution()
   if (special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" and
       extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") ==
           "isotropic" and
-      Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(
+      Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
           extraparams_->sublist("TURBULENCE MODEL"), "FORCING_TYPE") ==
           Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
   {
@@ -2116,7 +2094,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
       Teuchos::ParameterList eleparams;
       Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_error, eleparams);
-      eleparams.set<int>("calcerrorflag", calcerror_);
+      eleparams.set<Inpar::ScaTra::CalcError>("calcerrorflag", calcerror_);
 
       if (calcerror_ == Inpar::ScaTra::calcerror_byfunction)
       {
@@ -2193,7 +2171,8 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
         Teuchos::ParameterList eleparams;
         Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
-        eleparams.set<int>("calcerrorflag", Inpar::ScaTra::calcerror_byfunction);
+        eleparams.set<Inpar::ScaTra::CalcError>(
+            "calcerrorflag", Inpar::ScaTra::calcerror_byfunction);
         const int errorfunctnumber = relerrorconditions[icond]->parameters().get<int>("Function");
         if (errorfunctnumber < 1) FOUR_C_THROW("Invalid function number for error calculation!");
         eleparams.set<int>("error function number", errorfunctnumber);
@@ -2459,8 +2438,7 @@ void ScaTra::OutputScalarsStrategyBase::init(const ScaTraTimIntImpl* const scatr
 {
   myrank_ = scatratimint->myrank_;
 
-  output_mean_grad_ = Core::UTILS::integral_value<bool>(
-      *scatratimint->scatra_parameter_list(), "OUTPUTSCALARSMEANGRAD");
+  output_mean_grad_ = scatratimint->scatra_parameter_list()->get<bool>("OUTPUTSCALARSMEANGRAD");
 
   output_micro_dis_ = scatratimint->macro_scale() and scatratimint->nds_micro();
 

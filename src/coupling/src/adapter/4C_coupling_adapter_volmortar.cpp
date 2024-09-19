@@ -112,12 +112,12 @@ void Coupling::Adapter::MortarVolCoupl::setup(
 
   //-----------------------
   // Evaluate volmortar coupling:
-  if (Core::UTILS::integral_value<FourC::Coupling::VolMortar::CouplingType>(
-          params, "COUPLINGTYPE") == FourC::Coupling::VolMortar::couplingtype_volmortar)
+  if (Teuchos::getIntegralValue<FourC::Coupling::VolMortar::CouplingType>(params, "COUPLINGTYPE") ==
+      FourC::Coupling::VolMortar::couplingtype_volmortar)
     coupdis->evaluate_volmortar();
   //-----------------------
   // consistent interpolation (NO Core::VOLMORTAR)
-  else if (Core::UTILS::integral_value<FourC::Coupling::VolMortar::CouplingType>(
+  else if (Teuchos::getIntegralValue<FourC::Coupling::VolMortar::CouplingType>(
                params, "COUPLINGTYPE") == FourC::Coupling::VolMortar::couplingtype_coninter)
     coupdis->evaluate_consistent_interpolation();
   //-----------------------

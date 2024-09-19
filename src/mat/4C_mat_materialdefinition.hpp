@@ -58,7 +58,7 @@ namespace Mat
   ///
   /// So this is quite sophisticated internal stuff here. If you want to
   /// introduce a new material to 4C, all you have to do is add an
-  /// appropriate definition in ValidMaterials(). This will take care of the
+  /// appropriate definition in valid_materials(). This will take care of the
   /// reading part and you will get your Core::FE::Discretization filled with proper
   /// Discret::Material objects.
   ///

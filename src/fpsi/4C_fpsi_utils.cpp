@@ -152,7 +152,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
 
   // 4.- get coupling algorithm
   Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
-  int coupling = Core::UTILS::integral_value<int>(fpsidynparams, "COUPALGO");
+  const auto coupling = Teuchos::getIntegralValue<FpsiCouplingType>(fpsidynparams, "COUPALGO");
   switch (coupling)
   {
     case fpsi_monolithic_plain:
@@ -166,22 +166,8 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
           "Partitioned solution scheme not implemented for FPSI, yet. "
           "Make sure that the parameter COUPALGO is set to 'fpsi_monolithic_plain', "
           "and the parameter PARITIONED is set to 'monolithic'. ");
-      Inpar::FPSI::PartitionedCouplingMethod method;
-      method = Core::UTILS::integral_value<Inpar::FPSI::PartitionedCouplingMethod>(
-          fpsidynparams, "PARTITIONED");
-      if (method == Inpar::FPSI::RobinNeumann)
-      {
-        // do nothing
-      }
-      else
-      {
-        FOUR_C_THROW(
-            "Only RobinNeumann algorithm available for partitioned FPSI !!!\n"
-            "Set 'PARTITIONED' to 'RobinNeumann' in input file.");
-      }
-      break;
     }
-  }  // switch(coupling)
+  }
 
   return fpsi_algo;
 }  // SetupDiscretization()

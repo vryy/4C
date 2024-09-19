@@ -217,10 +217,13 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
   // ---------------------------------------------------------------------
   // get theta of global time integration scheme to use it here
   // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5
-  std::string dyntype =
-      Global::Problem::instance()->fluid_dynamic_params().get<std::string>("TIMEINTEGR");
-  if (dyntype == "One_Step_Theta")
+  auto dyntype = Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(
+      Global::Problem::instance()->fluid_dynamic_params(), "TIMEINTEGR");
+
+  if (dyntype == Inpar::FLUID::TimeIntegrationScheme::timeint_one_step_theta)
+  {
     theta_ = Global::Problem::instance()->fluid_dynamic_params().get<double>("THETA");
+  }
 
   // ---------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -291,7 +294,7 @@ void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", FLD::calc_flowrate);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::calc_flowrate);
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices local <-> global dof numbering
@@ -372,7 +375,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   // call the element to apply the pressure
   Teuchos::ParameterList eleparams;
   // action for elements
-  eleparams.set<int>("action", FLD::Outletimpedance);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::Outletimpedance);
 
   eleparams.set("WindkesselPressure", pressure);
 
@@ -402,7 +405,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
 
     Teuchos::ParameterList eleparams2;
     // action for elements
-    eleparams2.set<int>("action", FLD::dQdu);
+    eleparams2.set<FLD::BoundaryAction>("action", FLD::dQdu);
 
     discret_->evaluate_condition(eleparams2, dQdu, "ImpedanceCond", condid);
 
@@ -581,7 +584,7 @@ double FLD::UTILS::FluidImpedanceBc::area(const int condid)
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", FLD::calc_area);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::calc_area);
   eleparams.set<double>("area", 0.0);
   // we have to set some dummy values here:
   eleparams.set<double>("viscosity", 0.0);

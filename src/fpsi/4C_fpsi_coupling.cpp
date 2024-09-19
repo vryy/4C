@@ -249,9 +249,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
-  Inpar::FPSI::PartitionedCouplingMethod method =
-      Core::UTILS::integral_value<Inpar::FPSI::PartitionedCouplingMethod>(
-          fpsidynparams, "PARTITIONED");
+  auto method = Teuchos::getIntegralValue<Inpar::FPSI::PartitionedCouplingMethod>(
+      fpsidynparams, "PARTITIONED");
 
   if (method != Inpar::FPSI::nocoupling)
   {
@@ -286,11 +285,12 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     Teuchos::ParameterList fparams;
 
     // action for elements
-    fparams.set<int>("action", FLD::fpsi_coupling);
+    fparams.set<FLD::BoundaryAction>("action", FLD::fpsi_coupling);
     fparams.set("timescale", poro_field()->fluid_field()->residual_scaling());
 
     fparams.set("dt", fpsidynparams.get<double>("TIMESTEP"));
-    fparams.set<int>("Physical Type", poro_field()->fluid_field()->physical_type());
+    fparams.set<Inpar::FLUID::PhysicalType>(
+        "Physical Type", poro_field()->fluid_field()->physical_type());
 
     if (method == Inpar::FPSI::monolithic)
     {

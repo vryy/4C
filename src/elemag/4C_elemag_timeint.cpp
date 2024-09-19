@@ -40,7 +40,7 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::Discretization
       solver_(solver),
       params_(params),
       output_(output),
-      elemagdyna_(Core::UTILS::integral_value<Inpar::EleMag::DynamicType>(*params_, "TIMEINT")),
+      elemagdyna_(Teuchos::getIntegralValue<Inpar::EleMag::DynamicType>(*params_, "TIMEINT")),
       myrank_(actdis->get_comm().MyPID()),
       time_(0.0),
       step_(0),
@@ -54,8 +54,8 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::Discretization
       tau_(params_->get<double>("TAU")),
       dtele_(0.0),
       dtsolve_(0.0),
-      calcerr_(Core::UTILS::integral_value<bool>(*params_, "CALCERR")),
-      postprocess_(Core::UTILS::integral_value<bool>(*params_, "POSTPROCESS")),
+      calcerr_(params_->get<bool>("CALCERR")),
+      postprocess_(params_->get<bool>("POSTPROCESS")),
       errfunct_(params_->get<int>("ERRORFUNCNO", -1)),
       sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1)),
       equilibration_method_(
@@ -255,7 +255,7 @@ void EleMag::ElemagTimeInt::elements_init()
     else
       initParams.remove("dirichdof", false);
 
-    initParams.set<int>("action", EleMag::ele_init);
+    initParams.set<EleMag::Action>("action", EleMag::ele_init);
     initParams.set<Inpar::EleMag::DynamicType>("dyna", elemagdyna_);
     Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
     Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
@@ -309,7 +309,7 @@ void EleMag::ElemagTimeInt::set_initial_field(
       Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
       Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
       Teuchos::ParameterList initParams;
-      initParams.set<int>("action", EleMag::project_field);
+      initParams.set<EleMag::Action>("action", EleMag::project_field);
       initParams.set("startfuncno", startfuncno);
       initParams.set<double>("time", time_);
       initParams.set<double>("dt", dtp_);
@@ -363,7 +363,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
   Core::LinAlg::SerialDenseVector elevec1, elevec2;  //, elevec3;
   Core::LinAlg::SerialDenseMatrix elemat;            //, elemat2;
 
-  initParams.set<int>("action", EleMag::project_electric_from_scatra_field);
+  initParams.set<EleMag::Action>("action", EleMag::project_electric_from_scatra_field);
   initParams.set<Inpar::EleMag::DynamicType>("dyna", elemagdyna_);
 
   Teuchos::RCP<Epetra_Vector> phicol;
@@ -442,7 +442,7 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> EleMag::ElemagTimeInt::compute_err
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
   Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList params;
-  params.set<int>("action", EleMag::compute_error);
+  params.set<EleMag::Action>("action", EleMag::compute_error);
   params.set<int>("funcno", errfunct_);
   params.set<double>("time", time_);
   params.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
@@ -529,7 +529,7 @@ void EleMag::ElemagTimeInt::project_field_test(const int startfuncno)
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
   Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
-  initParams.set<int>("action", EleMag::project_field_test);
+  initParams.set<EleMag::Action>("action", EleMag::project_field_test);
   initParams.set("startfuncno", startfuncno);
   initParams.set<double>("time", time_);
   initParams.set<bool>("padaptivity", false);
@@ -566,7 +566,7 @@ void EleMag::ElemagTimeInt::project_field_test_trace(const int startfuncno)
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
   Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
-  initParams.set<int>("action", EleMag::project_field_test_trace);
+  initParams.set<EleMag::Action>("action", EleMag::project_field_test_trace);
   initParams.set("startfuncno", startfuncno);
   initParams.set<double>("time", time_);
   initParams.set<bool>("padaptivity", false);
@@ -680,7 +680,7 @@ void EleMag::ElemagTimeInt::assemble_mat_and_rhs()
   // set information needed by the elements
   eleparams.set<int>("sourcefuncno", sourcefuncno_);
   eleparams.set<bool>("resonly", resonly);
-  eleparams.set<int>("action", EleMag::calc_systemmat_and_residual);
+  eleparams.set<EleMag::Action>("action", EleMag::calc_systemmat_and_residual);
   eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
   eleparams.set<double>("time", time_);
   eleparams.set<double>("timep", time_ + dtp_);
@@ -716,7 +716,7 @@ void EleMag::ElemagTimeInt::update_interior_variables_and_assemble_rhs()
   eleparams.set<double>("tau", tau_);
   eleparams.set<double>("time", time_);
   eleparams.set<double>("timep", time_ + dtp_);
-  eleparams.set<int>("action", EleMag::update_secondary_solution_and_calc_residual);
+  eleparams.set<EleMag::Action>("action", EleMag::update_secondary_solution_and_calc_residual);
   eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
   eleparams.set<int>("step", step_);
   eleparams.set<bool>("resonly", true);
@@ -774,7 +774,7 @@ void EleMag::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
     Teuchos::ParameterList eleparams;
     eleparams.set<double>("time", time_);
     eleparams.set<bool>("do_rhs", do_rhs);
-    eleparams.set<int>("action", EleMag::calc_abc);
+    eleparams.set<EleMag::Action>("action", EleMag::calc_abc);
     // Evaluate the boundary condition
     if (do_rhs)
       discret_->evaluate_condition(eleparams, residual_, condname);
@@ -854,7 +854,7 @@ namespace
     // call element routine for interpolate HDG to elements
     // Here it is used the function that acts in the elements, evaluate().
     Teuchos::ParameterList params;
-    params.set<int>("action", EleMag::interpolate_hdg_to_node);
+    params.set<EleMag::Action>("action", EleMag::interpolate_hdg_to_node);
     // Setting a name to the dofs maps
     dis.set_state(0, "trace", traceValues);
     // Declaring all the necessary entry for evaluate()
@@ -1019,7 +1019,7 @@ void EleMag::ElemagTimeInt::write_restart()
   discret_->set_state(1, "intVarnm", intVarnm);
 
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", EleMag::fill_restart_vecs);
+  eleparams.set<EleMag::Action>("action", EleMag::fill_restart_vecs);
   eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
   discret_->evaluate(eleparams);
@@ -1061,7 +1061,7 @@ void EleMag::ElemagTimeInt::read_restart(int step)
   discret_->set_state(1, "intVar", intVar);
 
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", EleMag::ele_init_from_restart);
+  eleparams.set<EleMag::Action>("action", EleMag::ele_init_from_restart);
   eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
   Teuchos::RCP<Epetra_Vector> intVarnm =
@@ -1072,12 +1072,6 @@ void EleMag::ElemagTimeInt::read_restart(int step)
   }
   catch (...)
   {
-    // if (myrank_ == 0)
-    //{
-    //  std::cout << "=========== Only one time step was found. Switch to BDF1." << std::endl;
-    //}
-    // eleparams.set<Inpar::EleMag::DynamicType>(
-    //    "dynamic type", Inpar::EleMag::DynamicType::elemag_bdf1);
     FOUR_C_THROW(
         "Impossible to find the additional vector of unknown necessary for the BDF2 integration. "
         "Consider fixing the code or restart a simulation that used BDF2 since the beginning.");

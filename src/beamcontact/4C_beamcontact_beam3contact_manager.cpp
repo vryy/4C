@@ -93,7 +93,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
   sstructdynamic_ = Global::Problem::instance()->structural_dynamic_params();
 
   // indicate if beam-to-solid contact is applied
-  btsol_ = Core::UTILS::integral_value<int>(beam_contact_parameters(), "BEAMS_BTSOL");
+  btsol_ = beam_contact_parameters().get<bool>("BEAMS_BTSOL");
 
   init_beam_contact_discret();
 
@@ -132,7 +132,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
   // initialize octtree for contact search
-  if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
       Inpar::BEAMCONTACT::boct_none)
   {
     if (!pdiscret_.get_comm().MyPID())
@@ -157,16 +157,16 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
 
   if (!pdiscret_.get_comm().MyPID())
   {
-    if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::Strategy>(
-            sbeamcontact_, "BEAMS_STRATEGY") == Inpar::BEAMCONTACT::bstr_penalty)
+    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+        Inpar::BEAMCONTACT::bstr_penalty)
       std::cout << "Strategy                 Penalty" << std::endl;
-    else if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::Strategy>(
+    else if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(
                  sbeamcontact_, "BEAMS_STRATEGY") == Inpar::BEAMCONTACT::bstr_gmshonly)
       std::cout << "Strategy                 Gmsh Only" << std::endl;
     else
       FOUR_C_THROW("Unknown strategy for beam contact!");
 
-    switch (Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
+    switch (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
         sbeamcontact_, "BEAMS_PENALTYLAW"))
     {
       case Inpar::BEAMCONTACT::pl_lp:
@@ -216,7 +216,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
       }
     }
 
-    if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
+    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
             sbeamcontact_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp)
     {
       std::cout << "Regularization Params    BEAMS_PENREGPARAM_G0 = "
@@ -229,7 +229,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
                 << sbeamcontact_.get<double>("BEAMS_GAPSHIFTPARAM", 0.0) << std::endl;
     }
 
-    if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
+    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
         Inpar::BEAMCONTACT::bd_no)
       std::cout << "Damping                  No Contact Damping Force Applied!" << std::endl;
     else
@@ -318,7 +318,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     {
       std::cout << "=============== Beam Potential-Based Interaction ===============" << std::endl;
 
-      switch (Core::UTILS::integral_value<Inpar::BEAMPOTENTIAL::BeamPotentialType>(
+      switch (Teuchos::getIntegralValue<Inpar::BEAMPOTENTIAL::BeamPotentialType>(
           sbeampotential_, "BEAMPOTENTIAL_TYPE"))
       {
         case Inpar::BEAMPOTENTIAL::beampot_surf:
@@ -347,7 +347,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     searchradiuspot_ = sbeampotential_.get<double>("CUTOFFRADIUS", -1.0);
 
     // initialize octtree for search of potential-based interaction pairs
-    if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::OctreeType>(
+    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(
             sbeampotential_, "BEAMPOT_OCTREE") != Inpar::BEAMCONTACT::boct_none)
     {
       if (searchradiuspot_ <= 0)
@@ -381,8 +381,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     }
 
     // flags to indicate, if beam-to-solid or beam-to-sphere potential-based interaction is applied
-    potbtsol_ = Core::UTILS::integral_value<int>(sbeampotential_, "BEAMPOT_BTSOL");
-    potbtsph_ = Core::UTILS::integral_value<int>(sbeampotential_, "BEAMPOT_BTSPH");
+    potbtsol_ = sbeampotential_.get<bool>("BEAMPOT_BTSOL");
+    potbtsph_ = sbeampotential_.get<bool>("BEAMPOT_BTSPH");
 
   }  // end: at least one beam potential line charge condition applied
 
@@ -408,7 +408,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, E
     const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
-  if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
       Inpar::BEAMCONTACT::bstr_gmshonly)
     return;
 
@@ -552,7 +552,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, E
   contactevaluationtime_ += sumproc_evaluationtime;
   t_start = Teuchos::Time::wallTime();
 
-  if (Core::UTILS::integral_value<Inpar::Solid::MassLin>(sstructdynamic_, "MASSLIN") !=
+  if (Teuchos::getIntegralValue<Inpar::Solid::MassLin>(sstructdynamic_, "MASSLIN") !=
       Inpar::Solid::ml_rotations)
   {
     // assemble contact forces into global fres vector
@@ -1153,8 +1153,8 @@ void CONTACT::Beam3cmanager::set_state(
     pairs_[i]->update_ele_pos(ele1pos, ele2pos);
   }
   // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
-  int smoothing =
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
+  auto smoothing =
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
   if (smoothing != Inpar::BEAMCONTACT::bsm_none)
   {
     for (int i = 0; i < (int)pairs_.size(); ++i)
@@ -2021,7 +2021,7 @@ void CONTACT::Beam3cmanager::update(
 
   // If the original gap function definition is applied, the displacement per time is not allowed
   // to be larger than the smalles beam cross section radius occurring in the discretization!
-  bool newgapfunction = Core::UTILS::integral_value<int>(beam_contact_parameters(), "BEAMS_NEWGAP");
+  bool newgapfunction = beam_contact_parameters().get<bool>("BEAMS_NEWGAP");
   if (!newgapfunction)
   {
     double maxdeltadisscalefac = sbeamcontact_.get<double>("BEAMS_MAXDELTADISSCALEFAC", 1.0);
@@ -2731,7 +2731,7 @@ void CONTACT::Beam3cmanager::gmsh_output(
         // Get pointer onto current beam element
         Core::Elements::Element* element = ProblemDiscret().lColElement(i);
 
-        if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
+        if (!BEAMCONTACT::UTILS::is_beam_element(*element))
         {
           gmsh_solid(element, disrow, gmshfilecontent);
         }
@@ -2742,7 +2742,7 @@ void CONTACT::Beam3cmanager::gmsh_output(
         // Get pointer onto current beam element
         Core::Elements::Element* element = BTSolDiscret().lColElement(i);
 
-        if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
+        if (!BEAMCONTACT::UTILS::is_beam_element(*element))
         {
           gmsh_solid_surface_element_numbers(element, disrow, gmshfilecontent);
         }
@@ -2771,7 +2771,7 @@ void CONTACT::Beam3cmanager::gmsh_output(
       for (int i = 0; i < ColElements()->NumMyElements(); ++i)
       {
         Core::Elements::Element* element = BTSolDiscret().lColElement(i);
-        if (BEAMCONTACT::UTILS::IsBeamElement(*element))
+        if (BEAMCONTACT::UTILS::is_beam_element(*element))
           numele1++;
         else
           numele2++;
@@ -3004,7 +3004,7 @@ void CONTACT::Beam3cmanager::gmsh_output(
     // Get pointer onto current beam element
     Core::Elements::Element* element = ProblemDiscret().lColElement(i);
 
-    if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
+    if (!BEAMCONTACT::UTILS::is_beam_element(*element))
     {
       gmsh_solid(element, disrow, fc2filecontent);
     }

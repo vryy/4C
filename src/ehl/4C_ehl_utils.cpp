@@ -51,7 +51,7 @@ int EHL::Utils::check_time_stepping(double dt1, double dt2)
 void EHL::Utils::change_time_parameter(const Epetra_Comm& comm, Teuchos::ParameterList& ehlparams,
     Teuchos::ParameterList& lubricationdyn, Teuchos::ParameterList& sdyn)
 {
-  bool difftimestep = Core::UTILS::integral_value<int>(ehlparams, "DIFFTIMESTEPSIZE");
+  const bool difftimestep = ehlparams.get<bool>("DIFFTIMESTEPSIZE");
 
   if (difftimestep)  // Create subproblems with different time steps
   {

@@ -86,83 +86,31 @@ int Discret::ELEMENTS::RedAirBloodScatraLine3::evaluate(Teuchos::ParameterList& 
   switch (act)
   {
     case calc_sys_matrix_rhs:
-    {
-    }
-    break;
     case calc_sys_matrix_rhs_iad:
-    {
-    }
-    break;
     case get_initial_state:
-    {
-    }
-    break;
     case set_bc:
-    {
-    }
-    break;
     case calc_flow_rates:
-    {
-    }
-    break;
     case calc_elem_volumes:
-    {
-    }
-    break;
     case get_coupled_values:
-    {
-    }
-    break;
     case get_junction_volume_mix:
-    {
-      // do nothing
-    }
-    break;
     case solve_scatra:
-    {
-      // do nothing
-    }
-    break;
     case calc_cfl:
-    {
-      // do nothing
-    }
-    break;
     case solve_junction_scatra:
-    {
-      // do nothing
-    }
-    break;
     case update_scatra:
-    {
-      // do nothing
-    }
-    break;
     case update_elem12_scatra:
-    {
-      // do nothing
-    }
-    break;
     case eval_nodal_ess_vals:
-    {
-      // do nothing
-    }
-    break;
     case eval_PO2_from_concentration:
-    {
       // do nothing
-    }
-    break;
+      break;
+
     case solve_blood_air_transport:
-    {
       Discret::ELEMENTS::RedAirBloodScatraLine3ImplInterface::impl(this)->solve_blood_air_transport(
           this, elevec1, elevec2, params, discretization, lm, mat);
-    }
-    break;
-    default:
-      FOUR_C_THROW("Unkown type of action for reduced dimensional acinuss");
-  }  // end of switch(act)
+      break;
 
+    default:
+      FOUR_C_THROW("Unknown type of action for reduced dimensional acinuss");
+  }
   return 0;
 }  // end of Discret::ELEMENTS::RedAirBloodScatraLine3::Evaluate
 

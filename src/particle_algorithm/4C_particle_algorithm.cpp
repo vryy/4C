@@ -47,7 +47,7 @@ PARTICLEALGORITHM::ParticleAlgorithm::ParticleAlgorithm(
       myrank_(comm.MyPID()),
       params_(params),
       numparticlesafterlastloadbalance_(0),
-      transferevery_(Core::UTILS::integral_value<int>(params_, "TRANSFER_EVERY")),
+      transferevery_(params_.get<bool>("TRANSFER_EVERY")),
       writeresultsevery_(params.get<int>("RESULTSEVRY")),
       writerestartevery_(params.get<int>("RESTARTEVRY")),
       writeresultsthisstep_(true),
@@ -390,9 +390,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_engine()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_wall()
 {
   // get type of particle wall source
-  Inpar::PARTICLE::ParticleWallSource particlewallsource =
-      Core::UTILS::integral_value<Inpar::PARTICLE::ParticleWallSource>(
-          params_, "PARTICLE_WALL_SOURCE");
+  auto particlewallsource = Teuchos::getIntegralValue<Inpar::PARTICLE::ParticleWallSource>(
+      params_, "PARTICLE_WALL_SOURCE");
 
   // create particle wall handler
   switch (particlewallsource)
@@ -427,7 +426,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_wall()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_rigid_body()
 {
   // create rigid body handler
-  if (Core::UTILS::integral_value<int>(params_, "RIGID_BODY_MOTION"))
+  if (params_.get<bool>("RIGID_BODY_MOTION"))
     particlerigidbody_ = std::make_shared<ParticleRigidBody::RigidBodyHandler>(get_comm(), params_);
 
   // init rigid body handler
@@ -437,8 +436,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_rigid_body()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_time_integration()
 {
   // get particle time integration scheme
-  Inpar::PARTICLE::DynamicType timinttype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
+  auto timinttype = Teuchos::getIntegralValue<Inpar::PARTICLE::DynamicType>(params_, "DYNAMICTYP");
 
   // create particle time integration
   switch (timinttype)
@@ -469,8 +467,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_time_integration()
 void PARTICLEALGORITHM::ParticleAlgorithm::init_particle_interaction()
 {
   // get particle interaction type
-  Inpar::PARTICLE::InteractionType interactiontype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::InteractionType>(params_, "INTERACTION");
+  auto interactiontype =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::InteractionType>(params_, "INTERACTION");
 
   // create particle interaction handler
   switch (interactiontype)

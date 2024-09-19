@@ -41,15 +41,12 @@ void Inpar::EleMag::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   Core::UTILS::int_parameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
   Core::UTILS::int_parameter(
       "SOURCEFUNCNO", -1, "Function for source term in volume", &electromagneticdyn);
-  // Core::UTILS::BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with
-  // float",&electromagneticdyn); Core::UTILS::BoolParameter("ALLELESEQUAL","No","Yes, if all
-  // elements have same shape and material",&electromagneticdyn);
 
   {
     // time integration
 
     Teuchos::Tuple<std::string, 8> name;
-    Teuchos::Tuple<int, 8> label;
+    Teuchos::Tuple<Inpar::EleMag::DynamicType, 8> label;
     name[0] = "One_Step_Theta";
     label[0] = elemag_ost;
     name[1] = "BDF1";
@@ -67,14 +64,14 @@ void Inpar::EleMag::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
     name[7] = "Crank_Nicolson";
     label[7] = elemag_cn;
 
-    setStringToIntegralParameter<int>("TIMEINT", "One_Step_Theta",
+    setStringToIntegralParameter<Inpar::EleMag::DynamicType>("TIMEINT", "One_Step_Theta",
         "Type of time integration scheme", name, label, &electromagneticdyn);
   }
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     Teuchos::Tuple<std::string, 4> name;
-    Teuchos::Tuple<int, 4> label;
+    Teuchos::Tuple<Inpar::EleMag::InitialField, 4> label;
     name[0] = "zero_field";
     label[0] = initfield_zero_field;
     name[1] = "field_by_function";
@@ -84,8 +81,8 @@ void Inpar::EleMag::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
     name[3] = "field_by_steady_state_hdg";
     label[3] = initfield_scatra_hdg;
 
-    setStringToIntegralParameter<int>("INITIALFIELD", "zero_field", "Initial field for ele problem",
-        name, label, &electromagneticdyn);
+    setStringToIntegralParameter<Inpar::EleMag::InitialField>("INITIALFIELD", "zero_field",
+        "Initial field for ele problem", name, label, &electromagneticdyn);
 
     // Error calculation
     Core::UTILS::bool_parameter(
@@ -112,10 +109,6 @@ void Inpar::EleMag::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
           Core::LinAlg::EquilibrationMethod::rowsandcolumns_full,
           Core::LinAlg::EquilibrationMethod::rowsandcolumns_maindiag),
       &electromagneticdyn);
-
-  // PML
-  // Core::UTILS::StringParameter("PML_DEFINITION_FILE","none.txt","Filename of file containing the
-  // pml definition",&electromagneticdyn);
 }
 
 /// set specific electromagnetic conditions

@@ -199,7 +199,7 @@ void FLD::TimIntLoma::set_element_custom_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_loma_parameter);
+  eleparams.set<FLD::Action>("action", FLD::set_loma_parameter);
 
   // set parameters to update material with subgrid-scale temperature
   // potential inclusion of additional subgrid-scale terms in continuity equation
@@ -224,7 +224,7 @@ void FLD::TimIntLoma::print_turbulence_model()
 
   if (physicaltype_ == Inpar::FLUID::loma and turbmodel_ == Inpar::FLUID::smagorinsky)
   {
-    if (Core::UTILS::integral_value<int>(params_->sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI"))
+    if (params_->sublist("SUBGRID VISCOSITY").get<bool>("C_INCLUDE_CI"))
     {
       if (params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") > 0.0)
       {

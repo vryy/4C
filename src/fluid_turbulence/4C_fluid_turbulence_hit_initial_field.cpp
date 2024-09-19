@@ -1177,7 +1177,7 @@ namespace FLD
 
     // for 1st evaluate
     Teuchos::ParameterList params;
-    params.set<int>("action", FLD::interpolate_hdg_for_hit);
+    params.set<FLD::Action>("action", FLD::interpolate_hdg_for_hit);
 
     std::vector<int> dummy;
     Core::LinAlg::SerialDenseMatrix dummyMat;
@@ -1192,7 +1192,7 @@ namespace FLD
     Core::LinAlg::SerialDenseVector elevec1, elevec3;
     Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
     Teuchos::ParameterList initParams;
-    initParams.set<int>("action", FLD::project_hdg_initial_field_for_hit);
+    initParams.set<FLD::Action>("action", FLD::project_hdg_initial_field_for_hit);
 
     // loop over all elements on the processor
     Core::Elements::Element::LocationArray la(2);

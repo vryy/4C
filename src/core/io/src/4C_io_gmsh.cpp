@@ -482,7 +482,7 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(
     const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
-  // remark: Core::Rebalance::GetColVersionOfRowVector() does only work for Epetra_Vectors
+  // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for Epetra_Vectors
   // on dof_row_map
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->node_col_map(), 3, true));
@@ -530,7 +530,7 @@ void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
-  // remark: Core::Rebalance::GetColVersionOfRowVector() does only work for Epetra_Vectors
+  // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for Epetra_Vectors
   // on dof_row_map
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for
   //         Epetra_MultiVectors

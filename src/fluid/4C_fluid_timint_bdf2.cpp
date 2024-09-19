@@ -195,10 +195,10 @@ void FLD::TimIntBDF2::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_time_parameter);
+  eleparams.set<FLD::Action>("action", FLD::set_time_parameter);
 
   // set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
 
   // set general element parameters
   eleparams.set("dt", dta_);

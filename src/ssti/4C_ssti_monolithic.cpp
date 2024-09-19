@@ -38,7 +38,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
           Global::Problem::instance()->solver_params(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm, Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")))),
       scatrastructureoffdiagcoupling_(Teuchos::null),
       scatrathermooffdiagcoupling_(Teuchos::null),
@@ -200,7 +200,7 @@ void SSTI::SSTIMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList&
     const Teuchos::ParameterList& structparams)
 {
   // check input parameters for scalar transport field
-  if (Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatraparams, "VELOCITYFIELD") !=
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatraparams, "VELOCITYFIELD") !=
       Inpar::ScaTra::velocity_Navier_Stokes)
     FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
@@ -291,11 +291,12 @@ void SSTI::SSTIMono::setup()
           equilibration_method_.thermo != Core::LinAlg::EquilibrationMethod::none))
     FOUR_C_THROW("Block based equilibration only for block matrices");
 
-  const bool equilibration_scatra_initial = Core::UTILS::integral_value<bool>(
-      Global::Problem::instance()->ssti_control_params().sublist("MONOLITHIC"),
-      "EQUILIBRATION_INIT_SCATRA");
-  const bool calc_initial_pot = Core::UTILS::integral_value<bool>(
-      Global::Problem::instance()->elch_control_params(), "INITPOTCALC");
+  const bool equilibration_scatra_initial = Global::Problem::instance()
+                                                ->ssti_control_params()
+                                                .sublist("MONOLITHIC")
+                                                .get<bool>("EQUILIBRATION_INIT_SCATRA");
+  const bool calc_initial_pot =
+      Global::Problem::instance()->elch_control_params().get<bool>("INITPOTCALC");
 
   if (!equilibration_scatra_initial and
       scatra_field()->equilibration_method() != Core::LinAlg::EquilibrationMethod::none)

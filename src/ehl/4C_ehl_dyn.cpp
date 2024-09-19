@@ -70,8 +70,7 @@ void ehl_dyn()
   Teuchos::ParameterList& lubricationdyn =
       const_cast<Teuchos::ParameterList&>(problem->lubrication_dynamic_params());
   // do we want to use Modified Reynolds Equation?
-  bool modifiedreynolds =
-      (Core::UTILS::integral_value<int>(lubricationdyn, "MODIFIED_REYNOLDS_EQU"));
+  const bool modifiedreynolds = lubricationdyn.get<bool>("MODIFIED_REYNOLDS_EQU");
 
   // print problem specific logo
   if (!problem->get_dis("structure")->get_comm().MyPID())
@@ -93,8 +92,8 @@ void ehl_dyn()
   //  //Modification of time parameter list
   EHL::Utils::change_time_parameter(comm, ehlparams, lubricationdyn, sdyn);
 
-  const Inpar::EHL::SolutionSchemeOverFields coupling =
-      Core::UTILS::integral_value<Inpar::EHL::SolutionSchemeOverFields>(ehlparams, "COUPALGO");
+  const auto coupling =
+      Teuchos::getIntegralValue<Inpar::EHL::SolutionSchemeOverFields>(ehlparams, "COUPALGO");
 
   // 3.- Creation of Lubrication + Structure problem. (discretization called inside)
   Teuchos::RCP<EHL::Base> ehl = Teuchos::null;

@@ -1795,7 +1795,7 @@ namespace FLD
     }
 
     return;
-  }  // Discret::ELEMENTS::Fluid::f3_calc_smag_const_LijMij_and_MijMij
+  }  // Discret::ELEMENTS::Fluid::f3_calc_smag_const_lij_mij_and_mij_mij
 
 
   template <int iel>
@@ -2155,7 +2155,7 @@ namespace FLD
     strainnorm = (sqrt(strainnorm / 4.0));
 
     // do we have a fixed parameter N
-    if ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "CALC_N")) == false)
+    if (not turbmodelparamsmfs->get<bool>("CALC_N"))
     {
       for (int rr = 1; rr < 3; rr++) Nvel[rr] = turbmodelparamsmfs->get<double>("N");
     }
@@ -2467,7 +2467,7 @@ namespace FLD
 
     // calculate near-wall correction
     double Cai_phi = 0.0;
-    if ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true)
+    if (turbmodelparamsmfs->get<bool>("NEAR_WALL_LIMIT"))
     {
       // get Re from strain rate
       double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
@@ -2507,7 +2507,7 @@ namespace FLD
       // ratio of dissipation scale to element length
       double scale_ratio_phi = 0.0;
 
-      if ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "CALC_N")) == true)
+      if (turbmodelparamsmfs->get<bool>("CALC_N"))
       {
         //
         //   Delta
@@ -2596,9 +2596,8 @@ namespace FLD
       }
 
       // apply near-wall limit if required
-      if (((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT_CSGS_PHI")) ==
-              true) and
-          ((Core::UTILS::integral_value<int>(*turbmodelparamsmfs, "NEAR_WALL_LIMIT")) == true))
+      if (turbmodelparamsmfs->get<bool>("NEAR_WALL_LIMIT_CSGS_PHI") and
+          turbmodelparamsmfs->get<bool>("NEAR_WALL_LIMIT"))
       {
         D *= Cai_phi;
         Csgs_phi *= Cai_phi;
@@ -2607,7 +2606,9 @@ namespace FLD
 
     // calculate subgrid-viscosity, if small-scale eddy-viscosity term is included
     double sgvisc = 0.0;
-    if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC", "No") != "No")
+    if (params.sublist("TURBULENCE MODEL")
+            .get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC",
+                Inpar::FLUID::FineSubgridVisc::no_fssgv) != Inpar::FLUID::FineSubgridVisc::no_fssgv)
     {
       // get filter width and Smagorinsky-coefficient
       const double hk_sgvisc = std::pow(vol, (1.0 / nsd));
@@ -2625,11 +2626,15 @@ namespace FLD
       velintderxy.multiply_nt(evel, derxy);
       fsvelintderxy.multiply_nt(efsvel, derxy);
 
-      if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC", "No") ==
-          "Smagorinsky_all")
+      if (params.sublist("TURBULENCE MODEL")
+              .get<Inpar::FLUID::FineSubgridVisc>(
+                  "FSSUGRVISC", Inpar::FLUID::FineSubgridVisc::no_fssgv) ==
+          Inpar::FLUID::FineSubgridVisc::smagorinsky_all)
         velderxy = velintderxy;
-      else if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC", "No") ==
-               "Smagorinsky_small")
+      else if (params.sublist("TURBULENCE MODEL")
+                   .get<Inpar::FLUID::FineSubgridVisc>(
+                       "FSSUGRVISC", Inpar::FLUID::FineSubgridVisc::no_fssgv) ==
+               Inpar::FLUID::FineSubgridVisc::smagorinsky_small)
         velderxy = fsvelintderxy;
       else
         FOUR_C_THROW("fssgvisc-type unknown");
@@ -3201,33 +3206,12 @@ namespace FLD
       {
         xsi(idim) = gpcoord[idim];
       }
-      /*
-          // set gauss point coordinates
-          Core::LinAlg::Matrix<3,1> gp;
-
-          gp(0)=intpoints.qxg[iquad][0];
-          gp(1)=intpoints.qxg[iquad][1];
-          gp(2)=intpoints.qxg[iquad][2];
-
-          if(!(distype == Core::FE::CellType::nurbs8
-               ||
-               distype == Core::FE::CellType::nurbs27))
-          {
-            // get values of shape functions and derivatives in the gausspoint
-            Core::FE::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
-            Core::FE::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
-          }
-          else
-          {
-            FOUR_C_THROW("not implemented");
-          }
-      */
 
       if (not Core::FE::is_nurbs<distype>)
       {
         // get values of shape functions and derivatives in the gausspoint
-        // Core::FE::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
-        // Core::FE::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
+        // Core::FE::shape_function_3d       (funct,gp(0),gp(1),gp(2),distype);
+        // Core::FE::shape_function_3d_deriv1(deriv,gp(0),gp(1),gp(2),distype);
 
         // shape function derivs of boundary element at gausspoint
         Core::FE::shape_function<distype>(xsi, funct);

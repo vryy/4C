@@ -25,14 +25,14 @@ void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
   Teuchos::ParameterList& type = list->sublist("PROBLEM TYP", false, "");
 
   {
-    using IntegerType = std::underlying_type_t<Core::ProblemType>;
+    using IntegerType = Core::ProblemType;
     Teuchos::Array<std::string> name;
     Teuchos::Array<IntegerType> label;
 
     for (const auto& [prb_name, prb_enum] : string_to_problem_type_map())
     {
       name.push_back(prb_name);
-      label.push_back(static_cast<IntegerType>(prb_enum));
+      label.push_back(prb_enum);
     }
 
     setStringToIntegralParameter<IntegerType>(
@@ -40,14 +40,14 @@ void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
   }
 
   {
-    using IntegerType = std::underlying_type_t<Core::FE::ShapeFunctionType>;
+    using IntegerType = Core::FE::ShapeFunctionType;
     Teuchos::Array<std::string> name;
     Teuchos::Array<IntegerType> label;
 
     for (const auto& [prb_name, prb_enum] : Core::FE::string_to_shape_function_type_map())
     {
       name.push_back(prb_name);
-      label.push_back(static_cast<IntegerType>(prb_enum));
+      label.push_back(prb_enum);
     }
 
     setStringToIntegralParameter<IntegerType>("SHAPEFCT", "Polynomial",

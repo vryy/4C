@@ -159,7 +159,7 @@ void Coupling::Adapter::CouplingMortar::setup(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
       Inpar::Mortar::relocation_initial)
   {
     // Warning:
@@ -287,8 +287,11 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
 
   // set valid parameter values
   input.set<std::string>("LM_SHAPEFCN", "dual");
-  input.set<std::string>("LM_DUAL_CONSISTENT", "none");
-  input.sublist("PARALLEL REDISTRIBUTION").set<std::string>("PARALLEL_REDIST", "none");
+  input.set<Inpar::Mortar::ConsistentDualType>(
+      "LM_DUAL_CONSISTENT", Inpar::Mortar::ConsistentDualType::consistent_none);
+  input.sublist("PARALLEL REDISTRIBUTION")
+      .set<Inpar::Mortar::ParallelRedist>(
+          "PARALLEL_REDIST", Inpar::Mortar::ParallelRedist::redist_none);
   input.set<int>("DIMENSION", spatial_dimension_);
 
   // create an empty mortar interface
@@ -819,7 +822,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
     // const_cast to force modifed X() into pnode
     // const_cast to force modifed X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
-    if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
+    if (Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(
             mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_initial)
     {
       for (int k = 0; k < dim; ++k)
@@ -839,7 +842,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
           const_cast<double&>(alenode->x()[k]) = Xnewglobal[k];
       }
     }
-    else if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
+    else if (Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(
                  mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
     {
       // modification of ALE displacements
@@ -1002,7 +1005,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   check_setup();
 
   // check
-  if (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(
           interface()->interface_params(), "LM_SHAPEFCN") != Inpar::Mortar::shape_dual)
     FOUR_C_THROW("Creation of P operator only for dual shape functions!");
 
@@ -1246,7 +1249,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
+  if (Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(
           mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
     mesh_relocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 

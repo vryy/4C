@@ -6,6 +6,7 @@
 \level 2
 
  */
+/*----------------------------------------------------------------------*/
 
 #include "4C_poroelast_scatra_utils.hpp"
 
@@ -75,7 +76,7 @@ Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::UTILS::create_por
   // Parameter reading
   const Teuchos::ParameterList& params = problem->poro_scatra_control_params();
   const auto coupling =
-      Core::UTILS::integral_value<Inpar::PoroScaTra::SolutionSchemeOverFields>(params, "COUPALGO");
+      Teuchos::getIntegralValue<Inpar::PoroScaTra::SolutionSchemeOverFields>(params, "COUPALGO");
 
   switch (coupling)
   {

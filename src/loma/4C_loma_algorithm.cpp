@@ -14,7 +14,6 @@
 
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fluid_ele_action.hpp"
-#include "4C_fluid_timint_loma.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_solver.hpp"
 #include "4C_io_control.hpp"
@@ -63,7 +62,7 @@ void LowMach::Algorithm::init()
   Adapter::ScaTraFluidCouplingAlgorithm::init();
 
   // flag for monolithic solver
-  monolithic_ = (Core::UTILS::integral_value<int>(probdyn_, "MONOLITHIC"));
+  monolithic_ = (probdyn_.get<bool>("MONOLITHIC"));
 
   // time-step length, maximum time and maximum number of steps
   dt_ = probdyn_.get<double>("TIMESTEP");
@@ -89,8 +88,7 @@ void LowMach::Algorithm::init()
     FOUR_C_THROW("Incremental ScaTra formulation required for low-Mach-number flow");
 
   // flag for turbulent inflow
-  turbinflow_ =
-      Core::UTILS::integral_value<int>(fluiddyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW");
+  turbinflow_ = fluiddyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW");
   // number of inflow steps
   numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
   if (turbinflow_)
@@ -134,8 +132,7 @@ void LowMach::Algorithm::setup()
 
     // check whether (fluid) linearization scheme is a fixed-point-like scheme,
     // which is the only one enabled for monolithic solver, for the time being
-    Inpar::FLUID::LinearisationAction linearization =
-        Core::UTILS::integral_value<Inpar::FLUID::LinearisationAction>(fluiddyn, "NONLINITER");
+    auto linearization = fluiddyn.get<Inpar::FLUID::LinearisationAction>("NONLINITER");
     if (linearization != Inpar::FLUID::fixed_point_like)
       FOUR_C_THROW(
           "Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number "
@@ -194,7 +191,7 @@ void LowMach::Algorithm::setup()
         lomasolverparams, "AZPREC");
     if (azprectype != Core::LinearSolver::PreconditionerType::block_teko)
       FOUR_C_THROW(
-          "SOLVER %i is not valid for LOMA. It has to be an iterative Solver with BGS2x2 block "
+          "SOLVER %i is not valid for LOMA. It has to be an iterative Solver with 2x2 block "
           "preconditioner",
           linsolvernumber);
 
@@ -202,8 +199,7 @@ void LowMach::Algorithm::setup()
     lomasolver_ = Teuchos::rcp(
         new Core::LinAlg::Solver(lomasolverparams, fluid_field()->discretization()->get_comm(),
             Global::Problem::instance()->solver_params_callback(),
-            Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-                Global::Problem::instance()->io_params(), "VERBOSITY")));
+            Global::Problem::instance()->io_params().get<Core::IO::Verbositylevel>("VERBOSITY")));
 
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
@@ -216,8 +212,8 @@ void LowMach::Algorithm::setup()
     lomasolver_->put_solver_params_to_sub_params("Inverse1",
         Global::Problem::instance()->solver_params(fluidsolver),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY"));
+        Global::Problem::instance()->io_params().get<Core::IO::Verbositylevel>("VERBOSITY"));
+
 
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
     const Teuchos::ParameterList& scatradyn =
@@ -232,8 +228,7 @@ void LowMach::Algorithm::setup()
     lomasolver_->put_solver_params_to_sub_params("Inverse2",
         Global::Problem::instance()->solver_params(scalartransportsolvernumber),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY"));
+        Global::Problem::instance()->io_params().get<Core::IO::Verbositylevel>("VERBOSITY"));
 
     Core::LinearSolver::Parameters::compute_solver_parameters(
         *fluid_field()->discretization(), lomasolver_->params().sublist("Inverse1"));
@@ -702,7 +697,7 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
   Teuchos::ParameterList fparams;
 
   // set action type
-  fparams.set<int>("action", FLD::calc_loma_mono_odblock);
+  fparams.set<FLD::Action>("action", FLD::calc_loma_mono_odblock);
 
   // set general vector values needed by elements
   fluid_field()->discretization()->clear_state();

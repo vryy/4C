@@ -47,7 +47,6 @@ typedef enum RedAirwaysDyntype
 } _RED_AIRWAYS_DYNTYPE;
 
 
-
 namespace Inpar
 {
   namespace ArtDyn

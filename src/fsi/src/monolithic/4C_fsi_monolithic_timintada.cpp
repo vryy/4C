@@ -116,16 +116,17 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   // check on which fields time adaptivity should be based on
   //----------------------------------------------------------------------------
-  if (not(Core::UTILS::integral_value<Inpar::Solid::TimAdaKind>(sada, "KIND") ==
+  if (not(Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(sada, "KIND") ==
           Inpar::Solid::timada_kind_none))
     isadastructure_ = true;
 
-  if (not(Core::UTILS::integral_value<int>(fsiada, "AUXINTEGRATORFLUID") ==
+  if (not(Teuchos::getIntegralValue<Inpar::FSI::FluidMethod>(fsiada, "AUXINTEGRATORFLUID") ==
           Inpar::FSI::timada_fld_none))
     isadafluid_ = true;
 
   // get error action strategy from input file
-  const int erroractionstrategy = Core::UTILS::integral_value<int>(fsiada, "DIVERCONT");
+  const auto erroractionstrategy =
+      Teuchos::getIntegralValue<Inpar::FSI::DivContAct>(fsiada, "DIVERCONT");
   if (erroractionstrategy != Inpar::FSI::divcont_stop and
       erroractionstrategy != Inpar::FSI::divcont_continue)
     isadasolver_ = true;
@@ -330,7 +331,7 @@ void FSI::Monolithic::write_ada_file_header() const
     // get string of type of auxiliary time integration scheme in structure field
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
     const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
-    std::string strmethod = sada.get<std::string>("KIND");
+    const auto strmethod = Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(sada, "KIND");
 
     // print the actual header
     (*logada_) << "Time Adaptivity in monolithic Fluid-Structure-Interaction:"

@@ -31,8 +31,8 @@ Adapter::StructureFactory::build_structure_algorithm(const Teuchos::ParameterLis
 {
   Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
 
-  const enum Inpar::Solid::IntegrationStrategy intstrat =
-      Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const auto intstrat =
+      Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {

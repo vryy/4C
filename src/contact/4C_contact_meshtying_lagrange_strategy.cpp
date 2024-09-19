@@ -18,7 +18,7 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method.hpp"
-#include "4C_linear_solver_method_linalg.hpp"  // mesh initialization :-(
+#include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_interface.hpp"
 #include "4C_mortar_utils.hpp"
@@ -29,6 +29,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
@@ -40,7 +41,6 @@ CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* dof_row_map,
           dof_row_map, NodeRowMap, params, interface, spatialDim, comm, alphaf, maxdof)
 {
   // empty constructor body
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -102,8 +102,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   if (dualquadslavetrafo())
   {
     // type of LM interpolation for quadratic elements
-    Inpar::Mortar::LagMultQuad lagmultquad =
-        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+    auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
     if (lagmultquad == Inpar::Mortar::lagmult_lin)
     {
@@ -133,8 +132,7 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   //    -> no explicit constraint matrix needed
   //----------------------------------------------------------------------
   bool setup = true;
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
   if (systype == Inpar::CONTACT::system_condensed ||
       systype == Inpar::CONTACT::system_condensed_lagmult)
     setup = false;
@@ -172,8 +170,6 @@ void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   if (get_comm().MyPID() == 0)
     std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
               << std::endl;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -184,7 +180,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::mesh_initialization");
 
   // get out of here if NTS algorithm is activated
-  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
       Inpar::Mortar::algorithm_nts)
     return Teuchos::null;
 
@@ -213,10 +209,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initializati
   Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   // shape function type and type of LM interpolation for quadratic elements
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   // quadratic FE with dual LM
   if (dualquadslavetrafo())
@@ -353,12 +347,9 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     Teuchos::RCP<Epetra_Vector> dis)
 {
   // system type, shape function type and type of LM interpolation for quadratic elements
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   //**********************************************************************
   //**********************************************************************
@@ -735,8 +726,6 @@ void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     Core::LinAlg::export_to(*fmold, *fmoldexp);
     feff->Update(alphaf_, *fmoldexp, 1.0);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -760,8 +749,7 @@ void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
   // prepare saddle point system
   //**********************************************************************
   // get system type
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   // the standard stiffness matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiffmt =
@@ -842,9 +830,9 @@ void CONTACT::MtLagrangeStrategy::build_saddle_point_system(
   // invalid system types
   //**********************************************************************
   else
+  {
     FOUR_C_THROW("Invalid system type in SaddlePontSolve");
-
-  return;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -865,8 +853,6 @@ void CONTACT::MtLagrangeStrategy::update_displacements_and_l_mincrements(
 
   zincr_->Update(1.0, *sollm, 0.0);
   z_->Update(1.0, *zincr_, 1.0);
-
-  return;
 }
 
 
@@ -878,12 +864,9 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::recover");
 
   // system type, shape function type and type of LM interpolation for quadratic elements
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   //**********************************************************************
   //**********************************************************************
@@ -992,8 +975,6 @@ void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // store updated LM into nodes
   store_nodal_quantities(Mortar::StrategyBase::lmupdate);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1057,9 +1038,7 @@ bool CONTACT::MtLagrangeStrategy::evaluate_stiff(const Teuchos::RCP<const Epetra
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*lm_do_f_row_map_ptr(true), 1, false, true));
   lm_diag_matrix_->complete();
 
-
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
   {
     systrafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
@@ -1105,7 +1084,6 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::get_rhs_block_ptr
     default:
     {
       FOUR_C_THROW("Unknown Solid::VecBlockType!");
-      break;
     }
   }
 
@@ -1137,7 +1115,6 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::MtLagrangeStrategy::get_matrix
       break;
     default:
       FOUR_C_THROW("Unknown Solid::MatBlockType!");
-      break;
   }
   return mat_ptr;
 }
@@ -1147,8 +1124,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::MtLagrangeStrategy::get_matrix
 void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs)
 {
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
 
   if (systype == Inpar::CONTACT::system_condensed)
   {
@@ -1156,8 +1132,7 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*kteff));
     Teuchos::RCP<Epetra_Vector> r = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
 
-    Inpar::Mortar::LagMultQuad lagmultquad =
-        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+    auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
     if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
     {
@@ -1172,18 +1147,14 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
 
     Mortar::UTILS::mortar_rhs_condensation(r, mhatmatrix_);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::run_post_apply_jacobian_inverse(Epetra_Vector& result)
 {
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (systype == Inpar::CONTACT::system_condensed)
   {
     Teuchos::RCP<Epetra_Vector> inc = Teuchos::rcpFromRef<Epetra_Vector>(result);
@@ -1207,18 +1178,14 @@ void CONTACT::MtLagrangeStrategy::run_post_compute_x(
     zdir_ptr->ReplaceMap(*gsdofrowmap_);
     z_->Update(1., *zdir_ptr, 1.);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
-  Inpar::CONTACT::SystemType systype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (systype == Inpar::CONTACT::system_condensed)
   {
     // undo basis transformation to solution
@@ -1228,8 +1195,6 @@ void CONTACT::MtLagrangeStrategy::remove_condensed_contributions_from_rhs(Epetra
     Teuchos::RCP<Epetra_Vector> r = Teuchos::rcpFromRef<Epetra_Vector>(rhs);
     Mortar::UTILS::mortar_rhs_condensation(r, mhatmatrix_);
   }
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -327,7 +327,7 @@ void XFEM::MeshVolCoupling::init()
     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
 
     trace_estimate_eigenvalue_update_ =
-        Core::UTILS::integral_value<Inpar::XFEM::TraceEstimateEigenvalueUpdate>(
+        Teuchos::getIntegralValue<Inpar::XFEM::TraceEstimateEigenvalueUpdate>(
             Global::Problem::instance()->x_fluid_dynamic_params().sublist("STABILIZATION"),
             "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
   }
@@ -1876,7 +1876,7 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
 }
 
 //----------------------------------------------------------------------
-// LiftDrag                                                  chfoe 11/07
+// lift_drag                                                  chfoe 11/07
 //----------------------------------------------------------------------
 // calculate lift&drag forces
 //

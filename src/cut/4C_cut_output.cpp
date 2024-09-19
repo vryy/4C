@@ -254,7 +254,7 @@ void Cut::Output::gmsh_side_dump(std::ofstream& file, const Side* s, bool to_loc
       break;
     default:
       std::stringstream str;
-      str << "unknown element type in GmshSideDump for " << nodes.size() << " nodes!";
+      str << "unknown element type in gmsh_side_dump for " << nodes.size() << " nodes!";
       FOUR_C_THROW(str.str());
       exit(EXIT_FAILURE);
   }
@@ -385,7 +385,7 @@ void Cut::Output::gmsh_facet_dump(std::ofstream& file, Facet* facet,
       Cut::Output::gmsh_point_dump(file, facet->points()[pidx], facet->side_id(), to_local, ele);
   }
   else
-    FOUR_C_THROW("GmshFacetDump: unknown visualizationtype!");
+    FOUR_C_THROW("gmsh_facet_dump: unknown visualizationtype!");
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -415,7 +415,7 @@ void Cut::Output::gmsh_cycle_dump(std::ofstream& file, Cycle* cycle,
       gmsh_line_dump(file, (*cycle)()[i], (*cycle)()[(i + 1) % (*cycle)().size()], to_local, ele);
   }
   else
-    FOUR_C_THROW("GmshFacetDump: unknown visualizationtype!");
+    FOUR_C_THROW("gmsh_facet_dump: unknown visualizationtype!");
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -451,7 +451,6 @@ void Cut::Output::gmsh_complete_cut_element(std::ofstream& file, Element* ele, b
   }
 
   // write details of volumecells
-  // GmshNewSection( file, "Volumecells",true);
   const plain_volumecell_set& vcs = ele->volume_cells();
   for (plain_volumecell_set::const_iterator its = vcs.begin(); its != vcs.end(); its++)
   {

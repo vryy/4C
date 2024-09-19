@@ -163,7 +163,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseBoun
 {
   // boundary elements are not created as stand-alone elements by the element type,
   // but they are build directly by the corresponding domain element instead.
-  // See the ElementBoundaryFactory.
+  // See the element_boundary_factory.
   // Hence, boundary type classes actually are not used as factories, but
   // only for type identification.
   // To make this clear, a null pointer is returned.

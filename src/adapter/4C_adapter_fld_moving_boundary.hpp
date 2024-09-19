@@ -82,9 +82,6 @@ namespace Adapter
     /// read restart information for given time step
     virtual double read_restart(int step) = 0;
 
-    /// calculation (and output) of lift&drag
-    // virtual void LiftDrag() = 0;
-
     //@}
 
     //! @name Solver calls
@@ -103,9 +100,6 @@ namespace Adapter
     /// linear fluid solve with just a interface load
     virtual Teuchos::RCP<Epetra_Vector> relaxation_solve(
         Teuchos::RCP<Epetra_Vector> idisp, double dt) = 0;
-
-    /// get the linear solver object used for this field
-    // virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
 
     //@}
 

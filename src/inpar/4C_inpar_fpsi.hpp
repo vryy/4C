@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Coupling Methods                                                                  |
  *----------------------------------------------------------------------*/
-enum FpsiCoupling
+enum FpsiCouplingType
 {
   fpsi_monolithic_plain,
   partitioned

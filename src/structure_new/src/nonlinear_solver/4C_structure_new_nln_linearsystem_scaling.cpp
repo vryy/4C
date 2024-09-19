@@ -50,7 +50,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
 
   const std::string action = "calc_stc_matrix";
   p.set("action", action);
-  p.set<int>("stc_scaling", stcscale_);
+  p.set<Inpar::Solid::StcScale>("stc_scaling", stcscale_);
   p.set("stc_layer", 1);
 
   discret->evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -62,7 +62,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
     Teuchos::ParameterList pe;
 
     pe.set("action", action);
-    pe.set<int>("stc_scaling", stcscale_);
+    pe.set<Inpar::Solid::StcScale>("stc_scaling", stcscale_);
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =

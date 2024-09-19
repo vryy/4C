@@ -32,8 +32,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
     : discret_(actdis),
       params_(params),
       geotype_(TurbulenceStatisticsBfs::none),
-      inflowchannel_(
-          Core::UTILS::integral_value<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+      inflowchannel_(params_.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")),
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       statistics_outfilename_(statistics_outfilename)
 {
@@ -58,8 +57,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
   if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow problems!");
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  const Inpar::FLUID::PhysicalType physicaltype =
-      Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
+  const auto physicaltype =
+      Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
 
   // geometry of bfs
   convert_string_to_geo_type(geotype);

@@ -27,7 +27,7 @@ namespace FSI
   /**
    *  \brief Factory that creates the appropriate DirichletNeumann algorithm
    *
-   *  To create a DirichletNeumann algorithm, call the static CreateAlgorithm function directly! No
+   *  To create a DirichletNeumann algorithm, call the static create_algorithm function directly! No
    * instance of DirichletNeumannFactory has to be created! If you try to call the constructor, you
    * will get an error message, since it is set to be private.
    */

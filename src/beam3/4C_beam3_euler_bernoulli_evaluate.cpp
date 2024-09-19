@@ -130,7 +130,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       myvel.clear();
       const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
-      if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
+      if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
           Inpar::Solid::dyna_statics)
       {
         vel = discretization.get_state("velocity");
@@ -252,7 +252,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   // get element velocities only if it's not a static problem, otherwise a dynamics problem
   // (UNCOMMENT IF NEEDED)
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
+  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
       Inpar::Solid::dyna_statics)
   {
     Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");

@@ -128,7 +128,6 @@ namespace Discret::ELEMENTS
       return (not solid_interface_ptr_.is_null());
     }
 
-
     [[nodiscard]] inline Core::Elements::ParamsInterface& params_interface() const
     {
       FOUR_C_THROW_UNLESS(

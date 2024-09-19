@@ -109,8 +109,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       case Core::Elements::struct_calc_stress:
       case Core::Elements::struct_calc_mass_volume:
       {
-        Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-            dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
+        auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
         bool zero_sized = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
@@ -246,9 +245,11 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
+      {
         FOUR_C_THROW(
             "Cannot get state vectors \"displacement\" "
             "and/or \"residual displacement\"");
+      }
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
@@ -310,10 +311,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "iostrain", Inpar::Solid::strain_none);
+        iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+        iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
@@ -322,7 +321,6 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Core::FE::extract_my_values(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);
-
       const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
       Core::LinAlg::SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
       Core::LinAlg::SerialDenseMatrix strain(intpoints.nquad, Wall1::numstr_);
@@ -406,6 +404,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       // reference and current geometry (nodal positions)
       Core::LinAlg::SerialDenseMatrix xrefe(2, numnode);
       Core::LinAlg::SerialDenseMatrix xcure(2, numnode);
+      Core::LinAlg::SerialDenseMatrix xmat(2, numnode);
       Core::LinAlg::SerialDenseVector strain;
       strain.size(4);
       Core::LinAlg::SerialDenseMatrix boplin;
@@ -428,8 +427,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       {
         for (int inode = 0; inode < numnode; ++inode)
         {
-          Core::FE::Nurbs::ControlPoint* cp =
-              dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
+          auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
           weights(inode) = cp->w();
         }
       }
@@ -599,8 +597,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
 
   if (shape() == Core::FE::CellType::nurbs4 || shape() == Core::FE::CellType::nurbs9)
   {
-    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
+    auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
 
     bool zero_sized = (*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id());
 
@@ -612,8 +609,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
       weights(inode) = cp->w();
     }
@@ -799,7 +795,6 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
         (*eas_inc)[0], (*alpha)[0], step_length, owner());
 
   // the element internal stuff should be up-to-date for now...
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -817,7 +812,6 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   const int numnode = num_node();
   const int numdf = 2;
   const int nd = numnode * numdf;
-
 
   // general arrays
   Core::LinAlg::SerialDenseVector funct(numnode);
@@ -893,8 +887,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
-      Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
       weights(inode) = cp->w();
     }
@@ -1173,16 +1166,16 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
         for (int j = 0; j < Wall1::neas_; ++j) (*oldKaainv)(i, j) = Kaa(i, j);
 
       for (int i = 0; i < (2 * num_node()); ++i)
+      {
         for (int j = 0; j < Wall1::neas_; ++j)
         {
           (*oldKda)(i, j) = Kda(i, j);
           (*oldfeas)(j, 0) = feas(j);
         }
+      }
     }
   }
   // -------------------------------------------------------------------- EAS
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1249,8 +1242,7 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
-      Core::FE::Nurbs::ControlPoint* cp =
-          dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
+      auto* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(nodes()[inode]);
 
       weights(inode) = cp->w();
     }
@@ -1368,8 +1360,6 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     if (force) w1_fint(stress, boplin, *force, fac, nd);
 
   }  // for (int ip=0; ip<totngp; ++ip)
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1394,8 +1384,6 @@ void Discret::ELEMENTS::Wall1::w1_jacobianmatrix(const Core::LinAlg::SerialDense
 
   if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, id());
   /*----------------------------------------------------------------------*/
-
-  return;
 }  // Discret::ELEMENTS::Wall1::w1_jacobianmatrix
 
 /*----------------------------------------------------------------------*
@@ -1432,7 +1420,6 @@ void Discret::ELEMENTS::Wall1::w1_boplin(Core::LinAlg::SerialDenseMatrix& boplin
     boplin(2, dnode + 0) = boplin(1, dnode + 1);
     boplin(3, dnode + 1) = boplin(0, dnode + 0);
   } /* end of loop over nodes */
-  return;
 }
 
 /* Discret::ELEMENTS::Wall1::w1_boplin */
@@ -1478,12 +1465,7 @@ void Discret::ELEMENTS::Wall1::w1_defgrad(Core::LinAlg::SerialDenseVector& F,
   // strain[1] = 0.5 * (F[1] + F[1]) - 1.0;
   // strain[2] = 0.5 * (F[2] + F[3]);
   // strain[3] = strain[2];
-
-  return;
-}
-
-/* Discret::ELEMENTS::Wall1::w1_defgrad */
-
+} /* Discret::ELEMENTS::Wall1::w1_defgrad */
 
 /*----------------------------------------------------------------------*
  | Deformation gradient F in matrix notation and B in
@@ -1519,37 +1501,7 @@ void Discret::ELEMENTS::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b
     for (int j = 0; j < nd; j++)
       for (int k = 0; k < numeps; k++) b_cure(i, j) += Fmatrix(k, i) * boplin(k, j);
   /*----------------------------------------------------------------*/
-
-  return;
 }
-
-/* Discret::ELEMENTS::Wall1::w1_boplin_cure */
-
-
-//{
-//  Teuchos::RCP<Core::Mat::Material> mat = material();
-//  Core::LinAlg::SerialDenseMatrix cmat;
-//
-//  switch(material->mattyp)
-//  {
-//    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
-//    {
-//      Mat::StVenantKirchhoff* stvk = static_cast <Mat::StVenantKirchhoff*>(mat.get());
-//
-//      stvk->evaluate(glstrain,cmat,stress);
-//
-//      *density = stvk->Density();
-//
-//      break;
-//    }
-//    default:
-//      FOUR_C_THROW("Illegal type %d of material for wall1 element ", mat->material_type());
-//      break;
-//  }
-//
-//  /*--------------------------------------------------------------------*/
-//  return;
-//}  // of w1_mat_sel
 
 /*----------------------------------------------------------------------*
 | geometric stiffness part (total lagrange)                   mgit 05/07|
@@ -1560,13 +1512,16 @@ void Discret::ELEMENTS::Wall1::w1_kg(Core::LinAlg::SerialDenseMatrix& estif,
 {
   /*---------------------------------------------- perform B^T * SIGMA * B*/
   for (int i = 0; i < nd; i++)
+  {
     for (int j = 0; j < nd; j++)
+    {
       for (int r = 0; r < numeps; r++)
+      {
         for (int m = 0; m < numeps; m++)
           estif(i, j) += boplin(r, i) * stress(r, m) * boplin(m, j) * fac;
-
-  return;
-
+      }
+    }
+  }
 }  // Discret::ELEMENTS::Wall1::w1_kg
 
 /*----------------------------------------------------------------------*
@@ -1578,11 +1533,18 @@ void Discret::ELEMENTS::Wall1::w1_keu(Core::LinAlg::SerialDenseMatrix& estif,
 {
   /*------------- perform B_cure^T * D * B_cure, whereas B_cure = F^T * B */
   for (int i = 0; i < nd; i++)
+  {
     for (int j = 0; j < nd; j++)
+    {
       for (int k = 0; k < numeps; k++)
-        for (int m = 0; m < numeps; m++) estif(i, j) += b_cure(k, i) * C(k, m) * b_cure(m, j) * fac;
-
-  return;
+      {
+        for (int m = 0; m < numeps; m++)
+        {
+          estif(i, j) += b_cure(k, i) * C(k, m) * b_cure(m, j) * fac;
+        }
+      }
+    }
+  }
 }  // Discret::ELEMENTS::Wall1::w1_keu
 
 
@@ -1603,9 +1565,12 @@ void Discret::ELEMENTS::Wall1::w1_fint(const Core::LinAlg::SerialDenseMatrix& st
   st[3] = fac * stress(0, 2);
 
   for (int i = 0; i < nd; i++)
-    for (int j = 0; j < 4; j++) intforce[i] += b_cure(j, i) * st[j];
-
-  return;
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      intforce[i] += b_cure(j, i) * st[j];
+    }
+  }
 }  // Discret::ELEMENTS::Wall1::w1_fint
 
 

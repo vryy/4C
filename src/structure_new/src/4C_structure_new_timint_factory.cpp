@@ -36,8 +36,8 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_strategy(
 {
   Teuchos::RCP<Solid::TimeInt::Base> ti_strategy = Teuchos::null;
 
-  const enum Inpar::Solid::IntegrationStrategy intstrat =
-      Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const auto intstrat =
+      Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
@@ -66,8 +66,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_strat
   Teuchos::RCP<Solid::TimeInt::Base> ti_strategy = Teuchos::null;
 
   // get the dynamic type
-  const enum Inpar::Solid::DynamicType dyntype =
-      Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
 
   const bool is_prestress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
                                 Global::Problem::instance()->structural_dynamic_params(),
@@ -95,8 +94,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_strat
       probtype == Core::ProblemType::thermo_fsi)
     FOUR_C_THROW("No explicit time integration with fsi");
 
-  const enum Inpar::Solid::DynamicType dyntype =
-      Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
 
   if (dyntype == Inpar::Solid::dyna_expleuler or dyntype == Inpar::Solid::dyna_centrdiff or
       dyntype == Inpar::Solid::dyna_ab2 or dyntype == Inpar::Solid::dyna_ab4)
@@ -112,8 +110,7 @@ Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_data_s
 {
   Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyndata_ptr = Teuchos::null;
 
-  const enum Inpar::Solid::DynamicType dyntype =
-      Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
+  const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
 
   switch (dyntype)
   {

@@ -113,7 +113,7 @@ void FS3I::BiofilmFSI::init()
   // automatically (i.e. field-wise)
   const Teuchos::ParameterList& scatradyn =
       Global::Problem::instance()->scalar_transport_dynamic_params();
-  if (Core::UTILS::integral_value<int>(scatradyn, "SKIPINITDER") == false)
+  if (not scatradyn.get<bool>("SKIPINITDER"))
     FOUR_C_THROW(
         "Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to "
         "false");
@@ -261,8 +261,8 @@ void FS3I::BiofilmFSI::timeloop()
 
   const Teuchos::ParameterList& biofilmcontrol =
       Global::Problem::instance()->biofilm_control_params();
-  const int biofilmgrowth = Core::UTILS::integral_value<int>(biofilmcontrol, "BIOFILMGROWTH");
-  const int outputgmsh_ = Core::UTILS::integral_value<int>(biofilmcontrol, "OUTPUT_GMSH");
+  const bool biofilmgrowth = biofilmcontrol.get<bool>("BIOFILMGROWTH");
+  const bool outputgmsh_ = biofilmcontrol.get<bool>("OUTPUT_GMSH");
 
   std::cout << std::endl << "--------------SIMULATION PARAMETERS-----------------" << std::endl;
   std::cout << "FSI TIMESTEP = " << dt_fsi_ << "; FSI NUMSTEP = " << nstep_fsi_ << std::endl;
@@ -366,7 +366,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
   // or only on the last values coming from the fsi-scatra simulation
   const Teuchos::ParameterList& biofilmcontrol =
       Global::Problem::instance()->biofilm_control_params();
-  const int avgrowth = Core::UTILS::integral_value<int>(biofilmcontrol, "AVGROWTH");
+  const bool avgrowth = biofilmcontrol.get<bool>("AVGROWTH");
   // in case of averaged values we need temporary variables
   Teuchos::RCP<Epetra_Vector> normtempinflux_ =
       Teuchos::rcp(new Epetra_Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
@@ -444,7 +444,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
     // used however the imposition of a Dirichlet condition on the interface produce wrong lambda_
     // when structuresplit is used
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-    int coupling = Teuchos::getIntegralValue<int>(fsidyn, "COUPALGO");
+    const auto coupling = Teuchos::getIntegralValue<FsiCoupling>(fsidyn, "COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit)
     {
       Teuchos::RCP<Epetra_Vector> lambdafluid = fsi_->get_lambda();

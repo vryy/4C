@@ -869,7 +869,7 @@ namespace Core::FE
                      << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
-  };  // CloneDiscretization
+  };  // clone_discretization
 
   /// clone target discretization @p targetdis from a given source discretization @p sourcedis
   /// based on conditions @p conds. The @p clonefieldmatmap is required from the global
@@ -910,7 +910,7 @@ namespace Core::FE
                      << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
-  };  // CloneDiscretizationFromCondition
+  };  // clone_discretization_from_condition
 
   /// clone target discretization @p targetdis from a given source discretization @p sourcedis
   /// based on the name of a condition @p condname. The @p clonefieldmatmap is required from the
@@ -943,7 +943,7 @@ namespace Core::FE
                      << time.totalElapsedTime(true) << " secs\n\n";
     }
     return;
-  };  // CloneDiscretizationFromCondition
+  };  // clone_discretization_from_condition
 
   //! Return valid cloning material map input lines.
   std::vector<Input::LineDefinition> valid_cloning_material_map_lines();

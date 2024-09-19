@@ -249,8 +249,8 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  auto iocouplingstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-      params, "iocouplstress", Inpar::Solid::stress_none);
+  auto iocouplingstress =
+      params.get<Inpar::Solid::StressType>("iocouplstress", Inpar::Solid::stress_none);
 
   // check for output of coupling stress
   if (iocouplingstress == Inpar::Solid::stress_none)

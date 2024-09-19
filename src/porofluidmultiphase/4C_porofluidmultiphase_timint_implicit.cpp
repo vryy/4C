@@ -53,26 +53,25 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretizatio
       myrank_(actdis->get_comm().MyPID()),
       nsd_(Global::Problem::instance()->n_dim()),
       isale_(false),
-      skipinitder_(Core::UTILS::integral_value<int>(poroparams_, "SKIPINITDER")),
-      output_satpress_(Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_SATANDPRESS")),
-      output_solidpress_(Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_SOLIDPRESS")),
-      output_porosity_(Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_POROSITY")),
-      output_phase_velocities_(
-          Core::UTILS::integral_value<int>(poroparams_, "OUTPUT_PHASE_VELOCITIES")),
-      output_bloodvesselvolfrac_(Core::UTILS::integral_value<int>(
-          poroparams_.sublist("ARTERY COUPLING"), "OUTPUT_BLOODVESSELVOLFRAC")),
-      stab_biot_(Core::UTILS::integral_value<int>(poroparams_, "STAB_BIOT")),
+      skipinitder_(poroparams_.get<bool>("SKIPINITDER")),
+      output_satpress_(poroparams_.get<bool>("OUTPUT_SATANDPRESS")),
+      output_solidpress_(poroparams_.get<bool>("OUTPUT_SOLIDPRESS")),
+      output_porosity_(poroparams_.get<bool>("OUTPUT_POROSITY")),
+      output_phase_velocities_(poroparams_.get<bool>("OUTPUT_PHASE_VELOCITIES")),
+      output_bloodvesselvolfrac_(
+          poroparams_.sublist("ARTERY COUPLING").get<bool>("OUTPUT_BLOODVESSELVOLFRAC")),
+      stab_biot_(poroparams_.get<bool>("STAB_BIOT")),
       domainint_funct_(std::vector<int>()),
       num_domainint_funct_(0),
-      calcerr_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::CalcError>(
+      calcerr_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::CalcError>(
           poroparams_, "CALCERROR")),
-      fluxrecon_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+      fluxrecon_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
           poroparams_, "FLUX_PROJ_METHOD")),
       fluxreconsolvernum_(poroparams_.get<int>("FLUX_PROJ_SOLVER")),
-      divcontype_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::DivContAct>(
+      divcontype_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::DivContAct>(
           poroparams_, "DIVERCONT")),
       fdcheck_(
-          Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::FdCheck>(poroparams_, "FDCHECK")),
+          Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::FdCheck>(poroparams_, "FDCHECK")),
       fdcheckeps_(poroparams_.get<double>("FDCHECKEPS")),
       fdchecktol_(poroparams_.get<double>("FDCHECKTOL")),
       stab_biot_scaling_(poroparams_.get<double>("STAB_BIOT_SCALING")),
@@ -87,13 +86,13 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretizatio
       itemax_(poroparams_.get<int>("ITEMAX")),
       upres_(params_.get<int>("RESULTSEVRY")),
       uprestart_(params_.get<int>("RESTARTEVRY")),
-      vectornormfres_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
+      vectornormfres_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
           poroparams_, "VECTORNORM_RESF")),
-      vectornorminc_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
+      vectornorminc_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
           poroparams_, "VECTORNORM_INC")),
       ittolres_(poroparams_.get<double>("TOLRES")),
       ittolinc_(poroparams_.get<double>("TOLINC")),
-      artery_coupling_active_(Core::UTILS::integral_value<int>(params_, "ARTERY_COUPLING")),
+      artery_coupling_active_(params_.get<bool>("ARTERY_COUPLING")),
       // Initialization of degrees of freedom variables
       phin_(Teuchos::null),
       phinp_(Teuchos::null),
@@ -266,7 +265,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
-  set_initial_field(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::InitialField>(
+  set_initial_field(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::InitialField>(
                         poroparams_, "INITIALFIELD"),
       poroparams_.get<int>("INITFUNCNO"));
 
@@ -311,7 +310,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   solver_ = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber_),
           discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
   strategy_->initialize_linear_solver(solver_);
 
@@ -331,7 +330,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_element_general_parameters() const
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::set_general_parameter);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::set_general_parameter);
 
   eleparams.set<bool>("isale", isale_);
   eleparams.set<int>("nds_disp", nds_disp_);
@@ -718,7 +717,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_neumann_bc(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", POROFLUIDMULTIPHASE::bd_calc_Neumann);
+  condparams.set<POROFLUIDMULTIPHASE::BoundaryAction>(
+      "action", POROFLUIDMULTIPHASE::bd_calc_Neumann);
 
   // set time for evaluation of point Neumann conditions as parameter depending on time integration
   // scheme line/surface/volume Neumann conditions use the time stored in the time parameter class
@@ -754,7 +754,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_mat_and_rhs()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_mat_and_rhs);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_mat_and_rhs);
 
   // clean up, just in case ...
   discret_->clear_state();
@@ -798,7 +798,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_valid_volume_frac_press_and_spec(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_valid_dofs);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_valid_dofs);
 
   // clean up, just in case ...
   discret_->clear_state();
@@ -967,7 +967,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_fluid_struct_coupling_mat(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_fluid_struct_coupl_mat);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>(
+      "action", POROFLUIDMULTIPHASE::calc_fluid_struct_coupl_mat);
 
   // clean up, just in case ...
   discret_->clear_state();
@@ -1011,7 +1012,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::assemble_fluid_scatra_coupling_mat(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>(
+      "action", POROFLUIDMULTIPHASE::calc_fluid_scatra_coupl_mat);
 
   // clean up, just in case ...
   discret_->clear_state();
@@ -1055,7 +1057,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::nonlinear_solve()
   print_convergence_header();
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool isadapttol = (Core::UTILS::integral_value<int>(poroparams_, "ADAPTCONV"));
+  const bool isadapttol = poroparams_.get<bool>("ADAPTCONV");
   const double adaptolbetter = poroparams_.get<double>("ADAPTCONV_BETTER");
   const double abstolres = poroparams_.get<double>("ABSTOLRES");
   double actresidual(0.0);
@@ -1262,7 +1264,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_pressures_and_saturations()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_pres_and_sat);
+    eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_pres_and_sat);
 
     // set vector values needed by elements
     discret_->clear_state();
@@ -1306,7 +1308,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_solid_pressures()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_solidpressure);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_solidpressure);
 
   // set vector values needed by elements
   discret_->clear_state();
@@ -1346,7 +1348,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_flux()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::recon_flux_at_nodes);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::recon_flux_at_nodes);
 
   const int dim = Global::Problem::instance()->n_dim();
   // we assume same number of dofs per node in the whole dis here
@@ -1378,7 +1380,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calculate_phase_velocities()
   phase_velocities_->PutScalar(0.0);
 
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_phase_velocities);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_phase_velocities);
 
   discret_->clear_state();
 
@@ -1402,7 +1404,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_porosity()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_porosity);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_porosity);
 
   // set vector values needed by elements
   discret_->clear_state();
@@ -1445,7 +1447,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_domain_integrals()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_domain_integrals);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_domain_integrals);
 
   // set vector values needed by elements
   discret_->clear_state();
@@ -1756,9 +1758,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_error);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>("action", POROFLUIDMULTIPHASE::calc_error);
   eleparams.set("total time", time_);
-  eleparams.set<int>("calcerrorflag", calcerr_);
+  eleparams.set<Inpar::POROFLUIDMULTIPHASE::CalcError>("calcerrorflag", calcerr_);
 
   switch (calcerr_)
   {
@@ -2086,7 +2088,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calc_initial_time_derivative()
 
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", POROFLUIDMULTIPHASE::calc_initial_time_deriv);
+  eleparams.set<POROFLUIDMULTIPHASE::Action>(
+      "action", POROFLUIDMULTIPHASE::calc_initial_time_deriv);
 
   // add state vectors according to time integration scheme
   discret_->clear_state();

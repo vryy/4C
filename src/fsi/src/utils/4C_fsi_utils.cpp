@@ -131,16 +131,10 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
   // find max FSI condition ID
   for (meit = istructslideles_.begin(); meit != istructslideles_.end(); meit++)
   {
-    //    for ( eit=meit->second.begin(); eit != meit->second.end(); eit++ )
-    //    {
-    //      //build slideeleidvector with unique distribution. Otherwise, AllreduceEMap() will
-    //      complain in DEBUG if (structdis->Comm().MyPID()==(*eit).second->Owner())
-    //        slideeleidvector.push_back((*eit).first);
-    //    }
-    //    const Epetra_Map slideelemap (-1, slideeleidvector.size(), slideeleidvector.data(), 0,
-    //    structdis->Comm()); slideeleredmap_[meit->first] =
-    //    Core::LinAlg::AllreduceEMap(slideelemap);
-    if (meit->first > max_id) max_id = meit->first;
+    if (meit->first > max_id)
+    {
+      max_id = meit->first;
+    }
   }
 
   structdis->get_comm().MaxAll(&max_id, &maxid_, 1);

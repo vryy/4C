@@ -6,10 +6,6 @@
 
 */
 /*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
-
 #include "4C_structure_timint_impl.hpp"
 
 #include "4C_beamcontact_beam3contact_manager.hpp"
@@ -65,19 +61,19 @@ Solid::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      pred_(Core::UTILS::integral_value<Inpar::Solid::PredEnum>(sdynparams, "PREDICT")),
-      itertype_(Core::UTILS::integral_value<Inpar::Solid::NonlinSolTech>(sdynparams, "NLNSOL")),
-      normtypedisi_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_DISP")),
-      normtypefres_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_RESF")),
-      normtypepres_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_PRES")),
-      normtypepfres_(Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_INCO")),
+      pred_(Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(sdynparams, "PREDICT")),
+      itertype_(Teuchos::getIntegralValue<Inpar::Solid::NonlinSolTech>(sdynparams, "NLNSOL")),
+      normtypedisi_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_DISP")),
+      normtypefres_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_RESF")),
+      normtypepres_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_PRES")),
+      normtypepfres_(Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_INCO")),
       combdispre_(
-          Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
+          Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES")),
       combfrespfres_(
-          Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
+          Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO")),
       combdisifres_(
-          Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
-      iternorm_(Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(sdynparams, "ITERNORM")),
+          Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP")),
+      iternorm_(Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sdynparams, "ITERNORM")),
       itermax_(sdynparams.get<int>("MAXITER")),
       itermin_(sdynparams.get<int>("MINITER")),
       toldisi_(sdynparams.get<double>("TOLDISP")),
@@ -118,7 +114,7 @@ Solid::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       fres_(Teuchos::null),
       freact_(Teuchos::null),
       updateprojection_(false),
-      stcscale_(Core::UTILS::integral_value<Inpar::Solid::StcScale>(sdynparams, "STC_SCALING")),
+      stcscale_(Teuchos::getIntegralValue<Inpar::Solid::StcScale>(sdynparams, "STC_SCALING")),
       stclayer_(sdynparams.get<int>("STC_LAYER")),
       ptcdt_(sdynparams.get<double>("PTCDT")),
       dti_(1.0 / ptcdt_)
@@ -229,21 +225,20 @@ void Solid::TimIntImpl::setup()
   // in saddlepoint formulation
   tolcontconstr_ = tolfres_;
   tollagr_ = toldisi_;
-  combfrescontconstr_ = Inpar::Solid::bop_and;  // default values, avoid uninitialized variables
+  // default values, avoid uninitialized variables
+  combfrescontconstr_ = Inpar::Solid::bop_and;
   combdisilagr_ = Inpar::Solid::bop_and;
-  normtypecontconstr_ = Inpar::Solid::
-      convnorm_abs;  // Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdynparams,"NORM_RESF"));
-  normtypeplagrincr_ = Inpar::Solid::
-      convnorm_abs;  // Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdynparams,"NORM_DISP"));
+  normtypecontconstr_ = Inpar::Solid::convnorm_abs;
+  normtypeplagrincr_ = Inpar::Solid::convnorm_abs;
 
   if (have_contact_meshtying())
   {
     // extract information from parameter lists
     tolcontconstr_ = cmtbridge_->get_strategy().params().get<double>("TOLCONTCONSTR");
     tollagr_ = cmtbridge_->get_strategy().params().get<double>("TOLLAGR");
-    combfrescontconstr_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+    combfrescontconstr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         cmtbridge_->get_strategy().params(), "NORMCOMBI_RESFCONTCONSTR");
-    combdisilagr_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+    combdisilagr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         cmtbridge_->get_strategy().params(), "NORMCOMBI_DISPLAGR");
   }
 
@@ -684,12 +679,12 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   bool bPressure = pressure_ != Teuchos::null;
   bool bContactSP =
       (have_contact_meshtying() &&
-          Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
+          Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
               cmtbridge_->get_strategy().params(), "STRATEGY") ==
               Inpar::CONTACT::solution_lagmult &&
-          (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+          (Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
                cmtbridge_->get_strategy().params(), "SYSTEM") != Inpar::CONTACT::system_condensed ||
-              Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+              Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
                   cmtbridge_->get_strategy().params(), "SYSTEM") !=
                   Inpar::CONTACT::system_condensed_lagmult));
 
@@ -851,7 +846,7 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
   if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-  bool loadlin = (Core::UTILS::integral_value<int>(sdyn, "LOADLIN") == 1);
+  bool loadlin = (sdyn.get<bool>("LOADLIN"));
 
   if (!loadlin)
     discret_->evaluate_neumann(p, *fext);
@@ -1054,7 +1049,7 @@ void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
     // visualization of current Newton step
 #ifdef MORTARGMSH2
     bool gmsh =
-        Core::UTILS::IntegralValue<int>(Global::Problem::instance()->IOParams(), "OUTPUT_GMSH");
+        Teuchos::getIntegralValue<int>(Global::Problem::instance()->IOParams(), "OUTPUT_GMSH");
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_, iter_);
 #endif
   }
@@ -1241,11 +1236,9 @@ bool Solid::TimIntImpl::converged()
   if (have_contact_meshtying())
   {
     // check which case (application, strategy) we are in
-    Inpar::CONTACT::SolvingStrategy stype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-            cmtbridge_->get_strategy().params(), "STRATEGY");
-    bool semismooth =
-        Core::UTILS::integral_value<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
+    auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        cmtbridge_->get_strategy().params(), "STRATEGY");
+    const bool semismooth = cmtbridge_->get_strategy().params().get<bool>("SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (cmtbridge_->have_contact() && (stype == Inpar::CONTACT::solution_lagmult) && semismooth)
@@ -1599,16 +1592,16 @@ int Solid::TimIntImpl::newton_full()
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
-    bool bContactSP = (have_contact_meshtying() &&
-                       ((Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-                             cmtbridge_->get_strategy().params(), "STRATEGY") ==
-                               Inpar::CONTACT::solution_lagmult &&
-                           (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
-                                cmtbridge_->get_strategy().params(), "SYSTEM") !=
-                                   Inpar::CONTACT::system_condensed ||
-                               Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
-                                   cmtbridge_->get_strategy().params(), "SYSTEM") !=
-                                   Inpar::CONTACT::system_condensed_lagmult))));
+    bool bContactSP =
+        (have_contact_meshtying() && ((Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+                                           cmtbridge_->get_strategy().params(), "STRATEGY") ==
+                                             Inpar::CONTACT::solution_lagmult &&
+                                         (Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
+                                              cmtbridge_->get_strategy().params(), "SYSTEM") !=
+                                                 Inpar::CONTACT::system_condensed ||
+                                             Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
+                                                 cmtbridge_->get_strategy().params(), "SYSTEM") !=
+                                                 Inpar::CONTACT::system_condensed_lagmult))));
 
     if (bPressure && bContactSP)
       FOUR_C_THROW(
@@ -1657,9 +1650,9 @@ int Solid::TimIntImpl::newton_full()
         normlagr_ = -1.0;
 
       // for wear discretization
-      Inpar::Wear::WearType wtype = Core::UTILS::integral_value<Inpar::Wear::WearType>(
+      auto wtype = Teuchos::getIntegralValue<Inpar::Wear::WearType>(
           cmtbridge_->get_strategy().params(), "WEARTYPE");
-      Inpar::Wear::WearSide wside = Core::UTILS::integral_value<Inpar::Wear::WearSide>(
+      auto wside = Teuchos::getIntegralValue<Inpar::Wear::WearSide>(
           cmtbridge_->get_strategy().params(), "WEAR_SIDE");
 
       if (wtype == Inpar::Wear::wear_primvar)
@@ -2672,8 +2665,8 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
     double dti = cardvasc0dman_->get_k_ptc();
 
-    const bool ptc_3D0D = Core::UTILS::integral_value<int>(
-        Global::Problem::instance()->cardiovascular0_d_structural_params(), "PTC_3D0D");
+    const bool ptc_3D0D =
+        Global::Problem::instance()->cardiovascular0_d_structural_params().get<bool>("PTC_3D0D");
 
     // equilibrium iteration loop
     while (((not converged() and (not linsolve_error) and (not element_error)) and
@@ -2937,13 +2930,11 @@ int Solid::TimIntImpl::cmt_nonlinear_solve()
   // get some parameters
   //********************************************************************
   // strategy type
-  Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-          cmtbridge_->get_strategy().params(), "STRATEGY");
+  auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      cmtbridge_->get_strategy().params(), "STRATEGY");
 
   // semi-smooth Newton type
-  bool semismooth =
-      Core::UTILS::integral_value<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
+  const bool semismooth = cmtbridge_->get_strategy().params().get<bool>("SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != Inpar::Solid::soltech_newtonfull)
@@ -3095,10 +3086,9 @@ void Solid::TimIntImpl::cmt_linear_solve()
     solver_params.lin_tol_better = solveradaptolbetter_;
   }
 
-  Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-          cmtbridge_->get_strategy().params(), "STRATEGY");
-  Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+  auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      cmtbridge_->get_strategy().params(), "STRATEGY");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
       cmtbridge_->get_strategy().params(), "SYSTEM");
 
   // update information about active slave dofs
@@ -3217,7 +3207,7 @@ int Solid::TimIntImpl::beam_contact_nonlinear_solve()
   // get some parameters
   //********************************************************************
   // strategy type
-  Inpar::BEAMCONTACT::Strategy strategy = Core::UTILS::integral_value<Inpar::BEAMCONTACT::Strategy>(
+  auto strategy = Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(
       beamcman_->beam_contact_parameters(), "BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
@@ -3420,13 +3410,13 @@ int Solid::TimIntImpl::ptc()
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (have_contact_meshtying() &&
-                       Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
+                       Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
                            cmtbridge_->get_strategy().params(), "STRATEGY") ==
                            Inpar::CONTACT::solution_lagmult &&
-                       (Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+                       (Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
                             cmtbridge_->get_strategy().params(), "SYSTEM") !=
                                Inpar::CONTACT::system_condensed ||
-                           Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+                           Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
                                cmtbridge_->get_strategy().params(), "SYSTEM") !=
                                Inpar::CONTACT::system_condensed));
 
@@ -3684,14 +3674,13 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
   if (have_contact_meshtying())
   {
     // strategy and system setup types
-    Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-            cmtbridge_->get_strategy().params(), "STRATEGY");
-    Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+    auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        cmtbridge_->get_strategy().params(), "STRATEGY");
+    auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
         cmtbridge_->get_strategy().params(), "SYSTEM");
-    Inpar::Wear::WearType wtype = Core::UTILS::integral_value<Inpar::Wear::WearType>(
+    auto wtype = Teuchos::getIntegralValue<Inpar::Wear::WearType>(
         cmtbridge_->get_strategy().params(), "WEARTYPE");
-    Inpar::Wear::WearSide wside = Core::UTILS::integral_value<Inpar::Wear::WearSide>(
+    auto wside = Teuchos::getIntegralValue<Inpar::Wear::WearSide>(
         cmtbridge_->get_strategy().params(), "WEAR_SIDE");
 
     if (soltype == Inpar::CONTACT::solution_lagmult &&
@@ -3866,14 +3855,13 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
   if (have_contact_meshtying())
   {
     // strategy and system setup types
-    Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-            cmtbridge_->get_strategy().params(), "STRATEGY");
-    Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+    auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        cmtbridge_->get_strategy().params(), "STRATEGY");
+    auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
         cmtbridge_->get_strategy().params(), "SYSTEM");
-    Inpar::Wear::WearType wtype = Core::UTILS::integral_value<Inpar::Wear::WearType>(
+    auto wtype = Teuchos::getIntegralValue<Inpar::Wear::WearType>(
         cmtbridge_->get_strategy().params(), "WEARTYPE");
-    Inpar::Wear::WearSide wside = Core::UTILS::integral_value<Inpar::Wear::WearSide>(
+    auto wside = Teuchos::getIntegralValue<Inpar::Wear::WearSide>(
         cmtbridge_->get_strategy().params(), "WEAR_SIDE");
 
     if (soltype == Inpar::CONTACT::solution_lagmult &&
@@ -4256,7 +4244,7 @@ void Solid::TimIntImpl::compute_stc_matrix()
 
   const std::string action = "calc_stc_matrix";
   p.set("action", action);
-  p.set<int>("stc_scaling", stcscale_);
+  p.set<Inpar::Solid::StcScale>("stc_scaling", stcscale_);
   p.set("stc_layer", 1);
 
   discret_->evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -4279,7 +4267,7 @@ void Solid::TimIntImpl::compute_stc_matrix()
     Teuchos::ParameterList pe;
 
     pe.set("action", action);
-    pe.set<int>("stc_scaling", stcscale_);
+    pe.set<Inpar::Solid::StcScale>("stc_scaling", stcscale_);
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
@@ -4331,13 +4319,11 @@ int Solid::TimIntImpl::cmt_windk_constr_nonlinear_solve()
   // get some parameters
   //********************************************************************
   // strategy type
-  Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-          cmtbridge_->get_strategy().params(), "STRATEGY");
+  auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      cmtbridge_->get_strategy().params(), "STRATEGY");
 
   // semi-smooth Newton type
-  bool semismooth =
-      Core::UTILS::integral_value<int>(cmtbridge_->get_strategy().params(), "SEMI_SMOOTH_NEWTON");
+  const bool semismooth = cmtbridge_->get_strategy().params().get<bool>("SEMI_SMOOTH_NEWTON");
 
   // iteration type
   if (itertype_ != Inpar::Solid::soltech_newtonuzawalin)
@@ -4473,10 +4459,9 @@ int Solid::TimIntImpl::cmt_windk_constr_nonlinear_solve()
 int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
 {
   // strategy and system setup types
-  Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-          cmtbridge_->get_strategy().params(), "STRATEGY");
-  Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+  auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      cmtbridge_->get_strategy().params(), "STRATEGY");
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
       cmtbridge_->get_strategy().params(), "SYSTEM");
 
   int linsolve_error = 0;

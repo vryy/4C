@@ -169,11 +169,11 @@ void FLD::TimIntOneStepTheta::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_time_parameter);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<FLD::Action>("action", FLD::set_time_parameter);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
 
   // set general element parameters
   eleparams.set("dt", dta_);
@@ -184,7 +184,8 @@ void FLD::TimIntOneStepTheta::set_element_time_parameter()
   eleparams.set("total time", time_);
 
   // full implicit handling of pressure in OST integration
-  eleparams.set<int>("ost cont and press", params_->get<int>("ost cont and press"));
+  eleparams.set<Inpar::FLUID::OstContAndPress>("ost cont and press",
+      Teuchos::getIntegralValue<Inpar::FLUID::OstContAndPress>(*params_, "ost cont and press"));
   eleparams.set<bool>("ost new", params_->get<bool>("ost new"));
 
   // call standard loop over elements

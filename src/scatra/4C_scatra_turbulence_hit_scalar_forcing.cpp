@@ -33,7 +33,7 @@ namespace ScaTra
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint)
-      : forcing_type_(Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(
+      : forcing_type_(Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
             timeint->extraparams_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint->discret_),
         forcing_(timeint->forcing_),

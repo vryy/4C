@@ -19,7 +19,6 @@
 #include "4C_fluid_functions.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
-#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
 
@@ -167,8 +166,8 @@ namespace Discret
       Core::LinAlg::Matrix<nsd_, nsd_> grad_u_err(true);
       double p_err = 0.0;
 
-      const int calcerr =
-          Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
+      const auto calcerr =
+          Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
       const double t = my::fldparatimint_->time();
@@ -200,13 +199,6 @@ namespace Discret
       //----------------------------------------------------------------
       if (my::isNurbs_)
       {
-        //    // access knots and weights for this element
-        //    bool zero_size =
-        //    Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
-        //
-        //    // if we have a zero sized element due to a interpolated point -> exit here
-        //    if(zero_size)
-        //      return(0);
         FOUR_C_THROW("compute error not implemented for nurbs");
       }  // Nurbs specific stuff
 
@@ -799,8 +791,8 @@ namespace Discret
       if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
 #endif
 
-      const int calcerr =
-          Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
+      const auto calcerr =
+          Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
       const int calcerrfunctno = params.get<int>("error function number");
 
       const double t = my::fldparatimint_->time();

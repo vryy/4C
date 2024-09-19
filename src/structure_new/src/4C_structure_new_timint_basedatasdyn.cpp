@@ -129,20 +129,20 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
 
     timer_ = Teuchos::rcp(new Teuchos::Time("", true));
 
-    dyntype_ = Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
+    dyntype_ = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
 
-    stcscale_ = Core::UTILS::integral_value<Inpar::Solid::StcScale>(sdynparams, "STC_SCALING");
+    stcscale_ = Teuchos::getIntegralValue<Inpar::Solid::StcScale>(sdynparams, "STC_SCALING");
 
     stclayer_ = sdynparams.get<int>("STC_LAYER");
 
     isrestarting_initial_state_ =
-        (Core::UTILS::integral_value<int>(sdynparams, "CALC_ACC_ON_RESTART") == 1);
+        Teuchos::getIntegralValue<bool>(sdynparams, "CALC_ACC_ON_RESTART");
   }
   // ---------------------------------------------------------------------------
   // initialize the damping control parameters
   // ---------------------------------------------------------------------------
   {
-    damptype_ = Core::UTILS::integral_value<Inpar::Solid::DampKind>(sdynparams, "DAMPING");
+    damptype_ = Teuchos::getIntegralValue<Inpar::Solid::DampKind>(sdynparams, "DAMPING");
     dampk_ = sdynparams.get<double>("K_DAMP");
     dampm_ = sdynparams.get<double>("M_DAMP");
   }
@@ -150,9 +150,9 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
   // initialize the mass and inertia control parameters
   // ---------------------------------------------------------------------------
   {
-    masslintype_ = Core::UTILS::integral_value<Inpar::Solid::MassLin>(sdynparams, "MASSLIN");
-    lumpmass_ = (Core::UTILS::integral_value<int>(sdynparams, "LUMPMASS") == 1);
-    neglectinertia_ = (Core::UTILS::integral_value<int>(sdynparams, "NEGLECTINERTIA") == 1);
+    masslintype_ = Teuchos::getIntegralValue<Inpar::Solid::MassLin>(sdynparams, "MASSLIN");
+    lumpmass_ = sdynparams.get<bool>("LUMPMASS");
+    neglectinertia_ = sdynparams.get<bool>("NEGLECTINERTIA");
   }
   // ---------------------------------------------------------------------------
   // initialize model evaluator control parameters
@@ -184,19 +184,19 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
   {
     itermin_ = sdynparams.get<int>("MINITER");
     itermax_ = sdynparams.get<int>("MAXITER");
-    loadlin_ = (Core::UTILS::integral_value<int>(sdynparams, "LOADLIN") == 1);
+    loadlin_ = (sdynparams.get<bool>("LOADLIN"));
     prestresstime_ =
         Global::Problem::instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
     prestresstype_ = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS");
     prestress_displacement_tolerance_ = sdynparams.get<double>("PRESTRESSTOLDISP");
     prestress_min_number_of_load_steps_ = sdynparams.get<int>("PRESTRESSMINLOADSTEPS");
-    predtype_ = Core::UTILS::integral_value<Inpar::Solid::PredEnum>(sdynparams, "PREDICT");
-    nlnsolvertype_ = Core::UTILS::integral_value<Inpar::Solid::NonlinSolTech>(sdynparams, "NLNSOL");
+    predtype_ = Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(sdynparams, "PREDICT");
+    nlnsolvertype_ = Teuchos::getIntegralValue<Inpar::Solid::NonlinSolTech>(sdynparams, "NLNSOL");
     divergenceaction_ =
-        Core::UTILS::integral_value<Inpar::Solid::DivContAct>(sdynparams, "DIVERCONT");
-    mid_time_energy_type_ = Core::UTILS::integral_value<Inpar::Solid::MidAverageEnum>(
-        sdynparams, "MIDTIME_ENERGY_TYPE");
+        Teuchos::getIntegralValue<Inpar::Solid::DivContAct>(sdynparams, "DIVERCONT");
+    mid_time_energy_type_ =
+        Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(sdynparams, "MIDTIME_ENERGY_TYPE");
     maxdivconrefinementlevel_ = sdynparams.get<int>("MAXDIVCONREFINEMENTLEVEL");
     noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("NOX")));
     ptc_delta_init_ = sdynparams.get<double>("PTCDT");
@@ -211,18 +211,17 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
   // initialize the status test control parameters
   // ---------------------------------------------------------------------------
   {
-    normtype_ = Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(sdynparams, "ITERNORM");
+    normtype_ = Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sdynparams, "ITERNORM");
     nox_normtype_ = Solid::Nln::convert2_nox_norm_type(normtype_);
 
     // -------------------------------------------------------------------------
     // primary variables
     // -------------------------------------------------------------------------
     tol_disp_incr_ = sdynparams.get<double>("TOLDISP");
-    toltype_disp_incr_ =
-        Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_DISP");
+    toltype_disp_incr_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_DISP");
 
     tol_fres_ = sdynparams.get<double>("TOLRES");
-    toltype_fres_ = Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdynparams, "NORM_RESF");
+    toltype_fres_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdynparams, "NORM_RESF");
 
     tol_pres_ = sdynparams.get<double>("TOLPRE");
     toltype_pres_ = Inpar::Solid::convnorm_abs;
@@ -246,19 +245,19 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     toltype_eas_incr_ = Inpar::Solid::convnorm_abs;
 
     normcombo_disp_pres_ =
-        Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES");
+        Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_DISPPRES");
     normcombo_fres_inco_ =
-        Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO");
-    normcombo_fres_plast_res_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+        Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFINCO");
+    normcombo_fres_plast_res_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_RESFPLASTCONSTR");
-    normcombo_disp_plast_incr_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+    normcombo_disp_plast_incr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_DISPPLASTINCR");
-    normcombo_fres_eas_res_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+    normcombo_fres_eas_res_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_EASRES");
-    normcombo_disp_eas_incr_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+    normcombo_disp_eas_incr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         Global::Problem::instance()->semi_smooth_plast_params(), "NORMCOMBI_EASINCR");
     normcombo_fres_disp_ =
-        Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP");
+        Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdynparams, "NORMCOMBI_RESFDISP");
 
     // -------------------------------------------------------------------------
     // constraint variables
@@ -287,9 +286,9 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
         Global::Problem::instance()->contact_dynamic_params().get<double>("TOLLAGR");
     toltype_contact_lm_incr_ = Inpar::Solid::convnorm_abs;
 
-    normcombo_fres_contact_res_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+    normcombo_fres_contact_res_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         Global::Problem::instance()->contact_dynamic_params(), "NORMCOMBI_RESFCONTCONSTR");
-    normcombo_disp_contact_lm_incr_ = Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(
+    normcombo_disp_contact_lm_incr_ = Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(
         Global::Problem::instance()->contact_dynamic_params(), "NORMCOMBI_DISPLAGR");
   }
 
@@ -302,8 +301,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
   // initial displacement variables
   // -------------------------------------------------------------------------
   {
-    initial_disp_ =
-        Core::UTILS::integral_value<Inpar::Solid::InitialDisp>(sdynparams, "INITIALDISP");
+    initial_disp_ = Teuchos::getIntegralValue<Inpar::Solid::InitialDisp>(sdynparams, "INITIALDISP");
     start_func_no_ = sdynparams.get<int>("STARTFUNCNO");
   }
 
@@ -736,7 +734,7 @@ void Solid::TimeInt::GenAlphaDataSDyn::setup()
   // call base class setup
   Solid::TimeInt::BaseDataSDyn::setup();
 
-  midavg_ = Core::UTILS::integral_value<Inpar::Solid::MidAverageEnum>(
+  midavg_ = Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(
       get_sdyn_params().sublist("GENALPHA"), "GENAVG");
   beta_ = get_sdyn_params().sublist("GENALPHA").get<double>("BETA");
   gamma_ = get_sdyn_params().sublist("GENALPHA").get<double>("GAMMA");
@@ -785,8 +783,7 @@ void Solid::TimeInt::ExplEulerDataSDyn::setup()
   Solid::TimeInt::BaseDataSDyn::setup();
 
   modexpleuler_ =
-      (Core::UTILS::integral_value<int>(
-           Global::Problem::instance()->structural_dynamic_params(), "MODIFIEDEXPLEULER") == 1);
+      Global::Problem::instance()->structural_dynamic_params().get<bool>("MODIFIEDEXPLEULER");
 
   issetup_ = true;
 }

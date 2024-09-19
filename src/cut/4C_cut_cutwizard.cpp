@@ -388,7 +388,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
       face_element->face_master_number(), face_element->parent_element_id(), *cutterdis.get(),
       mypknots, myknots, weights, normalfac);
   if (zero_size)
-    FOUR_C_THROW("GetKnotVectorAndWeightsForNurbsBoundary has to return a non zero size.");
+    FOUR_C_THROW("get_knot_vector_and_weights_for_nurbs_boundary has to return a non zero size.");
 
   // Get the position of the control points in the reference configuration and their
   // displacements.

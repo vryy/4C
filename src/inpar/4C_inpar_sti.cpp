@@ -50,11 +50,11 @@ void Inpar::STI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &stidyn);
 
   // specification of initial temperature field
-  setStringToIntegralParameter<int>("THERMO_INITIALFIELD", "zero_field",
+  setStringToIntegralParameter<Inpar::ScaTra::InitialField>("THERMO_INITIALFIELD", "zero_field",
       "initial temperature field for scatra-thermo interaction problems",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
-      tuple<int>(Inpar::ScaTra::initfield_zero_field, Inpar::ScaTra::initfield_field_by_function,
-          Inpar::ScaTra::initfield_field_by_condition),
+      tuple<Inpar::ScaTra::InitialField>(Inpar::ScaTra::initfield_zero_field,
+          Inpar::ScaTra::initfield_field_by_function, Inpar::ScaTra::initfield_field_by_condition),
       &stidyn);
 
   // function number for initial temperature field

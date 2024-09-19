@@ -54,7 +54,7 @@ void Discret::ELEMENTS::FluidEleParameterPoro::set_element_poro_parameter(
   set_fluid_parameter_poro_ = true;
   poro_conti_partint_ = params.get<bool>("conti partial integration", false);
   reaction_ = true;
-  transient_terms_ = Core::UTILS::get_as_enum<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
+  transient_terms_ = Teuchos::getIntegralValue<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
       params, "Transient Terms Poro Fluid");
   poro_convective_term_ = params.get<bool>("convective term", false);
   if (poro_convective_term_ and not FluidEleParameter::is_newton_)
@@ -75,7 +75,7 @@ void Discret::ELEMENTS::FluidEleParameterPoro::set_element_poro_parameter(
   if (stabtype_ == Inpar::FLUID::stabtype_residualbased)
   {
     Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
-    stab_biot_ = Core::UTILS::integral_value<int>(stablist, "STAB_BIOT");
+    stab_biot_ = stablist.get<bool>("STAB_BIOT");
     stab_biot_scaling_ = stablist.get<double>("STAB_BIOT_SCALING");
   }
   else if (stabtype_ == Inpar::FLUID::stabtype_nostab)

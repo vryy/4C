@@ -37,7 +37,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   HomIsoTurbForcing::HomIsoTurbForcing(FluidImplicitTimeInt& timeint)
       : ForcingInterface(),
-        forcing_type_(Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(
+        forcing_type_(Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(
             timeint.params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint.discret_),
         forcing_(timeint.forcing_),
@@ -1285,7 +1285,7 @@ namespace FLD
       //  //new for HDG: go down to element and get 5x5x5 values
       //  call element routine for interpolate HDG to elements
       Teuchos::ParameterList params;
-      params.set<int>("action", FLD::interpolate_hdg_for_hit);
+      params.set<FLD::Action>("action", FLD::interpolate_hdg_for_hit);
 
       if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum or
           (forcing_type_ == Inpar::FLUID::fixed_power_input and (not is_genalpha_)))
@@ -1734,7 +1734,7 @@ namespace FLD
       //  //new for HDG: go down to element and get 5x5x5 values
       //  call element routine for interpolate HDG to elements
       Teuchos::ParameterList params;
-      params.set<int>("action", FLD::interpolate_hdg_for_hit);
+      params.set<FLD::Action>("action", FLD::interpolate_hdg_for_hit);
 
       discret_->set_state(1, "intvelnp", velnp_);
 
@@ -1919,7 +1919,7 @@ namespace FLD
       Core::LinAlg::SerialDenseVector elevec1, elevec3;
       Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
       Teuchos::ParameterList initParams;
-      initParams.set<int>("action", FLD::project_hdg_force_on_dof_vec_for_hit);
+      initParams.set<FLD::Action>("action", FLD::project_hdg_force_on_dof_vec_for_hit);
 
       // loop over all elements on the processor
       Core::Elements::Element::LocationArray la(2);
@@ -2050,7 +2050,7 @@ namespace FLD
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", FLD::calc_mass_flow_periodic_hill);
+    eleparams.set<FLD::Action>("action", FLD::calc_mass_flow_periodic_hill);
 
     if (myxwall_ != Teuchos::null) myxwall_->set_x_wall_params(eleparams);
 

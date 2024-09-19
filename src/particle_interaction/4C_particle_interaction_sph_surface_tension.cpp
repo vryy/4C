@@ -82,11 +82,11 @@ void ParticleInteraction::SPHSurfaceTension::init()
 
   if (alpha_t_ != 0.0)
   {
-    if (Core::UTILS::integral_value<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+    if (Teuchos::getIntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == Inpar::PARTICLE::NoTemperatureEvaluation)
       FOUR_C_THROW("temperature evaluation needed for temperature dependent surface tension!");
 
-    if (Core::UTILS::integral_value<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
+    if (not params_sph_.get<bool>("TEMPERATUREGRADIENT"))
       FOUR_C_THROW(
           "temperature gradient evaluation needed for temperature dependent surface tension!");
   }
@@ -94,7 +94,7 @@ void ParticleInteraction::SPHSurfaceTension::init()
   if (trans_d_t_surf_ > 0.0 or trans_d_t_mara_ > 0.0 or trans_d_t_curv_ > 0.0 or
       trans_d_t_wet_ > 0.0)
   {
-    if (Core::UTILS::integral_value<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+    if (Teuchos::getIntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == Inpar::PARTICLE::NoTemperatureEvaluation)
       FOUR_C_THROW("temperature evaluation needed for linear transition of surface tension!");
   }
@@ -247,7 +247,7 @@ void ParticleInteraction::SPHSurfaceTension::add_acceleration_contribution()
 void ParticleInteraction::SPHSurfaceTension::init_interface_viscosity_handler()
 {
   // create interface viscosity handler
-  if (Core::UTILS::integral_value<int>(params_sph_, "INTERFACE_VISCOSITY"))
+  if (params_sph_.get<bool>("INTERFACE_VISCOSITY"))
     interfaceviscosity_ = std::unique_ptr<ParticleInteraction::SPHInterfaceViscosity>(
         new ParticleInteraction::SPHInterfaceViscosity(params_sph_));
 
@@ -258,7 +258,7 @@ void ParticleInteraction::SPHSurfaceTension::init_interface_viscosity_handler()
 void ParticleInteraction::SPHSurfaceTension::init_recoil_pressure_evaporation_handler()
 {
   // create evaporation induced recoil pressure handler
-  if (Core::UTILS::integral_value<int>(params_sph_, "VAPOR_RECOIL"))
+  if (params_sph_.get<bool>("VAPOR_RECOIL"))
     recoilpressureevaporation_ = std::unique_ptr<ParticleInteraction::SPHRecoilPressureEvaporation>(
         new ParticleInteraction::SPHRecoilPressureEvaporation(params_sph_));
 
@@ -269,7 +269,7 @@ void ParticleInteraction::SPHSurfaceTension::init_recoil_pressure_evaporation_ha
 void ParticleInteraction::SPHSurfaceTension::init_barrier_force_handler()
 {
   // create barrier force handler
-  if (Core::UTILS::integral_value<int>(params_sph_, "BARRIER_FORCE"))
+  if (params_sph_.get<bool>("BARRIER_FORCE"))
     barrierforce_ = std::unique_ptr<ParticleInteraction::SPHBarrierForce>(
         new ParticleInteraction::SPHBarrierForce(params_sph_));
 

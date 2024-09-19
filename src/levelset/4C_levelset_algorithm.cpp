@@ -104,7 +104,7 @@ void ScaTra::LevelSetAlgorithm::setup()
   //         initialize reinitialization
   // -------------------------------------------------------------------
   // get reinitialization strategy
-  reinitaction_ = Core::UTILS::integral_value<Inpar::ScaTra::ReInitialAction>(
+  reinitaction_ = Teuchos::getIntegralValue<Inpar::ScaTra::ReInitialAction>(
       levelsetparams_->sublist("REINITIALIZATION"), "REINITIALIZATION");
 
   if (reinitaction_ != Inpar::ScaTra::reinitaction_none)
@@ -120,8 +120,7 @@ void ScaTra::LevelSetAlgorithm::setup()
     if (reinitaction_ == Inpar::ScaTra::reinitaction_signeddistancefunction)
     {
       // reinitialization within band around interface only
-      reinitband_ = Core::UTILS::integral_value<int>(
-          levelsetparams_->sublist("REINITIALIZATION"), "REINITBAND");
+      reinitband_ = levelsetparams_->sublist("REINITIALIZATION").get<bool>("REINITBAND");
     }
 
     // set parameters for reinitialization equation
@@ -143,11 +142,10 @@ void ScaTra::LevelSetAlgorithm::setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // flag to activate corrector step
-      reinitcorrector_ = Core::UTILS::integral_value<int>(
-          levelsetparams_->sublist("REINITIALIZATION"), "CORRECTOR_STEP");
+      reinitcorrector_ = levelsetparams_->sublist("REINITIALIZATION").get<bool>("CORRECTOR_STEP");
 
       // flag to activate calculation of node-based velocity
-      useprojectedreinitvel_ = Core::UTILS::integral_value<Inpar::ScaTra::VelReinit>(
+      useprojectedreinitvel_ = Teuchos::getIntegralValue<Inpar::ScaTra::VelReinit>(
           levelsetparams_->sublist("REINITIALIZATION"), "VELREINIT");
 
       if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based)
@@ -160,7 +158,7 @@ void ScaTra::LevelSetAlgorithm::setup()
       }
 
       // get dimension
-      lsdim_ = Core::UTILS::integral_value<Inpar::ScaTra::LSDim>(
+      lsdim_ = Teuchos::getIntegralValue<Inpar::ScaTra::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
     }
 
@@ -173,12 +171,11 @@ void ScaTra::LevelSetAlgorithm::setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // get dimension
-      lsdim_ = Core::UTILS::integral_value<Inpar::ScaTra::LSDim>(
+      lsdim_ = Teuchos::getIntegralValue<Inpar::ScaTra::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
 
       // use L2-projection of grad phi and related quantities
-      projection_ = Core::UTILS::integral_value<int>(
-          levelsetparams_->sublist("REINITIALIZATION"), "PROJECTION");
+      projection_ = levelsetparams_->sublist("REINITIALIZATION").get<bool>("PROJECTION");
       if (projection_ == true)
       {
         // vector for nodal level-set gradient for reinitialization
@@ -190,12 +187,11 @@ void ScaTra::LevelSetAlgorithm::setup()
     }
 
     // flag to correct volume after reinitialization
-    reinitvolcorrection_ = Core::UTILS::integral_value<int>(
-        levelsetparams_->sublist("REINITIALIZATION"), "REINITVOLCORRECTION");
+    reinitvolcorrection_ =
+        levelsetparams_->sublist("REINITIALIZATION").get<bool>("REINITVOLCORRECTION");
 
     // initialize level-set to signed distance function if required
-    if (Core::UTILS::integral_value<int>(
-            levelsetparams_->sublist("REINITIALIZATION"), "REINIT_INITIAL"))
+    if (levelsetparams_->sublist("REINITIALIZATION").get<bool>("REINIT_INITIAL"))
     {
       reinitialization();
 
@@ -213,8 +209,7 @@ void ScaTra::LevelSetAlgorithm::setup()
   //       initialize treatment of velocity from Navier-Stokes
   // -------------------------------------------------------------------
   // set potential extraction of interface velocity
-  extract_interface_vel_ =
-      Core::UTILS::integral_value<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
+  extract_interface_vel_ = levelsetparams_->get<bool>("EXTRACT_INTERFACE_VEL");
   if (extract_interface_vel_)
   {
     // set number of element layers around interface where velocity field form Navier-Stokes is kept
@@ -387,7 +382,6 @@ void ScaTra::LevelSetAlgorithm::reinitialization()
         default:
         {
           FOUR_C_THROW("Unknown reinitialization method!");
-          break;
         }
       }
 
@@ -399,8 +393,6 @@ void ScaTra::LevelSetAlgorithm::reinitialization()
       if (reinitvolcorrection_) correct_volume();
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -455,8 +447,6 @@ void ScaTra::LevelSetAlgorithm::test_results()
 {
   problem_->add_field_test(Teuchos::rcp(new ScaTra::ScaTraResultTest(Teuchos::rcp(this, false))));
   problem_->test_all(discret_->get_comm());
-
-  return;
 }
 
 
@@ -467,8 +457,6 @@ void ScaTra::LevelSetAlgorithm::set_time_step(const double time, const int step)
 {
   // call base class function
   ScaTra::ScaTraTimIntImpl::set_time_step(time, step);
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

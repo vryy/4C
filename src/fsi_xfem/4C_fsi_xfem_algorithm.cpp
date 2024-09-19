@@ -47,7 +47,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
   const Teuchos::ParameterList& xfdyn = Global::Problem::instance()->x_fluid_dynamic_params();
-  bool ale = Core::UTILS::integral_value<bool>((xfdyn.sublist("GENERAL")), "ALE_XFluid");
+  bool ale = xfdyn.sublist("GENERAL").get<bool>("ALE_XFluid");
 
   num_fields_ += 2;
   structp_block_ = 0;
@@ -79,7 +79,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
       FOUR_C_THROW(
           "Couldn't cast poro to PoroElast::Monolithic --> check your COUPALGO in the "
           "POROELASTICITY DYNAMIC section!");
-    if (Core::UTILS::integral_value<Inpar::PoroElast::SolutionSchemeOverFields>(
+    if (Teuchos::getIntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
             poroelastdyn, "COUPALGO") != Inpar::PoroElast::Monolithic)
       FOUR_C_THROW(
           "You created a different poroelast algorithm than monolithic (not combineable with xfpsi "

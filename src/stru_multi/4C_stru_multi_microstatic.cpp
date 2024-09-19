@@ -80,19 +80,17 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
       Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   discret_->compute_null_space_if_necessary(solver_->params());
 
-  Inpar::Solid::PredEnum pred =
-      Core::UTILS::integral_value<Inpar::Solid::PredEnum>(sdyn_micro, "PREDICT");
+  auto pred = Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
   combdisifres_ =
-      Core::UTILS::integral_value<Inpar::Solid::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
-  normtypedisi_ = Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_DISP");
-  normtypefres_ = Core::UTILS::integral_value<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_RESF");
-  Inpar::Solid::VectorNorm iternorm =
-      Core::UTILS::integral_value<Inpar::Solid::VectorNorm>(sdyn_micro, "ITERNORM");
+      Teuchos::getIntegralValue<Inpar::Solid::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
+  normtypedisi_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_DISP");
+  normtypefres_ = Teuchos::getIntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_RESF");
+  auto iternorm = Teuchos::getIntegralValue<Inpar::Solid::VectorNorm>(sdyn_micro, "ITERNORM");
   iternorm_ = iternorm;
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
@@ -114,21 +112,19 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   restart_ = Global::Problem::instance()->restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
-  iodisp_ = Core::UTILS::integral_value<int>(ioflags, "STRUCT_DISP");
+  iodisp_ = ioflags.get<bool>("STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
-  Inpar::Solid::StressType iostress =
-      Core::UTILS::integral_value<Inpar::Solid::StressType>(ioflags, "STRUCT_STRESS");
+  auto iostress = Teuchos::getIntegralValue<Inpar::Solid::StressType>(ioflags, "STRUCT_STRESS");
   iostress_ = iostress;
   resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
-  Inpar::Solid::StrainType iostrain =
-      Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioflags, "STRUCT_STRAIN");
+  auto iostrain = Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_STRAIN");
   iostrain_ = iostrain;
-  Inpar::Solid::StrainType ioplstrain =
-      Core::UTILS::integral_value<Inpar::Solid::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
+  auto ioplstrain =
+      Teuchos::getIntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
   ioplstrain_ = ioplstrain;
-  iosurfactant_ = Core::UTILS::integral_value<int>(ioflags, "STRUCT_SURFACTANT");
+  iosurfactant_ = ioflags.get<bool>("STRUCT_SURFACTANT");
 
-  isadapttol_ = (Core::UTILS::integral_value<int>(sdyn_micro, "ADAPTCONV") == 1);
+  isadapttol_ = (sdyn_micro.get<bool>("ADAPTCONV"));
   adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");
 
   // broadcast important data that must be consistent on macro and micro scale (master and
@@ -643,9 +639,9 @@ void MultiScale::MicroStatic::prepare_output()
     p.set("stress", stress_);
     p.set("strain", strain_);
     p.set("plstrain", plstrain_);
-    p.set<int>("iostress", iostress_);
-    p.set<int>("iostrain", iostrain_);
-    p.set<int>("ioplstrain", ioplstrain_);
+    p.set<Inpar::Solid::StressType>("iostress", iostress_);
+    p.set<Inpar::Solid::StrainType>("iostrain", iostrain_);
+    p.set<Inpar::Solid::StrainType>("ioplstrain", ioplstrain_);
     // set vector values needed by elements
     discret_->clear_state();
     discret_->set_state("residual displacement", zeros_);
@@ -721,7 +717,6 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
         break;
       default:
         FOUR_C_THROW("requested stress type not supported");
-        break;
     }
 
     switch (iostrain_)
@@ -736,7 +731,6 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
         break;
       default:
         FOUR_C_THROW("requested strain type not supported");
-        break;
     }
 
     switch (ioplstrain_)
@@ -751,7 +745,6 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
         break;
       default:
         FOUR_C_THROW("requested plastic strain type not supported");
-        break;
     }
   }
 }  // MultiScale::MicroStatic::output()
@@ -1026,7 +1019,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     // create solver
     Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
         discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     // prescribe rigid body modes
@@ -1063,7 +1056,6 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       default:
       {
         FOUR_C_THROW("You have to choose either belos, superlu or umfpack for micro structures!");
-        break;
       }
     }
 

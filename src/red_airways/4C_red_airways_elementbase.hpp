@@ -654,10 +654,8 @@ namespace Discret
       bool read_element(const std::string& eletype, const std::string& distype,
           const Core::IO::InputParameterContainer& container) override;
 
-      //@}
 
       //! @name Evaluation
-
       /*!
       \brief Evaluate an element
 
@@ -723,35 +721,11 @@ namespace Discret
           Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1);
 
-
-      //@}
-
-
       //! @name Other
       std::string type() { return elem_type_; }
 
       //! @name Other
       std::string resistance() { return resistance_; }
-
-      //@}
-
-      //! get cross-sectional area
-      //  double         getdata(){ return A_;}
-
-      //! get youngs modulus of the wall
-      //  double         getEw(){ return Ew_;}
-
-      //! get youngs modulus of the air
-      //  double         getEa(){ return Ea_;}
-
-      //! get wall thickness
-      //  double         gettw(){ return tw_;}
-
-      //! set qin
-      //  void           setqin (double Qin ){ qin_ = Qin;}
-
-      //! set qout
-      //  void           setqout(double Qout){ qout_ = Qout;}
 
       /*!
        * \brief Update relaxed reference volume of the RedAcinus element.
@@ -798,7 +772,6 @@ namespace Discret
 
       //! Acinus-specific parameters
       Discret::ReducedLung::AcinusParams acinus_params_;
-
 
       // internal calculation methods
 

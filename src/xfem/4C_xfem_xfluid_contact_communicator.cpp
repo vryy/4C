@@ -46,28 +46,28 @@ void XFEM::XFluidContactComm::initialize_fluid_state(Teuchos::RCP<Cut::CutWizard
 
   Teuchos::ParameterList& params_xf_stab = fluidparams->sublist("XFLUID DYNAMIC/STABILIZATION");
 
-  visc_stab_trace_estimate_ = Core::UTILS::integral_value<Inpar::XFEM::ViscStabTraceEstimate>(
+  visc_stab_trace_estimate_ = Teuchos::getIntegralValue<Inpar::XFEM::ViscStabTraceEstimate>(
       params_xf_stab, "VISC_STAB_TRACE_ESTIMATE");
   visc_stab_hk_ =
-      Core::UTILS::integral_value<Inpar::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
+      Teuchos::getIntegralValue<Inpar::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
-  is_pseudo_2d_ = (bool)Core::UTILS::integral_value<int>(params_xf_stab, "IS_PSEUDO_2D");
-  mass_conservation_scaling_ = Core::UTILS::integral_value<Inpar::XFEM::MassConservationScaling>(
+  is_pseudo_2d_ = params_xf_stab.get<bool>("IS_PSEUDO_2D");
+  mass_conservation_scaling_ = Teuchos::getIntegralValue<Inpar::XFEM::MassConservationScaling>(
       params_xf_stab, "MASS_CONSERVATION_SCALING");
   mass_conservation_combination_ =
-      Core::UTILS::integral_value<Inpar::XFEM::MassConservationCombination>(
+      Teuchos::getIntegralValue<Inpar::XFEM::MassConservationCombination>(
           params_xf_stab, "MASS_CONSERVATION_COMBO");
 
 
   Inpar::XFEM::ConvStabScaling ConvStabScaling =
-      Core::UTILS::integral_value<Inpar::XFEM::ConvStabScaling>(
-          params_xf_stab, "CONV_STAB_SCALING");
+      Teuchos::getIntegralValue<Inpar::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");
   if (ConvStabScaling != Inpar::XFEM::ConvStabScaling_none)
     FOUR_C_THROW("ConvStabScaling not handled correctly!");
 
-  extrapolate_to_zero_ = (bool)Core::UTILS::integral_value<int>(
-      Global::Problem::instance()->x_fluid_dynamic_params().sublist("XFPSI MONOLITHIC"),
-      "EXTRAPOLATE_TO_ZERO");
+  extrapolate_to_zero_ = Global::Problem::instance()
+                             ->x_fluid_dynamic_params()
+                             .sublist("XFPSI MONOLITHIC")
+                             .get<bool>("EXTRAPOLATE_TO_ZERO");
 
   if (extrapolate_to_zero_)
     std::cout << "==| The Fluid Stress Extrapolation is relaxed to zero! |==" << std::endl;
@@ -1460,13 +1460,13 @@ void XFEM::XFluidContactComm::create_new_gmsh_files()
     std::ofstream file(str.str().c_str());
     for (std::size_t section = 0; section < sections.size(); ++section)
     {
-      Cut::Output::GmshNewSection(file, sections[section], false);
+      Cut::Output::gmsh_new_section(file, sections[section], false);
       for (std::size_t entry = 0; entry < (plot_data_[section]).size(); ++entry)
       {
-        Cut::Output::GmshCoordDump(
+        Cut::Output::gmsh_coord_dump(
             file, (plot_data_[section])[entry].first, (plot_data_[section])[entry].second);
       }
-      Cut::Output::GmshEndSection(file, false);
+      Cut::Output::gmsh_end_section(file, false);
     }
     file.close();
   }

@@ -18,7 +18,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_io_control.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -116,7 +115,7 @@ void Solid::ModelEvaluator::Meshtying::setup()
   if (!global_state().get_restart_step())
   {
     // perform mesh initialization if required by input parameter MESH_RELOCATION
-    auto mesh_relocation_parameter = Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
+    auto mesh_relocation_parameter = Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(
         Global::Problem::instance()->mortar_coupling_params(), "MESH_RELOCATION");
 
     if (mesh_relocation_parameter == Inpar::Mortar::relocation_initial)
@@ -160,7 +159,7 @@ bool Solid::ModelEvaluator::Meshtying::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
-  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty())
   {
@@ -201,7 +200,7 @@ bool Solid::ModelEvaluator::Meshtying::assemble_jacobian(
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
-  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty())
   {
@@ -306,8 +305,8 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Meshtying::get_block_dof_r
     return global_state().dof_row_map();
   else
   {
-    enum Inpar::CONTACT::SystemType systype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(strategy().params(), "SYSTEM");
+    auto systype =
+        Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(strategy().params(), "SYSTEM");
 
     if (systype == Inpar::CONTACT::system_saddlepoint)
       return strategy().lm_do_f_row_map_ptr(true);
@@ -320,26 +319,6 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Meshtying::get_block_dof_r
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::Meshtying::get_current_solution_ptr() const
 {
-  //  //TODO: this should be removed!
-  //  Global::Problem* problem = Global::Problem::instance();
-  //  enum Inpar::CONTACT::SystemType systype =
-  //      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
-  //          problem->contact_dynamic_params(),"SYSTEM");
-  //  if (systype == Inpar::CONTACT::system_condensed)
-  //    return Teuchos::null;
-  //
-  //  if (Strategy().lagrange_multiplier_np(false)!=Teuchos::null)
-  //  {
-  //    Teuchos::RCP<Epetra_Vector> curr_lm_ptr =
-  //        Teuchos::rcp(new Epetra_Vector(*Strategy().lagrange_multiplier_np(false)));
-  //    if (not curr_lm_ptr.is_null())
-  //      curr_lm_ptr->ReplaceMap(Strategy().lm_dof_row_map(false));
-  //
-  //    extend_lagrange_multiplier_domain( curr_lm_ptr );
-  //
-  //    return curr_lm_ptr;
-  //  }
-  //  else
   return Teuchos::null;
 }
 
@@ -348,24 +327,6 @@ Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::Meshtying::get_current_
 Teuchos::RCP<const Epetra_Vector>
 Solid::ModelEvaluator::Meshtying::get_last_time_step_solution_ptr() const
 {
-  //  Global::Problem* problem = Global::Problem::instance();
-  //  enum Inpar::CONTACT::SystemType systype =
-  //      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
-  //          problem->contact_dynamic_params(),"SYSTEM");
-  //  if (systype == Inpar::CONTACT::system_condensed)
-  //    return Teuchos::null;
-  //
-  //  if (Strategy().lagrange_multiplier_n(false).is_null())
-  //    return Teuchos::null;
-  //
-  //  Teuchos::RCP<Epetra_Vector> old_lm_ptr =
-  //      Teuchos::rcp(new Epetra_Vector(*Strategy().lagrange_multiplier_n(false)));
-  //  if (not old_lm_ptr.is_null())
-  //    old_lm_ptr->ReplaceMap(Strategy().lm_dof_row_map(false));
-  //
-  //  extend_lagrange_multiplier_domain( old_lm_ptr );
-  //
-  //  return old_lm_ptr;
   return Teuchos::null;
 }
 

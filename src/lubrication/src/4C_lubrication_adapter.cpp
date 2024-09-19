@@ -57,7 +57,7 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
   // list? -> no default paramter possible any more
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
       actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   actdis->compute_null_space_if_necessary(solver->params());
 

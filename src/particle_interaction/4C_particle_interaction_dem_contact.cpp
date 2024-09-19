@@ -40,9 +40,8 @@ FOUR_C_NAMESPACE_OPEN
 ParticleInteraction::DEMContact::DEMContact(const Teuchos::ParameterList& params)
     : params_dem_(params),
       dt_(0.0),
-      tension_cutoff_(Core::UTILS::integral_value<int>(params_dem_, "TENSION_CUTOFF")),
-      writeparticlewallinteraction_(
-          Core::UTILS::integral_value<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
+      tension_cutoff_(params_dem_.get<bool>("TENSION_CUTOFF")),
+      writeparticlewallinteraction_(params_dem_.get<bool>("WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -109,9 +108,8 @@ void ParticleInteraction::DEMContact::setup(
   if (contacttangential_)
   {
     // get type of normal contact law
-    Inpar::PARTICLE::NormalContact normalcontacttype =
-        Core::UTILS::integral_value<Inpar::PARTICLE::NormalContact>(
-            params_dem_, "NORMALCONTACTLAW");
+    auto normalcontacttype =
+        Teuchos::getIntegralValue<Inpar::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
 
     if (normalcontacttype != Inpar::PARTICLE::NormalLinSpring and
         normalcontacttype != Inpar::PARTICLE::NormalLinSpringDamp)
@@ -215,8 +213,8 @@ void ParticleInteraction::DEMContact::evaluate_elastic_potential_energy(
 void ParticleInteraction::DEMContact::init_normal_contact_handler()
 {
   // get type of normal contact law
-  Inpar::PARTICLE::NormalContact normalcontacttype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
+  auto normalcontacttype =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::NormalContact>(params_dem_, "NORMALCONTACTLAW");
 
   // create normal contact handler
   switch (normalcontacttype)
@@ -271,9 +269,8 @@ void ParticleInteraction::DEMContact::init_normal_contact_handler()
 void ParticleInteraction::DEMContact::init_tangential_contact_handler()
 {
   // get type of tangential contact law
-  Inpar::PARTICLE::TangentialContact tangentialcontacttype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::TangentialContact>(
-          params_dem_, "TANGENTIALCONTACTLAW");
+  auto tangentialcontacttype = Teuchos::getIntegralValue<Inpar::PARTICLE::TangentialContact>(
+      params_dem_, "TANGENTIALCONTACTLAW");
 
   // create tangential contact handler
   switch (tangentialcontacttype)
@@ -304,9 +301,8 @@ void ParticleInteraction::DEMContact::init_tangential_contact_handler()
 void ParticleInteraction::DEMContact::init_rolling_contact_handler()
 {
   // get type of rolling contact law
-  Inpar::PARTICLE::RollingContact rollingcontacttype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::RollingContact>(
-          params_dem_, "ROLLINGCONTACTLAW");
+  auto rollingcontacttype =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::RollingContact>(params_dem_, "ROLLINGCONTACTLAW");
 
   // create rolling contact handler
   switch (rollingcontacttype)

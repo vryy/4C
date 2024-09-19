@@ -16,12 +16,10 @@ algorithms
 #include "4C_contact_interface.hpp"
 #include "4C_contact_node.hpp"
 #include "4C_coupling_adapter.hpp"
-#include "4C_ehl_partitioned.hpp"
 #include "4C_ehl_utils.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
-#include "4C_io_gmsh.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_lubrication_adapter.hpp"
 #include "4C_lubrication_timint_implicit.hpp"
@@ -40,10 +38,10 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
     : AlgorithmBase(comm, globaltimeparams),
       structure_(Teuchos::null),
       lubrication_(Teuchos::null),
-      fieldcoupling_(Core::UTILS::integral_value<Inpar::EHL::FieldCoupling>(
+      fieldcoupling_(Teuchos::getIntegralValue<Inpar::EHL::FieldCoupling>(
           Global::Problem::instance()->elasto_hydro_dynamic_params(), "FIELDCOUPLING")),
-      dry_contact_(Core::UTILS::integral_value<bool>(
-          Global::Problem::instance()->elasto_hydro_dynamic_params(), "DRY_CONTACT_MODEL"))
+      dry_contact_(
+          Global::Problem::instance()->elasto_hydro_dynamic_params().get<bool>("DRY_CONTACT_MODEL"))
 {
   Global::Problem* problem = Global::Problem::instance();
 
@@ -69,8 +67,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   // by the problem section (e.g. ehl or cell dynamic)
   const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
   const Teuchos::ParameterList* lubricationtimeparams = &globaltimeparams;
-  if (Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->elasto_hydro_dynamic_params(), "DIFFTIMESTEPSIZE"))
+  if (Global::Problem::instance()->elasto_hydro_dynamic_params().get<bool>("DIFFTIMESTEPSIZE"))
   {
     structtimeparams = &structparams;
     lubricationtimeparams = &lubricationparams;
@@ -206,10 +203,6 @@ void EHL::Base::set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp)
   // 1. Update the Mortar Coupling
   //---------------------------------------------------------
 
-  //  //Extract the structure displacement at the lubricated interface
-  //  Teuchos::RCP<Epetra_Vector> idisp = Core::LinAlg::CreateVector(*(mergedrowmapextr_->Map(0)),
-  //  true);//Structure displacement at the lubricated interface
-  //  mergedrowmapextr_->extract_vector(disp,0,idisp);
   // Reevalute the mortar martices D and M
   mortaradapter_->integrate(disp, dt());
 
@@ -513,8 +506,7 @@ void EHL::Base::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
  *----------------------------------------------------------------------*/
 void EHL::Base::setup_unprojectable_dbc()
 {
-  if (not Core::UTILS::integral_value<int>(
-          ((Global::Problem::instance()->elasto_hydro_dynamic_params())), "UNPROJ_ZERO_DBC"))
+  if (not Global::Problem::instance()->elasto_hydro_dynamic_params().get<bool>("UNPROJ_ZERO_DBC"))
     return;
 
   Teuchos::RCP<Epetra_FEVector> inf_gap_toggle =
@@ -613,7 +605,7 @@ void EHL::Base::setup_field_coupling(
       Global::Problem::instance()->spatial_approximation_type()));
   mortaradapter_->setup(structdis, structdis, coupleddof, "EHLCoupling");
 
-  if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
+  if (Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
           mortaradapter_->interface()->interface_params(), "STRATEGY") !=
       Inpar::CONTACT::solution_ehl)
     FOUR_C_THROW("you need to set ---CONTACT DYNAMIC: STRATEGY   Ehl");

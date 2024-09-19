@@ -281,13 +281,11 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
     }
     case Inpar::Solid::model_contact:
     {
-      enum Inpar::CONTACT::SystemType systype =
-          Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
-              problem->contact_dynamic_params(), "SYSTEM");
+      auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
+          problem->contact_dynamic_params(), "SYSTEM");
 
-      enum Inpar::CONTACT::SolvingStrategy soltype =
-          Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-              problem->contact_dynamic_params(), "STRATEGY");
+      auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+          problem->contact_dynamic_params(), "STRATEGY");
 
       // systems without additional dofs
       if (soltype == Inpar::CONTACT::solution_nitsche ||
@@ -317,9 +315,8 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
 
       enum Inpar::CONTACT::SystemType systype = mt_me.strategy().system_type();
 
-      enum Inpar::CONTACT::SolvingStrategy soltype =
-          Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-              mt_me.strategy().params(), "STRATEGY");
+      auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+          mt_me.strategy().params(), "STRATEGY");
 
       // systems without additional dofs
       if (soltype == Inpar::CONTACT::solution_nitsche ||

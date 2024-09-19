@@ -205,8 +205,8 @@ void ScaTra::LevelSetAlgorithm::mass_conservation_check(
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 {
-  const Inpar::ScaTra::CalcErrorLevelSet calcerr =
-      Core::UTILS::integral_value<Inpar::ScaTra::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::ScaTra::CalcErrorLevelSet>(*levelsetparams_, "CALCERROR");
 
   switch (calcerr)
   {
@@ -236,7 +236,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         Teuchos::ParameterList eleparams;
         Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
-        eleparams.set<int>("calcerrorflag", calcerr);
+        eleparams.set<Inpar::ScaTra::CalcErrorLevelSet>("calcerrorflag", calcerr);
 
         // get initial field
         const Epetra_Map* dofrowmap = discret_->dof_row_map();

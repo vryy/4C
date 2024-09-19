@@ -44,11 +44,13 @@ void Inpar::BrownianDynamics::set_valid_parameters(Teuchos::RCP<Teuchos::Paramet
       "Within this time interval the random numbers remain constant. -1.0 ", &browniandyn_list);
 
   // the way how damping coefficient values for beams are specified
-  setStringToIntegralParameter<int>("BEAMS_DAMPING_COEFF_SPECIFIED_VIA", "cylinder_geometry_approx",
+  setStringToIntegralParameter<BeamDampingCoefficientSpecificationType>(
+      "BEAMS_DAMPING_COEFF_SPECIFIED_VIA", "cylinder_geometry_approx",
       "In which way are damping coefficient values for beams specified?",
       tuple<std::string>(
           "cylinder_geometry_approx", "Cylinder_geometry_approx", "input_file", "Input_file"),
-      tuple<int>(Inpar::BrownianDynamics::cylinder_geometry_approx,
+      tuple<BeamDampingCoefficientSpecificationType>(
+          Inpar::BrownianDynamics::cylinder_geometry_approx,
           Inpar::BrownianDynamics::cylinder_geometry_approx, Inpar::BrownianDynamics::input_file,
           Inpar::BrownianDynamics::input_file),
       &browniandyn_list);

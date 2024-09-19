@@ -75,7 +75,7 @@ void Discret::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
   }
 
   // set flag, time integration scheme
-  timealgo_ = Core::UTILS::get_as_enum<Inpar::FLUID::TimeIntegrationScheme>(
+  timealgo_ = Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(
       params, "TimeIntegrationScheme");
 
   // set time integration scheme-specific element parameters
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
 
       // set flag, time integration scheme
       ostalgo_ =
-          Core::UTILS::get_as_enum<Inpar::FLUID::OstContAndPress>(params, "ost cont and press");
+          Teuchos::getIntegralValue<Inpar::FLUID::OstContAndPress>(params, "ost cont and press");
       ostnew_ = params.get<bool>("ost new", false);
 
       if (ostnew_)

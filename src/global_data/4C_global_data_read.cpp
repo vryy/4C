@@ -93,8 +93,7 @@ void Global::read_fields(
         aledis = Teuchos::rcp(
             new Core::FE::Nurbs::NurbsDiscretization("ale", reader.get_comm(), problem.n_dim()));
       }
-      else if (Core::UTILS::integral_value<int>(
-                   problem.fluid_dynamic_params().sublist("WALL MODEL"), "X_WALL"))
+      else if (problem.fluid_dynamic_params().sublist("WALL MODEL").get<bool>("X_WALL"))
       {
         structdis = Teuchos::rcp(
             new Core::FE::Discretization("structure", reader.get_comm(), problem.n_dim()));
@@ -109,8 +108,7 @@ void Global::read_fields(
             new Core::FE::Discretization("structure", reader.get_comm(), problem.n_dim()));
         fluiddis = Teuchos::rcp(
             new Core::FE::DiscretizationFaces("fluid", reader.get_comm(), problem.n_dim()));
-        if (Core::UTILS::integral_value<bool>(
-                problem.x_fluid_dynamic_params().sublist("GENERAL"), "XFLUIDFLUID"))
+        if (problem.x_fluid_dynamic_params().sublist("GENERAL").get<bool>("XFLUIDFLUID"))
           xfluiddis = Teuchos::rcp(
               new XFEM::DiscretizationXFEM("xfluid", reader.get_comm(), problem.n_dim()));
         aledis =
@@ -282,12 +280,11 @@ void Global::read_fields(
           Teuchos::rcp(new Core::IO::DiscretizationWriter(structdis, output_control, distype)));
       problem.add_dis("structure", structdis);
       meshreader.add_advanced_reader(structdis, reader, "STRUCTURE",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
 
-      if (Core::UTILS::integral_value<int>(
-              problem.x_fluid_dynamic_params().sublist("GENERAL"), "XFLUIDFLUID"))
+      if (problem.x_fluid_dynamic_params().sublist("GENERAL").get<bool>("XFLUIDFLUID"))
       {
         fluiddis = Teuchos::rcp(
             new Core::FE::DiscretizationFaces("fluid", reader.get_comm(), problem.n_dim()));
@@ -313,7 +310,7 @@ void Global::read_fields(
         problem.add_dis("fluid", fluiddis);
 
         meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
-            Core::UTILS::integral_value<Core::IO::GeometryType>(
+            Teuchos::getIntegralValue<Core::IO::GeometryType>(
                 problem.fluid_dynamic_params(), "GEOMETRY"),
             nullptr);
       }
@@ -356,7 +353,7 @@ void Global::read_fields(
           Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
 
       meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
 
@@ -414,8 +411,7 @@ void Global::read_fields(
         fluiddis->set_writer(
             Teuchos::rcp(new Core::IO::DiscretizationWriter(fluiddis, output_control, distype)));
       }
-      else if (Core::UTILS::integral_value<int>(
-                   problem.fluid_dynamic_params().sublist("WALL MODEL"), "X_WALL"))
+      else if (problem.fluid_dynamic_params().sublist("WALL MODEL").get<bool>("X_WALL"))
       {
         fluiddis = Teuchos::rcp(
             new XFEM::DiscretizationXWall("fluid", reader.get_comm(), problem.n_dim()));
@@ -438,7 +434,7 @@ void Global::read_fields(
       problem.add_dis("fluid", fluiddis);
 
       meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
 
@@ -552,8 +548,7 @@ void Global::read_fields(
         aledis = Teuchos::rcp(
             new Core::FE::Nurbs::NurbsDiscretization("ale", reader.get_comm(), problem.n_dim()));
       }
-      else if (Core::UTILS::integral_value<int>(
-                   problem.fluid_dynamic_params().sublist("WALL MODEL"), "X_WALL"))
+      else if (problem.fluid_dynamic_params().sublist("WALL MODEL").get<bool>("X_WALL"))
       {
         fluiddis = Teuchos::rcp(
             new XFEM::DiscretizationXWall("fluid", reader.get_comm(), problem.n_dim()));
@@ -564,8 +559,7 @@ void Global::read_fields(
       {
         fluiddis = Teuchos::rcp(
             new Core::FE::DiscretizationFaces("fluid", reader.get_comm(), problem.n_dim()));
-        if (Core::UTILS::integral_value<bool>(
-                problem.x_fluid_dynamic_params().sublist("GENERAL"), "XFLUIDFLUID"))
+        if (problem.x_fluid_dynamic_params().sublist("GENERAL").get<bool>("XFLUIDFLUID"))
           xfluiddis = Teuchos::rcp(
               new XFEM::DiscretizationXFEM("xfluid", reader.get_comm(), problem.n_dim()));
         aledis =
@@ -637,11 +631,11 @@ void Global::read_fields(
       problem.add_dis("thermo", thermdis);
 
       meshreader.add_advanced_reader(structdis, reader, "STRUCTURE",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
       meshreader.add_advanced_reader(thermdis, reader, "THERMO",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.thermal_dynamic_params(), "GEOMETRY"),
           nullptr);
 
@@ -701,7 +695,7 @@ void Global::read_fields(
       problem.add_dis("structure", structdis);
 
       meshreader.add_advanced_reader(structdis, reader, "STRUCTURE",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
 
@@ -786,7 +780,7 @@ void Global::read_fields(
       meshreader.add_element_reader(
           Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
       // meshreader.AddElementReader(Teuchos::rcp(new Core::IO::ElementReader(fluiddis, reader,
@@ -944,8 +938,7 @@ void Global::read_fields(
       meshreader.add_element_reader(
           Core::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
-      if (Core::UTILS::integral_value<bool>(
-              problem.poro_multi_phase_dynamic_params(), "ARTERY_COUPLING"))
+      if (problem.poro_multi_phase_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(
             new Core::FE::Discretization("artery", reader.get_comm(), problem.n_dim()));
@@ -1004,8 +997,7 @@ void Global::read_fields(
       meshreader.add_element_reader(
           Core::IO::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS"));
 
-      if (Core::UTILS::integral_value<bool>(
-              problem.poro_multi_phase_scatra_dynamic_params(), "ARTERY_COUPLING"))
+      if (problem.poro_multi_phase_scatra_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(
             new Core::FE::Discretization("artery", reader.get_comm(), problem.n_dim()));
@@ -1054,8 +1046,7 @@ void Global::read_fields(
       meshreader.add_element_reader(
           Core::IO::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS"));
 
-      if (Core::UTILS::integral_value<bool>(
-              problem.poro_fluid_multi_phase_dynamic_params(), "ARTERY_COUPLING"))
+      if (problem.poro_fluid_multi_phase_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
         arterydis = Teuchos::rcp(
             new Core::FE::Discretization("artery", reader.get_comm(), problem.n_dim()));
@@ -1120,7 +1111,7 @@ void Global::read_fields(
       meshreader.add_element_reader(
           Core::IO::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS"));
       meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
-          Core::UTILS::integral_value<Core::IO::GeometryType>(
+          Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
 
@@ -1272,8 +1263,7 @@ void Global::read_fields(
       problem.add_dis("scatra", scatradis);
 
       // consider case of additional scatra manifold
-      if (Core::UTILS::integral_value<bool>(
-              problem.ssi_control_params().sublist("MANIFOLD"), "ADD_MANIFOLD"))
+      if (problem.ssi_control_params().sublist("MANIFOLD").get<bool>("ADD_MANIFOLD"))
       {
         auto scatra_manifold_dis = Teuchos::rcp(
             new Core::FE::Discretization("scatra_manifold", reader.get_comm(), problem.n_dim()));
@@ -1444,7 +1434,7 @@ void Global::read_fields(
       case Core::ProblemType::np_support:
       {
         // read microscale fields from second, third, ... inputfile for supporting processors
-        read_microfields_n_psupport(problem);
+        read_microfields_np_support(problem);
         break;
       }
       default:
@@ -1740,7 +1730,7 @@ void Global::read_micro_fields(Global::Problem& problem, Core::IO::DatFileReader
         problem.set_restart_step(restart_step);
 
         // set the problem number from which to call materials again to zero
-        // (i.e. macro problem), cf. Mat::Factory!
+        // (i.e. macro problem), cf. Mat::factory!
         problem.materials()->reset_read_from_problem();
       }
     }
@@ -1751,7 +1741,7 @@ void Global::read_micro_fields(Global::Problem& problem, Core::IO::DatFileReader
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_microfields_n_psupport(Global::Problem& problem)
+void Global::read_microfields_np_support(Global::Problem& problem)
 {
   Teuchos::RCP<Epetra_Comm> lcomm = problem.get_communicators()->local_comm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem.get_communicators()->global_comm();
@@ -1859,7 +1849,7 @@ void Global::read_microfields_n_psupport(Global::Problem& problem)
     problem.set_restart_step(restart_step);
 
     // set the problem number from which to call materials again to zero
-    // (i.e. macro problem), cf. Mat::Factory!
+    // (i.e. macro problem), cf. Mat::factory!
     problem.materials()->reset_read_from_problem();
   }
 }
@@ -2088,11 +2078,11 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::DatFileReader& r
 
   // 1) get the problem type
   const Teuchos::ParameterList& type = problem.problem_type_params();
-  problem.set_problem_type(Core::UTILS::integral_value<Core::ProblemType>(type, "PROBLEMTYP"));
+  problem.set_problem_type(Teuchos::getIntegralValue<Core::ProblemType>(type, "PROBLEMTYP"));
 
   // 2) get the spatial approximation type
   problem.set_spatial_approximation_type(
-      Core::UTILS::integral_value<Core::FE::ShapeFunctionType>(type, "SHAPEFCT"));
+      Teuchos::getIntegralValue<Core::FE::ShapeFunctionType>(type, "SHAPEFCT"));
 
   int restart_step = problem.restart();
   // 3) do the restart business with the four options we support (partially)

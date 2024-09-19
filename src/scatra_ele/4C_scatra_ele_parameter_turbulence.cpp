@@ -111,7 +111,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
 
   // set flag for fine-scale subgrid diffusivity and perform some checks
   whichfssgd_ =
-      Core::UTILS::get_as_enum<Inpar::ScaTra::FSSUGRDIFF>(parameters, "fs subgrid diffusivity");
+      Teuchos::getIntegralValue<Inpar::ScaTra::FSSUGRDIFF>(parameters, "fs subgrid diffusivity");
   if (whichfssgd_ == Inpar::ScaTra::fssugrdiff_artificial)
   {
     fssgd_ = true;
@@ -135,7 +135,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
   }
 
   // in some cases we may want to switch off the turbulence model in the scalar field
-  if (not Core::UTILS::integral_value<int>(turbulencelist, "TURBMODEL_LS"))
+  if (not turbulencelist.get<bool>("TURBMODEL_LS"))
   {
     fssgd_ = false;
     whichfssgd_ = Inpar::ScaTra::fssugrdiff_no;
@@ -149,7 +149,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
     tpn_ = sgvisclist.get<double>("C_TURBPRANDTL");
     if (tpn_ <= 1.0E-16) FOUR_C_THROW("Turbulent Prandtl number should be larger than zero!");
 
-    cs_av_ = Core::UTILS::integral_value<int>(sgvisclist, "C_SMAGORINSKY_AVERAGED");
+    cs_av_ = sgvisclist.get<bool>("C_SMAGORINSKY_AVERAGED");
 
     if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
       cs_ = turbulencelist.get<double>("Dt_vreman", 1.0);
@@ -163,7 +163,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
         alpha_ = 3.0;
       else
         FOUR_C_THROW("Scale-Separtion method not supported!");
-      calc_n_ = Core::UTILS::integral_value<int>(mfslist, "CALC_N");
+      calc_n_ = mfslist.get<bool>("CALC_N");
       n_vel_ = mfslist.get<double>("N");
       if (mfslist.get<std::string>("REF_VELOCITY") == "strainrate")
         refvel_ = Inpar::FLUID::strainrate;
@@ -186,11 +186,11 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
       else
         FOUR_C_THROW("Unknown length!");
       c_nu_ = mfslist.get<double>("C_NU");
-      nwl_ = Core::UTILS::integral_value<int>(mfslist, "NEAR_WALL_LIMIT");
+      nwl_ = mfslist.get<bool>("NEAR_WALL_LIMIT");
       // necessary parameters for subgrid-scale scalar estimation
       csgs_sgphi_ = mfslist.get<double>("CSGS_PHI");
       c_diff_ = mfslist.get<double>("C_DIFF");
-      nwl_scatra_ = Core::UTILS::integral_value<int>(mfslist, "NEAR_WALL_LIMIT_CSGS_PHI");
+      nwl_scatra_ = mfslist.get<bool>("NEAR_WALL_LIMIT_CSGS_PHI");
       // general parameters
       beta_ = mfslist.get<double>("BETA");
       if (beta_ != 0.0) FOUR_C_THROW("Lhs terms for mfs not included! Fixed-point iteration only!");
@@ -207,7 +207,7 @@ void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
       else
         FOUR_C_THROW("Unknown form of convective term!");
 
-      adapt_csgs_phi_ = Core::UTILS::integral_value<bool>(mfslist, "ADAPT_CSGS_PHI");
+      adapt_csgs_phi_ = mfslist.get<bool>("ADAPT_CSGS_PHI");
     }
   }
 

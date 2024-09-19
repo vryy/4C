@@ -55,7 +55,7 @@ PoroMultiPhaseScaTra::UTILS::create_poro_multi_phase_scatra_algorithm(
     }
     case Inpar::PoroMultiPhaseScaTra::solscheme_twoway_monolithic:
     {
-      const bool artery_coupl = Core::UTILS::integral_value<int>(timeparams, "ARTERY_COUPLING");
+      const bool artery_coupl = timeparams.get<bool>("ARTERY_COUPLING");
       if (!artery_coupl)
       {
         // call constructor
@@ -92,7 +92,7 @@ PoroMultiPhaseScaTra::UTILS::create_and_init_artery_coupling_strategy(
   Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> strategy;
 
   auto arterycoupl =
-      Core::UTILS::integral_value<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+      Teuchos::getIntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
           meshtyingparams, "ARTERY_COUPLING_METHOD");
 
   switch (arterycoupl)

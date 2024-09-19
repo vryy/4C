@@ -35,10 +35,10 @@ Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::VolMortarIntegrator
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = Core::UTILS::integral_value<DualQuad>(params, "DUALQUAD");
+  dualquad_ = Teuchos::getIntegralValue<DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = Core::UTILS::integral_value<Shapefcn>(params, "SHAPEFCN");
+  shape_ = Teuchos::getIntegralValue<Shapefcn>(params, "SHAPEFCN");
 }
 
 /*----------------------------------------------------------------------*
@@ -602,82 +602,6 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
 
 
 /*----------------------------------------------------------------------*
- |  possible slave/master element pairs                      farah 02/15|
- *----------------------------------------------------------------------*/
-////slave quad4
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::quad4,Core::FE::CellType::quad4>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::quad4,Core::FE::CellType::tri3>;
-//
-////slave tri3
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tri3,Core::FE::CellType::quad4>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tri3,Core::FE::CellType::tri3>;
-//
-////slave hex8
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::tet4>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::tet10>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex8>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex27>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex8,Core::FE::CellType::hex20>;
-//
-////slave hex20
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::tet4>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::tet10>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex8>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex27>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex20,Core::FE::CellType::hex20>;
-//
-////slave hex27
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::tet4>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::tet10>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex8>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex27>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::hex27,Core::FE::CellType::hex20>;
-//
-////slave tet4
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::tet4>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::tet10>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex8>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex27>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet4,Core::FE::CellType::hex20>;
-//
-////slave tet10
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::tet4>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::tet10>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex8>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex27>;
-// template class
-// Coupling::VolMortar::VolMortarEleBasedGP<Core::FE::CellType::tet10,Core::FE::CellType::hex20>;
-
-
-/*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
@@ -685,10 +609,10 @@ Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::VolMortarIntegra
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
-  dualquad_ = Core::UTILS::integral_value<DualQuad>(params, "DUALQUAD");
+  dualquad_ = Teuchos::getIntegralValue<DualQuad>(params, "DUALQUAD");
 
   // get type of quadratic modification
-  shape_ = Core::UTILS::integral_value<Shapefcn>(params, "SHAPEFCN");
+  shape_ = Teuchos::getIntegralValue<Shapefcn>(params, "SHAPEFCN");
 
   // define gp rule
   initialize_gp();
@@ -901,7 +825,6 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     UTILS::shape_function<distype_m>(mval, mxi);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    // UTILS::volmortar_shape_function_2d(lmval, sxi[0],sxi[1],distypeS);
     UTILS::dual_shape_function<distype_s>(lmval, sxi, sele);
 
     // evaluate the integration cell Jacobian

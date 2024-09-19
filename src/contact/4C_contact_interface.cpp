@@ -168,17 +168,16 @@ CONTACT::Interface::Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>
       intcells_(interface_data_->int_cells())
 {
   selfcontact_ = selfcontact;
-  nonSmoothContact_ = Core::UTILS::integral_value<int>(icontact, "NONSMOOTH_GEOMETRIES");
+  nonSmoothContact_ = icontact.get<bool>("NONSMOOTH_GEOMETRIES");
   two_half_pass_ = icontact.get<bool>("Two_half_pass");
-  constr_direction_ = Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
+  constr_direction_ = Teuchos::getIntegralValue<Inpar::CONTACT::ConstraintDirection>(
       icontact, "CONSTRAINT_DIRECTIONS");
   smpairs_ = 0;
   smintpairs_ = 0;
   intcells_ = 0;
 
   // set frictional contact status
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(icontact, "FRICTION");
+  auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(icontact, "FRICTION");
   if (ftype != Inpar::CONTACT::friction_none) friction_ = true;
 
   // set poro contact
@@ -980,7 +979,7 @@ void CONTACT::Interface::redistribute()
 
       // check for overlap
       if (slaveCloseRowNodes->MyGID(slaveNonCloseRowNodes->GID(i)))
-        FOUR_C_THROW("Core::LinAlg::MergeMap: Result map is overlapping");
+        FOUR_C_THROW("Core::LinAlg::merge_map: Result map is overlapping");
 
       // add new GIDs to mygids
       mygids[count] = slaveNonCloseRowNodes->GID(i);
@@ -1052,8 +1051,8 @@ void CONTACT::Interface::redistribute()
 void CONTACT::Interface::split_into_far_and_close_sets(std::vector<int>& closeele,
     std::vector<int>& noncloseele, std::vector<int>& localcns, std::vector<int>& localfns) const
 {
-  const bool performSplitting = Core::UTILS::integral_value<bool>(
-      interface_params().sublist("PARALLEL REDISTRIBUTION"), "EXPLOIT_PROXIMITY");
+  const bool performSplitting =
+      interface_params().sublist("PARALLEL REDISTRIBUTION").get<bool>("EXPLOIT_PROXIMITY");
 
   if (performSplitting)
   {
@@ -1199,9 +1198,8 @@ void CONTACT::Interface::create_search_tree()
 
       {
         // get update type of binary tree
-        Inpar::Mortar::BinaryTreeUpdateType updatetype =
-            Core::UTILS::integral_value<Inpar::Mortar::BinaryTreeUpdateType>(
-                interface_params(), "BINARYTREE_UPDATETYPE");
+        auto updatetype = Teuchos::getIntegralValue<Inpar::Mortar::BinaryTreeUpdateType>(
+            interface_params(), "BINARYTREE_UPDATETYPE");
 
         // create binary tree object for contact search and setup tree
         binarytree_ = Teuchos::rcp(new Mortar::BinaryTree(discret(), selecolmap_, melefullmap,
@@ -1235,7 +1233,7 @@ void CONTACT::Interface::initialize_data_container()
   // we need this master node data container to create an averaged
   // nodal normal field on the master side for the smoothed cpp
   // normal field!
-  if (Core::UTILS::integral_value<int>(interface_params(), "CPP_NORMALS") || nonSmoothContact_)
+  if (interface_params().get<bool>("CPP_NORMALS") || nonSmoothContact_)
   {
     const Teuchos::RCP<Epetra_Map> masternodes =
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
@@ -1272,7 +1270,7 @@ void CONTACT::Interface::initialize()
   }
 
   // init normal data in master node data container for cpp calculation
-  if (Core::UTILS::integral_value<int>(interface_params(), "CPP_NORMALS"))
+  if (interface_params().get<bool>("CPP_NORMALS"))
   {
     for (int i = 0; i < master_col_nodes()->NumMyElements(); ++i)
     {
@@ -1386,7 +1384,7 @@ void CONTACT::Interface::initialize()
       frinode->fri_data().get_m_nodes().clear();
 
       // for gp slip
-      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (interface_params().get<bool>("GP_SLIP_INCR"))
       {
         // reset jump deriv.
         for (int j = 0; j < (int)((frinode->fri_data().get_deriv_var_jump()).size()); ++j)
@@ -1456,7 +1454,7 @@ void CONTACT::Interface::initialize()
   }
 
   // clear all Nitsche data
-  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM") ==
       Inpar::Mortar::algorithm_gpts)
     for (int e = 0; e < discret().element_col_map()->NumMyElements(); ++e)
       dynamic_cast<Mortar::Element*>(discret().g_element(discret().element_col_map()->GID(e)))
@@ -1484,8 +1482,7 @@ void CONTACT::Interface::set_element_areas()
   // same time we initialize the element data containers for self contact.
   // This is due to the fact that self contact search is NOT parallelized.
   //**********************************************************************
-  if (self_contact() or Core::UTILS::integral_value<int>(interface_params(), "CPP_NORMALS") or
-      nonSmoothContact_)
+  if (self_contact() or interface_params().get<bool>("CPP_NORMALS") or nonSmoothContact_)
   {
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
@@ -1540,7 +1537,7 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
   set_cn_ct_values(iter);
 
   // cpp normals or averaged normal field?
-  if (Core::UTILS::integral_value<int>(interface_params(), "CPP_NORMALS"))
+  if (interface_params().get<bool>("CPP_NORMALS"))
   {
     // evaluate cpp nodal normals on slave side
     evaluate_cpp_normals();
@@ -3144,8 +3141,7 @@ void CONTACT::Interface::add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatr
 void CONTACT::Interface::post_evaluate(const int step, const int iter)
 {
   // decide which type of coupling should be evaluated
-  Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   switch (algo)
   {
@@ -3323,8 +3319,7 @@ void CONTACT::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
       // statement is included:
       // decide which type of coupling should be evaluated
       //********************************************************************
-      Inpar::Mortar::AlgorithmType algo =
-          Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
       if (algo == Inpar::Mortar::algorithm_ltl)
       {
         evaluate_ltl();
@@ -7052,8 +7047,8 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
   if (n_dim() == 3 && sele.is_quad())
   {
     // get LM interpolation and testing type
-    Inpar::Mortar::LagMultQuad lmtype =
-        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(interface_params(), "LM_QUAD");
+    auto lmtype =
+        Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(interface_params(), "LM_QUAD");
 
     // build linear integration elements from quadratic CElements
     std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
@@ -7165,27 +7160,25 @@ void CONTACT::Interface::evaluate_relative_movement(const Teuchos::RCP<Epetra_Ve
     // this value isn't needed.
     bool activeinfuture = false;
 
-    if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-            interface_params(), "STRATEGY") == Inpar::CONTACT::solution_penalty ||
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-            interface_params(), "STRATEGY") == Inpar::CONTACT::solution_multiscale)
+    const auto contact_strategy =
+        Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(interface_params(), "STRATEGY");
+
+    if (contact_strategy == Inpar::CONTACT::solution_penalty ||
+        contact_strategy == Inpar::CONTACT::solution_multiscale)
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-                 interface_params(), "STRATEGY") == Inpar::CONTACT::solution_lagmult and
-             Core::UTILS::integral_value<int>(interface_params(), "SEMI_SMOOTH_NEWTON") != 1)
+    else if (contact_strategy == Inpar::CONTACT::solution_lagmult and
+             not interface_params().get<bool>("SEMI_SMOOTH_NEWTON"))
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-                 interface_params(), "STRATEGY") == Inpar::CONTACT::solution_lagmult and
-             Core::UTILS::integral_value<int>(interface_params(), "SEMI_SMOOTH_NEWTON") == 1)
+    else if (contact_strategy == Inpar::CONTACT::solution_lagmult and
+             interface_params().get<bool>("SEMI_SMOOTH_NEWTON"))
     {
       if ((nz - cn * gap > 0) or cnode->active()) activeinfuture = true;
     }
-    else if (Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-                 interface_params(), "STRATEGY") == Inpar::CONTACT::solution_uzawa)
+    else if (contact_strategy == Inpar::CONTACT::solution_uzawa)
     {
       if (lmuzawan - kappa * pp * gap >= 0) activeinfuture = true;
     }
@@ -7831,8 +7824,8 @@ void CONTACT::Interface::evaluate_tangent_norm(double& cnormtan)
 bool CONTACT::Interface::update_active_set_semi_smooth()
 {
   // get input parameter ftype
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // this is the complementarity parameter we use for the decision.
   // it might be scaled with a mesh-size dependent factor
@@ -7880,14 +7873,14 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
         tz[0] += frinode->data().txi()[i] * frinode->mo_data().lm()[i];
         if (n_dim() == 3) tz[1] += frinode->data().teta()[i] * frinode->mo_data().lm()[i];
 
-        if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == false)
+        if (not interface_params().get<bool>("GP_SLIP_INCR"))
         {
           tjump[0] += frinode->data().txi()[i] * frinode->fri_data().jump()[i];
           if (n_dim() == 3) tjump[1] += frinode->data().teta()[i] * frinode->fri_data().jump()[i];
         }
       }
 
-      if (Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (interface_params().get<bool>("GP_SLIP_INCR"))
       {
         tjump[0] = frinode->fri_data().jump_var()[0];
         if (n_dim() == 3) tjump[1] = frinode->fri_data().jump_var()[1];
@@ -7903,7 +7896,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
 
     // adhesion
     double adhbound = 0.0;
-    if (Core::UTILS::integral_value<Inpar::CONTACT::AdhesionType>(interface_params(), "ADHESION") ==
+    if (Teuchos::getIntegralValue<Inpar::CONTACT::AdhesionType>(interface_params(), "ADHESION") ==
         Inpar::CONTACT::adhesion_bound)
       adhbound = interface_params().get<double>("ADHESION_BOUND");
 
@@ -7993,7 +7986,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
           double frcoeff = frinode->fr_coeff(interface_params().get<double>("FRCOEFF"));
           double frbound;
           static const bool regularization =
-              Core::UTILS::integral_value<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+              interface_params().get<bool>("REGULARIZED_NORMAL_CONTACT");
           if (!regularization)
             frbound = frcoeff * (nz - cn * wgap);
           else
@@ -8106,8 +8099,7 @@ bool CONTACT::Interface::build_active_set(bool init)
     if (init)
     {
       // flag for initialization of init active nodes with nodal gaps
-      bool initcontactbygap =
-          Core::UTILS::integral_value<int>(interface_params(), "INITCONTACTBYGAP");
+      const bool initcontactbygap = interface_params().get<bool>("INITCONTACTBYGAP");
       // value
       double initcontactval = interface_params().get<double>("INITCONTACTGAPVALUE");
 
@@ -8397,8 +8389,7 @@ void CONTACT::Interface::update_self_contact_lag_mult_set(
  *----------------------------------------------------------------------------*/
 void CONTACT::Interface::set_node_initially_active(CONTACT::Node& cnode) const
 {
-  static const bool init_contact_by_gap =
-      Core::UTILS::integral_value<int>(interface_params(), "INITCONTACTBYGAP");
+  static const bool init_contact_by_gap = interface_params().get<bool>("INITCONTACTBYGAP");
 
   const bool node_init_active = cnode.is_init_active();
 

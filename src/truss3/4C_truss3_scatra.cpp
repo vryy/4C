@@ -233,7 +233,6 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
     default:
     {
       FOUR_C_THROW("Material type is not supported");
-      break;
     }
   }
 }
@@ -267,8 +266,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
       else
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
+        iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
       }
 
       const Core::FE::IntegrationPoints1D intpoints(gaussrule_);
@@ -311,7 +309,6 @@ void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
             break;
           default:
             FOUR_C_THROW("Requested stress type not available");
-            break;
         }
       }
       {
@@ -324,7 +321,6 @@ void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
     default:
     {
       FOUR_C_THROW("Material type is not supported");
-      break;
     }
   }
 }
@@ -402,7 +398,6 @@ void Discret::ELEMENTS::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_sca
       break;
     default:
       FOUR_C_THROW("Vector has size other than 2,4, or 6. Please use different mapping strategy!");
-      break;
   }
 }
 
@@ -457,7 +452,6 @@ void Discret::ELEMENTS::Truss3Scatra::energy(
     default:
     {
       FOUR_C_THROW("Material type is not supported");
-      break;
     }
   }
 }

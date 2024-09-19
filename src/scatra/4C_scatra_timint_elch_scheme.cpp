@@ -103,7 +103,7 @@ void ScaTra::ScaTraTimIntElchOST::write_restart() const
 
   // write additional restart data for galvanostatic applications or simulations including a double
   // layer formulation
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -163,7 +163,7 @@ void ScaTra::ScaTraTimIntElchOST::read_restart(
   // Initialize Nernst-BC
   init_nernst_bc();
 
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -221,7 +221,7 @@ void ScaTra::ScaTraTimIntElchOST::update()
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchOST::electrode_kinetics_time_update()
 {
-  if ((Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     compute_time_deriv_pot0(false);
 
@@ -314,7 +314,7 @@ void ScaTra::ScaTraTimIntElchOST::set_old_part_of_righthandside()
   TimIntOneStepTheta::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
-  if ((Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     std::vector<Core::Conditions::Condition*> conditions;
     discret_->get_condition("ElchBoundaryKinetics", conditions);
@@ -394,7 +394,7 @@ void ScaTra::ScaTraTimIntElchBDF2::write_restart() const
   ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -450,7 +450,7 @@ void ScaTra::ScaTraTimIntElchBDF2::read_restart(
   init_nernst_bc();
 
   // restart for galvanostatic applications
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -506,7 +506,7 @@ void ScaTra::ScaTraTimIntElchBDF2::electrode_kinetics_time_update()
   // The galvanostatic mode and double layer charging has never been tested if it is implemented
   // correctly!! The code have to be checked in detail, if somebody want to use it!!
 
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // compute_time_deriv_pot0(false);
 
@@ -558,7 +558,7 @@ void ScaTra::ScaTraTimIntElchBDF2::compute_time_deriv_pot0(const bool init)
             "to use one-step-theta time integration scheme");
       }
 
-      if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") == true)
+      if (elchparams_->get<bool>("GALVANOSTATIC"))
       {
         FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for BDF2! You have "
@@ -578,7 +578,7 @@ void ScaTra::ScaTraTimIntElchBDF2::set_old_part_of_righthandside()
   TimIntBDF2::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
-  if ((Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     std::vector<Core::Conditions::Condition*> conditions;
     discret_->get_condition("ElchBoundaryKinetics", conditions);
@@ -698,7 +698,7 @@ void ScaTra::ScaTraTimIntElchGenAlpha::write_restart() const
   ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -745,7 +745,7 @@ void ScaTra::ScaTraTimIntElchGenAlpha::read_restart(
   // Initialize Nernst-BC
   init_nernst_bc();
 
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -796,7 +796,7 @@ void ScaTra::ScaTraTimIntElchGenAlpha::update()
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchGenAlpha::electrode_kinetics_time_update()
 {
-  if ((Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     compute_time_deriv_pot0(false);
 
@@ -937,7 +937,7 @@ void ScaTra::ScaTraTimIntElchStationary::write_restart() const
   ScaTraTimIntElch::write_restart();
 
   // write additional restart data for galvanostatic applications
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -981,7 +981,7 @@ void ScaTra::ScaTraTimIntElchStationary::read_restart(
   init_nernst_bc();
 
   // restart for galvanostatic applications
-  if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<Core::Conditions::Condition*> cond;
@@ -1041,7 +1041,7 @@ void ScaTra::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init
             "integration scheme! You have to use one-step-theta time integration scheme!");
       }
 
-      if (Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC") == true)
+      if (elchparams_->get<bool>("GALVANOSTATIC"))
       {
         FOUR_C_THROW(
             "Double layer charging and galvanostatic mode are not implemented for stationary time "
@@ -1172,7 +1172,7 @@ void ScaTra::ScaTraTimIntElchSCLOST::set_old_part_of_righthandside()
   TimIntOneStepTheta::set_old_part_of_righthandside();
 
   // contribution from galvanostatic equation
-  if ((Core::UTILS::integral_value<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
+  if (elchparams_->get<bool>("GALVANOSTATIC") or dlcapexists_)
   {
     std::vector<Core::Conditions::Condition*> conditions;
     discret_->get_condition("ElchBoundaryKinetics", conditions);

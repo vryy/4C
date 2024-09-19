@@ -9,8 +9,6 @@ with condensed structure interface displacements
 */
 /*--------------------------------------------------------------------------*/
 
-
-
 #include "4C_fsi_slidingmonolithic_structuresplit.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"
@@ -226,9 +224,9 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = Core::UTILS::integral_value<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -292,7 +290,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
     // -------------------------------------------------------------------------
 
     // enable debugging
-    if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (fsidyn.get<bool>("DEBUGOUTPUT"))
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -850,7 +848,7 @@ void FSI::SlidingMonolithicStructureSplit::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -902,7 +900,7 @@ void FSI::SlidingMonolithicStructureSplit::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {

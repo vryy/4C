@@ -39,10 +39,11 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::RCP<Teuchos::Paramete
 
   Teuchos::ParameterList& beaminteraction = list->sublist("BEAM INTERACTION", false, "");
 
-  setStringToIntegralParameter<int>("REPARTITIONSTRATEGY", "Adaptive",
-      "Type of employed repartitioning strategy",
+  setStringToIntegralParameter<Inpar::BEAMINTERACTION::RepartitionStrategy>("REPARTITIONSTRATEGY",
+      "Adaptive", "Type of employed repartitioning strategy",
       tuple<std::string>("Adaptive", "adaptive", "Everydt", "everydt"),
-      tuple<int>(repstr_adaptive, repstr_adaptive, repstr_everydt, repstr_everydt),
+      tuple<Inpar::BEAMINTERACTION::RepartitionStrategy>(
+          repstr_adaptive, repstr_adaptive, repstr_everydt, repstr_everydt),
       &beaminteraction);
 
   setStringToIntegralParameter<SearchStrategy>("SEARCH_STRATEGY", "bruteforce_with_binning",
@@ -145,9 +146,10 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::RCP<Teuchos::Paramete
   Teuchos::ParameterList& beamtobeamcontact =
       beaminteraction.sublist("BEAM TO BEAM CONTACT", false, "");
 
-  setStringToIntegralParameter<int>("STRATEGY", "None", "Type of employed solving strategy",
-      tuple<std::string>("None", "none", "Penalty", "penalty"),
-      tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beamtobeamcontact);
+  setStringToIntegralParameter<Inpar::BEAMINTERACTION::Strategy>("STRATEGY", "None",
+      "Type of employed solving strategy", tuple<std::string>("None", "none", "Penalty", "penalty"),
+      tuple<Inpar::BEAMINTERACTION::Strategy>(bstr_none, bstr_none, bstr_penalty, bstr_penalty),
+      &beamtobeamcontact);
 
   // ...
 
@@ -157,9 +159,10 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::RCP<Teuchos::Paramete
   Teuchos::ParameterList& beamtospherecontact =
       beaminteraction.sublist("BEAM TO SPHERE CONTACT", false, "");
 
-  setStringToIntegralParameter<int>("STRATEGY", "None", "Type of employed solving strategy",
-      tuple<std::string>("None", "none", "Penalty", "penalty"),
-      tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beamtospherecontact);
+  setStringToIntegralParameter<Inpar::BEAMINTERACTION::Strategy>("STRATEGY", "None",
+      "Type of employed solving strategy", tuple<std::string>("None", "none", "Penalty", "penalty"),
+      tuple<Inpar::BEAMINTERACTION::Strategy>(bstr_none, bstr_none, bstr_penalty, bstr_penalty),
+      &beamtospherecontact);
 
   Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
       "Penalty parameter for beam-to-rigidsphere contact", &beamtospherecontact);

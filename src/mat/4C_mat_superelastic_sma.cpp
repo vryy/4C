@@ -126,7 +126,7 @@ struct Mat::SuperElasticSMA::LoadingData
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
+ | is called in Material::Factory from read_materials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::SuperElasticSMA::create_material()
 {
@@ -138,7 +138,7 @@ Mat::SuperElasticSMAType Mat::SuperElasticSMAType::instance_;
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
+ | is called in Material::Factory from read_materials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::SuperElasticSMAType::create(
     Core::Communication::UnpackBuffer& buffer)

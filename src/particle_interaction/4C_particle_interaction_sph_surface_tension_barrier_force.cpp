@@ -56,7 +56,7 @@ void ParticleInteraction::SPHBarrierForce::init()
 
   if (trans_dT_barrier_ > 0.0)
   {
-    if (Core::UTILS::integral_value<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+    if (Teuchos::getIntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
             params_sph_, "TEMPERATUREEVALUATION") == Inpar::PARTICLE::NoTemperatureEvaluation)
       FOUR_C_THROW("temperature evaluation needed for linear transition of surface tension!");
   }

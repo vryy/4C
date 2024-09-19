@@ -51,26 +51,26 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::int_parameter(
       "MAX_NUM_DOFSETS", 3, "Maximum number of volumecells in the XFEM element", &xfem_general);
 
-  setStringToIntegralParameter<int>("NODAL_DOFSET_STRATEGY", "full",
+  setStringToIntegralParameter<Cut::NodalDofSetStrategy>("NODAL_DOFSET_STRATEGY", "full",
       "Strategy used for the nodal dofset management per node",
       tuple<std::string>(
           "OneDofset_PerNodeAndPosition", "ConnectGhostDofsets_PerNodeAndPosition", "full"),
-      tuple<int>(Cut::NDS_Strategy_OneDofset_PerNodeAndPosition,
+      tuple<Cut::NodalDofSetStrategy>(Cut::NDS_Strategy_OneDofset_PerNodeAndPosition,
           Cut::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition, Cut::NDS_Strategy_full),
       &xfem_general);
 
   // Integration options
-  setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY", "Tessellation",
+  setStringToIntegralParameter<Cut::VCellGaussPts>("VOLUME_GAUSS_POINTS_BY", "Tessellation",
       "Method for finding Gauss Points for the cut volumes",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
-      tuple<int>(Cut::VCellGaussPts_Tessellation, Cut::VCellGaussPts_MomentFitting,
+      tuple<Cut::VCellGaussPts>(Cut::VCellGaussPts_Tessellation, Cut::VCellGaussPts_MomentFitting,
           Cut::VCellGaussPts_DirectDivergence),
       &xfem_general);
 
-  setStringToIntegralParameter<int>("BOUNDARY_GAUSS_POINTS_BY", "Tessellation",
+  setStringToIntegralParameter<Cut::BCellGaussPts>("BOUNDARY_GAUSS_POINTS_BY", "Tessellation",
       "Method for finding Gauss Points for the boundary cells",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
-      tuple<int>(Cut::BCellGaussPts_Tessellation, Cut::BCellGaussPts_MomentFitting,
+      tuple<Cut::BCellGaussPts>(Cut::BCellGaussPts_Tessellation, Cut::BCellGaussPts_MomentFitting,
           Cut::BCellGaussPts_DirectDivergence),
       &xfem_general);
 
@@ -94,11 +94,12 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
       "XFLUIDFLUID_SEARCHRADIUS", 1.0, "Radius of the search tree", &xfluid_general);
 
   // xfluidfluid-fsi-monolithic approach
-  setStringToIntegralParameter<int>("MONOLITHIC_XFFSI_APPROACH", "xffsi_fixedALE_partitioned",
-      "The monolithic approach for xfluidfluid-fsi",
+  setStringToIntegralParameter<MonolithicXffsiApproach>("MONOLITHIC_XFFSI_APPROACH",
+      "xffsi_fixedALE_partitioned", "The monolithic approach for xfluidfluid-fsi",
       tuple<std::string>(
           "xffsi_full_newton", "xffsi_fixedALE_interpolation", "xffsi_fixedALE_partitioned"),
-      tuple<int>(Inpar::XFEM::XFFSI_Full_Newton,      // xffsi with no fixed xfem-coupling
+      tuple<MonolithicXffsiApproach>(
+          Inpar::XFEM::XFFSI_Full_Newton,             // xffsi with no fixed xfem-coupling
           Inpar::XFEM::XFFSI_FixedALE_Interpolation,  // xffsi with fixed xfem-coupling in every
                                                       // newtonstep and interpolations for
                                                       // embedded-dis afterwards
@@ -108,12 +109,12 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
       &xfluid_general);
 
   // xfluidfluid time integration approach
-  setStringToIntegralParameter<int>("XFLUIDFLUID_TIMEINT", "Xff_TimeInt_FullProj",
+  setStringToIntegralParameter<XFluidFluidTimeInt>("XFLUIDFLUID_TIMEINT", "Xff_TimeInt_FullProj",
       "The xfluidfluid-timeintegration approach",
       tuple<std::string>("Xff_TimeInt_FullProj", "Xff_TimeInt_ProjIfMoved",
           "Xff_TimeInt_KeepGhostValues", "Xff_TimeInt_IncompProj"),
-      tuple<int>(Inpar::XFEM::Xff_TimeInt_FullProj,  // always project nodes from embedded to
-                                                     // background nodes
+      tuple<XFluidFluidTimeInt>(Inpar::XFEM::Xff_TimeInt_FullProj,  // always project nodes from
+                                                                    // embedded to background nodes
           Inpar::XFEM::Xff_TimeInt_ProjIfMoved,  // project nodes just if the status of background
                                                  // nodes changed
           Inpar::XFEM::Xff_TimeInt_KeepGhostValues,  // always keep the ghost values of the
@@ -123,11 +124,11 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
           ),
       &xfluid_general);
 
-  setStringToIntegralParameter<int>("XFLUID_TIMEINT", "STD=COPY/SL_and_GHOST=COPY/GP",
-      "The xfluid time integration approach",
+  setStringToIntegralParameter<XFluidTimeIntScheme>("XFLUID_TIMEINT",
+      "STD=COPY/SL_and_GHOST=COPY/GP", "The xfluid time integration approach",
       tuple<std::string>("STD=COPY_and_GHOST=COPY/GP", "STD=COPY/SL_and_GHOST=COPY/GP",
           "STD=SL(boundary-zone)_and_GHOST=GP", "STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP"),
-      tuple<int>(
+      tuple<XFluidTimeIntScheme>(
           Inpar::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP,  // STD= only copy,
                                                                               // GHOST= copy or
                                                                               // ghost penalty
@@ -146,12 +147,13 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::bool_parameter("ALE_XFluid", "no", "XFluid is Ale Fluid?", &xfluid_general);
 
   // for new OST-implementation: which interface terms to be evaluated for previous time step
-  setStringToIntegralParameter<int>("INTERFACE_TERMS_PREVIOUS_STATE",
+  setStringToIntegralParameter<InterfaceTermsPreviousState>("INTERFACE_TERMS_PREVIOUS_STATE",
       "PreviousState_only_consistency",
       "how to treat interface terms from previous time step (new OST)",
       tuple<std::string>("PreviousState_only_consistency", "PreviousState_full"),
-      tuple<int>(Inpar::XFEM::PreviousState_only_consistency,  /// evaluate only consistency terms
-                                                               /// for previous time step
+      tuple<InterfaceTermsPreviousState>(
+          Inpar::XFEM::PreviousState_only_consistency,  /// evaluate only consistency terms
+                                                        /// for previous time step
           Inpar::XFEM::PreviousState_full  /// evaluate consistency, adjoint consistency and penalty
                                            /// terms or previous time step
           ),
@@ -167,30 +169,30 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION", false, "");
 
   // Boundary-Coupling options
-  setStringToIntegralParameter<int>("COUPLING_METHOD", "Nitsche",
+  setStringToIntegralParameter<CouplingMethod>("COUPLING_METHOD", "Nitsche",
       "method how to enforce embedded boundary/coupling conditions at the interface",
       tuple<std::string>("Hybrid_LM_Cauchy_stress", "Hybrid_LM_viscous_stress", "Nitsche"),
-      tuple<int>(
+      tuple<CouplingMethod>(
           Inpar::XFEM::Hybrid_LM_Cauchy_stress,   // Cauchy stress-based mixed/hybrid formulation
           Inpar::XFEM::Hybrid_LM_viscous_stress,  // viscous stress-based mixed/hybrid formulation
           Inpar::XFEM::Nitsche                    // Nitsche's formulation
           ),
       &xfluid_stab);
 
-  setStringToIntegralParameter<int>("HYBRID_LM_L2_PROJ", "part_ele_proj",
+  setStringToIntegralParameter<HybridLmL2Proj>("HYBRID_LM_L2_PROJ", "part_ele_proj",
       "perform the L2 projection between stress fields on whole element or on fluid part?",
       tuple<std::string>("full_ele_proj", "part_ele_proj"),
-      tuple<int>(
+      tuple<HybridLmL2Proj>(
           Inpar::XFEM::Hybrid_LM_L2_Proj_full,  // L2 stress projection on whole fluid element
           Inpar::XFEM::Hybrid_LM_L2_Proj_part   // L2 stress projection on partial fluid element
                                                 // volume
           ),
       &xfluid_stab);
 
-  setStringToIntegralParameter<int>("VISC_ADJOINT_SYMMETRY", "yes",
+  setStringToIntegralParameter<AdjointScaling>("VISC_ADJOINT_SYMMETRY", "yes",
       "viscous and adjoint viscous interface terms with matching sign?",
       tuple<std::string>("yes", "no", "sym", "skew", "none"),
-      tuple<int>(Inpar::XFEM::adj_sym, Inpar::XFEM::adj_skew, Inpar::XFEM::adj_sym,
+      tuple<AdjointScaling>(Inpar::XFEM::adj_sym, Inpar::XFEM::adj_skew, Inpar::XFEM::adj_sym,
           Inpar::XFEM::adj_skew, Inpar::XFEM::adj_none),
       &xfluid_stab);
 
@@ -200,10 +202,10 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::double_parameter("NIT_STAB_FAC_TANG", 35.0,
       " ( stabilization parameter for Nitsche's penalty tangential term", &xfluid_stab);
 
-  setStringToIntegralParameter<int>("VISC_STAB_TRACE_ESTIMATE", "CT_div_by_hk",
+  setStringToIntegralParameter<ViscStabTraceEstimate>("VISC_STAB_TRACE_ESTIMATE", "CT_div_by_hk",
       "how to estimate the scaling from the trace inequality in Nitsche's method",
       tuple<std::string>("CT_div_by_hk", "eigenvalue"),
-      tuple<int>(
+      tuple<ViscStabTraceEstimate>(
           Inpar::XFEM::ViscStab_TraceEstimate_CT_div_by_hk,  // estimate the trace inequality by a
                                                              // trace-constant CT and hk: CT/hk
           Inpar::XFEM::ViscStab_TraceEstimate_eigenvalue     // estimate the trace inequality by
@@ -212,18 +214,19 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
           ),
       &xfluid_stab);
 
-  setStringToIntegralParameter<int>("UPDATE_EIGENVALUE_TRACE_ESTIMATE", "every_iter",
-      "how often should the local eigenvalue problem be updated",
+  setStringToIntegralParameter<TraceEstimateEigenvalueUpdate>("UPDATE_EIGENVALUE_TRACE_ESTIMATE",
+      "every_iter", "how often should the local eigenvalue problem be updated",
       tuple<std::string>("every_iter", "every_timestep", "once"),
-      tuple<int>(Inpar::XFEM::Eigenvalue_update_every_iter,
+      tuple<TraceEstimateEigenvalueUpdate>(Inpar::XFEM::Eigenvalue_update_every_iter,
           Inpar::XFEM::Eigenvalue_update_every_timestep, Inpar::XFEM::Eigenvalue_update_once),
       &xfluid_stab);
 
-  setStringToIntegralParameter<int>("VISC_STAB_HK", "ele_vol_div_by_max_ele_surf",
+  setStringToIntegralParameter<ViscStabHk>("VISC_STAB_HK", "ele_vol_div_by_max_ele_surf",
       "how to define the characteristic element length in cut elements",
       tuple<std::string>("vol_equivalent", "cut_vol_div_by_cut_surf", "ele_vol_div_by_cut_surf",
           "ele_vol_div_by_ele_surf", "ele_vol_div_by_max_ele_surf"),
-      tuple<int>(Inpar::XFEM::ViscStab_hk_vol_equivalent,    /// volume equivalent element diameter
+      tuple<ViscStabHk>(
+          Inpar::XFEM::ViscStab_hk_vol_equivalent,           /// volume equivalent element diameter
           Inpar::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf,  /// physical partial/cut volume divided
                                                              /// by physical partial/cut surface
                                                              /// measure ( used to estimate the
@@ -251,39 +254,42 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
       &xfluid_stab);
 
 
-  setStringToIntegralParameter<int>("CONV_STAB_SCALING", "none",
+  setStringToIntegralParameter<ConvStabScaling>("CONV_STAB_SCALING", "none",
       "scaling factor for viscous interface stabilization (Nitsche, MSH)",
       tuple<std::string>("inflow", "abs_inflow", "none"),
-      tuple<int>(Inpar::XFEM::ConvStabScaling_inflow,  // scaling with max(0,-u*n)
-          Inpar::XFEM::ConvStabScaling_abs_inflow,     // scaling with |u*n|
-          Inpar::XFEM::ConvStabScaling_none            // no convective stabilization
+      tuple<ConvStabScaling>(Inpar::XFEM::ConvStabScaling_inflow,  // scaling with max(0,-u*n)
+          Inpar::XFEM::ConvStabScaling_abs_inflow,                 // scaling with |u*n|
+          Inpar::XFEM::ConvStabScaling_none                        // no convective stabilization
           ),
       &xfluid_stab);
 
-  setStringToIntegralParameter<int>("XFF_CONV_STAB_SCALING", "none",
+  setStringToIntegralParameter<XffConvStabScaling>("XFF_CONV_STAB_SCALING", "none",
       "scaling factor for convective interface stabilization of fluid-fluid Coupling",
       tuple<std::string>("inflow", "averaged", "none"),
-      tuple<int>(Inpar::XFEM::XFF_ConvStabScaling_upwinding,  // one-sided inflow stabilization
-          Inpar::XFEM::XFF_ConvStabScaling_only_averaged,     // averaged inflow stabilization
-          Inpar::XFEM::XFF_ConvStabScaling_none               // no convective stabilization
+      tuple<XffConvStabScaling>(
+          Inpar::XFEM::XFF_ConvStabScaling_upwinding,      // one-sided inflow stabilization
+          Inpar::XFEM::XFF_ConvStabScaling_only_averaged,  // averaged inflow stabilization
+          Inpar::XFEM::XFF_ConvStabScaling_none            // no convective stabilization
           ),
       &xfluid_stab);
 
-  setStringToIntegralParameter<int>("MASS_CONSERVATION_COMBO", "max",
+  setStringToIntegralParameter<MassConservationCombination>("MASS_CONSERVATION_COMBO", "max",
       "choose the maximum from viscous and convective contributions or just sum both up",
       tuple<std::string>("max", "sum"),
-      tuple<int>(Inpar::XFEM::MassConservationCombination_max,  /// use the maximum contribution
+      tuple<MassConservationCombination>(
+          Inpar::XFEM::MassConservationCombination_max,  /// use the maximum contribution
           Inpar::XFEM::MassConservationCombination_sum  /// sum viscous and convective contributions
           ),
       &xfluid_stab);
 
-  setStringToIntegralParameter<int>("MASS_CONSERVATION_SCALING", "only_visc",
+  setStringToIntegralParameter<MassConservationScaling>("MASS_CONSERVATION_SCALING", "only_visc",
       "apply additional scaling of penalty term to enforce mass conservation for "
       "convection-dominated flow",
       tuple<std::string>("full", "only_visc"),
-      tuple<int>(Inpar::XFEM::MassConservationScaling_full,  /// apply mass-conserving convective
-                                                             /// scaling additionally
-          Inpar::XFEM::MassConservationScaling_only_visc     /// use only the viscous scaling
+      tuple<MassConservationScaling>(
+          Inpar::XFEM::MassConservationScaling_full,  /// apply mass-conserving convective scaling
+                                                      /// additionally
+          Inpar::XFEM::MassConservationScaling_only_visc  /// use only the viscous scaling
           ),
       &xfluid_stab);
 
@@ -308,12 +314,6 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::double_parameter("GHOST_PENALTY_TRANSIENT_FAC", 0.001,
       "define stabilization parameter ghost penalty transient interface stabilization",
       &xfluid_stab);
-
-  //  // NOT chosen optimally!
-  //  Core::UTILS::DoubleParameter("GHOST_PENALTY_2nd_FAC", 1.0,"define stabilization parameter
-  //  ghost penalty 2nd order viscous interface stabilization",&xfluid_stab);
-  //  Core::UTILS::DoubleParameter("GHOST_PENALTY_PRESSURE_2nd_FAC", 1.0,"define stabilization
-  //  parameter ghost penalty 2nd order pressure interface stabilization",&xfluid_stab);
 
   Core::UTILS::double_parameter("GHOST_PENALTY_2nd_FAC", 0.05,
       "define stabilization parameter ghost penalty 2nd order viscous interface stabilization",

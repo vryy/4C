@@ -616,8 +616,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
   // set action and facetype for elements
 
   // TODO: set here the right stab-type LPS or EOS
-  eleparams.set<int>("action", FLD::EOS_and_GhostPenalty_stabilization);
-
+  eleparams.set<FLD::IntFaceAction>("action", FLD::EOS_and_GhostPenalty_stabilization);
 
   // call the egde-based assemble and evaluate routine
   Discret::ELEMENTS::FluidIntFaceImplInterface::impl(intface)

@@ -16,6 +16,7 @@
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_fsi_partitioned_immersed.hpp"
+#include "4C_inpar_fsi.hpp"
 #include "4C_inpar_immersed.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_structure_aux.hpp"
@@ -108,31 +109,31 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
       Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapperImmersed>(structure_field());
 
   // get coupling variable
-  displacementcoupling_ = globalproblem_->fsi_dynamic_params()
-                              .sublist("PARTITIONED SOLVER")
-                              .get<std::string>("COUPVARIABLE") == "Displacement";
+  displacementcoupling_ =
+      globalproblem_->fsi_dynamic_params()
+          .sublist("PARTITIONED SOLVER")
+          .get<Inpar::FSI::CoupVarPart>("COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp;
   if (displacementcoupling_ and myrank_ == 0)
     std::cout << "\n Coupling variable for partitioned FSI scheme :  Displacements " << std::endl;
   else if (!displacementcoupling_ and myrank_ == 0)
     std::cout << "\n Coupling variable for partitioned FSI scheme :  Force " << std::endl;
 
   // set switch for interface velocity correction
-  correct_boundary_velocities_ = (Core::UTILS::integral_value<int>(
-      globalproblem_->immersed_method_params(), "CORRECT_BOUNDARY_VELOCITIES"));
+  correct_boundary_velocities_ =
+      globalproblem_->immersed_method_params().get<bool>("CORRECT_BOUNDARY_VELOCITIES");
 
   // set switch for output in every nln. iteration (for debugging)
-  output_evry_nlniter_ = (Core::UTILS::integral_value<int>(
-      globalproblem_->immersed_method_params(), "OUTPUT_EVRY_NLNITER"));
+  output_evry_nlniter_ = globalproblem_->immersed_method_params().get<bool>("OUTPUT_EVRY_NLNITER");
 
   // print acceleration method
-  if (globalproblem_->fsi_dynamic_params().get<std::string>("COUPALGO") ==
-      "iter_stagg_fixed_rel_param")
+  if (globalproblem_->fsi_dynamic_params().get<FsiCoupling>("COUPALGO") ==
+      FsiCoupling::fsi_iter_stagg_fixed_rel_param)
   {
     is_relaxation_ = false;
     if (myrank_ == 0) std::cout << "\n Using FIXED relaxation parameter. " << std::endl;
   }
-  else if (globalproblem_->fsi_dynamic_params().get<std::string>("COUPALGO") ==
-           "iter_stagg_AITKEN_rel_param")
+  else if (globalproblem_->fsi_dynamic_params().get<FsiCoupling>("COUPALGO") ==
+           FsiCoupling::fsi_iter_stagg_AITKEN_rel_param)
   {
     is_relaxation_ = true;
     if (myrank_ == 0) std::cout << "\n Using AITKEN relaxation parameter. " << std::endl;
@@ -333,8 +334,9 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
   }
 
   // perform n steps max; then set converged
-  bool nlnsolver_continue =
-      globalproblem_->immersed_method_params().get<std::string>("DIVERCONT") == "continue";
+  const bool nlnsolver_continue =
+      globalproblem_->immersed_method_params().get<Inpar::Immersed::ImmersedNlnsolver>(
+          "DIVERCONT") == Inpar::Immersed::ImmersedNlnsolver::nlnsolver_continue;
   int itemax =
       globalproblem_->fsi_dynamic_params().sublist("PARTITIONED SOLVER").get<int>("ITEMAX");
   if ((FSI::Partitioned::iteration_counter())[0] == itemax and nlnsolver_continue)
@@ -1013,7 +1015,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::correct_interface_velocit
     // calculate new dirichlet velocities for fluid elements cut by structure
     evaluate_immersed(params, mb_fluid_field()->discretization(), &fluid_vol_strategy,
         &curr_subset_of_fluiddis_, structure_SearchTree_, &currpositions_struct_,
-        (int)FLD::correct_immersed_fluid_bound_vel, true);
+        FLD::correct_immersed_fluid_bound_vel, true);
 
     // Build new dirich map
     build_immersed_dirich_map(mb_fluid_field()->discretization(), dbcmap_immersed_,
@@ -1063,7 +1065,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::reset_immersed_informatio
 
   // reset element and node information about immersed method
   Teuchos::ParameterList params;
-  params.set<int>("action", FLD::reset_immersed_ele);
+  params.set<FLD::Action>("action", FLD::reset_immersed_ele);
   params.set<int>("intpoints_fluid_bound", degree_gp_fluid_bound_);
   evaluate_subset_elements(
       params, fluiddis_, curr_subset_of_fluiddis_, (int)FLD::reset_immersed_ele);

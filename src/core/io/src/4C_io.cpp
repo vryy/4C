@@ -1307,7 +1307,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
       ele->vis_names(names);
     }
 
-    // By applying GatherAll we get the combined map including all elemental values
+    // By applying gather_all we get the combined map including all elemental values
     // which where found by vis_names
     Core::LinAlg::gather_all(names, get_comm());
 
@@ -1369,7 +1369,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
       dis_->l_row_node(i)->vis_names(names);
     }
 
-    /* By applying GatherAll we get the combined map including all nodal values
+    /* By applying gather_all we get the combined map including all nodal values
      * which where found by vis_names
      */
     Core::LinAlg::gather_all(names, get_comm());

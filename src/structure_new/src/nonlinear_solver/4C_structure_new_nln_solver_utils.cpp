@@ -114,8 +114,8 @@ void Solid::Nln::SOLVER::convert_model_type_to_quantity_type(const enum Inpar::S
       // check for friction
       const Teuchos::ParameterList& p_contact =
           Global::Problem::instance()->contact_dynamic_params();
-      enum Inpar::CONTACT::FrictionType frictiontype =
-          Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(p_contact, "FRICTION");
+      auto frictiontype =
+          Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(p_contact, "FRICTION");
       switch (frictiontype)
       {
         case Inpar::CONTACT::friction_none:

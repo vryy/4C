@@ -150,7 +150,7 @@ Airway::RedAirwayTissue::RedAirwayTissue(
 
   // Dynamic relaxation type
   relaxtype_ =
-      Core::UTILS::integral_value<Inpar::ArteryNetwork::Relaxtype3D0D>(rawtisdyn, "RELAXTYPE");
+      Teuchos::getIntegralValue<Inpar::ArteryNetwork::Relaxtype3D0D>(rawtisdyn, "RELAXTYPE");
 
   // Get normal direction
   // -> if normal == 1.0 : the pressure will be implemented from inside the element to the outside
@@ -490,7 +490,7 @@ void Airway::RedAirwayTissue::setup_red_airways()
   std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->params());
 
@@ -515,23 +515,24 @@ void Airway::RedAirwayTissue::setup_red_airways()
 
   // Solver parameters
   // Solver type
-  airwaystimeparams.set("solver type", rawdyn.get<std::string>("SOLVERTYPE"));
+  airwaystimeparams.set(
+      "solver type", Teuchos::getIntegralValue<RedAirwaysDyntype>(rawdyn, "SOLVERTYPE"));
   // Tolerance
   airwaystimeparams.set("tolerance", rawdyn.get<double>("TOLERANCE"));
   // Maximum number of iterations
   airwaystimeparams.set("maximum iteration steps", rawdyn.get<int>("MAXITERATIONS"));
   // solve scatra flag
-  if (rawdyn.get<std::string>("SOLVESCATRA") == "yes")
+  if (rawdyn.get<bool>("SOLVESCATRA"))
     airwaystimeparams.set("SolveScatra", true);
   else
     airwaystimeparams.set("SolveScatra", false);
   // compute Interdependency
-  if (rawdyn.get<std::string>("COMPAWACINTER") == "yes")
+  if (rawdyn.get<bool>("COMPAWACINTER"))
     airwaystimeparams.set("CompAwAcInter", true);
   else
     airwaystimeparams.set("CompAwAcInter", false);
   // Adjust acini volume with pre-stress condition
-  if (rawdyn.get<std::string>("CALCV0PRESTRESS") == "yes")
+  if (rawdyn.get<bool>("CALCV0PRESTRESS"))
   {
     airwaystimeparams.set("CalcV0PreStress", true);
     airwaystimeparams.set("transpulmpress", rawdyn.get<double>("TRANSPULMPRESS"));

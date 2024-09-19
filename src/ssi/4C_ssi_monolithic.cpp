@@ -52,8 +52,7 @@ SSI::SsiMono::SsiMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      print_matlab_(Core::UTILS::integral_value<bool>(
-          globaltimeparams.sublist("MONOLITHIC"), "PRINT_MAT_RHS_MAP_MATLAB")),
+      print_matlab_(globaltimeparams.sublist("MONOLITHIC").get<bool>("PRINT_MAT_RHS_MAP_MATLAB")),
       relax_lin_solver_tolerance_(
           globaltimeparams.sublist("MONOLITHIC").get<double>("RELAX_LIN_SOLVER_TOLERANCE")),
       relax_lin_solver_iter_step_(
@@ -62,7 +61,7 @@ SSI::SsiMono::SsiMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           Global::Problem::instance()->solver_params(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm, Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")))),
       timer_(Teuchos::rcp(new Teuchos::Time("SSI_Mono", true)))
 {
@@ -482,11 +481,11 @@ void SSI::SsiMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
     const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // check input parameters for scalar transport field
-  if (Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatraparams, "VELOCITYFIELD") !=
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatraparams, "VELOCITYFIELD") !=
       Inpar::ScaTra::velocity_Navier_Stokes)
     FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
-  if (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP") ==
+  if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP") ==
       Inpar::Solid::DynamicType::dyna_statics)
     FOUR_C_THROW(
         "Mass conservation is not fulfilled if 'Statics' time integration is chosen since the "
@@ -653,10 +652,9 @@ void SSI::SsiMono::setup()
   }
   const auto ssi_params = Global::Problem::instance()->ssi_control_params();
 
-  const bool calc_initial_pot_elch = Core::UTILS::integral_value<bool>(
-      Global::Problem::instance()->elch_control_params(), "INITPOTCALC");
-  const bool calc_initial_pot_ssi =
-      Core::UTILS::integral_value<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+  const bool calc_initial_pot_elch =
+      Global::Problem::instance()->elch_control_params().get<bool>("INITPOTCALC");
+  const bool calc_initial_pot_ssi = ssi_params.sublist("ELCH").get<bool>("INITPOTCALC");
 
   if (scatra_field()->equilibration_method() != Core::LinAlg::EquilibrationMethod::none)
   {
@@ -675,8 +673,7 @@ void SSI::SsiMono::setup()
           equilibration_method_.scatra != Core::LinAlg::EquilibrationMethod::none))
     FOUR_C_THROW("Block based equilibration only for block matrices");
 
-  if (!Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->scalar_transport_dynamic_params(), "SKIPINITDER"))
+  if (not Global::Problem::instance()->scalar_transport_dynamic_params().get<bool>("SKIPINITDER"))
   {
     FOUR_C_THROW(
         "Initial derivatives are already calculated in monolithic SSI. Enable 'SKIPINITDER' in the "
@@ -881,8 +878,7 @@ void SSI::SsiMono::newton_loop()
 
     // output performance statistics associated with linear solver into text file if
     // applicable
-    if (Core::UTILS::integral_value<bool>(
-            *scatra_field()->scatra_parameter_list(), "OUTPUTLINSOLVERSTATS"))
+    if (scatra_field()->scatra_parameter_list()->get<bool>("OUTPUTLINSOLVERSTATS"))
       scatra_field()->output_lin_solver_stats(*solver_, dt_solve_, step(), iteration_count(),
           ssi_vectors_->residual()->Map().NumGlobalElements());
 
@@ -918,8 +914,7 @@ void SSI::SsiMono::timeloop()
 
     // output performance statistics associated with nonlinear solver into *.csv file if
     // applicable
-    if (Core::UTILS::integral_value<int>(
-            *scatra_field()->scatra_parameter_list(), "OUTPUTNONLINSOLVERSTATS"))
+    if (scatra_field()->scatra_parameter_list()->get<bool>("OUTPUTNONLINSOLVERSTATS"))
       scatra_field()->output_nonlin_solver_stats(
           iteration_count(), dtnonlinsolve, step(), get_comm());
 
@@ -1172,7 +1167,7 @@ void SSI::SsiMono::distribute_solution_all_fields(const bool restore_velocity)
  *--------------------------------------------------------------------------------------*/
 void SSI::SsiMono::calc_initial_potential_field()
 {
-  const auto equpot = Core::UTILS::integral_value<Inpar::ElCh::EquPot>(
+  const auto equpot = Teuchos::getIntegralValue<Inpar::ElCh::EquPot>(
       Global::Problem::instance()->elch_control_params(), "EQUPOT");
   if (equpot != Inpar::ElCh::equpot_divi and equpot != Inpar::ElCh::equpot_enc_pde and
       equpot != Inpar::ElCh::equpot_enc_pde_elim)

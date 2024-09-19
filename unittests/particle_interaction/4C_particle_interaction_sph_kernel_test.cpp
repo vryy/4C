@@ -30,19 +30,25 @@ namespace
     {
       // create a parameter list
       Teuchos::ParameterList params_sph_1D;
-      Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel1D",
-          "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel1D), &params_sph_1D);
+      Teuchos::setStringToIntegralParameter<Inpar::PARTICLE::KernelSpaceDimension>(
+          "KERNEL_SPACE_DIM", "Kernel1D", "kernel space dimension number",
+          Teuchos::tuple<std::string>("Kernel1D"),
+          Teuchos::tuple<Inpar::PARTICLE::KernelSpaceDimension>(Inpar::PARTICLE::Kernel1D),
+          &params_sph_1D);
 
       Teuchos::ParameterList params_sph_2D;
-      Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel2D",
-          "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel2D), &params_sph_2D);
+      Teuchos::setStringToIntegralParameter<Inpar::PARTICLE::KernelSpaceDimension>(
+          "KERNEL_SPACE_DIM", "Kernel2D", "kernel space dimension number",
+          Teuchos::tuple<std::string>("Kernel2D"),
+          Teuchos::tuple<Inpar::PARTICLE::KernelSpaceDimension>(Inpar::PARTICLE::Kernel2D),
+          &params_sph_2D);
 
       Teuchos::ParameterList params_sph_3D;
-      Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel3D",
-          "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel3D), &params_sph_3D);
+      Teuchos::setStringToIntegralParameter<Inpar::PARTICLE::KernelSpaceDimension>(
+          "KERNEL_SPACE_DIM", "Kernel3D", "kernel space dimension number",
+          Teuchos::tuple<std::string>("Kernel3D"),
+          Teuchos::tuple<Inpar::PARTICLE::KernelSpaceDimension>(Inpar::PARTICLE::Kernel3D),
+          &params_sph_3D);
 
       // create kernel handler
       kernel_1D_ = std::make_unique<ParticleInteraction::SPHKernelCubicSpline>(params_sph_1D);
@@ -298,19 +304,25 @@ namespace
     {
       // create a parameter list
       Teuchos::ParameterList params_sph_1D;
-      Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel1D",
-          "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel1D), &params_sph_1D);
+      Teuchos::setStringToIntegralParameter<Inpar::PARTICLE::KernelSpaceDimension>(
+          "KERNEL_SPACE_DIM", "Kernel1D", "kernel space dimension number",
+          Teuchos::tuple<std::string>("Kernel1D"),
+          Teuchos::tuple<Inpar::PARTICLE::KernelSpaceDimension>(Inpar::PARTICLE::Kernel1D),
+          &params_sph_1D);
 
       Teuchos::ParameterList params_sph_2D;
-      Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel2D",
-          "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel2D), &params_sph_2D);
+      Teuchos::setStringToIntegralParameter<Inpar::PARTICLE::KernelSpaceDimension>(
+          "KERNEL_SPACE_DIM", "Kernel2D", "kernel space dimension number",
+          Teuchos::tuple<std::string>("Kernel2D"),
+          Teuchos::tuple<Inpar::PARTICLE::KernelSpaceDimension>(Inpar::PARTICLE::Kernel2D),
+          &params_sph_2D);
 
       Teuchos::ParameterList params_sph_3D;
-      Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel3D",
-          "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel3D), &params_sph_3D);
+      Teuchos::setStringToIntegralParameter<Inpar::PARTICLE::KernelSpaceDimension>(
+          "KERNEL_SPACE_DIM", "Kernel3D", "kernel space dimension number",
+          Teuchos::tuple<std::string>("Kernel3D"),
+          Teuchos::tuple<Inpar::PARTICLE::KernelSpaceDimension>(Inpar::PARTICLE::Kernel3D),
+          &params_sph_3D);
 
       // create kernel handler
       kernel_1D_ = std::make_unique<ParticleInteraction::SPHKernelQuinticSpline>(params_sph_1D);

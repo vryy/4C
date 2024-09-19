@@ -983,7 +983,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
         {
           // std::cout << "Boundary segmentation for element: " << SlaveElement().Id() << "\n" ;
           // switch, if consistent boundary modification chosen
-          if (Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
+          if (Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(
                   imortar_, "LM_DUAL_CONSISTENT") != Inpar::Mortar::consistent_none &&
               shape_fcn() != Inpar::Mortar::shape_standard  // so for petrov-Galerkin and dual
           )
@@ -1062,7 +1062,7 @@ bool Mortar::Coupling2dManager::evaluate_coupling(
   if (master_elements().size() == 0) return false;
 
   // decide which type of coupling should be evaluated
-  auto algo = Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -1088,8 +1088,8 @@ void Mortar::Coupling2dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  auto consistent = Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
-      imortar_, "LM_DUAL_CONSISTENT");
+  auto consistent =
+      Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
     return;
 

@@ -24,7 +24,6 @@
 #include "4C_binstrategy.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_fem_condition_selector.hpp"
-#include "4C_fem_condition_utils.hpp"
 #include "4C_fem_dofset_predefineddofnumber.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
@@ -45,8 +44,6 @@
 #include "4C_ssi_clonestrategy.hpp"
 #include "4C_structure_aux.hpp"
 
-#include <Teuchos_TimeMonitor.hpp>
-
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -65,9 +62,9 @@ void FS3I::PartFS3I::init()
   // call setup in base class
   FS3I::FS3IBase::init();
 
-  volume_fieldcouplings_.push_back(Core::UTILS::integral_value<Inpar::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(Teuchos::getIntegralValue<Inpar::FS3I::VolumeCoupling>(
       Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_FIELDCOUPLING"));
-  volume_fieldcouplings_.push_back(Core::UTILS::integral_value<Inpar::FS3I::VolumeCoupling>(
+  volume_fieldcouplings_.push_back(Teuchos::getIntegralValue<Inpar::FS3I::VolumeCoupling>(
       Global::Problem::instance()->f_s3_i_dynamic_params(), "STRUCTSCAL_FIELDCOUPLING"));
 
   Global::Problem* problem = Global::Problem::instance();
@@ -116,9 +113,8 @@ void FS3I::PartFS3I::init()
   //  FOUR_C_THROW("At least two material lists required for partitioned FS3I!");
 
   // determine type of scalar transport
-  const Inpar::ScaTra::ImplType impltype_fluid =
-      Core::UTILS::integral_value<Inpar::ScaTra::ImplType>(
-          Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_SCATRATYPE");
+  const auto impltype_fluid = Teuchos::getIntegralValue<Inpar::ScaTra::ImplType>(
+      Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -250,7 +246,7 @@ void FS3I::PartFS3I::init()
   // get FSI coupling algorithm
   //---------------------------------------------------------------------
   const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
-  int coupling = Teuchos::getIntegralValue<int>(fsidyn, "COUPALGO");
+  const auto coupling = Teuchos::getIntegralValue<FsiCoupling>(fsidyn, "COUPALGO");
 
   const Teuchos::ParameterList& fsitimeparams = manipulate_fsi_time_params(fs3idyn);
 
@@ -445,8 +441,7 @@ void FS3I::PartFS3I::read_restart()
   if (restart)
   {
     const Teuchos::ParameterList& fs3idynac = Global::Problem::instance()->f_s3_i_dynamic_params();
-    const bool restartfrompartfsi =
-        Core::UTILS::integral_value<int>(fs3idynac, "RESTART_FROM_PART_FSI");
+    const bool restartfrompartfsi = fs3idynac.get<bool>("RESTART_FROM_PART_FSI");
 
     if (not restartfrompartfsi)  // standard restart
     {
@@ -598,7 +593,7 @@ void FS3I::PartFS3I::setup_system()
   // use coupled scatra solver object
   scatrasolver_ = Teuchos::rcp(new Core::LinAlg::Solver(coupledscatrasolvparams,
       firstscatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   // get the solver number used for fluid ScalarTransport solver
@@ -619,12 +614,12 @@ void FS3I::PartFS3I::setup_system()
   scatrasolver_->put_solver_params_to_sub_params("Inverse1",
       Global::Problem::instance()->solver_params(linsolver1number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   scatrasolver_->put_solver_params_to_sub_params("Inverse2",
       Global::Problem::instance()->solver_params(linsolver2number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
@@ -785,7 +780,7 @@ void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->calculate_wall_shear_stresses();
 
-  if (Core::UTILS::integral_value<Inpar::FLUID::WSSType>(
+  if (Teuchos::getIntegralValue<Inpar::FLUID::WSSType>(
           Global::Problem::instance()->fluid_dynamic_params(), "WSS_TYPE") !=
       Inpar::FLUID::wss_standard)
     FOUR_C_THROW("WSS_TYPE not supported for FS3I!");

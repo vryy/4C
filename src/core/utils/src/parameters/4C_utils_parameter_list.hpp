@@ -12,6 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_utils_exceptions.hpp"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -44,47 +46,22 @@ namespace Core
         std::string const& docString, Teuchos::ParameterList* paramList);
 
     /*!
-    \brief Special implementation for a parameter being an arbitrary std::string
+    \brief Sets a string parameter in a Teuchos::ParameterList with optional validation.
 
-    The method Teuchos::setNumericStringParameter() cannot be used for arbitrary
-    std::string parameters, since the validate() method of the underlying
-    AnyNumberParameterEntryValidator always tries to convert a given std::string to DOUBLE(s)!
-    This may cause error messages in valgrind.
-    Thus, for arbitrary std::strings, such as needed for specifying a file or solver name, for
-    instance, this method which uses a StringValidator has to be used!
+    This function adds a string parameter to a given Teuchos::ParameterList with a
+     Teuchos::Stringalidator.
+    Optionally, a list of valid string values can be provided for validation.
 
-    @param[in] paramName Name of parameter to be put into the parameter list
-    @param[in] value Value of the parameter
-    @param[in] docString Documentation of the parameter
-    @param[in/out] paramList Parameter list (to be filled with <paramName,Value,docString>)
+    @param[in] paramName Name of the parameter to be added to the parameter list.
+    @param[in] value The string value of the parameter.
+    @param[in] docString Documentation string describing the parameter.
+    @param[in/out] paramList The parameter list that will be updated with the new parameter.
+    @param[in] validParams (Optional) A list of valid string values for the parameter.
     */
     void string_parameter(std::string const& paramName, std::string const& value,
-        std::string const& docString, Teuchos::ParameterList* paramList);
+        std::string const& docString, Teuchos::ParameterList* paramList,
+        std::vector<std::string> const& validParams = {});
 
-    template <class T>
-    T integral_value(const Teuchos::ParameterList& params, const std::string& name)
-    {
-      int value = Teuchos::getIntegralValue<int>(params, name);
-      return static_cast<T>(value);
-    }
-
-    template <class T>
-    T get_as_enum(const Teuchos::ParameterList& params, const std::string& name)
-    {
-      static_assert(std::is_enum_v<T>, "This function may only be used for enum constants.");
-      int value = params.get<int>(name);
-      return static_cast<T>(value);
-    }
-
-    template <class T>
-    T get_as_enum(const Teuchos::ParameterList& params, const std::string& name, T default_value)
-    {
-      static_assert(std::is_enum_v<T>, "This function may only be used for enum constants.");
-      if (params.isParameter(name))
-        return static_cast<T>(params.get<int>(name));
-      else
-        return default_value;
-    }
   }  // namespace UTILS
 }  // namespace Core
 

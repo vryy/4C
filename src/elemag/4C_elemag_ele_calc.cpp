@@ -22,6 +22,7 @@
 #include "4C_mat_electromagnetic.hpp"
 #include "4C_utils_function.hpp"
 
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -83,7 +84,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::evaluate(Discret::ELEMENTS::Elema
   }
   else
   {
-    action = Core::UTILS::get_as_enum<EleMag::Action>(params, "action");
+    action = Teuchos::getIntegralValue<EleMag::Action>(params, "action");
   }
 
   initialize_shapes(ele);
