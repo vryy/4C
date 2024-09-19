@@ -97,7 +97,7 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
     : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
       deforming_simulation_domain_handler_(Teuchos::null),
-      writebinstype_(Core::UTILS::integral_value<WriteBins>(binning_params, ("WRITEBINS"))),
+      writebinstype_(Teuchos::getIntegralValue<WriteBins>(binning_params, ("WRITEBINS"))),
       myrank_(my_rank),
       comm_(comm.Clone()),
       determine_relevant_points_(

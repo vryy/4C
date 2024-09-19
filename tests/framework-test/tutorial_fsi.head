@@ -498,7 +498,7 @@ TOL_VEL_RES_L2                  1e-06
 CONVTOL                         1e-10
 //
 // Coupling Method Mortar (mtr) or conforming nodes at interface
-//                              MTR,Mtr,mtr,conforming
+//                              mortar,conforming
 COUPMETHOD                      conforming
 //
 // Coupling variable at the interface for partitioned FSI solvers

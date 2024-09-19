@@ -64,34 +64,34 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::setup
 
   // Get global parameters.
   output_interval_steps_ = global_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
-  output_every_iteration_ = (bool)Core::UTILS::integral_value<int>(
-      global_visualization_output_paramslist, "EVERY_ITERATION");
+  output_every_iteration_ = global_visualization_output_paramslist.get<bool>("EVERY_ITERATION");
 
   // Get beam to solid volume mesh tying specific parameters.
-  output_flag_ = (bool)Core::UTILS::integral_value<int>(
-      beam_to_solid_volume_meshtying_visualization_output_paramslist, "WRITE_OUTPUT");
+  output_flag_ =
+      beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>("WRITE_OUTPUT");
 
-  nodal_forces_ = (bool)Core::UTILS::integral_value<int>(
-      beam_to_solid_volume_meshtying_visualization_output_paramslist, "NODAL_FORCES");
+  nodal_forces_ =
+      beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>("NODAL_FORCES");
 
-  mortar_lambda_discret_ = (bool)Core::UTILS::integral_value<int>(
-      beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_DISCRET");
+  mortar_lambda_discret_ = beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>(
+      "MORTAR_LAMBDA_DISCRET");
 
-  mortar_lambda_continuous_ = (bool)Core::UTILS::integral_value<int>(
-      beam_to_solid_volume_meshtying_visualization_output_paramslist, "MORTAR_LAMBDA_CONTINUOUS");
+  mortar_lambda_continuous_ =
+      beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>(
+          "MORTAR_LAMBDA_CONTINUOUS");
 
   mortar_lambda_continuous_segments_ =
       beam_to_solid_volume_meshtying_visualization_output_paramslist.get<int>(
           "MORTAR_LAMBDA_CONTINUOUS_SEGMENTS");
 
-  segmentation_ = (bool)Core::UTILS::integral_value<int>(
-      beam_to_solid_volume_meshtying_visualization_output_paramslist, "SEGMENTATION");
+  segmentation_ =
+      beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>("SEGMENTATION");
 
-  integration_points_ = (bool)Core::UTILS::integral_value<int>(
-      beam_to_solid_volume_meshtying_visualization_output_paramslist, "INTEGRATION_POINTS");
+  integration_points_ = beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>(
+      "INTEGRATION_POINTS");
 
-  write_unique_ids_ = (bool)Core::UTILS::integral_value<int>(
-      beam_to_solid_volume_meshtying_visualization_output_paramslist, "UNIQUE_IDS");
+  write_unique_ids_ =
+      beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>("UNIQUE_IDS");
 
   // Set the setup flag.
   issetup_ = true;

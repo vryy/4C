@@ -190,11 +190,6 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
   // are chosen based on the discretization.
   else
   {
-    // Fill maps based on condition for master side (masterdis != slavedis)
-    //    if(masterdis!=Teuchos::null)
-    //      Core::Conditions::FindConditionObjects(*masterdis, masternodes, mastergnodes,
-    //      masterelements, couplingcond);
-
     // Fill maps based on condition for slave side (masterdis != slavedis)
     if (slavedis != Teuchos::null)
       Core::Conditions::find_condition_objects(
@@ -221,9 +216,9 @@ void Adapter::CouplingNonLinMortar::read_mortar_condition(
   input.set<int>("DIMENSION", Global::Problem::instance()->n_dim());
 
   // check for invalid parameter values
-  if (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
           Inpar::Mortar::shape_dual and
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
+      Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(input, "LM_SHAPEFCN") !=
           Inpar::Mortar::shape_petrovgalerkin)
     if (myrank_ == 0) FOUR_C_THROW("Mortar coupling adapter only works for dual shape functions");
 
@@ -1055,7 +1050,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   check_setup();
 
   // check
-  if (Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(
           interface()->interface_params(), "LM_SHAPEFCN") != Inpar::Mortar::shape_dual)
     FOUR_C_THROW("ERROR: Creation of P operator only for dual shape functions!");
 

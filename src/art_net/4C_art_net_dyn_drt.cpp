@@ -96,7 +96,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
         "number!");
 
   // solution output
-  if (artdyn.get<std::string>("SOLVESCATRA") == "yes")
+  if (artdyn.get<bool>("SOLVESCATRA"))
   {
     if (actdis->get_comm().MyPID() == 0)
     {
@@ -131,19 +131,12 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     }
   }
 
-  // flag for writing the hemodynamic physiological results
-  // arterytimeparams.set ("write stresses"
-  // ,Core::UTILS::IntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
-  //---------------------- A method to initialize the flow inside the
-  //                       arteries.
-  //  int init = Core::UTILS::IntegralValue<int> (artdyn,"INITIALFIELD");
-
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  Inpar::ArtDyn::TimeIntegrationScheme timintscheme =
-      Core::UTILS::integral_value<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+  auto timintscheme =
+      Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   // build art net time integrator
   Teuchos::RCP<Adapter::ArtNet> artnettimint = Arteries::UTILS::create_algorithm(
@@ -173,7 +166,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // assign materials
   // note: to be done after potential restart, as in read_restart()
   //       the secondary material is destroyed
-  if (artdyn.get<std::string>("SOLVESCATRA") == "yes")
+  if (artdyn.get<bool>("SOLVESCATRA"))
     Arteries::UTILS::assign_material_pointers(artery_disname, scatra_disname);
 
   if (!CoupledTo3D)

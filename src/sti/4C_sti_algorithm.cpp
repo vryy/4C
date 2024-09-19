@@ -39,8 +39,8 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       timer_(Teuchos::rcp(new Teuchos::Time("STI::ALG", true)))
 {
   // check input parameters for scatra and thermo fields
-  if (Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(
-          *fieldparameters_, "VELOCITYFIELD") != Inpar::ScaTra::velocity_zero)
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(*fieldparameters_, "VELOCITYFIELD") !=
+      Inpar::ScaTra::velocity_zero)
     FOUR_C_THROW("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
@@ -167,33 +167,36 @@ void STI::Algorithm::modify_field_parameters_for_thermo_field()
         "Initial field parameters not properly set in input file section SCALAR TRANSPORT "
         "DYNAMIC!");
   }
-  fieldparameters_->set<std::string>(
-      "INITIALFIELD", stiparameters_->get<std::string>("THERMO_INITIALFIELD"));
+  fieldparameters_->set<Inpar::ScaTra::InitialField>(
+      "INITIALFIELD", stiparameters_->get<Inpar::ScaTra::InitialField>("THERMO_INITIALFIELD"));
   fieldparameters_->set<int>("INITFUNCNO", stiparameters_->get<int>("THERMO_INITFUNCNO"));
 
   // perform additional manipulations associated with scatra-scatra interface mesh tying
   if (scatra_->scatra_field()->s2_i_meshtying())
   {
     // set flag for matrix type associated with thermo field
-    fieldparameters_->set<std::string>("MATRIXTYPE", "sparse");
+    fieldparameters_->set<Core::LinAlg::MatrixType>("MATRIXTYPE", Core::LinAlg::MatrixType::sparse);
 
     // set flag in thermo meshtying strategy for evaluation of interface linearizations and
     // residuals on slave side only
-    fieldparameters_->sublist("S2I COUPLING").set<std::string>("SLAVEONLY", "Yes");
+    fieldparameters_->sublist("S2I COUPLING").set<bool>("SLAVEONLY", true);
 
     // adapt type of meshtying method for thermo field
-    if (fieldparameters_->sublist("S2I COUPLING").get<std::string>("COUPLINGTYPE") ==
-        "StandardMortar")
+    if (fieldparameters_->sublist("S2I COUPLING").get<Inpar::S2I::CouplingType>("COUPLINGTYPE") ==
+        Inpar::S2I::CouplingType::coupling_mortar_standard)
     {
       fieldparameters_->sublist("S2I COUPLING")
-          .set<std::string>("COUPLINGTYPE", "CondensedMortar_Bubnov");
+          .set<Inpar::S2I::CouplingType>(
+              "COUPLINGTYPE", Inpar::S2I::CouplingType::coupling_mortar_condensed_bubnov);
     }
-    else if (fieldparameters_->sublist("S2I COUPLING").get<std::string>("COUPLINGTYPE") !=
-             "MatchingNodes")
+    else if (fieldparameters_->sublist("S2I COUPLING")
+                 .get<Inpar::S2I::CouplingType>("COUPLINGTYPE") !=
+             Inpar::S2I::CouplingType::coupling_matching_nodes)
       FOUR_C_THROW("Invalid type of scatra-scatra interface coupling!");
 
     // make sure that interface side underlying Lagrange multiplier definition is slave side
-    fieldparameters_->sublist("S2I COUPLING").set<std::string>("LMSIDE", "slave");
+    fieldparameters_->sublist("S2I COUPLING")
+        .set<Inpar::S2I::InterfaceSides>("LMSIDE", Inpar::S2I::InterfaceSides::side_slave);
   }
 }  // STI::Algorithm::modify_field_parameters_for_thermo_field()
 
@@ -278,7 +281,7 @@ void STI::Algorithm::time_loop()
     get_comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (Core::UTILS::integral_value<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
+    if (fieldparameters_->get<bool>("OUTPUTNONLINSOLVERSTATS"))
       scatra_->scatra_field()->output_nonlin_solver_stats(
           static_cast<int>(iter_), dtnonlinsolve, step(), get_comm());
 

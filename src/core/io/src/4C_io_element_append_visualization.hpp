@@ -105,7 +105,7 @@ namespace Core::IO
       std::vector<Core::LinAlg::SerialDenseVector> knots(true);
       const bool zero_size =
           Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discret, &ele, knots, weights);
-      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+      if (zero_size) FOUR_C_THROW("get_my_nurbs_knots_and_weights has to return a non zero size.");
 
       // Get the position of the control points in the reference configuration.
       Core::LinAlg::Matrix<number_of_output_points * dim_output, 1, double> pos_controlpoints;
@@ -288,7 +288,7 @@ namespace Core::IO
       std::vector<Core::LinAlg::SerialDenseVector> knots(true);
       const bool zero_size =
           Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discret, &ele, knots, weights);
-      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+      if (zero_size) FOUR_C_THROW("get_my_nurbs_knots_and_weights has to return a non zero size.");
 
       // Get the element result vector.
       Core::LinAlg::Matrix<number_of_output_points * result_num_dofs_per_node, 1, double>
@@ -374,7 +374,7 @@ namespace Core::IO
       std::vector<Core::LinAlg::SerialDenseVector> knots(true);
       const bool zero_size =
           Core::FE::Nurbs::get_my_nurbs_knots_and_weights(discret, &ele, knots, weights);
-      if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
+      if (zero_size) FOUR_C_THROW("get_my_nurbs_knots_and_weights has to return a non zero size.");
 
       // Get the element result vector.
       Core::LinAlg::Matrix<number_of_output_points * result_num_components_per_node, 1, double>

@@ -47,7 +47,7 @@ ScaTra::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<Core::FE::Discretization
 void ScaTra::ScaTraTimIntLoma::init()
 {
   // safety check
-  if (Core::UTILS::integral_value<int>(*lomaparams_, "SGS_MATERIAL_UPDATE"))
+  if (lomaparams_->get<bool>("SGS_MATERIAL_UPDATE"))
     FOUR_C_THROW(
         "Material update using subgrid-scale temperature currently not supported for loMa "
         "problems. Read remark in file 'scatra_ele_calc_loma.H'!");

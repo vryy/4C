@@ -3,13 +3,9 @@
 \brief
 \level 2
 
-
 */
+/*----------------------------------------------------------------------*/
 
-
-/*----------------------------------------------------------------------*
- | headers                                                  seitz 07/13 |
- *----------------------------------------------------------------------*/
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
@@ -294,10 +290,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "iostrain", Inpar::Solid::strain_none);
+        iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+        iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");

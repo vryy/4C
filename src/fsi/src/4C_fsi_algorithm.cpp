@@ -70,7 +70,8 @@ void FSI::Algorithm::setup()
   //       fsi_dc3D_part_ait_ga_ost_xwall
   //       fsi_ow3D_mtr_drt
   // build structure
-  if (sdyn.get<std::string>("INT_STRATEGY") == "Standard")
+  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY") ==
+      Inpar::Solid::IntegrationStrategy::int_standard)
   {
     adapterbase_ptr_ = Adapter::build_structure_algorithm(sdyn);
     adapterbase_ptr_->init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
@@ -86,8 +87,9 @@ void FSI::Algorithm::setup()
     if (structure_ == Teuchos::null)
       FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");
   }
-  else if (sdyn.get<std::string>("INT_STRATEGY") ==
-           "Old")  // todo this is the part that should be removed !
+  else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY") ==
+           Inpar::Solid::IntegrationStrategy::int_old)  // todo this is the part that should be
+                                                        // removed !
   {
     if (get_comm().MyPID() == 0)
       std::cout << "\n"

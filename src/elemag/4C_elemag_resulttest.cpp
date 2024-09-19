@@ -24,10 +24,8 @@ EleMag::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
     : Core::UTILS::ResultTest("ELECTROMAGNETIC")
 {
   dis_ = elemagalgo.discretization();
-  // mysol_ = Core::LinAlg::CreateVector(*(dis_->NodeRowMap()), true);
   error_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
   error_ = elemagalgo.compute_error();
-  // elemagalgo.NodalPressureField(mysol_);
 }
 
 /*----------------------------------------------------------------------*

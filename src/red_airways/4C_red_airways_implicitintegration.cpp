@@ -14,6 +14,7 @@
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
 #include "4C_global_data.hpp"
+#include "4C_inpar_bio.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
@@ -217,11 +218,6 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   residual_ = Core::LinAlg::create_vector(*dofrowmap, true);
   bc_residual_ = Core::LinAlg::create_vector(*dofcolmap, true);
 
-  // Volumetric flow rates at time n+1, n and n-1
-  //  qcnp_          = Core::LinAlg::CreateVector(*elementrowmap,true);
-  //  qcn_           = Core::LinAlg::CreateVector(*elementrowmap,true);
-  //  qcnm_          = Core::LinAlg::CreateVector(*elementrowmap,true);
-
   // Vectors for postprocessing, Element Node Ids, radii, generations, etc ...
   nodeIds_ = Core::LinAlg::create_vector(*dofrowmap, true);
   radii_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -262,11 +258,6 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     e2scatraO2np_ = Core::LinAlg::create_vector(*elementcolmap, true);
 
     cfls_ = Core::LinAlg::create_vector(*elementrowmap, true);
-
-    // junctionVolumeInMix_ = Core::LinAlg::CreateVector(*dofcolmap,true);
-    // junVolMix_Corrector_ = Core::LinAlg::CreateVector(*dofcolmap,true);
-    // jVDofRowMix_         = Core::LinAlg::CreateVector(*dofrowmap,true);
-    // diffusionArea_       = Core::LinAlg::CreateVector(*dofcolmap,true);
 
     junctionVolumeInMix_ = Core::LinAlg::create_vector(*dofrowmap, true);
     junVolMix_Corrector_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -702,13 +693,13 @@ void Airway::RedAirwayImplicitTimeInt::time_step(
   }
 
   // Get the solver type parameter: linear or nonlinear solver and solve current timestep
-  if (params_.get<std::string>("solver type") == "Nonlinear")
+  if (params_.get<RedAirwaysDyntype>("solver type") == RedAirwaysDyntype::nonlinear)
   {
     // Nonlinear solve of current timestep
     non_lin_solve(CouplingTo3DParams);
     if (!myrank_) std::cout << std::endl;
   }
-  else if (params_.get<std::string>("solver type") == "Linear")
+  else if (params_.get<RedAirwaysDyntype>("solver type") == RedAirwaysDyntype::linear)
   {
     // Linear solve of current timestep
     solve(CouplingTo3DParams);
@@ -716,7 +707,8 @@ void Airway::RedAirwayImplicitTimeInt::time_step(
   }
   else
   {
-    FOUR_C_THROW("[%s] is not a defined solver", (params_.get<std::string>("solver type")).c_str());
+    FOUR_C_THROW("[%s] is not a defined solver",
+        (Teuchos::getStringValue<RedAirwaysDyntype>(params_, "solver type").c_str()));
   }
 
   // Solve scatra if required
@@ -761,19 +753,20 @@ void Airway::RedAirwayImplicitTimeInt::integrate_step(
   }
 
   // Get the solver type parameter: linear or nonlinear solver and solve current timestep
-  if (params_.get<std::string>("solver type") == "Nonlinear")
+  if (params_.get<RedAirwaysDyntype>("solver type") == RedAirwaysDyntype::nonlinear)
   {
     non_lin_solve(CouplingTo3DParams);
     if (!myrank_) std::cout << std::endl;
   }
-  else if (params_.get<std::string>("solver type") == "Linear")
+  else if (params_.get<RedAirwaysDyntype>("solver type") == RedAirwaysDyntype::linear)
   {
     solve(CouplingTo3DParams);
     if (!myrank_) std::cout << std::endl << std::endl;
   }
   else
   {
-    FOUR_C_THROW("[%s] is not a defined solver", (params_.get<std::string>("solver type")).c_str());
+    FOUR_C_THROW("[%s] is not a defined solver",
+        (Teuchos::getStringValue<RedAirwaysDyntype>(params_, "solver type").c_str()));
   }
 
 }  // RedAirwayImplicitTimeInt::IntegrateStep
@@ -1121,7 +1114,8 @@ void Airway::RedAirwayImplicitTimeInt::solve(
     eleparams.set("action", "calc_flow_rates");
 
     // Set solution type
-    eleparams.set("solver type", params_.get<std::string>("solver type"));
+    eleparams.set(
+        "solver type", Teuchos::getIntegralValue<RedAirwaysDyntype>(params_, "solver type"));
 
     // Set vector values needed by elements
     discret_->clear_state();

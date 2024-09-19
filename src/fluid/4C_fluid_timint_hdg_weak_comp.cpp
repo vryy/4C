@@ -315,7 +315,7 @@ void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Epetra_Vector>
 {
   // call element routine to update local solution
   Teuchos::ParameterList params;
-  params.set<int>("action", FLD::update_local_solution);
+  params.set<FLD::Action>("action", FLD::update_local_solution);
 
   // location array
   Core::Elements::Element::LocationArray la(2);
@@ -429,9 +429,9 @@ void FLD::TimIntHDGWeakComp::set_initial_flow_field(
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
   Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
-  initParams.set<int>("action", FLD::project_fluid_field);
+  initParams.set<FLD::Action>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);
-  initParams.set<int>("initfield", initfield);
+  initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
 
   // loop over all elements on the processor
   Core::Elements::Element::LocationArray la(2);
@@ -488,8 +488,8 @@ Teuchos::RCP<std::vector<double>>
 FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
-  Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -512,9 +512,9 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       Teuchos::ParameterList eleparams;
 
       // action for elements
-      eleparams.set<int>("action", FLD::calc_fluid_error);
-      eleparams.set<int>("Physical Type", physicaltype_);
-      eleparams.set<int>("calculate error", calcerr);
+      eleparams.set<FLD::Action>("action", FLD::calc_fluid_error);
+      eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
+      eleparams.set<Inpar::FLUID::CalcError>("calculate error", calcerr);
 
       // get function number
       const int errorfunctno = params_->get<int>("error function number", -1);
@@ -667,7 +667,7 @@ namespace
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
-    params.set<int>("action", FLD::interpolate_hdg_to_node);
+    params.set<FLD::Action>("action", FLD::interpolate_hdg_to_node);
     dis.set_state(1, "intvelnp", interiorValues);
     dis.set_state(0, "velnp", traceValues);
     std::vector<int> dummy;

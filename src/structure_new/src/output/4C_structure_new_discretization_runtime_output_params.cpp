@@ -43,22 +43,14 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
   issetup_ = false;
 
   // initialize the parameter values
-  output_displacement_state_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
-  output_velocity_state_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "VELOCITY");
-  output_element_owner_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
-  output_element_gid_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
-  output_element_material_id_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_MAT_ID");
-  output_element_ghosting_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GHOSTING");
-  output_node_gid_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
-  output_stress_strain_ =
-      Core::UTILS::integral_value<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
+  output_displacement_state_ = IO_vtk_structure_structure_paramslist.get<bool>("DISPLACEMENT");
+  output_velocity_state_ = IO_vtk_structure_structure_paramslist.get<bool>("VELOCITY");
+  output_element_owner_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_OWNER");
+  output_element_gid_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_GID");
+  output_element_material_id_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_MAT_ID");
+  output_element_ghosting_ = IO_vtk_structure_structure_paramslist.get<bool>("ELEMENT_GHOSTING");
+  output_node_gid_ = IO_vtk_structure_structure_paramslist.get<bool>("NODE_GID");
+  output_stress_strain_ = IO_vtk_structure_structure_paramslist.get<bool>("STRESS_STRAIN");
   gauss_point_data_output_type_ = Teuchos::getIntegralValue<Inpar::Solid::GaussPointDataOutputType>(
       IO_vtk_structure_structure_paramslist, "GAUSS_POINT_DATA_OUTPUT_TYPE");
 
@@ -67,10 +59,10 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
     // If stress / strain data should be output, check that the relevant parameters in the --IO
     // section are set.
     const Teuchos::ParameterList& io_parameter_list = Global::Problem::instance()->io_params();
-    Inpar::Solid::StressType io_stress =
-        Core::UTILS::integral_value<Inpar::Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
-    Inpar::Solid::StrainType io_strain =
-        Core::UTILS::integral_value<Inpar::Solid::StrainType>(io_parameter_list, "STRUCT_STRAIN");
+    auto io_stress =
+        Teuchos::getIntegralValue<Inpar::Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
+    auto io_strain =
+        Teuchos::getIntegralValue<Inpar::Solid::StrainType>(io_parameter_list, "STRUCT_STRAIN");
     if (io_stress == Inpar::Solid::stress_none and io_strain == Inpar::Solid::strain_none)
       FOUR_C_THROW(
           "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "

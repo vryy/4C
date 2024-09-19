@@ -197,11 +197,9 @@ bool CONTACT::LineToSurfaceCoupling3d::check_orientation()
  *----------------------------------------------------------------------*/
 void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
 {
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
-  Inpar::Mortar::ConsistentDualType consistent =
-      Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
-          imortar_, "LM_DUAL_CONSISTENT");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+  auto consistent =
+      Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
 
   if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin)
     return;
@@ -417,8 +415,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
 void CONTACT::LineToSurfaceCoupling3d::integrate_line()
 {
   // get solution strategy
-  Inpar::CONTACT::SolvingStrategy sol =
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(imortar_, "STRATEGY");
+  auto sol = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(imortar_, "STRATEGY");
 
   // create integrator object
   Teuchos::RCP<CONTACT::Integrator> integrator =
@@ -2386,8 +2383,8 @@ void CONTACT::LineToLineCouplingPoint3d::evaluate_terms(double* sxi, double* mxi
     Core::Gen::Pairedvector<int, double>& dsxi, Core::Gen::Pairedvector<int, double>& dmxi)
 {
   bool friction = false;
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   if (ftype != Inpar::CONTACT::friction_none) friction = true;
 
   // get slave element nodes themselves for normal evaluation

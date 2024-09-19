@@ -23,6 +23,7 @@
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_fem_geometry_searchtree.hpp"
 #include "4C_fem_geometry_searchtree_service.hpp"
+#include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_immersed_base.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fluid.hpp"
@@ -213,7 +214,7 @@ namespace Immersed
         Teuchos::RCP<Core::FE::Discretization> dis, Core::FE::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
-        std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action,
         bool evaluateonlyboundary = false);
 
 
@@ -227,7 +228,7 @@ namespace Immersed
     void evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::FE::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
-        std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action);
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, const FLD::Action action);
 
 
     /*!
@@ -363,8 +364,8 @@ namespace Immersed
   template <Core::FE::CellType sourcedistype, Core::FE::CellType targetdistype>
   int interpolate_to_immersed_int_point(const Teuchos::RCP<Core::FE::Discretization> sourcedis,
       const Teuchos::RCP<Core::FE::Discretization> targetdis, Core::Elements::Element& targetele,
-      const std::vector<double>& targetxi, const std::vector<double>& targetedisp, int action,
-      std::vector<double>& targetdata)
+      const std::vector<double>& targetxi, const std::vector<double>& targetedisp,
+      const FLD::Action action, std::vector<double>& targetdata)
   {
     //////////////////////////////////////////////////////////////////////////////////
     ///////
@@ -396,8 +397,7 @@ namespace Immersed
     Global::Problem* problem = Global::Problem::instance();
 
     // true in case we have to deal wit ha deformable background mesh
-    static int isALE =
-        (problem->immersed_method_params().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
+    const bool isALE = problem->immersed_method_params().get<bool>("DEFORM_BACKGROUND_MESH");
 
     // dimension of global problem
     const int globdim = problem->n_dim();
@@ -738,25 +738,10 @@ namespace Immersed
               // count++;
             }  // if on element edge
 
-
-            // evaluate and perform action handed in to this function
-            if (action == 81311)
-            {  // experimental pre cmbe
-              params.set<std::string>("action", "interpolate_porosity_to_given_point");
-            }
-            else
-              params.set<int>("action", action);
-            params.set<int>("Physical Type", Inpar::FLUID::poro_p1);
+            params.set<FLD::Action>("action", action);
+            params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
             if (validsource)
             {
-              //              std::cout<<"\n ---------- \n PROC "<<comm.MyPID()<<" ; sourcele :
-              //              "<<sourceele->Id()<<std::endl; std::cout<<"POINT: ["<<xvec[0]<<"
-              //              "<<xvec[1]<<" "<<xvec[2]<<"]"<<std::endl; std::cout<<"normal:
-              //              ["<<normal_vec[0]<<" "<<normal_vec[1]<<"
-              //              "<<normal_vec[2]<<"]"<<std::endl; std::cout<<"vector:
-              //              "<<*vector<<std::endl; std::cout<<"scalarproduct:
-              //              "<<scalarproduct<<std::endl;
-
               // fill locationarray
               Core::Elements::Element::LocationArray sourcela(1);
               sourceele->location_vector(*sourcedis, sourcela, false);
@@ -770,19 +755,10 @@ namespace Immersed
               // only possible and reasonable if current element is fluid element
               if (immersedele != Teuchos::null)
               {
-                // std::cout<<"ID="<<immersedele->Id()<<"
-                // scalarprod="<<std::setprecision(10)<<scalarproduct<<std::endl;
                 immersedele->set_boundary_is_immersed(2);
                 immersedele->construct_element_rcp(
                     problem->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND"));
               }
-
-              // DEBUG output
-              // std::cout<<"Tgt. Ele: "<<targetele.Id()<<" lies in src. ele:
-              // "<<curr->second->Id()<<" at  pos. ["<<std::setprecision(5)<<xvec[0]<<"
-              // "<<xvec[1]<<"
-              // "<<xvec[2]<<"]"<<std::endl;
-
               break;  // break loop over all source eles
             }
             else
@@ -1238,8 +1214,7 @@ namespace Immersed
     Global::Problem* problem = Global::Problem::instance();
 
     // true in case we have to deal wit ha deformable background mesh
-    static int isALE =
-        (problem->immersed_method_params().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
+    const bool isALE = problem->immersed_method_params().get<bool>("DEFORM_BACKGROUND_MESH");
 
     // dimension of global problem
     const int globdim = problem->n_dim();
@@ -1496,7 +1471,7 @@ namespace Immersed
           if (converged == false)
           {
             std::cout << "WARNING!! GlobalToCurrentLocal() did not converge in "
-                         "FindClosestStructureSurfacePoint( \n"
+                         "find_closest_structure_surface_point( \n"
                          "xi="
                       << fluid_xi << std::endl;
             fluid_xi(0) = 2.0;

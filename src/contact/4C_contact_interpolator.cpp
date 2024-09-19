@@ -31,33 +31,32 @@ FOUR_C_NAMESPACE_OPEN
 NTS::Interpolator::Interpolator(Teuchos::ParameterList& params, const int& dim)
     : iparams_(params),
       dim_(dim),
-      pwslip_(Core::UTILS::integral_value<int>(iparams_, "GP_SLIP_INCR")),
-      wearlaw_(Core::UTILS::integral_value<Inpar::Wear::WearLaw>(iparams_, "WEARLAW")),
+      pwslip_(iparams_.get<bool>("GP_SLIP_INCR")),
+      wearlaw_(Teuchos::getIntegralValue<Inpar::Wear::WearLaw>(iparams_, "WEARLAW")),
       wearimpl_(false),
       wearside_(Inpar::Wear::wear_slave),
       weartype_(Inpar::Wear::wear_intstate),
       wearshapefcn_(Inpar::Wear::wear_shape_standard),
       wearcoeff_(-1.0),
       wearcoeffm_(-1.0),
-      sswear_(Core::UTILS::integral_value<int>(iparams_, "SSWEAR")),
+      sswear_(iparams_.get<bool>("SSWEAR")),
       ssslip_(iparams_.get<double>("SSSLIP"))
 {
   // wear specific
   if (wearlaw_ != Inpar::Wear::wear_none)
   {
     // wear time integration
-    Inpar::Wear::WearTimInt wtimint =
-        Core::UTILS::integral_value<Inpar::Wear::WearTimInt>(params, "WEARTIMINT");
+    auto wtimint = Teuchos::getIntegralValue<Inpar::Wear::WearTimInt>(params, "WEARTIMINT");
     if (wtimint == Inpar::Wear::wear_impl) wearimpl_ = true;
 
     // wear surface
-    wearside_ = Core::UTILS::integral_value<Inpar::Wear::WearSide>(iparams_, "BOTH_SIDED_WEAR");
+    wearside_ = Teuchos::getIntegralValue<Inpar::Wear::WearSide>(iparams_, "BOTH_SIDED_WEAR");
 
     // wear algorithm
-    weartype_ = Core::UTILS::integral_value<Inpar::Wear::WearType>(iparams_, "WEARTYPE");
+    weartype_ = Teuchos::getIntegralValue<Inpar::Wear::WearType>(iparams_, "WEARTYPE");
 
     // wear shape function
-    wearshapefcn_ = Core::UTILS::integral_value<Inpar::Wear::WearShape>(iparams_, "WEAR_SHAPEFCN");
+    wearshapefcn_ = Teuchos::getIntegralValue<Inpar::Wear::WearShape>(iparams_, "WEAR_SHAPEFCN");
 
     // wear coefficient
     wearcoeff_ = iparams_.get<double>("WEARCOEFF");

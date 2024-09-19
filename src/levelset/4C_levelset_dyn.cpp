@@ -50,8 +50,8 @@ void levelset_dyn(int restart)
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // check velocity field
-  const Inpar::ScaTra::VelocityField veltype =
-      Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+  const auto veltype =
+      Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
   if (veltype != Inpar::ScaTra::velocity_function)
     FOUR_C_THROW(
         "Other velocity fields than a field given by a function not yet supported for level-set "

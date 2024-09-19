@@ -153,7 +153,6 @@ void Discret::ELEMENTS::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& 
 }
 
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuffer& buffer)
@@ -191,7 +190,6 @@ bool Discret::ELEMENTS::FluidHDGWeakComp::read_element(const std::string& eletyp
 }
 
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params,
@@ -201,7 +199,7 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<Core::Mat::Material> mat = material();

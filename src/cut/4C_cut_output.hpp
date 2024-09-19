@@ -272,23 +272,6 @@ namespace Cut
     void gmsh_cut_pair_dump(std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id,
         const std::string& suffix);
 
-    // void gmsh_object_dump2(std::ofstream & file, Cut::Facet* f)
-    //{
-    //  return;
-    //};//GmshFacetDump(file,f);}
-
-    /*!
-     \brief Writes the whole container into a gmsh file!
-     */
-    // template<class T>
-    // void GmshPrintContainer(std::ofstream & file, const std::string & section, std::vector<T>
-    // container)
-    //{
-    //  GmshNewSection(file, section);
-    //  for (typename std::vector<T>::iterator t = container.begin(); t!=container.end(); ++t)
-    //    //gmsh_object_dump( file, (T)(*t));
-    //  GmshEndSection(file);
-    //}
     /*!
      \brief Write Coordinates in Gmsh file (for internal use)
      //to_local ... transform to local coordinates of the ele?

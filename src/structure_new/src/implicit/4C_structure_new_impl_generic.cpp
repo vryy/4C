@@ -12,7 +12,6 @@
 #include "4C_structure_new_impl_generic.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_io_pstream.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
@@ -20,6 +19,8 @@
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
+
+#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -87,12 +88,12 @@ Teuchos::ParameterList& Solid::IMPLICIT::Generic::get_nox_params()
 double Solid::IMPLICIT::Generic::get_default_step_length() const
 {
   const Teuchos::ParameterList& p_nox = tim_int().get_data_sdyn().get_nox_params();
-  const std::string& nln_solver = p_nox.get<std::string>("Nonlinear Solver");
+  const std::string nln_solver = p_nox.get<std::string>("Nonlinear Solver");
   // The pseudo transient implementation holds also a line search object!
   if (nln_solver == "Line Search Based" or nln_solver == "Pseudo Transient")
   {
     const Teuchos::ParameterList& p_ls = p_nox.sublist("Line Search");
-    const std::string& method = p_ls.get<std::string>("Method");
+    const std::string method = p_ls.get<std::string>("Method");
     const Teuchos::ParameterList& p_method = p_ls.sublist(method);
     if (p_method.isParameter("Default Step")) return p_method.get<double>("Default Step");
   }

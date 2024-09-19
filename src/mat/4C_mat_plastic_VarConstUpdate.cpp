@@ -414,66 +414,6 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
 
       beta.update(1., beta_incr, 1.);
 
-      //      // Backtracking Line Search Method
-      //      double damping_fac=1.;
-      //
-      //      Core::LinAlg::Matrix<5,1> beta_test(beta);
-      //      beta_test.update(damping_fac,beta_incr,1.);
-      //
-      //      Core::LinAlg::Matrix<3,3> dLp_test;
-      //      dLp_test(0,0) = beta_test(0);
-      //      dLp_test(1,1) = beta_test(1);
-      //      dLp_test(2,2) = -beta_test(0)-beta_test(1);
-      //      dLp_test(0,1) = dLp_test(1,0) = beta_test(2);
-      //      dLp_test(2,1) = dLp_test(1,2) = beta_test(3);
-      //      dLp_test(0,2) = dLp_test(2,0) = beta_test(4);
-      //
-      //      Core::LinAlg::Matrix<5,1> rhs_test;
-      //      Core::LinAlg::Matrix<5,1> rhsElast_test;
-      //
-      //      Core::LinAlg::Matrix<6,6> dummytest;
-      //      Core::LinAlg::Matrix<6,1> dummyeetest;
-      //      EvaluateRHS(gp,dLp_test,*defgrd,dummyeetest,rhs_test,rhsElast_test,dummytest,params,eleGID);
-      //
-      //      double criteria= rhs_test.Norm2() - rhs.Norm2();
-      //
-      //      if (criteria <= 0.)
-      //        beta = beta_test;
-      //      else
-      //      {
-      //        double new_criteria = 1.0;
-      //        int dampIter = 0;
-      //        int maxDampIter = 20;
-      //        Core::LinAlg::Matrix<5,1> beta_corr(beta);
-      //        while (( new_criteria > 0. )&& (dampIter<maxDampIter))
-      //        {
-      //          damping_fac *= 0.5;
-      //          beta_corr=beta;
-      //          beta_corr.update(damping_fac,beta_incr,1.);
-      //
-      //          Core::LinAlg::Matrix<3,3> dLp_corr;
-      //          dLp_corr(0,0) = beta_corr(0);
-      //          dLp_corr(1,1) = beta_corr(1);
-      //          dLp_corr(2,2) = -beta_corr(0)-beta_corr(1);
-      //          dLp_corr(0,1) = dLp_corr(1,0) = beta_corr(2);
-      //          dLp_corr(2,1) = dLp_corr(1,2) = beta_corr(3);
-      //          dLp_corr(0,2) = dLp_corr(2,0) = beta_corr(4);
-      //
-      //          Core::LinAlg::Matrix<5,1> rhs_corr;
-      //          Core::LinAlg::Matrix<5,1> rhsElast_corr;
-      //          Core::LinAlg::Matrix<6,6> dummy;
-      //          Core::LinAlg::Matrix<6,1> dummy1;
-      //          EvaluateRHS(gp,dLp_corr,*defgrd,dummy1,rhs_corr,rhsElast_corr,dummy,params,eleGID);
-      //
-      //          new_criteria = rhs_corr.Norm2() - rhs.Norm2();
-      //
-      //          dampIter++;
-      //        }
-      //        if (dampIter==maxDampIter)
-      //          beta.update(1.,beta_incr,1.);
-      //        else
-      //          beta = beta_corr;
-      //      }
     } while (!converged && (iterator < maxiter));
 
     if (!converged)

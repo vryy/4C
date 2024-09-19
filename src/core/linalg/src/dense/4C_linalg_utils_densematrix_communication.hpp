@@ -557,7 +557,7 @@ namespace Core::LinAlg
    filter in order to import all values stored in a distributed Epetra_Vector
    to processor 0 for writing them into file.
 
-   \note see also documentation for the usual AllreduceEMap methods
+   \note see also documentation for the usual allreduce_e_map methods
 
    \param emap (i) any distributed Epetra_Map
    \param pid (i)  processor id where you want to have the allreduced map

@@ -77,8 +77,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::init()
         beam_to_solid_contact_params_list.get<double>("ROTATION_COUPLING_PENALTY_PARAMETER");
 
     // If the restart configuration should be coupled.
-    couple_restart_state_ = (bool)Core::UTILS::integral_value<int>(
-        beam_to_solid_contact_params_list, "COUPLE_RESTART_STATE");
+    couple_restart_state_ = beam_to_solid_contact_params_list.get<bool>("COUPLE_RESTART_STATE");
   }
 
   // Setup the output parameter object.

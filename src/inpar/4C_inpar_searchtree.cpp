@@ -23,9 +23,9 @@ void Inpar::Geo::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE", false, "");
 
-  setStringToIntegralParameter<int>("TREE_TYPE", "notree", "set tree type",
+  setStringToIntegralParameter<Inpar::Geo::TreeType>("TREE_TYPE", "notree", "set tree type",
       tuple<std::string>("notree", "octree3d", "quadtree3d", "quadtree2d"),
-      tuple<int>(
+      tuple<Inpar::Geo::TreeType>(
           Inpar::Geo::Notree, Inpar::Geo::Octree3D, Inpar::Geo::Quadtree3D, Inpar::Geo::Quadtree2D),
       &search_tree);
 }

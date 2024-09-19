@@ -24,11 +24,9 @@ ParticleInteraction::DEMAdhesionLawBase::DEMAdhesionLawBase(const Teuchos::Param
       adhesion_surface_energy_factor_(params_dem_.get<double>("ADHESION_SURFACE_ENERGY_FACTOR")),
       adhesion_max_contact_pressure_(params_dem_.get<double>("ADHESION_MAX_CONTACT_PRESSURE")),
       adhesion_max_contact_force_(params_dem_.get<double>("ADHESION_MAX_CONTACT_FORCE")),
-      adhesion_use_max_contact_force_(
-          Core::UTILS::integral_value<int>(params_dem_, "ADHESION_USE_MAX_CONTACT_FORCE")),
+      adhesion_use_max_contact_force_(params_dem_.get<bool>("ADHESION_USE_MAX_CONTACT_FORCE")),
       adhesion_max_contact_force_fac_(0.0),
-      adhesion_vdW_curve_shift_(
-          Core::UTILS::integral_value<int>(params_dem_, "ADHESION_VDW_CURVE_SHIFT")),
+      adhesion_vdW_curve_shift_(params_dem_.get<bool>("ADHESION_VDW_CURVE_SHIFT")),
       inv_k_normal_(0.0)
 {
   // empty constructor

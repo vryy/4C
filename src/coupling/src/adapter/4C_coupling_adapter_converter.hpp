@@ -142,7 +142,7 @@ namespace Coupling::Adapter
               by the Core::LinAlg::SparseMatrix object.
 
 
-  \sa MatrixColTransform, MatrixRowTransform, matrix_row_col_transform
+  \sa MatrixColTransform, MatrixRowTransform, MatrixRowColTransform
   \author kronbichler
   \date 11/15
                               */
@@ -240,7 +240,7 @@ namespace Coupling::Adapter
   matrix row map.
 
     The operator is meant to be usable on its own or as part of the composed
-    matrix_row_col_transform operator.
+    MatrixRowColTransform operator.
 
     \note The implementation is done by MatrixLogicalSplitAndTransform
 
@@ -251,7 +251,7 @@ namespace Coupling::Adapter
     and this can reset the filled state if the matrix graph is not preserved
     by the Core::LinAlg::SparseMatrix object.
 
-    \sa MatrixLogicalSplitAndTransform, MatrixColTransform, matrix_row_col_transform
+    \sa MatrixLogicalSplitAndTransform, MatrixColTransform, MatrixRowColTransform
     \author u.kue
     \date 05/08
    */
@@ -304,7 +304,7 @@ namespace Coupling::Adapter
     by the Core::LinAlg::SparseMatrix object.
 
 
-    \sa MatrixLogicalSplitAndTransform, MatrixRowTransform, matrix_row_col_transform
+    \sa MatrixLogicalSplitAndTransform, MatrixRowTransform, MatrixRowColTransform
     \author u.kue
     \date 05/08
    */

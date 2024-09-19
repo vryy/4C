@@ -61,7 +61,7 @@ void Solid::ModelEvaluator::BrownianDynData::init(
 
   // the way how damping coefficient values for beams are specified
   beam_damping_coeff_specified_via_ =
-      Core::UTILS::integral_value<Inpar::BrownianDynamics::BeamDampingCoefficientSpecificationType>(
+      Teuchos::getIntegralValue<Inpar::BrownianDynamics::BeamDampingCoefficientSpecificationType>(
           browndyn_params_list, "BEAMS_DAMPING_COEFF_SPECIFIED_VIA");
 
   // if input file is chosen, get the required values and check them for sanity

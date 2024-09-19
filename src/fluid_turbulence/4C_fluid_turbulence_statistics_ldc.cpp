@@ -37,8 +37,8 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
   int numdim = params_.get<int>("number of velocity degrees of freedom");
   if (numdim != 3) FOUR_C_THROW("Evaluation of turbulence statistics only for 3d flow problems!");
 
-  Inpar::FLUID::PhysicalType physicaltype =
-      Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
+  const auto physicaltype =
+      Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type");
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors

@@ -85,7 +85,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service(
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   calcoldandnewpsi_ = false;
-  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
   if (act == FLD::xwall_l2_projection) calcoldandnewpsi_ = true;
   get_ele_properties(ele, discretization, lm, params, mat);
 
@@ -153,7 +153,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_w
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   switch (act)
   {

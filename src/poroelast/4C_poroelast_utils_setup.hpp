@@ -36,7 +36,7 @@ namespace PoroElast
       // access the problem-specific parameter list
       const Teuchos::ParameterList& porodyn =
           Global::Problem::instance()->poroelast_dynamic_params();
-      const bool matchinggrid = Core::UTILS::integral_value<bool>(porodyn, "MATCHINGGRID");
+      const bool matchinggrid = porodyn.get<bool>("MATCHINGGRID");
 
       // access the structure discretization, make sure it is filled
       Teuchos::RCP<Core::FE::Discretization> structdis;

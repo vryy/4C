@@ -26,7 +26,7 @@ namespace Global
   void read_micro_fields(Global::Problem& problem, Core::IO::DatFileReader& reader);
 
   /// set up supporting processors for micro-scale discretizations
-  void read_microfields_n_psupport(Global::Problem& problem);
+  void read_microfields_np_support(Global::Problem& problem);
 
   /// read global parameters
   void read_parameter(Global::Problem& problem, Core::IO::DatFileReader& reader);

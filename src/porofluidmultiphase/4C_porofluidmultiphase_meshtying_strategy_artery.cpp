@@ -9,7 +9,6 @@
 
 #include "4C_porofluidmultiphase_meshtying_strategy_artery.hpp"
 
-#include "4C_adapter_art_net.hpp"
 #include "4C_art_net_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_bio.hpp"
@@ -41,8 +40,8 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 
   if (!arterydis_->filled()) arterydis_->fill_complete();
 
-  Inpar::ArtDyn::TimeIntegrationScheme timintscheme =
-      Core::UTILS::integral_value<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
+  auto timintscheme =
+      Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   Teuchos::RCP<Core::IO::DiscretizationWriter> artery_output = arterydis_->writer();
   artery_output->write_mesh(0, 0.0);
@@ -66,13 +65,13 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
   }
 
-  const bool evaluate_on_lateral_surface = Core::UTILS::integral_value<int>(
-      poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
+  const bool evaluate_on_lateral_surface =
+      poroparams.sublist("ARTERY COUPLING").get<bool>("LATERAL_SURFACE_COUPLING");
 
   const std::string couplingcondname = std::invoke(
       [&]()
       {
-        if (Core::UTILS::integral_value<
+        if (Teuchos::getIntegralValue<
                 Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
                 Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params().sublist(
                     "ARTERY COUPLING"),

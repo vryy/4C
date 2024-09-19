@@ -238,8 +238,7 @@ void Discret::ELEMENTS::UTILS::evaluate_inverse_jacobian(
 void Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
     const Teuchos::ParameterList& sdyn, const std::string& eletype)
 {
-  bool doFDCheck = static_cast<bool>(Core::UTILS::integral_value<int>(sdyn, "MATERIALTANGENT"));
-  if (doFDCheck)
+  if (sdyn.get<std::string>("MATERIALTANGENT") != "analytical")
   {
     FOUR_C_THROW(
         "Approximation of material tangent by finite differences not implemented by %s elements. "

@@ -853,9 +853,9 @@ void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* st
     // get theta of global time integration scheme to use it here
     // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
     // 09/14)
-    std::string dyntype =
-        Global::Problem::instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
-    if (dyntype == "OneStepTheta")
+    const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
+        Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYP");
+    if (dyntype == Inpar::Solid::DynamicType::dyna_onesteptheta)
       theta = Global::Problem::instance()
                   ->structural_dynamic_params()
                   .sublist("ONESTEPTHETA")
@@ -1061,9 +1061,9 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
       // get theta of global time integration scheme to use it here
       // if global time integration scheme is not ONESTEPTHETA, theta is by default = 0.5 (abirzle
       // 09/14)
-      std::string dyntype =
-          Global::Problem::instance()->structural_dynamic_params().get<std::string>("DYNAMICTYP");
-      if (dyntype == "OneStepTheta")
+      const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
+          Global::Problem::instance()->structural_dynamic_params(), "DYNAMICTYP");
+      if (dyntype == Inpar::Solid::DynamicType::dyna_onesteptheta)
         theta = Global::Problem::instance()
                     ->structural_dynamic_params()
                     .sublist("ONESTEPTHETA")

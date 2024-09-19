@@ -47,10 +47,11 @@ void Inpar::POROMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Parameter
 
 
   // Coupling strategy for solvers
-  setStringToIntegralParameter<int>("COUPALGO", "twoway_partitioned",
+  setStringToIntegralParameter<SolutionSchemeOverFields>("COUPALGO", "twoway_partitioned",
       "Coupling strategies for poro multiphase solvers",
       tuple<std::string>("twoway_partitioned", "twoway_monolithic"),
-      tuple<int>(solscheme_twoway_partitioned, solscheme_twoway_monolithic), &poromultiphasedyn);
+      tuple<SolutionSchemeOverFields>(solscheme_twoway_partitioned, solscheme_twoway_monolithic),
+      &poromultiphasedyn);
 
   // coupling with 1D artery network active
   Core::UTILS::bool_parameter(
@@ -72,24 +73,24 @@ void Inpar::POROMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Parameter
       "number of linear solver used for poroelasticity problems", &poromultiphasedynmono);
 
   // parameters for finite difference check
-  setStringToIntegralParameter<int>("FDCHECK", "none",
+  setStringToIntegralParameter<FdCheck>("FDCHECK", "none",
       "flag for finite difference check: none or global",
       tuple<std::string>("none",
           "global"),  // perform finite difference check on time integrator level
-      tuple<int>(fdcheck_none, fdcheck_global), &poromultiphasedynmono);
+      tuple<FdCheck>(fdcheck_none, fdcheck_global), &poromultiphasedynmono);
 
-  setStringToIntegralParameter<int>("VECTORNORM_RESF", "L2",
+  setStringToIntegralParameter<VectorNorm>("VECTORNORM_RESF", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::POROMULTIPHASE::norm_l1, Inpar::POROMULTIPHASE::norm_l1_scaled,
+      tuple<VectorNorm>(Inpar::POROMULTIPHASE::norm_l1, Inpar::POROMULTIPHASE::norm_l1_scaled,
           Inpar::POROMULTIPHASE::norm_l2, Inpar::POROMULTIPHASE::norm_rms,
           Inpar::POROMULTIPHASE::norm_inf),
       &poromultiphasedynmono);
 
-  setStringToIntegralParameter<int>("VECTORNORM_INC", "L2",
+  setStringToIntegralParameter<VectorNorm>("VECTORNORM_INC", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::POROMULTIPHASE::norm_l1, Inpar::POROMULTIPHASE::norm_l1_scaled,
+      tuple<VectorNorm>(Inpar::POROMULTIPHASE::norm_l1, Inpar::POROMULTIPHASE::norm_l1_scaled,
           Inpar::POROMULTIPHASE::norm_l2, Inpar::POROMULTIPHASE::norm_rms,
           Inpar::POROMULTIPHASE::norm_inf),
       &poromultiphasedynmono);
@@ -127,9 +128,10 @@ void Inpar::POROMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Parameter
       "tolerance for convergence check of outer iteration", &poromultiphasedynpart);
 
   // flag for relaxation of partitioned scheme
-  setStringToIntegralParameter<int>("RELAXATION", "none",
+  setStringToIntegralParameter<RelaxationMethods>("RELAXATION", "none",
       "flag for relaxation of partitioned scheme", tuple<std::string>("none", "Constant", "Aitken"),
-      tuple<int>(relaxation_none, relaxation_constant, relaxation_aitken), &poromultiphasedynpart);
+      tuple<RelaxationMethods>(relaxation_none, relaxation_constant, relaxation_aitken),
+      &poromultiphasedynpart);
 
   // parameters for relaxation of partitioned coupling
   Core::UTILS::double_parameter(

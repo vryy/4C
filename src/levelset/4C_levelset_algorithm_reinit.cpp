@@ -73,7 +73,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
       "action", ScaTra::Action::set_lsreinit_scatra_parameter, eleparams);
 
   // reinitialization equation is given in convective form
-  eleparams.set<int>("convform", Inpar::ScaTra::convform_convective);
+  eleparams.set<Inpar::ScaTra::ConvForm>("convform", Inpar::ScaTra::convform_convective);
 
   // no ALE intended
   eleparams.set("isale", false);
@@ -82,7 +82,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
   eleparams.sublist("stabilization") = params_->sublist("STABILIZATION");
 
   // set flag for writing the flux vector fields
-  eleparams.set<int>("calcflux_domain", calcflux_domain_);
+  eleparams.set<Inpar::ScaTra::FluxType>("calcflux_domain", calcflux_domain_);
 
   // set vector containing IDs of scalars for which flux vectors are calculated
   eleparams.set<Teuchos::RCP<std::vector<int>>>("writefluxids", writefluxids_);
@@ -93,27 +93,31 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
   // turn off stabilization and artificial diffusivity when calculating initial time derivative
   if (calcinitialtimederivative)
   {
-    eleparams.sublist("REINITIALIZATION").set<std::string>("STABTYPEREINIT", "no_stabilization");
-    eleparams.sublist("REINITIALIZATION").set<std::string>("ARTDIFFREINIT", "no");
+    eleparams.sublist("REINITIALIZATION")
+        .set<Inpar::ScaTra::StabType>(
+            "STABTYPEREINIT", Inpar::ScaTra::StabType::stabtype_no_stabilization);
+    eleparams.sublist("REINITIALIZATION").set<bool>("ARTDIFFREINIT", false);
   }
 
   // parameters for finite difference check
-  eleparams.set<int>("fdcheck", fdcheck_);
+  eleparams.set<Inpar::ScaTra::FdCheck>("fdcheck", fdcheck_);
   eleparams.set<double>("fdcheckeps", fdcheckeps_);
   eleparams.set<double>("fdchecktol", fdchecktol_);
 
   // overwrite some values in general stabilization parameter list by modified values in levelset
   // reinitialization parameter list
   eleparams.sublist("stabilization")
-      .set<std::string>("DEFINITION_TAU",
-          eleparams.sublist("REINITIALIZATION").get<std::string>("DEFINITION_TAU_REINIT"));
+      .set<Inpar::ScaTra::TauType>(
+          "DEFINITION_TAU", eleparams.sublist("REINITIALIZATION")
+                                .get<Inpar::ScaTra::TauType>("DEFINITION_TAU_REINIT"));
   eleparams.sublist("stabilization")
-      .set<std::string>(
-          "STABTYPE", eleparams.sublist("REINITIALIZATION").get<std::string>("STABTYPEREINIT"));
-  eleparams.sublist("stabilization").set<std::string>("SUGRVEL", "no");
+      .set<Inpar::ScaTra::StabType>("STABTYPE",
+          eleparams.sublist("REINITIALIZATION").get<Inpar::ScaTra::StabType>("STABTYPEREINIT"));
+  eleparams.sublist("stabilization").set<bool>("SUGRVEL", false);
   eleparams.sublist("stabilization")
-      .set<std::string>("DEFINITION_ASSGD",
-          eleparams.sublist("REINITIALIZATION").get<std::string>("DEFINITION_ARTDIFFREINIT"));
+      .set<Inpar::ScaTra::AssgdType>(
+          "DEFINITION_ASSGD", eleparams.sublist("REINITIALIZATION")
+                                  .get<Inpar::ScaTra::AssgdType>("DEFINITION_ARTDIFFREINIT"));
 
   // call standard loop over elements
   discret_->evaluate(
@@ -234,43 +238,6 @@ void ScaTra::LevelSetAlgorithm::finish_time_loop_reinit()
   // reset general parameters for element evaluation
   set_element_general_parameters();
   set_element_turbulence_parameters();
-
-  //  {
-  //    // turn on/off screen output for writing process of Gmsh postprocessing file
-  //  const bool screen_out = true;
-  //
-  //  // create Gmsh postprocessing file
-  //  const std::string filename =
-  //  Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("reinitialization_scalar", step_, 500,
-  //  screen_out, discret_->Comm().MyPID()); std::ofstream gmshfilecontent(filename.c_str());
-  //
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Inital Phi \" {" << std::endl;
-  //    // draw scalar field 'Phinp' for every element
-  //    Core::IO::Gmsh::ScalarFieldToGmsh(discret_,initialphireinit_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
-  //
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Final Phi \" {" << std::endl;
-  //    // draw scalar field 'Phinp' for every element
-  //    Core::IO::Gmsh::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
-  //
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Reinit Velocity \" {" << std::endl;
-  //    // draw vector field 'Convective Velocity' for every element
-  //    Core::IO::Gmsh::VectorFieldNodeBasedToGmsh(discret_,reinitvel_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
-  //  gmshfilecontent.close();
-  //  if (screen_out) std::cout << " done" << std::endl;
-  //  }
-  //  FOUR_C_THROW("ENDE");
 
   return;
 }

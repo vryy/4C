@@ -73,13 +73,13 @@ void porofluidmultiphase_dyn(int restart)
     Teuchos::RCP<Core::FE::Discretization> arterydis = Teuchos::null;
     arterydis = Global::Problem::instance()->get_dis(artery_disname);
     // get the coupling method
-    Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
-        Core::UTILS::integral_value<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
+    auto arterycoupl =
+        Teuchos::getIntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
             porodyn.sublist("ARTERY COUPLING"), "ARTERY_COUPLING_METHOD");
 
     // lateral surface coupling active?
-    const bool evaluate_on_lateral_surface = Core::UTILS::integral_value<int>(
-        porodyn.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
+    const bool evaluate_on_lateral_surface =
+        porodyn.sublist("ARTERY COUPLING").get<bool>("LATERAL_SURFACE_COUPLING");
 
     switch (arterycoupl)
     {
@@ -121,9 +121,8 @@ void porofluidmultiphase_dyn(int restart)
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-      Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
-          porodyn, "TIMEINTEGR");
+  auto timintscheme = Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
+      porodyn, "TIMEINTEGR");
 
   // build poro fluid time integrator
   Teuchos::RCP<Adapter::PoroFluidMultiphase> algo = POROFLUIDMULTIPHASE::UTILS::create_algorithm(

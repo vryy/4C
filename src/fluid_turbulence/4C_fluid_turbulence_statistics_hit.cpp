@@ -1867,7 +1867,7 @@ namespace FLD
     //  //new for HDG: go down to element and get 5x5x5 values
     //  call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
-    params.set<int>("action", FLD::interpolate_hdg_for_hit);
+    params.set<FLD::Action>("action", FLD::interpolate_hdg_for_hit);
 
     discret_->set_state(1, "intvelnp", velnp);
 
@@ -2085,12 +2085,6 @@ namespace FLD
           const double k = sqrt(k_1 * k_1 + k_2 * k_2 + k_3 * k_3);
 
           // calculate energy
-          // E = 1/2 * u_i * conj(u_i)
-          // u_i * conj(u_i) = real(u_i)^2 + imag(u_i)^2
-          // const std::complex<double> energy = 0.5 * ((*u1_hat)[pos] * conj((*u1_hat)[pos])
-          //                                          + (*u2_hat)[pos] * conj((*u2_hat)[pos])
-          //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
-          // instead
           const double energy =
               0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
 
@@ -2123,60 +2117,6 @@ namespace FLD
     toggleu_->PutScalar(0.0);
     togglev_->PutScalar(0.0);
     togglew_->PutScalar(0.0);
-
-    // this is currently not supported and has to be adapted to HDG
-    //  for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
-    //  {
-    //    // get node
-    //    Core::Nodes::Node* node = discret_->lRowNode(nn);
-    //
-    //    // get global dof ids
-    //    std::vector<int> dof = discret_->Dof(node);
-    //    double one = 1.0;
-    //
-    //    // set one in respective position
-    //    toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-    //    togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
-    //    togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
-    //  }
-    //
-    //  // compute squared values of velocity
-    //  const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    //  Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::CreateVector(*dofrowmap,true);
-    //  squaredvelnp->Multiply(1.0,*velnp,*velnp,0.0);
-    //
-    //  //----------------------------------
-    //  // get values for velocity
-    //  //----------------------------------
-    //
-    //  // velocity components
-    //  double u;
-    //  double v;
-    //  double w;
-    //  velnp->Dot(*toggleu_,&u);
-    //  velnp->Dot(*togglev_,&v);
-    //  velnp->Dot(*togglew_,&w);
-    //
-    //  // square of velocity components
-    //  double uu;
-    //  double vv;
-    //  double ww;
-    //  squaredvelnp->Dot(*toggleu_,&uu);
-    //  squaredvelnp->Dot(*togglev_,&vv);
-    //  squaredvelnp->Dot(*togglew_,&ww);
-    //
-    //  //-------------------------------------------------
-    //  // add spatial mean values to statistical sample
-    //  //-------------------------------------------------
-    //
-    //  (*sumvel_)[0] = u/countallnodes;
-    //  (*sumvel_)[1] = v/countallnodes;
-    //  (*sumvel_)[2] = w/countallnodes;
-    //
-    //  (*sumvelvel_)[0] = uu/countallnodes;
-    //  (*sumvelvel_)[1] = vv/countallnodes;
-    //  (*sumvelvel_)[2] = ww/countallnodes;
-
 
     //----------------------------------------------------------------------
     // increase sample counter

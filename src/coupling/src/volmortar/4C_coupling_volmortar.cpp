@@ -199,7 +199,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_volmortar()
    ***********************************************************/
   // check_initial_residuum();
   // mesh initialization procedure
-  if (Core::UTILS::integral_value<int>(params(), "MESH_INIT")) mesh_init();
+  if (params().get<bool>("MESH_INIT")) mesh_init();
 
   /***********************************************************
    * initialize global matrices                              *
@@ -209,13 +209,13 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_volmortar()
   /***********************************************************
    * Segment-based integration                               *
    ***********************************************************/
-  if (Core::UTILS::integral_value<IntType>(params(), "INTTYPE") == inttype_segments)
+  if (Teuchos::getIntegralValue<IntType>(params(), "INTTYPE") == inttype_segments)
     evaluate_segments();
 
   /***********************************************************
    * Element-based Integration                               *
    ***********************************************************/
-  else if (Core::UTILS::integral_value<IntType>(params(), "INTTYPE") == inttype_elements)
+  else if (Teuchos::getIntegralValue<IntType>(params(), "INTTYPE") == inttype_elements)
     evaluate_elements();
 
   // no other possibility
@@ -1027,7 +1027,7 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
     const Teuchos::ParameterList& volmortar_parameters)
 {
   // check validity
-  if (Core::UTILS::integral_value<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
+  if (Teuchos::getIntegralValue<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
   {
     if (myrank_ == 0)
     {
@@ -1040,13 +1040,14 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
     }
   }
 
-  if (Core::UTILS::integral_value<int>(volmortar_parameters, "MESH_INIT") and
-      Core::UTILS::integral_value<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
+  if (volmortar_parameters.get<bool>("MESH_INIT") and
+      Teuchos::getIntegralValue<IntType>(volmortar_parameters, "INTTYPE") == inttype_segments)
   {
     FOUR_C_THROW("ERROR: mesh_init only for ele-based integration!!!");
   }
 
-  if (Core::UTILS::integral_value<int>(volmortar_parameters, "SHAPEFCN") == shape_std)
+  if (Teuchos::getIntegralValue<Coupling::VolMortar::Shapefcn>(volmortar_parameters, "SHAPEFCN") ==
+      shape_std)
   {
     std::cout << "WARNING: Standard shape functions are employed! D is lumped!" << std::endl;
   }
@@ -1055,7 +1056,7 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
   params_.setParameters(volmortar_parameters);
 
   // get specific and frequently reused parameters
-  dualquad_ = Core::UTILS::integral_value<DualQuad>(params_, "DUALQUAD");
+  dualquad_ = Teuchos::getIntegralValue<DualQuad>(params_, "DUALQUAD");
 }
 
 /*----------------------------------------------------------------------*
@@ -1635,7 +1636,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
   // *************************************
   // TESSELATION *************************
-  if (Core::UTILS::integral_value<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
+  if (Teuchos::getIntegralValue<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
   {
     // Set options for the cut wizard
     wizard->set_options(cut_params_, Cut::NDS_Strategy_full,
@@ -1697,7 +1698,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
 
   // *******************************************
   // DIRECT DIVERGENCE *************************
-  else if (Core::UTILS::integral_value<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
+  else if (Teuchos::getIntegralValue<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
   {
     // Set options for the cut wizard
     wizard->set_options(cut_params_, Cut::NDS_Strategy_full,

@@ -61,7 +61,7 @@ int Discret::ELEMENTS::Ale3Surface::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  const Ale3::ActionType act = Core::UTILS::get_as_enum<Ale3::ActionType>(params, "action");
+  const auto act = Teuchos::getIntegralValue<Ale3::ActionType>(params, "action");
 
   switch (act)
   {

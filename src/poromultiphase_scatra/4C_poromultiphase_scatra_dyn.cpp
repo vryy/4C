@@ -55,7 +55,7 @@ void poromultiphasescatra_dyn(int restart)
   const Teuchos::ParameterList& scatraparams = problem->scalar_transport_dynamic_params();
 
   // do we perform coupling with 1D artery
-  const bool artery_coupl = Core::UTILS::integral_value<int>(poroscatraparams, "ARTERY_COUPLING");
+  const bool artery_coupl = poroscatraparams.get<bool>("ARTERY_COUPLING");
 
   // initialize variables for dof set numbers
   int ndsporo_disp(-1);
@@ -73,9 +73,8 @@ void poromultiphasescatra_dyn(int restart)
   // algorithm construction depending on
   // coupling scheme
   // -------------------------------------------------------------------
-  Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solscheme =
-      Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
-          poroscatraparams, "COUPALGO");
+  auto solscheme = Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
+      poroscatraparams, "COUPALGO");
 
   Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo =
       PoroMultiPhaseScaTra::UTILS::create_poro_multi_phase_scatra_algorithm(

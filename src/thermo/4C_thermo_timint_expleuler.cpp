@@ -160,7 +160,7 @@ void Thermo::TimIntExplEuler::update_step_element()
   p.set("delta time", (*dt_)[0]);
   // action for elements
   // --> be careful: this action does nothing
-  p.set<int>("action", Thermo::calc_thermo_update_istep);
+  p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements and do nothing
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 

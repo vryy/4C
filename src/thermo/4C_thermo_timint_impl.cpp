@@ -30,16 +30,16 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
-      pred_(Core::UTILS::integral_value<Inpar::Thermo::PredEnum>(tdynparams, "PREDICT")),
-      itertype_(Core::UTILS::integral_value<Inpar::Thermo::NonlinSolTech>(tdynparams, "NLNSOL")),
-      normtypetempi_(Core::UTILS::integral_value<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_TEMP")),
-      normtypefres_(Core::UTILS::integral_value<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_RESF")),
+      pred_(Teuchos::getIntegralValue<Inpar::Thermo::PredEnum>(tdynparams, "PREDICT")),
+      itertype_(Teuchos::getIntegralValue<Inpar::Thermo::NonlinSolTech>(tdynparams, "NLNSOL")),
+      normtypetempi_(Teuchos::getIntegralValue<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_TEMP")),
+      normtypefres_(Teuchos::getIntegralValue<Inpar::Thermo::ConvNorm>(tdynparams, "NORM_RESF")),
       combtempifres_(
-          Core::UTILS::integral_value<Inpar::Thermo::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
-      iternorm_(Core::UTILS::integral_value<Inpar::Thermo::VectorNorm>(tdynparams, "ITERNORM")),
+          Teuchos::getIntegralValue<Inpar::Thermo::BinaryOp>(tdynparams, "NORMCOMBI_RESFTEMP")),
+      iternorm_(Teuchos::getIntegralValue<Inpar::Thermo::VectorNorm>(tdynparams, "ITERNORM")),
       itermax_(tdynparams.get<int>("MAXITER")),
       itermin_(tdynparams.get<int>("MINITER")),
-      divcontype_(Core::UTILS::integral_value<Inpar::Thermo::DivContAct>(tdynparams, "DIVERCONT")),
+      divcontype_(Teuchos::getIntegralValue<Inpar::Thermo::DivContAct>(tdynparams, "DIVERCONT")),
       divcontrefinelevel_(0),
       divcontfinesteps_(0),
       toltempi_(tdynparams.get<double>("TOLTEMP")),
@@ -361,7 +361,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   {
     // create the parameters for the discretization
     Teuchos::ParameterList p;
-    p.set<int>("action", Thermo::calc_thermo_reset_istep);
+    p.set<Thermo::Action>("action", Thermo::calc_thermo_reset_istep);
     // set the total time
     p.set("total time", (*time_)[0]);
     // go to elements

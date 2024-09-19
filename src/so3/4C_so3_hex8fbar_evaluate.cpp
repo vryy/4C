@@ -225,14 +225,11 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
-        iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "iostrain", Inpar::Solid::strain_none);
+        iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+        iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
         // in case of small strain materials calculate plastic strains for post processing
         plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-        ioplstrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "ioplstrain", Inpar::Solid::strain_none);
+        ioplstrain = params.get<Inpar::Solid::StrainType>("ioplstrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");

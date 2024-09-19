@@ -56,7 +56,7 @@ ScaTra::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       icoupmortar_(),
       imortarcells_(),
       imortarredistribution_(
-          Core::UTILS::integral_value<Inpar::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
+          Teuchos::getIntegralValue<Inpar::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
               "COUPLINGTYPE") == Inpar::S2I::coupling_mortar_standard and
           Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
               Global::Problem::instance()->mortar_coupling_params().sublist(
@@ -70,7 +70,7 @@ ScaTra::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islavematrix_(Teuchos::null),
       imastermatrix_(Teuchos::null),
       imasterslavematrix_(Teuchos::null),
-      couplingtype_(Core::UTILS::integral_value<Inpar::S2I::CouplingType>(
+      couplingtype_(Teuchos::getIntegralValue<Inpar::S2I::CouplingType>(
           parameters.sublist("S2I COUPLING"), "COUPLINGTYPE")),
       D_(Teuchos::null),
       M_(Teuchos::null),
@@ -89,11 +89,11 @@ ScaTra::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islavephidtnp_(Teuchos::null),
       imasterphidt_on_slave_side_np_(Teuchos::null),
       imasterphi_on_slave_side_np_(Teuchos::null),
-      lmside_(Core::UTILS::integral_value<Inpar::S2I::InterfaceSides>(
+      lmside_(Teuchos::getIntegralValue<Inpar::S2I::InterfaceSides>(
           parameters.sublist("S2I COUPLING"), "LMSIDE")),
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(parameters, "MATRIXTYPE")),
       ntsprojtol_(parameters.sublist("S2I COUPLING").get<double>("NTSPROJTOL")),
-      intlayergrowth_evaluation_(Core::UTILS::integral_value<Inpar::S2I::GrowthEvaluation>(
+      intlayergrowth_evaluation_(Teuchos::getIntegralValue<Inpar::S2I::GrowthEvaluation>(
           parameters.sublist("S2I COUPLING"), "INTLAYERGROWTH_EVALUATION")),
       intlayergrowth_convtol_(
           parameters.sublist("S2I COUPLING").get<double>("INTLAYERGROWTH_CONVTOL")),
@@ -115,14 +115,12 @@ ScaTra::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       growthscatrablock_(Teuchos::null),
       growthgrowthblock_(Teuchos::null),
       equilibration_(Teuchos::null),
-      output_interface_flux_(Core::UTILS::integral_value<bool>(
-          parameters.sublist("S2I COUPLING"), "OUTPUT_INTERFACE_FLUX")),
+      output_interface_flux_(parameters.sublist("S2I COUPLING").get<bool>("OUTPUT_INTERFACE_FLUX")),
       has_capacitive_contributions_(false),
       kinetics_conditions_meshtying_slaveside_(),
-      slaveonly_(
-          Core::UTILS::integral_value<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
-      indepedent_setup_of_conditions_(Core::UTILS::integral_value<bool>(
-          parameters.sublist("S2I COUPLING"), "MESHTYING_CONDITIONS_INDEPENDENT_SETUP"))
+      slaveonly_(parameters.sublist("S2I COUPLING").get<bool>("SLAVEONLY")),
+      indepedent_setup_of_conditions_(
+          parameters.sublist("S2I COUPLING").get<bool>("MESHTYING_CONDITIONS_INDEPENDENT_SETUP"))
 {
   // empty constructor
 }  // ScaTra::meshtying_strategy_s2_i::meshtying_strategy_s2_i
@@ -620,7 +618,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         if (couplingtype_ != Inpar::S2I::coupling_nts_standard)
         {
           // set action
-          params.set<int>("action", Inpar::S2I::evaluate_condition);
+          params.set<Inpar::S2I::EvaluationActions>("action", Inpar::S2I::evaluate_condition);
 
           // evaluate mortar integration cells at current interface
           evaluate_mortar_cells(idiscret, params, islavematrix_, Inpar::S2I::side_slave,
@@ -634,7 +632,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         else
         {
           // set action
-          params.set<int>("action", Inpar::S2I::evaluate_condition_nts);
+          params.set<Inpar::S2I::EvaluationActions>("action", Inpar::S2I::evaluate_condition_nts);
 
           // evaluate note-to-segment coupling at current interface
           evaluate_nts(*islavenodestomasterelements_[kinetics_slave_cond.first],
@@ -1973,8 +1971,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           {
             has_capacitive_contributions_ = true;
 
-            auto timeintscheme = Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(
-                *scatratimint_->scatra_parameter_list(), "TIMEINTEGR");
+            auto timeintscheme = Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(
+                *(scatratimint_->scatra_parameter_list()), "TIMEINTEGR");
             if (not(timeintscheme == Inpar::ScaTra::timeint_bdf2 or
                     timeintscheme == Inpar::ScaTra::timeint_one_step_theta))
             {
@@ -2179,10 +2177,12 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             "Parallel redistribution only implemented for scatra-scatra interface coupling based "
             "on standard mortar approach!");
       }
-      if (Core::UTILS::integral_value<Inpar::Mortar::MeshRelocation>(
+      if (Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(
               Global::Problem::instance()->mortar_coupling_params(), "MESH_RELOCATION") !=
           Inpar::Mortar::relocation_none)
+      {
         FOUR_C_THROW("Mesh relocation not yet implemented for scatra-scatra interface coupling!");
+      }
 
       // initialize empty interface maps
       Teuchos::RCP<Epetra_Map> imastermap =
@@ -2285,10 +2285,11 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           {
             interface.interface_params()
                 .sublist("PARALLEL REDISTRIBUTION")
-                .set<std::string>("PARALLEL_REDIST", Global::Problem::instance()
-                                                         ->mortar_coupling_params()
-                                                         .sublist("PARALLEL REDISTRIBUTION")
-                                                         .get<std::string>("PARALLEL_REDIST"));
+                .set<Inpar::Mortar::ParallelRedist>("PARALLEL_REDIST",
+                    Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
+                        Global::Problem::instance()->mortar_coupling_params().sublist(
+                            "PARALLEL REDISTRIBUTION"),
+                        "PARALLEL_REDIST"));
             interface.redistribute();
             interface.fill_complete({}, Global::Problem::instance()->binning_strategy_params(),
                 Global::Problem::instance()->output_control_file(),
@@ -2444,7 +2445,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           Teuchos::ParameterList eleparams;
 
           // set action for slave-side elements
-          eleparams.set<int>("action", Inpar::S2I::evaluate_nodal_area_fractions);
+          eleparams.set<Inpar::S2I::EvaluationActions>(
+              "action", Inpar::S2I::evaluate_nodal_area_fractions);
 
           // compute vector for lumped interface area fractions associated with slave-side nodes
           const Epetra_Map& dofrowmap_slave = *interface.slave_row_dofs();
@@ -2552,7 +2554,8 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             params.set<Core::Conditions::Condition*>("condition", kinetics_slave_cond.second);
 
             // set action
-            params.set<int>("action", Inpar::S2I::evaluate_mortar_matrices);
+            params.set<Inpar::S2I::EvaluationActions>(
+                "action", Inpar::S2I::evaluate_mortar_matrices);
 
             // evaluate mortar integration cells at current interface
             evaluate_mortar_cells(icoupmortar_[kinetics_slave_cond.first]->interface()->discret(),
@@ -3545,7 +3548,7 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
           new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(extendedsolver),
               scatratimint_->discretization()->get_comm(),
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY")));
     }
   }  // initialize scatra-scatra interface layer growth
@@ -3561,8 +3564,7 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
   // safety checks associated with adaptive time stepping for scatra-scatra interface layer growth
   if (intlayergrowth_timestep_ > 0.)
   {
-    if (not Core::UTILS::integral_value<bool>(
-            *scatratimint_->scatra_parameter_list(), "ADAPTIVE_TIMESTEPPING"))
+    if (not scatratimint_->scatra_parameter_list()->get<bool>("ADAPTIVE_TIMESTEPPING"))
     {
       FOUR_C_THROW(
           "Adaptive time stepping for scatra-scatra interface layer growth requires "
@@ -4169,7 +4171,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate(
     Core::LinAlg::SerialDenseVector& cellvector1, Core::LinAlg::SerialDenseVector& cellvector2)
 {
   // extract and evaluate action
-  switch (Core::UTILS::get_as_enum<Inpar::S2I::EvaluationActions>(params, "action"))
+  switch (Teuchos::getIntegralValue<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     case Inpar::S2I::evaluate_mortar_matrices:
     {
@@ -4210,7 +4212,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_nts(
     Core::LinAlg::SerialDenseVector& ntsvector1, Core::LinAlg::SerialDenseVector& ntsvector2)
 {
   // extract and evaluate action
-  switch (Core::UTILS::get_as_enum<Inpar::S2I::EvaluationActions>(params, "action"))
+  switch (Teuchos::getIntegralValue<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     case Inpar::S2I::evaluate_condition_nts:
     {
@@ -4250,7 +4252,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_mortar_element(
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2)
 {
   // extract and evaluate action
-  switch (Core::UTILS::get_as_enum<Inpar::S2I::EvaluationActions>(params, "action"))
+  switch (Teuchos::getIntegralValue<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     case Inpar::S2I::evaluate_nodal_area_fractions:
     {

@@ -277,15 +277,15 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   // set parameter list (time integration)
 
   // action for elements
-  eleparams_.set<int>("action", FLD::calc_dissipation);
+  eleparams_.set<FLD::Action>("action", FLD::calc_dissipation);
 
   // add velafgrad
   Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-  if (Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der"))
+  if (stabparams->get<bool>("Reconstruct_Sec_Der"))
   {
     // add velafgrad
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-    if (Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der"))
+    if (stabparams->get<bool>("Reconstruct_Sec_Der"))
     {
       for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
            state != statevecs.end(); ++state)

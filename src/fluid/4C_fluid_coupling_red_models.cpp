@@ -860,7 +860,7 @@ double FLD::UTILS::FluidCouplingBc::area(double& density, double& viscosity, int
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", FLD::calc_area);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::calc_area);
   eleparams.set<double>("area", 0.0);
   eleparams.set<double>("viscosity", 0.0);
   eleparams.set<double>("density", 0.0);
@@ -935,7 +935,7 @@ double FLD::UTILS::FluidCouplingBc::flow_rate_calculation(double time, double dt
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", FLD::calc_flowrate);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::calc_flowrate);
   eleparams.set("total time", time);
 
   // get a vector layout from the discretization to construct matching
@@ -989,7 +989,7 @@ double FLD::UTILS::FluidCouplingBc::pressure_calculation(double time, double dta
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", FLD::calc_pressure_bou_int);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::calc_pressure_bou_int);
   eleparams.set<double>("pressure boundary integral", 0.0);
   eleparams.set("total time", time);
 
@@ -1045,7 +1045,7 @@ void FLD::UTILS::FluidCouplingBc::outflow_boundary(
   // action for elements
   // the reason we have Outlet impedance as action is because we don't
   // want to rewrite the implimented code
-  eleparams.set<int>("action", FLD::Outletimpedance);
+  eleparams.set<FLD::BoundaryAction>("action", FLD::Outletimpedance);
 
   eleparams.set("total time", time);
   eleparams.set("delta time", dta);

@@ -18,6 +18,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -115,22 +116,21 @@ CONTACT::AbstractStrategy::AbstractStrategy(
 {
   // set data container pointer (only PRIVATE direct access!)
   data_ptr_->sol_type() =
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params_in, "STRATEGY");
-  data_ptr_->constr_direction() = Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
+      Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params_in, "STRATEGY");
+  data_ptr_->constr_direction() = Teuchos::getIntegralValue<Inpar::CONTACT::ConstraintDirection>(
       params_in, "CONSTRAINT_DIRECTIONS");
   data_ptr_->par_type() = Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
       params_in.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
 
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
+  auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
 
   // set frictional contact status
   if (ftype != Inpar::CONTACT::friction_none) friction_ = true;
 
   // set nonsmooth contact status
-  if (Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES")) nonSmoothContact_ = true;
+  if (params().get<bool>("NONSMOOTH_GEOMETRIES")) nonSmoothContact_ = true;
 
-  if (Core::UTILS::integral_value<Inpar::CONTACT::Regularization>(
+  if (Teuchos::getIntegralValue<Inpar::CONTACT::Regularization>(
           params(), "CONTACT_REGULARIZATION") != Inpar::CONTACT::reg_none)
     regularized_ = true;
 
@@ -486,7 +486,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   }
 
   // initialize vertex, edge and surface maps for nonsmooth case
-  if (Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES"))
+  if (params().get<bool>("NONSMOOTH_GEOMETRIES"))
   {
     gsdofVertex_ = Teuchos::null;
     gsdofEdge_ = Teuchos::null;
@@ -568,7 +568,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     }
 
     // define maps for nonsmooth case
-    if (Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES"))
+    if (params().get<bool>("NONSMOOTH_GEOMETRIES"))
     {
       gsdofVertex_ = Core::LinAlg::merge_map(gsdofVertex_, interfaces()[i]->sdof_vertex_rowmap());
       gsdofEdge_ = Core::LinAlg::merge_map(gsdofEdge_, interfaces()[i]->sdof_edge_rowmap());
@@ -592,13 +592,6 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   // setup global displacement dof map
   gsmdofrowmap_ = Core::LinAlg::merge_map(slave_dof_row_map(true), *gmdofrowmap_, false);
   gdisprowmap_ = Core::LinAlg::merge_map(*gndofrowmap_, *gsmdofrowmap_, false);
-
-  // TODO: check if necessary!
-  // due to boundary modification we have to extend master map to slave dofs
-  //  if(Core::UTILS::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
-  //  {
-  //    gmdofrowmap_ = Core::LinAlg::MergeMap(slave_dof_row_map(true), *gmdofrowmap_, false);
-  //  }
 
   // initialize flags for global contact status
   if (gactivenodes_->NumGlobalElements())
@@ -718,10 +711,8 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   // {d}, we have to apply the transformation matrix T and vice versa
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if ((shapefcn == Inpar::Mortar::shape_dual || shapefcn == Inpar::Mortar::shape_petrovgalerkin) &&
       (n_dim() == 3 || (n_dim() == 2 && lagmultquad == Inpar::Mortar::lagmult_lin)))
     for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -855,8 +846,7 @@ void CONTACT::AbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector
   iter_ = nonlinearIteration;
 
   // Create timing reports?
-  bool doAccurateTimeMeasurements =
-      Core::UTILS::integral_value<bool>(data().s_contact(), "TIMING_DETAILS");
+  const bool doAccurateTimeMeasurements = data().s_contact().get<bool>("TIMING_DETAILS");
 
   if (doAccurateTimeMeasurements)
   {
@@ -1179,9 +1169,9 @@ void CONTACT::AbstractStrategy::initialize_and_evaluate_interface(
 
   // global numbers
   std::vector<int> gsmpairs, gsmintpairs, gintcells;
-  Core::LinAlg::Gather<int>(smpairs, gsmpairs, numproc, allproc.data(), Comm());
-  Core::LinAlg::Gather<int>(smintpairs, gsmintpairs, numproc, allproc.data(), Comm());
-  Core::LinAlg::Gather<int>(intcells, gintcells, numproc, allproc.data(), Comm());
+  Core::LinAlg::gather<int>(smpairs, gsmpairs, numproc, allproc.data(), Comm());
+  Core::LinAlg::gather<int>(smintpairs, gsmintpairs, numproc, allproc.data(), Comm());
+  Core::LinAlg::gather<int>(intcells, gintcells, numproc, allproc.data(), Comm());
 
   // output to screen
   if (Comm().MyPID() == 0)
@@ -1409,7 +1399,7 @@ void CONTACT::AbstractStrategy::assemble_mortar()
 void CONTACT::AbstractStrategy::evaluate_reference_state()
 {
   // flag for initialization of contact with nodal gaps
-  bool initcontactbygap = Core::UTILS::integral_value<int>(params(), "INITCONTACTBYGAP");
+  const bool initcontactbygap = params().get<bool>("INITCONTACTBYGAP");
 
   // only do something for frictional case
   // or for initialization of initial contact set with nodal gap
@@ -1530,7 +1520,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   // evaluation of obj. invariant slip increment
   // do the evaluation on the interface
   // loop over all slave row nodes on the current interface
-  if (Core::UTILS::integral_value<int>(params(), "GP_SLIP_INCR") == false)
+  if (not params().get<bool>("GP_SLIP_INCR"))
     for (int i = 0; i < (int)interfaces().size(); ++i)
       interfaces()[i]->evaluate_relative_movement(xsmod, dmatrixmod_, doldmod_);
 
@@ -1998,7 +1988,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   // to try to read certain, in this case non-existing, vectors
   // such as the activetoggle or sliptoggle vectors, but rather
   // initialize the restart active and slip sets as being empty)
-  bool restartwithcontact = Core::UTILS::integral_value<int>(params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = params().get<bool>("RESTART_WITH_CONTACT");
 
   // set restart displacement state
   set_state(Mortar::state_new_displacement, *dis);
@@ -2073,8 +2063,10 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   z_ = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
   zold_ = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
   if (!restartwithcontact)
-    if (!(Global::Problem::instance()->structural_dynamic_params().get<std::string>(
-              "INT_STRATEGY") == "Standard" &&
+    if (not(Global::Problem::instance()
+                    ->structural_dynamic_params()
+                    .get<Inpar::Solid::IntegrationStrategy>("INT_STRATEGY") ==
+                Inpar::Solid::IntegrationStrategy::int_standard &&
             is_penalty()))
     {
       reader.read_vector(lagrange_multiplier(), "lagrmultold");
@@ -2158,8 +2150,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
 void CONTACT::AbstractStrategy::interface_forces(bool output)
 {
   // check chosen output option
-  Inpar::CONTACT::EmOutputType emtype =
-      Core::UTILS::integral_value<Inpar::CONTACT::EmOutputType>(params(), "EMOUTPUT");
+  auto emtype = Teuchos::getIntegralValue<Inpar::CONTACT::EmOutputType>(params(), "EMOUTPUT");
 
   // get out of here if no output wanted
   if (emtype == Inpar::CONTACT::output_none) return;
@@ -2602,26 +2593,26 @@ void CONTACT::AbstractStrategy::print_active_set() const
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  Core::LinAlg::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
-  Core::LinAlg::Gather<double>(llmn, glmn, (int)allproc.size(), allproc.data(), Comm());
-  Core::LinAlg::Gather<double>(lgap, ggap, (int)allproc.size(), allproc.data(), Comm());
-  Core::LinAlg::Gather<int>(lsta, gsta, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(llmn, glmn, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(lgap, ggap, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<int>(lsta, gsta, (int)allproc.size(), allproc.data(), Comm());
 
-  Core::LinAlg::Gather<double>(Xposl, Xposg, (int)allproc.size(), allproc.data(), Comm());
-  Core::LinAlg::Gather<double>(Yposl, Yposg, (int)allproc.size(), allproc.data(), Comm());
-  Core::LinAlg::Gather<double>(Zposl, Zposg, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(Xposl, Xposg, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(Yposl, Yposg, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(Zposl, Zposg, (int)allproc.size(), allproc.data(), Comm());
 
-  Core::LinAlg::Gather<double>(xposl, xposg, (int)allproc.size(), allproc.data(), Comm());
-  Core::LinAlg::Gather<double>(yposl, yposg, (int)allproc.size(), allproc.data(), Comm());
-  Core::LinAlg::Gather<double>(zposl, zposg, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(xposl, xposg, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(yposl, yposg, (int)allproc.size(), allproc.data(), Comm());
+  Core::LinAlg::gather<double>(zposl, zposg, (int)allproc.size(), allproc.data(), Comm());
 
   // communicate some more data to proc 0 for friction
   if (friction_)
   {
-    Core::LinAlg::Gather<double>(llmt, glmt, (int)allproc.size(), allproc.data(), Comm());
-    Core::LinAlg::Gather<double>(ljtx, gjtx, (int)allproc.size(), allproc.data(), Comm());
-    Core::LinAlg::Gather<double>(ljte, gjte, (int)allproc.size(), allproc.data(), Comm());
-    Core::LinAlg::Gather<double>(lwear, gwear, (int)allproc.size(), allproc.data(), Comm());
+    Core::LinAlg::gather<double>(llmt, glmt, (int)allproc.size(), allproc.data(), Comm());
+    Core::LinAlg::gather<double>(ljtx, gjtx, (int)allproc.size(), allproc.data(), Comm());
+    Core::LinAlg::gather<double>(ljte, gjte, (int)allproc.size(), allproc.data(), Comm());
+    Core::LinAlg::gather<double>(lwear, gwear, (int)allproc.size(), allproc.data(), Comm());
   }
 
   // output is solely done by proc 0
@@ -2716,7 +2707,7 @@ void CONTACT::AbstractStrategy::print_active_set() const
   int gcornernodes = 0;
 
   // nonsmooth contact active?
-  bool nonsmooth = Core::UTILS::integral_value<int>(params(), "NONSMOOTH_GEOMETRIES");
+  bool nonsmooth = params().get<bool>("NONSMOOTH_GEOMETRIES");
 
   // loop over all interfaces
   for (int i = 0; i < (int)interfaces().size(); ++i)

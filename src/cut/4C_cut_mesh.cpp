@@ -1916,12 +1916,6 @@ void Cut::Mesh::dump_gmsh(std::string name)
   // ###############write all facets (or basically the facet points)###############
   if (facets_.size() > 0)
   {
-    //    Cut::Output::GmshNewSection(file,"Facet_Points");
-    //    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i
-    //    )
-    //      Cut::Output::GmshFacetDump(file,&(**i),"points");
-    //    Cut::Output::GmshEndSection(file);
-
     // ###############write all facets (or basically the facet lines)###############
     Cut::Output::gmsh_new_section(file, "Facet_Lines");
     for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)

@@ -179,10 +179,10 @@ void ScaTra::TimIntCardiacMonodomain::set_element_specific_scatra_parameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check
-  if (Core::UTILS::integral_value<int>(*params_, "SEMIIMPLICIT"))
+  if (params_->get<bool>("SEMIIMPLICIT"))
   {
     if (Inpar::ScaTra::timeint_gen_alpha ==
-        Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
+        Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
     {
       if (params_->get<double>("ALPHA_M") < 1.0 or params_->get<double>("ALPHA_F") < 1.0)
         FOUR_C_THROW(
@@ -191,7 +191,7 @@ void ScaTra::TimIntCardiacMonodomain::set_element_specific_scatra_parameters(
     }
   }
 
-  eleparams.set<bool>("semiimplicit", Core::UTILS::integral_value<int>(*params_, "SEMIIMPLICIT"));
+  eleparams.set<bool>("semiimplicit", params_->get<bool>("SEMIIMPLICIT"));
 }
 
 /*----------------------------------------------------------------------*

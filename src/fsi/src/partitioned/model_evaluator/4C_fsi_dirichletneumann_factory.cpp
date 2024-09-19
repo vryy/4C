@@ -28,8 +28,8 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
     const Epetra_Comm& comm, const Teuchos::ParameterList& fsidyn)
 {
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  Inpar::FSI::PartitionedCouplingMethod method =
-      Core::UTILS::integral_value<Inpar::FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
+  auto method =
+      Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
   switch (method)
   {
     case Inpar::FSI::DirichletNeumannSlideale:
@@ -37,7 +37,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
-          if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") ==
+          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
               Inpar::FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
@@ -57,7 +57,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
       {
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
-          if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") ==
+          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
               Inpar::FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
@@ -78,7 +78,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
         case (Core::ProblemType::fsi):
         case (Core::ProblemType::fsi_redmodels):
         case (Core::ProblemType::fsi_xfem):
-          if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") ==
+          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
               Inpar::FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
@@ -89,7 +89,7 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::create_algorit
             return Teuchos::rcp(new FSI::DirichletNeumannDisp(comm));
           break;
         case (Core::ProblemType::fbi):
-          if (Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") ==
+          if (Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(fsipart, "COUPVARIABLE") ==
               Inpar::FSI::CoupVarPart::disp)
           {
             FOUR_C_THROW(

@@ -105,17 +105,16 @@ void Mat::ScatraMultiScaleGP::init()
           "Must have one-dimensional micro scale in multi-scale simulations of scalar transport "
           "problems!");
     }
-    if (Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(
-            sdyn_macro, "TIMEINTEGR") != Inpar::ScaTra::timeint_one_step_theta or
-        Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(
+    if (Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(sdyn_macro, "TIMEINTEGR") !=
+            Inpar::ScaTra::timeint_one_step_theta or
+        Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(
             *sdyn_micro, "TIMEINTEGR") != Inpar::ScaTra::timeint_one_step_theta)
     {
       FOUR_C_THROW(
           "Multi-scale calculations for scalar transport only implemented for one-step-theta time "
           "integration scheme!");
     }
-    if (Core::UTILS::integral_value<bool>(sdyn_macro, "SKIPINITDER") !=
-        Core::UTILS::integral_value<bool>(*sdyn_micro, "SKIPINITDER"))
+    if (sdyn_macro.get<bool>("SKIPINITDER") != sdyn_micro->get<bool>("SKIPINITDER"))
       FOUR_C_THROW("Flag SKIPINITDER in input file must be equal on macro and micro scales!");
     if (sdyn_macro.get<double>("TIMESTEP") != sdyn_micro->get<double>("TIMESTEP"))
       FOUR_C_THROW("Must have identical time step size on macro and micro scales!");
@@ -196,7 +195,7 @@ void Mat::ScatraMultiScaleGP::init()
     Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
         Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber),
         microdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     // provide solver with null space information if necessary
@@ -432,9 +431,7 @@ void Mat::ScatraMultiScaleGP::new_result_file()
         microdis->get_comm(), "Scalar_Transport", microproblem->spatial_approximation_type(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         Global::Problem::instance(microdisnum_)->io_params().get<int>("FILESTEPS"),
-        Core::UTILS::integral_value<bool>(
-            Global::Problem::instance(microdisnum_)->io_params(), "OUTPUT_BIN"),
-        adaptname));
+        Global::Problem::instance(microdisnum_)->io_params().get<bool>("OUTPUT_BIN"), adaptname));
 
     micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
@@ -523,7 +520,7 @@ void Mat::ScatraMultiScaleGP::output()
 
     // set current state in micro-scale time integrator
     microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
-        micro_visualization_writer_, std::vector<double>(0, 0.), step_,
+        micro_visualization_writer_, std::vector<double>(0, 0.0), step_,
         Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
     // output micro-scale results
@@ -557,7 +554,7 @@ void Mat::ScatraMultiScaleGP::read_restart()
 
   // set current state in micro-scale time integrator
   microtimint->set_state(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_,
-      micro_visualization_writer_, std::vector<double>(0, 0.), step_,
+      micro_visualization_writer_, std::vector<double>(0, 0.0), step_,
       Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
   // read restart on micro scale
@@ -565,15 +562,22 @@ void Mat::ScatraMultiScaleGP::read_restart()
   microtimint->read_restart(step_, inputcontrol);
 
   // safety check
-  if (microtimint->step() != step_) FOUR_C_THROW("Time step mismatch!");
+  if (microtimint->step() != step_)
+  {
+    FOUR_C_THROW("Time step mismatch!");
+  }
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (inputcontrol == Teuchos::null)
+  {
     reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
         microtimint->discretization(), Global::Problem::instance()->input_control_file(), step_));
+  }
   else
+  {
     reader = Teuchos::rcp(
         new Core::IO::DiscretizationReader(microtimint->discretization(), inputcontrol, step_));
+  }
 
   if (is_ale_)
   {

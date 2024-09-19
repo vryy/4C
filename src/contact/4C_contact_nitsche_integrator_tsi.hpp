@@ -45,7 +45,7 @@ namespace CONTACT
         Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
         : IntegratorNitsche(params, eletype, comm),
           theta_thermo_(params.get<double>("NITSCHE_THETA_TSI")),
-          nit_thr_(Core::UTILS::integral_value<Inpar::CONTACT::NitscheThermoMethod>(
+          nit_thr_(Teuchos::getIntegralValue<Inpar::CONTACT::NitscheThermoMethod>(
               params, "NITSCHE_METHOD_TSI")),
           pp_thermo_(params.get<double>("PENALTYPARAM_THERMO")),
           temp_ref_(params.get<double>("TEMP_REF")),

@@ -267,8 +267,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
   }
 
   // shape function
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   //**********************************************************************
   //**********************************************************************
@@ -1879,10 +1878,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // shape function type and type of LM interpolation for quadratic elements
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
   // requires a penalty regularization. Here, the penalty contriutions for this
@@ -2039,7 +2036,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
   {
     // double-check if this is a dual LM system
     if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin &&
-        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
+        Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
             Inpar::Mortar::lagmult_const)
       FOUR_C_THROW("Condensation only for dual LM");
 
@@ -2810,10 +2807,6 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     //----------------------------------------------------------------------
     if (is_dual_quad_slave_trafo())
     {
-      // modify dmatrix_
-      // Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
-      // Core::LinAlg::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true); dmatrix_    =
-      // temp2;
       if (lagmultquad == Inpar::Mortar::lagmult_lin)
       {
         // basis transformation
@@ -3088,7 +3081,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
     trkzz = Mortar::matrix_row_col_transform_gids(kzz, glmdofrowmap_, glmdofrowmap_);
 
-    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+    // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
     trkdz = Mortar::matrix_col_transform_gids(kdz, glmdofrowmap_);
   }
 
@@ -3398,8 +3391,7 @@ void CONTACT::LagrangeStrategy::evaluate_force(CONTACT::ParamsInterface& cparams
   else
     eval_str_contact_rhs();
 
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (is_dual_quad_slave_trafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
   {
     systrafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
@@ -3521,8 +3513,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
     linslipDIS_->complete(*gsmdofrowmap_, *gslipt_);
   }
 
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (is_dual_quad_slave_trafo())
   {
     if (lagmultquad == Inpar::Mortar::lagmult_lin)
@@ -3711,8 +3702,6 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
       mhatmatrix_ = temp4;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3782,8 +3771,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
   lindmatrix_->complete(*gsmdofrowmap_, *gsdofrowmap_);
   linmmatrix_->complete(*gsmdofrowmap_, *gmdofrowmap_);
 
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (is_dual_quad_slave_trafo())
   {
     if (lagmultquad == Inpar::Mortar::lagmult_lin)
@@ -3972,8 +3960,6 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
       mhatmatrix_ = temp4;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3992,8 +3978,6 @@ void CONTACT::LagrangeStrategy::assemble_contact_rhs()
       if (!is_friction()) interface_[i]->assemble_tangrhs(*tangrhs_);
     }
   }
-
-  return;
 }
 
 
@@ -4045,9 +4029,6 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
     Core::LinAlg::export_to(*fm, *fmexp);
     strcontactrhs_->Update(-1., *fmexp, 1.0);
   }
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4076,8 +4057,6 @@ void CONTACT::LagrangeStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4114,8 +4093,6 @@ void CONTACT::LagrangeStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4124,9 +4101,6 @@ void CONTACT::LagrangeStrategy::evaluate_force_stiff(CONTACT::ParamsInterface& c
 {
   // call the evaluate force routine if not done before
   if (!evalForceCalled_) evaluate_force(cparams);
-
-  // bye bye
-  return;
 }
 
 
@@ -4143,8 +4117,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
     else
       return Teuchos::null;
   }
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
@@ -4189,7 +4162,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
       kdz_ptr->add(*mmatrix_, true, -1.0, 1.0);
       kdz_ptr->complete(*gsdofrowmap_, *gdisprowmap_);
 
-      // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+      // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
       mat_ptr = Mortar::matrix_col_transform_gids(kdz_ptr, lm_dof_row_map_ptr(true));
 
       // transform parallel row/column distribution of matrix kdz
@@ -4252,8 +4225,10 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
           FOUR_C_THROW("Unexpected error!");
       }
       else
+      {
         kzz_ptr =
             Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100, false, true));
+      }
 
       // build unity matrix for inactive dofs
       Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
@@ -4331,8 +4306,6 @@ void CONTACT::LagrangeStrategy::run_post_compute_x(const CONTACT::ParamsInterfac
       zincr_->Scale(stepLength, *zdir_ptr);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4348,7 +4321,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::get_rhs_block_ptr(
       return nonsmooth_Penalty_force_;
     }
     else
+    {
       return Teuchos::null;
+    }
   }
 
   Teuchos::RCP<Epetra_Vector> vec_ptr = Teuchos::null;
@@ -4367,7 +4342,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::LagrangeStrategy::get_rhs_block_ptr(
         vec_ptr->Update(1., *strcontactrhs_, 1.);
 
       Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-      if (is_dual_quad_slave_trafo() && Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(
+      if (is_dual_quad_slave_trafo() && Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(
                                             params(), "LM_QUAD") == Inpar::Mortar::lagmult_lin)
       {
         invsystrafo_->multiply(true, *vec_ptr, *tmp);
@@ -4424,7 +4399,6 @@ void CONTACT::LagrangeStrategy::reset_lagrange_multipliers(
     // ---------------------------------------------------------------------
     store_nodal_quantities(Mortar::StrategyBase::lmupdate);
   }
-  return;
 }
 
 
@@ -4440,10 +4414,8 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
   if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
 
   // shape function type and type of LM interpolation for quadratic elements
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
   //**********************************************************************
   //**********************************************************************
@@ -4455,7 +4427,7 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
     // double-check if this is a dual LM system
     if ((shapefcn != Inpar::Mortar::shape_dual &&
             shapefcn != Inpar::Mortar::shape_petrovgalerkin) &&
-        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
+        Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
             Inpar::Mortar::lagmult_const)
       FOUR_C_THROW("Condensation only for dual LM");
 
@@ -4599,8 +4571,7 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
 void CONTACT::LagrangeStrategy::update_active_set()
 {
   // get input parameter ftype
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
+  auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
 
   // assume that active set has converged and check for opposite
   activesetconv_ = true;
@@ -4639,7 +4610,7 @@ void CONTACT::LagrangeStrategy::update_active_set()
              frinode->data().txi()[1] * frinode->mo_data().lm()[1];
 
         // compute tangential part of jump FIXME -- also the teta component should be considered
-        if (Core::UTILS::integral_value<int>(params(), "GP_SLIP_INCR") == true)
+        if (params().get<bool>("GP_SLIP_INCR"))
           tjump = frinode->fri_data().jump_var()[0];
         else
           tjump = frinode->data().txi()[0] * frinode->fri_data().jump()[0] +
@@ -4906,7 +4877,7 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
 
   // get out gof here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
-  bool semismooth = Core::UTILS::integral_value<int>(params(), "SEMI_SMOOTH_NEWTON");
+  const bool semismooth = params().get<bool>("SEMI_SMOOTH_NEWTON");
   if (!semismooth)
   {
     // loop over all interfaces
@@ -4936,8 +4907,7 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   }
 
   // get input parameter ftype
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
+  auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(params(), "FRICTION");
 
   // assume that active set has converged and check for opposite
   activesetconv_ = true;
@@ -5472,8 +5442,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Epetra_Map> gstickdofs = Core::LinAlg::split_map(*gactivedofs_, *gslipdofs_);
 
   // shape function
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin)
@@ -6254,8 +6223,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(kteff);
 
   // shape function type and type of LM interpolation for quadratic elements
-  Inpar::Mortar::ShapeFcn shapefcn =
-      Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+  auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
   // In case of nonsmooth contact the scenario of contacting edges (non parallel)
   // requires a penalty regularization. Here, the penalty contriutions for this
@@ -6308,7 +6276,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
 
   // double-check if this is a dual LM system
   if (shapefcn != Inpar::Mortar::shape_dual && shapefcn != Inpar::Mortar::shape_petrovgalerkin &&
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
+      Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
           Inpar::Mortar::lagmult_const)
     FOUR_C_THROW("Condensation only for dual LM");
 
@@ -6840,8 +6808,7 @@ void CONTACT::LagrangeStrategy::run_pre_apply_jacobian_inverse(
   // if not we can skip this routine to speed things up
   if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
 
-  Inpar::Mortar::LagMultQuad lagmultquad =
-      Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+  auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (is_dual_quad_slave_trafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
   {
     if (not(systrafo_->domain_map().SameAs(kteff->domain_map()))) FOUR_C_THROW("stop");
@@ -6880,13 +6847,12 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
   disi->Scale(-1.);
   {
     // shape function type and type of LM interpolation for quadratic elements
-    Inpar::Mortar::ShapeFcn shapefcn =
-        Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
+    auto shapefcn = Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params(), "LM_SHAPEFCN");
 
     // double-check if this is a dual LM system
     if ((shapefcn != Inpar::Mortar::shape_dual &&
             shapefcn != Inpar::Mortar::shape_petrovgalerkin) &&
-        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
+        Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD") !=
             Inpar::Mortar::lagmult_const)
       FOUR_C_THROW("Condensation only for dual LM");
 

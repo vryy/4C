@@ -107,15 +107,11 @@ namespace
     for (it = myblocks.begin(); it != myblocks.end(); ++it)
     {
       it->second->print(defaultbc);
-      defaultbc
-          << "*eb" << it->first << "=\"ELEMENT\"" << std::endl
-          << "sectionname=\"\"" << std::endl
-          << "description=\"\"" << std::endl
-          << "elementname=\"\""
-          << std::endl
-          //<<"elementshape=\""
-          //<< Core::FE::CellTypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<std::endl
-          << std::endl;
+      defaultbc << "*eb" << it->first << "=\"ELEMENT\"" << std::endl
+                << "sectionname=\"\"" << std::endl
+                << "description=\"\"" << std::endl
+                << "elementname=\"\"" << std::endl
+                << std::endl;
     }
 
     // write NodeSets with specification proposal

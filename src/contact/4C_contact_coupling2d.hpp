@@ -64,7 +64,7 @@ namespace CONTACT
     */
     Inpar::Wear::WearSide wear_side()
     {
-      return Core::UTILS::integral_value<Inpar::Wear::WearSide>(imortar_, "BOTH_SIDED_WEAR");
+      return Teuchos::getIntegralValue<Inpar::Wear::WearSide>(imortar_, "BOTH_SIDED_WEAR");
     }
 
     /*!
@@ -73,7 +73,7 @@ namespace CONTACT
     */
     Inpar::Wear::WearType wear_type()
     {
-      return Core::UTILS::integral_value<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
+      return Teuchos::getIntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
     }
 
     //@}
@@ -129,7 +129,7 @@ namespace CONTACT
     */
     Inpar::Mortar::ShapeFcn shape_fcn()
     {
-      return Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     /*!

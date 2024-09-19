@@ -45,14 +45,14 @@ void Inpar::EHL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::int_parameter("ITEMIN", 1, "minimal number of iterations over fields", &ehldyn);
 
   // Type of coupling strategy between the two fields
-  setStringToIntegralParameter<int>("FIELDCOUPLING", "none",
+  setStringToIntegralParameter<FieldCoupling>("FIELDCOUPLING", "none",
       "Type of coupling strategy between fields", tuple<std::string>("none", "matching"),
-      tuple<int>(coupling_none, coupling_matching), &ehldyn);
+      tuple<FieldCoupling>(coupling_none, coupling_matching), &ehldyn);
 
   // Coupling strategy for EHL solvers
-  setStringToIntegralParameter<int>("COUPALGO", "ehl_Monolithic",
+  setStringToIntegralParameter<SolutionSchemeOverFields>("COUPALGO", "ehl_Monolithic",
       "Coupling strategies for EHL solvers", tuple<std::string>("ehl_IterStagg", "ehl_Monolithic"),
-      tuple<int>(ehl_IterStagg, ehl_Monolithic), &ehldyn);
+      tuple<SolutionSchemeOverFields>(ehl_IterStagg, ehl_Monolithic), &ehldyn);
 
   /*----------------------------------------------------------------------*/
   /* parameters for monolithic EHL */
@@ -67,26 +67,27 @@ void Inpar::EHL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::double_parameter("TOLINC", 1.0e-6,
       "tolerance for convergence check of EHL-increment in monolithic EHL", &ehldynmono);
 
-  setStringToIntegralParameter<int>("NORM_RESF", "Abs",
+  setStringToIntegralParameter<ConvNorm>("NORM_RESF", "Abs",
       "type of norm for residual convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
-      tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &ehldynmono);
+      tuple<ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &ehldynmono);
 
-  setStringToIntegralParameter<int>("NORM_INC", "Abs",
+  setStringToIntegralParameter<ConvNorm>("NORM_INC", "Abs",
       "type of norm for convergence check of primary variables in EHL",
-      tuple<std::string>("Abs", "Rel", "Mix"), tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix),
-      &ehldynmono);
+      tuple<std::string>("Abs", "Rel", "Mix"),
+      tuple<ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &ehldynmono);
 
 
-  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC", "Coupl_And_Singl",
+  setStringToIntegralParameter<BinaryOp>("NORMCOMBI_RESFINC", "Coupl_And_Singl",
       "binary operator to combine primary variables and residual force values",
       tuple<std::string>("And", "Or", "Coupl_Or_Singl", "Coupl_And_Singl", "And_Singl", "Or_Singl"),
-      tuple<int>(
+      tuple<BinaryOp>(
           bop_and, bop_or, bop_coupl_or_singl, bop_coupl_and_singl, bop_and_singl, bop_or_singl),
       &ehldynmono);
 
-  setStringToIntegralParameter<int>("ITERNORM", "Rms", "type of norm to be applied to residuals",
+  setStringToIntegralParameter<VectorNorm>("ITERNORM", "Rms",
+      "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &ehldynmono);
+      tuple<VectorNorm>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &ehldynmono);
 
   Core::UTILS::double_parameter("PTCDT", 0.1,
       "pseudo time step for pseudo-transient continuation (PTC) stabilised Newton procedure",

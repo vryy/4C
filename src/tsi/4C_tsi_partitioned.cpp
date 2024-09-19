@@ -59,10 +59,10 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // get the parameters for the convergence_check
   itmax_ = tsidyn.get<int>("ITEMAX");          // default: =1
   ittol_ = tsidynpart.get<double>("CONVTOL");  // default: =1e-6
-  normtypeinc_ = Core::UTILS::integral_value<Inpar::TSI::ConvNorm>(tsidyn, "NORM_INC");
+  normtypeinc_ = Teuchos::getIntegralValue<Inpar::TSI::ConvNorm>(tsidyn, "NORM_INC");
 
   // decide which coupling scheme is applied (e.g. one-way or full coupling)
-  coupling_ = Core::UTILS::integral_value<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+  coupling_ = Teuchos::getIntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // coupling variable
   displacementcoupling_ = tsidynpart.get<std::string>("COUPVARIABLE") == "Displacement";
@@ -74,7 +74,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // if structure field is quasi-static --> calc_velocity
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
-  quasistatic_ = (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") ==
+  quasistatic_ = (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") ==
                   Inpar::Solid::dyna_statics);
 
   // initialise internal variables with values
@@ -447,8 +447,8 @@ void TSI::Partitioned::outer_iteration_loop()
       Global::Problem::instance()->tsi_dynamic_params().sublist("PARTITIONED");
 
   // decide if one-way coupling or full coupling
-  Inpar::TSI::SolutionSchemeOverFields coupling =
-      Core::UTILS::integral_value<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+  auto coupling =
+      Teuchos::getIntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // Pure iterative staggered algorithms
   // iterative staggered TSI withOUT Aitken relaxation

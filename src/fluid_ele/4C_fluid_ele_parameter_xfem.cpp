@@ -167,9 +167,9 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::set_element_xfem_parameter(
   Teuchos::ParameterList& params_xfem = params.sublist("XFEM");
 
   vcellgausspts_ =
-      Core::UTILS::integral_value<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
+      Teuchos::getIntegralValue<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
   bcellgausspts_ =
-      Core::UTILS::integral_value<Cut::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
+      Teuchos::getIntegralValue<Cut::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
 
   //----------------------------------------------------------------
   Teuchos::ParameterList& params_xf_gen = params.sublist("XFLUID DYNAMIC/GENERAL");
@@ -181,29 +181,29 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::set_element_xfem_parameter(
   // parameters describing the coupling approach
   //---------------------------------------------
   coupling_method_ =
-      Core::UTILS::integral_value<Inpar::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
+      Teuchos::getIntegralValue<Inpar::XFEM::CouplingMethod>(params_xf_stab, "COUPLING_METHOD");
 
   hybrid_lm_l2_proj_ =
-      Core::UTILS::integral_value<Inpar::XFEM::HybridLmL2Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
+      Teuchos::getIntegralValue<Inpar::XFEM::HybridLmL2Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
   //--------------------------------------------
   // parameters for the viscous stabilization in Nitsche's method and MixedHybrid_LM methods
   //---------------------------------------------
 
-  visc_stab_trace_estimate_ = Core::UTILS::integral_value<Inpar::XFEM::ViscStabTraceEstimate>(
+  visc_stab_trace_estimate_ = Teuchos::getIntegralValue<Inpar::XFEM::ViscStabTraceEstimate>(
       params_xf_stab, "VISC_STAB_TRACE_ESTIMATE");
 
   visc_stab_hk_ =
-      Core::UTILS::integral_value<Inpar::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
+      Teuchos::getIntegralValue<Inpar::XFEM::ViscStabHk>(params_xf_stab, "VISC_STAB_HK");
 
   nit_stab_gamma_ = params_xf_stab.get<double>("NIT_STAB_FAC");
 
   nit_stab_gamma_tang_ = params_xf_stab.get<double>("NIT_STAB_FAC_TANG");
 
-  visc_adjoint_scaling_ = Core::UTILS::integral_value<Inpar::XFEM::AdjointScaling>(
+  visc_adjoint_scaling_ = Teuchos::getIntegralValue<Inpar::XFEM::AdjointScaling>(
       params_xf_stab, "VISC_ADJOINT_SYMMETRY");
 
-  is_pseudo_2d_ = (bool)Core::UTILS::integral_value<int>(params_xf_stab, "IS_PSEUDO_2D");
+  is_pseudo_2d_ = params_xf_stab.get<bool>("IS_PSEUDO_2D");
 
 
   // TODO: add a comment how to define the visc-stab-fac for eigenvalue problem
@@ -215,21 +215,21 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::set_element_xfem_parameter(
   // parameters for the convective interface stabilizations
   //---------------------------------------------
 
-  xff_conv_stab_scaling_ = Core::UTILS::integral_value<Inpar::XFEM::XffConvStabScaling>(
+  xff_conv_stab_scaling_ = Teuchos::getIntegralValue<Inpar::XFEM::XffConvStabScaling>(
       params_xf_stab, "XFF_CONV_STAB_SCALING");
-  conv_stab_scaling_ = Core::UTILS::integral_value<Inpar::XFEM::ConvStabScaling>(
-      params_xf_stab, "CONV_STAB_SCALING");
+  conv_stab_scaling_ =
+      Teuchos::getIntegralValue<Inpar::XFEM::ConvStabScaling>(params_xf_stab, "CONV_STAB_SCALING");
 
   //--------------------------------------------
   // settings for computation of Nitsche's penalty parameter
   //---------------------------------------------
 
-  mass_conservation_combo_ = Core::UTILS::integral_value<Inpar::XFEM::MassConservationCombination>(
+  mass_conservation_combo_ = Teuchos::getIntegralValue<Inpar::XFEM::MassConservationCombination>(
       params_xf_stab, "MASS_CONSERVATION_COMBO");
-  mass_conservation_scaling_ = Core::UTILS::integral_value<Inpar::XFEM::MassConservationScaling>(
+  mass_conservation_scaling_ = Teuchos::getIntegralValue<Inpar::XFEM::MassConservationScaling>(
       params_xf_stab, "MASS_CONSERVATION_SCALING");
 
-  intterms_prev_state_ = Core::UTILS::integral_value<Inpar::XFEM::InterfaceTermsPreviousState>(
+  intterms_prev_state_ = Teuchos::getIntegralValue<Inpar::XFEM::InterfaceTermsPreviousState>(
       params_xf_gen, "INTERFACE_TERMS_PREVIOUS_STATE");
 
   //--------------------------------------------

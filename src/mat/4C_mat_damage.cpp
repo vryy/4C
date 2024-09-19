@@ -70,7 +70,7 @@ Mat::PAR::Damage::Damage(const Core::Mat::PAR::Parameter::Data& matdata)
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Damage::create_material()
 {
@@ -82,7 +82,7 @@ Mat::DamageType Mat::DamageType::instance_;
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::DamageType::create(Core::Communication::UnpackBuffer& buffer)
 {

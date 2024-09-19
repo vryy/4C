@@ -360,7 +360,7 @@ int Discret::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
 )
 {
   FLD::IntFaceAction act = FLD::ifa_none;
-  act = Core::UTILS::get_as_enum<FLD::IntFaceAction>(params, "action");
+  act = Teuchos::getIntegralValue<FLD::IntFaceAction>(params, "action");
 
   switch (act)
   {

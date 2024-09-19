@@ -36,19 +36,22 @@ void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterL
       "prefactor(s) \f$k_i\f$ of potential law \f$\\Phi(r) = \\sum_i (k_i * r^{-m_i})\f$.",
       &beampotential);
 
-  setStringToIntegralParameter<int>("BEAMPOTENTIAL_TYPE", "Surface",
-      "Type of potential interaction: surface (default) or volume potential",
+  setStringToIntegralParameter<Inpar::BEAMPOTENTIAL::BeamPotentialType>("BEAMPOTENTIAL_TYPE",
+      "Surface", "Type of potential interaction: surface (default) or volume potential",
       tuple<std::string>("Surface", "surface", "Volume", "volume"),
-      tuple<int>(beampot_surf, beampot_surf, beampot_vol, beampot_vol), &beampotential);
+      tuple<Inpar::BEAMPOTENTIAL::BeamPotentialType>(
+          beampot_surf, beampot_surf, beampot_vol, beampot_vol),
+      &beampotential);
 
-  setStringToIntegralParameter<int>("STRATEGY", "DoubleLengthSpecific_LargeSepApprox",
+  setStringToIntegralParameter<Inpar::BEAMPOTENTIAL::BeamPotentialStrategy>("STRATEGY",
+      "DoubleLengthSpecific_LargeSepApprox",
       "strategy to evaluate interaction potential: double/single length specific, "
       "small/large separation approximation, ...",
       tuple<std::string>("DoubleLengthSpecific_LargeSepApprox",
           "DoubleLengthSpecific_SmallSepApprox", "SingleLengthSpecific_SmallSepApprox",
           "SingleLengthSpecific_SmallSepApprox_Simple"),
-      tuple<int>(strategy_doublelengthspec_largesepapprox, strategy_doublelengthspec_smallsepapprox,
-          strategy_singlelengthspec_smallsepapprox,
+      tuple<Inpar::BEAMPOTENTIAL::BeamPotentialStrategy>(strategy_doublelengthspec_largesepapprox,
+          strategy_doublelengthspec_smallsepapprox, strategy_singlelengthspec_smallsepapprox,
           strategy_singlelengthspec_smallsepapprox_simple),
       &beampotential);
 
@@ -57,10 +60,10 @@ void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterL
       "than this cutoff radius",
       &beampotential);
 
-  setStringToIntegralParameter<int>("REGULARIZATION_TYPE", "none",
-      "Type of regularization applied to the force law",
+  setStringToIntegralParameter<Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
+      "REGULARIZATION_TYPE", "none", "Type of regularization applied to the force law",
       tuple<std::string>("linear_extrapolation", "constant_extrapolation", "None", "none"),
-      tuple<int>(
+      tuple<Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType>(
           regularization_linear, regularization_constant, regularization_none, regularization_none),
       &beampotential);
 
@@ -94,13 +97,13 @@ void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterL
       &beampotential);
 
   // enable octree search and determine type of bounding box (aabb = axis aligned, spbb = spherical)
-  setStringToIntegralParameter<int>("BEAMPOT_OCTREE", "None",
+  setStringToIntegralParameter<Inpar::BEAMCONTACT::OctreeType>("BEAMPOT_OCTREE", "None",
       "octree and bounding box type for octree search routine",
       tuple<std::string>(
           "None", "none", "octree_axisaligned", "octree_cylorient", "octree_spherical"),
-      tuple<int>(Inpar::BEAMCONTACT::boct_none, Inpar::BEAMCONTACT::boct_none,
-          Inpar::BEAMCONTACT::boct_aabb, Inpar::BEAMCONTACT::boct_cobb,
-          Inpar::BEAMCONTACT::boct_spbb),
+      tuple<Inpar::BEAMCONTACT::OctreeType>(Inpar::BEAMCONTACT::boct_none,
+          Inpar::BEAMCONTACT::boct_none, Inpar::BEAMCONTACT::boct_aabb,
+          Inpar::BEAMCONTACT::boct_cobb, Inpar::BEAMCONTACT::boct_spbb),
       &beampotential);
 
   Core::UTILS::int_parameter(

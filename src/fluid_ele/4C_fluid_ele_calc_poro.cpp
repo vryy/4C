@@ -105,7 +105,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_service(Discret::ELEM
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -6257,7 +6257,8 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
   Core::LinAlg::Matrix<nsd_, 1> deltavel(true);
   double deltap = 0.0;
 
-  const int calcerr = Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors

@@ -41,7 +41,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann_by_element(Core::Elements::Eleme
     default:
       FOUR_C_THROW(
           "The discretization type you are trying to evaluate the Neumann condition for is not yet "
-          "implemented in EvaluateNeumannByElement.");
+          "implemented in evaluate_neumann_by_element.");
   }
 }
 

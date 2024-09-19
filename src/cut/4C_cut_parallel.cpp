@@ -1046,7 +1046,7 @@ Cut::VolumeCell* Cut::Parallel::find_volume_cell(
         Cut::Output::gmsh_coord_dump(file, coord, 0);
       }
     }
-    //  Cut::Output::GmshEndSection(file, true);
+
     for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
     {
       VolumeCell* cell = *c;

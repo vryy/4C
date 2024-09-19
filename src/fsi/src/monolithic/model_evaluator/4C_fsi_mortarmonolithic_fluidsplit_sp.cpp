@@ -251,7 +251,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
     // -------------------------------------------------------------------------#
 
     // enable debugging
-    if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (fsidyn.get<bool>("DEBUGOUTPUT"))
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -264,8 +264,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
   const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
-    const bool restartfrompartfsi =
-        Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+    const bool restartfrompartfsi = timeparams_.get<bool>("RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       if (comm_.MyPID() == 0)
@@ -977,8 +976,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm =
-      static_cast<bool>(Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING"));
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1032,8 +1030,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm =
-      static_cast<bool>(Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING"));
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {

@@ -45,7 +45,7 @@ Mat::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ThermoStVenantKirchhoff::create_material()
 {
@@ -57,7 +57,7 @@ Mat::ThermoStVenantKirchhoffType Mat::ThermoStVenantKirchhoffType::instance_;
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::ThermoStVenantKirchhoffType::create(
     Core::Communication::UnpackBuffer& buffer)

@@ -1617,7 +1617,7 @@ namespace Core::FE
 
     // compute integration factor
     fac = intpoints.ip().qwgt[gpid] * drs;
-  };  // EvalShapeFuncAtBouIntPoint
+  };  // eval_shape_func_at_bou_int_point
 
   // Calculate mass-consistent node normals for the boundary element
   // according to dissertation of Prof. Wall, equation (7.13)
@@ -1655,7 +1655,7 @@ namespace Core::FE
             (discretization.name() == "ale") or (discretization.name() == "structure")))
     {
       FOUR_C_THROW(
-          "ElementNodeNormal: The mass-consistent-node-normal calculation can currently only be "
+          "element_node_normal: The mass-consistent-node-normal calculation can currently only be "
           "performed for discretization types 'fluid', 'inflow', 'ale' and 'structure'.");
     }
 
@@ -1705,7 +1705,7 @@ namespace Core::FE
         }
       }
     } /* end of loop over integration points gpid */
-  }   // ElementNodeNormal
+  }   // element_node_normal
 
 }  // namespace Core::FE
 

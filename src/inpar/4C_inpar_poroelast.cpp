@@ -30,32 +30,35 @@ void Inpar::PoroElast::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList>
       list->sublist("POROELASTICITY DYNAMIC", false, "Poroelasticity");
 
   // Coupling strategy for (monolithic) porous media solvers
-  setStringToIntegralParameter<int>("COUPALGO", "poro_monolithic",
-      "Coupling strategies for poroelasticity solvers",
+  setStringToIntegralParameter<Inpar::PoroElast::SolutionSchemeOverFields>("COUPALGO",
+      "poro_monolithic", "Coupling strategies for poroelasticity solvers",
       tuple<std::string>("poro_partitioned", "poro_monolithic", "poro_monolithicstructuresplit",
           "poro_monolithicfluidsplit", "poro_monolithicnopenetrationsplit",
           "poro_monolithicmeshtying"),
-      tuple<int>(Partitioned, Monolithic, Monolithic_structuresplit, Monolithic_fluidsplit,
-          Monolithic_nopenetrationsplit, Monolithic_meshtying),
+      tuple<Inpar::PoroElast::SolutionSchemeOverFields>(Partitioned, Monolithic,
+          Monolithic_structuresplit, Monolithic_fluidsplit, Monolithic_nopenetrationsplit,
+          Monolithic_meshtying),
       &poroelastdyn);
 
   // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
   // approximation)
-  setStringToIntegralParameter<int>("PHYSICAL_TYPE", "Poro", "Physical Type of Porofluid",
-      tuple<std::string>("Poro", "Poro_P1"), tuple<int>(Inpar::FLUID::poro, Inpar::FLUID::poro_p1),
-      &poroelastdyn);
+  setStringToIntegralParameter<Inpar::FLUID::PhysicalType>("PHYSICAL_TYPE", "Poro",
+      "Physical Type of Porofluid", tuple<std::string>("Poro", "Poro_P1"),
+      tuple<Inpar::FLUID::PhysicalType>(Inpar::FLUID::poro, Inpar::FLUID::poro_p1), &poroelastdyn);
 
   // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
   // approximation)
-  setStringToIntegralParameter<int>("TRANSIENT_TERMS", "all",
-      "which equation includes transient terms",
+  setStringToIntegralParameter<Inpar::PoroElast::TransientEquationsOfPoroFluid>("TRANSIENT_TERMS",
+      "all", "which equation includes transient terms",
       tuple<std::string>("none", "momentum", "continuity", "all"),
-      tuple<int>(transient_none, transient_momentum_only, transient_continuity_only, transient_all),
+      tuple<Inpar::PoroElast::TransientEquationsOfPoroFluid>(
+          transient_none, transient_momentum_only, transient_continuity_only, transient_all),
       &poroelastdyn);
 
   // Output type
   Core::UTILS::int_parameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poroelastdyn);
+
   // Time loop control
   Core::UTILS::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &poroelastdyn);
   Core::UTILS::double_parameter("MAXTIME", 1000.0, "total simulation time", &poroelastdyn);
@@ -90,29 +93,34 @@ void Inpar::PoroElast::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList>
   Core::UTILS::double_parameter("TOLRES_NCOUP", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
 
-  setStringToIntegralParameter<int>("NORM_INC", "AbsSingleFields",
+  setStringToIntegralParameter<Inpar::PoroElast::ConvNorm>("NORM_INC", "AbsSingleFields",
       "type of norm for primary variables convergence check",
       tuple<std::string>("AbsGlobal", "AbsSingleFields"),
-      tuple<int>(convnorm_abs_global, convnorm_abs_singlefields), &poroelastdyn);
+      tuple<Inpar::PoroElast::ConvNorm>(convnorm_abs_global, convnorm_abs_singlefields),
+      &poroelastdyn);
 
-  setStringToIntegralParameter<int>("NORM_RESF", "AbsSingleFields",
+  setStringToIntegralParameter<Inpar::PoroElast::ConvNorm>("NORM_RESF", "AbsSingleFields",
       "type of norm for residual convergence check",
       tuple<std::string>("AbsGlobal", "AbsSingleFields"),
-      tuple<int>(convnorm_abs_global, convnorm_abs_singlefields), &poroelastdyn);
+      tuple<Inpar::PoroElast::ConvNorm>(convnorm_abs_global, convnorm_abs_singlefields),
+      &poroelastdyn);
 
-  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC", "And",
+  setStringToIntegralParameter<Inpar::PoroElast::BinaryOp>("NORMCOMBI_RESFINC", "And",
       "binary operator to combine primary variables and residual force values",
-      tuple<std::string>("And", "Or"), tuple<int>(bop_and, bop_or), &poroelastdyn);
+      tuple<std::string>("And", "Or"), tuple<Inpar::PoroElast::BinaryOp>(bop_and, bop_or),
+      &poroelastdyn);
 
-  setStringToIntegralParameter<int>("VECTORNORM_RESF", "L2",
+  setStringToIntegralParameter<Inpar::PoroElast::VectorNorm>("VECTORNORM_RESF", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &poroelastdyn);
+      tuple<Inpar::PoroElast::VectorNorm>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf),
+      &poroelastdyn);
 
-  setStringToIntegralParameter<int>("VECTORNORM_INC", "L2",
+  setStringToIntegralParameter<Inpar::PoroElast::VectorNorm>("VECTORNORM_INC", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &poroelastdyn);
+      tuple<Inpar::PoroElast::VectorNorm>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf),
+      &poroelastdyn);
 
   Core::UTILS::bool_parameter(
       "SECONDORDER", "Yes", "Second order coupling at the interface.", &poroelastdyn);

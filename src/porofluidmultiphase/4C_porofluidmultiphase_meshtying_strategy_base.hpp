@@ -38,9 +38,9 @@ namespace POROFLUIDMULTIPHASE
         : porofluidmultitimint_(porofluidmultitimint),
           params_(probparams),
           poroparams_(poroparams),
-          vectornormfres_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
+          vectornormfres_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
               poroparams_, "VECTORNORM_RESF")),
-          vectornorminc_(Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
+          vectornorminc_(Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::VectorNorm>(
               poroparams_, "VECTORNORM_INC"))
     {
       return;

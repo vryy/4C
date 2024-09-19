@@ -30,6 +30,7 @@
 
 #include <Epetra_MpiComm.h>
 
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -62,7 +63,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int mat
 
 
 /*----------------------------------------------------------------------*
- | set element data for cloned element                       dano 12/11 |
+ | set element data for cloned element                                  |
  *----------------------------------------------------------------------*/
 void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
@@ -148,7 +149,7 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();
 
-  bool matchinggrid = Core::UTILS::integral_value<bool>(tsidyn, "MATCHINGGRID");
+  bool matchinggrid = tsidyn.get<bool>("MATCHINGGRID");
 
   // we use the structure discretization as layout for the temperature discretization
   if (structdis->num_global_nodes() == 0) FOUR_C_THROW("Structure discretization is empty!");
@@ -238,7 +239,7 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
     thermdis->fill_complete(true, false, false);
   }
 
-}  // SetupTSI()
+}  // setup_tsi()
 
 
 /*----------------------------------------------------------------------*
@@ -345,6 +346,7 @@ void TSI::UTILS::TSIMaterialStrategy::assign_material1_to2(
   // done
   return;
 }
+
 
 
 /*----------------------------------------------------------------------*

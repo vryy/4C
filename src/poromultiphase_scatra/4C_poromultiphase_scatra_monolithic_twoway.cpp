@@ -106,19 +106,18 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::init(
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
 
-  fdcheck_ = Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::FdCheck>(
+  fdcheck_ = Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::FdCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
   equilibration_method_ = Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
       algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
-  solveradapttol_ =
-      (Core::UTILS::integral_value<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+  solveradapttol_ = algoparams.sublist("MONOLITHIC").get<bool>("ADAPTCONV");
 
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
-  solve_structure_ = Core::UTILS::integral_value<int>(poroparams, "SOLVE_STRUCTURE");
+  solve_structure_ = poroparams.get<bool>("SOLVE_STRUCTURE");
   if (!solve_structure_) struct_offset_ = 0;
 }
 
@@ -273,9 +272,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_solver()
 
   create_linear_solver(solverparams, solvertype);
 
-  vectornormfres_ = Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
+  vectornormfres_ = Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
-  vectornorminc_ = Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
+  vectornorminc_ = Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::VectorNorm>(
       poromultscatradyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
 }
 
@@ -286,7 +285,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::create_linear_s
 {
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   // no need to do the rest for direct solvers
   if (solvertype == Core::LinearSolver::SolverType::umfpack or

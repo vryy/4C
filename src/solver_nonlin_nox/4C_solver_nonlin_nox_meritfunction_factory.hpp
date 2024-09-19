@@ -45,11 +45,13 @@ namespace NOX
        private:
         //! unconstraint factory
         Teuchos::RCP<::NOX::MeritFunction::Generic> build_unconstrained_merit_function(
-            const std::string& mftype, const NOX::Nln::GlobalData& noxNlnGlobalData) const;
+            const NOX::Nln::MeritFunction::MeritFctName& mftype,
+            const NOX::Nln::GlobalData& noxNlnGlobalData) const;
 
         //! constraint factory
         Teuchos::RCP<::NOX::MeritFunction::Generic> build_constrained_merit_function(
-            const std::string& mftype, const NOX::Nln::GlobalData& noxNlnGlobalData) const;
+            const NOX::Nln::MeritFunction::MeritFctName& mftype,
+            const NOX::Nln::GlobalData& noxNlnGlobalData) const;
 
       };  // class Factory
 

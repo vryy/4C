@@ -1644,7 +1644,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
       ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const auto errortype =
-      Core::UTILS::get_as_enum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
+      Teuchos::getIntegralValue<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::ScaTra::calcerror_byfunction:

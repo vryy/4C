@@ -40,7 +40,7 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
                         .get<double>("SEARCH_RADIUS")),
       edgebased_fluidstabilization_(false)
 {
-  edgebased_fluidstabilization_ = (Core::UTILS::integral_value<Inpar::FLUID::StabType>(
+  edgebased_fluidstabilization_ = (Teuchos::getIntegralValue<Inpar::FLUID::StabType>(
                                        Global::Problem::instance()->fluid_dynamic_params().sublist(
                                            "RESIDUAL-BASED STABILIZATION"),
                                        "STABTYPE") == Inpar::FLUID::stabtype_edgebased);
@@ -128,11 +128,10 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search(
 
 /*----------------------------------------------------------------------*/
 
-// todo Maybe we can use Core::Rebalance::GhostDiscretizationOnAllProcs instead
+// todo Maybe we can use Core::Rebalance::ghost_discretization_on_all_procs instead
 // todo Needs to be adapted as soon as problems can contain beam and general structure nodes
 void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& discretization)
 {
-  // Core::Rebalance::GhostDiscretizationOnAllProcs(structure_->discretization());
   std::vector<int> allproc(discretization.get_comm().NumProc());
   for (int i = 0; i < discretization.get_comm().NumProc(); ++i) allproc[i] = i;
 

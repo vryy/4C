@@ -197,8 +197,8 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
   double pptan = interface_params().get<double>("PENALTYPARAMTAN");
   double frcoeff = interface_params().get<double>("FRCOEFF");
 
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < slave_row_nodes()->NumMyElements(); ++i)
@@ -553,8 +553,8 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
   double pptan = interface_params().get<double>("PENALTYPARAMTAN");
   double frcoeff = interface_params().get<double>("FRCOEFF");
 
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < slave_row_nodes()->NumMyElements(); ++i)
@@ -1742,12 +1742,12 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
   if (sticknodes->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  const auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = Core::UTILS::integral_value<int>(interface_params(), "FRLESS_FIRST");
+  const bool gp_slip = interface_params().get<bool>("GP_SLIP_INCR");
+  const bool frilessfirst = interface_params().get<bool>("FRLESS_FIRST");
 
   double frcoeff = 0.;  // the friction coefficient actually used
   bool consistent = false;
@@ -1761,8 +1761,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
   consistent = true;
 #endif
 
-  if (consistent &&
-      Core::UTILS::integral_value<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT"))
+  if (consistent && interface_params().get<bool>("REGULARIZED_NORMAL_CONTACT"))
     FOUR_C_THROW("no consistent stick for regularized contact");
 
   // loop over all stick nodes of the interface
@@ -2566,13 +2565,13 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
   if (slipnodes_->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frbound = interface_params().get<double>("FRBOUND");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = Core::UTILS::integral_value<int>(interface_params(), "FRLESS_FIRST");
+  const bool gp_slip = interface_params().get<bool>("GP_SLIP_INCR");
+  const bool frilessfirst = interface_params().get<bool>("FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -4248,14 +4247,13 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
 void CONTACT::Interface::assemble_normal_contact_regularization(
     Core::LinAlg::SparseMatrix& d_disp, Core::LinAlg::SparseMatrix& d_lm, Epetra_Vector& f)
 {
-  const bool regularization =
-      Core::UTILS::integral_value<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+  const bool regularization = interface_params().get<bool>("REGULARIZED_NORMAL_CONTACT");
   if (!regularization) FOUR_C_THROW("you should not be here");
   const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
   const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
   const int dim = Interface::n_dim();
-  static const Inpar::CONTACT::ConstraintDirection constr_direction =
-      Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
+  static const auto constr_direction =
+      Teuchos::getIntegralValue<Inpar::CONTACT::ConstraintDirection>(
           interface_params(), "CONSTRAINT_DIRECTIONS");
 
   for (int i = 0; i < active_nodes()->NumMyElements(); ++i)
@@ -4327,13 +4325,13 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
   if (slipnodes_->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  Inpar::CONTACT::FrictionType ftype =
-      Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  auto ftype =
+      Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = Core::UTILS::integral_value<int>(interface_params(), "GP_SLIP_INCR");
+  const bool gp_slip = interface_params().get<bool>("GP_SLIP_INCR");
   if (gp_slip) FOUR_C_THROW("not implemented");
-  bool frilessfirst = Core::UTILS::integral_value<int>(interface_params(), "FRLESS_FIRST");
+  const bool frilessfirst = interface_params().get<bool>("FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -4430,8 +4428,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
       }
 
       // setup regularization
-      static const bool regularization =
-          Core::UTILS::integral_value<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+      static const bool regularization = interface_params().get<bool>("REGULARIZED_NORMAL_CONTACT");
       if (!regularization) FOUR_C_THROW("you should not be here");
       static const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
       static const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");

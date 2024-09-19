@@ -47,8 +47,8 @@ void tsi_dyn_drt()
   // access the problem-specific parameter list
   const Teuchos::ParameterList& sdynparams =
       Global::Problem::instance()->structural_dynamic_params();
-  const Inpar::TSI::SolutionSchemeOverFields coupling =
-      Core::UTILS::integral_value<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
+  const auto coupling =
+      Teuchos::getIntegralValue<Inpar::TSI::SolutionSchemeOverFields>(tsidyn, "COUPALGO");
 
   // create an empty TSI::Algorithm instance
   Teuchos::RCP<TSI::Algorithm> tsi;

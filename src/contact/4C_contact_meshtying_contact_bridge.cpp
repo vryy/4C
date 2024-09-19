@@ -56,8 +56,7 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Core::FE::Discretization
 
   // Sanity check for writing output for each interface
   {
-    const bool writeInterfaceOutput =
-        Core::UTILS::integral_value<bool>(get_strategy().params(), "OUTPUT_INTERFACES");
+    const bool writeInterfaceOutput = get_strategy().params().get<bool>("OUTPUT_INTERFACES");
 
     if (writeInterfaceOutput && have_contact() && contact_manager()->get_strategy().is_friction())
       FOUR_C_THROW(
@@ -128,8 +127,7 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
   // This is an optional feature, so we check if it has been enabled in the input file
-  const bool writeInterfaceOutput =
-      Core::UTILS::integral_value<bool>(get_strategy().params(), "OUTPUT_INTERFACES");
+  const bool writeInterfaceOutput = get_strategy().params().get<bool>("OUTPUT_INTERFACES");
   if (writeInterfaceOutput)
   {
     // contact

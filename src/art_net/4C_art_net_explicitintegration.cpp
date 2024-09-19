@@ -197,7 +197,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
     Wfn_->Update(1.0, *Wfo_, 0.0);
     Wbn_->Update(1.0, *Wbo_, 0.0);
     // eleparams.set("lmowner",lmowner);
-    eleparams.set<int>("action", Arteries::get_initial_artery_state);
+    eleparams.set<Arteries::Action>("action", Arteries::get_initial_artery_state);
     discret_->evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
@@ -300,7 +300,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", Arteries::calc_sys_matrix_rhs);
+    eleparams.set<Arteries::Action>("action", Arteries::calc_sys_matrix_rhs);
     eleparams.set("time step size", dta_);
 
     // other parameters that might be needed by the elements
@@ -328,7 +328,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", Arteries::solve_riemann_problem);
+    eleparams.set<Arteries::Action>("action", Arteries::solve_riemann_problem);
 
     // set vecotr values needed by elements
     discret_->clear_state();
@@ -357,7 +357,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", Arteries::set_term_bc);
+    eleparams.set<Arteries::Action>("action", Arteries::set_term_bc);
 
     // set vecotr values needed by elements
     discret_->clear_state();
@@ -423,7 +423,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", Arteries::evaluate_wf_wb);
+    eleparams.set<Arteries::Action>("action", Arteries::evaluate_wf_wb);
 
     // set vecotr values needed by elements
     discret_->clear_state();
@@ -448,7 +448,7 @@ void Arteries::ArtNetExplicitTimeInt::solve_scatra()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", Arteries::evaluate_scatra_analytically);
+    eleparams.set<Arteries::Action>("action", Arteries::evaluate_scatra_analytically);
 
     // set vecotr values needed by elements
     discret_->clear_state();
@@ -472,7 +472,7 @@ void Arteries::ArtNetExplicitTimeInt::solve_scatra()
     Teuchos::ParameterList eleparams;
 
     // action for elements
-    eleparams.set<int>("action", Arteries::set_scatra_term_bc);
+    eleparams.set<Arteries::Action>("action", Arteries::set_scatra_term_bc);
 
     // set vecotr values needed by elements
     discret_->clear_state();
@@ -806,7 +806,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", Arteries::calc_postpro_vals);
+  eleparams.set<Arteries::Action>("action", Arteries::calc_postpro_vals);
 
   // set vecotr values needed by elements
   discret_->clear_state();
@@ -839,7 +839,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", Arteries::calc_scatra_from_scatra_fb);
+  eleparams.set<Arteries::Action>("action", Arteries::calc_scatra_from_scatra_fb);
 
   // set vecotr values needed by elements
   discret_->clear_state();

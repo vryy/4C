@@ -54,7 +54,7 @@ void ElCh::MovingBoundaryAlgorithm::init()
         "interface!");
   }
 
-  pseudotransient_ = (Core::UTILS::integral_value<Inpar::ElCh::ElchMovingBoundary>(elch_params_,
+  pseudotransient_ = (Teuchos::getIntegralValue<Inpar::ElCh::ElchMovingBoundary>(elch_params_,
                           "MOVINGBOUNDARY") == Inpar::ElCh::elch_mov_bndry_pseudo_transient);
 }
 

@@ -40,7 +40,7 @@ void BEAMINTERACTION::BeamInteractionParams::init()
   Teuchos::ParameterList const& params_list =
       Global::Problem::instance()->beam_interaction_params();
 
-  rep_strategy_ = Core::UTILS::integral_value<Inpar::BEAMINTERACTION::RepartitionStrategy>(
+  rep_strategy_ = Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::RepartitionStrategy>(
       params_list, "REPARTITIONSTRATEGY");
 
   search_strategy_ = Teuchos::getIntegralValue<Inpar::BEAMINTERACTION::SearchStrategy>(

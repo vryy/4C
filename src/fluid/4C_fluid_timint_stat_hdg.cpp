@@ -179,9 +179,9 @@ void FLD::TimIntStationaryHDG::set_initial_flow_field(
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
   Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
-  initParams.set<int>("action", FLD::project_fluid_field);
+  initParams.set<FLD::Action>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);
-  initParams.set<int>("initfield", initfield);
+  initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
   // loop over all elements on the processor
   Core::Elements::Element::LocationArray la(2);
   double error = 0;
@@ -233,11 +233,11 @@ void FLD::TimIntStationaryHDG::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_time_parameter);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<FLD::Action>("action", FLD::set_time_parameter);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
 
   // set general element parameters
   eleparams.set("dt", dta_);

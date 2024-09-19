@@ -12,10 +12,8 @@
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_micromaterial.hpp"
-#include "4C_mat_viscoanisotropic.hpp"
 #include "4C_so3_shw6.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -179,10 +177,8 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       Core::FE::extract_my_values(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-          params, "iostress", Inpar::Solid::stress_none);
-      auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-          params, "iostrain", Inpar::Solid::strain_none);
+      auto iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+      auto iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
       soshw6_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
           params, iostress, iostrain);
       {
@@ -390,7 +386,9 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     // std::cout << "Warning: Solid-Shell Wegde6 without EAS" << std::endl;
   }
   else
+  {
     FOUR_C_THROW("Unknown EAS-type for solid wedge6");  // ------------------- EAS
+  }
 
   /*
   ** ANS Element technology to remedy
@@ -760,9 +758,11 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
 
   // rhs norm of eas equations
   if (eastype_ != soshw6_easnone && split_res)
+  {
     // only add for row-map elements
     if (params.get<int>("MyPID") == owner())
       params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::norm2(feas), 2.);
+  }
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
@@ -799,8 +799,6 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
       }
     }  // -------------------------------------------------------------------- EAS
   }
-
-  return;
 }
 
 
@@ -910,9 +908,6 @@ void Discret::ELEMENTS::SoShw6::soshw6_anssetup(
       }
     }
   }
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -976,8 +971,10 @@ void Discret::ELEMENTS::SoShw6::soshw6_evaluate_t(
   solve_for_inverseT.set_matrix(TinvT);
   int err2 = solve_for_inverseT.factor();
   int err = solve_for_inverseT.invert();
-  if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
-  return;
+  if ((err != 0) && (err2 != 0))
+  {
+    FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1151,7 +1148,6 @@ void Discret::ELEMENTS::SoShw6::soshw6_cauchy(
   (*elestress)(gp, 3) = cauchystress(0, 1);
   (*elestress)(gp, 4) = cauchystress(1, 2);
   (*elestress)(gp, 5) = cauchystress(0, 2);
-  return;
 }
 
 

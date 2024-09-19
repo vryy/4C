@@ -73,7 +73,8 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
   Teuchos::RCP<Core::FE::Discretization> thermodis = problem->get_dis("thermo");
 
   // safety check
-  if (structparams.get<std::string>("INT_STRATEGY") == "Old")
+  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(structparams, "INT_STRATEGY") ==
+      Inpar::Solid::IntegrationStrategy::int_old)
     FOUR_C_THROW("Old structural time integration is not supported");
 
   struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(structparams);
@@ -119,16 +120,17 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
     FOUR_C_THROW("unexpected dof sets in thermo field");
 
   // is adaptive time stepping activated?
-  if (Core::UTILS::integral_value<bool>(sstitimeparams, "ADAPTIVE_TIMESTEPPING"))
+  if (sstitimeparams.get<bool>("ADAPTIVE_TIMESTEPPING"))
   {
     // safety check: adaptive time stepping in one of the subproblems?
-    if (!Core::UTILS::integral_value<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+    if (!scatraparams.get<bool>("ADAPTIVE_TIMESTEPPING"))
       FOUR_C_THROW(
           "Must provide adaptive time stepping in one of the subproblems. (Currently just ScaTra)");
-    if (Core::UTILS::integral_value<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
-        Inpar::Solid::timada_kind_none)
+    if (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(
+            structparams.sublist("TIMEADAPTIVITY"), "KIND") != Inpar::Solid::timada_kind_none)
       FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-    if (Core::UTILS::integral_value<int>(structparams, "DYNAMICTYP") == Inpar::Solid::dyna_ab2)
+    if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP") ==
+        Inpar::Solid::dyna_ab2)
       FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
   }
 
@@ -456,14 +458,14 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::clone_thermo_params(
   }
 
   thermoparams_copy.set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
-  thermoparams_copy.sublist("S2I COUPLING").set<std::string>("SLAVEONLY", "No");
+  thermoparams_copy.sublist("S2I COUPLING").set<bool>("SLAVEONLY", false);
 
-  if (Core::UTILS::integral_value<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
       Inpar::ScaTra::outputscalars_none)
     thermoparams_copy.set<bool>("output_file_name_discretization", true);
 
   // adaptive time stepping only from scatra
-  thermoparams_copy.set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
+  thermoparams_copy.set<bool>("ADAPTIVE_TIMESTEPPING", false);
 
   return thermoparams_copy;
 }

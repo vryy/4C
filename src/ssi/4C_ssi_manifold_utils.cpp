@@ -97,8 +97,10 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     : block_map_scatra_(ssi_mono.block_map_scatra()),
       block_map_scatra_manifold_(ssi_mono.block_map_scatra_manifold()),
       block_map_structure_(ssi_mono.block_map_structure()),
-      do_output_(Core::UTILS::integral_value<bool>(
-          Global::Problem::instance()->ssi_control_params().sublist("MANIFOLD"), "OUTPUT_INFLOW")),
+      do_output_(Global::Problem::instance()
+                     ->ssi_control_params()
+                     .sublist("MANIFOLD")
+                     .get<bool>("OUTPUT_INFLOW")),
       full_map_manifold_(ssi_mono.maps_sub_problems()->Map(
           UTILS::SSIMaps::get_problem_position(Subproblem::manifold))),
       full_map_scatra_(ssi_mono.maps_sub_problems()->Map(
@@ -863,7 +865,9 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
         Core::LinAlg::split_map(*ssi_maps_->scatra_manifold_dof_row_map(), *slave_dof_map);
   }
   else
+  {
     condensed_dof_map_ = ssi_maps_->scatra_manifold_dof_row_map();
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1043,7 +1047,9 @@ void SSI::ManifoldMeshTyingStrategySparse::apply_meshtying_to_manifold_matrix(
         // indices
         else if (ssi_manifold_sparse->epetra_matrix()->InsertGlobalValues(
                      dofgid_slave, 1, &one, &dofgid_slave))
+        {
           FOUR_C_THROW("InsertGlobalValues failed!");
+        }
       }
     }
   }
@@ -1123,7 +1129,9 @@ void SSI::ManifoldMeshTyingStrategyBlock::apply_meshtying_to_manifold_matrix(
               // column indices
               else if (ssi_manifold_block->matrix(row, row).epetra_matrix()->InsertGlobalValues(
                            dofgid_slave, 1, &one, &dofgid_slave))
+              {
                 FOUR_C_THROW("InsertGlobalValues failed!");
+              }
             }
           }
         }

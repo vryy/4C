@@ -266,7 +266,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_service(Discret::ELEME
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -343,10 +343,9 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(Discret::ELEMENTS
   Core::LinAlg::Matrix<nsd_, nsd_> dervel(true);
   Core::LinAlg::Matrix<nsd_, 1> xyz(true);
 
-  const Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
-  const int calcerrfunctno =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "error function number");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
+  const int calcerrfunctno = params.get<int>("error function number");
 
   double err_u = 0., err_p = 0., err_h = 0., norm_u = 0., norm_p = 0., norm_h = 0.;
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -418,7 +417,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_field(Discret::ELEMENTS
       "Wrong size in project vector 2");
 
   // get initial function and current time
-  const int* initfield = params.getPtr<int>("initfield");
+  const auto* initfield = params.getPtr<Inpar::FLUID::InitialField>("initfield");
   const int* startfunc = params.getPtr<int>("startfuncno");
   double* time = params.getPtr<double>("time");
 
@@ -1361,8 +1360,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(
 
   // get function used to evaluate the error
   const Teuchos::ParameterList fluidparams = Global::Problem::instance()->fluid_dynamic_params();
-  const Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::integral_value<Inpar::FLUID::CalcError>(fluidparams, "CALCERROR");
+  const auto calcerr = Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(fluidparams, "CALCERROR");
   const int calcerrfunctno = fluidparams.get<int>("CALCERRORFUNCNO");
 
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)

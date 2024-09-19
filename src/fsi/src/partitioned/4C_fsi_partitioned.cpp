@@ -89,9 +89,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
       Global::Problem::instance()->spatial_approximation_type()));
 
 
-  if ((Core::UTILS::integral_value<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
-          1)  // matching meshes
-      and (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fsi_xfem) and
+  if (fsidyn.sublist("PARTITIONED SOLVER").get<std::string>("COUPMETHOD") == "conforming" and
+      (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fsi_xfem) and
       (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fbi))
   {
     matchingnodes_ = true;
@@ -103,9 +102,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     if (coupsf.master_dof_map()->NumGlobalElements() == 0)
       FOUR_C_THROW("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if ((Core::UTILS::integral_value<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
-               1)  // matching meshes coupled via XFEM
-           and (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fsi_xfem) and
+  else if ((fsidyn.sublist("PARTITIONED SOLVER").get<std::string>("COUPMETHOD") == "conforming") and
+           (Global::Problem::instance()->get_problem_type() == Core::ProblemType::fsi_xfem) and
            (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fbi))
   {
     matchingnodes_ = true;  // matching between structure and boundary dis! non-matching between
@@ -126,9 +124,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
   {
     matchingnodes_ = true;
   }
-  else if (Core::UTILS::integral_value<int>(fsidyn.sublist("PARTITIONED SOLVER"), "COUPMETHOD") ==
-               0  // mortar coupling
-           and (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fsi_xfem))
+  else if (fsidyn.sublist("PARTITIONED SOLVER").get<std::string>("COUPMETHOD") == "mortar" and
+           (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fsi_xfem))
   {
     // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are
     // coupled e.g.: 3D: coupleddof = [1, 1, 1]
@@ -151,7 +148,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
   }
 
   // enable debugging
-  if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT"))
+  if (fsidyn.get<bool>("DEBUGOUTPUT"))
     debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
 }
 
@@ -185,7 +182,7 @@ void FSI::Partitioned::set_default_parameters(
   // search step.
   //
 
-  switch (Core::UTILS::integral_value<int>(fsidyn, "COUPALGO"))
+  switch (Teuchos::getIntegralValue<FsiCoupling>(fsidyn, "COUPALGO"))
   {
     case fsi_iter_stagg_fixed_rel_param:
     {
@@ -365,9 +362,8 @@ void FSI::Partitioned::set_default_parameters(
     }
     default:
     {
-      FOUR_C_THROW(
-          "coupling method type '%s' unsupported", fsidyn.get<std::string>("COUPALGO").c_str());
-      break;
+      FOUR_C_THROW("coupling method type '%s' unsupported",
+          Teuchos::getStringValue<FsiCoupling>(fsidyn, "COUPALGO").c_str());
     }
   }
 
@@ -518,9 +514,8 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // ==================================================================
 
     // In case of sliding ALE interfaces, 'remesh' fluid field
-    Inpar::FSI::PartitionedCouplingMethod usedmethod =
-        Core::UTILS::integral_value<Inpar::FSI::PartitionedCouplingMethod>(
-            fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
+    auto usedmethod = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+        fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
 
     if (usedmethod == Inpar::FSI::DirichletNeumannSlideale)
     {
@@ -864,7 +859,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_velocity(
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
 
-  if (Core::UTILS::integral_value<int>(fsidyn, "SECONDORDER") == 1)
+  if (fsidyn.get<bool>("SECONDORDER"))
   {
     ivel = Teuchos::rcp(new Epetra_Vector(*iveln_));
     ivel->Update(2. / dt(), *idispnp, -2. / dt(), *idispn_, -1.);
@@ -946,7 +941,7 @@ void FSI::Partitioned::output()
   // call base class version
   FSI::Algorithm::output();
 
-  switch (Core::UTILS::integral_value<int>(
+  switch (Teuchos::getIntegralValue<FsiCoupling>(
       Global::Problem::instance()->fsi_dynamic_params(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
@@ -965,8 +960,9 @@ void FSI::Partitioned::output()
           "omega", aitkenfactory->get_aitken()->get_omega());
 
       break;
-    }  // AITKEN case
-
+    }
+    default:
+      break;
   }  // switch-case to be extended for other solver variants if necessary
 }
 
@@ -977,7 +973,7 @@ void FSI::Partitioned::read_restart(int step)
   // call base class version
   FSI::Algorithm::read_restart(step);
 
-  switch (Core::UTILS::integral_value<int>(
+  switch (Teuchos::getIntegralValue<FsiCoupling>(
       Global::Problem::instance()->fsi_dynamic_params(), "COUPALGO"))
   {
     case fsi_iter_stagg_AITKEN_rel_param:
@@ -1014,6 +1010,8 @@ void FSI::Partitioned::read_restart(int step)
 
       break;
     }  // AITKEN case
+    default:
+      break;
 
   }  // switch-case to be extended for other solver variants if necessary
 }

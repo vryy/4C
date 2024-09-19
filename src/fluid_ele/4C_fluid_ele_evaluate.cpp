@@ -43,7 +43,7 @@ void Discret::ELEMENTS::FluidType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const FLD::Action action = Core::UTILS::get_as_enum<FLD::Action>(p, "action");
+  const auto action = Teuchos::getIntegralValue<FLD::Action>(p, "action");
 
   if (action == FLD::set_general_fluid_parameter)
   {
@@ -93,7 +93,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<Core::Mat::Material> mat = material();
@@ -101,12 +101,17 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
   // get space dimensions
   const int nsd = Core::FE::get_dimension(shape());
 
-  // switch between different physical types as used below
-  std::string impltype = "std";
-  switch (params.get<int>("Physical Type", Inpar::FLUID::incompressible))
+  // Retrieve the physical type from the parameters
+  auto physicalType =
+      params.get<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::incompressible);
+  std::string impltype;
+  switch (physicalType)
   {
     case Inpar::FLUID::loma:
       impltype = "loma";
+      break;
+    default:
+      impltype = "std";
       break;
   }
 
@@ -769,7 +774,7 @@ void Discret::ELEMENTS::FluidIntFaceType::pre_evaluate(Core::FE::Discretization&
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const FLD::Action action = Core::UTILS::get_as_enum<FLD::Action>(p, "action");
+  const auto action = Teuchos::getIntegralValue<FLD::Action>(p, "action");
 
   if (action == FLD::set_general_face_fluid_parameter)
   {

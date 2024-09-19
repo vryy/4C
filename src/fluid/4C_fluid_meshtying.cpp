@@ -995,7 +995,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // knm: add kns*P
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_add =
-      MLMultiply(splitmatrix->Matrix(0, 2), false, *P, false, false, false, true);
+      matrix_multiply(splitmatrix->Matrix(0, 2), false, *P, false, false, false, true);
   knm_add->Complete(splitmatrix->Matrix(0, 1).DomainMap(), splitmatrix->Matrix(0, 1).RowMap());
   sysmat->Add(*knm_add, false, 1.0, 1.0);
 
@@ -1007,7 +1007,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // kmn: add P^T*ksn
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_add =
-      MLMultiply(*P, true, splitmatrix->Matrix(2, 0), false, false, false, true);
+      matrix_multiply(*P, true, splitmatrix->Matrix(2, 0), false, false, false, true);
   kmn_add->Complete(splitmatrix->Matrix(1, 0).DomainMap(), splitmatrix->Matrix(1, 0).RowMap());
   sysmat->Add(*kmn_add, false, 1.0, 1.0);
 
@@ -1018,9 +1018,9 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kms =
-      MLMultiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
+      matrix_multiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_add =
-      MLMultiply(*kms, false, *P, false, false, false, true);
+      matrix_multiply(*kms, false, *P, false, false, false, true);
   kmm_mod->Add(*kmm_add, false, 1.0, 1.0);
   kmm_mod->Complete(splitmatrix->Matrix(1, 1).DomainMap(), splitmatrix->Matrix(1, 1).RowMap());
 
@@ -1068,7 +1068,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gndofrowmap_, 100));
   knm_mod->Add(splitmatrix->Matrix(0, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_add =
-      MLMultiply(splitmatrix->Matrix(0, 2), false, *P, false, false, false, true);
+      matrix_multiply(splitmatrix->Matrix(0, 2), false, *P, false, false, false, true);
   knm_mod->Add(*knm_add, false, 1.0, 1.0);
   knm_mod->Complete(splitmatrix->Matrix(0, 1).DomainMap(), splitmatrix->Matrix(0, 1).RowMap());
 
@@ -1085,7 +1085,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmn_mod->Add(splitmatrix->Matrix(1, 0), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_add =
-      MLMultiply(*P, true, splitmatrix->Matrix(2, 0), false, false, false, true);
+      matrix_multiply(*P, true, splitmatrix->Matrix(2, 0), false, false, false, true);
   kmn_mod->Add(*kmn_add, false, 1.0, 1.0);
   kmn_mod->Complete(splitmatrix->Matrix(1, 0).DomainMap(), splitmatrix->Matrix(1, 0).RowMap());
 
@@ -1099,9 +1099,9 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
   kmm_mod->Add(splitmatrix->Matrix(1, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kms =
-      MLMultiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
+      matrix_multiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_add =
-      MLMultiply(*kms, false, *P, false, false, false, true);
+      matrix_multiply(*kms, false, *P, false, false, false, true);
   kmm_mod->Add(*kmm_add, false, 1.0, 1.0);
   kmm_mod->Complete(splitmatrix->Matrix(1, 1).DomainMap(), splitmatrix->Matrix(1, 1).RowMap());
 

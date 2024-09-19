@@ -33,7 +33,7 @@ void MultiScale::np_support_drt()
   // and during run time supporting processors are available.
   // Dependent on the number of processors on the macro scale that need
   // support, the supporting procs are distributed. The distribution is performed
-  // in Global::Problem::ReadMicroFields() where a sub communicator is created
+  // in Global::Problem::read_micro_fields() where a sub communicator is created
   // that contains one master proc and several supporting procs. The master
   // proc has always MyPID() = 0 in the subcomm. That's why all broadcast commands
   // send from proc 0 in subcomm.

@@ -54,7 +54,7 @@ Mat::PAR::PlasticLinElast::PlasticLinElast(const Core::Mat::PAR::Parameter::Data
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticLinElast::create_material()
 {
@@ -66,7 +66,7 @@ Mat::PlasticLinElastType Mat::PlasticLinElastType::instance_;
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::PlasticLinElastType::create(
     Core::Communication::UnpackBuffer& buffer)

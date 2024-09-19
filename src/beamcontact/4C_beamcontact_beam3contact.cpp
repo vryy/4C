@@ -67,8 +67,8 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
     nodaltangentssmooth2_(i) = 0.0;
   }
 
-  int smoothing =
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
+  auto smoothing =
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
   if (smoothing == Inpar::BEAMCONTACT::bsm_cpp)
   {
     const Core::Elements::ElementType& eot1 = element1_->element_type();
@@ -87,7 +87,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
   // order to avoid strong discontinuities in the integrand) we have to check, if a master beam
   // element node coincides with a beams endpoint!
   bool determine_neighbors = false;
-  bool endpointpenalty = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_ENDPOINTPENALTY");
+  const bool endpointpenalty = bcparams_.get<bool>("BEAMS_ENDPOINTPENALTY");
   if (endpointpenalty) determine_neighbors = true;
 
 #ifdef ENDPOINTSEGMENTATION
@@ -135,7 +135,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
   if (element1->id() >= element2->id())
     FOUR_C_THROW("Element 1 has to have the smaller element-ID. Adapt your contact search!");
 
-  int penaltylaw = Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
+  auto penaltylaw = Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
       beamcontactparams, "BEAMS_PENALTYLAW");
   if (penaltylaw != Inpar::BEAMCONTACT::pl_lp and penaltylaw != Inpar::BEAMCONTACT::pl_qp)
   {
@@ -150,11 +150,12 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
   gpvariables_.resize(0);
   epvariables_.resize(0);
 
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(bcparams_, "BEAMS_DAMPING") !=
+      Inpar::BEAMCONTACT::bd_no)
     FOUR_C_THROW("Damping is not implemented for beam3contact elements so far!");
 
   if (bcparams_.get<double>("BEAMS_GAPSHIFTPARAM", 0.0) != 0.0 and
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW") !=
           Inpar::BEAMCONTACT::pl_lpqp)
     FOUR_C_THROW("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
@@ -164,7 +165,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
   if (parshiftangle2 <= perpshiftangle1)
     FOUR_C_THROW("No angle overlap between large-angle and small-angle contact!");
 
-  bool beamsdebug = Core::UTILS::integral_value<int>(beamcontactparams, "BEAMS_DEBUG");
+  bool beamsdebug = beamcontactparams.get<bool>("BEAMS_DEBUG");
 
   // Check, if a unique closest point solution can be guaranteed for angles alpha >
   // BEAMS_PERPSHIFTANGLE1
@@ -268,7 +269,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate(
   closelargeanglesegments.clear();
   closesmallanglesegments.clear();
 
-  bool endpoint_penalty = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_ENDPOINTPENALTY");
+  const bool endpoint_penalty = bcparams_.get<bool>("BEAMS_ENDPOINTPENALTY");
 
 // Sub-devision of contact elements in search segments or not?
 #ifndef NOSEGMENTATION
@@ -1428,8 +1429,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_penalty_law(
 
   if (!check_contact_status(Core::FADUtils::cast_to_double(gap))) return;
 
-  switch (
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW"))
+  switch (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW"))
   {
     case Inpar::BEAMCONTACT::pl_lp:  // linear penalty force law
     {
@@ -1862,8 +1862,8 @@ template <const int numnodes, const int numnodalvalues>
 double CONTACT::Beam3contact<numnodes, numnodalvalues>::get_max_active_dist()
 {
   double maxactivedist = 0.0;
-  int penaltylaw =
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
+  auto penaltylaw =
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
 
   switch (penaltylaw)
   {
@@ -1897,7 +1897,8 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::get_max_active_dist()
       break;
     }
   }
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(bcparams_, "BEAMS_DAMPING") !=
+      Inpar::BEAMCONTACT::bd_no)
   {
     double gd1 = bcparams_.get<double>("BEAMS_DAMPREGPARAM1", -1000.0);
     if (gd1 == -1000.0)
@@ -1969,7 +1970,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_close_segments(
   Core::LinAlg::Matrix<3, 1, double> r2_b(true);
   double angle(0.0);
 
-  bool endpoint_penalty = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_ENDPOINTPENALTY");
+  const bool endpoint_penalty = bcparams_.get<bool>("BEAMS_ENDPOINTPENALTY");
 
   // Safety factor for determination of close segments
   double safetyfac = 1.1;
@@ -2207,8 +2208,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::closest_point_projection(d
         }
       }
 
-      int smoothing =
-          Core::UTILS::integral_value<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
+      auto smoothing =
+          Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
       if (smoothing != Inpar::BEAMCONTACT::bsm_none)  // smoothed case
       {
         // Evaluate nodal tangents in each case. However, they are used only if
@@ -2567,7 +2568,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::point_to_line_projection(d
       N2_xixi.clear();
 
       bool inversion_possible = false;
-      bool endpointpenalty = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_ENDPOINTPENALTY");
+      const bool endpointpenalty = bcparams_.get<bool>("BEAMS_ENDPOINTPENALTY");
       if (endpointpenalty) inversion_possible = true;
 
 #ifdef ENDPOINTSEGMENTATION
@@ -4778,8 +4779,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_orthogonality_con
   // reset f
   f.clear();
 
-  int smoothing =
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
+  auto smoothing =
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
   // evaluate f
   // see Wriggers, Computational Contact Mechanics, equation (12.5)
   if (smoothing == Inpar::BEAMCONTACT::bsm_none)  // non-smoothed
@@ -4828,8 +4829,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_lin_orthogonality
   df.clear();
   dfinv.clear();
 
-  int smoothing =
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
+  auto smoothing =
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(bcparams_, "BEAMS_SMOOTHING");
 
   // evaluate df
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
@@ -5028,8 +5029,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::check_contact_status(const
   double g0 = bcparams_.get<double>("BEAMS_PENREGPARAM_G0", -1.0);
   bool contactflag = false;
 
-  int penaltylaw =
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
+  auto penaltylaw =
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
 
   if (penaltylaw == Inpar::BEAMCONTACT::pl_lp)
   {
@@ -5105,7 +5106,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::check_damping_status(const
 {
   bool dampingcontactflag = false;
 
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(bcparams_, "BEAMS_DAMPING") !=
+      Inpar::BEAMCONTACT::bd_no)
   {
     // First parameter for contact force regularization
     double gd1 = bcparams_.get<double>("BEAMS_DAMPREGPARAM1", -1000.0);

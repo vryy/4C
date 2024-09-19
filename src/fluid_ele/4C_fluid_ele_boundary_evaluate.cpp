@@ -30,7 +30,7 @@ int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::BoundaryAction act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {
@@ -131,7 +131,7 @@ void Discret::ELEMENTS::FluidBoundary::location_vector(const Core::FE::Discretiz
     Teuchos::ParameterList& params) const
 {
   // get the action required
-  const FLD::BoundaryAction act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {

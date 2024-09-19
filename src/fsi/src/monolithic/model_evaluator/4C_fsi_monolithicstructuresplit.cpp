@@ -4,7 +4,6 @@
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed structure interface displacements
 
-
 \level 1
 */
 
@@ -248,7 +247,7 @@ void FSI::MonolithicStructureSplit::setup_system()
   // ---------------------------------------------------------------------------
 
   // enable debugging
-  if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
+  if (fsidyn.get<bool>("DEBUGOUTPUT"))
   {
     pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
   }
@@ -262,8 +261,7 @@ void FSI::MonolithicStructureSplit::setup_system()
   const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
-    const bool restartfrompartfsi =
-        Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+    const bool restartfrompartfsi = timeparams_.get<bool>("RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       Teuchos::RCP<Epetra_Vector> lambdafullfluid =
@@ -727,7 +725,7 @@ void FSI::MonolithicStructureSplit::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -779,7 +777,7 @@ void FSI::MonolithicStructureSplit::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1190,8 +1188,7 @@ void FSI::MonolithicStructureSplit::update()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::read_restart(int step)
 {
-  const bool restartfrompartfsi =
-      Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+  const bool restartfrompartfsi = timeparams_.get<bool>("RESTART_FROM_PART_FSI");
 
   // read Lagrange multiplier
   if (not restartfrompartfsi)  // standard restart

@@ -443,10 +443,8 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
         Core::FE::extract_my_values(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iostress", Inpar::Solid::stress_none);
-        auto iostrain = Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(
-            params, "iostrain", Inpar::Solid::strain_none);
+        auto iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
+        auto iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
 
         nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain, params,
             iostress, iostrain);

@@ -19,7 +19,6 @@
 #include "4C_mat_robinson.hpp"
 #include "4C_mat_thermoplastichyperelast.hpp"
 #include "4C_mat_thermoplasticlinelast.hpp"
-#include "4C_mat_thermostvenantkirchhoff.hpp"
 #include "4C_mat_trait_thermo_solid.hpp"
 #include "4C_so3_thermo.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
@@ -45,10 +44,12 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pre_evaluate(Teuchos::Parame
     if (discretization.has_state(1, "temperature"))
     {
       if (la[1].size() != nen_ * numdofpernode_thr)
+      {
         FOUR_C_THROW(
             "Location vector length for temperatures does not match!\n"
             "la[1].Size()= %i\tnen_*numdofpernode_thr= %i",
             la[1].size(), nen_ * numdofpernode_thr);
+      }
       // check if you can get the temperature state
       Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
       if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'.");
@@ -62,8 +63,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pre_evaluate(Teuchos::Parame
       params.set<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", nodaltempnp);
     }
   }  // initial temperature dependence
-
-  return;
 }  // pre_evaluate()
 
 
@@ -243,9 +242,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*
-              eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
-                  Core::FE::CellType::hex8>*>(this);
+          auto* eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
+              Core::FE::CellType::hex8>*>(this);
 
           // default structural element
           if (!eleFBAR)
@@ -337,9 +335,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*
-              eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
-                  Core::FE::CellType::hex8>*>(this);
+          auto* eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
+              Core::FE::CellType::hex8>*>(this);
 
           // default structural element
           if (!eleFBAR)
@@ -431,9 +428,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*
-              eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
-                  Core::FE::CellType::hex8>*>(this);
+          auto* eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
+              Core::FE::CellType::hex8>*>(this);
 
           // default structural element
           if (!eleFBAR)
@@ -498,8 +494,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       else
       {
         couplstressdata = params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
-        iocouplstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-            params, "iocouplstress", Inpar::Solid::stress_none);
+        iocouplstress =
+            params.get<Inpar::Solid::StressType>("iocouplstress", Inpar::Solid::stress_none);
       }
 
       // get the temperature dependent stress
@@ -534,9 +530,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         {
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*
-              eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
-                  Core::FE::CellType::hex8>*>(this);
+          auto* eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
+              Core::FE::CellType::hex8>*>(this);
 
 #ifdef TSIASOUTPUT
           std::cout << "thermal stress" << couplstress << std::endl;
@@ -660,10 +655,11 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         if (So3Ele::shape() == Core::FE::CellType::nurbs27)
         {
           // cast to nurbs discretization
-          Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-              dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
+          auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
           if (nurbsdis == nullptr)
+          {
             FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
+          }
 
           // zero-sized element
           if ((*((*nurbsdis).get_knot_vector())).get_ele_knots(myknots, id())) return 1;
@@ -681,8 +677,10 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
           }
           // evaluate shape functions NURBS-style
           else
+          {
             Core::FE::Nurbs::nurbs_get_3d_funct(
                 shapefunct, xsi_[gp], myknots, weights, Core::FE::CellType::nurbs27);
+          }
 
           // product of shapefunctions and element temperatures
           Core::LinAlg::Matrix<1, 1> NT(false);
@@ -738,9 +736,9 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       {
         // in case we have a finite strain thermoplastic material use hex8fbar element
         // to cirucumvent volumetric locking
-        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*
-            eleFBAR = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
-                Core::FE::CellType::hex8>*>(this);
+        auto* eleFBAR = dynamic_cast<
+            Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*>(
+            this);
 
         // default structural element
         if (!eleFBAR)
@@ -853,7 +851,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_fint_tsi(
     Core::LinAlg::Matrix<numstr_, numdofperelement_> boplin;
     calculate_boplin(&boplin, &N_XYZ);
 
-    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    // call material law
 
     // product of shapefunctions and element temperatures for couplstress
     // N_T . T
@@ -883,7 +881,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_fint_tsi(
     if (material()->material_type() != Core::Materials::m_vp_robinson)
       materialize(&couplstress, &ctemp, &NT, &cmat, &glstrain, params);
 
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    // end of call material law
 
     // return gp stresses
     switch (iostress)
@@ -930,8 +928,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_fint_tsi(
     /* =========================================================================*/
   } /* ==================================================== end of Loop over GP */
   /* =========================================================================*/
-
-  return;
 }  // lin_fint_tsi()
 
 
@@ -1013,7 +1009,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
     Core::LinAlg::Matrix<numstr_, numdofperelement_> boplin;
     calculate_boplin(&boplin, &N_XYZ);
 
-    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    // call material law
 
     Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolidMaterial =
         Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
@@ -1042,7 +1038,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
     {
       compute_ctemp(&ctemp, params);
     }
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    // end of call material law
 
     double detJ_w = detJ * intpoints_.weight(gp);
     // update linear coupling matrix K_dT
@@ -1071,8 +1067,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(
     /* =========================================================================*/
   } /* ==================================================== end of Loop over GP */
   /* =========================================================================*/
-
-  return;
 }  // lin_kdT_tsi()
 
 
@@ -1132,8 +1126,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
   if (So3Ele::shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
-    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
+    auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
@@ -1157,8 +1150,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     }
     // evaluate shape functions NURBS-style
     else
+    {
       Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, Core::FE::CellType::nurbs27);
+    }
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1206,7 +1201,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     // insert T_{n+1} into parameter list
     params.set<double>("temperature", NT(0, 0));
 
-    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    // call material law
 
     // calculate the stress part dependent on the temperature in the material
     Core::LinAlg::Matrix<numstr_, 1> ctemp(true);
@@ -1229,7 +1224,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     if (material()->material_type() != Core::Materials::m_vp_robinson)
       materialize(&couplstress, &ctemp, &NT, &cmat_T, &glstrain, params);
 
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    // end of call material law
 
     // return gp stresses
     switch (iostress)
@@ -1330,8 +1325,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi(
     /* =========================================================================*/
   } /* ==================================================== end of Loop over GP */
   /* =========================================================================*/
-
-  return;
 }  // nln_stifffint_tsi()
 
 
@@ -1397,8 +1390,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
   if (So3Ele::shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
-    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
+    auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discretization));
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
@@ -1422,8 +1414,10 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
     }
     // evaluate shape functions NURBS-style
     else
+    {
       Core::FE::Nurbs::nurbs_get_3d_funct_deriv(
           shapefunct, deriv, xsi_[gp], myknots, weights, Core::FE::CellType::nurbs27);
+    }
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1449,7 +1443,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
     Core::LinAlg::Matrix<numstr_, numdofperelement_> bop(false);
     calculate_bop(&bop, &defgrd, &N_XYZ);
 
-    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    // call material law
 
     Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolidMaterial =
         Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
@@ -1495,9 +1489,11 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
 
     // get thermal material tangent
     else
+    {
       compute_ctemp(&ctemp, params);
+    }
 
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    // end of call material law
 
     double detJ_w = detJ * intpoints_.weight(gp);
     // update linear coupling matrix K_dT
@@ -1528,7 +1524,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(
   } /* ==================================================== end of Loop over GP */
   /* =========================================================================*/
 
-  return;
 }  // nln_kdT_tsi()
 
 
@@ -1551,10 +1546,8 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
 {
   // in case we have a finite strain thermoplastic material use hex8fbar element
   // to cirucumvent volumetric locking
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>* eleFBAR =
-      dynamic_cast<
-          Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*>(
-          this);
+  auto* eleFBAR = dynamic_cast<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*>(this);
 
   if ((distype == Core::FE::CellType::hex8) and (eleFBAR))
   {
@@ -1702,7 +1695,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
       // insert T_{n+1} into parameter list
       params.set<double>("temperature", NT(0, 0));
 
-      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
+      // call material law
 
       // calculate the stress part dependent on the temperature in the material
       Core::LinAlg::Matrix<numstr_, 1> ctemp_bar(true);
@@ -1722,11 +1715,13 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
       //                             2.) couplstress = C . Delta T
       // do not call the material for Robinson's material
       if (material()->material_type() != Core::Materials::m_vp_robinson)
+      {
         materialize(&couplstress_bar,
             &ctemp_bar,  // is not filled! pass an empty matrix
             &NT, &cmat_T_bar, &glstrain_bar, params);
+      }
 
-      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
+      // end of call material law
 
       // return gp stresses
       switch (iostress)
@@ -1880,9 +1875,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_stifffint_tsi_fbar(
 
   }  // end HEX8FBAR
   else
+  {
     FOUR_C_THROW("call method only for HEX8FBAR elements!");
-
-  return;
+  }
 
 }  // nln_stiffint_tsi_fbar()
 
@@ -1901,10 +1896,8 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
 {
   // in case we have a finite strain thermoplastic material use hex8fbar element
   // to cirucumvent volumetric locking
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>* eleFBAR =
-      dynamic_cast<
-          Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*>(
-          this);
+  auto* eleFBAR = dynamic_cast<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*>(this);
 
   if ((distype == Core::FE::CellType::hex8) && (eleFBAR))
   {
@@ -2009,7 +2002,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
       Core::LinAlg::Matrix<numstr_, numdofperelement_> bop(false);
       calculate_bop(&bop, &defgrd, &N_XYZ);
 
-      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccc
+      // call material law
       // get the thermal material tangent
       Core::LinAlg::Matrix<numstr_, 1> ctemp(true);
       Core::LinAlg::Matrix<numstr_, 1> Cmat_kdT(true);
@@ -2050,11 +2043,11 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
             defgrd, glstrain, params, map_my_gp_to_so_hex8(gp), id());
       }
       else
+      {
         // get temperature-dependent material tangent
         // in case of m_thermoplhyperelast: F, Cinv are passed via params
         compute_ctemp(&ctemp, params);
-
-      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
+      }  // end of call material law
 
       double detJ_w = detJ * intpoints_.weight(gp);
       // update linear coupling matrix K_dT
@@ -2085,8 +2078,9 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::nln_kd_t_tsi_fbar(
 
   }  // end HEX8FBAR
   else
+  {
     FOUR_C_THROW("call method only for HEX8FBAR elements!");
-  return;
+  }
 
 }  // nln_kd_t_tsi_fbar()
 
@@ -2154,8 +2148,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::materialize(
       FOUR_C_THROW("Unknown type of temperature dependent material");
       break;
   }  // switch (mat->material_type())
-
-  return;
 }  // Materialize()
 
 
@@ -2465,8 +2457,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::init_jacobian_mapping_specia
   if (So3Ele::shape() == Core::FE::CellType::nurbs27)
   {
     // cast to nurbs discretization
-    Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-        dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
+    auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
     if (nurbsdis == nullptr) FOUR_C_THROW("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
@@ -2516,8 +2507,6 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::init_jacobian_mapping_specia
     detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", detJ_[gp]);
   }  // end gp loop
-
-  return;
 }  // init_jacobian_mapping()
 
 /*----------------------------------------------------------------------------------*

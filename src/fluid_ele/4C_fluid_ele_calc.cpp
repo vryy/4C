@@ -5833,7 +5833,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_service(
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -6379,8 +6379,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
   Core::LinAlg::Matrix<nsd_, nsd_> deltadervel(true);
   Core::LinAlg::Matrix<nsd_, nsd_> dervelint(true);
 
-  const Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "calculate error");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(params, "calculate error");
   const int calcerrfunctno = params.get<int>("error function number");
 
   //----------------------------------------------------------------------------
@@ -8739,8 +8739,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
     FOUR_C_THROW("no support for discretization guaranteed. check for valid material.");
 
   // determine whether fluid mesh is deformable or not
-  static int isALE = (Global::Problem::instance()->immersed_method_params().get<std::string>(
-                          "DEFORM_BACKGROUND_MESH") == "yes");
+  const bool isALE =
+      Global::Problem::instance()->immersed_method_params().get<bool>("DEFORM_BACKGROUND_MESH");
 
   // resize vector to the size of the nsd_ times nsd_ independent entries of the velocity gradient
   // du/dx and the pressure causes seg fault -> therefore commented; needs to be investigated.
@@ -8936,8 +8936,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
   int degree_gp_fluid_bound = params.get("intpoints_fluid_bound", 0);
 
   // determine whether fluid mesh is deformable or not
-  static int isALE =
-      (globalproblem->immersed_method_params().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
+  const bool isALE = globalproblem->immersed_method_params().get<bool>("DEFORM_BACKGROUND_MESH");
 
   // initialize vectors for interpolation
   std::vector<double> vel(numdofpernode_);  // dofs 0,1,2
@@ -9254,8 +9253,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
     }
 
     // determine whether fluid mesh is deformable or not
-    static int isALE = (globalproblem->immersed_method_params().get<std::string>(
-                            "DEFORM_BACKGROUND_MESH") == "yes");
+    const bool isALE = globalproblem->immersed_method_params().get<bool>("DEFORM_BACKGROUND_MESH");
 
     // get element velocity at time n+1
     Core::LinAlg::Matrix<nsd_, nen_> evelnp;

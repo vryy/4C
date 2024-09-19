@@ -29,26 +29,28 @@ void Inpar::LUBRICATION::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
   Core::UTILS::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &lubricationdyn);
   Core::UTILS::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &lubricationdyn);
 
-  setStringToIntegralParameter<int>("CALCERROR", "No",
+  setStringToIntegralParameter<Inpar::LUBRICATION::CalcError>("CALCERROR", "No",
       "compute error compared to analytical solution",
-      tuple<std::string>("No", "error_by_function"), tuple<int>(calcerror_no, calcerror_byfunction),
-      &lubricationdyn);
+      tuple<std::string>("No", "error_by_function"),
+      tuple<Inpar::LUBRICATION::CalcError>(calcerror_no, calcerror_byfunction), &lubricationdyn);
 
   Core::UTILS::int_parameter(
       "CALCERRORNO", -1, "function number for lubrication error computation", &lubricationdyn);
 
-  setStringToIntegralParameter<int>("VELOCITYFIELD", "zero",
+  setStringToIntegralParameter<Inpar::LUBRICATION::VelocityField>("VELOCITYFIELD", "zero",
       "type of velocity field used for lubrication problems",
       tuple<std::string>("zero", "function", "EHL"),
-      tuple<int>(velocity_zero, velocity_function, velocity_EHL), &lubricationdyn);
+      tuple<Inpar::LUBRICATION::VelocityField>(velocity_zero, velocity_function, velocity_EHL),
+      &lubricationdyn);
 
   Core::UTILS::int_parameter(
       "VELFUNCNO", -1, "function number for lubrication velocity field", &lubricationdyn);
 
-  setStringToIntegralParameter<int>("HEIGHTFEILD", "zero",
+  setStringToIntegralParameter<Inpar::LUBRICATION::HeightField>("HEIGHTFEILD", "zero",
       "type of height field used for lubrication problems",
       tuple<std::string>("zero", "function", "EHL"),
-      tuple<int>(height_zero, height_function, height_EHL), &lubricationdyn);
+      tuple<Inpar::LUBRICATION::HeightField>(height_zero, height_function, height_EHL),
+      &lubricationdyn);
 
   Core::UTILS::int_parameter(
       "HFUNCNO", -1, "function number for lubrication height field", &lubricationdyn);
@@ -82,17 +84,17 @@ void Inpar::LUBRICATION::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
       "nonlinear convergence limit",
       &lubricationdyn);
 
-  setStringToIntegralParameter<int>("NORM_PRE", "Abs",
+  setStringToIntegralParameter<ConvNorm>("NORM_PRE", "Abs",
       "type of norm for temperature convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
-      tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &lubricationdyn);
+      tuple<ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &lubricationdyn);
 
-  setStringToIntegralParameter<int>("NORM_RESF", "Abs",
+  setStringToIntegralParameter<ConvNorm>("NORM_RESF", "Abs",
       "type of norm for residual convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
-      tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &lubricationdyn);
+      tuple<ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &lubricationdyn);
 
-  setStringToIntegralParameter<int>("ITERNORM", "L2", "type of norm to be applied to residuals",
-      tuple<std::string>("L1", "L2", "Rms", "Inf"),
-      tuple<int>(norm_l1, norm_l2, norm_rms, norm_inf), &lubricationdyn);
+  setStringToIntegralParameter<VectorNorm>("ITERNORM", "L2",
+      "type of norm to be applied to residuals", tuple<std::string>("L1", "L2", "Rms", "Inf"),
+      tuple<VectorNorm>(norm_l1, norm_l2, norm_rms, norm_inf), &lubricationdyn);
 
   /// Iterationparameters
   Core::UTILS::double_parameter("TOLPRE", 1.0E-06,

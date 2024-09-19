@@ -27,16 +27,16 @@ void Inpar::Wear::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   /* parameters for wear */
   Teuchos::ParameterList& wear = list->sublist("WEAR", false, "");
 
-  setStringToIntegralParameter<int>("WEARLAW", "None", "Type of wear law",
+  setStringToIntegralParameter<WearLaw>("WEARLAW", "None", "Type of wear law",
       tuple<std::string>("None", "none", "Archard", "archard"),
-      tuple<int>(wear_none, wear_none, wear_archard, wear_archard), &wear);
+      tuple<WearLaw>(wear_none, wear_none, wear_archard, wear_archard), &wear);
 
   Core::UTILS::bool_parameter("MATCHINGGRID", "Yes", "is matching grid", &wear);
 
-  setStringToIntegralParameter<int>("WEAR_SHAPEFCN", "std",
+  setStringToIntegralParameter<WearShape>("WEAR_SHAPEFCN", "std",
       "Type of employed set of shape functions for wear",
       tuple<std::string>("Dual", "dual", "Standard", "standard", "std"),
-      tuple<int>(wear_shape_dual, wear_shape_dual, wear_shape_standard, wear_shape_standard,
+      tuple<WearShape>(wear_shape_dual, wear_shape_dual, wear_shape_standard, wear_shape_standard,
           wear_shape_standard),
       &wear);
 
@@ -52,24 +52,27 @@ void Inpar::Wear::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::bool_parameter(
       "VOLMASS_OUTPUT", "No", "flag for output of mass/volume in ref,mat and cur. conf.", &wear);
 
-  setStringToIntegralParameter<int>("WEAR_SIDE", "slave", "Definition of wear side",
+  setStringToIntegralParameter<WearSide>("WEAR_SIDE", "slave", "Definition of wear side",
       tuple<std::string>("s", "slave", "Slave", "both", "slave_master", "sm"),
-      tuple<int>(wear_slave, wear_slave, wear_slave, wear_both, wear_both, wear_both), &wear);
+      tuple<WearSide>(wear_slave, wear_slave, wear_slave, wear_both, wear_both, wear_both), &wear);
 
-  setStringToIntegralParameter<int>("WEARTYPE", "internal_state", "Definition of wear algorithm",
+  setStringToIntegralParameter<WearType>("WEARTYPE", "internal_state",
+      "Definition of wear algorithm",
       tuple<std::string>("intstate", "is", "internal_state", "primvar", "pv", "primary_variable"),
-      tuple<int>(
+      tuple<WearType>(
           wear_intstate, wear_intstate, wear_intstate, wear_primvar, wear_primvar, wear_primvar),
       &wear);
 
-  setStringToIntegralParameter<int>("WEARTIMINT", "explicit", "Definition of wear time integration",
+  setStringToIntegralParameter<WearTimInt>("WEARTIMINT", "explicit",
+      "Definition of wear time integration",
       tuple<std::string>("explicit", "e", "expl", "implicit", "i", "impl"),
-      tuple<int>(wear_expl, wear_expl, wear_expl, wear_impl, wear_impl, wear_impl), &wear);
+      tuple<WearTimInt>(wear_expl, wear_expl, wear_expl, wear_impl, wear_impl, wear_impl), &wear);
 
-  setStringToIntegralParameter<int>("WEAR_TIMESCALE", "equal",
+  setStringToIntegralParameter<WearTimeScale>("WEAR_TIMESCALE", "equal",
       "Definition wear time scale compares to std. time scale",
       tuple<std::string>("equal", "e", "different", "d"),
-      tuple<int>(wear_time_equal, wear_time_equal, wear_time_different, wear_time_different),
+      tuple<WearTimeScale>(
+          wear_time_equal, wear_time_equal, wear_time_different, wear_time_different),
       &wear);
 }
 

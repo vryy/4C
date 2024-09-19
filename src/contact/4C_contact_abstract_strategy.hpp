@@ -1406,7 +1406,7 @@ namespace CONTACT
      *  The global Lagrange multiplier DoF row map is created in a deterministic
      *  manner based on the previously created global slave DoF row map. This is
      *  necessary for the later ReplaceMap calls. Especially, the std::sort during
-     *  a Core::LinAlg::MergeMap call would otherwise destroy the correlation. This becomes
+     *  a Core::LinAlg::merge_map call would otherwise destroy the correlation. This becomes
      *  obvious if more than one interface is considered.
      *
      *  \pre The method UpdateLagMultSets() has to be called on each involved

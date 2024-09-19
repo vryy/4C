@@ -214,7 +214,7 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
-  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty() || strategy().is_condensed_system())
   {
@@ -254,7 +254,7 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
-  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty())
   {
@@ -636,9 +636,8 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Contact::get_block_dof_row
     return global_state().dof_row_map();
   else
   {
-    enum Inpar::CONTACT::SystemType systype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
-            problem->contact_dynamic_params(), "SYSTEM");
+    auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
+        problem->contact_dynamic_params(), "SYSTEM");
 
     if (systype == Inpar::CONTACT::system_saddlepoint)
       return strategy().lin_system_lm_dof_row_map_ptr();
@@ -653,7 +652,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::Contact::get_current_so
 {
   // TODO: this should be removed!
   Global::Problem* problem = Global::Problem::instance();
-  enum Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
       problem->contact_dynamic_params(), "SYSTEM");
   if (systype == Inpar::CONTACT::system_condensed) return Teuchos::null;
 
@@ -677,7 +676,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::Contact::get_last_time_
     const
 {
   Global::Problem* problem = Global::Problem::instance();
-  enum Inpar::CONTACT::SystemType systype = Core::UTILS::integral_value<Inpar::CONTACT::SystemType>(
+  auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(
       problem->contact_dynamic_params(), "SYSTEM");
   if (systype == Inpar::CONTACT::system_condensed) return Teuchos::null;
 

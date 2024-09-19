@@ -8,12 +8,10 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_material_base.hpp"
 #include "4C_shell7p_ele.hpp"
 #include "4C_shell7p_ele_calc_interface.hpp"
 #include "4C_shell7p_ele_neumann_evaluator.hpp"
 #include "4C_utils_exceptions.hpp"
-#include "4C_utils_function_of_time.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -56,7 +54,7 @@ namespace
     }
     else
     {
-      return Core::UTILS::get_as_enum<Inpar::Solid::StressType>(params, "iostress");
+      return Teuchos::getIntegralValue<Inpar::Solid::StressType>(params, "iostress");
     }
   }
 
@@ -69,7 +67,7 @@ namespace
     }
     else
     {
-      return Core::UTILS::get_as_enum<Inpar::Solid::StrainType>(params, "iostrain");
+      return Teuchos::getIntegralValue<Inpar::Solid::StrainType>(params, "iostrain");
     }
   }
 }  // namespace

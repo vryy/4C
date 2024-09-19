@@ -63,7 +63,7 @@ void Discret::ELEMENTS::evaluate_neumann_by_element(Core::Elements::Element& ele
     default:
       FOUR_C_THROW(
           "The cell type you are trying to evaluate the Neumann condition for is not yet "
-          "implemented in EvaluateNeumannByElement.");
+          "implemented in evaluate_neumann_by_element.");
       break;
   }
 }

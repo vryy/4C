@@ -249,13 +249,15 @@ void PaSI::PartitionedAlgo::init_structure_field()
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
 
   // build structure
-  if (params.get<std::string>("INT_STRATEGY") == "Standard")
+  if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(params, "INT_STRATEGY") ==
+      Inpar::Solid::IntegrationStrategy::int_standard)
   {
     // create and init structure base algorithm
     struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(params);
     struct_adapterbase_ptr_->init(params, const_cast<Teuchos::ParameterList&>(params), structdis);
   }
-  else if (params.get<std::string>("INT_STRATEGY") == "Old")
+  else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(params, "INT_STRATEGY") ==
+           Inpar::Solid::IntegrationStrategy::int_old)
     FOUR_C_THROW(
         "Old time integration not supported in particle structure interaction!\n"
         "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!");

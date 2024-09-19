@@ -116,8 +116,6 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
   Teuchos::RCP<std::vector<char>> particledata = Teuchos::rcp(new std::vector<char>);
   reader->read_char_vector(particledata, "ParticleData");
 
-
-
   Core::Communication::UnpackBuffer buffer(*particledata);
   while (!buffer.at_end())
   {
@@ -1075,8 +1073,7 @@ void PARTICLEENGINE::ParticleEngine::init_particle_vtp_writer()
 void PARTICLEENGINE::ParticleEngine::setup_particle_vtp_writer() const
 {
   // get flag to determine output of ghosted particles (debug feature)
-  bool write_ghosted_particles =
-      Core::UTILS::integral_value<int>(params_, "WRITE_GHOSTED_PARTICLES");
+  bool write_ghosted_particles = params_.get<bool>("WRITE_GHOSTED_PARTICLES");
 
   // setup particle runtime vtp writer
   particlevtpwriter_->setup(write_ghosted_particles);
@@ -1795,8 +1792,6 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
   for (const auto& p : rdata)
   {
     const std::vector<char>& rmsg = p.second;
-
-
 
     Core::Communication::UnpackBuffer buffer(rmsg);
     while (!buffer.at_end())

@@ -426,7 +426,7 @@ namespace Wear
     */
     Inpar::Wear::WearShape wear_shape_fcn()
     {
-      return Core::UTILS::integral_value<Inpar::Wear::WearShape>(imortar_, "WEAR_SHAPEFCN");
+      return Teuchos::getIntegralValue<Inpar::Wear::WearShape>(imortar_, "WEAR_SHAPEFCN");
     }
 
    private:

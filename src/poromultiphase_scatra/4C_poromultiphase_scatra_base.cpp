@@ -15,11 +15,9 @@
 #include "4C_global_data.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_scatra_multiporo.hpp"
-#include "4C_poromultiphase_adapter.hpp"
 #include "4C_poromultiphase_scatra_utils.hpp"
 #include "4C_poromultiphase_utils.hpp"
 #include "4C_scatra_ele.hpp"
-#include "4C_scatra_timint_implicit.hpp"
 #include "4C_scatra_timint_meshtying_strategy_artery.hpp"
 #include "4C_scatra_timint_poromulti.hpp"
 
@@ -36,9 +34,9 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
       ndsporofluid_scatra_(-1),
       timertimestep_("PoroMultiPhaseScaTraBase", true),
       dttimestep_(0.0),
-      divcontype_(Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::DivContAct>(
+      divcontype_(Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::DivContAct>(
           globaltimeparams, "DIVERCONT")),
-      artery_coupl_(Core::UTILS::integral_value<int>(globaltimeparams, "ARTERY_COUPLING"))
+      artery_coupl_(globaltimeparams.get<bool>("ARTERY_COUPLING"))
 {
 }
 
@@ -66,11 +64,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
   // coupling scheme
   // -------------------------------------------------------------------
   // first of all check for possible couplings
-  Inpar::POROMULTIPHASE::SolutionSchemeOverFields solschemeporo =
-      Core::UTILS::integral_value<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
-          poroparams, "COUPALGO");
-  Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solschemescatraporo =
-      Core::UTILS::integral_value<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
+  auto solschemeporo = Teuchos::getIntegralValue<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
+      poroparams, "COUPALGO");
+  auto solschemescatraporo =
+      Teuchos::getIntegralValue<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
           algoparams, "COUPALGO");
 
   // partitioned -- monolithic not possible --> error
@@ -98,7 +95,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
         "YOUR CHOICE                       : monolithic  -- partitioned_sequential");
 
   fluxreconmethod_ =
-      Core::UTILS::integral_value<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+      Teuchos::getIntegralValue<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
           fluidparams, "FLUX_PROJ_METHOD");
 
   if (solschemescatraporo ==

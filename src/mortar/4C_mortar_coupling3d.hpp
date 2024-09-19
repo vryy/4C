@@ -664,7 +664,7 @@ namespace Mortar
 
     Inpar::Mortar::LagMultQuad lag_mult_quad() override
     {
-      return Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
+      return Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
 
     /*!

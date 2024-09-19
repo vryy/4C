@@ -1229,8 +1229,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_service(
   if (setup_calc(ele, discretization) == -1) return 0;
 
   // check for the action parameter
-  const LUBRICATION::Action action =
-      Core::UTILS::get_as_enum<LUBRICATION::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<LUBRICATION::Action>(params, "action");
 
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -1307,7 +1306,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
     const Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& errors)
 {
-  if (Core::UTILS::get_as_enum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
+  if (Teuchos::getIntegralValue<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
     FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
@@ -1319,8 +1318,8 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const Inpar::LUBRICATION::CalcError errortype =
-      Core::UTILS::get_as_enum<Inpar::LUBRICATION::CalcError>(params, "calcerrorflag");
+  const auto errortype =
+      Teuchos::getIntegralValue<Inpar::LUBRICATION::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case Inpar::LUBRICATION::calcerror_byfunction:

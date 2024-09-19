@@ -77,18 +77,18 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       strategy_(Teuchos::null),
       additional_model_evaluator_(nullptr),
       isale_(extraparams->get<bool>("isale")),
-      solvtype_(Core::UTILS::integral_value<Inpar::ScaTra::SolverType>(*params, "SOLVERTYPE")),
+      solvtype_(Teuchos::getIntegralValue<Inpar::ScaTra::SolverType>(*params, "SOLVERTYPE")),
       equilibrationmethod_(
           Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(*params, "EQUILIBRATION")),
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(*params, "MATRIXTYPE")),
       incremental_(true),
-      fssgd_(Core::UTILS::integral_value<Inpar::ScaTra::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
+      fssgd_(Teuchos::getIntegralValue<Inpar::ScaTra::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
       turbmodel_(Inpar::FLUID::no_model),
       s2ikinetics_(actdis->get_condition("S2IKinetics") != nullptr),
       s2imeshtying_(actdis->get_condition("S2IMeshtying") != nullptr),
-      arterycoupling_(Core::UTILS::integral_value<int>(
-                          problem_->poro_multi_phase_scatra_dynamic_params(), "ARTERY_COUPLING") &&
-                      actdis->name() == "scatra"),
+      arterycoupling_(
+          problem_->poro_multi_phase_scatra_dynamic_params().get<bool>("ARTERY_COUPLING") &&
+          actdis->name() == "scatra"),
       heteroreaccoupling_(actdis->get_condition("ScatraHeteroReactionSlave") != nullptr),
       macro_scale_(
           problem_->materials()->first_id_by_type(Core::Materials::m_scatra_multiscale) != -1 or
@@ -96,33 +96,31 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       micro_scale_(probnum != 0),
       isemd_(extraparams->get<bool>("ELECTROMAGNETICDIFFUSION", false)),
       emd_source_(extraparams->get<int>("EMDSOURCE", -1)),
-      has_external_force_(
-          Core::UTILS::integral_value<bool>(params_->sublist("EXTERNAL FORCE"), "EXTERNAL_FORCE")),
+      has_external_force_(params_->sublist("EXTERNAL FORCE").get<bool>("EXTERNAL_FORCE")),
       calcflux_domain_(
-          Core::UTILS::integral_value<Inpar::ScaTra::FluxType>(*params, "CALCFLUX_DOMAIN")),
-      calcflux_domain_lumped_(Core::UTILS::integral_value<bool>(*params, "CALCFLUX_DOMAIN_LUMPED")),
+          Teuchos::getIntegralValue<Inpar::ScaTra::FluxType>(*params, "CALCFLUX_DOMAIN")),
+      calcflux_domain_lumped_(params->get<bool>("CALCFLUX_DOMAIN_LUMPED")),
       calcflux_boundary_(
-          Core::UTILS::integral_value<Inpar::ScaTra::FluxType>(*params, "CALCFLUX_BOUNDARY")),
-      calcflux_boundary_lumped_(
-          Core::UTILS::integral_value<bool>(*params, "CALCFLUX_BOUNDARY_LUMPED")),
+          Teuchos::getIntegralValue<Inpar::ScaTra::FluxType>(*params, "CALCFLUX_BOUNDARY")),
+      calcflux_boundary_lumped_(params->get<bool>("CALCFLUX_BOUNDARY_LUMPED")),
       writefluxids_(Teuchos::rcp(new std::vector<int>)),
       flux_domain_(Teuchos::null),
       flux_boundary_(Teuchos::null),
       flux_boundary_maps_(Teuchos::null),
       sumnormfluxintegral_(Teuchos::null),
       lastfluxoutputstep_(-1),
-      output_element_material_id_(Core::UTILS::integral_value<bool>(
-          Global::Problem::instance()->io_params(), "ELEMENT_MAT_ID")),
+      output_element_material_id_(
+          Global::Problem::instance()->io_params().get<bool>("ELEMENT_MAT_ID")),
       outputscalars_(
-          Core::UTILS::integral_value<Inpar::ScaTra::OutputScalarType>(*params, "OUTPUTSCALARS")),
-      outputgmsh_(Core::UTILS::integral_value<int>(*params, "OUTPUT_GMSH")),
-      output_state_matlab_(Core::UTILS::integral_value<int>(*params, "MATLAB_STATE_OUTPUT")),
-      fdcheck_(Core::UTILS::integral_value<Inpar::ScaTra::FdCheck>(*params, "FDCHECK")),
+          Teuchos::getIntegralValue<Inpar::ScaTra::OutputScalarType>(*params, "OUTPUTSCALARS")),
+      outputgmsh_(params->get<bool>("OUTPUT_GMSH")),
+      output_state_matlab_(params->get<bool>("MATLAB_STATE_OUTPUT")),
+      fdcheck_(Teuchos::getIntegralValue<Inpar::ScaTra::FdCheck>(*params, "FDCHECK")),
       fdcheckeps_(params->get<double>("FDCHECKEPS")),
       fdchecktol_(params->get<double>("FDCHECKTOL")),
-      computeintegrals_(Core::UTILS::integral_value<Inpar::ScaTra::ComputeIntegrals>(
-          *params, "COMPUTEINTEGRALS")),
-      calcerror_(Core::UTILS::integral_value<Inpar::ScaTra::CalcError>(*params, "CALCERROR")),
+      computeintegrals_(
+          Teuchos::getIntegralValue<Inpar::ScaTra::ComputeIntegrals>(*params, "COMPUTEINTEGRALS")),
+      calcerror_(Teuchos::getIntegralValue<Inpar::ScaTra::CalcError>(*params, "CALCERROR")),
       time_(0.0),
       maxtime_(params->get<double>("MAXTIME")),
       step_(0),
@@ -133,7 +131,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       iternum_(0),
       iternum_outer_(0),
       timealgo_(
-          Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(*params, "TIMEINTEGR")),
+          Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(*params, "TIMEINTEGR")),
       nsd_(problem_->n_dim()),
       scalarhandler_(Teuchos::null),
       outputscalarstrategy_(Teuchos::null),
@@ -149,7 +147,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       hist_(Teuchos::null),
       densafnp_(Teuchos::null),
       velocity_field_type_(
-          Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(*params, "VELOCITYFIELD")),
+          Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(*params, "VELOCITYFIELD")),
       mean_conc_(Teuchos::null),
       membrane_conc_(Teuchos::null),
       phinp_micro_(Teuchos::null),
@@ -167,7 +165,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       macro_micro_rea_coeff_(0.0),
       discret_(actdis),
       output_(std::move(output)),
-      convform_(Core::UTILS::integral_value<Inpar::ScaTra::ConvForm>(*params, "CONVFORM")),
+      convform_(Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(*params, "CONVFORM")),
       sysmat_(Teuchos::null),
       zeros_(Teuchos::null),
       dbcmaps_(Teuchos::null),
@@ -176,7 +174,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       residual_(Teuchos::null),
       trueresidual_(Teuchos::null),
       increment_(Teuchos::null),
-      msht_(Core::UTILS::integral_value<Inpar::FLUID::MeshTying>(*params, "MESHTYING")),
+      msht_(Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*params, "MESHTYING")),
       // Initialization of AVM3 variables
       sysmat_sd_(Teuchos::null),
       Sep_(Teuchos::null),
@@ -187,8 +185,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       samstart_(0),
       samstop_(0),
       dumperiod_(0),
-      turbinflow_(Core::UTILS::integral_value<int>(
-          extraparams->sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+      turbinflow_(extraparams->sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")),
       numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
       special_flow_("initialization"),
       forcing_(Teuchos::null),
@@ -199,16 +196,16 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       // Initialization of
       upres_(params->get<int>("RESULTSEVRY")),
       uprestart_(params->get<int>("RESTARTEVRY")),
-      neumanninflow_(Core::UTILS::integral_value<int>(*params, "NEUMANNINFLOW")),
-      convheatrans_(Core::UTILS::integral_value<int>(*params, "CONV_HEAT_TRANS")),
+      neumanninflow_(params->get<bool>("NEUMANNINFLOW")),
+      convheatrans_(params->get<bool>("CONV_HEAT_TRANS")),
       phinp_macro_(0, 0.),
       q_(0.0),
       dq_dphi_(0, 0.),
       // Initialization of Biofilm specific stuff
       scfldgrdisp_(Teuchos::null),
       scstrgrdisp_(Teuchos::null),
-      outintegrreac_(Core::UTILS::integral_value<int>(*params, "OUTINTEGRREAC")),
-      skipinitder_(Core::UTILS::integral_value<int>(*params, "SKIPINITDER")),
+      outintegrreac_(params->get<bool>("OUTINTEGRREAC")),
+      skipinitder_(params->get<bool>("SKIPINITDER")),
       timestepadapted_(false),
       issetup_(false),
       isinit_(false)
@@ -242,7 +239,7 @@ void ScaTra::ScaTraTimIntImpl::init()
   // -------------------------------------------------------------------
   // safety check for spherical coordinates
   // -------------------------------------------------------------------
-  if (Core::UTILS::integral_value<bool>(*params_, "SPHERICALCOORDS") and nsd_ > 1)
+  if (params_->get<bool>("SPHERICALCOORDS") and nsd_ > 1)
     FOUR_C_THROW("Spherical coordinates only available for 1D problems!");
 
   // -------------------------------------------------------------------
@@ -534,13 +531,13 @@ void ScaTra::ScaTraTimIntImpl::setup()
   // set initial field
   // -------------------------------------------------------------------
   set_initial_field(
-      Core::UTILS::integral_value<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"),
+      Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"),
       params_->get<int>("INITFUNCNO"));
 
   // -------------------------------------------------------------------
   // preparations for natural convection
   // -------------------------------------------------------------------
-  if (static_cast<bool>(Core::UTILS::integral_value<int>(*params_, "NATURAL_CONVECTION")))
+  if (params_->get<bool>("NATURAL_CONVECTION"))
   {
     // allocate global density vector and initialize
     densafnp_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
@@ -790,8 +787,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
   // necessary only for AVM3 approach:
   // initialize subgrid-diffusivity matrix + respective output
   // -------------------------------------------------------------------
-  if (fssgd_ != Inpar::ScaTra::fssugrdiff_no and
-      Core::UTILS::integral_value<int>(*turbparams, "TURBMODEL_LS"))
+  if (fssgd_ != Inpar::ScaTra::fssugrdiff_no and turbparams->get<bool>("TURBMODEL_LS"))
   {
     sysmat_sd_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 27));
 
@@ -808,10 +804,12 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
     if (turbparams->get<std::string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales")
     {
       if (fssgd_ == Inpar::ScaTra::fssugrdiff_smagorinsky_small and
-          turbparams->get<std::string>("FSSUGRVISC") != "Smagorinsky_small")
+          turbparams->get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC") !=
+              Inpar::FLUID::FineSubgridVisc::smagorinsky_small)
         FOUR_C_THROW("Same subgrid-viscosity approach expected!");
       if (fssgd_ == Inpar::ScaTra::fssugrdiff_smagorinsky_all and
-          turbparams->get<std::string>("FSSUGRVISC") != "Smagorinsky_all")
+          turbparams->get<Inpar::FLUID::FineSubgridVisc>("FSSUGRVISC") !=
+              Inpar::FLUID::FineSubgridVisc::smagorinsky_all)
         FOUR_C_THROW("Same subgrid-viscosity approach expected!");
     }
   }
@@ -823,7 +821,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
   // -------------------------------------------------------------------
   turbmodel_ = Inpar::FLUID::no_model;
 
-  if (Core::UTILS::integral_value<int>(*turbparams, "TURBMODEL_LS"))
+  if (turbparams->get<bool>("TURBMODEL_LS"))
   {
     // set turbulence model
     if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
@@ -990,12 +988,12 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
   // set problem number
   eleparams.set<int>("probnum", probnum_);
 
-  eleparams.set<int>("convform", convform_);
+  eleparams.set<Inpar::ScaTra::ConvForm>("convform", convform_);
 
   eleparams.set<bool>("isale", isale_);
 
   // set flag for writing the flux vector fields
-  eleparams.set<int>("calcflux_domain", calcflux_domain_);
+  eleparams.set<Inpar::ScaTra::FluxType>("calcflux_domain", calcflux_domain_);
 
   //! set vector containing ids of scalars for which flux vectors are calculated
   eleparams.set<Teuchos::RCP<std::vector<int>>>("writeflux_ids", writefluxids_);
@@ -1005,29 +1003,30 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
   if (calcinitialtimederivative)
   {
     // deactivate stabilization when calculating initial time derivative
-    eleparams.sublist("stabilization").set<std::string>("STABTYPE", "no_stabilization");
-    eleparams.sublist("stabilization").set<std::string>("DEFINITION_TAU", "Zero");
+    eleparams.sublist("stabilization")
+        .set<Inpar::ScaTra::StabType>(
+            "STABTYPE", Inpar::ScaTra::StabType::stabtype_no_stabilization);
+    eleparams.sublist("stabilization")
+        .set<Inpar::ScaTra::TauType>("DEFINITION_TAU", Inpar::ScaTra::TauType::tau_zero);
     // deactivate subgrid-scale velocity
-    eleparams.sublist("stabilization").set<std::string>("SUGRVEL", "no");
+    eleparams.sublist("stabilization").set<bool>("SUGRVEL", false);
     // deactivate subgrid diffusivity
-    eleparams.sublist("stabilization").set<std::string>("ASSUGRDIFF", "no");
+    eleparams.sublist("stabilization").set<bool>("ASSUGRDIFF", false);
   }
 
   // parameters for finite difference check
   if (calcinitialtimederivative)
-  {  // deactivate finite difference check when calculating initial
-     // time derivative
-    eleparams.set<int>("fdcheck", Inpar::ScaTra::fdcheck_none);
+  {  // deactivate finite difference check when calculating initial time derivative
+    eleparams.set<Inpar::ScaTra::FdCheck>("fdcheck", Inpar::ScaTra::fdcheck_none);
   }
   else
-    eleparams.set<int>("fdcheck", fdcheck_);
+    eleparams.set<Inpar::ScaTra::FdCheck>("fdcheck", fdcheck_);
 
   eleparams.set<double>("fdcheckeps", fdcheckeps_);
   eleparams.set<double>("fdchecktol", fdchecktol_);
 
   // flag for spherical coordinates
-  eleparams.set<bool>(
-      "sphericalcoords", Core::UTILS::integral_value<bool>(*params_, "SPHERICALCOORDS"));
+  eleparams.set<bool>("sphericalcoords", params_->get<bool>("SPHERICALCOORDS"));
 
   // flag for truly partitioned multi-scale simulation
   eleparams.set<bool>("partitioned_multiscale",
@@ -1073,12 +1072,14 @@ void ScaTra::ScaTraTimIntImpl::set_element_turbulence_parameters(
   {
     // deactivate turbulence model when calculating initial time
     // derivative
-    Teuchos::setStringToIntegralParameter<int>("PHYSICAL_MODEL", "no_model",
+    Teuchos::setStringToIntegralParameter<Inpar::FLUID::TurbModelAction>("PHYSICAL_MODEL",
+        "no_model",
         "Classical LES approaches require an additional model for\nthe turbulent viscosity.",
         Teuchos::tuple<std::string>("no_model"),
         Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a "
                                     "contradiction and should cause a FOUR_C_THROW."),
-        Teuchos::tuple<int>(Inpar::FLUID::no_model), &eleparams.sublist("TURBULENCE MODEL"));
+        Teuchos::tuple<Inpar::FLUID::TurbModelAction>(Inpar::FLUID::no_model),
+        &eleparams.sublist("TURBULENCE MODEL"));
   }
 
   // set model-dependent parameters
@@ -1091,9 +1092,14 @@ void ScaTra::ScaTraTimIntImpl::set_element_turbulence_parameters(
   eleparams.set<bool>("turbulent inflow", turbinflow_);
 
   if (calcinitialtimederivative)
-    eleparams.set<int>("fs subgrid diffusivity", Inpar::ScaTra::fssugrdiff_no);
+  {
+    eleparams.set<Inpar::ScaTra::FSSUGRDIFF>(
+        "fs subgrid diffusivity", Inpar::ScaTra::fssugrdiff_no);
+  }
   else
-    eleparams.set<int>("fs subgrid diffusivity", fssgd_);
+  {
+    eleparams.set<Inpar::ScaTra::FSSUGRDIFF>("fs subgrid diffusivity", fssgd_);
+  }
 
   // call standard loop over elements
   discret_->evaluate(
@@ -1574,7 +1580,7 @@ void ScaTra::ScaTraTimIntImpl::time_loop()
     discret_->get_comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (Core::UTILS::integral_value<int>(*params_, "OUTPUTNONLINSOLVERSTATS"))
+    if (params_->get<bool>("OUTPUTNONLINSOLVERSTATS"))
       output_nonlin_solver_stats(iternum_, dtnonlinsolve, step(), discret_->get_comm());
 
     // -------------------------------------------------------------------
@@ -2748,7 +2754,7 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
 
   // DO THIS AT VERY FIRST!!!
   // compute reconstructed diffusive fluxes for better consistency
-  const auto consistency = Core::UTILS::integral_value<Inpar::ScaTra::Consistency>(
+  const auto consistency = Teuchos::getIntegralValue<Inpar::ScaTra::Consistency>(
       params_->sublist("STABILIZATION"), "CONSISTENCY");
   if (consistency == Inpar::ScaTra::consistency_l2_projection_lumped)
   {
@@ -2926,8 +2932,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
 
   //------------------------------ turn adaptive solver tolerance on/off
   const double ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
-  const bool isadapttol =
-      (Core::UTILS::integral_value<int>(params_->sublist("NONLINEAR"), "ADAPTCONV"));
+  const bool isadapttol = params_->sublist("NONLINEAR").get<bool>("ADAPTCONV");
   const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER");
   double actresidual(0.0);
 
@@ -2935,8 +2940,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
   iternum_ = 0;
 
   // perform explicit predictor step (-> better starting point for nonlinear solver)
-  const bool explpredictor =
-      (Core::UTILS::integral_value<int>(params_->sublist("NONLINEAR"), "EXPLPREDICT") == 1);
+  const bool explpredictor = (params_->sublist("NONLINEAR").get<bool>("EXPLPREDICT"));
   if (explpredictor)
   {
     // explicit predictor + recovery of DBC values
@@ -3008,7 +3012,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
       discret_->get_comm().MaxAll(&mydtsolve, &dtsolve_, 1);
 
       // output performance statistics associated with linear solver into text file if applicable
-      if (Core::UTILS::integral_value<int>(*params_, "OUTPUTLINSOLVERSTATS"))
+      if (params_->get<bool>("OUTPUTLINSOLVERSTATS"))
         output_lin_solver_stats(strategy_->solver(), dtsolve_, step(), iternum_,
             strategy_->dof_row_map().NumGlobalElements());
     }
@@ -3190,7 +3194,7 @@ void ScaTra::ScaTraTimIntImpl::adapt_time_step_size()
   timestepadapted_ = false;
 
   // check flag for adaptive time stepping
-  if (Core::UTILS::integral_value<bool>(*params_, "ADAPTIVE_TIMESTEPPING"))
+  if (params_->get<bool>("ADAPTIVE_TIMESTEPPING"))
   {
     // initialize time step size with original value
     double dt(params_->get<double>("TIMESTEP"));
@@ -3373,7 +3377,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
 
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
-        const double fac = Core::UTILS::integral_value<bool>(*params_, "SPHERICALCOORDS")
+        const double fac = params_->get<bool>("SPHERICALCOORDS")
                                ? *node->x().data() * *node->x().data() * four_pi
                                : 1.0;
 

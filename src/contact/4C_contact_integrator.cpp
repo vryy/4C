@@ -39,25 +39,24 @@ CONTACT::Integrator::Integrator(
     : imortar_(params),
       Comm_(comm),
       dim_(imortar_.get<int>("DIMENSION")),
-      shapefcn_(Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN")),
-      lagmultquad_(Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD")),
-      gpslip_(Core::UTILS::integral_value<int>(imortar_, "GP_SLIP_INCR")),
-      algo_(Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM")),
-      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(imortar_, "STRATEGY")),
-      cppnormal_(Core::UTILS::integral_value<int>(imortar_, "CPP_NORMALS")),
-      wearlaw_(Core::UTILS::integral_value<Inpar::Wear::WearLaw>(imortar_, "WEARLAW")),
+      shapefcn_(Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN")),
+      lagmultquad_(Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD")),
+      gpslip_(imortar_.get<bool>("GP_SLIP_INCR")),
+      algo_(Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM")),
+      stype_(Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(imortar_, "STRATEGY")),
+      cppnormal_(imortar_.get<bool>("CPP_NORMALS")),
+      wearlaw_(Teuchos::getIntegralValue<Inpar::Wear::WearLaw>(imortar_, "WEARLAW")),
       wearimpl_(false),
       wearside_(Inpar::Wear::wear_slave),
       weartype_(Inpar::Wear::wear_intstate),
       wearshapefcn_(Inpar::Wear::wear_shape_standard),
-      sswear_(Core::UTILS::integral_value<int>(imortar_, "SSWEAR")),
+      sswear_(imortar_.get<bool>("SSWEAR")),
       wearcoeff_(-1.0),
       wearcoeffm_(-1.0),
       ssslip_(imortar_.get<double>("SSSLIP")),
       nonsmooth_(false),
-      nonsmoothselfcontactsurface_(
-          Core::UTILS::integral_value<int>(imortar_, "NONSMOOTH_CONTACT_SURFACE")),
-      integrationtype_(Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE"))
+      nonsmoothselfcontactsurface_(imortar_.get<bool>("NONSMOOTH_CONTACT_SURFACE")),
+      integrationtype_(Teuchos::getIntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE"))
 {
   // init gp
   initialize_gp(eletype);
@@ -66,18 +65,17 @@ CONTACT::Integrator::Integrator(
   if (wearlaw_ != Inpar::Wear::wear_none)
   {
     // set wear contact status
-    Inpar::Wear::WearTimInt wtimint =
-        Core::UTILS::integral_value<Inpar::Wear::WearTimInt>(params, "WEARTIMINT");
+    auto wtimint = Teuchos::getIntegralValue<Inpar::Wear::WearTimInt>(params, "WEARTIMINT");
     if (wtimint == Inpar::Wear::wear_impl) wearimpl_ = true;
 
     // wear surface
-    wearside_ = Core::UTILS::integral_value<Inpar::Wear::WearSide>(imortar_, "WEAR_SIDE");
+    wearside_ = Teuchos::getIntegralValue<Inpar::Wear::WearSide>(imortar_, "WEAR_SIDE");
 
     // wear algorithm
-    weartype_ = Core::UTILS::integral_value<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
+    weartype_ = Teuchos::getIntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
 
     // wear shape function
-    wearshapefcn_ = Core::UTILS::integral_value<Inpar::Wear::WearShape>(imortar_, "WEAR_SHAPEFCN");
+    wearshapefcn_ = Teuchos::getIntegralValue<Inpar::Wear::WearShape>(imortar_, "WEAR_SHAPEFCN");
 
     // wear coefficient
     wearcoeff_ = imortar_.get<double>("WEARCOEFF");
@@ -86,7 +84,7 @@ CONTACT::Integrator::Integrator(
     wearcoeffm_ = imortar_.get<double>("WEARCOEFF_MASTER");
   }
 
-  nonsmooth_ = Core::UTILS::integral_value<int>(imortar_, "NONSMOOTH_GEOMETRIES");
+  nonsmooth_ = imortar_.get<bool>("NONSMOOTH_GEOMETRIES");
 
   return;
 }
@@ -236,8 +234,7 @@ void CONTACT::Integrator::initialize_gp(Core::FE::CellType eletype)
   int numgp = imortar_.get<int>("NUMGP_PER_DIM");
 
   // get integration type
-  Inpar::Mortar::IntType integrationtype =
-      Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
+  auto integrationtype = Teuchos::getIntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
 
   //**********************************************************************
   // choose Gauss rule according to (a) element type (b) input parameter
@@ -1506,8 +1503,7 @@ void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
   //  if a slave-node has no projection onto each master element
   //  --> Boundary_ele==true
   //********************************************************************
-  Inpar::Mortar::IntType integrationtype =
-      Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
+  auto integrationtype = Teuchos::getIntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
 
   //************************************************************************
   // Boundary Segmentation check -- HasProj()-check
@@ -3801,7 +3797,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult;
 
   // get them in the case of wear
-  if (wear or Core::UTILS::integral_value<int>(imortar_, "GP_SLIP_INCR") == true)
+  if (wear or imortar_.get<bool>("GP_SLIP_INCR"))
   {
     scoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
     mcoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, mele.num_node()));
@@ -4313,8 +4309,7 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
   }
 
   // get numerical integration type
-  Inpar::Mortar::IntType inttype =
-      Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
+  auto inttype = Teuchos::getIntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
 
   //************************************************************************
   // Boundary Segmentation check -- HasProj()-check
@@ -5994,7 +5989,7 @@ void CONTACT::Integrator::integrate_gp_2d(Mortar::Element& sele, Mortar::Element
       }
 
       // Creating the tangential relative slip increment (non-objective)
-      if (Core::UTILS::integral_value<int>(imortar_, "GP_SLIP_INCR") == true)
+      if (imortar_.get<bool>("GP_SLIP_INCR"))
       {
         int linsize = 0;
         for (int i = 0; i < sele.num_node(); ++i)

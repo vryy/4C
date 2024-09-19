@@ -66,7 +66,7 @@ namespace Core::FE
 
       // goodbye
       return zero_size;
-    }  // GetMyNurbsKnotsAndWeights()
+    }  // get_my_nurbs_knots_and_weights()
 
     /*!
     \brief A service method for accessing knotvector and weights for
@@ -118,7 +118,7 @@ namespace Core::FE
 
       // goodbye
       return zero_size;
-    }  // GetKnotVectorAndWeightsForNurbsBoundary()
+    }  // get_knot_vector_and_weights_for_nurbs_boundary()
 
     /*!
     \brief A service method for accessing knotvector and weights for
@@ -181,7 +181,7 @@ namespace Core::FE
 
       // goodbye
       return zero_size;
-    }  // GetKnotVectorAndWeightsForNurbsBoundary()
+    }  // get_knot_vector_and_weights_for_nurbs_boundary()
 
     /**
      * \brief Helper function to evaluate the NURBS interpolation inside the element.

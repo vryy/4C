@@ -153,8 +153,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
               << " Artery-to-PoroMultiphaseScatra coupling pairs are active" << std::endl;
 
   // print out summary of pairs
-  if (contdis_->name() == "porofluid" &&
-      (Core::UTILS::integral_value<int>(couplingparams_, "PRINT_OUT_SUMMARY_PAIRS")))
+  if (contdis_->name() == "porofluid" && couplingparams_.get<bool>("PRINT_OUT_SUMMARY_PAIRS"))
   {
     if (myrank_ == 0)
       std::cout << "In total " << numgp_desired << " GPs (" << numgp_per_artele

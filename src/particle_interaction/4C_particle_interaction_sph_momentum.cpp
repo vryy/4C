@@ -40,13 +40,12 @@ FOUR_C_NAMESPACE_OPEN
 ParticleInteraction::SPHMomentum::SPHMomentum(const Teuchos::ParameterList& params)
     : params_sph_(params),
       boundaryparticleinteraction_(
-          Core::UTILS::integral_value<Inpar::PARTICLE::BoundaryParticleInteraction>(
+          Teuchos::getIntegralValue<Inpar::PARTICLE::BoundaryParticleInteraction>(
               params_sph_, "BOUNDARYPARTICLEINTERACTION")),
       transportvelocityformulation_(
-          Core::UTILS::integral_value<Inpar::PARTICLE::TransportVelocityFormulation>(
+          Teuchos::getIntegralValue<Inpar::PARTICLE::TransportVelocityFormulation>(
               params_sph_, "TRANSPORTVELOCITYFORMULATION")),
-      writeparticlewallinteraction_(
-          Core::UTILS::integral_value<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
+      writeparticlewallinteraction_(params_sph_.get<bool>("WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -194,8 +193,8 @@ void ParticleInteraction::SPHMomentum::add_acceleration_contribution() const
 void ParticleInteraction::SPHMomentum::init_momentum_formulation_handler()
 {
   // get type of smoothed particle hydrodynamics momentum formulation
-  Inpar::PARTICLE::MomentumFormulationType momentumformulationtype =
-      Core::UTILS::integral_value<Inpar::PARTICLE::MomentumFormulationType>(
+  auto momentumformulationtype =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::MomentumFormulationType>(
           params_sph_, "MOMENTUMFORMULATION");
 
   // create momentum formulation handler

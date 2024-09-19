@@ -59,7 +59,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {

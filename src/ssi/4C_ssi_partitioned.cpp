@@ -40,7 +40,8 @@ void SSI::SSIPart::init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // safety check
-  if (ssi_interface_meshtying() and structparams.get<std::string>("PREDICT") != "TangDis")
+  if (ssi_interface_meshtying() and Teuchos::getIntegralValue<Inpar::Solid::PredEnum>(structparams,
+                                        "PREDICT") != Inpar::Solid::PredEnum::pred_tangdis)
   {
     FOUR_C_THROW(
         "Must have TangDis predictor for structural field in partitioned scalar-structure "

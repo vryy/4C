@@ -101,8 +101,8 @@ void PARTICLEWALL::WallHandlerBase::insert_particle_states_of_particle_types(
     const
 {
   // get flags defining considered states of particle wall
-  bool ismoving = Core::UTILS::integral_value<int>(params_, "PARTICLE_WALL_MOVING");
-  bool isloaded = Core::UTILS::integral_value<int>(params_, "PARTICLE_WALL_LOADED");
+  const bool ismoving = params_.get<bool>("PARTICLE_WALL_MOVING");
+  const bool isloaded = params_.get<bool>("PARTICLE_WALL_LOADED");
 
   if (not(ismoving and isloaded)) return;
 

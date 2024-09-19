@@ -77,9 +77,8 @@ void Solid::TimIntExpl::setup()
   // explicit time integrators can only handle penalty contact / meshtying
   if (have_contact_meshtying())
   {
-    Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(
-            cmtbridge_->get_strategy().params(), "STRATEGY");
+    auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(
+        cmtbridge_->get_strategy().params(), "STRATEGY");
     if (soltype != Inpar::CONTACT::solution_penalty &&
         (soltype != Inpar::CONTACT::solution_multiscale))
       FOUR_C_THROW(

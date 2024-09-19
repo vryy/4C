@@ -187,7 +187,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_stc_matrix_inverse:
     {
       const auto stc_scaling =
-          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Teuchos::getIntegralValue<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
@@ -201,7 +201,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
     case calc_stc_matrix:
     {
       const auto stc_scaling =
-          Core::UTILS::get_as_enum<Inpar::Solid::StcScale>(params, "stc_scaling");
+          Teuchos::getIntegralValue<Inpar::Solid::StcScale>(params, "stc_scaling");
       if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else

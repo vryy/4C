@@ -107,7 +107,7 @@ void CONTACT::NitscheStrategyTsi::setup(bool redistributed, bool init)
 void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
 {
   auto NitWgt =
-      Core::UTILS::integral_value<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
+      Teuchos::getIntegralValue<Inpar::CONTACT::NitscheWeighting>(params(), "NITSCHE_WEIGHTING");
   for (auto& interface : interface_)
   {
     for (int e = 0; e < interface->discret().element_col_map()->NumMyElements(); ++e)

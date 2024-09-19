@@ -19,8 +19,6 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include <cstdlib>
-#include <ctime>
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN
@@ -37,7 +35,7 @@ Teuchos::RCP<Solid::TimAda> Solid::tim_ada_create(
   Teuchos::RCP<Solid::TimAda> sta = Teuchos::null;
 
   // auxiliary time integrator
-  switch (Core::UTILS::integral_value<Inpar::Solid::TimAdaKind>(tap, "KIND"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(tap, "KIND"))
   {
     case Inpar::Solid::timada_kind_none:
       // No adaptivity in time

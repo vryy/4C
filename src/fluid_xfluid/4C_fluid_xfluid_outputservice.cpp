@@ -253,20 +253,18 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner)
     : XFluidOutputService(discret, cond_manager),
-      gmsh_sol_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_SOL_OUT")),
-      gmsh_ref_sol_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_TIMINT_OUT")),
-      gmsh_debug_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_DEBUG_OUT")),
-      gmsh_debug_out_screen_(
-          (bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
-      gmsh_eos_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_EOS_OUT")),
-      gmsh_discret_out_((bool)Core::UTILS::integral_value<int>(params_xfem, "GMSH_DISCRET_OUT")),
+      gmsh_sol_out_(params_xfem.get<bool>("GMSH_SOL_OUT")),
+      gmsh_ref_sol_out_(params_xfem.get<bool>("GMSH_TIMINT_OUT")),
+      gmsh_debug_out_(params_xfem.get<bool>("GMSH_DEBUG_OUT")),
+      gmsh_debug_out_screen_(params_xfem.get<bool>("GMSH_DEBUG_OUT_SCREEN")),
+      gmsh_eos_out_(params_xfem.get<bool>("GMSH_EOS_OUT")),
+      gmsh_discret_out_(params_xfem.get<bool>("GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
       volume_cell_gauss_point_by_(
-          Core::UTILS::integral_value<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
+          Teuchos::getIntegralValue<Cut::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
-  if (!(bool)Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->io_params(), "OUTPUT_GMSH"))
+  if (not Global::Problem::instance()->io_params().get<bool>("OUTPUT_GMSH"))
     FOUR_C_THROW(
         "If GMSH output is globally deactivated, don't create an instance of "
         "XFluidOutputServiceGmsh!");

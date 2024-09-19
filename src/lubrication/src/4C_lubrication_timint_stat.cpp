@@ -62,7 +62,7 @@ void LUBRICATION::TimIntStationary::set_element_time_parameter() const
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", LUBRICATION::set_time_parameter);
+  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::set_time_parameter);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);
   eleparams.set<double>("time-step length", dta_);

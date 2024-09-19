@@ -73,7 +73,6 @@ $CMAKE_COMMAND \
   -D Trilinos_ENABLE_Stratimikos:BOOL=ON \
   -D Trilinos_ENABLE_Teko:BOOL=ON \
   -D Trilinos_ENABLE_Teuchos:BOOL=ON \
-    -D Teuchos_MODIFY_DEFAULTS_DURING_VALIDATION:BOOL=OFF \
   -D Trilinos_ENABLE_Thyra:BOOL=ON \
     -D Thyra_SHOW_DEPRECATED_WARNINGS:BOOL=OFF \
   -D Trilinos_ENABLE_ThyraEpetraAdapters:BOOL=ON \

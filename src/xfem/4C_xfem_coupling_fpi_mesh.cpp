@@ -823,7 +823,7 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
 }
 
 //----------------------------------------------------------------------
-// LiftDrag                                                  chfoe 11/07
+// lift_drag                                                  chfoe 11/07
 //----------------------------------------------------------------------
 // calculate lift&drag forces
 //

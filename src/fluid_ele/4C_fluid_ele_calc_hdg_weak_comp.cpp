@@ -221,7 +221,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_service(
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -359,8 +359,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
   Core::LinAlg::Matrix<nsd_, 1> xyz(true);
 
   // get function number
-  const int calcerrfunctno =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(params, "error function number");
+  const int calcerrfunctno = params.get<int>("error function number");
 
   // initialize errors
   double err_L = 0.0;
@@ -458,7 +457,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::project_field(
       "Wrong size in project vector 2");
 
   // get initial function and current time
-  const int* initfield = params.getPtr<int>("initfield");
+  const auto* initfield = params.getPtr<Inpar::FLUID::InitialField>("initfield");
   const int* startfunc = params.getPtr<int>("startfuncno");
   double* time = params.getPtr<double>("time");
 
@@ -1107,8 +1106,9 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
 
   // set unsteady flag
   const Teuchos::ParameterList& fluidparams = Global::Problem::instance()->fluid_dynamic_params();
-  std::string timeintegr = fluidparams.get<std::string>("TIMEINTEGR");
-  unsteady = (timeintegr.compare("Stationary") != 0);
+  auto timeintegr =
+      Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluidparams, "TIMEINTEGR");
+  unsteady = (timeintegr != Inpar::FLUID::TimeIntegrationScheme::timeint_stationary);
 
   // get material properties
   const Mat::WeaklyCompressibleFluid* actmat =

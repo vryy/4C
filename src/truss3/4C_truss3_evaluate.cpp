@@ -75,16 +75,12 @@ int Discret::ELEMENTS::Truss3::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_ptcstiff:
     {
       FOUR_C_THROW("EvaluatePTC not implemented");
-
-      break;
     }
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero
        displacement and residual values*/
     case Core::Elements::struct_calc_linstiff:
     {
       FOUR_C_THROW("linear stiffness matrix called, but not implemented");
-
-      break;
     }
     // calculate internal energy
     case Core::Elements::struct_calc_energy:
@@ -141,7 +137,6 @@ int Discret::ELEMENTS::Truss3::evaluate(Teuchos::ParameterList& params,
     {
       std::cout << "\ncalled element with action type " << action_type_to_string(act);
       FOUR_C_THROW("Unknown type of action for Truss3");
-      break;
     }
   }
   return 0;
@@ -157,8 +152,6 @@ int Discret::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("This method needs to be modified for bio-polymer networks!");
-
-  return 0;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -250,7 +243,6 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass(
       break;
     default:
       FOUR_C_THROW("Unknown type kintype_ for Truss3");
-      break;
   }
 
   // Map element level into global 12 by 12 element
@@ -498,8 +490,7 @@ void Discret::ELEMENTS::Truss3::calc_gp_stresses(
   else
   {
     stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-    iostress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-        params, "iostress", Inpar::Solid::stress_none);
+    iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
   }
 
   const Core::FE::IntegrationPoints1D intpoints(gaussrule_);

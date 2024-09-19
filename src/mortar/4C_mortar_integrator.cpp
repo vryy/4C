@@ -320,8 +320,8 @@ Mortar::Integrator* Mortar::Integrator::impl(
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 Mortar::IntegratorCalc<distype_s, distype_m>::IntegratorCalc(const Teuchos::ParameterList& params)
     : imortar_(params),
-      shapefcn_(Core::UTILS::integral_value<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
-      lmquadtype_(Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params, "LM_QUAD"))
+      shapefcn_(Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
+      lmquadtype_(Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params, "LM_QUAD"))
 {
   initialize_gp();
 }
@@ -352,8 +352,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::initialize_gp()
   int numgp = imortar_.get<int>("NUMGP_PER_DIM");
 
   // get integration type
-  Inpar::Mortar::IntType integrationtype =
-      Core::UTILS::integral_value<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
+  auto integrationtype = Teuchos::getIntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
 
   // if we use segment-based integration, the shape of the cells has to be considered!
   Core::FE::CellType intshape;

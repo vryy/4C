@@ -137,7 +137,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::
    * unknowns we build K with G as summand. Hence, we can just add the terms
    * resulting from this boundary condition to K (and hence G)
    */
-  const EleMag::Action action = Core::UTILS::get_as_enum<EleMag::Action>(params, "action");
+  const auto action = params.get<EleMag::Action>("action");
   switch (action)
   {
     case EleMag::calc_abc:

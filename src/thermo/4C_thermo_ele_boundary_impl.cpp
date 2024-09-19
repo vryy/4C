@@ -149,8 +149,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
   Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
 
   // Now, check for the action parameter
-  const Thermo::BoundaryAction action =
-      Core::UTILS::get_as_enum<Thermo::BoundaryAction>(params, "action");
+  const auto action = Teuchos::getIntegralValue<Thermo::BoundaryAction>(params, "action");
   if (action == Thermo::calc_normal_vectors)
   {
     // access the global vector
@@ -349,8 +348,8 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
-    const Inpar::Thermo::DynamicType timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-        params, "time integrator", Inpar::Thermo::dyna_undefined);
+    const auto timint =
+        params.get<Inpar::Thermo::DynamicType>("time integrator", Inpar::Thermo::dyna_undefined);
     switch (timint)
     {
       case Inpar::Thermo::dyna_statics:
@@ -530,9 +529,8 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 
         // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
         // check the time integrator
-        const Inpar::Thermo::DynamicType timint =
-            Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-                params, "time integrator", Inpar::Thermo::dyna_undefined);
+        const auto timint = params.get<Inpar::Thermo::DynamicType>(
+            "time integrator", Inpar::Thermo::dyna_undefined);
         switch (timint)
         {
           case Inpar::Thermo::dyna_statics:
@@ -1118,7 +1116,7 @@ void Thermo::TemperBoundaryImpl<distype>::surface_integration(
   xcurr_T.update_t(xcurr);
 
   // the metric tensor and the area of an infinitesimal surface/line element
-  // compute dXYZ / drs is included in ComputeMetricTensorForBoundaryEle
+  // compute dXYZ / drs is included in compute_metric_tensor_for_boundary_ele
   // dxyzdrs = deriv . xyze
   // dxyzdrs.multiply_nt(1.0,deriv,xyze,0.0) = (LENA)dxyzdrs
   // be careful: normal

@@ -33,8 +33,8 @@ FOUR_C_NAMESPACE_OPEN
 PoroElastScaTra::PoroScatraBase::PoroScatraBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : AlgorithmBase(comm, timeparams),
-      matchinggrid_(Core::UTILS::integral_value<bool>(
-          Global::Problem::instance()->poro_scatra_control_params(), "MATCHINGGRID")),
+      matchinggrid_(
+          Global::Problem::instance()->poro_scatra_control_params().get<bool>("MATCHINGGRID")),
       volcoupl_structurescatra_(Teuchos::null),
       volcoupl_fluidscatra_(Teuchos::null)
 {
@@ -43,37 +43,22 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
 
   // do some checks
   {
-    Inpar::ScaTra::TimeIntegrationScheme timealgo =
-        Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+    auto timealgo =
+        Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
     if (timealgo != Inpar::ScaTra::timeint_one_step_theta and
         timealgo != Inpar::ScaTra::timeint_stationary)
       FOUR_C_THROW(
           "scalar transport in porous media is limited in functionality (only one-step-theta "
           "scheme or stationary case possible)");
 
-    //    Inpar::ScaTra::ConvForm convform
-    //    = Core::UTILS::IntegralValue<Inpar::ScaTra::ConvForm>(scatradyn,"CONVFORM");
-    //    if ( convform != Inpar::ScaTra::convform_convective )
-    //      FOUR_C_THROW("The balance of mass is included in the formulation for scalar transport in
-    //      porous media. "
-    //          "Set 'CONVFORM' to 'convective' in the SCALAR TRANSPORT DYNAMIC section! ");
-
-    Inpar::ScaTra::VelocityField velfield =
-        Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+    auto velfield = scatradyn.get<Inpar::ScaTra::VelocityField>("VELOCITYFIELD");
     if (velfield != Inpar::ScaTra::velocity_Navier_Stokes)
       FOUR_C_THROW(
           "scalar transport is coupled with the porous medium. Set 'VELOCITYFIELD' to "
           "'Navier_Stokes' in the SCALAR TRANSPORT DYNAMIC section! ");
-
-    //    bool skipinitder
-    //    = Core::UTILS::IntegralValue<int>(scatradyn,"SKIPINITDER");
-    //    if ( not skipinitder )
-    //      FOUR_C_THROW("Calculation of initial time derivative not yet supported for scalar
-    //      transport in porous media. Set 'SKIPINITDER' to 'yes' in the SCALAR TRANSPORT DYNAMIC
-    //      section! ");
   }
 
-  // the problem is two way coupled, thus each discretization must know the other discretization
+  // the problem is two-way coupled, thus each discretization must know the other discretization
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
   Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("porofluid");
   Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");

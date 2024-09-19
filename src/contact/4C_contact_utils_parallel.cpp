@@ -31,8 +31,8 @@ bool CONTACT::UTILS::use_safe_redistribute_and_ghosting(const Teuchos::Parameter
   bool use_safe_ghosting_branch = false;
   {
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-    const enum Inpar::Solid::IntegrationStrategy intstrat =
-        Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+    const auto intstrat =
+        Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
     if (intstrat == Inpar::Solid::int_old)
     {
@@ -48,7 +48,7 @@ bool CONTACT::UTILS::use_safe_redistribute_and_ghosting(const Teuchos::Parameter
        * Other cases require volume ghosting as well and, thus, have to stick to the old code
        * branch. Everything porous media related has to stick to the old code branch as well.
        */
-      if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(contactParams, "ALGORITHM") ==
+      if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(contactParams, "ALGORITHM") ==
               Inpar::Mortar::algorithm_mortar &&
           (Global::Problem::instance()->get_problem_type() != Core::ProblemType::poroelast &&
               Global::Problem::instance()->get_problem_type() != Core::ProblemType::poroscatra))

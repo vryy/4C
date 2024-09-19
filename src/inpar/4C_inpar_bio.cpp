@@ -27,18 +27,18 @@ void Inpar::ArtDyn::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   using Teuchos::tuple;
   Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC", false, "");
 
-  setStringToIntegralParameter<int>("DYNAMICTYP", "ExpTaylorGalerkin",
+  setStringToIntegralParameter<TimeIntegrationScheme>("DYNAMICTYP", "ExpTaylorGalerkin",
       "Explicit Taylor Galerkin Scheme", tuple<std::string>("ExpTaylorGalerkin", "Stationary"),
-      tuple<int>(tay_gal, stationary), &andyn);
+      tuple<TimeIntegrationScheme>(tay_gal, stationary), &andyn);
 
   Core::UTILS::double_parameter("TIMESTEP", 0.01, "Time increment dt", &andyn);
   Core::UTILS::int_parameter("NUMSTEP", 0, "Number of Time Steps", &andyn);
   Core::UTILS::double_parameter("MAXTIME", 1000.0, "total simulation time", &andyn);
   Core::UTILS::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &andyn);
   Core::UTILS::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &andyn);
-  setStringToIntegralParameter<int>("SOLVESCATRA", "no",
-      "Flag to (de)activate solving scalar transport in blood", tuple<std::string>("no", "yes"),
-      tuple<std::string>("do not solve scatra", "solve scatra"), tuple<int>(0, 1), &andyn);
+
+  Core::UTILS::bool_parameter(
+      "SOLVESCATRA", "no", "Flag to (de)activate solving scalar transport in blood", &andyn);
 
   // number of linear solver used for arterial dynamics
   Core::UTILS::int_parameter(
@@ -48,10 +48,11 @@ void Inpar::ArtDyn::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   Core::UTILS::int_parameter("INITFUNCNO", -1, "function number for artery initial field", &andyn);
 
   // type of initial field
-  setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
+  setStringToIntegralParameter<InitialField>("INITIALFIELD", "zero_field",
       "Initial Field for artery problem",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
-      tuple<int>(initfield_zero_field, initfield_field_by_function, initfield_field_by_condition),
+      tuple<InitialField>(
+          initfield_zero_field, initfield_field_by_function, initfield_field_by_condition),
       &andyn);
 }
 
@@ -70,9 +71,10 @@ void Inpar::ArteryNetwork::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterL
   Core::UTILS::double_parameter("CONVTOL_Q", 1E-6,
       "Coupled red_airway and tissue iteration convergence for flux", &redtisdyn);
   Core::UTILS::int_parameter("MAXITER", 5, "Maximum coupling iterations", &redtisdyn);
-  setStringToIntegralParameter<int>("RELAXTYPE", "norelaxation", "Dynamic Relaxation Type",
+  setStringToIntegralParameter<Relaxtype3D0D>("RELAXTYPE", "norelaxation",
+      "Dynamic Relaxation Type",
       tuple<std::string>("norelaxation", "fixedrelaxation", "Aitken", "SD"),
-      tuple<int>(norelaxation, fixedrelaxation, Aitken, SD), &redtisdyn);
+      tuple<Relaxtype3D0D>(norelaxation, fixedrelaxation, Aitken, SD), &redtisdyn);
   Core::UTILS::double_parameter("TIMESTEP", 0.01, "Time increment dt", &redtisdyn);
   Core::UTILS::int_parameter("NUMSTEP", 1, "Number of Time Steps", &redtisdyn);
   Core::UTILS::double_parameter("MAXTIME", 4.0, "", &redtisdyn);
@@ -349,11 +351,13 @@ void Inpar::ReducedLung::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
   Teuchos::ParameterList& redawdyn =
       list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC", false, "");
 
-  setStringToIntegralParameter<int>("DYNAMICTYP", "OneStepTheta", "OneStepTheta Scheme",
-      tuple<std::string>("OneStepTheta"), tuple<int>(one_step_theta), &redawdyn);
+  setStringToIntegralParameter<RedAirwaysDyntype>("DYNAMICTYP", "OneStepTheta",
+      "OneStepTheta Scheme", tuple<std::string>("OneStepTheta"),
+      tuple<RedAirwaysDyntype>(one_step_theta), &redawdyn);
 
-  setStringToIntegralParameter<int>("SOLVERTYPE", "Linear", "Solver type",
-      tuple<std::string>("Linear", "Nonlinear"), tuple<int>(linear, nonlinear), &redawdyn);
+  setStringToIntegralParameter<RedAirwaysDyntype>("SOLVERTYPE", "Linear", "Solver type",
+      tuple<std::string>("Linear", "Nonlinear"), tuple<RedAirwaysDyntype>(linear, nonlinear),
+      &redawdyn);
 
   Core::UTILS::double_parameter("TIMESTEP", 0.01, "Time increment dt", &redawdyn);
   Core::UTILS::int_parameter("NUMSTEP", 0, "Number of Time Steps", &redawdyn);
@@ -368,21 +372,15 @@ void Inpar::ReducedLung::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterLis
   Core::UTILS::int_parameter("LINEAR_SOLVER", -1,
       "number of linear solver used for reduced dim arterial dynamics", &redawdyn);
 
-  // Solve scatra flag
-  setStringToIntegralParameter<int>("SOLVESCATRA", "no",
-      "Flag to (de)activate solving scalar transport in blood", tuple<std::string>("no", "yes"),
-      tuple<std::string>("do not solve scatra", "solve scatra"), tuple<int>(0, 1), &redawdyn);
-  // Compute airway-acinus interdependency flag
-  setStringToIntegralParameter<int>("COMPAWACINTER", "no",
-      "Flag to (de)activate computation of airway-acinus interdependency ",
-      tuple<std::string>("no", "yes"),
-      tuple<std::string>("do not compute interdependency", "compute interdependency"),
-      tuple<int>(0, 1), &redawdyn);
-  // Re-calculate initial acini volume flag
-  setStringToIntegralParameter<int>("CALCV0PRESTRESS", "no",
-      "Flag to (de)activate initial acini volume adjustment with pre-stress condition ",
-      tuple<std::string>("no", "yes"), tuple<std::string>("do not adjust", "adjust volumes"),
-      tuple<int>(0, 1), &redawdyn);
+  Core::UTILS::bool_parameter(
+      "SOLVESCATRA", "no", "Flag to (de)activate solving scalar transport in blood", &redawdyn);
+
+  Core::UTILS::bool_parameter("COMPAWACINTER", "no",
+      "Flag to (de)activate computation of airway-acinus interdependency", &redawdyn);
+
+  Core::UTILS::bool_parameter("CALCV0PRESTRESS", "no",
+      "Flag to (de)activate initial acini volume adjustment with pre-stress condition", &redawdyn);
+
   Core::UTILS::double_parameter("TRANSPULMPRESS", 800.0,
       "Transpulmonary pressure needed for recalculation of acini volumes", &redawdyn);
 }

@@ -17,7 +17,6 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
-#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_hdg.hpp"
 #include "4C_scatra_resulttest_hdg.hpp"
@@ -45,7 +44,7 @@ ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization> &actdi
       startalgo_(true),
       theta_(-1),
       hdgdis_(nullptr),
-      padaptivity_(Core::UTILS::integral_value<bool>(*params, "PADAPTIVITY")),
+      padaptivity_(params->get<bool>("PADAPTIVITY")),
       padapterrortol_(params->get<double>("PADAPTERRORTOL")),
       padapterrorbase_(params->get<double>("PADAPTERRORBASE")),
       padaptdegreemax_(params->get<int>("PADAPTDEGREEMAX")),
@@ -70,8 +69,7 @@ void ScaTra::TimIntHDG::setup()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Discret::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
 
@@ -455,8 +453,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   // store the number of dofs per element on vector
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Discret::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
     // store the number of dofs for the element
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
@@ -496,8 +493,6 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   // reset vector
   interpolatedPhinp_.reset(new Epetra_Vector(*(discret_->node_row_map())));
   elementdegree_.reset(new Epetra_Vector(*(discret_->element_row_map())));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -608,8 +603,6 @@ void ScaTra::TimIntHDG::compute_intermediate_values()
   gen_alpha_compute_time_derivative();
   // compute values at intermediate time steps
   gen_alpha_intermediate_values();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -619,7 +612,6 @@ void ScaTra::TimIntHDG::compute_interior_values()
 {
   // Update the interior variables
   update_interior_variables(intphinp_);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -788,9 +780,11 @@ void ScaTra::TimIntHDG::fd_check()
 
       // impose perturbation and update interior variables
       if (phinp_->Map().MyGID(colgid))
+      {
         if (phinp_->SumIntoGlobalValue(colgid, 0, eps))
           FOUR_C_THROW(
               "Perturbation could not be imposed on state vector for finite difference check!");
+      }
       update_interior_variables(intphitemp);
 
       discret_->clear_state(true);
@@ -944,8 +938,6 @@ void ScaTra::TimIntHDG::evaluate_error_compared_to_analytical_sol()
       break;
     }
   }
-
-  return;
 }  // ScaTra::TimIntHDG::evaluate_error_compared_to_analytical_sol
 
 /*----------------------------------------------------------------------------------*
@@ -1372,7 +1364,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::assemble_mat_and_rhs()
 {
-  if (!Core::UTILS::integral_value<int>(*params_, "SEMIIMPLICIT"))
+  if (not params_->get<bool>("SEMIIMPLICIT"))
     ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs();
   else  // in semi-implicit evaluation matrix does not change, thus only rhs is assembled in every
         // step

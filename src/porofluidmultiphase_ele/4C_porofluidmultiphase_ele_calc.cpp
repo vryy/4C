@@ -82,8 +82,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate(Core::Eleme
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
 {
   // check for the action parameter
-  const POROFLUIDMULTIPHASE::Action action =
-      Core::UTILS::get_as_enum<POROFLUIDMULTIPHASE::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<POROFLUIDMULTIPHASE::Action>(params, "action");
 
   // setup
   if (setup_calc(ele, discretization, action) == -1) return -1;

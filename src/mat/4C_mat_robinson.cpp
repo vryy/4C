@@ -92,7 +92,7 @@ Mat::PAR::Robinson::Robinson(const Core::Mat::PAR::Parameter::Data& matdata)
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Robinson::create_material()
 {
@@ -107,7 +107,7 @@ Mat::RobinsonType Mat::RobinsonType::instance_;
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       dano 02/12 |
+ | is called in Material::Factory from read_materials()       dano 02/12 |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::RobinsonType::create(Core::Communication::UnpackBuffer& buffer)
 {

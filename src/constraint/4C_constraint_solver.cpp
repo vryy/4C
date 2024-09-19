@@ -47,11 +47,11 @@ void CONSTRAINTS::ConstraintSolver::setup(Teuchos::RCP<Core::FE::Discretization>
 {
   solver_ = Teuchos::rcp(&solver, false);
 
-  algochoice_ = Core::UTILS::integral_value<Inpar::Solid::ConSolveAlgo>(params, "UZAWAALGO");
+  algochoice_ = Teuchos::getIntegralValue<Inpar::Solid::ConSolveAlgo>(params, "UZAWAALGO");
 
   // different setup for #adapttol_
   isadapttol_ = true;
-  isadapttol_ = (Core::UTILS::integral_value<int>(params, "ADAPTCONV") == 1);
+  isadapttol_ = (params.get<bool>("ADAPTCONV"));
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
@@ -337,7 +337,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
 
   solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(solverparams,
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   const auto prectype =

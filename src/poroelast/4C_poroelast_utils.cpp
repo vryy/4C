@@ -73,7 +73,7 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::create_poro_algorithm(
   const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
   //  problem->mortar_coupling_params()
-  const auto coupling = Core::UTILS::integral_value<Inpar::PoroElast::SolutionSchemeOverFields>(
+  const auto coupling = Teuchos::getIntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
       poroelastdyn, "COUPALGO");
 
   // create an empty Poroelast::Algorithm instance

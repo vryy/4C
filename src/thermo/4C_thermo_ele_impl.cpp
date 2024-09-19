@@ -150,7 +150,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 {
   prepare_nurbs_eval(ele, discretization);
 
-  const auto action = Core::UTILS::get_as_enum<Thermo::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<Thermo::Action>(params, "action");
 
   // check length
   if (la[0].size() != nen_ * numdofpernode_) FOUR_C_THROW("Location vector length does not match!");
@@ -252,8 +252,8 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     // lumping
     if (params.get<bool>("lump capa matrix", false))
     {
-      const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-          params, "time integrator", Inpar::Thermo::dyna_undefined);
+      const auto timint =
+          params.get<Inpar::Thermo::DynamicType>("time integrator", Inpar::Thermo::dyna_undefined);
       switch (timint)
       {
         case Inpar::Thermo::dyna_expleuler:
@@ -330,8 +330,8 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
     // combine capacity and conductivity matrix to one global tangent matrix
     // check the time integrator
     // K_T = fac_capa . C + fac_cond . K
-    const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-        params, "time integrator", Inpar::Thermo::dyna_undefined);
+    const auto timint =
+        params.get<Inpar::Thermo::DynamicType>("time integrator", Inpar::Thermo::dyna_undefined);
     switch (timint)
     {
       case Inpar::Thermo::dyna_statics:
@@ -652,7 +652,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
     etempn_.update(etemp);                                                        // copy
   }
   // check for the action parameter
-  const auto action = Core::UTILS::get_as_enum<Thermo::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<Thermo::Action>(params, "action");
   // extract time
   const double time = params.get<double>("total time");
 
@@ -1169,9 +1169,11 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_coupled_tang(
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-      params, "time integrator", Inpar::Thermo::dyna_undefined);
-
+  Inpar::Thermo::DynamicType timint = Inpar::Thermo::dyna_undefined;
+  if (params.isParameter("time integrator"))
+  {
+    timint = Teuchos::getIntegralValue<Inpar::Thermo::DynamicType>(params, "time integrator");
+  }
   // get step size dt
   const double stepsize = params.get<double>("delta time");
   // initialise time_factor
@@ -1631,8 +1633,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   double timefac_d = 0.0;
   double timefac = 0.0;
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-      params, "time integrator", Inpar::Thermo::dyna_undefined);
+  const auto timint =
+      params.get<Inpar::Thermo::DynamicType>("time integrator", Inpar::Thermo::dyna_undefined);
   switch (timint)
   {
     case Inpar::Thermo::dyna_statics:
@@ -1664,7 +1666,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   }  // end of switch(timint)
 
   const auto s_timint =
-      Core::UTILS::get_as_enum<Inpar::Solid::DynamicType>(params, "structural time integrator");
+      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(params, "structural time integrator");
   switch (s_timint)
   {
     case Inpar::Solid::dyna_statics:
@@ -2122,8 +2124,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::linear_dissipation_coupled_tang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-      params, "time integrator", Inpar::Thermo::dyna_undefined);
+  const auto timint =
+      params.get<Inpar::Thermo::DynamicType>("time integrator", Inpar::Thermo::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
   switch (timint)
@@ -2402,8 +2404,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
   const double stepsize = params.get<double>("delta time");
 
   // check the time integrator and add correct time factor
-  const auto timint = Core::UTILS::get_as_enum<Inpar::Thermo::DynamicType>(
-      params, "time integrator", Inpar::Thermo::dyna_undefined);
+  const auto timint =
+      params.get<Inpar::Thermo::DynamicType>("time integrator", Inpar::Thermo::dyna_undefined);
   // initialise time_fac of velocity discretisation w.r.t. displacements
   double timefac = 0.0;
   switch (timint)
@@ -2531,10 +2533,10 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
     Teuchos::ParameterList& params)
 {
   // specific choice of heat flux / temperature gradient
-  const auto ioheatflux = Core::UTILS::get_as_enum<Inpar::Thermo::HeatFluxType>(
-      params, "ioheatflux", Inpar::Thermo::heatflux_none);
-  const auto iotempgrad = Core::UTILS::get_as_enum<Inpar::Thermo::TempGradType>(
-      params, "iotempgrad", Inpar::Thermo::tempgrad_none);
+  const auto ioheatflux =
+      params.get<Inpar::Thermo::HeatFluxType>("ioheatflux", Inpar::Thermo::heatflux_none);
+  const auto iotempgrad =
+      params.get<Inpar::Thermo::TempGradType>("iotempgrad", Inpar::Thermo::tempgrad_none);
 
   // update element geometry
   Core::LinAlg::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
@@ -3268,7 +3270,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::compute_error(
   //    FOUR_C_THROW("Trouble with number of Gauss points");
 
   const auto calcerr =
-      Core::UTILS::get_as_enum<Inpar::Thermo::CalcError>(params, "calculate error");
+      Teuchos::getIntegralValue<Inpar::Thermo::CalcError>(params, "calculate error");
   const int errorfunctno = params.get<int>("error function number");
   const double t = params.get<double>("total time");
 

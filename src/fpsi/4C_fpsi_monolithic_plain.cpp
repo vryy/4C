@@ -394,7 +394,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   const Teuchos::ParameterList& fpsidynparams = Global::Problem::instance()->fpsi_dynamic_params();
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fluidalematrix =
       fluid_field()->shape_derivatives();
-  if (Teuchos::getIntegralValue<int>(fpsidynparams, "USESHAPEDERIVATIVES"))
+  if (fpsidynparams.get<bool>("USESHAPEDERIVATIVES"))
   {
     if (fluidalematrix != Teuchos::null)
     {

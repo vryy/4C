@@ -23,15 +23,15 @@ void Inpar::RveMpc::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   Teuchos::ParameterList& mpc = list->sublist("MULTI POINT CONSTRAINTS", false, "");
 
-  Teuchos::setStringToIntegralParameter<int>("RVE_REFERENCE_POINTS", "automatic",
-      "Method of definition of the reference points of an RVE",
-      Teuchos::tuple<std::string>("automatic", "manual"), Teuchos::tuple<int>(automatic, manual),
-      &mpc);
+  Teuchos::setStringToIntegralParameter<Inpar::RveMpc::RveReferenceDeformationDefinition>(
+      "RVE_REFERENCE_POINTS", "automatic", "Method of definition of the reference points of an RVE",
+      Teuchos::tuple<std::string>("automatic", "manual"),
+      Teuchos::tuple<Inpar::RveMpc::RveReferenceDeformationDefinition>(automatic, manual), &mpc);
 
-  Teuchos::setStringToIntegralParameter<int>("ENFORCEMENT", "penalty_method",
-      "Method to enforce the multi point constraint",
+  Teuchos::setStringToIntegralParameter<Inpar::RveMpc::EnforcementStrategy>("ENFORCEMENT",
+      "penalty_method", "Method to enforce the multi point constraint",
       Teuchos::tuple<std::string>("penalty_method", "lagrange_multiplier_method"),
-      Teuchos::tuple<int>(penalty, lagrangeMultiplier), &mpc);
+      Teuchos::tuple<Inpar::RveMpc::EnforcementStrategy>(penalty, lagrangeMultiplier), &mpc);
 
   Teuchos::setDoubleParameter("PENALTY_PARAM", 1e5, "Value of the penalty parameter", &mpc);
 }

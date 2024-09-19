@@ -28,8 +28,8 @@ Adapter::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     Core::FE::ShapeFunctionType shape_function_type)
     : CouplingNonLinMortar(
           spatial_dimension, mortar_coupling_params, contact_dynamic_params, shape_function_type),
-      contact_regularization_(Core::UTILS::integral_value<int>(
-          Global::Problem::instance()->contact_dynamic_params(), "REGULARIZED_NORMAL_CONTACT")),
+      contact_regularization_(Global::Problem::instance()->contact_dynamic_params().get<bool>(
+          "REGULARIZED_NORMAL_CONTACT")),
       regularization_thickness_(Global::Problem::instance()->contact_dynamic_params().get<double>(
           "REGULARIZATION_THICKNESS")),
       regularization_compliance_(Global::Problem::instance()->contact_dynamic_params().get<double>(
@@ -46,10 +46,9 @@ Adapter::CouplingEhlMortar::CouplingEhlMortar(int spatial_dimension,
     if (regularization_compliance_ <= 0. || regularization_thickness_ <= 0.)
       FOUR_C_THROW("need positive REGULARIZATION_THICKNESS and REGULARIZATION_STIFFNESS");
   if (contact_regularization_) regularization_compliance_ = 1. / regularization_compliance_;
-  if (Core::UTILS::integral_value<int>(Global::Problem::instance()->contact_dynamic_params(),
-          "REGULARIZED_NORMAL_CONTACT") == true &&
-      Core::UTILS::integral_value<bool>(
-          Global::Problem::instance()->elasto_hydro_dynamic_params(), "DRY_CONTACT_MODEL") == false)
+  if (Global::Problem::instance()->contact_dynamic_params().get<bool>(
+          "REGULARIZED_NORMAL_CONTACT") &&
+      not Global::Problem::instance()->elasto_hydro_dynamic_params().get<bool>("DRY_CONTACT_MODEL"))
     FOUR_C_THROW("for dry contact model you need REGULARIZED_NORMAL_CONTACT and DRY_CONTACT_MODEL");
 }
 
@@ -78,7 +77,7 @@ void Adapter::CouplingEhlMortar::setup(Teuchos::RCP<Core::FE::Discretization> ma
   z_ = Teuchos::rcp(new Epetra_Vector(*interface_->slave_row_dofs(), true));
   fscn_ = Teuchos::rcp(new Epetra_Vector(*interface_->slave_row_dofs(), true));
 
-  Inpar::CONTACT::FrictionType ftype = Core::UTILS::integral_value<Inpar::CONTACT::FrictionType>(
+  auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(
       Global::Problem::instance()->contact_dynamic_params(), "FRICTION");
 
   std::vector<Core::Conditions::Condition*> ehl_conditions(0);
@@ -163,7 +162,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
 {
   const double alphaf_ = 0.;  // statics!
   const Inpar::CONTACT::ConstraintDirection& constr_direction_ =
-      Core::UTILS::integral_value<Inpar::CONTACT::ConstraintDirection>(
+      Teuchos::getIntegralValue<Inpar::CONTACT::ConstraintDirection>(
           interface()->interface_params(), "CONSTRAINT_DIRECTIONS");
 
   // return if this state has already been evaluated

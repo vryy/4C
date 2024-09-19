@@ -101,20 +101,20 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
       adaptolbetter_(0.01),
       tolres_struct_(strparams.get("TOLRES", 1.0e-8)),
       tolres_cardvasc0d_(cv0dparams.get("TOL_CARDVASC0D_RES", 1.0e-8)),
-      algochoice_(Core::UTILS::integral_value<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
+      algochoice_(Teuchos::getIntegralValue<Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo>(
           cv0dparams, "SOLALGORITHM")),
       dirichtoggle_(Teuchos::null),
       zeros_(Core::LinAlg::create_vector(*(actdisc_->dof_row_map()), true)),
       theta_(cv0dparams.get("TIMINT_THETA", 0.5)),
-      enhanced_output_(Core::UTILS::integral_value<int>(cv0dparams, "ENHANCED_OUTPUT")),
-      ptc_3d0d_(Core::UTILS::integral_value<int>(cv0dparams, "PTC_3D0D")),
+      enhanced_output_(cv0dparams.get<bool>("ENHANCED_OUTPUT")),
+      ptc_3d0d_(cv0dparams.get<bool>("PTC_3D0D")),
       k_ptc_(cv0dparams.get("K_PTC", 0.0)),
       totaltime_(0.0),
       linsolveerror_(0),
       strparams_(strparams),
       cv0dparams_(cv0dparams),
-      intstrat_(Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(
-          strparams, "INT_STRATEGY")),
+      intstrat_(
+          Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(strparams, "INT_STRATEGY")),
       mor_(mor),
       have_mor_(false)
 {
@@ -540,7 +540,7 @@ void UTILS::Cardiovascular0DManager::read_restart(
 {
   // check if restart from non-Cardiovascular0D simulation is desired
   const bool restartwithcardiovascular0d =
-      Core::UTILS::integral_value<int>(cardvasc0_d_params(), "RESTART_WITH_CARDVASC0D");
+      cardvasc0_d_params().get<bool>("RESTART_WITH_CARDVASC0D");
 
   if (!restartwithcardiovascular0d)
   {
@@ -904,7 +904,7 @@ void UTILS::Cardiovascular0DManager::solver_setup(
 
   // different setup for #adapttol_
   isadapttol_ = true;
-  isadapttol_ = (Core::UTILS::integral_value<int>(params, "ADAPTCONV") == 1);
+  isadapttol_ = (params.get<bool>("ADAPTCONV"));
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
@@ -963,18 +963,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     mat_structstiff->extract_diagonal_copy(*diag3D);
     diag3D->Update(1.0, *tmp3D, 1.0);
     mat_structstiff->replace_diagonal_values(*diag3D);
-
-    //    // PTC on 0D matrix
-    //    Teuchos::RCP<Epetra_Vector> tmp0D =
-    //    Core::LinAlg::CreateVector(mat_cardvasc0dstiff->RowMap(),false); tmp0D->PutScalar(k_ptc);
-    //    Teuchos::RCP<Epetra_Vector> diag0D =
-    //    Core::LinAlg::CreateVector(mat_cardvasc0dstiff->RowMap(),false);
-    //    mat_cardvasc0dstiff->ExtractDiagonalCopy(*diag0D);
-    //    diag0D->Update(1.0,*tmp0D,1.0);
-    //    mat_cardvasc0dstiff->replace_diagonal_values(*diag0D);
   }
-
-
 
   // merge maps to one large map
   Teuchos::RCP<Epetra_Map> mergedmap =
@@ -1084,7 +1073,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   solver_->params() = Core::LinAlg::Solver::translate_solver_parameters(
       Global::Problem::instance()->solver_params(linsolvernumber),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   switch (algochoice_)
   {
@@ -1120,14 +1109,14 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
           solver_->put_solver_params_to_sub_params("Inverse1",
               Global::Problem::instance()->solver_params(linsolvernumber),
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse1"), true);
 
           solver_->put_solver_params_to_sub_params("Inverse2",
               Global::Problem::instance()->solver_params(linsolvernumber),
               Global::Problem::instance()->solver_params_callback(),
-              Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
                   Global::Problem::instance()->io_params(), "VERBOSITY"));
           actdisc_->compute_null_space_if_necessary(solver_->params().sublist("Inverse2"), true);
         }

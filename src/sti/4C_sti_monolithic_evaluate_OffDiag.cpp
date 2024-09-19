@@ -642,7 +642,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", Inpar::S2I::evaluate_condition_od);
+  condparams.set<Inpar::S2I::EvaluationActions>("action", Inpar::S2I::evaluate_condition_od);
 
   // create strategy for assembly of auxiliary system matrices
   ScaTra::MortarCellAssemblyStrategy strategyscatrathermos2i(slavematrix, Inpar::S2I::side_slave,
@@ -788,7 +788,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", Inpar::S2I::evaluate_condition_od);
+  condparams.set<Inpar::S2I::EvaluationActions>("action", Inpar::S2I::evaluate_condition_od);
 
   // create strategy for assembly of auxiliary system matrix
   ScaTra::MortarCellAssemblyStrategy strategythermoscatras2i(slavematrix, Inpar::S2I::side_slave,

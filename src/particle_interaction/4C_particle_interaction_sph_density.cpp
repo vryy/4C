@@ -892,8 +892,8 @@ void ParticleInteraction::SPHDensityPredictCorrect::compute_density() const
 void ParticleInteraction::SPHDensityPredictCorrect::init_density_correction_handler()
 {
   // get type of density correction scheme
-  Inpar::PARTICLE::DensityCorrectionScheme densitycorrectionscheme =
-      Core::UTILS::integral_value<Inpar::PARTICLE::DensityCorrectionScheme>(
+  auto densitycorrectionscheme =
+      Teuchos::getIntegralValue<Inpar::PARTICLE::DensityCorrectionScheme>(
           params_sph_, "DENSITYCORRECTION");
 
   // create density correction handler

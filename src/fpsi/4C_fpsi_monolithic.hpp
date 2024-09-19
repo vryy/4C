@@ -304,7 +304,7 @@ namespace FPSI
 
     //! adapt solver tolerancePoroField()->SystemSparseMatrix()
     bool solveradapttol_;
-    int linesearch_;
+    bool linesearch_;
     double linesearch_counter;
     double solveradaptolbetter_;
 

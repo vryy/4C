@@ -43,8 +43,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
       params_(params),
       statistics_outfilename_(statistics_outfilename),
       subgrid_dissipation_(subgrid_dissipation),
-      inflowchannel_(
-          Core::UTILS::integral_value<int>(params_.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW")),
+      inflowchannel_(params_.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")),
       inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE", 0.0)),
       dens_(1.0),
       visc_(1.0),
@@ -82,7 +81,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
   // switches, control parameters, material parameters
 
   // type of fluid flow solver: incompressible, Boussinesq approximation, varying density, loma
-  physicaltype_ = Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params, "Physical Type");
+  physicaltype_ = Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params, "Physical Type");
 
   // get the plane normal direction from the parameterlist
   {
@@ -1822,7 +1821,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_integral_mean_values_in_planes()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", FLD::calc_turbulence_statistics);
+  eleparams.set<FLD::Action>("action", FLD::calc_turbulence_statistics);
 
   // choose what to assemble
   eleparams.set("assemble matrix 1", false);
@@ -2034,7 +2033,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_loma_integral_mean_values_in_planes(
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", FLD::calc_loma_statistics);
+  eleparams.set<FLD::Action>("action", FLD::calc_loma_statistics);
 
   // choose what to assemble
   eleparams.set("assemble matrix 1", false);
@@ -2272,7 +2271,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_scatra_integral_mean_values_in_plane
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", FLD::calc_turbscatra_statistics);
+  eleparams.set<FLD::Action>("action", FLD::calc_turbscatra_statistics);
 
   // choose what to assemble
   eleparams.set("assemble matrix 1", false);
@@ -2792,7 +2791,7 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
 {
   // action for elements
   Teuchos::ParameterList paramsele;
-  paramsele.set<int>("action", FLD::calc_model_params_mfsubgr_scales);
+  paramsele.set<FLD::Action>("action", FLD::calc_model_params_mfsubgr_scales);
   paramsele.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
   paramsele.set("scalar", withscatra);
   if (withscatra)
@@ -3048,17 +3047,17 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     // set parameter list (time integration)
 
     // action for elements
-    eleparams_.set<int>("action", FLD::calc_dissipation);
+    eleparams_.set<FLD::Action>("action", FLD::calc_dissipation);
 
     // add velafgrad
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-    if (Core::UTILS::integral_value<int>(*stabparams, "Reconstruct_Sec_Der"))
+    if (stabparams->get<bool>("Reconstruct_Sec_Der"))
     {
       for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
            state != statevecs.end(); ++state)
       {
         if (state->first == "velaf")
-        {  // ProjectGradientAndSetParam decides, if we want to project something or not
+        {  // project_gradient_and_set_param decides, if we want to project something or not
           FLD::UTILS::project_gradient_and_set_param(
               discret_, eleparams_, state->second, "velafgrad", alefluid_);
           break;
@@ -3097,7 +3096,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       // set parameters required for evaluation of residuals, etc.
       scatraeleparams_.set<double>("time-step length", scatraparams_->get<double>("TIMESTEP"));
       scatraeleparams_.set<int>("fs subgrid diffusivity",
-          Core::UTILS::integral_value<Inpar::ScaTra::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
+          Teuchos::getIntegralValue<Inpar::ScaTra::FSSUGRDIFF>(*scatraparams_, "FSSUGRDIFF"));
       scatraeleparams_.sublist("TURBULENCE MODEL") =
           scatraextraparams_->sublist("TURBULENCE MODEL");
       scatraeleparams_.sublist("SUBGRID VISCOSITY") =

@@ -44,7 +44,7 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
       Global::Problem::instance()->poro_multi_phase_scatra_dynamic_params();
   const Teuchos::ParameterList& myscatraparams =
       Global::Problem::instance()->scalar_transport_dynamic_params();
-  if (Core::UTILS::integral_value<Inpar::ScaTra::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
+  if (Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(myscatraparams, "VELOCITYFIELD") !=
       Inpar::ScaTra::velocity_zero)
     FOUR_C_THROW("set your velocity field to zero!");
 
@@ -80,16 +80,16 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
     std::cout << "< ScaTra-Coupling with 1D Artery Network activated >" << std::endl;
   }
 
-  const bool evaluate_on_lateral_surface = Core::UTILS::integral_value<int>(
-      Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params().sublist(
-          "ARTERY COUPLING"),
-      "LATERAL_SURFACE_COUPLING");
+  const bool evaluate_on_lateral_surface = Global::Problem::instance()
+                                               ->poro_fluid_multi_phase_dynamic_params()
+                                               .sublist("ARTERY COUPLING")
+                                               .get<bool>("LATERAL_SURFACE_COUPLING");
 
   // set coupling condition name
   const std::string couplingcondname = std::invoke(
       [&]()
       {
-        if (Core::UTILS::integral_value<
+        if (Teuchos::getIntegralValue<
                 Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
                 Global::Problem::instance()->poro_fluid_multi_phase_dynamic_params().sublist(
                     "ARTERY COUPLING"),

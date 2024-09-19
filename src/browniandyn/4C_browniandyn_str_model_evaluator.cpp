@@ -743,7 +743,7 @@ void Solid::ModelEvaluator::BrownianDyn::SeedRandomGenerator()
       rand_data_.seedvariable = ( rand_data_.randseed + stepn ) * ( myrank + 1 );
     // else
     // set seed according to system time and different for each processor
-    // once in the beginning (done in ReadParameter globalproblem.cpp)
+    // once in the beginning (done in read_parameter globalproblem.cpp)
     // in this case we have different random numbers in each program start
     // and time step
   }

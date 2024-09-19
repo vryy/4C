@@ -27,8 +27,7 @@ int Discret::ELEMENTS::Lubrication::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // check for the action parameter
-  const LUBRICATION::Action action =
-      Core::UTILS::get_as_enum<LUBRICATION::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<LUBRICATION::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
@@ -92,7 +91,7 @@ void Discret::ELEMENTS::LubricationType::pre_evaluate(Core::FE::Discretization& 
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const LUBRICATION::Action action = Core::UTILS::get_as_enum<LUBRICATION::Action>(p, "action");
+  const auto action = Teuchos::getIntegralValue<LUBRICATION::Action>(p, "action");
 
   switch (action)
   {

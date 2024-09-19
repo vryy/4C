@@ -85,7 +85,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
   }
   else
   {
-    action = Core::UTILS::get_as_enum<EleMag::Action>(params, "action");
+    action = params.get<EleMag::Action>("action");
   }
 
   initialize_shapes(hdgele);

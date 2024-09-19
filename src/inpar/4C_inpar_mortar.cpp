@@ -29,25 +29,27 @@ void Inpar::Mortar::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   /* parameters for mortar coupling */
   Teuchos::ParameterList& mortar = list->sublist("MORTAR COUPLING", false, "");
 
-  setStringToIntegralParameter<int>("LM_SHAPEFCN", "Dual",
+  setStringToIntegralParameter<Inpar::Mortar::ShapeFcn>("LM_SHAPEFCN", "Dual",
       "Type of employed set of shape functions",
       tuple<std::string>(
           "Dual", "dual", "Standard", "standard", "std", "PetrovGalerkin", "petrovgalerkin", "pg"),
-      tuple<int>(shape_dual, shape_dual, shape_standard, shape_standard, shape_standard,
-          shape_petrovgalerkin, shape_petrovgalerkin, shape_petrovgalerkin),
+      tuple<Inpar::Mortar::ShapeFcn>(shape_dual, shape_dual, shape_standard, shape_standard,
+          shape_standard, shape_petrovgalerkin, shape_petrovgalerkin, shape_petrovgalerkin),
       &mortar);
 
-  setStringToIntegralParameter<int>("SEARCH_ALGORITHM", "Binarytree", "Type of contact search",
+  setStringToIntegralParameter<Inpar::Mortar::SearchAlgorithm>("SEARCH_ALGORITHM", "Binarytree",
+      "Type of contact search",
       tuple<std::string>("BruteForce", "bruteforce", "BruteForceEleBased", "bruteforceelebased",
           "BinaryTree", "Binarytree", "binarytree"),
-      tuple<int>(search_bfele, search_bfele, search_bfele, search_bfele, search_binarytree,
-          search_binarytree, search_binarytree),
+      tuple<Inpar::Mortar::SearchAlgorithm>(search_bfele, search_bfele, search_bfele, search_bfele,
+          search_binarytree, search_binarytree, search_binarytree),
       &mortar);
 
-  setStringToIntegralParameter<int>("BINARYTREE_UPDATETYPE", "BottomUp",
-      "Type of binary tree update, which is either a bottom up or a top down approach.",
+  setStringToIntegralParameter<Inpar::Mortar::BinaryTreeUpdateType>("BINARYTREE_UPDATETYPE",
+      "BottomUp", "Type of binary tree update, which is either a bottom up or a top down approach.",
       tuple<std::string>("BottomUp", "TopDown"),
-      tuple<int>(binarytree_bottom_up, binarytree_top_down), &mortar);
+      tuple<Inpar::Mortar::BinaryTreeUpdateType>(binarytree_bottom_up, binarytree_top_down),
+      &mortar);
 
   Core::UTILS::double_parameter(
       "SEARCH_PARAM", 0.3, "Radius / Bounding volume inflation for contact search", &mortar);
@@ -55,52 +57,57 @@ void Inpar::Mortar::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   Core::UTILS::bool_parameter("SEARCH_USE_AUX_POS", "Yes",
       "If chosen auxiliary position is used for computing dops", &mortar);
 
-  setStringToIntegralParameter<int>("LM_QUAD", "undefined",
+  setStringToIntegralParameter<Inpar::Mortar::LagMultQuad>("LM_QUAD", "undefined",
       "Type of LM interpolation for quadratic FE",
       tuple<std::string>(
           "undefined", "quad", "quadratic", "pwlin", "piecewiselinear", "lin", "linear", "const"),
-      tuple<int>(lagmult_undefined, lagmult_quad, lagmult_quad, lagmult_pwlin, lagmult_pwlin,
-          lagmult_lin, lagmult_lin, lagmult_const),
+      tuple<Inpar::Mortar::LagMultQuad>(lagmult_undefined, lagmult_quad, lagmult_quad,
+          lagmult_pwlin, lagmult_pwlin, lagmult_lin, lagmult_lin, lagmult_const),
       &mortar);
 
   Core::UTILS::bool_parameter("CROSSPOINTS", "No",
       "If chosen, multipliers are removed from crosspoints / edge nodes", &mortar);
 
-  setStringToIntegralParameter<int>("LM_DUAL_CONSISTENT", "boundary",
+  setStringToIntegralParameter<Inpar::Mortar::ConsistentDualType>("LM_DUAL_CONSISTENT", "boundary",
       "For which elements should the dual basis be calculated on EXACTLY the same GPs as the "
       "contact terms",
       tuple<std::string>("none", "boundary", "all"),
-      tuple<int>(consistent_none, consistent_boundary, consistent_all), &mortar);
-
-  setStringToIntegralParameter<int>("MESH_RELOCATION", "Initial", "Type of mesh relocation",
-      tuple<std::string>("Initial", "initial", "Every_Timestep", "every_timestep", "No", "no"),
-      tuple<int>(relocation_initial, relocation_initial, relocation_timestep, relocation_timestep,
-          relocation_none, relocation_none),
+      tuple<Inpar::Mortar::ConsistentDualType>(
+          consistent_none, consistent_boundary, consistent_all),
       &mortar);
 
-  setStringToIntegralParameter<int>("ALGORITHM", "Mortar", "Type of meshtying/contact algorithm",
+  setStringToIntegralParameter<Inpar::Mortar::MeshRelocation>("MESH_RELOCATION", "Initial",
+      "Type of mesh relocation",
+      tuple<std::string>("Initial", "initial", "Every_Timestep", "every_timestep", "No", "no"),
+      tuple<Inpar::Mortar::MeshRelocation>(relocation_initial, relocation_initial,
+          relocation_timestep, relocation_timestep, relocation_none, relocation_none),
+      &mortar);
+
+  setStringToIntegralParameter<Inpar::Mortar::AlgorithmType>("ALGORITHM", "Mortar",
+      "Type of meshtying/contact algorithm",
       tuple<std::string>("mortar", "Mortar", "nts", "NTS", "gpts", "GPTS", "lts", "LTS", "ltl",
           "LTL", "stl", "STL"),
-      tuple<int>(algorithm_mortar, algorithm_mortar, algorithm_nts, algorithm_nts, algorithm_gpts,
-          algorithm_gpts, algorithm_lts, algorithm_lts, algorithm_ltl, algorithm_ltl, algorithm_stl,
-          algorithm_stl),
+      tuple<Inpar::Mortar::AlgorithmType>(algorithm_mortar, algorithm_mortar, algorithm_nts,
+          algorithm_nts, algorithm_gpts, algorithm_gpts, algorithm_lts, algorithm_lts,
+          algorithm_ltl, algorithm_ltl, algorithm_stl, algorithm_stl),
       &mortar);
 
-  setStringToIntegralParameter<int>("INTTYPE", "Segments", "Type of numerical integration scheme",
+  setStringToIntegralParameter<Inpar::Mortar::IntType>("INTTYPE", "Segments",
+      "Type of numerical integration scheme",
       tuple<std::string>(
           "Segments", "segments", "Elements", "elements", "Elements_BS", "elements_BS"),
-      tuple<int>(inttype_segments, inttype_segments, inttype_elements, inttype_elements,
-          inttype_elements_BS, inttype_elements_BS),
+      tuple<Inpar::Mortar::IntType>(inttype_segments, inttype_segments, inttype_elements,
+          inttype_elements, inttype_elements_BS, inttype_elements_BS),
       &mortar);
 
   Core::UTILS::int_parameter(
       "NUMGP_PER_DIM", 0, "Number of employed integration points per dimension", &mortar);
 
-  setStringToIntegralParameter<int>("TRIANGULATION", "Delaunay",
+  setStringToIntegralParameter<Inpar::Mortar::Triangulation>("TRIANGULATION", "Delaunay",
       "Type of triangulation for segment-based integration",
       tuple<std::string>("Delaunay", "delaunay", "Center", "center"),
-      tuple<int>(triangulation_delaunay, triangulation_delaunay, triangulation_center,
-          triangulation_center),
+      tuple<Inpar::Mortar::Triangulation>(triangulation_delaunay, triangulation_delaunay,
+          triangulation_center, triangulation_center),
       &mortar);
 
   Core::UTILS::bool_parameter("RESTART_WITH_MESHTYING", "No",

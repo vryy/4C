@@ -365,11 +365,11 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // create the parameters for the discretization
     Teuchos::ParameterList params;
     // action for elements
-    params.set<int>("action", FLD::poro_splitnopenetration);
+    params.set<FLD::BoundaryAction>("action", FLD::poro_splitnopenetration);
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<int>("Physical Type", fluid_field()->physical_type());
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->dispnp());
@@ -403,11 +403,11 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // create the parameters for the discretization
     Teuchos::ParameterList params;
     // action for elements
-    params.set<int>("action", FLD::poro_splitnopenetration_OD);
+    params.set<FLD::BoundaryAction>("action", FLD::poro_splitnopenetration_OD);
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<int>("Physical Type", fluid_field()->physical_type());
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->dispnp());
@@ -436,11 +436,11 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // create the parameters for the discretization
     Teuchos::ParameterList params;
     // action for elements
-    params.set<int>("action", FLD::poro_splitnopenetration_ODdisp);
+    params.set<FLD::BoundaryAction>("action", FLD::poro_splitnopenetration_ODdisp);
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<int>("Physical Type", fluid_field()->physical_type());
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->dispnp());
@@ -465,17 +465,16 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
     // create the parameters for the discretization
     Teuchos::ParameterList params;
     // action for elements
-    params.set<int>("action", FLD::poro_splitnopenetration_ODpres);
+    params.set<FLD::BoundaryAction>("action", FLD::poro_splitnopenetration_ODpres);
     params.set("total time", time());
     params.set("delta time", dt());
     params.set("timescale", fluid_field()->residual_scaling());
-    params.set<int>("Physical Type", fluid_field()->physical_type());
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", fluid_field()->physical_type());
 
     fluid_field()->discretization()->clear_state();
     fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->dispnp());
     fluid_field()->discretization()->set_state(0, "gridv", fluid_field()->grid_vel());
     fluid_field()->discretization()->set_state(0, "velnp", fluid_field()->velnp());
-    //  fluid_field()->discretization()->set_state(0,"scaaf",fluid_field()->Scaaf());
 
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of fluid_field:

@@ -201,7 +201,7 @@ void SSI::SSIPart1WCSolidToScatra::init(const Epetra_Comm& comm,
 
   // do some checks
   {
-    auto convform = Core::UTILS::integral_value<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
+    auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
     if (convform != Inpar::ScaTra::convform_conservative)
     {
       FOUR_C_THROW(
@@ -272,8 +272,8 @@ void SSI::SSIPart1WCScatraToSolid::init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
-  isscatrafromfile_ = Core::UTILS::integral_value<bool>(
-      Global::Problem::instance()->ssi_control_params(), "SCATRA_FROM_RESTART_FILE");
+  isscatrafromfile_ =
+      Global::Problem::instance()->ssi_control_params().get<bool>("SCATRA_FROM_RESTART_FILE");
 }
 
 /*----------------------------------------------------------------------*/

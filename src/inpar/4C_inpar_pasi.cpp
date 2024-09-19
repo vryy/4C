@@ -35,12 +35,12 @@ void Inpar::PaSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Core::UTILS::double_parameter("MAXTIME", 1.0, "Total simulation time", &pasidyn);
 
   // type of partitioned coupling
-  setStringToIntegralParameter<int>("COUPLING", "partitioned_onewaycoup",
+  setStringToIntegralParameter<PartitionedCouplingType>("COUPLING", "partitioned_onewaycoup",
       "partitioned coupling strategies for particle structure interaction",
       tuple<std::string>("partitioned_onewaycoup", "partitioned_twowaycoup",
           "partitioned_twowaycoup_disprelax", "partitioned_twowaycoup_disprelaxaitken"),
-      tuple<int>(partitioned_onewaycoup, partitioned_twowaycoup, partitioned_twowaycoup_disprelax,
-          partitioned_twowaycoup_disprelaxaitken),
+      tuple<PartitionedCouplingType>(partitioned_onewaycoup, partitioned_twowaycoup,
+          partitioned_twowaycoup_disprelax, partitioned_twowaycoup_disprelaxaitken),
       &pasidyn);
 
   // partitioned iteration dependent parameters

@@ -36,7 +36,8 @@ namespace NOX
       {
        public:
         //! Constructor
-        Lagrangian(const std::string& identifier, const Teuchos::RCP<::NOX::Utils>& u);
+        Lagrangian(const NOX::Nln::MeritFunction::MeritFctName& identifier,
+            const Teuchos::RCP<::NOX::Utils>& u);
 
         /** \brief Computes the Lagrangian merit function
          *
@@ -105,9 +106,6 @@ namespace NOX
          *
          *  \author hiermeier \date 12/17 */
         std::map<std::string, MeritFctName> get_supported_type_list() const;
-
-        /// Set the Lagrangian merit function type
-        void set_type(const std::string& identifier);
 
         //! Throws NOX error
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;

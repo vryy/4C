@@ -47,12 +47,12 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
       myrank_(actdis->get_comm().MyPID()),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
-      modified_reynolds_(Core::UTILS::integral_value<int>(*params, "MODIFIED_REYNOLDS_EQU")),
-      addsqz_(Core::UTILS::integral_value<int>(*params, "ADD_SQUEEZE_TERM")),
-      purelub_(Core::UTILS::integral_value<int>(*params, "PURE_LUB")),
-      outmean_(Core::UTILS::integral_value<int>(*params, "OUTMEAN")),
-      outputgmsh_(Core::UTILS::integral_value<int>(*params, "OUTPUT_GMSH")),
-      output_state_matlab_(Core::UTILS::integral_value<int>(*params, "MATLAB_STATE_OUTPUT")),
+      modified_reynolds_(params->get<bool>("MODIFIED_REYNOLDS_EQU")),
+      addsqz_(params->get<bool>("ADD_SQUEEZE_TERM")),
+      purelub_(params->get<bool>("PURE_LUB")),
+      outmean_(params->get<bool>("OUTMEAN")),
+      outputgmsh_(params->get<bool>("OUTPUT_GMSH")),
+      output_state_matlab_(params->get<bool>("MATLAB_STATE_OUTPUT")),
       time_(0.0),
       maxtime_(params->get<double>("MAXTIME")),
       step_(0),
@@ -176,7 +176,7 @@ void LUBRICATION::TimIntImpl::set_element_general_parameters() const
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", LUBRICATION::set_general_lubrication_parameter);
+  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::set_general_lubrication_parameter);
 
   eleparams.set<bool>("isale", isale_);
 
@@ -573,7 +573,7 @@ void LUBRICATION::TimIntImpl::apply_neumann_bc(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", LUBRICATION::bd_calc_Neumann);
+  condparams.set<LUBRICATION::BoundaryAction>("action", LUBRICATION::bd_calc_Neumann);
 
   // set time for evaluation of point Neumann conditions as parameter depending on time integration
   // scheme line/surface/volume Neumann conditions use the time stored in the time parameter class
@@ -630,7 +630,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", LUBRICATION::calc_mat_and_rhs);
+  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::calc_mat_and_rhs);
 
   // time step set up
   eleparams.set<double>("delta time", dta_);
@@ -686,7 +686,7 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
   const double ittol = params_->get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool isadapttol = (Core::UTILS::integral_value<int>(*params_, "ADAPTCONV"));
+  const bool isadapttol = params_->get<bool>("ADAPTCONV");
   const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER");
   const double abstolres = params_->get<double>("ABSTOLRES");
   double actresidual(0.0);
@@ -1040,17 +1040,17 @@ inline void LUBRICATION::TimIntImpl::increment_time_and_step()
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 {
-  const Inpar::LUBRICATION::CalcError calcerr =
-      Core::UTILS::integral_value<Inpar::LUBRICATION::CalcError>(*params_, "CALCERROR");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::LUBRICATION::CalcError>(*params_, "CALCERROR");
 
   if (calcerr == Inpar::LUBRICATION::calcerror_no)  // do nothing (the usual case))
     return;
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", LUBRICATION::calc_error);
+  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::calc_error);
   eleparams.set("total time", time_);
-  eleparams.set<int>("calcerrorflag", calcerr);
+  eleparams.set<Inpar::LUBRICATION::CalcError>("calcerrorflag", calcerr);
 
   switch (calcerr)
   {
@@ -1168,7 +1168,7 @@ void LUBRICATION::TimIntImpl::output_mean_pressures(const int num)
     discret_->set_state("prenp", prenp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action", LUBRICATION::calc_mean_pressures);
+    eleparams.set<LUBRICATION::Action>("action", LUBRICATION::calc_mean_pressures);
     eleparams.set("inverting", false);
 
     // provide displacement field in case of ALE

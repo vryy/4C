@@ -221,9 +221,9 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     linearsolverstrategy_ =
-        Core::UTILS::integral_value<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+        Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
-    aleproj_ = Core::UTILS::integral_value<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
+    aleproj_ = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(fsidyn, "SLIDEALEPROJ");
 
     set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -285,7 +285,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     // -------------------------------------------------------------------------
 
     // enable debugging
-    if (Core::UTILS::integral_value<int>(fsidyn, "DEBUGOUTPUT") & 2)
+    if (fsidyn.get<bool>("DEBUGOUTPUT"))
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
@@ -311,8 +311,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
   const int restart = Global::Problem::instance()->restart();
   if (restart)
   {
-    const bool restartfrompartfsi =
-        Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+    const bool restartfrompartfsi = timeparams_.get<bool>("RESTART_FROM_PART_FSI");
     if (restartfrompartfsi)  // restart from part. fsi
     {
       if (comm_.MyPID() == 0)
@@ -960,12 +959,6 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   // END building the global system matrix
   // ---------------------------------------------------------------------------
 
-  //  Teuchos::RCP<Epetra_CrsMatrix> matrix = mat.Matrix(0,0).EpetraMatrix();
-  //  Core::LinAlg::PrintMatrixInMatlabFormat("mat.dat",*matrix,true);
-
-  //  Core::LinAlg::PrintBlockMatrixInMatlabFormat("mat.dat",mat);
-  //  std::cout<<"\nWROTE MATRIX!!";
-
   // ---------------------------------------------------------------------------
   // NOX related stuff needed for recovery of Lagrange multiplier
   // ---------------------------------------------------------------------------
@@ -994,7 +987,7 @@ void FSI::MortarMonolithicFluidSplit::scale_system(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1045,7 +1038,7 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -1522,8 +1515,7 @@ void FSI::MortarMonolithicFluidSplit::read_restart(int step)
   auto input_control_file = Global::Problem::instance()->input_control_file();
 
   // read Lagrange multiplier
-  const bool restartfrompartfsi =
-      Core::UTILS::integral_value<bool>(timeparams_, "RESTART_FROM_PART_FSI");
+  const bool restartfrompartfsi = timeparams_.get<bool>("RESTART_FROM_PART_FSI");
   if (not restartfrompartfsi)  // standard restart
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =

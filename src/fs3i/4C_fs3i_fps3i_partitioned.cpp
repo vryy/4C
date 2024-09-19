@@ -112,7 +112,7 @@ void FS3I::PartFPS3I::init()
   fpsi_algo = FPSI_UTILS->setup_discretizations(comm_, fpsidynparams, poroelastdynparams);
 
   // only monolithic coupling of fpsi problem is supported!
-  int coupling = Core::UTILS::integral_value<int>(fpsidynparams, "COUPALGO");
+  const auto coupling = Teuchos::getIntegralValue<FpsiCouplingType>(fpsidynparams, "COUPALGO");
   if (coupling == fpsi_monolithic_plain)
   {
     // Cast needed because functions such as poro_field() and fluid_field() are just a
@@ -142,9 +142,8 @@ void FS3I::PartFPS3I::init()
   Teuchos::RCP<Core::FE::Discretization> structscatradis = problem->get_dis("scatra2");
 
   // determine type of scalar transport
-  const Inpar::ScaTra::ImplType impltype_fluid =
-      Core::UTILS::integral_value<Inpar::ScaTra::ImplType>(
-          Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_SCATRATYPE");
+  const auto impltype_fluid = Teuchos::getIntegralValue<Inpar::ScaTra::ImplType>(
+      Global::Problem::instance()->f_s3_i_dynamic_params(), "FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -192,12 +191,6 @@ void FS3I::PartFPS3I::init()
     // fill poro-based scatra discretization by cloning structure discretization
     Core::FE::clone_discretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
         structdis, structscatradis, Global::Problem::instance()->cloning_material_map());
-
-    // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work
-    // fpsi_->redistribute_interface();
-    // after redistributing the interface we have to fix the material pointers of the
-    // structure-scatra discretisation
-    // PoroElast::UTILS::SetMaterialPointersMatchingGrid(structdis,structscatradis);
   }
   else
     FOUR_C_THROW("Structure AND ScaTra discretization present. This is not supported.");
@@ -256,13 +249,12 @@ void FS3I::PartFPS3I::init()
   // (including parameter theta itself in case of one-step-theta scheme)
   // and rule out unsupported versions of generalized-alpha time-integration
   // scheme (as well as other inappropriate schemes) for fluid subproblem
-  Inpar::ScaTra::TimeIntegrationScheme scatratimealgo =
-      Core::UTILS::integral_value<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
-  Inpar::FLUID::TimeIntegrationScheme fluidtimealgo =
-      Core::UTILS::integral_value<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
-
-  Inpar::Solid::DynamicType structtimealgo =
-      Core::UTILS::integral_value<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYP");
+  auto scatratimealgo =
+      Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
+  auto fluidtimealgo =
+      Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
+  auto structtimealgo =
+      Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYP");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {
@@ -531,7 +523,7 @@ void FS3I::PartFPS3I::setup_system()
   // use coupled scatra solver object
   scatrasolver_ = Teuchos::rcp(new Core::LinAlg::Solver(coupledscatrasolvparams,
       firstscatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
@@ -550,12 +542,12 @@ void FS3I::PartFPS3I::setup_system()
   scatrasolver_->put_solver_params_to_sub_params("Inverse1",
       Global::Problem::instance()->solver_params(linsolver1number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
   scatrasolver_->put_solver_params_to_sub_params("Inverse2",
       Global::Problem::instance()->solver_params(linsolver2number),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   if (azprectype == Core::LinearSolver::PreconditionerType::block_teko)
@@ -640,7 +632,8 @@ void FS3I::PartFPS3I::set_velocity_fields()
 {
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
-  int cdvel = Core::UTILS::integral_value<int>(scatradyn, "VELOCITYFIELD");
+  const auto cdvel =
+      Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
   switch (cdvel)
   {
     case Inpar::ScaTra::velocity_zero:

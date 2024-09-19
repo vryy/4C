@@ -17,7 +17,6 @@
 #include "4C_global_data.hpp"
 #include "4C_immersed_problem_immersed_base.hpp"
 #include "4C_inpar_fsi.hpp"
-#include "4C_inpar_structure.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
@@ -25,7 +24,6 @@
 #include "4C_mat_structporo.hpp"
 #include "4C_so3_prestress_service.hpp"
 #include "4C_so3_surface.hpp"
-#include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
@@ -1418,22 +1416,13 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         bdryxi[1] = intpoints.ip().qxg[gp][1];
 
         std::vector<double> interpolationresult(7);
-        auto action = (int)FLD::interpolate_velgrad_to_given_point;
+        FLD::Action action = FLD::interpolate_velgrad_to_given_point;
 
         Immersed::interpolate_to_immersed_int_point<Core::FE::CellType::hex8,  // source
             Core::FE::CellType::quad4>                                         // target
             (backgrddis, immerseddis, *this, bdryxi, bdryeledisp, action,
                 interpolationresult  // result
             );
-
-        //        //////////////////
-        //       // Debug output //
-        //      //////////////////
-        //      std::cout<<"PROC "<<Comm.MyPID()<<": gradu and press at gp "<<gp<<" on surf ele id
-        //      "<<this->Id()<<":"<<std::endl; for(int i=0;i<(int)interpolationresult.size();++i)
-        //        std::cout<<" "<<interpolationresult[i]<<" ";
-        //      std::cout<<" "<<std::endl;
-
 
         // get shape functions and derivatives in the plane of the element
         Core::FE::shape_function_2d(funct, bdryxi[0], bdryxi[1], shape());
@@ -1443,14 +1432,6 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
             parent_xi(gp, 2), this->parent_element()->shape());
         Core::FE::shape_function_3d_deriv1(parent_deriv_notrafo, parent_xi(gp, 0), parent_xi(gp, 1),
             parent_xi(gp, 2), this->parent_element()->shape());
-        // parent_deriv.multiply(derivtrafo,parent_deriv_notrafo);
-
-        //        //////////////////
-        //       // Debug output //
-        //      //////////////////
-        //      std::cout<<"PROC "<<Comm.MyPID()<<" : deriv at gp "<<bdryxi[0]<<" "<<bdryxi[1]<<"
-        //      "<<std::endl; std::cout<<"PROC "<<Comm.MyPID()<<" : "<<deriv<<std::endl;
-
 
         ////////////////////////////////////////////////////
         // calc unitnormal N in material configuration
@@ -1474,21 +1455,9 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
 
-        //         //////////////////
-        //        // Debug output //
-        //       //////////////////
-        //      for(int i=0;i<globdim;++i)
-        //        std::cout<<" normal["<<i<<"] "<<normal[i]<<std::endl;
-
         for (int i = 0; i < globdim; ++i) unitnormal(i, 0) = normal[i];
         const double norm2 = unitnormal.norm2();
         unitnormal.scale(1 / norm2);
-
-        //         //////////////////
-        //        // Debug output //
-        //       //////////////////
-        //      std::cout<<"_________________________________________________________________________________"<<std::endl;
-        //      std::cout<<unitnormal<<std::endl;
 
         /////////////////////////////////////////////////////////////////////
         // extract cauchy stress tensor from result vector of interpolation
@@ -1504,17 +1473,6 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         cauchystress(1, 0) = cauchystress(0, 1);
         cauchystress(2, 1) = cauchystress(1, 2);
         cauchystress(2, 0) = cauchystress(0, 2);
-
-        //        //////////////////
-        //       // Debug output //
-        //      //////////////////
-        //      std::cout<<"[ "<<cauchystress(0,0)<<" "<<cauchystress(0,1)<<"
-        //      "<<cauchystress(0,2)<<" ]"<<std::endl; std::cout<<"[ "<<cauchystress(1,0)<<"
-        //      "<<cauchystress(1,1)<<" "<<cauchystress(1,2)<<" ]"<<std::endl; std::cout<<"[
-        //      "<<cauchystress(2,0)<<" "<<cauchystress(2,1)<<" "<<cauchystress(2,2)<<"
-        //      ]"<<std::endl; std::cout<<"\n"<<std::endl;
-
-
 
         /* get the inverse of the Jacobian matrix which looks like:
         **            [ x_,r  y_,r  z_,r ]^-1
@@ -1541,16 +1499,6 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         Core::LinAlg::Matrix<3, 1> tempvec;
         Core::LinAlg::Matrix<3, 3> tempmat;
         tempmat.multiply_nt(cauchystress, defgrd_inv);
-
-        //        //////////////////
-        //       // Debug output //
-        //      //////////////////
-        //      std::cout<<"[ "<<tempmat(0,0)<<" "<<tempmat(0,1)<<" "<<tempmat(0,2)<<"
-        //      ]"<<std::endl; std::cout<<"[ "<<tempmat(1,0)<<" "<<tempmat(1,1)<<"
-        //      "<<tempmat(1,2)<<" ]"<<std::endl; std::cout<<"[ "<<tempmat(2,0)<<"
-        //      "<<tempmat(2,1)<<" "<<tempmat(2,2)<<" ]"<<std::endl;
-        //
-        //      std::cout<<"_________________________________________________________________________________"<<std::endl;
 
         tempvec.multiply_nn(tempmat, unitnormal);
 
@@ -2501,9 +2449,7 @@ void Discret::ELEMENTS::StructuralSurface::calculate_surface_porosity(
   for (int gp = 0; gp < ngp; ++gp)
   {
     // get shape functions and derivatives in the plane of the element
-    // Core::LinAlg::SerialDenseVector  funct(nenparent);
     Core::LinAlg::SerialDenseMatrix deriv(3, nenparent);
-    // Core::FE::shape_function_3D(funct,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
     Core::FE::shape_function_3d_deriv1(
         deriv, pqxg(gp, 0), pqxg(gp, 1), pqxg(gp, 2), parentele->shape());
 

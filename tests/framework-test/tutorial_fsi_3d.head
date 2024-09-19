@@ -922,8 +922,8 @@ PREDICTOR                       d(n)
 //     Displacement,Force
 COUPVARIABLE                    Displacement
 //
-// Coupling Method Mortar (mtr) or conforming nodes at interface
-//     MTR,Mtr,mtr,conforming,immersed
+// Coupling Method mortar or conforming nodes at interface
+//     mortar,conforming,immersed
 COUPMETHOD                      conforming
 //
 // Basic tolerance for adaptive convergence check in monolithic FSI.

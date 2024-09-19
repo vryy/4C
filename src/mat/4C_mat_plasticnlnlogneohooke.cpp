@@ -189,7 +189,7 @@ Mat::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()                  |
+ | is called in Material::Factory from read_materials()                  |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticNlnLogNeoHooke::create_material()
 {
@@ -201,7 +201,7 @@ Mat::PlasticNlnLogNeoHookeType Mat::PlasticNlnLogNeoHookeType::instance_;
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()                  |
+ | is called in Material::Factory from read_materials()                  |
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::PlasticNlnLogNeoHookeType::create(
     Core::Communication::UnpackBuffer& buffer)

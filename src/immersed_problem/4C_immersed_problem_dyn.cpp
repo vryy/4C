@@ -11,9 +11,7 @@
 #include "4C_adapter_str_fsiwrapper_immersed.hpp"
 #include "4C_ale_utils_clonestrategy.hpp"
 #include "4C_fem_general_utils_createdis.hpp"
-#include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
-#include "4C_immersed_problem_immersed_base.hpp"
 #include "4C_immersed_problem_immersed_partitioned_fsi_dirichletneumann.hpp"
 #include "4C_inpar_immersed.hpp"
 #include "4C_rebalance_binning_based.hpp"
@@ -42,8 +40,10 @@ void immersed_problem_drt()
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->immersed_method_params();
   // choose algorithm
-  int coupling = Core::UTILS::integral_value<int>(immersedmethodparams, "COUPALGO");
-  int scheme = Core::UTILS::integral_value<int>(immersedmethodparams, "SCHEME");
+  const auto coupling = Teuchos::getIntegralValue<Inpar::Immersed::ImmersedCoupling>(
+      immersedmethodparams, "COUPALGO");
+  const auto scheme = Teuchos::getIntegralValue<Inpar::Immersed::ImmersedCouplingScheme>(
+      immersedmethodparams, "SCHEME");
 
 
   ///////////////////////////////////////////////////////////////////////
@@ -76,8 +76,8 @@ void immersed_problem_drt()
 
           {
             // check if structural predictor ConstDisVelAcc is chosen in input file
-            if (problem->structural_dynamic_params().get<std::string>("PREDICT") !=
-                "ConstDisVelAcc")
+            if (problem->structural_dynamic_params().get<Inpar::Solid::PredEnum>("PREDICT") !=
+                Inpar::Solid::pred_constdisvelacc)
               FOUR_C_THROW(
                   "Invalid structural predictor for immersed fsi!\n"
                   "Choose ConstDisVelAcc as predictor in ---STRUCTURAL DYNAMIC section.\n"
@@ -90,7 +90,6 @@ void immersed_problem_drt()
             algo = Teuchos::rcp(new Immersed::ImmersedPartitionedFSIDirichletNeumann(comm));
           else
           {
-            algo = Teuchos::null;
             FOUR_C_THROW("unknown coupling scheme");
           }
 
@@ -134,10 +133,8 @@ void immersed_problem_drt()
         default:
         {
           FOUR_C_THROW("no valid problem type specified");
-          break;
         }  // default
-        break;
-      }  // switch problemtype
+      }    // switch problemtype
       break;
     }  // case partitioned (default)
     case Inpar::Immersed::monolithic:
@@ -145,7 +142,6 @@ void immersed_problem_drt()
       FOUR_C_THROW(
           "Monolithic solution scheme not implemented for immersed problems, yet.\n "
           "Make sure that the parameter COUPALGO is set to 'partitioned'");
-      break;
     }  // case monolithic
   }    // end switch(coupling)
 

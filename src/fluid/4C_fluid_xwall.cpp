@@ -52,10 +52,10 @@ FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
 
   // some exclusions and safety checks:
   if (nsd != 3) FOUR_C_THROW("Only 3D problems considered in xwall modelling!");
-  if (Core::UTILS::get_as_enum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+  if (Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
           Inpar::FLUID::timeint_afgenalpha &&
-      Core::UTILS::get_as_enum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
-          Inpar::FLUID::timeint_npgenalpha)
+      (Teuchos::getIntegralValue<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+          Inpar::FLUID::timeint_npgenalpha))
     FOUR_C_THROW(
         "Use Af-Genalpha for time integration in combination with xwall wall modeling. There would "
         "be additional updates necessary otherwise");
@@ -141,8 +141,8 @@ FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
     FOUR_C_THROW(
         "smoothing of tauw works only for residual-based tauw, as the residual is smoothed");
 
-  fix_residual_on_inflow_ = Core::UTILS::integral_value<int>(
-      params_->sublist("WALL MODEL"), "Treat_Tauw_on_Dirichlet_Inflow");
+  fix_residual_on_inflow_ =
+      params_->sublist("WALL MODEL").get<bool>("Treat_Tauw_on_Dirichlet_Inflow");
 
   // output:
   if (myrank_ == 0)
@@ -749,7 +749,7 @@ void FLD::XWall::setup_l2_projection()
 
     solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, xwdiscret_->get_comm(),
         Global::Problem::instance()->solver_params_callback(),
-        Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
 
     if (solvertype != Core::LinearSolver::SolverType::umfpack)
@@ -1036,7 +1036,7 @@ void FLD::XWall::calc_tau_w(
 
     set_x_wall_params_xw_dis(params);
 
-    params.set<int>("action", FLD::tauw_via_gradient);
+    params.set<FLD::Action>("action", FLD::tauw_via_gradient);
 
     // loop column elements: vector
     for (int i = 0; i < numele; ++i)
@@ -1164,7 +1164,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
   // set action in order to project nodal enriched values to new shape functions
   Teuchos::ParameterList params;
   set_x_wall_params_xw_dis(params);
-  params.set<int>("action", FLD::xwall_l2_projection);
+  params.set<FLD::Action>("action", FLD::xwall_l2_projection);
 
   // create empty right hand side
   Teuchos::RCP<Epetra_MultiVector> rhsassemble =
@@ -1314,7 +1314,7 @@ void FLD::XWall::calc_mk()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<int>("action", FLD::xwall_calc_mk);
+  eleparams.set<FLD::Action>("action", FLD::xwall_calc_mk);
 
   set_x_wall_params_xw_dis(eleparams);
 

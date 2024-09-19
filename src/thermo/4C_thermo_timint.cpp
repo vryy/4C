@@ -48,7 +48,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     : discret_(actdis),
       myrank_(actdis->get_comm().MyPID()),
       solver_(solver),
-      solveradapttol_(Core::UTILS::integral_value<int>(tdynparams, "ADAPTCONV") == 1),
+      solveradapttol_(tdynparams.get<bool>("ADAPTCONV")),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
       dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
       output_(output),
@@ -56,15 +56,15 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
       printiter_(true),  // ADD INPUT PARAMETER
       writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
-      writeglob_((bool)Core::UTILS::integral_value<int>(ioparams, "THERM_TEMPERATURE")),
+      writeglob_(ioparams.get<bool>("THERM_TEMPERATURE")),
       writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
       writeheatflux_(
-          Core::UTILS::integral_value<Inpar::Thermo::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
+          Teuchos::getIntegralValue<Inpar::Thermo::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
       writetempgrad_(
-          Core::UTILS::integral_value<Inpar::Thermo::TempGradType>(ioparams, "THERM_TEMPGRAD")),
+          Teuchos::getIntegralValue<Inpar::Thermo::TempGradType>(ioparams, "THERM_TEMPGRAD")),
       writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
       energyfile_(nullptr),
-      calcerror_(Core::UTILS::integral_value<Inpar::Thermo::CalcError>(tdynparams, "CALCERROR")),
+      calcerror_(Teuchos::getIntegralValue<Inpar::Thermo::CalcError>(tdynparams, "CALCERROR")),
       errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
       time_(Teuchos::null),
       timen_(0.0),
@@ -74,7 +74,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       step_(0),
       stepn_(0),
       firstoutputofrun_(true),
-      lumpcapa_(Core::UTILS::integral_value<int>(tdynparams, "LUMPCAPA") == 1),
+      lumpcapa_(tdynparams.get<bool>("LUMPCAPA")),
       zeros_(Teuchos::null),
       temp_(Teuchos::null),
       rate_(Teuchos::null),
@@ -144,7 +144,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   // -------------------------------------------------------------------
   const int startfuncno = tdynparams.get<int>("INITFUNCNO");
   set_initial_field(
-      Core::UTILS::integral_value<Inpar::Thermo::InitialField>(tdynparams, "INITIALFIELD"),
+      Teuchos::getIntegralValue<Inpar::Thermo::InitialField>(tdynparams, "INITIALFIELD"),
       startfuncno);
 
   // stay with us
@@ -181,9 +181,9 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
     // create the parameters for the discretization
     Teuchos::ParameterList p;
     // action for elements
-    p.set<int>("action", Thermo::calc_thermo_fintcapa);
+    p.set<Thermo::Action>("action", Thermo::calc_thermo_fintcapa);
     // type of calling time integrator
-    p.set<int>("time integrator", method_name());
+    p.set<Inpar::Thermo::DynamicType>("time integrator", method_name());
     p.set<bool>("lump capa matrix", lumpcapa_);
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
@@ -295,7 +295,7 @@ void Thermo::TimInt::reset_step()
   {
     // create the parameters for the discretization
     Teuchos::ParameterList p;
-    p.set<int>("action", Thermo::calc_thermo_reset_istep);
+    p.set<Thermo::Action>("action", Thermo::calc_thermo_reset_istep);
     p.set("total time", time());
     p.set("delta time", dt());
     // go to elements
@@ -494,18 +494,18 @@ void Thermo::TimInt::output_heatflux_tempgrad(bool& datawritten)
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  p.set<int>("action", Thermo::calc_thermo_heatflux);
+  p.set<Thermo::Action>("action", Thermo::calc_thermo_heatflux);
   // other parameters that might be needed by the elements
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
 
   Teuchos::RCP<std::vector<char>> heatfluxdata = Teuchos::rcp(new std::vector<char>());
   p.set("heatflux", heatfluxdata);
-  p.set<int>("ioheatflux", writeheatflux_);
+  p.set<Inpar::Thermo::HeatFluxType>("ioheatflux", writeheatflux_);
 
   Teuchos::RCP<std::vector<char>> tempgraddata = Teuchos::rcp(new std::vector<char>());
   p.set("tempgrad", tempgraddata);
-  p.set<int>("iotempgrad", writetempgrad_);
+  p.set<Inpar::Thermo::TempGradType>("iotempgrad", writetempgrad_);
 
   // set vector values needed by elements
   discret_->clear_state();
@@ -577,7 +577,7 @@ void Thermo::TimInt::output_energy()
   {
     Teuchos::ParameterList p;
     // other parameters needed by the elements
-    p.set<int>("action", Thermo::calc_thermo_energy);
+    p.set<Thermo::Action>("action", Thermo::calc_thermo_energy);
 
     // set vector values needed by elements
     discret_->clear_state();
@@ -590,27 +590,6 @@ void Thermo::TimInt::output_energy()
     discret_->clear_state();
     intergy = (*energies)(0);
   }
-
-  //  // global calculation of kinetic energy
-  //  double kinergy = 0.0;  // total kinetic energy
-  //  {
-  //    Teuchos::RCP<Epetra_Vector> linmom
-  //      = Core::LinAlg::CreateVector(*dofrowmap_, true);
-  //    capa_->Multiply(false, (*rate_)[0], *linmom);
-  //    linmom->Dot((*rate_)[0], &kinergy);
-  //    kinergy *= 0.5;
-  //  }
-
-  //  // external energy
-  //  //double extergy = 0.0;  // total external energy
-  //  {
-  //    // WARNING: This will only work with dead loads!!!
-  //    Teuchos::RCP<Epetra_Vector> fext = Fext();
-  //    fext->Dot((*temp_)[0], &extergy);
-  //  }
-
-  // total energy
-  // double totergy = kinergy + intergy - extergy;
 
   // the output
   if (myrank_ == 0)
@@ -646,9 +625,9 @@ void Thermo::TimInt::apply_force_external(const double time,  //!< evaluation ti
   Teuchos::ParameterList p;
   // action for elements
   const Thermo::Action action = Thermo::calc_thermo_fext;
-  p.set<int>("action", action);
+  p.set<Thermo::Action>("action", action);
   // type of calling time integrator
-  p.set<int>("time integrator", method_name());
+  p.set<Inpar::Thermo::DynamicType>("time integrator", method_name());
   // other parameters needed by the elements
   p.set("total time", time);
 
@@ -687,10 +666,10 @@ void Thermo::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
   //   - contribution due to linearisation for k_TT AND k_Td
 
   // action for elements
-  const Thermo::BoundaryAction action = Thermo::calc_thermo_fextconvection;
-  p.set<int>("action", action);
+  const Thermo::BoundaryAction boundaryAction = Thermo::calc_thermo_fextconvection;
+  p.set<Thermo::BoundaryAction>("action", boundaryAction);
   // type of calling time integrator
-  p.set<int>("time integrator", method_name());
+  p.set<Inpar::Thermo::DynamicType>("time integrator", method_name());
   // other parameters needed by the elements
   p.set("total time", time);
 
@@ -724,10 +703,10 @@ void Thermo::TimInt::apply_force_tang_internal(
 )
 {
   // type of calling time integrator
-  p.set<int>("time integrator", method_name());
+  p.set<Inpar::Thermo::DynamicType>("time integrator", method_name());
   // action for elements
   const Thermo::Action action = Thermo::calc_thermo_fintcond;
-  p.set<int>("action", action);
+  p.set<Thermo::Action>("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
@@ -777,10 +756,10 @@ void Thermo::TimInt::apply_force_tang_internal(
 )
 {
   // type of calling time integrator
-  p.set<int>("time integrator", method_name());
+  p.set<Inpar::Thermo::DynamicType>("time integrator", method_name());
   // action for elements
   const Thermo::Action action = Thermo::calc_thermo_finttang;
-  p.set<int>("action", action);
+  p.set<Thermo::Action>("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
@@ -838,10 +817,10 @@ void Thermo::TimInt::apply_force_internal(
 )
 {
   // type of calling time integrator
-  p.set<int>("time integrator", method_name());
+  p.set<Inpar::Thermo::DynamicType>("time integrator", method_name());
   // action for elements
   Thermo::Action action = Thermo::calc_thermo_fint;
-  p.set<int>("action", action);
+  p.set<Thermo::Action>("action", action);
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
@@ -975,8 +954,8 @@ Teuchos::RCP<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_ana
 
       // action for elements
       eleparams.set("total time", timen_);
-      eleparams.set<int>("action", Thermo::calc_thermo_error);
-      eleparams.set<int>("calculate error", calcerror_);
+      eleparams.set<Thermo::Action>("action", Thermo::calc_thermo_error);
+      eleparams.set<Inpar::Thermo::CalcError>("calculate error", calcerror_);
       eleparams.set<int>("error function number", errorfunctno_);
 
       discret_->set_state("temperature", tempn_);

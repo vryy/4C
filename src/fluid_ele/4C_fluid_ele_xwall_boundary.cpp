@@ -84,7 +84,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::location_vector(const Core::FE::Disc
     Teuchos::ParameterList& params) const
 {
   // get the action required
-  const FLD::BoundaryAction act = Core::UTILS::get_as_enum<FLD::BoundaryAction>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::BoundaryAction>(params, "action");
 
   switch (act)
   {

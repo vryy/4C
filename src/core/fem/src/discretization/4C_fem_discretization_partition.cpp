@@ -701,7 +701,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
     if (pbcdofset != Teuchos::null)
     {
       have_pbc = true;
-      // fill content of pbcmap int std::map<int, std::set<int> > in preparation for GatherAll
+      // fill content of pbcmap int std::map<int, std::set<int> > in preparation for gather_all
       std::map<int, std::vector<int>>* tmp = pbcdofset->get_coupled_nodes();
       for (std::map<int, std::vector<int>>::const_iterator it = tmp->begin(); it != tmp->end();
            ++it)

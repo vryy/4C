@@ -99,15 +99,14 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::init(
 
   blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
 
-  fdcheck_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::FdCheck>(
+  fdcheck_ = Teuchos::getIntegralValue<Inpar::POROMULTIPHASE::FdCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
   equilibration_method_ = Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
       algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
-  solveradapttol_ =
-      (Core::UTILS::integral_value<int>(algoparams.sublist("MONOLITHIC"), "ADAPTCONV") == 1);
+  solveradapttol_ = algoparams.sublist("MONOLITHIC").get<bool>("ADAPTCONV");
 }
 
 /*----------------------------------------------------------------------*
@@ -604,9 +603,9 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_solver()
 
   create_linear_solver(solverparams, solvertype);
 
-  vectornormfres_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::VectorNorm>(
+  vectornormfres_ = Teuchos::getIntegralValue<Inpar::POROMULTIPHASE::VectorNorm>(
       poromultdyn.sublist("MONOLITHIC"), "VECTORNORM_RESF");
-  vectornorminc_ = Core::UTILS::integral_value<Inpar::POROMULTIPHASE::VectorNorm>(
+  vectornorminc_ = Teuchos::getIntegralValue<Inpar::POROMULTIPHASE::VectorNorm>(
       poromultdyn.sublist("MONOLITHIC"), "VECTORNORM_INC");
 
   return true;
@@ -620,7 +619,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::create_linear_solver(
 {
   solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
-      Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
   // no need to do the rest for direct solvers
   if (solvertype == Core::LinearSolver::SolverType::umfpack or
@@ -1124,9 +1123,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
       std::cout << "( rhs_disturb - rhs_old )               "
                 << (*rhs_copy)[zeilennr] * (-1.0) * delta << std::endl;
       std::cout << "( rhs_disturb - rhs_old ) . (-1)/delta: " << (*rhs_copy)[zeilennr] << std::endl;
-      // Core::LinAlg::PrintMatrixInMatlabFormat("../o/mymatrix.dat",*test_crs);
-      // FOUR_C_THROW("exit here");
-      // std::cout << sparse_copy(4,35) << std::endl;
     }
     int* index = &i;
     for (int j = 0; j < dofs; ++j)
@@ -1138,13 +1134,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
       {
         std::cout << "\n******************" << zeilennr + 1 << ". Zeile!!***************"
                   << std::endl;
-        // std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
-        // std::cout << "iterinc" << std::endl << *iterinc << std::endl;
-        // std::cout << "meshdisp: " << std::endl << *(fluid_field()->Dispnp());
         std::cout << "disp: " << std::endl << *(structure_field()->dispnp());
-        // std::cout << "fluid vel" << std::endl << *(fluid_field()->Velnp());
-        // std::cout << "fluid acc" << std::endl << *(fluid_field()->Accnp());
-        // std::cout << "gridvel fluid" << std::endl << *(fluid_field()->GridVel());
         std::cout << "gridvel struct" << std::endl << *(structure_field()->velnp());
 
         std::cout << "stiff_apprx(" << zeilennr << "," << spaltenr << "): " << (*rhs_copy)[zeilennr]

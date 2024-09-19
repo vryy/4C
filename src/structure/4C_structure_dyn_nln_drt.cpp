@@ -40,7 +40,7 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // major switch to different time integrators
-  switch (Core::UTILS::integral_value<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
     case Inpar::Solid::dyna_statics:
     case Inpar::Solid::dyna_genalpha:
@@ -87,8 +87,8 @@ void dyn_nlnstructural_drt()
   Teuchos::RCP<Adapter::Structure> structadapter = Teuchos::null;
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
-  const enum Inpar::Solid::IntegrationStrategy intstrat =
-      Core::UTILS::integral_value<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const auto intstrat =
+      Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
   switch (intstrat)
   {
     // -------------------------------------------------------------------
@@ -117,10 +117,10 @@ void dyn_nlnstructural_drt()
     }
   }
 
-  const bool write_initial_state = Core::UTILS::integral_value<int>(
-      Global::Problem::instance()->io_params(), "WRITE_INITIAL_STATE");
-  const bool write_final_state = Core::UTILS::integral_value<int>(
-      Global::Problem::instance()->io_params(), "WRITE_FINAL_STATE");
+  const bool write_initial_state =
+      Global::Problem::instance()->io_params().get<bool>("WRITE_INITIAL_STATE");
+  const bool write_final_state =
+      Global::Problem::instance()->io_params().get<bool>("WRITE_FINAL_STATE");
 
   // do restart
   const int restart = Global::Problem::instance()->restart();

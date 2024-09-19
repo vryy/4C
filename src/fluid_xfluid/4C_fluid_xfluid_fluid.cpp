@@ -10,9 +10,7 @@
 
 #include "4C_fluid_xfluid_fluid.hpp"
 
-#include "4C_fem_condition_selector.hpp"
 #include "4C_fem_discretization_faces.hpp"
-#include "4C_fem_dofset_transparent_independent.hpp"
 #include "4C_fluid_ele.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_factory.hpp"
@@ -94,7 +92,7 @@ void FLD::XFluidFluid::create_initial_state()
   // base class CreateInitialState
   XFluid::create_initial_state();
 
-  if (Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
+  if (Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
       Inpar::FLUID::no_error_calculation)
   {
     mc_xff_->redistribute_for_error_calculation();
@@ -102,7 +100,7 @@ void FLD::XFluidFluid::create_initial_state()
 
   // recreate internal faces of DiscretizationFaces (as the distribution of the embedded
   // discretization may have changed)
-  if (Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
+  if (Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error") !=
           Inpar::FLUID::no_error_calculation ||
       mc_xff_->get_averaging_strategy() == Inpar::XFEM::Embedded_Sided ||
       mc_xff_->get_averaging_strategy() == Inpar::XFEM::Mean)
@@ -114,7 +112,7 @@ void FLD::XFluidFluid::create_initial_state()
   // domain
   {
     Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-    if (xff_eos_pres_emb_layer_ && Core::UTILS::integral_value<Inpar::FLUID::StabType>(*stabparams,
+    if (xff_eos_pres_emb_layer_ && Teuchos::getIntegralValue<Inpar::FLUID::StabType>(*stabparams,
                                        "STABTYPE") == Inpar::FLUID::stabtype_residualbased)
     {
       Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
@@ -158,18 +156,17 @@ void FLD::XFluidFluid::set_x_fluid_fluid_params()
 
   // additional eos pressure stabilization on the elements of the embedded discretization,
   // that contribute to the interface
-  xff_eos_pres_emb_layer_ =
-      Core::UTILS::integral_value<bool>(params_xf_stab, "XFF_EOS_PRES_EMB_LAYER");
+  xff_eos_pres_emb_layer_ = params_xf_stab.get<bool>("XFF_EOS_PRES_EMB_LAYER");
 
   // whether an eigenvalue problem has to be solved to estimate Nitsche's parameter
   nitsche_evp_ =
-      (Core::UTILS::integral_value<Inpar::XFEM::ViscStabTraceEstimate>(params_xf_stab,
+      (Teuchos::getIntegralValue<Inpar::XFEM::ViscStabTraceEstimate>(params_xf_stab,
            "VISC_STAB_TRACE_ESTIMATE") == Inpar::XFEM::ViscStab_TraceEstimate_eigenvalue);
 
   // get general XFEM/XFFSI specific parameters
-  monolithic_approach_ = Core::UTILS::integral_value<Inpar::XFEM::MonolithicXffsiApproach>(
+  monolithic_approach_ = Teuchos::getIntegralValue<Inpar::XFEM::MonolithicXffsiApproach>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "MONOLITHIC_XFFSI_APPROACH");
-  xfem_timeintapproach_ = Core::UTILS::integral_value<Inpar::XFEM::XFluidFluidTimeInt>(
+  xfem_timeintapproach_ = Teuchos::getIntegralValue<Inpar::XFEM::XFluidFluidTimeInt>(
       params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUIDFLUID_TIMEINT");
 
   // get information about active shape derivatives
@@ -685,8 +682,8 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   // solutions and an analytical solution which is implemented or given by a function in the input
   // file
 
-  Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   if (calcerr == Inpar::FLUID::no_error_calculation) return Teuchos::null;
   // set the time to evaluate errors
@@ -845,7 +842,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
     Core::LinAlg::SerialDenseMatrix elemat2;
     Core::LinAlg::SerialDenseVector elevec2;
     Core::LinAlg::SerialDenseVector elevec3;
-    params_->set<int>("action", FLD::calc_fluid_error);
+    params_->set<FLD::Action>("action", FLD::calc_fluid_error);
 
     Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem")
         ->evaluate_service(ele, *params_, mat, *mc_xff_->get_cond_dis(), la[0].lm_, elemat1,
@@ -958,7 +955,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
       std::cout.precision(8);
       Core::IO::cout << Core::IO::endl
                      << "---- error norm for analytical solution Nr. "
-                     << Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(
+                     << Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(
                             *params_, "calculate error")
                      << " ----------" << Core::IO::endl;
       Core::IO::cout << "-------------- domain error norms (background)------------"

@@ -14,7 +14,6 @@
 #include "4C_comm_utils_factory.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_tsi.hpp"
-#include "4C_io_linedefinition.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_mat_plasticelasthyper.hpp"
 #include "4C_so3_line.hpp"
@@ -198,11 +197,8 @@ int Discret::ELEMENTS::So3Plast<distype>::num_volume() const
     case Core::FE::CellType::hex27:
     case Core::FE::CellType::nurbs27:
       return 0;
-      break;
     default:
       FOUR_C_THROW("unknown distpye for So3Plast");
-      break;
-      return 0;
   }
 }
 
@@ -219,14 +215,10 @@ int Discret::ELEMENTS::So3Plast<distype>::num_surface() const
     case Core::FE::CellType::hex27:
     case Core::FE::CellType::nurbs27:
       return 6;
-      break;
     case Core::FE::CellType::tet4:
       return 4;
-      break;
     default:
       FOUR_C_THROW("unknown distpye for So3Plast");
-      break;
-      return 0;
   }
 }
 
@@ -243,14 +235,10 @@ int Discret::ELEMENTS::So3Plast<distype>::num_line() const
     case Core::FE::CellType::hex27:
     case Core::FE::CellType::nurbs27:
       return 12;
-      break;
     case Core::FE::CellType::tet4:
       return 6;
-      break;
     default:
       FOUR_C_THROW("unknown distpye for So3Plast");
-      break;
-      return 0;
   }
 }
 
@@ -338,8 +326,6 @@ void Discret::ELEMENTS::So3Plast<distype>::pack(Core::Communication::PackBuffer&
     add_to_pack(data, cauchy_deriv_);
     if (tsi_) add_to_pack(data, cauchy_deriv_T_);
   }
-
-  return;
 }  // pack()
 
 
@@ -459,8 +445,6 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   }
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
-
 }  // unpack()
 
 
@@ -471,7 +455,6 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::print(std::ostream& os) const
 {
   os << "So3Plast ";
-  return;
 }
 
 
@@ -496,7 +479,9 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
     // everything ok
   }
   else
+  {
     FOUR_C_THROW("Reading of SO3_PLAST element failed! KINEM unknown");
+  }
 
   // fbar
   if (container.get_if<std::string>("FBAR") != nullptr)
@@ -571,7 +556,6 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
       }
       default:
         FOUR_C_THROW("so3_plast doesn't know what to do with %i Gauss points", ngp);
-        break;
     }
   }
   else  // default integration
@@ -630,7 +614,9 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
       eastype_ = soh8p_easfull;
   }
   else
+  {
     FOUR_C_THROW("unknown EAS type for so3_plast");
+  }
 
   if (fbar_ && eastype_ != soh8p_easnone) FOUR_C_THROW("no combination of Fbar and EAS");
 
@@ -665,20 +651,15 @@ int Discret::ELEMENTS::So3Plast<distype>::unique_par_object_id() const
     case Core::FE::CellType::hex8:
     {
       return SoHex8PlastType::instance().unique_par_object_id();
-      break;
     }  // hex8
     case Core::FE::CellType::hex27:
       return SoHex27PlastType::instance().unique_par_object_id();
-      break;
     case Core::FE::CellType::tet4:
       return SoTet4PlastType::instance().unique_par_object_id();
-      break;
     case Core::FE::CellType::nurbs27:
       return SoNurbs27PlastType::instance().unique_par_object_id();
-      break;
     default:
       FOUR_C_THROW("unknown element type!");
-      break;
   }
   // Intel compiler needs a return
   return -1;
@@ -697,20 +678,15 @@ Core::Elements::ElementType& Discret::ELEMENTS::So3Plast<distype>::element_type(
     case Core::FE::CellType::hex8:
     {
       return SoHex8PlastType::instance();
-      break;
     }
     case Core::FE::CellType::hex27:
       return SoHex27PlastType::instance();
-      break;
     case Core::FE::CellType::tet4:
       return SoTet4PlastType::instance();
-      break;
     case Core::FE::CellType::nurbs27:
       return SoNurbs27PlastType::instance();
-      break;
     default:
       FOUR_C_THROW("unknown element type!");
-      break;
   }
   // Intel compiler needs a return
   return SoHex8PlastType::instance();
@@ -726,8 +702,6 @@ void Discret::ELEMENTS::So3Plast<distype>::vis_names(std::map<std::string, int>&
 {
   Core::Elements::Element::vis_names(names);
   solid_material()->vis_names(names);
-
-  return;
 }  // vis_names()
 
 /*----------------------------------------------------------------------*
@@ -756,8 +730,7 @@ void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
   if (material()->material_type() == Core::Materials::m_plelasthyper)
     static_cast<Mat::PlasticElastHyper*>(material().get())->get_params(s, cpl);
 
-  Core::ProblemType probtype =
-      Teuchos::getIntegralValue<Core::ProblemType>(*plparams, "Core::ProblemType");
+  auto probtype = Teuchos::getIntegralValue<Core::ProblemType>(*plparams, "Core::ProblemType");
   if (probtype == Core::ProblemType::tsi)
     tsi_ = true;
   else
@@ -773,7 +746,7 @@ void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
 
     // get dissipation mode
     auto mode =
-        Core::UTILS::integral_value<Inpar::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
+        Teuchos::getIntegralValue<Inpar::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
 
     // prepare material for tsi
     plmat->setup_tsi(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);
@@ -795,7 +768,6 @@ void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
       KdT_eas_ = Teuchos::null;
     }
   }
-  return;
 }
 
 
@@ -878,7 +850,6 @@ void Discret::ELEMENTS::So3Plast<distype>::soh8_expol(
         (*(expolData(j)))[lid] += nodalData(i, j) * invmyadjele;
     }
   }
-  return;
 }
 
 template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
@@ -910,23 +881,17 @@ int Discret::ELEMENTS::plast_eas_type_to_num_eas_v(Discret::ELEMENTS::So3PlastEa
   {
     case soh8p_easnone:
       return PlastEasTypeToNumEas<soh8p_easnone>::neas;
-      break;
     case soh8p_easmild:
       return PlastEasTypeToNumEas<soh8p_easmild>::neas;
-      break;
     case soh8p_easfull:
       return PlastEasTypeToNumEas<soh8p_easfull>::neas;
-      break;
     case soh8p_eassosh8:
       return PlastEasTypeToNumEas<soh8p_eassosh8>::neas;
-      break;
     case soh18p_eassosh18:
       return PlastEasTypeToNumEas<soh18p_eassosh18>::neas;
-      break;
     default:
       FOUR_C_THROW("EAS type not implemented");
   }
-  return -1;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -651,8 +651,7 @@ namespace FLD
       // set fine-scale velocity for parallel nigthly tests
       // separation matrix depends on the number of proc here
       if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
-          (Core::UTILS::integral_value<int>(
-              params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
+          params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<bool>("SET_FINE_SCALE_VEL"))
         fsvelaf_->PutScalar(0.01);
 
       return fsvelaf_;

@@ -35,7 +35,7 @@ Adapter::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(const Epetra
           false),  // false -> no immediate initialization of fluid time integration
       ScaTraBaseAlgorithm(prbdyn, Global::Problem::instance()->scalar_transport_dynamic_params(),
           solverparams, scatra_disname, isale),
-      fieldcoupling_(Core::UTILS::integral_value<Inpar::ScaTra::FieldCoupling>(
+      fieldcoupling_(Teuchos::getIntegralValue<Inpar::ScaTra::FieldCoupling>(
           Global::Problem::instance()->scalar_transport_dynamic_params(), "FIELDCOUPLING")),
       volcoupl_fluidscatra_(Teuchos::null),
       params_(prbdyn),

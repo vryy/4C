@@ -94,7 +94,7 @@ namespace Adapter
     Teuchos::RCP<Solid::MapExtractor> interface_;
 
     /// predictor type
-    int predictor_;
+    std::string predictor_;
 
     /// access the fsi model evaluator
     Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI> fsi_model_evaluator();

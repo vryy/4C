@@ -43,12 +43,12 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::Par
       "ITEMIN", 1, "minimal number of iterations over fields", &poromultiphasescatradyn);
 
   // Coupling strategy for poroscatra solvers
-  setStringToIntegralParameter<int>("COUPALGO", "twoway_partitioned_nested",
+  setStringToIntegralParameter<SolutionSchemeOverFields>("COUPALGO", "twoway_partitioned_nested",
       "Coupling strategies for poroscatra solvers",
       tuple<std::string>(
           "twoway_partitioned_nested", "twoway_partitioned_sequential", "twoway_monolithic"),
-      tuple<int>(solscheme_twoway_partitioned_nested, solscheme_twoway_partitioned_sequential,
-          solscheme_twoway_monolithic),
+      tuple<SolutionSchemeOverFields>(solscheme_twoway_partitioned_nested,
+          solscheme_twoway_partitioned_sequential, solscheme_twoway_monolithic),
       &poromultiphasescatradyn);
 
   // coupling with 1D artery network active
@@ -56,9 +56,9 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::Par
       "ARTERY_COUPLING", "No", "Coupling with 1D blood vessels.", &poromultiphasescatradyn);
 
   // no convergence of coupling scheme
-  setStringToIntegralParameter<int>("DIVERCONT", "stop",
+  setStringToIntegralParameter<DivContAct>("DIVERCONT", "stop",
       "What to do with time integration when Poromultiphase-Scatra iteration failed",
-      tuple<std::string>("stop", "continue"), tuple<int>(divcont_stop, divcont_continue),
+      tuple<std::string>("stop", "continue"), tuple<DivContAct>(divcont_stop, divcont_continue),
       &poromultiphasescatradyn);
 
   // ----------------------------------------------------------------------
@@ -66,20 +66,20 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::Par
   Teuchos::ParameterList& poromultiphasescatradynmono = poromultiphasescatradyn.sublist(
       "MONOLITHIC", false, "Parameters for monolithic Poro-Multiphase-Scatra Interaction");
 
-  setStringToIntegralParameter<int>("VECTORNORM_RESF", "L2",
+  setStringToIntegralParameter<VectorNorm>("VECTORNORM_RESF", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::PoroMultiPhaseScaTra::norm_l1, Inpar::PoroMultiPhaseScaTra::norm_l1_scaled,
-          Inpar::PoroMultiPhaseScaTra::norm_l2, Inpar::PoroMultiPhaseScaTra::norm_rms,
-          Inpar::PoroMultiPhaseScaTra::norm_inf),
+      tuple<VectorNorm>(Inpar::PoroMultiPhaseScaTra::norm_l1,
+          Inpar::PoroMultiPhaseScaTra::norm_l1_scaled, Inpar::PoroMultiPhaseScaTra::norm_l2,
+          Inpar::PoroMultiPhaseScaTra::norm_rms, Inpar::PoroMultiPhaseScaTra::norm_inf),
       &poromultiphasescatradynmono);
 
-  setStringToIntegralParameter<int>("VECTORNORM_INC", "L2",
+  setStringToIntegralParameter<VectorNorm>("VECTORNORM_INC", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::PoroMultiPhaseScaTra::norm_l1, Inpar::PoroMultiPhaseScaTra::norm_l1_scaled,
-          Inpar::PoroMultiPhaseScaTra::norm_l2, Inpar::PoroMultiPhaseScaTra::norm_rms,
-          Inpar::PoroMultiPhaseScaTra::norm_inf),
+      tuple<VectorNorm>(Inpar::PoroMultiPhaseScaTra::norm_l1,
+          Inpar::PoroMultiPhaseScaTra::norm_l1_scaled, Inpar::PoroMultiPhaseScaTra::norm_l2,
+          Inpar::PoroMultiPhaseScaTra::norm_rms, Inpar::PoroMultiPhaseScaTra::norm_inf),
       &poromultiphasescatradynmono);
 
   // convergence criteria adaptivity --> note ADAPTCONV_BETTER set pretty small
@@ -103,11 +103,11 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::Par
       &poromultiphasescatradynmono);
 
   // parameters for finite difference check
-  setStringToIntegralParameter<int>("FDCHECK", "none",
+  setStringToIntegralParameter<FdCheck>("FDCHECK", "none",
       "flag for finite difference check: none or global",
       tuple<std::string>("none",
           "global"),  // perform finite difference check on time integrator level
-      tuple<int>(fdcheck_none, fdcheck_global), &poromultiphasescatradynmono);
+      tuple<FdCheck>(fdcheck_none, fdcheck_global), &poromultiphasescatradynmono);
 
   // flag for equilibration of global system of equations
   setStringToIntegralParameter<Core::LinAlg::EquilibrationMethod>("EQUILIBRATION", "none",

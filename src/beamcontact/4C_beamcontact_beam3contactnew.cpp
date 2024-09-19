@@ -107,7 +107,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     nodaltangentssmooth2_(i) = 0.0;
   }
 
-  smoothing_ = Core::UTILS::integral_value<Inpar::BEAMCONTACT::Smoothing>(
+  smoothing_ = Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(
       beamcontactparams, "BEAMS_SMOOTHING");
 
   const Core::Elements::ElementType& eot1 = element1_->element_type();
@@ -159,7 +159,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   radius2_ = MANIPULATERADIUS * beamele2->get_circular_cross_section_radius_for_interactions();
 
 
-  if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::OctreeType>(
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(
           beamcontactparams, "BEAMS_OCTREE") != Inpar::BEAMCONTACT::boct_none)
   {
     // TODO: Here we need a warning in case we have no additive bounding box extrusion value!
@@ -170,11 +170,10 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   if (searchboxinc_ < 0.0)
     FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_NEWGAP") and
-      !Core::UTILS::integral_value<int>(beamcontactparams, "BEAMS_ADDITEXT"))
+  if (bcparams_.get<bool>("BEAMS_NEWGAP") and not beamcontactparams.get<bool>("BEAMS_ADDITEXT"))
     FOUR_C_THROW("New gap function only possible when the flag BEAMS_ADDITEXT is set true!");
 
-  int penaltylaw = Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(
+  int penaltylaw = Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
       beamcontactparams, "BEAMS_PENALTYLAW");
   if (penaltylaw != Inpar::BEAMCONTACT::pl_lp and penaltylaw != Inpar::BEAMCONTACT::pl_qp)
   {
@@ -185,8 +184,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
           "Regularized penalty law chosen, but not all regularization parameters are set!");
   }
 
-  if (Core::UTILS::integral_value<Inpar::BEAMCONTACT::Damping>(
-          beamcontactparams, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(beamcontactparams, "BEAMS_DAMPING") !=
+      Inpar::BEAMCONTACT::bd_no)
   {
     if (beamcontactparams.get<double>("BEAMS_DAMPINGPARAM", -1.0) == -1.0 or
         beamcontactparams.get<double>("BEAMS_DAMPREGPARAM1", -1.0) == -1.0 or
@@ -472,7 +471,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_fc_contact(con
   //**********************************************************************
   // evaluate damping forces for active pairs
   //**********************************************************************
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no and
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(bcparams_, "BEAMS_DAMPING") !=
+          Inpar::BEAMCONTACT::bd_no and
       dampingcontactflag_)
   {
     DoNotAssemble = false;
@@ -578,7 +578,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
   // if the bool inactivestiff is true, the contact stiffness will always be applied in the first
   // Newton steps for pair which have been active in the last time step (even when they are
   // currentely not active) -> This makes the algorithm more robust.
-  bool inactivestiff = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_INACTIVESTIFF");
+  const bool inactivestiff = bcparams_.get<bool>("BEAMS_INACTIVESTIFF");
 
   // In order to accelerate convergence, we only apply the basic stiffness part in case of very
   // large gaps!
@@ -847,7 +847,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
     //*************End of standard linearization of penalty contact forces****************
 
     //*************Begin of standard linearization of damping contact forces**************
-    if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") !=
+    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(bcparams_, "BEAMS_DAMPING") !=
             Inpar::BEAMCONTACT::bd_no and
         dampingcontactflag_)
     {
@@ -2435,7 +2435,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
   // if the bool inactivestiff is true, the contact stiffness will always be applied in the first
   // Newton steps for pair which have been active in the last time step (even when they are
   // currentely not active) -> This makes the algorithm more robust.
-  bool inactivestiff = Core::UTILS::integral_value<int>(bcparams_, "BEAMS_INACTIVESTIFF");
+  const bool inactivestiff = bcparams_.get<bool>("BEAMS_INACTIVESTIFF");
 
   if (contactflag_ or (iter_ == 0 and inactivestiff and oldcontactflag_))
   {
@@ -2443,7 +2443,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
     double g0 = bcparams_.get<double>("BEAMS_PENREGPARAM_G0", -1.0);
 
     switch (
-        Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW"))
+        Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW"))
     {
       case Inpar::BEAMCONTACT::pl_lp:  // linear penalty force law
       {
@@ -2651,7 +2651,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_penalty_law()
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::calc_damping_law()
 {
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") == Inpar::BEAMCONTACT::bd_no)
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(bcparams_, "BEAMS_DAMPING") ==
+      Inpar::BEAMCONTACT::bd_no)
     return;
 
   // Damping force parameter
@@ -3133,7 +3134,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_normal(
   TYPE gap = 0.0;
   sgn_ = 1.0;
 
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_NEWGAP"))
+  if (bcparams_.get<bool>("BEAMS_NEWGAP"))
   {
     if (Core::FADUtils::cast_to_double(
             Core::FADUtils::norm(Core::FADUtils::scalar_product(normal_, normal_old_))) < NORMALTOL)
@@ -3172,8 +3173,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_contact_status(co
   // First parameter for contact force regularization
   double g0 = bcparams_.get<double>("BEAMS_PENREGPARAM_G0", -1.0);
 
-  int penaltylaw =
-      Core::UTILS::integral_value<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
+  auto penaltylaw =
+      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(bcparams_, "BEAMS_PENALTYLAW");
 
   if (penaltylaw == Inpar::BEAMCONTACT::pl_lp)
   {
@@ -3226,7 +3227,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::check_contact_status(co
       contactflag_ = false;
   }
 
-  if (Core::UTILS::integral_value<int>(bcparams_, "BEAMS_DAMPING") != Inpar::BEAMCONTACT::bd_no)
+  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(bcparams_, "BEAMS_DAMPING") !=
+      Inpar::BEAMCONTACT::bd_no)
   {
     // First parameter for contact force regularization
     double gd1 = bcparams_.get<double>("BEAMS_DAMPREGPARAM1", -1000.0);

@@ -30,13 +30,14 @@ namespace Inpar
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      setStringToIntegralParameter<int>("KIND", "None", "Method for time step size adaptivity",
-          tuple<std::string>("None", "ZienkiewiczXie", "JointExplicit",  //
-              "AdamsBashforth2", "ExplicitEuler", "CentralDifference"),  // backward compatibility
-          tuple<int>(Inpar::Solid::timada_kind_none, Inpar::Solid::timada_kind_zienxie,
-              Inpar::Solid::timada_kind_joint_explicit,  //
+      setStringToIntegralParameter<Inpar::Solid::TimAdaKind>("KIND", "None",
+          "Method for time step size adaptivity",
+          tuple<std::string>("None", "ZienkiewiczXie", "JointExplicit", "AdamsBashforth2",
+              "ExplicitEuler", "CentralDifference"),
+          tuple<Inpar::Solid::TimAdaKind>(Inpar::Solid::timada_kind_none,
+              Inpar::Solid::timada_kind_zienxie, Inpar::Solid::timada_kind_joint_explicit,
               Inpar::Solid::timada_kind_ab2, Inpar::Solid::timada_kind_expleuler,
-              Inpar::Solid::timada_kind_centraldiff),  // backward compatibility
+              Inpar::Solid::timada_kind_centraldiff),
           &list);
 
       Core::UTILS::double_parameter("OUTSYSPERIOD", 0.0,
@@ -67,11 +68,11 @@ namespace Inpar
           "and must be larger than 0",
           &list);
 
-      setStringToIntegralParameter<int>("LOCERRNORM", "Vague",
+      setStringToIntegralParameter<Inpar::Solid::VectorNorm>("LOCERRNORM", "Vague",
           "Vector norm to treat error vector with",
           tuple<std::string>("Vague", "L1", "L2", "Rms", "Inf"),
-          tuple<int>(Inpar::Solid::norm_vague, Inpar::Solid::norm_l1, Inpar::Solid::norm_l2,
-              Inpar::Solid::norm_rms, Inpar::Solid::norm_inf),
+          tuple<Inpar::Solid::VectorNorm>(Inpar::Solid::norm_vague, Inpar::Solid::norm_l1,
+              Inpar::Solid::norm_l2, Inpar::Solid::norm_rms, Inpar::Solid::norm_inf),
           &list);
 
       Core::UTILS::double_parameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);
@@ -85,24 +86,25 @@ namespace Inpar
       Core::UTILS::int_parameter(
           "LINEAR_SOLVER", -1, "number of linear solver used for auxiliary integrator", &jep);
 
-      setStringToIntegralParameter<int>("INT_STRATEGY", "Standard",
+      setStringToIntegralParameter<Inpar::Solid::IntegrationStrategy>("INT_STRATEGY", "Standard",
           "global type of the used integration strategy", tuple<std::string>("Standard"),
-          tuple<int>(int_standard), &jep);
+          tuple<Inpar::Solid::IntegrationStrategy>(int_standard), &jep);
 
-      setStringToIntegralParameter<int>("DYNAMICTYP", "CentrDiff",
+      setStringToIntegralParameter<Inpar::Solid::DynamicType>("DYNAMICTYP", "CentrDiff",
           "type of the specific auxiliary dynamic time integration scheme",
           tuple<std::string>("ExplicitEuler", "CentrDiff", "AdamsBashforth2", "AdamsBashforth4"),
-          tuple<int>(dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4), &jep);
+          tuple<Inpar::Solid::DynamicType>(dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4),
+          &jep);
 
       Core::UTILS::bool_parameter(
           "LUMPMASS", "No", "Lump the mass matrix for explicit time integration", &jep);
 
-      setStringToIntegralParameter<int>("DAMPING", "No",
+      setStringToIntegralParameter<Inpar::Solid::DampKind>("DAMPING", "No",
           "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, "
           "(2) Material based and calculated in elements",
           tuple<std::string>("no", "No", "NO", "yes", "Yes", "YES", "Rayleigh", "Material"),
-          tuple<int>(damp_none, damp_none, damp_none, damp_rayleigh, damp_rayleigh, damp_rayleigh,
-              damp_rayleigh, damp_material),
+          tuple<Inpar::Solid::DampKind>(damp_none, damp_none, damp_none, damp_rayleigh,
+              damp_rayleigh, damp_rayleigh, damp_rayleigh, damp_material),
           &jep);
 
       Core::UTILS::double_parameter("M_DAMP", -1.0, "", &jep);
@@ -119,19 +121,19 @@ namespace Inpar
 
       Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC", false, "");
 
-      setStringToIntegralParameter<int>("INT_STRATEGY", "Old",
+      setStringToIntegralParameter<Solid::IntegrationStrategy>("INT_STRATEGY", "Old",
           "global type of the used integration strategy", tuple<std::string>("Old", "Standard"),
-          tuple<int>(int_old, int_standard), &sdyn);
+          tuple<Solid::IntegrationStrategy>(int_old, int_standard), &sdyn);
 
       Core::UTILS::bool_parameter(
           "TIME_ADAPTIVITY", "No", "Enable adaptive time integration", &sdyn);
 
-      setStringToIntegralParameter<int>("DYNAMICTYP", "GenAlpha",
+      setStringToIntegralParameter<Solid::DynamicType>("DYNAMICTYP", "GenAlpha",
           "type of the specific dynamic time integration scheme",
           tuple<std::string>("Statics", "GenAlpha", "GenAlphaLieGroup", "OneStepTheta",
               "ExplicitEuler", "CentrDiff", "AdamsBashforth2", "AdamsBashforth4"),
-          tuple<int>(dyna_statics, dyna_genalpha, dyna_genalpha_liegroup, dyna_onesteptheta,
-              dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4),
+          tuple<Solid::DynamicType>(dyna_statics, dyna_genalpha, dyna_genalpha_liegroup,
+              dyna_onesteptheta, dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4),
           &sdyn);
 
       setStringToIntegralParameter<Inpar::Solid::PreStress>("PRESTRESS", "none",
@@ -165,63 +167,65 @@ namespace Inpar
           "Compute the initial state for a restart dynamics analysis", &sdyn);
       Core::UTILS::int_parameter("OUTPUT_STEP_OFFSET", 0,
           "An offset added to the current step to shift the steps to be written.", &sdyn);
+
       // Time loop control
       Core::UTILS::double_parameter("TIMESTEP", 0.05, "time step size", &sdyn);
       Core::UTILS::int_parameter("NUMSTEP", 200, "maximum number of steps", &sdyn);
       Core::UTILS::double_parameter("TIMEINIT", 0.0, "initial time", &sdyn);
       Core::UTILS::double_parameter("MAXTIME", 5.0, "maximum time", &sdyn);
+
       // Damping
-      setStringToIntegralParameter<int>("DAMPING", "No",
+      setStringToIntegralParameter<Solid::DampKind>("DAMPING", "No",
           "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, "
           "(2) Material based and calculated in elements",
           tuple<std::string>("no", "No", "NO", "yes", "Yes", "YES", "Rayleigh", "Material"),
-          tuple<int>(damp_none, damp_none, damp_none, damp_rayleigh, damp_rayleigh, damp_rayleigh,
-              damp_rayleigh, damp_material),
+          tuple<Solid::DampKind>(damp_none, damp_none, damp_none, damp_rayleigh, damp_rayleigh,
+              damp_rayleigh, damp_rayleigh, damp_material),
           &sdyn);
       Core::UTILS::double_parameter("M_DAMP", -1.0, "", &sdyn);
       Core::UTILS::double_parameter("K_DAMP", -1.0, "", &sdyn);
 
       Core::UTILS::double_parameter(
           "TOLDISP", 1.0E-10, "tolerance in the displacement norm for the newton iteration", &sdyn);
-      setStringToIntegralParameter<int>("NORM_DISP", "Abs",
+      setStringToIntegralParameter<Solid::ConvNorm>("NORM_DISP", "Abs",
           "type of norm for displacement convergence check",
           tuple<std::string>("Abs", "Rel", "Mix"),
-          tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
+          tuple<Solid::ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
 
       Core::UTILS::double_parameter(
           "TOLRES", 1.0E-08, "tolerance in the residual norm for the newton iteration", &sdyn);
-      setStringToIntegralParameter<int>("NORM_RESF", "Abs",
+      setStringToIntegralParameter<Solid::ConvNorm>("NORM_RESF", "Abs",
           "type of norm for residual convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
-          tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
+          tuple<Solid::ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
 
       Core::UTILS::double_parameter(
           "TOLPRE", 1.0E-08, "tolerance in pressure norm for the newton iteration", &sdyn);
-      setStringToIntegralParameter<int>("NORM_PRES", "Abs",
+      setStringToIntegralParameter<Solid::ConvNorm>("NORM_PRES", "Abs",
           "type of norm for pressure convergence check", tuple<std::string>("Abs"),
-          tuple<int>(convnorm_abs), &sdyn);
+          tuple<Solid::ConvNorm>(convnorm_abs), &sdyn);
 
       Core::UTILS::double_parameter("TOLINCO", 1.0E-08,
           "tolerance in the incompressible residual norm for the newton iteration", &sdyn);
-      setStringToIntegralParameter<int>("NORM_INCO", "Abs",
+      setStringToIntegralParameter<Solid::ConvNorm>("NORM_INCO", "Abs",
           "type of norm for incompressible residual convergence check", tuple<std::string>("Abs"),
-          tuple<int>(convnorm_abs), &sdyn);
+          tuple<Solid::ConvNorm>(convnorm_abs), &sdyn);
 
-      setStringToIntegralParameter<int>("NORMCOMBI_DISPPRES", "And",
+      setStringToIntegralParameter<Solid::BinaryOp>("NORMCOMBI_DISPPRES", "And",
           "binary operator to combine pressure and displacement values",
-          tuple<std::string>("And", "Or"), tuple<int>(bop_and, bop_or), &sdyn);
+          tuple<std::string>("And", "Or"), tuple<Solid::BinaryOp>(bop_and, bop_or), &sdyn);
 
-      setStringToIntegralParameter<int>("NORMCOMBI_RESFINCO", "And",
+      setStringToIntegralParameter<Solid::BinaryOp>("NORMCOMBI_RESFINCO", "And",
           "binary operator to combine force and incompressible residual",
-          tuple<std::string>("And", "Or"), tuple<int>(bop_and, bop_or), &sdyn);
+          tuple<std::string>("And", "Or"), tuple<Solid::BinaryOp>(bop_and, bop_or), &sdyn);
 
-      setStringToIntegralParameter<int>("NORMCOMBI_RESFDISP", "And",
+      setStringToIntegralParameter<Solid::BinaryOp>("NORMCOMBI_RESFDISP", "And",
           "binary operator to combine displacement and residual force values",
-          tuple<std::string>("And", "Or"), tuple<int>(bop_and, bop_or), &sdyn);
+          tuple<std::string>("And", "Or"), tuple<Solid::BinaryOp>(bop_and, bop_or), &sdyn);
 
-      setStringToIntegralParameter<int>("STC_SCALING", "no",
+      setStringToIntegralParameter<Solid::StcScale>("STC_SCALING", "no",
           "Scaled director conditioning for thin shell structures",
           tuple<std::string>("no", "No", "NO", "Symmetric", "Right"),
-          tuple<int>(stc_none, stc_none, stc_none, stc_currsym, stc_curr), &sdyn);
+          tuple<Solid::StcScale>(stc_none, stc_none, stc_none, stc_currsym, stc_curr), &sdyn);
 
       Core::UTILS::int_parameter("STC_LAYER", 1, "number of STC layers for multilayer case", &sdyn);
 
@@ -240,30 +244,31 @@ namespace Inpar
           &sdyn);
       Core::UTILS::int_parameter("MINITER", 0,
           "minimum number of iterations to be done within Newton-Raphson loop", &sdyn);
-      setStringToIntegralParameter<int>("ITERNORM", "L2", "type of norm to be applied to residuals",
-          tuple<std::string>("L1", "L2", "Rms", "Inf"),
-          tuple<int>(norm_l1, norm_l2, norm_rms, norm_inf), &sdyn);
+      setStringToIntegralParameter<Solid::VectorNorm>("ITERNORM", "L2",
+          "type of norm to be applied to residuals", tuple<std::string>("L1", "L2", "Rms", "Inf"),
+          tuple<Solid::VectorNorm>(norm_l1, norm_l2, norm_rms, norm_inf), &sdyn);
 
-      setStringToIntegralParameter<int>("DIVERCONT", "stop",
+      setStringToIntegralParameter<Solid::DivContAct>("DIVERCONT", "stop",
           "What to do with time integration when Newton-Raphson iteration failed",
           tuple<std::string>("stop", "continue", "repeat_step", "halve_step", "adapt_step",
               "rand_adapt_step", "rand_adapt_step_ele_err", "repeat_simulation",
               "adapt_penaltycontact", "adapt_3D0Dptc_ele_err"),
-          tuple<int>(divcont_stop, divcont_continue, divcont_repeat_step, divcont_halve_step,
-              divcont_adapt_step, divcont_rand_adapt_step, divcont_rand_adapt_step_ele_err,
-              divcont_repeat_simulation, divcont_adapt_penaltycontact,
-              divcont_adapt_3D0Dptc_ele_err),
+          tuple<Solid::DivContAct>(divcont_stop, divcont_continue, divcont_repeat_step,
+              divcont_halve_step, divcont_adapt_step, divcont_rand_adapt_step,
+              divcont_rand_adapt_step_ele_err, divcont_repeat_simulation,
+              divcont_adapt_penaltycontact, divcont_adapt_3D0Dptc_ele_err),
           &sdyn);
 
       Core::UTILS::int_parameter("MAXDIVCONREFINEMENTLEVEL", 10,
           "number of times timestep is halved in case nonlinear solver diverges", &sdyn);
 
-      setStringToIntegralParameter<int>("NLNSOL", "fullnewton", "Nonlinear solution technique",
+      setStringToIntegralParameter<Solid::NonlinSolTech>("NLNSOL", "fullnewton",
+          "Nonlinear solution technique",
           tuple<std::string>("vague", "fullnewton", "modnewton", "lsnewton", "ptc",
               "newtonlinuzawa", "augmentedlagrange", "NoxNewtonLineSearch", "noxgeneral", "noxnln",
               "singlestep"),
-          tuple<int>(soltech_vague, soltech_newtonfull, soltech_newtonmod, soltech_newtonls,
-              soltech_ptc, soltech_newtonuzawalin, soltech_newtonuzawanonlin,
+          tuple<Solid::NonlinSolTech>(soltech_vague, soltech_newtonfull, soltech_newtonmod,
+              soltech_newtonls, soltech_ptc, soltech_newtonuzawalin, soltech_newtonuzawanonlin,
               soltech_noxnewtonlinesearch, soltech_noxgeneral, soltech_nox_nln, soltech_singlestep),
           &sdyn);
 
@@ -273,27 +278,30 @@ namespace Inpar
       Core::UTILS::double_parameter(
           "SIGMA_LS", 1.e-4, "sufficient descent factor in (Newton) line search scheme", &sdyn);
 
-      setStringToIntegralParameter<int>("MATERIALTANGENT", "analytical",
-          "way of evaluating the constitutive matrix",
-          tuple<std::string>("analytical", "finitedifferences"), tuple<int>(0, 1), &sdyn);
+      std::vector<std::string> material_tangent_valid_input = {"analytical", "finitedifferences"};
+      Core::UTILS::string_parameter("MATERIALTANGENT", "analytical",
+          "way of evaluating the constitutive matrix", &sdyn, material_tangent_valid_input);
+
 
       Core::UTILS::bool_parameter(
           "LOADLIN", "No", "Use linearization of external follower load in Newton", &sdyn);
 
-      setStringToIntegralParameter<int>("MASSLIN", "No", "Application of nonlinear inertia terms",
+      setStringToIntegralParameter<Solid::MassLin>("MASSLIN", "No",
+          "Application of nonlinear inertia terms",
           tuple<std::string>("No", "no", "Standard", "standard", "Rotations", "rotations"),
-
-          tuple<int>(ml_none, ml_none, ml_standard, ml_standard, ml_rotations, ml_rotations),
+          tuple<Solid::MassLin>(
+              ml_none, ml_none, ml_standard, ml_standard, ml_rotations, ml_rotations),
           &sdyn);
 
       Core::UTILS::bool_parameter("NEGLECTINERTIA", "No", "Neglect inertia", &sdyn);
 
       // Since predictor "none" would be misleading, the usage of no predictor is called vague.
-      setStringToIntegralParameter<int>("PREDICT", "ConstDis", "Type of predictor",
+      setStringToIntegralParameter<Solid::PredEnum>("PREDICT", "ConstDis", "Type of predictor",
           tuple<std::string>("Vague", "ConstDis", "ConstVel", "ConstAcc", "ConstDisVelAcc",
               "TangDis", "TangDisConstFext", "ConstDisPres", "ConstDisVelAccPres"),
-          tuple<int>(pred_vague, pred_constdis, pred_constvel, pred_constacc, pred_constdisvelacc,
-              pred_tangdis, pred_tangdis_constfext, pred_constdispres, pred_constdisvelaccpres),
+          tuple<Solid::PredEnum>(pred_vague, pred_constdis, pred_constvel, pred_constacc,
+              pred_constdisvelacc, pred_tangdis, pred_tangdis_constfext, pred_constdispres,
+              pred_constdisvelaccpres),
           &sdyn);
 
       // Uzawa iteration for constraint systems
@@ -305,9 +313,9 @@ namespace Inpar
           "maximum number of iterations allowed for uzawa algorithm before failure going to next "
           "newton step",
           &sdyn);
-      setStringToIntegralParameter<int>("UZAWAALGO", "direct", "",
+      setStringToIntegralParameter<Solid::ConSolveAlgo>("UZAWAALGO", "direct", "",
           tuple<std::string>("uzawa", "simple", "direct"),
-          tuple<int>(consolve_uzawa, consolve_simple, consolve_direct), &sdyn);
+          tuple<Solid::ConSolveAlgo>(consolve_uzawa, consolve_simple, consolve_direct), &sdyn);
 
       // convergence criteria adaptivity
       Core::UTILS::bool_parameter("ADAPTCONV", "No",
@@ -328,21 +336,22 @@ namespace Inpar
           "LINEAR_SOLVER", -1, "number of linear solver used for structural problems", &sdyn);
 
       // where the geometry comes from
-      setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
-          tuple<std::string>("full", "box", "file"),
-          tuple<int>(Core::IO::geometry_full, Core::IO::geometry_box, Core::IO::geometry_file),
+      setStringToIntegralParameter<Core::IO::GeometryType>("GEOMETRY", "full",
+          "How the geometry is specified", tuple<std::string>("full", "box", "file"),
+          tuple<Core::IO::GeometryType>(
+              Core::IO::geometry_full, Core::IO::geometry_box, Core::IO::geometry_file),
           &sdyn);
 
-      setStringToIntegralParameter<int>("MIDTIME_ENERGY_TYPE", "vague",
+      setStringToIntegralParameter<Solid::MidAverageEnum>("MIDTIME_ENERGY_TYPE", "vague",
           "Specify the mid-averaging type for the structural energy contributions",
           tuple<std::string>("vague", "imrLike", "trLike"),
-          tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &sdyn);
+          tuple<Solid::MidAverageEnum>(midavg_vague, midavg_imrlike, midavg_trlike), &sdyn);
 
       // Initial displacement
-      setStringToIntegralParameter<int>("INITIALDISP", "zero_displacement",
+      setStringToIntegralParameter<Solid::InitialDisp>("INITIALDISP", "zero_displacement",
           "Initial displacement for structure problem",
           tuple<std::string>("zero_displacement", "displacement_by_function"),
-          tuple<int>(initdisp_zero_disp, initdisp_disp_by_function), &sdyn);
+          tuple<Solid::InitialDisp>(initdisp_zero_disp, initdisp_disp_by_function), &sdyn);
 
       // Function to evaluate initial displacement
       Core::UTILS::int_parameter("STARTFUNCNO", -1, "Function for Initial displacement", &sdyn);
@@ -356,9 +365,9 @@ namespace Inpar
       /* parameters for generalised-alpha structural integrator */
       Teuchos::ParameterList& genalpha = sdyn.sublist("GENALPHA", false, "");
 
-      setStringToIntegralParameter<int>("GENAVG", "TrLike", "mid-average type of internal forces",
-          tuple<std::string>("Vague", "ImrLike", "TrLike"),
-          tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &genalpha);
+      setStringToIntegralParameter<Solid::MidAverageEnum>("GENAVG", "TrLike",
+          "mid-average type of internal forces", tuple<std::string>("Vague", "ImrLike", "TrLike"),
+          tuple<Solid::MidAverageEnum>(midavg_vague, midavg_imrlike, midavg_trlike), &genalpha);
       Core::UTILS::double_parameter("BETA", -1.0, "Generalised-alpha factor in (0,1/2]", &genalpha);
       Core::UTILS::double_parameter("GAMMA", -1.0, "Generalised-alpha factor in (0,1]", &genalpha);
       Core::UTILS::double_parameter(

@@ -174,12 +174,11 @@ void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::stri
     }
   }
 
-  outputcontrol_ = Teuchos::rcp(
-      new Core::IO::OutputControl(comm, problem_name(), spatial_approximation_type(), inputfile,
-          restartkenner, std::move(prefix), n_dim(), restart(), io_params().get<int>("FILESTEPS"),
-          Core::UTILS::integral_value<bool>(io_params(), "OUTPUT_BIN"), true));
+  outputcontrol_ = Teuchos::rcp(new Core::IO::OutputControl(comm, problem_name(),
+      spatial_approximation_type(), inputfile, restartkenner, std::move(prefix), n_dim(), restart(),
+      io_params().get<int>("FILESTEPS"), io_params().get<bool>("OUTPUT_BIN"), true));
 
-  if (!Core::UTILS::integral_value<int>(io_params(), "OUTPUT_BIN") && comm.MyPID() == 0)
+  if (!io_params().get<bool>("OUTPUT_BIN") && comm.MyPID() == 0)
   {
     Core::IO::cout << "==================================================\n"
                    << "=== WARNING: No binary output will be written. ===\n"

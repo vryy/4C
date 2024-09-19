@@ -33,9 +33,11 @@ void FLD::TimIntPoro::init()
   Teuchos::ParameterList* stabparams;
   stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
-  if (stabparams->get<std::string>("STABTYPE") == "residual_based")
+  if (stabparams->get<Inpar::FLUID::StabType>("STABTYPE") ==
+      Inpar::FLUID::StabType::stabtype_residualbased)
   {
-    if (stabparams->get<std::string>("TDS") == "time_dependent")
+    if (stabparams->get<Inpar::FLUID::SubscalesTD>("TDS") ==
+        Inpar::FLUID::SubscalesTD::subscales_time_dependent)
     {
       FOUR_C_THROW(
           "TDS is not implemented for Poro yet. An error will occur in "
@@ -78,16 +80,17 @@ void FLD::TimIntPoro::set_element_custom_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_poro_parameter);
+  eleparams.set<FLD::Action>("action", FLD::set_poro_parameter);
 
   // set general element parameters
   eleparams.set("form of convective term", convform_);
-  eleparams.set<int>("Linearisation", newton_);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<Inpar::FLUID::LinearisationAction>("Linearisation", newton_);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set poro specific element parameters
   eleparams.set<bool>("conti partial integration", params_->get<bool>("conti partial integration"));
-  eleparams.set<int>("Transient Terms Poro Fluid", params_->get<int>("Transient Terms Poro Fluid"));
+  eleparams.set<Inpar::PoroElast::TransientEquationsOfPoroFluid>("Transient Terms Poro Fluid",
+      params_->get<Inpar::PoroElast::TransientEquationsOfPoroFluid>("Transient Terms Poro Fluid"));
   eleparams.set<bool>("convective term", params_->get<bool>("convective term"));
 
   // parameter for stabilization
@@ -188,7 +191,7 @@ void FLD::TimIntPoro::output()
 
 void FLD::TimIntPoro::set_custom_ele_params_assemble_mat_and_rhs(Teuchos::ParameterList& eleparams)
 {
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // just for poroelasticity
   discret_->set_state("dispn", dispn_);
@@ -212,11 +215,11 @@ void FLD::TimIntPoro::poro_int_update()
     Teuchos::ParameterList eleparams;
 
     // set action for elements
-    eleparams.set<int>("action", FLD::poro_boundary);
+    eleparams.set<FLD::BoundaryAction>("action", FLD::poro_boundary);
     eleparams.set("total time", time_);
     eleparams.set("delta time", dta_);
     eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
-    eleparams.set<int>("Physical Type", physicaltype_);
+    eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
     discret_->clear_state();
     discret_->set_state("dispnp", dispnp_);
@@ -236,9 +239,9 @@ void FLD::TimIntPoro::poro_int_update()
     Teuchos::ParameterList eleparams;
 
     // set action for elements
-    eleparams.set<int>("action", FLD::poro_prescoupl);
+    eleparams.set<FLD::BoundaryAction>("action", FLD::poro_prescoupl);
     eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
-    eleparams.set<int>("Physical Type", physicaltype_);
+    eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
     discret_->clear_state();
     discret_->set_state("dispnp", dispnp_);

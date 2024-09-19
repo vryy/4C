@@ -17,7 +17,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
-#include "4C_linalg_fixedsizematrix.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
@@ -414,113 +413,106 @@ namespace FLD
         const Core::FE::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
         Teuchos::RCP<Epetra_Map> fullmap);
 
-    /*!
-
-    \brief calculate lift&drag forces and angular momenta
-
-    Lift and drag forces are based upon the right hand side true-residual entities
-    of the corresponding nodes. The contribution of the end node of a line is entirely
-    added to a present L&D force.
-
-    Idea of this routine:
-
-    create
-
-    map< label, std::set<Core::Nodes::Node*> >
-
-    which is a set of nodes to each L&D Id
-    nodal forces of all the nodes within one set are added to one L&D force
-
-    Notice: Angular moments obtained from lift&drag forces currently refere to the
-            initial configuration, i.e. are built with the coordinates X of a particular
-            node irrespective of its current position.
-
-          \author chfoe
-      \date 11/07
-     */
-    void lift_drag(const Teuchos::RCP<const Core::FE::Discretization>
-                       dis,  //! fluid discretization (node distribution, conditions)
-        const Teuchos::RCP<const Epetra_Vector> trueresidual,  //! vector of nodalforces
-        const Teuchos::RCP<const Epetra_Vector>
-            dispnp,      ///< solution vector with velocities (and pressure)
-        const int ndim,  //! number of dimensions
-        Teuchos::RCP<std::map<int, std::vector<double>>>&
-            liftdragvals,  //! the computed values for lift and drag in an array
-        bool alefluid      //! flag for ALE case
-    );
-
-    /*!
-     * \brief proc 0 writes transient liftdrag values to files (1 file per label)
+    /**
+     * \brief Calculate lift and drag forces, and angular momenta.
      *
-     * \author axel
-     * \date 02/09
+     * This routine computes lift and drag forces based on the right-hand side
+     * true-residual values of the corresponding nodes. The contribution of the end node
+     * of a line is entirely added to the current lift and drag (L&D) forces.
+     *
+     * The basic idea:
+     *  - A map is created: `map<label, std::set<Core::Nodes::Node*>>`,
+     *    where each L&D ID corresponds to a set of nodes.
+     *  - Nodal forces from all nodes within a set are added to compute the total L&D forces.
+     *
+     * \note Angular moments obtained from lift and drag forces currently refer to the
+     *       initial configuration, meaning they are calculated using the coordinates X
+     *       of a node in its initial state, not its current position.
+     *
+     * \date November 2007
+     *
+     * \param dis          Fluid discretization, including node distribution and
+     *                     boundary conditions.
+     * \param trueresidual Vector of nodal forces (true-residual values).
+     * \param dispnp       Solution vector containing velocities and pressures.
+     * \param ndim         Number of spatial dimensions (e.g., 2D or 3D).
+     * \param liftdragvals Output parameter that stores the computed lift and drag values in
+     *                     an array.
+     * \param alefluid     Boolean flag indicating if the Arbitrary Lagrangian-Eulerian (ALE)
+     *                     formulation is used.
      */
-    void write_lift_drag_to_file(const double time,  ///< current real time
-        const int step,                              ///< time step
-        const std::map<int, std::vector<double>>&
-            liftdragvals  ///< the computed values for lift and drag in an array
-    );
-
-    /*!
-      \brief integrate mass flow over surfaces
-
-      for each condition Id, compute the flow through the surface
+    void lift_drag(const Teuchos::RCP<const Core::FE::Discretization> dis,
+        const Teuchos::RCP<const Epetra_Vector> trueresidual,
+        const Teuchos::RCP<const Epetra_Vector> dispnp, const int ndim,
+        Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid);
 
 
-      \return a map, where for each condition Id, we get the flowrate.
-              positive and negative signs indicate net inflow and outflow
-
-
-      \author Axel Gerstenberger
-      \date 10/08
+    /**
+     * \brief Process 0 writes transient lift and drag values to files (one file per label).
+     *
+     * This function writes the computed lift and drag values to files, with one file being
+     * generated per label. It is typically called by process 0.
+     *
+     * \date February 2009
+     *
+     * \param time         The current real time at which the values are being written.
+     * \param step         The current time step.
+     * \param liftdragvals The computed lift and drag values, stored in a map where each entry
+     *                     corresponds to a label and its associated lift and drag data.
      */
-    // std::map<int,double> ComputeSurfaceFlowRates(
-    //    Core::FE::Discretization&       dis  ,      ///< the discretisation (node
-    //    distribution, conditions) const Teuchos::RCP<Epetra_Vector>   velnp       ///< solution
-    //    vector with velocities and pressure
-    ///< (only velocities are used)
-    //    );
+    void write_lift_drag_to_file(
+        const double time, const int step, const std::map<int, std::vector<double>>& liftdragvals);
 
-
-    /*!
-      \brief integrate mass flow over surfaces
-
-      for each condition Id, compute the flow through a boundary condition
-
-      \return a map, where for each condition Id, we get the flowrate.
-              positive and negative signs indicate net inflow and outflow
-
-      \author Ursula Mayer
-      \date 10/08
+    /**
+     * \brief Integrate mass flow over surfaces for each condition ID.
+     *
+     * This function computes the flow rate through a boundary condition for each
+     * condition ID. The result is returned as a map where the flow rate is associated
+     * with each condition ID. The flow rate's sign indicates net inflow (positive)
+     * or outflow (negative).
+     *
+     * \date October 2008
+     *
+     * \param dis         The discretization, including node distribution and conditions.
+     * \param velnp       Solution vector containing velocities (and pressure).
+     * \param condstring  Name of the condition (e.g., "LineFlowRate" or "SurfaceFlowRate").
+     * \param physicaltype The physical type of flow, defined by the fluid's properties.
+     *
+     * \return A map where each condition ID corresponds to the computed flow rate.
+     *         The sign of the flow rate indicates net inflow (positive) or outflow (negative).
      */
-    std::map<int, double> compute_flow_rates(
-        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
-        const Teuchos::RCP<Epetra_Vector>&
-            velnp,                      ///< solution vector with velocities (and pressure)
-        const std::string& condstring,  ///< name of the condition (LineFlowRate or SurfaceFlowRate)
-        const Inpar::FLUID::PhysicalType physicaltype  ///< physical type of flow
-    );
+    std::map<int, double> compute_flow_rates(Core::FE::Discretization& dis,
+        const Teuchos::RCP<Epetra_Vector>& velnp, const std::string& condstring,
+        const Inpar::FLUID::PhysicalType physicaltype);
 
-    std::map<int, double> compute_flow_rates(
-        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
-        const Teuchos::RCP<Epetra_Vector>&
-            velnp,  ///< solution vector with velocities (and pressure)
-        const Teuchos::RCP<Epetra_Vector>& gridvel,  ///< solution vector with grid velocities (ALE)
-        const Teuchos::RCP<Epetra_Vector>&
-            dispnp,                     ///< solution vector with mesh displacements (ALE)
-        const std::string& condstring,  ///< name of the condition (LineFlowRate or SurfaceFlowRate)
-        const Inpar::FLUID::PhysicalType physicaltype  ///< physical type of flow
-    );
+    /**
+     * \param dis          The discretization, including node distribution and conditions.
+     * \param velnp        Solution vector containing velocities (and pressure).
+     * \param gridvel      Solution vector containing grid velocities for ALE formulation.
+     * \param dispnp       Solution vector containing mesh displacements for ALE formulation.
+     * \param condstring   Name of the condition (e.g., "LineFlowRate" or "SurfaceFlowRate").
+     * \param physicaltype The physical type of flow, defined by the fluid's properties.
+     *
+     * \return A map where each condition ID corresponds to the computed flow rate.
+     *         The sign of the flow rate indicates net inflow (positive) or outflow (negative).
+     */
+    std::map<int, double> compute_flow_rates(Core::FE::Discretization& dis,
+        const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridvel,
+        const Teuchos::RCP<Epetra_Vector>& dispnp, const std::string& condstring,
+        const Inpar::FLUID::PhysicalType physicaltype);
 
-    std::map<int, double> compute_volume(
-        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
-        const Teuchos::RCP<Epetra_Vector>&
-            velnp,  ///< solution vector with velocities (and pressure)
-        const Teuchos::RCP<Epetra_Vector>& gridvel,  ///< solution vector with grid velocities (ALE)
-        const Teuchos::RCP<Epetra_Vector>&
-            dispnp,  ///< solution vector with mesh displacements (ALE)
-        const Inpar::FLUID::PhysicalType physicaltype  ///< physical type of flow
-    );
+    /**
+     * \param dis          The discretization, including node distribution and conditions.
+     * \param velnp        Solution vector containing velocities (and pressure).
+     * \param gridvel      Solution vector containing grid velocities for ALE formulation.
+     * \param dispnp       Solution vector containing mesh displacements for ALE formulation.
+     * \param physicaltype The physical type of flow, defined by the fluid's properties.
+     *
+     * \return A map where each condition ID corresponds to the computed volume.
+     */
+    std::map<int, double> compute_volume(Core::FE::Discretization& dis,
+        const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridvel,
+        const Teuchos::RCP<Epetra_Vector>& dispnp, const Inpar::FLUID::PhysicalType physicaltype);
 
     /*!
      * \brief proc 0 writes the flow rate values for each condition ID to a file
@@ -550,27 +542,6 @@ namespace FLD
     Teuchos::RCP<Epetra_MultiVector> project_gradient(
         Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel,
         bool alefluid);
-
-    /*!
-      \brief integrate impulse rate over surfaces
-
-      for each condition Id, compute the impulse rate vector through the surface
-
-      integral over surface: rho * u_i * u_j * n_j dx
-
-      \return a map, where for each condition Id, we get the impulse rate.
-              positive and negative signs indicate net inflow and outflow
-
-
-      \author Axel Gerstenberger
-      \date 10/08
-     */
-    std::map<int, Core::LinAlg::Matrix<3, 1>> compute_surface_impuls_rates(
-        Core::FE::Discretization& dis,  ///< the discretisation (node distribution, conditions)
-        const Teuchos::RCP<Epetra_Vector> velnp  ///< solution vector with velocities and pressure
-                                                 ///< (only velocities are used)
-    );
-
 
   }  // namespace UTILS
 }  // namespace FLD

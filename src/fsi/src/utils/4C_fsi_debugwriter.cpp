@@ -57,7 +57,7 @@ void FSI::UTILS::DebugWriter::new_time_step(int step, std::string name)
       Global::Problem::instance()->n_dim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      Core::UTILS::integral_value<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
+      Global::Problem::instance()->io_params().get<bool>("OUTPUT_BIN")));
 
   writer_ = dis_->writer();
   writer_->set_output(control_);
@@ -109,7 +109,7 @@ void FSI::UTILS::SimpleDebugWriter::new_linear_system(int step, std::string name
       Global::Problem::instance()->n_dim(),
       0,     // restart is meaningless here
       1000,  // we never expect to get 1000 iterations
-      Core::UTILS::integral_value<bool>(Global::Problem::instance()->io_params(), "OUTPUT_BIN")));
+      Global::Problem::instance()->io_params().get<bool>("OUTPUT_BIN")));
 
   writer_ = dis_->writer();
   writer_->set_output(control_);

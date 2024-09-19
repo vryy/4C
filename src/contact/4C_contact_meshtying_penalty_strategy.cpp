@@ -73,8 +73,7 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra
   if (dualquadslavetrafo())
   {
     // type of LM interpolation for quadratic elements
-    Inpar::Mortar::LagMultQuad lagmultquad =
-        Core::UTILS::integral_value<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
+    auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
 
     if (lagmultquad != Inpar::Mortar::lagmult_lin)
     {
@@ -134,7 +133,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::mesh_initializatio
   TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::mesh_initialization");
 
   // get out of here is NTS algorithm is activated
-  if (Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
+  if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM") ==
       Inpar::Mortar::algorithm_nts)
     return Teuchos::null;
 
@@ -369,8 +368,7 @@ void CONTACT::MtPenaltyStrategy::update_constraint_norm(int uzawaiter)
   // adaptive update of penalty parameter
   // (only for Uzawa Augmented Lagrange strategy)
   //********************************************************************
-  Inpar::CONTACT::SolvingStrategy soltype =
-      Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
+  auto soltype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
 
   if (soltype == Inpar::CONTACT::solution_uzawa)
   {

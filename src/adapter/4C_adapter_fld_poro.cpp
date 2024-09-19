@@ -60,8 +60,8 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
   if (coupltype == PoroElast::fluidfluid)
   {
     // first, find out which dofs will be constraint
-    params.set<int>("action", FLD::no_penetrationIDs);
-    params.set<int>("Physical Type", Inpar::FLUID::poro);
+    params.set<FLD::BoundaryAction>("action", FLD::no_penetrationIDs);
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro);
     discretization()->evaluate_condition(params, condVector, "no_penetration");
 
     // write global IDs of dofs on which the no penetration condition is applied (can vary in time
@@ -91,10 +91,10 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     }
 
     // set action for elements
-    params.set<int>("action", FLD::no_penetration);
+    params.set<FLD::BoundaryAction>("action", FLD::no_penetration);
     // params.set<Teuchos::RCP< std::set<int> > >("condIDs",condIDs);
     params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
-    params.set<int>("Physical Type", Inpar::FLUID::poro);
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro);
 
     Core::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
         0,                                       // fluiddofset for column
@@ -113,9 +113,9 @@ void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     discretization()->set_state(0, "condVector", condVector);
 
     // set action for elements
-    params.set<int>("action", FLD::no_penetration);
+    params.set<FLD::BoundaryAction>("action", FLD::no_penetration);
     params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidstructure);
-    params.set<int>("Physical Type", Inpar::FLUID::poro);
+    params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro);
 
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of fluid_field:

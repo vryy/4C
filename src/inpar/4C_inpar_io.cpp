@@ -46,41 +46,43 @@ void Inpar::IO::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::bool_parameter("STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", &io);
   Core::UTILS::bool_parameter("STRUCT_CURRENT_VOLUME", "No",
       "Output of current element volume as scalar value for each structural element", &io);
-  setStringToIntegralParameter<int>("STRUCT_STRESS", "No", "Output of stress",
+  setStringToIntegralParameter<Inpar::Solid::StressType>("STRUCT_STRESS", "No", "Output of stress",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "Cauchy", "cauchy", "2PK", "2pk"),
-      tuple<int>(Inpar::Solid::stress_none, Inpar::Solid::stress_none, Inpar::Solid::stress_none,
-          Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk,
-          Inpar::Solid::stress_cauchy, Inpar::Solid::stress_cauchy, Inpar::Solid::stress_2pk,
-          Inpar::Solid::stress_2pk),
+      tuple<Inpar::Solid::StressType>(Inpar::Solid::stress_none, Inpar::Solid::stress_none,
+          Inpar::Solid::stress_none, Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk,
+          Inpar::Solid::stress_2pk, Inpar::Solid::stress_cauchy, Inpar::Solid::stress_cauchy,
+          Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk),
       &io);
   // in case of a coupled problem (e.g. TSI) the additional stresses are
   // (TSI: thermal stresses) are printed here
-  setStringToIntegralParameter<int>("STRUCT_COUPLING_STRESS", "No", "",
+  setStringToIntegralParameter<Inpar::Solid::StressType>("STRUCT_COUPLING_STRESS", "No", "",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "Cauchy", "cauchy", "2PK", "2pk"),
-      tuple<int>(Inpar::Solid::stress_none, Inpar::Solid::stress_none, Inpar::Solid::stress_none,
-          Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk,
-          Inpar::Solid::stress_cauchy, Inpar::Solid::stress_cauchy, Inpar::Solid::stress_2pk,
-          Inpar::Solid::stress_2pk),
+      tuple<Inpar::Solid::StressType>(Inpar::Solid::stress_none, Inpar::Solid::stress_none,
+          Inpar::Solid::stress_none, Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk,
+          Inpar::Solid::stress_2pk, Inpar::Solid::stress_cauchy, Inpar::Solid::stress_cauchy,
+          Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk),
       &io);
-  setStringToIntegralParameter<int>("STRUCT_STRAIN", "No", "Output of strains",
+  setStringToIntegralParameter<Inpar::Solid::StrainType>("STRUCT_STRAIN", "No", "Output of strains",
       tuple<std::string>(
           "No", "no", "NO", "Yes", "yes", "YES", "EA", "ea", "GL", "gl", "LOG", "log"),
-      tuple<int>(Inpar::Solid::strain_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none,
-          Inpar::Solid::strain_gl, Inpar::Solid::strain_gl, Inpar::Solid::strain_gl,
-          Inpar::Solid::strain_ea, Inpar::Solid::strain_ea, Inpar::Solid::strain_gl,
-          Inpar::Solid::strain_gl, Inpar::Solid::strain_log, Inpar::Solid::strain_log),
+      tuple<Inpar::Solid::StrainType>(Inpar::Solid::strain_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_gl, Inpar::Solid::strain_gl,
+          Inpar::Solid::strain_gl, Inpar::Solid::strain_ea, Inpar::Solid::strain_ea,
+          Inpar::Solid::strain_gl, Inpar::Solid::strain_gl, Inpar::Solid::strain_log,
+          Inpar::Solid::strain_log),
       &io);
-  setStringToIntegralParameter<int>("STRUCT_PLASTIC_STRAIN", "No", "",
+  setStringToIntegralParameter<Inpar::Solid::StrainType>("STRUCT_PLASTIC_STRAIN", "No", "",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "EA", "ea", "GL", "gl"),
-      tuple<int>(Inpar::Solid::strain_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none,
-          Inpar::Solid::strain_gl, Inpar::Solid::strain_gl, Inpar::Solid::strain_gl,
-          Inpar::Solid::strain_ea, Inpar::Solid::strain_ea, Inpar::Solid::strain_gl,
-          Inpar::Solid::strain_gl),
+      tuple<Inpar::Solid::StrainType>(Inpar::Solid::strain_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_gl, Inpar::Solid::strain_gl,
+          Inpar::Solid::strain_gl, Inpar::Solid::strain_ea, Inpar::Solid::strain_ea,
+          Inpar::Solid::strain_gl, Inpar::Solid::strain_gl),
       &io);
-  setStringToIntegralParameter<int>("STRUCT_OPTIONAL_QUANTITY", "No",
+  setStringToIntegralParameter<Inpar::Solid::OptQuantityType>("STRUCT_OPTIONAL_QUANTITY", "No",
       "Output of an optional quantity", tuple<std::string>("No", "no", "NO", "membranethickness"),
-      tuple<int>(Inpar::Solid::optquantity_none, Inpar::Solid::optquantity_none,
-          Inpar::Solid::optquantity_none, Inpar::Solid::optquantity_membranethickness),
+      tuple<Inpar::Solid::OptQuantityType>(Inpar::Solid::optquantity_none,
+          Inpar::Solid::optquantity_none, Inpar::Solid::optquantity_none,
+          Inpar::Solid::optquantity_membranethickness),
       &io);
   Core::UTILS::bool_parameter("STRUCT_SURFACTANT", "No", "", &io);
   Core::UTILS::bool_parameter("STRUCT_JACOBIAN_MATLAB", "No", "", &io);
@@ -96,15 +98,15 @@ void Inpar::IO::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
   Core::UTILS::bool_parameter("FLUID_ELEDATA_EVRY_STEP", "No", "", &io);
   Core::UTILS::bool_parameter("FLUID_NODEDATA_FIRST_STEP", "No", "", &io);
   Core::UTILS::bool_parameter("THERM_TEMPERATURE", "No", "", &io);
-  setStringToIntegralParameter<int>("THERM_HEATFLUX", "None", "",
+  setStringToIntegralParameter<Inpar::Thermo::HeatFluxType>("THERM_HEATFLUX", "None", "",
       tuple<std::string>("None", "No", "NO", "no", "Current", "Initial"),
-      tuple<int>(Inpar::Thermo::heatflux_none, Inpar::Thermo::heatflux_none,
+      tuple<Inpar::Thermo::HeatFluxType>(Inpar::Thermo::heatflux_none, Inpar::Thermo::heatflux_none,
           Inpar::Thermo::heatflux_none, Inpar::Thermo::heatflux_none,
           Inpar::Thermo::heatflux_current, Inpar::Thermo::heatflux_initial),
       &io);
-  setStringToIntegralParameter<int>("THERM_TEMPGRAD", "None", "",
+  setStringToIntegralParameter<Inpar::Thermo::TempGradType>("THERM_TEMPGRAD", "None", "",
       tuple<std::string>("None", "No", "NO", "no", "Current", "Initial"),
-      tuple<int>(Inpar::Thermo::tempgrad_none, Inpar::Thermo::tempgrad_none,
+      tuple<Inpar::Thermo::TempGradType>(Inpar::Thermo::tempgrad_none, Inpar::Thermo::tempgrad_none,
           Inpar::Thermo::tempgrad_none, Inpar::Thermo::tempgrad_none,
           Inpar::Thermo::tempgrad_current, Inpar::Thermo::tempgrad_initial),
       &io);
@@ -127,12 +129,12 @@ void Inpar::IO::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "PREFIX_GROUP_ID", "No", "Put a <GroupID>: in front of every line", &io);
   Core::UTILS::int_parameter(
       "LIMIT_OUTP_TO_PROC", -1, "Only the specified procs will write output", &io);
-  setStringToIntegralParameter<int>("VERBOSITY", "verbose", "",
+  setStringToIntegralParameter<FourC::Core::IO::Verbositylevel>("VERBOSITY", "verbose", "",
       tuple<std::string>(
           "minimal", "Minimal", "standard", "Standard", "verbose", "Verbose", "debug", "Debug"),
-      tuple<int>(FourC::Core::IO::minimal, FourC::Core::IO::minimal, FourC::Core::IO::standard,
-          FourC::Core::IO::standard, FourC::Core::IO::verbose, FourC::Core::IO::verbose,
-          FourC::Core::IO::debug, FourC::Core::IO::debug),
+      tuple<FourC::Core::IO::Verbositylevel>(FourC::Core::IO::minimal, FourC::Core::IO::minimal,
+          FourC::Core::IO::standard, FourC::Core::IO::standard, FourC::Core::IO::verbose,
+          FourC::Core::IO::verbose, FourC::Core::IO::debug, FourC::Core::IO::debug),
       &io);
 
   Core::UTILS::double_parameter("RESTARTWALLTIMEINTERVAL", -1.0,

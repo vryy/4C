@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::Coupling2d::Coupling2d(Core::FE::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
     : Mortar::Coupling2d(idiscret, dim, quad, params, sele, mele),
-      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
 
@@ -147,7 +147,7 @@ CONTACT::Coupling2dManager::Coupling2dManager(Core::FE::Discretization& idiscret
     bool quad, Teuchos::ParameterList& params, Mortar::Element* sele,
     std::vector<Mortar::Element*> mele)
     : Mortar::Coupling2dManager(idiscret, dim, quad, params, sele, mele),
-      stype_(Core::UTILS::integral_value<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
   return;
@@ -168,8 +168,7 @@ bool CONTACT::Coupling2dManager::evaluate_coupling(
   if (master_elements().size() == 0) return false;
 
   // decide which type of coupling should be evaluated
-  Inpar::Mortar::AlgorithmType algo =
-      Core::UTILS::integral_value<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
@@ -279,7 +278,8 @@ void CONTACT::Coupling2dManager::integrate_coupling(
       if (int_type() == Inpar::Mortar::inttype_elements_BS and boundary_ele == true)
       {
         // switch, if consistent boundary modification chosen
-        if (Core::UTILS::integral_value<int>(imortar_, "LM_DUAL_CONSISTENT") == true &&
+        if (Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_,
+                "LM_DUAL_CONSISTENT") == Inpar::Mortar::ConsistentDualType::consistent_boundary &&
             shape_fcn() != Inpar::Mortar::shape_standard  // so for petrov-Galerkin and dual
         )
         {
@@ -379,9 +379,8 @@ void CONTACT::Coupling2dManager::consist_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  Inpar::Mortar::ConsistentDualType consistent =
-      Core::UTILS::integral_value<Inpar::Mortar::ConsistentDualType>(
-          imortar_, "LM_DUAL_CONSISTENT");
+  auto consistent =
+      Teuchos::getIntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
   if (shape_fcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
     return;
 

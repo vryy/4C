@@ -47,10 +47,10 @@ void FSI::DirichletNeumannSlideale::setup()
 
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  set_kinematic_coupling(
-      Core::UTILS::integral_value<int>(fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
+  set_kinematic_coupling(Teuchos::getIntegralValue<Inpar::FSI::CoupVarPart>(
+                             fsipart, "COUPVARIABLE") == Inpar::FSI::CoupVarPart::disp);
 
-  Inpar::FSI::SlideALEProj aletype = Core::UTILS::integral_value<Inpar::FSI::SlideALEProj>(
+  auto aletype = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(
       Global::Problem::instance()->fsi_dynamic_params(), "SLIDEALEPROJ");
 
   slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(structure_field()->discretization(),
@@ -162,7 +162,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannSlideale::initial_guess()
   {
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-    if (Core::UTILS::integral_value<int>(fsipart, "PREDICTOR") != 1)
+    if (fsipart.get<std::string>("PREDICTOR") != "d(n)")
     {
       FOUR_C_THROW(
           "unknown interface force predictor '%s'", fsipart.get<std::string>("PREDICTOR").c_str());

@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::MeritFunction::Lagrangian::Lagrangian(
-    const std::string& identifier, const Teuchos::RCP<::NOX::Utils>& u)
+    const NOX::Nln::MeritFunction::MeritFctName& identifier, const Teuchos::RCP<::NOX::Utils>& u)
     : lagrangian_type_(mrtfct_vague), merit_function_name_()
 {
-  set_type(identifier);
+  lagrangian_type_ = identifier;
   merit_function_name_ = merit_func_name_to_string(type());
 
   utils_ = u;
@@ -177,36 +177,6 @@ NOX::Nln::MeritFunction::Lagrangian::get_supported_type_list() const
   type_names["Lagrangian Active"] = mrtfct_lagrangian_active;
 
   return type_names;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void NOX::Nln::MeritFunction::Lagrangian::set_type(const std::string& identifier)
-{
-  static const std::map<std::string, MeritFctName> supported_type_names = get_supported_type_list();
-
-  auto cit = supported_type_names.cbegin();
-  while (cit != supported_type_names.cend())
-  {
-    if (identifier == cit->first)
-    {
-      lagrangian_type_ = cit->second;
-      break;
-    }
-    ++cit;
-  }
-
-  if (cit == supported_type_names.cend())
-  {
-    std::cout << "\n\n=====================================================\n";
-    std::cout << "Supported Lagrangian type names:\n"
-                 "EXPECTED INPUT [= deduced merit function type]\n";
-    for (const auto& supported_pair : supported_type_names)
-      std::cout << supported_pair.first
-                << " [= " << merit_func_name_to_string(supported_pair.second) << "]\n";
-
-    FOUR_C_THROW("Unknown type name: \"%s\"", identifier.c_str());
-  }
 }
 
 /*----------------------------------------------------------------------*

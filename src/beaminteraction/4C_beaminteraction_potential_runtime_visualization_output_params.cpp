@@ -48,25 +48,22 @@ void BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams::init(
   /****************************************************************************/
   output_interval_steps_ = beam_contact_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_every_iteration_ = (bool)Core::UTILS::integral_value<int>(
-      beam_contact_visualization_output_paramslist, "EVERY_ITERATION");
+  output_every_iteration_ =
+      beam_contact_visualization_output_paramslist.get<bool>("EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   /****************************************************************************/
-  output_forces_ = (bool)Core::UTILS::integral_value<int>(
-      beam_contact_visualization_output_paramslist, "FORCES");
+  output_forces_ = beam_contact_visualization_output_paramslist.get<bool>("FORCES");
 
   /****************************************************************************/
-  output_moments_ = (bool)Core::UTILS::integral_value<int>(
-      beam_contact_visualization_output_paramslist, "MOMENTS");
+  output_moments_ = beam_contact_visualization_output_paramslist.get<bool>("MOMENTS");
 
   /****************************************************************************/
-  write_force_moment_per_elepair_ = (bool)Core::UTILS::integral_value<int>(
-      beam_contact_visualization_output_paramslist, "WRITE_FORCE_MOMENT_PER_ELEMENTPAIR");
+  write_force_moment_per_elepair_ =
+      beam_contact_visualization_output_paramslist.get<bool>("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR");
 
   /****************************************************************************/
-  output_uids_ = (bool)Core::UTILS::integral_value<int>(
-      beam_contact_visualization_output_paramslist, "WRITE_UIDS");
+  output_uids_ = beam_contact_visualization_output_paramslist.get<bool>("WRITE_UIDS");
 
   isinit_ = true;
 }

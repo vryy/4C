@@ -179,10 +179,7 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3::unpack(Core::Communication::Unpa
     elem_params_[name] = val;
   }
 
-
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
 }
 
 
@@ -194,8 +191,6 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3::print(std::ostream& os) const
 {
   os << "RedAirBloodScatraLine3 ";
   Element::print(os);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -241,15 +236,7 @@ void Discret::ELEMENTS::RedAirBloodScatraLine3::get_params(std::string name, dou
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::RedAirBloodScatraLine3::get_params(std::string name, int& var)
 {
-  //  if (name == "Generation")
-  //  {
-  //    var = generation_;
-  //  }
-  //  else
-  {
-    FOUR_C_THROW("[%s] is not found with in the element INT variables", name.c_str());
-    exit(1);
-  }
+  FOUR_C_THROW("[%s] is not found with in the element INT variables", name.c_str());
 }
 
 /*----------------------------------------------------------------------*

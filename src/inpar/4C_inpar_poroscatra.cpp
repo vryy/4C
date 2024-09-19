@@ -51,9 +51,6 @@ void Inpar::PoroScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList
       "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
   Core::UTILS::double_parameter("TOLINC_DISP", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
-  //  Core::UTILS::DoubleParameter("TOLRES_PORO",1e-8,"tolerance in the residual norm for the Newton
-  //  iteration",&poroscatradyn); Core::UTILS::DoubleParameter("TOLINC_PORO",1e-8,"tolerance in the
-  //  increment norm for the Newton iteration",&poroscatradyn);
   Core::UTILS::double_parameter("TOLRES_VEL", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
   Core::UTILS::double_parameter("TOLINC_VEL", 1e-8,
@@ -67,37 +64,40 @@ void Inpar::PoroScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList
   Core::UTILS::double_parameter("TOLINC_SCALAR", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
 
-  setStringToIntegralParameter<int>("NORM_INC", "AbsSingleFields",
+  setStringToIntegralParameter<Inpar::PoroElast::ConvNorm>("NORM_INC", "AbsSingleFields",
       "type of norm for primary variables convergence check",
       tuple<std::string>("AbsGlobal", "AbsSingleFields"),
-      tuple<int>(
+      tuple<Inpar::PoroElast::ConvNorm>(
           Inpar::PoroElast::convnorm_abs_global, Inpar::PoroElast::convnorm_abs_singlefields),
       &poroscatradyn);
 
-  setStringToIntegralParameter<int>("NORM_RESF", "AbsSingleFields",
+  setStringToIntegralParameter<Inpar::PoroElast::ConvNorm>("NORM_RESF", "AbsSingleFields",
       "type of norm for residual convergence check",
       tuple<std::string>("AbsGlobal", "AbsSingleFields"),
-      tuple<int>(
+      tuple<Inpar::PoroElast::ConvNorm>(
           Inpar::PoroElast::convnorm_abs_global, Inpar::PoroElast::convnorm_abs_singlefields),
       &poroscatradyn);
 
-  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC", "And",
+  setStringToIntegralParameter<Inpar::PoroElast::BinaryOp>("NORMCOMBI_RESFINC", "And",
       "binary operator to combine primary variables and residual force values",
       tuple<std::string>("And", "Or"),
-      tuple<int>(Inpar::PoroElast::bop_and, Inpar::PoroElast::bop_or), &poroscatradyn);
-
-  setStringToIntegralParameter<int>("VECTORNORM_RESF", "L2",
-      "type of norm to be applied to residuals",
-      tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::PoroElast::norm_l1, Inpar::PoroElast::norm_l1_scaled,
-          Inpar::PoroElast::norm_l2, Inpar::PoroElast::norm_rms, Inpar::PoroElast::norm_inf),
+      tuple<Inpar::PoroElast::BinaryOp>(Inpar::PoroElast::bop_and, Inpar::PoroElast::bop_or),
       &poroscatradyn);
 
-  setStringToIntegralParameter<int>("VECTORNORM_INC", "L2",
+  setStringToIntegralParameter<Inpar::PoroElast::VectorNorm>("VECTORNORM_RESF", "L2",
       "type of norm to be applied to residuals",
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
-      tuple<int>(Inpar::PoroElast::norm_l1, Inpar::PoroElast::norm_l1_scaled,
-          Inpar::PoroElast::norm_l2, Inpar::PoroElast::norm_rms, Inpar::PoroElast::norm_inf),
+      tuple<Inpar::PoroElast::VectorNorm>(Inpar::PoroElast::norm_l1,
+          Inpar::PoroElast::norm_l1_scaled, Inpar::PoroElast::norm_l2, Inpar::PoroElast::norm_rms,
+          Inpar::PoroElast::norm_inf),
+      &poroscatradyn);
+
+  setStringToIntegralParameter<Inpar::PoroElast::VectorNorm>("VECTORNORM_INC", "L2",
+      "type of norm to be applied to residuals",
+      tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
+      tuple<Inpar::PoroElast::VectorNorm>(Inpar::PoroElast::norm_l1,
+          Inpar::PoroElast::norm_l1_scaled, Inpar::PoroElast::norm_l2, Inpar::PoroElast::norm_rms,
+          Inpar::PoroElast::norm_inf),
       &poroscatradyn);
 
   // number of linear solver used for poroelasticity
@@ -105,10 +105,12 @@ void Inpar::PoroScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList
       "number of linear solver used for monolithic poroscatra problems", &poroscatradyn);
 
   // Coupling strategy for poroscatra solvers
-  setStringToIntegralParameter<int>("COUPALGO", "solid_to_scatra",
+  setStringToIntegralParameter<SolutionSchemeOverFields>("COUPALGO", "solid_to_scatra",
       "Coupling strategies for poroscatra solvers",
       tuple<std::string>("monolithic", "scatra_to_solid", "solid_to_scatra", "two_way"),
-      tuple<int>(Monolithic, Part_ScatraToPoro, Part_PoroToScatra, Part_TwoWay), &poroscatradyn);
+      tuple<SolutionSchemeOverFields>(
+          Monolithic, Part_ScatraToPoro, Part_PoroToScatra, Part_TwoWay),
+      &poroscatradyn);
 
   Core::UTILS::bool_parameter("MATCHINGGRID", "Yes", "is matching grid", &poroscatradyn);
 }

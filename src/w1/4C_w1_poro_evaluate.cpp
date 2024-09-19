@@ -462,8 +462,8 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
     case Core::Elements::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      auto iocouplstress = Core::UTILS::get_as_enum<Inpar::Solid::StressType>(
-          params, "iocouplstress", Inpar::Solid::stress_none);
+      auto iocouplstress =
+          params.get<Inpar::Solid::StressType>("iocouplstress", Inpar::Solid::stress_none);
 
       // check for output of coupling stress
       if (iocouplstress == Inpar::Solid::stress_none)

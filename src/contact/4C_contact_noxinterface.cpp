@@ -279,7 +279,7 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(const Epetr
 enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::get_active_set_info(
     NOX::Nln::StatusTest::QuantityType checkQuantity, int& activesetsize) const
 {
-  bool semismooth = Core::UTILS::integral_value<int>(strategy().params(), "SEMI_SMOOTH_NEWTON");
+  const bool semismooth = strategy().params().get<bool>("SEMI_SMOOTH_NEWTON");
   if (not semismooth) FOUR_C_THROW("Currently we support only the semi-smooth Newton case!");
   // ---------------------------------------------------------------------------
   // get the number of active nodes for the given active set type

@@ -146,7 +146,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
 void ScaTra::MeshtyingStrategyS2IElch::evaluate_meshtying()
 {
   // safety check
-  if (Core::UTILS::integral_value<int>(*(elch_tim_int()->elch_parameter_list()), "BLOCKPRECOND"))
+  if (elch_tim_int()->elch_parameter_list()->get<bool>("BLOCKPRECOND"))
     FOUR_C_THROW("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
   // call base class routine
@@ -259,8 +259,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
-        const double fac = Core::UTILS::integral_value<bool>(
-                               *scatratimint_->scatra_parameter_list(), "SPHERICALCOORDS")
+        const double fac = scatratimint_->scatra_parameter_list()->get<bool>("SPHERICALCOORDS")
                                ? *slave_node->x().data() * *slave_node->x().data() * four_pi
                                : 1.0;
         const double timefacfac =
@@ -781,7 +780,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate(
 )
 {
   // extract and evaluate action
-  switch (Core::UTILS::get_as_enum<Inpar::S2I::EvaluationActions>(params, "action"))
+  switch (Teuchos::getIntegralValue<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble off-diagonal interface linearizations
     case Inpar::S2I::evaluate_condition_od:
@@ -994,7 +993,7 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate(
 )
 {
   // extract and evaluate action
-  switch (Core::UTILS::get_as_enum<Inpar::S2I::EvaluationActions>(params, "action"))
+  switch (Teuchos::getIntegralValue<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble interface linearizations and residuals
     case Inpar::S2I::evaluate_condition:

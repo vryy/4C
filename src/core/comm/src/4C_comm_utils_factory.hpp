@@ -56,7 +56,7 @@ namespace Core::Communication
   Teuchos::RCP<Core::Elements::Element> factory(
       const std::string eletype, const std::string distype, const int id, const int owner);
 
-  //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
+  //! flag, whether surfaces or lines have to be created in the element_boundary_factory
   enum BoundaryBuildType
   {
     buildSurfaces,  ///< build surfaces
@@ -110,7 +110,7 @@ namespace Core::Communication
         break;
       }
       default:
-        FOUR_C_THROW("buildNothing case not handled in ElementBoundaryFactory");
+        FOUR_C_THROW("buildNothing case not handled in element_boundary_factory");
     }
     // create vectors that will contain the volume, surface or line elements
     std::vector<Teuchos::RCP<Core::Elements::Element>> boundaryeles(nele);

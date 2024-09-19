@@ -149,16 +149,6 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
   double parshiftangle2 =
       params()->beam_to_beam_contact_params()->beam_to_beam_perp_shifting_angle2();
 
-
-  // Todo
-  //  bool beamsdebug = Core::UTILS::IntegralValue<int>(beamcontactparams,"BEAMS_DEBUG");
-  //
-  //  //Check, if a unique closest point solution can be guaranteed for angles alpha >
-  //  BEAMS_PERPSHIFTANGLE1 if((perpshiftangle1<acos(1.0-2*MAXCROSSSECTIONTOCURVATURE)) and
-  //  !beamsdebug)
-  //    FOUR_C_THROW("Choose larger shifting angle BEAMS_PERPSHIFTANGLE1 in order to enable a unique
-  //    CPP!");
-
   double segangle = params()->beam_to_beam_contact_params()->segmentation_angle();
 
   double safetyfac = 1.5;

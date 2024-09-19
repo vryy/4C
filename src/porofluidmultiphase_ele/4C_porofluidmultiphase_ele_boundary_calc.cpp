@@ -98,8 +98,8 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
   extract_element_and_node_values(ele, params, discretization, la);
 
   // check for the action parameter
-  const POROFLUIDMULTIPHASE::BoundaryAction action =
-      Core::UTILS::get_as_enum<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
+  const auto action =
+      Teuchos::getIntegralValue<POROFLUIDMULTIPHASE::BoundaryAction>(params, "action");
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat, elevec);
 

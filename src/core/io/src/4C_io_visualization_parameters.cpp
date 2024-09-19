@@ -46,8 +46,7 @@ Core::IO::VisualizationParameters Core::IO::visualization_parameters_factory(
       visualization_ouput_parameter_list.get<int>("EVERY_ITERATION_RESERVE_DIGITS");
 
   // This value can be overwritten from the physical field
-  parameters.every_iteration_ =
-      Core::UTILS::integral_value<bool>(visualization_ouput_parameter_list, "EVERY_ITERATION");
+  parameters.every_iteration_ = visualization_ouput_parameter_list.get<bool>("EVERY_ITERATION");
 
   parameters.file_name_prefix_ = output_control.file_name_only_prefix();
 
@@ -96,7 +95,7 @@ Core::IO::VisualizationParameters Core::IO::visualization_parameters_factory(
   if (iteration_number != 0 && !visualization_parameters.every_iteration_)
   {
     FOUR_C_THROW(
-        "An iteration index was passed to GetTimeAndTimeStepIndexForOutput, but output for "
+        "An iteration index was passed to get_time_and_time_step_index_for_output, but output for "
         "each iteration is deactivated, this is a contradiction");
   }
 

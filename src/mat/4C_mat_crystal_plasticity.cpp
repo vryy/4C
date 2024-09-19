@@ -163,7 +163,7 @@ Mat::PAR::CrystalPlasticity::CrystalPlasticity(const Core::Mat::PAR::Parameter::
 
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       			|
+ | is called in Material::Factory from read_materials()       			|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrystalPlasticity::create_material()
 {
@@ -171,13 +171,13 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrystalPlasticity::create_material()
 }
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       			|
+ | is called in Material::Factory from read_materials()       			|
  *----------------------------------------------------------------------*/
 
 Mat::CrystalPlasticityType Mat::CrystalPlasticityType::instance_;
 
 /*----------------------------------------------------------------------*
- | is called in Material::Factory from ReadMaterials()       			|
+ | is called in Material::Factory from read_materials()       			|
  *----------------------------------------------------------------------*/
 Core::Communication::ParObject* Mat::CrystalPlasticityType::create(
     Core::Communication::UnpackBuffer& buffer)

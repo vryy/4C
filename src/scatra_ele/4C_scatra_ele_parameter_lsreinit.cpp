@@ -71,46 +71,45 @@ void Discret::ELEMENTS::ScaTraEleParameterLsReinit::set_parameters(
 
   // reinitialization strategy
   reinittype_ =
-      Core::UTILS::integral_value<Inpar::ScaTra::ReInitialAction>(reinitlist, "REINITIALIZATION");
+      Teuchos::getIntegralValue<Inpar::ScaTra::ReInitialAction>(reinitlist, "REINITIALIZATION");
 
   // get signum function
-  signtype_ = Core::UTILS::integral_value<Inpar::ScaTra::SmoothedSignType>(
-      reinitlist, "SMOOTHED_SIGN_TYPE");
+  signtype_ =
+      Teuchos::getIntegralValue<Inpar::ScaTra::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
 
   // characteristic element length for signum function
-  charelelengthreinit_ = Core::UTILS::integral_value<Inpar::ScaTra::CharEleLengthReinit>(
+  charelelengthreinit_ = Teuchos::getIntegralValue<Inpar::ScaTra::CharEleLengthReinit>(
       reinitlist, "CHARELELENGTHREINIT");
 
   // interface thickness for signum function
   interfacethicknessfac_ = reinitlist.get<double>("INTERFACE_THICKNESS");
 
   // form of linearization for nonlinear terms
-  linform_ =
-      Core::UTILS::integral_value<Inpar::ScaTra::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
+  linform_ = Teuchos::getIntegralValue<Inpar::ScaTra::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
 
   // set form of velocity evaluation
   Inpar::ScaTra::VelReinit velreinit =
-      Core::UTILS::integral_value<Inpar::ScaTra::VelReinit>(reinitlist, "VELREINIT");
+      Teuchos::getIntegralValue<Inpar::ScaTra::VelReinit>(reinitlist, "VELREINIT");
   if (velreinit == Inpar::ScaTra::vel_reinit_node_based) useprojectedreinitvel_ = true;
 
   // set flag for artificial diffusion term
-  artdiff_ = Core::UTILS::integral_value<Inpar::ScaTra::ArtDiff>(reinitlist, "ARTDIFFREINIT");
+  artdiff_ = Teuchos::getIntegralValue<Inpar::ScaTra::ArtDiff>(reinitlist, "ARTDIFFREINIT");
 
   // set penalty parameter for elliptic reinitialization
   alphapen_ = reinitlist.get<double>("PENALTY_PARA");
 
   // get diffusivity function
-  difffct_ = Core::UTILS::integral_value<Inpar::ScaTra::DiffFunc>(reinitlist, "DIFF_FUNC");
+  difffct_ = Teuchos::getIntegralValue<Inpar::ScaTra::DiffFunc>(reinitlist, "DIFF_FUNC");
 
   // L2-projection
-  project_ = Core::UTILS::integral_value<bool>(reinitlist, "PROJECTION");
+  project_ = reinitlist.get<bool>("PROJECTION");
 
   // diffusion for L2-projection
   projectdiff_ = reinitlist.get<double>("PROJECTION_DIFF");
   if (projectdiff_ < 0.0) FOUR_C_THROW("Diffusivity has to be positive!");
 
   // lumping for L2-projection
-  lumping_ = Core::UTILS::integral_value<bool>(reinitlist, "LUMPING");
+  lumping_ = reinitlist.get<bool>("LUMPING");
 
   // check for illegal combination
   if (projectdiff_ > 0.0 and lumping_ == true) FOUR_C_THROW("Illegal combination!");

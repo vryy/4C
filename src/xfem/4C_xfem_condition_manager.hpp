@@ -511,7 +511,7 @@ namespace XFEM
 
     // the cutwizard should add elements via the manager!!!
 
-    // TODO: TransformID routines (localToGlobal, GlobalToLocal
+    // TODO: TransformID routines (localToGlobal, global_to_local
 
     // get the side id w.r.t. the cutter discretization
     int get_cutter_dis_ele_id(const int coup_sid, const int mc_idx)

@@ -406,11 +406,11 @@ void FLD::TimIntGenAlpha::set_element_time_parameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_time_parameter);
-  eleparams.set<int>("Physical Type", physicaltype_);
+  eleparams.set<FLD::Action>("action", FLD::set_time_parameter);
+  eleparams.set<Inpar::FLUID::PhysicalType>("Physical Type", physicaltype_);
 
   // set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+  eleparams.set<Inpar::FLUID::TimeIntegrationScheme>("TimeIntegrationScheme", timealgo_);
   // set general element parameters
   eleparams.set("dt", dta_);
   eleparams.set("theta", theta_);

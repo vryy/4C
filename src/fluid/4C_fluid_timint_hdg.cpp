@@ -357,9 +357,9 @@ void FLD::TimIntHDG::set_initial_flow_field(
     Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
     Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
     Teuchos::ParameterList initParams;
-    initParams.set<int>("action", FLD::project_fluid_field);
+    initParams.set<FLD::Action>("action", FLD::project_fluid_field);
     initParams.set("startfuncno", startfuncno);
-    initParams.set<int>("initfield", initfield);
+    initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
     // loop over all elements on the processor
     Core::Elements::Element::LocationArray la(2);
     double error = 0;
@@ -414,8 +414,8 @@ void FLD::TimIntHDG::set_initial_flow_field(
 Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
-  Inpar::FLUID::CalcError calcerr =
-      Core::UTILS::get_as_enum<Inpar::FLUID::CalcError>(*params_, "calculate error");
+  const auto calcerr =
+      Teuchos::getIntegralValue<Inpar::FLUID::CalcError>(*params_, "calculate error");
 
   switch (calcerr)
   {
@@ -478,7 +478,7 @@ namespace
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
-    params.set<int>("action", FLD::interpolate_hdg_to_node);
+    params.set<FLD::Action>("action", FLD::interpolate_hdg_to_node);
     dis.set_state(1, "intvelnp", interiorValues);
     dis.set_state(0, "velnp", traceValues);
     std::vector<int> dummy;
@@ -566,7 +566,7 @@ void FLD::TimIntHDG::calc_intermediate_solution()
   if ((special_flow_ == "forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
           special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
-      Core::UTILS::integral_value<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
+      Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
   {
     Teuchos::RCP<Epetra_Vector> inttmp =

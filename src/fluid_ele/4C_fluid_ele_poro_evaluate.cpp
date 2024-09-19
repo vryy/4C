@@ -25,7 +25,7 @@ void Discret::ELEMENTS::FluidPoroEleType::pre_evaluate(Core::FE::Discretization&
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const auto action = Core::UTILS::get_as_enum<FLD::Action>(p, "action");
+  const auto action = Teuchos::getIntegralValue<FLD::Action>(p, "action");
 
   // poro specific actions
   if (action == FLD::set_poro_parameter)
@@ -49,14 +49,15 @@ int Discret::ELEMENTS::FluidPoro::evaluate(Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = Core::UTILS::get_as_enum<FLD::Action>(params, "action");
+  const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   // get material
   Teuchos::RCP<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   std::string impltype = "poro";
-  switch (params.get<int>("Physical Type", Inpar::FLUID::physicaltype_undefined))
+  switch (
+      params.get<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::physicaltype_undefined))
   {
     case Inpar::FLUID::poro:
       impltype = "poro";
@@ -100,7 +101,8 @@ int Discret::ELEMENTS::FluidPoro::evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_poroscatra_mono_odblock:
     {
-      switch (params.get<int>("Physical Type", Inpar::FLUID::physicaltype_undefined))
+      switch (params.get<Inpar::FLUID::PhysicalType>(
+          "Physical Type", Inpar::FLUID::physicaltype_undefined))
       {
         case Inpar::FLUID::poro:
         {

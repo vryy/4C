@@ -447,7 +447,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
       // action for elements
-      eleparams.set<int>("action", FLD::presgradient_projection);
+      eleparams.set<FLD::Action>("action", FLD::presgradient_projection);
 
       // To get phi nodal values into pressure dofs in the fluid discretization!!! - any idea for
       // nice implementation?

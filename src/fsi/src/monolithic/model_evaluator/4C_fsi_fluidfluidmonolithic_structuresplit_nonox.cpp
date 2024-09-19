@@ -227,7 +227,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
     // can insert the embedded dofrowmap into it
     // kruse 30.04. --> we don't, see adapter
     // Teuchos::RCP<Epetra_Vector> fluidfluidtmp =
-    // Core::LinAlg::CreateVector(*fluid_field()->dof_row_map(),true);
+    // Core::LinAlg::create_vector(*fluid_field()->dof_row_map(),true);
 
     // ---------- inner fluid DOFs
     /* The following terms are added to the inner fluid DOFs of right hand side:
@@ -442,7 +442,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::scale_system(
   // should we scale the system?
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -516,7 +516,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::unscale_solution(
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)Core::UTILS::integral_value<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = fsimono.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -939,30 +939,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier()
 
   // Finally, the Lagrange multiplier 'lambda_' is recovered here.
   // It represents nodal forces acting onto the structure.
-
-
-  //------ old version changed on 5/12/12  --------------
-  //   // compute the product S_{\Gamma I} \Delta d_I
-  //   Teuchos::RCP<Epetra_Vector> sgiddi =
-  //   Core::LinAlg::CreateVector(*structure_field()->Interface()->other_map(),true); // store the
-  //   prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here (sgicur_->EpetraMatrix())->Multiply(false,
-  //   *ddiinc_, *sgiddi);
-
-  //    // compute the product S_{\Gamma\Gamma} \Delta d_\Gamma
-  //    Teuchos::RCP<Epetra_Vector> sggddg =
-  //    Core::LinAlg::CreateVector(*structure_field()->Interface()->other_map(),true); // store the
-  //    prodcut
-  //    '\Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1}' in here
-  //    (sggcur_->EpetraMatrix())->Multiply(false, *ddginc_, *sggddg);
-
-  //    // Update the Lagrange multiplier:
-  //    /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
-  //     *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
-  //     */
-  //    lambda_->Update(1.0, *fgcur_, -stiparam);
-  //    //lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
-  //    lambda_->Scale(1/(1.0-stiparam)); //entire Lagrange multiplier it divided by (1.-stiparam)
-  //
 
   return;
 }

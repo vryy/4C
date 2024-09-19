@@ -97,12 +97,11 @@ void Adapter::FluidFSI::init()
 
   // time step size adaptivity in monolithic FSI
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-  const bool timeadapton =
-      Core::UTILS::integral_value<bool>(fsidyn.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+  const bool timeadapton = fsidyn.sublist("TIMEADAPTIVITY").get<bool>("TIMEADAPTON");
   if (timeadapton)
   {
     // extract the type of auxiliary integrator from the input parameter list
-    auxintegrator_ = Core::UTILS::integral_value<Inpar::FSI::FluidMethod>(
+    auxintegrator_ = Teuchos::getIntegralValue<Inpar::FSI::FluidMethod>(
         fsidyn.sublist("TIMEADAPTIVITY"), "AUXINTEGRATORFLUID");
 
     if (auxintegrator_ != Inpar::FSI::timada_fld_none)
@@ -227,7 +226,7 @@ void Adapter::FluidFSI::apply_interface_velocities(Teuchos::RCP<Epetra_Vector> i
 
   const Teuchos::ParameterList& fsipart =
       Global::Problem::instance()->fsi_dynamic_params().sublist("PARTITIONED SOLVER");
-  if (Core::UTILS::integral_value<int>(fsipart, "DIVPROJECTION"))
+  if (fsipart.get<bool>("DIVPROJECTION"))
   {
     // project the velocity field into a divergence free subspace
     // (might enhance the linear solver, but we are still not sure.)
@@ -430,7 +429,7 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
 
     // set action in order to calculate the integrated divergence operator via an evaluate()-call
     Teuchos::ParameterList params;
-    params.set<int>("action", FLD::calc_divop);
+    params.set<FLD::Action>("action", FLD::calc_divop);
 
     // call the element specific evaluate method
     actele->evaluate(
@@ -476,7 +475,7 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(simplersolvernumber),
           discretization()->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Core::UTILS::integral_value<Core::IO::Verbositylevel>(
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY")));
 
   if (solver->params().isSublist("ML Parameters"))

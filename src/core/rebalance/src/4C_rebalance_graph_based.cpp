@@ -36,7 +36,7 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::r
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
     const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceNodeMaps");
+  TEUCHOS_FUNC_TIME_MONITOR("Rebalance::rebalance_node_maps");
 
   // Compute rebalanced graph
   Teuchos::RCP<Epetra_CrsGraph> balanced_graph = Rebalance::rebalance_graph(*initialGraph,

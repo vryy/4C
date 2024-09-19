@@ -90,7 +90,7 @@ void ScaTra::MeshtyingStrategyFluid::init_meshtying()
 
   // Important: Meshtying for scalar transport is not well tested!
   // get meshtying type
-  type_ = Core::UTILS::integral_value<Inpar::FLUID::MeshTying>(
+  type_ = Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(
       *(scatratimint_->scatra_parameter_list()), "MESHTYING");
 
   // safety checks

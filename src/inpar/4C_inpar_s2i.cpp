@@ -30,20 +30,22 @@ void Inpar::S2I::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
               "S2I COUPLING", false, "control parameters for scatra-scatra interface coupling");
 
   // type of mortar meshtying
-  setStringToIntegralParameter<int>("COUPLINGTYPE", "Undefined", "type of mortar meshtying",
+  setStringToIntegralParameter<CouplingType>("COUPLINGTYPE", "Undefined",
+      "type of mortar meshtying",
       tuple<std::string>("Undefined", "MatchingNodes", "StandardMortar", "SaddlePointMortar_Petrov",
           "SaddlePointMortar_Bubnov", "CondensedMortar_Petrov", "CondensedMortar_Bubnov",
           "StandardNodeToSegment"),
-      tuple<int>(coupling_undefined, coupling_matching_nodes, coupling_mortar_standard,
+      tuple<CouplingType>(coupling_undefined, coupling_matching_nodes, coupling_mortar_standard,
           coupling_mortar_saddlepoint_petrov, coupling_mortar_saddlepoint_bubnov,
           coupling_mortar_condensed_petrov, coupling_mortar_condensed_bubnov,
           coupling_nts_standard),
       &s2icoupling);
 
   // flag for interface side underlying Lagrange multiplier definition
-  setStringToIntegralParameter<int>("LMSIDE", "slave",
+  setStringToIntegralParameter<InterfaceSides>("LMSIDE", "slave",
       "flag for interface side underlying Lagrange multiplier definition",
-      tuple<std::string>("slave", "master"), tuple<int>(side_slave, side_master), &s2icoupling);
+      tuple<std::string>("slave", "master"), tuple<InterfaceSides>(side_slave, side_master),
+      &s2icoupling);
 
   // flag for evaluation of interface linearizations and residuals on slave side only
   Core::UTILS::bool_parameter("SLAVEONLY", "No",
@@ -55,10 +57,10 @@ void Inpar::S2I::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "NTSPROJTOL", 0.0, "node-to-segment projection tolerance", &s2icoupling);
 
   // flag for evaluation of scatra-scatra interface coupling involving interface layer growth
-  setStringToIntegralParameter<int>("INTLAYERGROWTH_EVALUATION", "none",
+  setStringToIntegralParameter<GrowthEvaluation>("INTLAYERGROWTH_EVALUATION", "none",
       "flag for evaluation of scatra-scatra interface coupling involving interface layer growth",
       tuple<std::string>("none", "monolithic", "semi-implicit"),
-      tuple<int>(
+      tuple<GrowthEvaluation>(
           growth_evaluation_none, growth_evaluation_monolithic, growth_evaluation_semi_implicit),
       &s2icoupling);
 

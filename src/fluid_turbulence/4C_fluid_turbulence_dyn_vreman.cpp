@@ -29,7 +29,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::Para
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(Core::UTILS::get_as_enum<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
   // Initialize Boxfilter
@@ -132,7 +132,7 @@ double FLD::Vreman::dyn_vreman_compute_cv()
   // action for elements
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params;
-  calc_vreman_params.set<int>("action", FLD::calc_vreman_const);
+  calc_vreman_params.set<FLD::Action>("action", FLD::calc_vreman_const);
 
   // hand filtered global vectors down to the element
   calc_vreman_params.set("col_filtered_strainrate", col_filtered_strainrate_);
