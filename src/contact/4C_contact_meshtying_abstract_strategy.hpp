@@ -88,31 +88,34 @@ namespace CONTACT
     \brief Return Lagrange multiplier vector (t_n+1)
 
     */
-    Teuchos::RCP<Epetra_Vector> lagrange_multiplier() override { return z_; }
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier() const override { return z_; }
 
     /*!
     \brief Return old Lagrange multiplier vector (t_n)
 
     */
-    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() override { return zold_; }
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_old() const override { return zold_; }
 
     /*!
     \brief Return Lagrange multiplier vector from last Uzawa step
 
     */
-    Teuchos::RCP<Epetra_Vector> lagr_mult_uzawa() { return zuzawa_; }
+    Teuchos::RCP<const Epetra_Vector> lagr_mult_uzawa() const { return zuzawa_; }
 
     /*!
     \brief Return constraint rhs vector (only in saddle-point formulation
 
     */
-    Teuchos::RCP<Epetra_Vector> constraint_rhs() override { return constrrhs_; }
+    Teuchos::RCP<const Epetra_Vector> constraint_rhs() const override { return constrrhs_; }
 
     /*!
     \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
 
     */
-    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_increment() override { return zincr_; }
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_increment() const override
+    {
+      return zincr_;
+    }
 
     /*!
     \brief Gather maps needed for contact/meshtying specific multigrid preconditioners
@@ -130,13 +133,13 @@ namespace CONTACT
     \brief Return mortar matrix D
 
     */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> d_matrix() override { return dmatrix_; }
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> d_matrix() const override { return dmatrix_; }
 
     /*!
     \brief Return mortar matrix M
 
     */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> m_matrix() override { return mmatrix_; }
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> m_matrix() const override { return mmatrix_; }
 
     /*!
     \brief Get dual quadratic 3d slave element flag
@@ -356,7 +359,7 @@ namespace CONTACT
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
     void postprocess_quantities_per_interface(
-        Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+        Teuchos::RCP<Teuchos::ParameterList> outputParams) const final;
 
     //! @}
 
@@ -370,7 +373,7 @@ namespace CONTACT
     \param iter (in): current nonlinear iteration index
 
     */
-    void visualize_gmsh(const int step, const int iter) override;
+    void visualize_gmsh(const int step, const int iter) const override;
 
     //! @}
 
@@ -417,7 +420,7 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override = 0;
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override = 0;
-    double initial_penalty() override = 0;
+    double initial_penalty() const override = 0;
     void recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
     void reset_penalty() override = 0;
     void modify_penalty() override = 0;
@@ -439,17 +442,29 @@ namespace CONTACT
      * control routine (time integrator), whenever you like.
      */
 
-    bool active_set_converged() override { return true; }
+    bool active_set_converged() const override { return true; }
     bool active_set_semi_smooth_converged() const override { return true; }
     bool is_friction() const override { return false; }
     bool wear_both_discrete() const override { return false; }
     bool is_in_contact() const override { return true; }
     bool was_in_contact() const override { return true; }
     bool was_in_contact_last_time_step() const override { return true; }
-    Teuchos::RCP<Epetra_Vector> contact_normal_stress() override { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Vector> contact_tangential_stress() override { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Vector> contact_normal_force() override { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Vector> contact_tangential_force() override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Vector> contact_normal_stress() const override
+    {
+      return Teuchos::null;
+    }
+    Teuchos::RCP<const Epetra_Vector> contact_tangential_stress() const override
+    {
+      return Teuchos::null;
+    }
+    Teuchos::RCP<const Epetra_Vector> contact_normal_force() const override
+    {
+      return Teuchos::null;
+    }
+    Teuchos::RCP<const Epetra_Vector> contact_tangential_force() const override
+    {
+      return Teuchos::null;
+    }
     void assemble_mortar() override {}
     void do_write_restart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const override
@@ -458,7 +473,7 @@ namespace CONTACT
     void initialize_and_evaluate_interface() override {}
     void initialize_mortar() override {}
     void initialize() override {}
-    double inttime() override { return inttime_; };
+    double inttime() const override { return inttime_; };
     void inttime_init() override { inttime_ = 0.0; };
     int number_of_active_nodes() const override { return 0; }
     int number_of_slip_nodes() const override { return 0; }
@@ -482,12 +497,18 @@ namespace CONTACT
     void evaluate_reference_state() override {}
     void evaluate_relative_movement() override {}
     void predict_relative_movement() override {}
-    Teuchos::RCP<Epetra_Map> slave_row_nodes_ptr() override { return gsnoderowmap_; }
-    Teuchos::RCP<Epetra_Map> active_row_nodes() override { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Map> active_row_dofs() override { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Map> non_redist_slave_row_dofs() override { return pgsdofrowmap_; }
-    Teuchos::RCP<Epetra_Map> non_redist_master_row_dofs() override { return pgmdofrowmap_; }
-    Teuchos::RCP<Epetra_Map> slip_row_nodes() override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Map> slave_row_nodes_ptr() const override { return gsnoderowmap_; }
+    Teuchos::RCP<const Epetra_Map> active_row_nodes() const override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Map> active_row_dofs() const override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Map> non_redist_slave_row_dofs() const override
+    {
+      return non_redist_gsdofrowmap_;
+    }
+    Teuchos::RCP<const Epetra_Map> non_redist_master_row_dofs() const override
+    {
+      return non_redist_gmdofrowmap_;
+    }
+    Teuchos::RCP<const Epetra_Map> slip_row_nodes() const override { return Teuchos::null; }
 
     //! @}
 
@@ -521,18 +542,17 @@ namespace CONTACT
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) const = 0;
 
-    /*! \brief Return the Lagrange multiplier dof row map
+    /*! \brief Return the current (maybe redistributed) Lagrange multiplier dof row map
      *
-     *  \param redist (in): If TRUE, the redistributed map is returned, otherwise the
-     *                      original map before any redistribution took place.
-     *
-     *  \date 04/2016
-     *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> lm_do_f_row_map_ptr(const bool& redist) const
-    {
-      if ((not redist) and par_redist()) return pglmdofrowmap_;
+     */
+    virtual Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr() const { return glmdofrowmap_; };
 
-      return glmdofrowmap_;
+    /*! \brief Return the non-redistributed Lagrange multiplier dof row map
+     *
+     */
+    virtual Teuchos::RCP<const Epetra_Map> non_redist_lm_dof_row_map_ptr() const
+    {
+      return non_redist_glmdofrowmap_;
     };
 
     //! Modify system before linear solve
@@ -681,19 +701,19 @@ namespace CONTACT
     //!@{
 
     //! Global Lagrange multiplier dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_glmdofrowmap_;
 
     //! Global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_gsdofrowmap_;
 
     //! Global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_gmdofrowmap_;
 
     //! Global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_gsmdofrowmap_;
 
     //! Global dirichlet toggle of all slave dofs (before parallel redistribution)
-    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;
+    Teuchos::RCP<Epetra_Vector> non_redist_gsdirichtoggle_;
 
     //!@}
 

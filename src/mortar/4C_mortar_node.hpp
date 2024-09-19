@@ -94,9 +94,19 @@ namespace Mortar
     double* n() { return n_; }
 
     /*!
+     \brief Return const version of current nodal normal (only for slave side!) (length 3)
+     */
+    const double* n() const { return n_; }
+
+    /*!
      \brief Return current edge tangent(length 3)
      */
     double* edge_tangent() { return edgeTangent_; }
+
+    /*!
+     \brief Return const version of current edge tangent(length 3)
+     */
+    const double* edge_tangent() const { return edgeTangent_; }
 
     //! @}
 
@@ -387,7 +397,7 @@ namespace Mortar
      \brief Return attached status
 
      */
-    bool is_detected() { return detected_; }
+    bool is_detected() const { return detected_; }
 
     /*!
      \brief Return attached status
@@ -500,6 +510,7 @@ namespace Mortar
      \brief Return old displacement (length 3)
      */
     double* uold() { return uold_; }
+    const double* uold() const { return uold_; }
 
     /*!
      \brief Return projection status of this node (only for slave side!)
@@ -521,7 +532,12 @@ namespace Mortar
      contact specific quantities/information are stored.
 
      */
-    inline Mortar::NodeDataContainer& mo_data() const
+    inline Mortar::NodeDataContainer& mo_data()
+    {
+      if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", id());
+      return *modata_;
+    }
+    inline const Mortar::NodeDataContainer& mo_data() const
     {
       if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", id());
       return *modata_;

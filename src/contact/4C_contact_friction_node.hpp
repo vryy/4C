@@ -481,7 +481,7 @@ namespace CONTACT
      dependent (due to the involved projections), it requires
      a consistent linearization (see function below).
      */
-    double fr_coeff(const double& frcoeff_in);
+    double fr_coeff(const double frcoeff_in) const;
 
     /*!
      \brief calculate the derivative of apparent coefficient of friction
@@ -491,8 +491,8 @@ namespace CONTACT
      dependent (due to the involved projections), it requires
      a consistent linearization (see function below).
      */
-    void deriv_fr_coeff_temp(
-        const double& frcoeff_in, std::map<int, double>& derivT, std::map<int, double>& derivDisp);
+    void deriv_fr_coeff_temp(const double frcoeff_in, std::map<int, double>& derivT,
+        std::map<int, double>& derivDisp) const;
 
     //@}
 
@@ -515,7 +515,7 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void add_t_value(int& row, int& col, double& val);
+    void add_t_value(int row, int col, double val);
 
     /*!
      \brief Add a value to the 'E' map of this node
@@ -528,7 +528,7 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void add_e_value(int& row, int& col, double& val);
+    void add_e_value(int row, int col, double val);
 
     /*!
      \brief Add a value to the 'WS' map of this node
@@ -541,7 +541,7 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void add_ws_value(int& row, int& col, double& val);
+    void add_ws_value(int row, int col, double val);
     /*!
      \brief Add a value to the MNode set of this node
 
@@ -558,17 +558,17 @@ namespace CONTACT
      \param col : global dof column id of the value added
 
      */
-    void add_deriv_jump_value(int& row, const int& col, double val);
+    void add_deriv_jump_value(int row, int col, double val);
 
     void add_jump_value(double val, int k);
 
-    void add_d2_value(int& row, int& col, double& val);
+    void add_d2_value(int row, int col, double val);
 
     /*!
      \brief Set deltawear to value
 
      */
-    void add_delta_weighted_wear_value(double& val);
+    void add_delta_weighted_wear_value(double val);
 
     /*!
      \brief Write nodal entries of D and M to Dold and Mold

@@ -27,7 +27,6 @@ namespace CONTACT
          the contact-specific stuff for 2d mortar coupling.
 
   */
-
   class Coupling2d : public Mortar::Coupling2d
   {
    public:
@@ -62,7 +61,7 @@ namespace CONTACT
     \brief Return type of wear surface definition
 
     */
-    Inpar::Wear::WearSide wear_side()
+    Inpar::Wear::WearSide wear_side() const
     {
       return Teuchos::getIntegralValue<Inpar::Wear::WearSide>(imortar_, "BOTH_SIDED_WEAR");
     }
@@ -71,7 +70,7 @@ namespace CONTACT
     \brief Return type of wear surface definition
 
     */
-    Inpar::Wear::WearType wear_type()
+    Inpar::Wear::WearType wear_type() const
     {
       return Teuchos::getIntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
     }
@@ -86,7 +85,6 @@ namespace CONTACT
 
     // new variables as compared to base class
     Inpar::CONTACT::SolvingStrategy stype_;
-
   };  // class Coupling2d
 
   /*!
@@ -95,7 +93,6 @@ namespace CONTACT
          2D. Concretely, this class simply stores several Coupling2d objects.
 
   */
-
   class Coupling2dManager : public Mortar::Coupling2dManager
   {
    public:
@@ -121,13 +118,13 @@ namespace CONTACT
     \brief Get problem dimension
 
     */
-    virtual const int& n_dim() const { return dim_; }
+    virtual int n_dim() const { return dim_; }
 
     /*!
     \brief Return the LM shape fcn type
 
     */
-    Inpar::Mortar::ShapeFcn shape_fcn()
+    Inpar::Mortar::ShapeFcn shape_fcn() const
     {
       return Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
@@ -145,7 +142,7 @@ namespace CONTACT
     \brief Calculate consistent dual shape functions in boundary elements
 
     */
-    void consist_dual_shape() override;
+    void consistent_dual_shape() override;
 
    protected:
     // don't want = operator and cctor
@@ -157,7 +154,6 @@ namespace CONTACT
   };  // class Coupling2dManager
 
 }  // namespace CONTACT
-
 
 FOUR_C_NAMESPACE_CLOSE
 

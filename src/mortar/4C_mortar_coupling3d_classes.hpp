@@ -97,6 +97,14 @@ namespace Mortar
         return nodes_ptr_.data();
     }
 
+    const Core::Nodes::Node* const* nodes() const override
+    {
+      if (parele_->shape() != Core::FE::CellType::nurbs9)
+        return Core::Elements::Element::nodes();
+      else
+        return nodes_ptr_.data();
+    }
+
     /*!
     \brief Get the linearization of the spatial position of the Nodes for this IntEle.
            For Lagrange finite elements, this is trivial, since the nodes are interpolatory.
@@ -108,7 +116,7 @@ namespace Mortar
            inner vector for the spatial dimensions, map for the derivatives.
     */
     void node_linearization(
-        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin) override;
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin) const override;
 
    protected:
     // don't want = operator and cctor
@@ -405,12 +413,13 @@ namespace Mortar
 
     */
     virtual std::vector<double>& coord() { return coord_; }
+    const std::vector<double>& coord() const { return coord_; }
 
     /*!
     \brief Return vertex type (slave, projmaster or lineclip)
 
     */
-    virtual Vertex::VType& v_type() { return type_; }
+    virtual Vertex::VType v_type() const { return type_; }
 
     /*!
     \brief Return pointer to next vertex on polygon
@@ -504,6 +513,12 @@ namespace Mortar
 
     */
     virtual std::vector<int>& nodeids()
+    {  // if(type_==Vertex::slave && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
+      // if(type_==Vertex::projmaster && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
+      // if(type_==Vertex::lineclip && nodeids_.size()!=4) FOUR_C_THROW("Error: Vertex Ids");
+      return nodeids_;
+    }
+    const std::vector<int>& nodeids() const
     {  // if(type_==Vertex::slave && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
       // if(type_==Vertex::projmaster && nodeids_.size()!=1) FOUR_C_THROW("Error: Vertex Ids");
       // if(type_==Vertex::lineclip && nodeids_.size()!=4) FOUR_C_THROW("Error: Vertex Ids");

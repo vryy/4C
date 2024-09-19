@@ -595,7 +595,8 @@ int Mortar::Element::get_local_node_id(int nid) const
 /*----------------------------------------------------------------------*
  |  Build element normal at node                              popp 12/07|
  *----------------------------------------------------------------------*/
-void Mortar::Element::build_normal_at_node(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens)
+void Mortar::Element::build_normal_at_node(
+    int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens) const
 {
   // find this node in my list of nodes and get local numbering
   int lid = get_local_node_id(nid);
@@ -606,15 +607,13 @@ void Mortar::Element::build_normal_at_node(int nid, int& i, Core::LinAlg::Serial
 
   // build an outward unit normal at xi and return it
   compute_normal_at_xi(xi, i, elens);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 09/08|
  *----------------------------------------------------------------------*/
 void Mortar::Element::compute_normal_at_xi(
-    const double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens)
+    const double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens) const
 {
   // empty local basis vectors
   double gxi[3];
@@ -634,14 +633,12 @@ void Mortar::Element::compute_normal_at_xi(
   if (elens(4, i) < 1e-12) FOUR_C_THROW("ComputeNormalAtXi gives normal of length 0!");
   elens(3, i) = id();
   elens(5, i) = mo_data().area();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 11/08|
  *----------------------------------------------------------------------*/
-double Mortar::Element::compute_unit_normal_at_xi(const double* xi, double* n)
+double Mortar::Element::compute_unit_normal_at_xi(const double* xi, double* n) const
 {
   // check input
   if (!xi) FOUR_C_THROW("compute_unit_normal_at_xi called with xi=nullptr");
@@ -671,7 +668,7 @@ double Mortar::Element::compute_unit_normal_at_xi(const double* xi, double* n)
 /*----------------------------------------------------------------------*
  |  Compute nodal averaged normal at xi                      farah 06/16|
  *----------------------------------------------------------------------*/
-double Mortar::Element::compute_averaged_unit_normal_at_xi(const double* xi, double* n)
+double Mortar::Element::compute_averaged_unit_normal_at_xi(const double* xi, double* n) const
 {
   // check input
   if (!xi) FOUR_C_THROW("compute_unit_normal_at_xi called with xi=nullptr");
@@ -692,7 +689,7 @@ double Mortar::Element::compute_averaged_unit_normal_at_xi(const double* xi, dou
   // loop over all nodes of this element
   for (int i = 0; i < num_node(); ++i)
   {
-    Node* mymrtrnode = dynamic_cast<Node*>(nodes()[i]);
+    const Node* mymrtrnode = dynamic_cast<const Node*>(nodes()[i]);
     n[0] = val[i] * mymrtrnode->mo_data().n()[0];
     n[1] = val[i] * mymrtrnode->mo_data().n()[1];
     n[2] = val[i] * mymrtrnode->mo_data().n()[2];
@@ -709,11 +706,11 @@ double Mortar::Element::compute_averaged_unit_normal_at_xi(const double* xi, dou
  |  Compute unit normal derivative at loc. coord. xi          popp 03/09|
  *----------------------------------------------------------------------*/
 void Mortar::Element::deriv_unit_normal_at_xi(
-    const double* xi, std::vector<Core::Gen::Pairedvector<int, double>>& derivn)
+    const double* xi, std::vector<Core::Gen::Pairedvector<int, double>>& derivn) const
 {
   // initialize variables
   const int nnodes = num_node();
-  Core::Nodes::Node** mynodes = nodes();
+  const Core::Nodes::Node* const* mynodes = nodes();
   if (!mynodes) FOUR_C_THROW("DerivUnitNormalAtXi: Null pointer!");
 
   Core::LinAlg::SerialDenseVector val(nnodes);
@@ -758,7 +755,7 @@ void Mortar::Element::deriv_unit_normal_at_xi(
   // now the derivative
   for (int n = 0; n < nnodes; ++n)
   {
-    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[n]);
+    const Node* mymrtrnode = dynamic_cast<const Node*>(mynodes[n]);
     if (!mymrtrnode) FOUR_C_THROW("DerivUnitNormalAtXi: Null pointer!");
     int ndof = mymrtrnode->num_dof();
 
@@ -821,78 +818,74 @@ void Mortar::Element::deriv_unit_normal_at_xi(
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
-void Mortar::Element::get_nodal_coords(Core::LinAlg::SerialDenseMatrix& coord)
+void Mortar::Element::get_nodal_coords(Core::LinAlg::SerialDenseMatrix& coord) const
 {
   const int nnodes = num_point();
-  Core::Nodes::Node** mynodes = points();
+  const Core::Nodes::Node* const* mynodes = points();
   if (!mynodes) FOUR_C_THROW("GetNodalCoords: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoords: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
-    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
+    const Node* mymrtrnode = dynamic_cast<const Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
 
     const double* x = mymrtrnode->xspatial();
     std::copy(x, x + 3, &coord(0, i));
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Get old nodal coordinates of the element               gitterle 08/10|
  *----------------------------------------------------------------------*/
-void Mortar::Element::get_nodal_coords_old(Core::LinAlg::SerialDenseMatrix& coord, bool isinit)
+void Mortar::Element::get_nodal_coords_old(
+    Core::LinAlg::SerialDenseMatrix& coord, bool isinit) const
 {
   const int nnodes = num_point();
-  Core::Nodes::Node** mynodes = points();
+  const Core::Nodes::Node* const* mynodes = points();
   if (!mynodes) FOUR_C_THROW("GetNodalCoordsOld: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoordsOld: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
-    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
+    const Node* mymrtrnode = dynamic_cast<const Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("GetNodalCoordsOld: Null pointer!");
 
     coord(0, i) = mymrtrnode->x()[0] + mymrtrnode->uold()[0];
     coord(1, i) = mymrtrnode->x()[1] + mymrtrnode->uold()[1];
     coord(2, i) = mymrtrnode->x()[2] + mymrtrnode->uold()[2];
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Get lagrange multipliers of the element                gitterle 08/10|
  *----------------------------------------------------------------------*/
-void Mortar::Element::get_nodal_lag_mult(Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit)
+void Mortar::Element::get_nodal_lag_mult(
+    Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit) const
 {
   int nnodes = num_node();
-  Core::Nodes::Node** mynodes = nodes();
+  const Core::Nodes::Node* const* mynodes = nodes();
   if (!mynodes) FOUR_C_THROW("GetNodalLagMult: Null pointer!");
   if (lagmult.numRows() != 3 || lagmult.numCols() != nnodes)
     FOUR_C_THROW("GetNodalLagMult: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
-    Node* mymrtrnode = dynamic_cast<Node*>(mynodes[i]);
+    const Node* mymrtrnode = dynamic_cast<const Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
 
     lagmult(0, i) = mymrtrnode->mo_data().lm()[0];
     lagmult(1, i) = mymrtrnode->mo_data().lm()[1];
     lagmult(2, i) = mymrtrnode->mo_data().lm()[2];
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate element metrics (local basis vectors)            popp 08/08|
  *----------------------------------------------------------------------*/
-void Mortar::Element::metrics(const double* xi, double* gxi, double* geta)
+void Mortar::Element::metrics(const double* xi, double* gxi, double* geta) const
 {
   std::fill(gxi, gxi + 3, 0.0);
   std::fill(geta, geta + 3, 0.0);
@@ -966,7 +959,7 @@ void Mortar::Element::metrics(const double* xi, double* gxi, double* geta)
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant                             popp 12/07|
  *----------------------------------------------------------------------*/
-double Mortar::Element::jacobian(const double* xi)
+double Mortar::Element::jacobian(const double* xi) const
 {
   double jac = 0.0;
   double gxi[3];
@@ -1013,12 +1006,12 @@ double Mortar::Element::jacobian(const double* xi)
  |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
 void Mortar::Element::deriv_jacobian(
-    const double* xi, Core::Gen::Pairedvector<int, double>& derivjac)
+    const double* xi, Core::Gen::Pairedvector<int, double>& derivjac) const
 {
   // get element nodes
   int nnodes = num_node();
 
-  Core::Nodes::Node** mynodes = nullptr;  // Nodes();
+  const Core::Nodes::Node* const* mynodes = nullptr;  // Nodes();
   mynodes = nodes();
 
   if (!mynodes) FOUR_C_THROW("DerivJacobian: Null pointer!");
@@ -1095,7 +1088,7 @@ void Mortar::Element::deriv_jacobian(
   // *********************************************************************
   for (int i = 0; i < nnodes; ++i)
   {
-    Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[i]);
+    const Mortar::Node* mymrtrnode = dynamic_cast<const Mortar::Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("DerivJacobian: Null pointer!");
 
     derivjac[mymrtrnode->dofs()[0]] +=
@@ -1122,7 +1115,7 @@ void Mortar::Element::deriv_jacobian(
 /*----------------------------------------------------------------------*
  |  Compute length / area of the element                      popp 12/07|
  *----------------------------------------------------------------------*/
-double Mortar::Element::compute_area()
+double Mortar::Element::compute_area() const
 {
   double area = 0.0;
   Core::FE::CellType dt = shape();
@@ -1202,7 +1195,7 @@ double Mortar::Element::compute_area()
 /*----------------------------------------------------------------------*
  |  Compute length / area of the element                     seitz 09/17|
  *----------------------------------------------------------------------*/
-double Mortar::Element::compute_area_deriv(Core::Gen::Pairedvector<int, double>& area_deriv)
+double Mortar::Element::compute_area_deriv(Core::Gen::Pairedvector<int, double>& area_deriv) const
 {
   double area = 0.0;
   Core::FE::CellType dt = shape();
@@ -1288,7 +1281,7 @@ double Mortar::Element::compute_area_deriv(Core::Gen::Pairedvector<int, double>&
 /*----------------------------------------------------------------------*
  |  Get global coords for given local coords                  popp 01/08|
  *----------------------------------------------------------------------*/
-bool Mortar::Element::local_to_global(const double* xi, double* globcoord, int inttype)
+bool Mortar::Element::local_to_global(const double* xi, double* globcoord, int inttype) const
 {
   // check input
   if (!xi) FOUR_C_THROW("local_to_global called with xi=nullptr");
@@ -1297,7 +1290,7 @@ bool Mortar::Element::local_to_global(const double* xi, double* globcoord, int i
   // collect fundamental data
   const int nnodes = num_node();
 
-  Core::Nodes::Node** mynodes = nodes();
+  const Core::Nodes::Node* const* mynodes = nodes();
   if (!mynodes) FOUR_C_THROW("local_to_global: Null pointer!");
   Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
   Core::LinAlg::SerialDenseVector val(nnodes);
@@ -1343,7 +1336,7 @@ bool Mortar::Element::local_to_global(const double* xi, double* globcoord, int i
 /*----------------------------------------------------------------------*
  |  Compute minimal edge size of Mortar::Element                popp 11/08|
  *----------------------------------------------------------------------*/
-double Mortar::Element::min_edge_size()
+double Mortar::Element::min_edge_size() const
 {
   double minedgesize = 1.0e12;
 
@@ -1511,7 +1504,7 @@ double Mortar::Element::min_edge_size()
 /*----------------------------------------------------------------------*
  |  Compute maximal edge size of Mortar::Element                popp 11/08|
  *----------------------------------------------------------------------*/
-double Mortar::Element::max_edge_size()
+double Mortar::Element::max_edge_size() const
 {
   double maxedgesize = 0.0;
   // get coordinates of element nodes
@@ -1643,7 +1636,7 @@ void Mortar::Element::delete_search_elements()
  |  Derivatives of nodal spatial coords                      seitz 03/15|
  *----------------------------------------------------------------------*/
 void Mortar::Element::node_linearization(
-    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin) const
 {
   // resize the linearizations
   nodelin.resize(num_node(), std::vector<Core::Gen::Pairedvector<int, double>>(3, 1));
@@ -1651,7 +1644,7 @@ void Mortar::Element::node_linearization(
   // loop over all intEle nodes
   for (int in = 0; in < num_node(); ++in)
   {
-    Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(nodes()[in]);
+    const Mortar::Node* mrtrnode = dynamic_cast<const Mortar::Node*>(nodes()[in]);
     for (int dim = 0; dim < n_dim(); ++dim) nodelin[in][dim][mrtrnode->dofs()[dim]] += 1.;
   }
 }

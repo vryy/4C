@@ -480,7 +480,7 @@ bool Mortar::IntElement::map_to_parent(const std::vector<Core::Gen::Pairedvector
 }
 
 void Mortar::IntElement::node_linearization(
-    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin) const
 {
   switch (parele_->shape())
   {
@@ -498,7 +498,7 @@ void Mortar::IntElement::node_linearization(
       // loop over all intEle nodes
       for (int in = 0; in < num_node(); ++in)
       {
-        Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(nodes()[in]);
+        const Mortar::Node* mrtrnode = dynamic_cast<const Mortar::Node*>(nodes()[in]);
         for (int dim = 0; dim < 3; ++dim) nodelin[in][dim][mrtrnode->dofs()[dim]] += 1.;
       }
       break;

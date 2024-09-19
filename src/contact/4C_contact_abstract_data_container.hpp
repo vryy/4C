@@ -200,26 +200,53 @@ namespace CONTACT
     };
 
     //! return global LM dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& pg_lm_dof_row_map_ptr() { return pglmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> pg_lm_dof_row_map_ptr() const { return pglmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& non_redist_global_lm_dof_row_map_ptr()
+    {
+      return non_redist_glmdofrowmap_;
+    };
+    Teuchos::RCP<const Epetra_Map> non_redist_global_lm_dof_row_map_ptr() const
+    {
+      return non_redist_glmdofrowmap_;
+    };
 
     //! return global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& pg_sl_dof_row_map_ptr() { return pgsdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> pg_sl_dof_row_map_ptr() const { return pgsdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& non_redist_global_slave_dof_row_map_ptr()
+    {
+      return non_redist_gsdofrowmap_;
+    };
+    Teuchos::RCP<const Epetra_Map> non_redist_global_slave_dof_row_map_ptr() const
+    {
+      return non_redist_gsdofrowmap_;
+    };
 
     //! return global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& pg_ma_dof_row_map_ptr() { return pgmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> pg_ma_dof_row_map_ptr() const { return pgmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& non_redist_global_master_dof_row_map_ptr()
+    {
+      return non_redist_gmdofrowmap_;
+    };
+    Teuchos::RCP<const Epetra_Map> non_redist_global_master_dof_row_map_ptr() const
+    {
+      return non_redist_gmdofrowmap_;
+    };
 
     //! return global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map>& pg_sl_ma_dof_row_map_ptr() { return pgsmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> pg_sl_ma_dof_row_map_ptr() const { return pgsmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& non_redist_global_slave_master_dof_row_map_ptr()
+    {
+      return non_redist_gsmdofrowmap_;
+    };
+    Teuchos::RCP<const Epetra_Map> non_redist_global_slave_master_dof_row_map_ptr() const
+    {
+      return non_redist_gsmdofrowmap_;
+    };
 
     //! return global dirichlet toggle of all slave dofs (before parallel redistribution)
-    Teuchos::RCP<Epetra_Vector>& pg_sl_dirich_toggle_dof_row_map_ptr() { return pgsdirichtoggle_; };
-    Teuchos::RCP<const Epetra_Vector> pg_sl_dirich_toggle_dof_row_map_ptr() const
+    Teuchos::RCP<Epetra_Vector>& non_redist_global_slave_dirich_toggle_dof_row_map_ptr()
     {
-      return pgsdirichtoggle_;
+      return non_redist_gsdirichtoggle_;
+    };
+    Teuchos::RCP<const Epetra_Vector> non_redist_global_slave_dirich_toggle_dof_row_map_ptr() const
+    {
+      return non_redist_gsdirichtoggle_;
     };
 
     //! return initial col ele map for binning strategy (s m)
@@ -531,19 +558,19 @@ namespace CONTACT
     std::vector<int> unbalance_num_slave_elements_;
 
     //! global LM dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_glmdofrowmap_;
 
     //! global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_gsdofrowmap_;
 
     //! global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_gmdofrowmap_;
 
     //! global slave and master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> non_redist_gsmdofrowmap_;
 
     //! global dirichlet toggle of all slave dofs (before parallel redistribution)
-    Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;
+    Teuchos::RCP<Epetra_Vector> non_redist_gsdirichtoggle_;
 
     //! parallel redistribution type
     Inpar::Mortar::ParallelRedist partype_;

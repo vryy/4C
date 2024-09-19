@@ -136,7 +136,12 @@ namespace CONTACT
 
      */
     virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_n() { return derivn_; }
+    const std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_n() const { return derivn_; }
     virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_tangent()
+    {
+      return derivEdge_;
+    }
+    const std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_tangent() const
     {
       return derivEdge_;
     }
@@ -576,21 +581,25 @@ namespace CONTACT
     \brief Return max (Temp_slave , Temp_master)
     */
     double& temp_master() { return temp_master_; }
+    double temp_master() const { return temp_master_; }
 
     /*!
     \brief Return temperature
     */
     double& temp() { return temp_; }
+    double temp() const { return temp_; }
 
     /*!
     \brief Return reference temperature
     */
     double& temp_ref() { return t_ref_; }
+    double temp_ref() const { return t_ref_; }
 
     /*!
     \brief Return temperature
     */
     double& temp_dam() { return t_dam_; }
+    double temp_dam() const { return t_dam_; }
 
     /*!
     \brief Return thermo Lagrange multiplier
@@ -598,7 +607,9 @@ namespace CONTACT
     double& thermo_lm() { return thermo_lm_; }
 
     std::map<int, double>& deriv_temp_master_disp() { return derivTempMasterDisp_; }
+    const std::map<int, double>& deriv_temp_master_disp() const { return derivTempMasterDisp_; }
     std::map<int, double>& deriv_temp_master_temp() { return derivTempMasterTemp_; }
+    const std::map<int, double>& deriv_temp_master_temp() const { return derivTempMasterTemp_; }
 
     void clear();
 
@@ -807,6 +818,7 @@ namespace CONTACT
      \brief Return contact status of this node (active=true)
      */
     virtual bool& active() { return active_; }
+    bool active() const { return active_; }
 
     virtual bool& involved_m() { return involvedm_; }
 
@@ -818,11 +830,14 @@ namespace CONTACT
 
      */
     inline CONTACT::NodeDataContainer& data() { return *codata_; }
-    inline CONTACT::NodeDataContainer& data() const { return *codata_; }
+    inline const CONTACT::NodeDataContainer& data() const { return *codata_; }
 
     inline CONTACT::NodePoroDataContainer& poro_data() { return *coporodata_; }
+    inline const CONTACT::NodePoroDataContainer& poro_data() const { return *coporodata_; }
     inline CONTACT::NodeTSIDataContainer& tsi_data() { return *cTSIdata_; }
+    inline const CONTACT::NodeTSIDataContainer& tsi_data() const { return *cTSIdata_; }
     inline CONTACT::NodeEhlDataContainer& ehl_data() { return *cEHLdata_; }
+    inline const CONTACT::NodeEhlDataContainer& ehl_data() const { return *cEHLdata_; }
 
     //@}
 
@@ -837,7 +852,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void addg_value(double& val);
+    void addg_value(const double val);
 
     /*!
      \brief Add a value to the point-wise gap of this node (NTS)
@@ -845,7 +860,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void addnts_gap_value(double& val);
+    void addnts_gap_value(const double val);
 
     /*!
      \brief Add a value to the line-weighted gap of this node (LTS)
@@ -853,7 +868,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void addlts_gap_value(double& val);
+    void addlts_gap_value(const double val);
 
     /*!
      \brief Add a value to the point-wise gap of this node (LTL)
@@ -861,7 +876,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void addltl_gap_value(double* val);
+    void addltl_gap_value(const double* val);
 
     /*!
      \brief Add a value to the point-wise jump of this node (LTL)
@@ -869,7 +884,7 @@ namespace CONTACT
      \param val : value to be added
 
      */
-    void addltl_jump_value(double* val);
+    void addltl_jump_value(const double* val);
 
 
     /*!
@@ -885,7 +900,7 @@ namespace CONTACT
     \param col : global dof column id of the value added
 
     */
-    void add_deriv_z_value(int& row, const int& col, double val);
+    void add_deriv_z_value(const int row, const int col, const double val);
 
     /*!
     \brief Add a value to the NCoup of this node
@@ -893,7 +908,7 @@ namespace CONTACT
     \param val : value to be added
 
     */
-    void add_ncoup_value(double& val);
+    void add_ncoup_value(const double val);
 
     /*!
      \brief Build nodal normal

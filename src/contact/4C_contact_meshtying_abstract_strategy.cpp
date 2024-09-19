@@ -50,10 +50,10 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
   // redistribution of slave and master sides)
   if (par_redist())
   {
-    pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*glmdofrowmap_));
-    pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsdofrowmap_));
-    pgmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
-    pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
+    non_redist_glmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*glmdofrowmap_));
+    non_redist_gsdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsdofrowmap_));
+    non_redist_gmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
+    non_redist_gsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
   }
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
@@ -431,11 +431,12 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
       /* Check if this GID is stored on this processor in the slave dof row map based on the old
        * distribution and add to data vector if so.
        */
-      if (pgsdofrowmap_->MyGID(gid)) data.push_back(gid);
+      if (non_redist_gsdofrowmap_->MyGID(gid)) data.push_back(gid);
     }
 
     // re-setup old slave dof row map (with restriction now)
-    pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)data.size(), data.data(), 0, get_comm()));
+    non_redist_gsdofrowmap_ =
+        Teuchos::rcp(new Epetra_Map(-1, (int)data.size(), data.data(), 0, get_comm()));
   }
 
   // Step 5: re-setup internal dof row map (non-interface dofs)
@@ -445,8 +446,8 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
   // before parallel redistribution!
   if (par_redist())
   {
-    gndofrowmap_ = Core::LinAlg::split_map(*problem_dofs(), *pgsdofrowmap_);
-    gndofrowmap_ = Core::LinAlg::split_map(*gndofrowmap_, *pgmdofrowmap_);
+    gndofrowmap_ = Core::LinAlg::split_map(*problem_dofs(), *non_redist_gsdofrowmap_);
+    gndofrowmap_ = Core::LinAlg::split_map(*gndofrowmap_, *non_redist_gmdofrowmap_);
   }
 
   // Step 6: re-setup displacement dof row map with current parallel
@@ -602,7 +603,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // get global quantity to be stored in nodes
-    Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
+    Teuchos::RCP<const Epetra_Vector> vectorglobal = Teuchos::null;
     switch (type)
     {
       case Mortar::StrategyBase::lmcurrent:
@@ -633,7 +634,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
     }  // switch
 
     // export global quantity to current interface slave dof row map
-    Teuchos::RCP<Epetra_Map> sdofrowmap = interface_[i]->slave_row_dofs();
+    Teuchos::RCP<const Epetra_Map> sdofrowmap = interface_[i]->slave_row_dofs();
     Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofrowmap));
 
     if (vectorglobal != Teuchos::null)
@@ -741,10 +742,10 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
   }
 
   // create old style dirichtoggle vector (supposed to go away)
-  pgsdirichtoggle_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
+  non_redist_gsdirichtoggle_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::export_to(*temp, *pgsdirichtoggle_);
+  Core::LinAlg::export_to(*temp, *non_redist_gsdirichtoggle_);
 
   return;
 }
@@ -763,8 +764,6 @@ void CONTACT::MtAbstractStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
   // (this is needed for calculating the auxiliary positions in
   // binarytree contact search)
   set_state(Mortar::state_old_displacement, *dis);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -783,10 +782,10 @@ void CONTACT::MtAbstractStrategy::do_read_restart(
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithmeshtying) reader.read_vector(lagrange_multiplier(), "mt_lagrmultold");
+  if (!restartwithmeshtying) reader.read_vector(z_, "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmcurrent);
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithmeshtying) reader.read_vector(lagrange_multiplier_old(), "mt_lagrmultold");
+  if (!restartwithmeshtying) reader.read_vector(zold_, "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmold);
 
   // only for Uzawa strategy
@@ -794,11 +793,9 @@ void CONTACT::MtAbstractStrategy::do_read_restart(
   if (st == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (!restartwithmeshtying) reader.read_vector(lagr_mult_uzawa(), "mt_lagrmultold");
+    if (!restartwithmeshtying) reader.read_vector(zuzawa_, "mt_lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1072,7 +1069,7 @@ void CONTACT::MtAbstractStrategy::print_active_set() const { return; }
 /*----------------------------------------------------------------------*
  | Visualization of meshtying segments with gmsh              popp 08/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::visualize_gmsh(const int step, const int iter)
+void CONTACT::MtAbstractStrategy::visualize_gmsh(const int step, const int iter) const
 {
   // visualization with gmsh
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1155,20 +1152,20 @@ void CONTACT::MtAbstractStrategy::collect_maps_for_preconditioner(
   InnerDofMap = gndofrowmap_;  // global internal dof row map
 
   // global active slave dof row map (all slave dofs are active  in meshtying)
-  if (pgsdofrowmap_ != Teuchos::null)
-    ActiveDofMap = pgsdofrowmap_;
+  if (non_redist_gsdofrowmap_ != Teuchos::null)
+    ActiveDofMap = non_redist_gsdofrowmap_;
   else
     ActiveDofMap = gsdofrowmap_;
 
   // check if parallel redistribution is used
   // if parallel redistribution is activated, then use (original) maps before redistribution
   // otherwise we use just the standard master/slave maps
-  if (pgsdofrowmap_ != Teuchos::null)
-    SlaveDofMap = pgsdofrowmap_;
+  if (non_redist_gsdofrowmap_ != Teuchos::null)
+    SlaveDofMap = non_redist_gsdofrowmap_;
   else
     SlaveDofMap = gsdofrowmap_;
-  if (pgmdofrowmap_ != Teuchos::null)
-    MasterDofMap = pgmdofrowmap_;
+  if (non_redist_gmdofrowmap_ != Teuchos::null)
+    MasterDofMap = non_redist_gmdofrowmap_;
   else
     MasterDofMap = gmdofrowmap_;
 
@@ -1208,16 +1205,16 @@ void CONTACT::MtAbstractStrategy::fill_maps_for_preconditioner(
    * before redistribution otherwise we use just the standard master/slave
    * maps */
   // (0) masterDofMap
-  if (pgmdofrowmap_ != Teuchos::null)
-    maps[0] = pgmdofrowmap_;
+  if (non_redist_gmdofrowmap_ != Teuchos::null)
+    maps[0] = non_redist_gmdofrowmap_;
   else
     maps[0] = gmdofrowmap_;
   // (1) slaveDofMap
   // (3) activeDofMap (all slave nodes are active!)
-  if (pgsdofrowmap_ != Teuchos::null)
+  if (non_redist_gsdofrowmap_ != Teuchos::null)
   {
-    maps[1] = pgsdofrowmap_;
-    maps[3] = pgsdofrowmap_;
+    maps[1] = non_redist_gsdofrowmap_;
+    maps[3] = non_redist_gsdofrowmap_;
   }
   else
   {
@@ -1242,7 +1239,7 @@ bool CONTACT::MtAbstractStrategy::computePreconditioner(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::postprocess_quantities_per_interface(
-    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+    Teuchos::RCP<Teuchos::ParameterList> outputParams) const
 {
   using Teuchos::RCP;
 
@@ -1257,7 +1254,7 @@ void CONTACT::MtAbstractStrategy::postprocess_quantities_per_interface(
   outputParams->set<RCP<const Epetra_Vector>>("slave forces", fcslave);
   outputParams->set<RCP<const Epetra_Vector>>("master forces", fcmaster);
 
-  for (std::vector<Teuchos::RCP<Mortar::Interface>>::iterator it = interface_.begin();
+  for (std::vector<Teuchos::RCP<Mortar::Interface>>::const_iterator it = interface_.begin();
        it < interface_.end(); ++it)
     (*it)->postprocess_quantities(*outputParams);
 }

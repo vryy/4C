@@ -285,9 +285,9 @@ namespace Wear
     \brief Returning dofs for both-sided wear mapping
 
     */
-    virtual Teuchos::RCP<Epetra_Map> involved_dofs() const { return involveddofs_; }
+    virtual Teuchos::RCP<const Epetra_Map> involved_dofs() const { return involveddofs_; }
 
-    virtual Teuchos::RCP<Epetra_Map> involved_nodes() const { return involvednodes_; }
+    virtual Teuchos::RCP<const Epetra_Map> involved_nodes() const { return involvednodes_; }
 
     /*!
     \brief Set element areas
@@ -332,7 +332,7 @@ namespace Wear
     \brief Get map of slave wear dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<Epetra_Map> w_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> w_dofs() const
     {
       if (filled())
         return wdofmap_;
@@ -345,7 +345,7 @@ namespace Wear
     \brief Get map of master wear dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<Epetra_Map> wm_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> wm_dofs() const
     {
       if (filled())
         return wmdofmap_;
@@ -358,7 +358,7 @@ namespace Wear
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<Epetra_Map> sn_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> sn_dofs() const
     {
       if (filled())
         return sndofmap_;
@@ -371,7 +371,7 @@ namespace Wear
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<Epetra_Map> mn_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> mn_dofs() const
     {
       if (filled())
         return mndofmap_;
@@ -384,7 +384,7 @@ namespace Wear
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<Epetra_Map> active_master_nodes() const
+    virtual Teuchos::RCP<const Epetra_Map> active_master_nodes() const
     {
       if (filled())
         return activmasternodes_;
@@ -397,7 +397,7 @@ namespace Wear
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<Epetra_Map> slip_master_nodes() const
+    virtual Teuchos::RCP<const Epetra_Map> slip_master_nodes() const
     {
       if (filled())
         return slipmasternodes_;
@@ -410,7 +410,7 @@ namespace Wear
     \brief Get row map of active nodes (Filled()==true is prerequisite)
 
     */
-    virtual Teuchos::RCP<Epetra_Map> slip_master_n_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> slip_master_n_dofs() const
     {
       if (filled())
         return slipmn_;

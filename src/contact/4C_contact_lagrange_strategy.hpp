@@ -81,7 +81,7 @@ namespace CONTACT
     this case and activesetconv_ is meaningless.
 
     */
-    bool active_set_converged() override
+    bool active_set_converged() const override
     {
       bool semismooth = params().get<bool>("SEMI_SMOOTH_NEWTON");
       if (!semismooth)
@@ -94,7 +94,7 @@ namespace CONTACT
     \brief Return no. of fixed-point active sets in this time step
 
     */
-    int active_set_steps() override { return activesetsteps_; }
+    int active_set_steps() const override { return activesetsteps_; }
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
      *
@@ -246,7 +246,7 @@ namespace CONTACT
     1. Transform maps related to constraint DOFs of matrix blocks \f$K_{dz}\f$, \f$K_{zd}\f$, and
        \f$K_{zz}\f$ to the Lagrange multiplier dof_row_map #glmdofrowmap_.
     2. If parallel redistribution is active, do another transformation to go from the redistributed
-       constraint dof_row_map #glmdofrowmap_ to the original distribution #pglmdofrowmap_.
+       constraint dof_row_map #glmdofrowmap_ to the original distribution #non_redist_glmdofrowmap_.
 
     \param[in] kdd Displacement dof stiffness (upper left block)
     \param[in] fd  Displacement dof r.h.s. (upper block)
@@ -405,7 +405,7 @@ namespace CONTACT
     \brief Return matrix T
 
     */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> t_matrix() override { return tmatrix_; }
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> t_matrix() const override { return tmatrix_; }
 
     //@}
 
@@ -453,7 +453,7 @@ namespace CONTACT
     */
     double constraint_norm() const override { return 0.0; }
     void predict_relative_movement() override {}
-    double initial_penalty() override { return 0.0; }
+    double initial_penalty() const override { return 0.0; }
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {

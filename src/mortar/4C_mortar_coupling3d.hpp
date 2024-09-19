@@ -83,13 +83,13 @@ namespace Mortar
      \brief Get problem dimension (here: 3D)
 
      */
-    virtual const int& n_dim() { return dim_; };
+    virtual int n_dim() const { return dim_; };
 
     /*!
      \brief Get coupling / FE ansatz type (true = quadratic)
 
      */
-    virtual const bool& quad() { return quad_; };
+    virtual bool quad() const { return quad_; };
 
     /*!
      \brief Get coupling slave element
@@ -130,12 +130,14 @@ namespace Mortar
 
      */
     virtual double* auxc() { return auxc_; }
+    const double* auxc() const { return auxc_; }
 
     /*!
      \brief Return normal of auxiliary plane
 
      */
     virtual double* auxn() { return auxn_; }
+    const double* auxn() const { return auxn_; }
 
     /*!
      \brief Return length of Auxn() before normalization
@@ -148,24 +150,28 @@ namespace Mortar
 
      */
     virtual std::vector<Vertex>& slave_vertices() { return svertices_; }
+    const std::vector<Vertex>& slave_vertices() const { return svertices_; }
 
     /*!
      \brief Return vector of projected master node vertex objects
 
      */
     virtual std::vector<Vertex>& master_vertices() { return mvertices_; }
+    const std::vector<Vertex>& master_vertices() const { return mvertices_; }
 
     /*!
      \brief Return vector of clip polygon vertex objects
 
      */
     virtual std::vector<Vertex>& clip() { return clip_; }
+    const std::vector<Vertex>& clip() const { return clip_; }
 
     /*!
      \brief Return vector of integration cells
 
      */
     virtual std::vector<Teuchos::RCP<IntCell>>& cells() { return cells_; }
+    const std::vector<Teuchos::RCP<IntCell>>& cells() const { return cells_; }
 
     /*!
      \brief Return the 'DerivAuxn' map (vector) of this coupling pair
@@ -175,12 +181,16 @@ namespace Mortar
     {
       return derivauxn_;
     }
+    const std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_auxn() const
+    {
+      return derivauxn_;
+    }
 
     /*!
      \brief Return the LM interpolation / testing type for quadratic FE
 
      */
-    virtual Inpar::Mortar::LagMultQuad lag_mult_quad() { return lmquadtype_; };
+    virtual Inpar::Mortar::LagMultQuad lag_mult_quad() const { return lmquadtype_; };
 
     /*!
      \brief Get interface contact parameter list
@@ -192,7 +202,7 @@ namespace Mortar
      \brief Return the LM shape fcn type
 
      */
-    Inpar::Mortar::ShapeFcn shape_fcn() { return shapefcn_; };
+    Inpar::Mortar::ShapeFcn shape_fcn() const { return shapefcn_; };
 
     //@}
 
@@ -245,7 +255,7 @@ namespace Mortar
      \brief Visualize integration cells with gmsh
 
      */
-    virtual void gmsh_output_cells(int lid);
+    virtual void gmsh_output_cells(int lid) const;
 
     //@}
 
@@ -257,7 +267,7 @@ namespace Mortar
      */
     virtual bool vertex_linearization(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
-        std::map<int, double>& projpar, bool printderiv = false)
+        std::map<int, double>& projpar, bool printderiv = false) const
     {
       return true;
     }
@@ -268,7 +278,7 @@ namespace Mortar
      */
     virtual bool center_linearization(
         const std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
-        std::vector<Core::Gen::Pairedvector<int, double>>& lincenter)
+        std::vector<Core::Gen::Pairedvector<int, double>>& lincenter) const
     {
       return true;
     }
@@ -434,7 +444,7 @@ namespace Mortar
      in the auxiliary plane or in the slave parameter space.
 
      */
-    virtual double slave_element_area();
+    virtual double slave_element_area() const;
 
     // don't want = operator and cctor
     Coupling3d operator=(const Coupling3d& old);

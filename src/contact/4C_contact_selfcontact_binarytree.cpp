@@ -38,7 +38,6 @@ CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
       nonsmoothsurf_(nonsmoothsurf),
       treenodes_(treenodes)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -83,8 +82,6 @@ void CONTACT::SelfBinaryTreeNode::complete_tree(int layer, double& enlarge)
   }
 
   // do nothing if arrived at leaf level
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -141,8 +138,6 @@ void CONTACT::SelfBinaryTreeNode::calculate_qualified_vectors()
     else
       qualifiedvectors_[i] = false;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -159,8 +154,6 @@ void CONTACT::SelfBinaryTreeNode::update_qualified_vectors_bottom_up()
   for (int i = 0; i < (int)qualifiedvectors_.size(); ++i)
     qualifiedvectors_.at(i) =
         ((rightchild_->qualified_vectors()).at(i) && (leftchild_->qualified_vectors()).at(i));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -207,8 +200,6 @@ void CONTACT::SelfBinaryTreeNode::update_endnodes()
     endnodes_.push_back(-1);
     endnodes_.push_back(-1);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -245,8 +236,6 @@ void CONTACT::SelfBinaryTreeNode::update_slabs_bottom_up(double& enlarge)
     // Prints slabs to std::cout
     // PrintSlabs();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -262,8 +251,6 @@ void CONTACT::SelfBinaryTreeNode::print_type()
     std::cout << std::endl << "TreeNode contains no elements = SELFCO_NO_ELEMENTS ";
   else
     std::cout << std::endl << "SELFCO_UNDEFINED ";
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -274,8 +261,6 @@ void CONTACT::SelfBinaryTreeNode::set_children(
 {
   leftchild_ = leftchild;
   rightchild_ = rightchild;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -291,8 +276,6 @@ void CONTACT::SelfBinaryTreeNode::set_parent_owner(int leftchildowner, int right
   if (leftchildowner < 0) FOUR_C_THROW("Something went wrong! Owner can not be smaller than 0");
 
   owner_ = leftchildowner;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -304,8 +287,6 @@ CONTACT::SelfDualEdge::SelfDualEdge(
 {
   // directly move on to cost function
   calculate_costs();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -417,8 +398,6 @@ void CONTACT::SelfDualEdge::calculate_costs()
     int nele = node1_->elelist().size() + node2_->elelist().size();
     costs_ = nele * nele * (area / doparea);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -431,8 +410,6 @@ CONTACT::SelfBinaryTree::SelfBinaryTree(Core::FE::Discretization& discret,
       iparams_(iparams),
       nvectors_(-1)
 {
-  // keep the constructor clean
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -465,8 +442,6 @@ void CONTACT::SelfBinaryTree::init()
 
   // now initialize SelfBinaryTree in a bottom-up way based on dual graph
   initialize_tree_bottom_up(&dualgraph);
-
-  return;
 }
 
 
@@ -565,8 +540,6 @@ void CONTACT::SelfBinaryTree::init_internal_variables()
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -602,8 +575,6 @@ void CONTACT::SelfBinaryTree::init_leaf_nodes_and_map(std::vector<int>& elelist)
 
   // double-check if there is at the least one leaf node in tree now
   if (leafsmap_.size() == 0) FOUR_C_THROW("SelfBinaryTree: No contact elements defined!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -671,8 +642,6 @@ void CONTACT::SelfBinaryTree::get_contracted_node(
 
   // in 2D we simply save the end nodes as adjacency criterion
   if (n_dim() == 2) contractedNode->update_endnodes();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -780,8 +749,6 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
       }  // else 3D
     }    // else possadjids empty
   }      // if eleID!=gid
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -859,8 +826,6 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
       for (unsigned j = 0; j < adjdualedges.size(); ++j)
         if (j != k) (*dualGraph)[adjdualedges[k]].push_back(adjdualedges[j]);
   }  // all elements
-
-  return;
 }  // calculate_dual_graph
 
 
@@ -905,9 +870,6 @@ void CONTACT::SelfBinaryTree::evaluate_search()
 
   // update and search for contact
   search_contact();
-
-  // bye bye
-  return;
 }
 
 
@@ -939,8 +901,6 @@ void CONTACT::SelfBinaryTree::set_enlarge()
 
   // set the class variable
   enlarge() = eps() * lmin;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1001,8 +961,6 @@ void CONTACT::SelfBinaryTree::initialize_tree_bottom_up(
     calculate_adjacent_leaves();
     calculate_adjacent_tnodes();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1020,8 +978,6 @@ void CONTACT::SelfBinaryTree::add_tree_nodes_to_contact_pairs(
     contactpairs_[treenode1->elelist()[0]].push_back(treenode2->elelist()[0]);
     contactpairs_[treenode2->elelist()[0]].push_back(treenode1->elelist()[0]);
   }
-
-  return;
 }
 /*----------------------------------------------------------------------*
  | Set adjacent treenodes of leaf-nodes in lowest layer (3D)  popp 11/09|
@@ -1056,8 +1012,6 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_leaves()
     // increment iterator
     ++leafiter;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1185,8 +1139,6 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
       }
     }  // all treenodes of current layer
   }    // all tree layers
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1209,8 +1161,6 @@ void CONTACT::SelfBinaryTree::search_self_contact(Teuchos::RCP<SelfBinaryTreeNod
     search_self_contact(treenode->rightchild());
     evaluate_contact_and_adjacency(treenode->leftchild(), treenode->rightchild(), true);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1259,8 +1209,6 @@ void CONTACT::SelfBinaryTree::search_root_contact(
       contactpairs_[gid2].push_back(gid1);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1493,8 +1441,6 @@ void CONTACT::SelfBinaryTree::master_slave_sorting(int eleID, bool isslave)
         master_slave_sorting(contacteleID[i], !isslave);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1653,8 +1599,6 @@ void CONTACT::SelfBinaryTree::search_contact()
       if (element2->is_slave()) FOUR_C_THROW("Slave / master inconsistency in self contact");
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1679,8 +1623,6 @@ void CONTACT::SelfBinaryTree::update_normals()
       if (treenodes_[i][j]->type() != SELFCO_LEAF)
         treenodes_[i][j]->update_qualified_vectors_bottom_up();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1896,18 +1838,16 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
 
   // delete the contracted edge
   dualgraph->erase(contractedEdge);
-
-  return;
 }  // update_dual_graph
 
 /*----------------------------------------------------------------------*
  | Plot the adjacency matrix                                  popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::plot_adjacency_matrix()
+void CONTACT::SelfBinaryTree::plot_adjacency_matrix() const
 {
-  std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>::iterator iter2 =
+  std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>::const_iterator iter2 =
       adjacencymatrix_.begin();
-  std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>::iterator iter2_end =
+  std::map<int, std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>::const_iterator iter2_end =
       adjacencymatrix_.end();
 
   std::cout << "\n" << leafsmap_.size() << " elements in leafs map\n";
@@ -1923,22 +1863,21 @@ void CONTACT::SelfBinaryTree::plot_adjacency_matrix()
     std::cout << "\n";
     ++iter2;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Plot the dual graph                                        popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::plot_dual_graph(
-    std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph)
+    const std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>& dualgraph)
+    const
 {
   std::cout << "\n" << leafsmap_.size() << " elements in leafmap\n";
   std::cout << dualgraph.size() << " edges in dual graph\n";
 
-  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator iter3 =
-      dualgraph.begin();
-  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator
+  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::const_iterator
+      iter3 = dualgraph.begin();
+  std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::const_iterator
       iter3_end = dualgraph.end();
 
   std::cout << dualgraph.max_size() << " maximal\n";
@@ -1963,14 +1902,12 @@ void CONTACT::SelfBinaryTree::plot_dual_graph(
     ++iter3;
     ++cnt;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Plot the root nodes and the self binary tree               popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::plot_roots_and_tree()
+void CONTACT::SelfBinaryTree::plot_roots_and_tree() const
 {
   // debug output
   if (get_comm().MyPID() == 0)
@@ -2002,8 +1939,6 @@ void CONTACT::SelfBinaryTree::plot_roots_and_tree()
     }
     std::cout << std::endl;
   }
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

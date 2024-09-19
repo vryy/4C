@@ -792,20 +792,21 @@ namespace CONTACT
     \brief Plot the adjacency matrix
 
      */
-    void plot_adjacency_matrix();
+    void plot_adjacency_matrix() const;
 
     /*!
     \brief Plot the dual graph
 
      */
     void plot_dual_graph(
-        std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph);
+        const std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>&
+            dualgraph) const;
 
     /*!
     \brief Plot root nodes and the self binary tree
 
      */
-    void plot_roots_and_tree();
+    void plot_roots_and_tree() const;
     //@}
 
     // don't want = operator and cctor

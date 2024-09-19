@@ -55,8 +55,6 @@ CONTACT::Element::Element(int id, int owner, const Core::FE::CellType& shape, co
     : Mortar::Element(id, owner, shape, numnode, nodeids, isslave, isnurbs)
 {
   // empty constructor
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -65,8 +63,6 @@ CONTACT::Element::Element(int id, int owner, const Core::FE::CellType& shape, co
 CONTACT::Element::Element(const CONTACT::Element& old) : Mortar::Element(old)
 {
   // empty copy-constructor
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -94,8 +90,6 @@ void CONTACT::Element::print(std::ostream& os) const
 {
   os << "Contact ";
   Mortar::Element::print(os);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -112,8 +106,6 @@ void CONTACT::Element::pack(Core::Communication::PackBuffer& data) const
 
   // add base class Mortar::Element
   Mortar::Element::pack(data);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -131,7 +123,6 @@ void CONTACT::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   Mortar::Element::unpack(base_buffer);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -172,8 +163,6 @@ void CONTACT::Element::deriv_normal_at_node(int nid, int& i, Core::LinAlg::Seria
 
   // build normal derivative at xi and return it
   deriv_normal_at_xi(xi, i, elens, derivn);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -239,8 +228,6 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
     for (int j = 0; j < 3; ++j)
       for (int k = 0; k < ndof; ++k) (derivn[j])[mycnode->dofs()[k]] += WF(j, k) * normal_fac();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -378,8 +365,6 @@ void CONTACT::Element::d_jac_d_xi(
   // unknown case
   else
     FOUR_C_THROW("d_jac_d_xi called for unknown element type!");
-
-  return;
 }
 
 

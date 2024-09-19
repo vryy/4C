@@ -259,11 +259,11 @@ void MultiScale::MicroStatic::calc_ref_norms()
   // the chosen tolerances. Simply testing against 0 only works for
   // the displacements, but not for the residual!
 
-  normchardis_ = Solid::calculate_vector_norm(iternorm_, dis_);
+  normchardis_ = Solid::calculate_vector_norm(iternorm_, *dis_);
   if (normchardis_ < toldisi_) normchardis_ = 1.0;
 
-  double fintnorm = Solid::calculate_vector_norm(iternorm_, fintn_);
-  double freactnorm = Solid::calculate_vector_norm(iternorm_, freactn_);
+  double fintnorm = Solid::calculate_vector_norm(iternorm_, *fintn_);
+  double freactnorm = Solid::calculate_vector_norm(iternorm_, *freactn_);
   normcharforce_ = std::max(fintnorm, freactnorm);
   if (normcharforce_ < tolfres_) normcharforce_ = 1.0;
 }

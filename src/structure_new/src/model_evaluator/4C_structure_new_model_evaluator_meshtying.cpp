@@ -301,7 +301,7 @@ const CONTACT::MtAbstractStrategy& Solid::ModelEvaluator::Meshtying::strategy() 
 Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Meshtying::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
-  if (strategy().lm_do_f_row_map_ptr(true) == Teuchos::null)
+  if (strategy().lm_dof_row_map_ptr() == Teuchos::null)
     return global_state().dof_row_map();
   else
   {
@@ -309,7 +309,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Meshtying::get_block_dof_r
         Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(strategy().params(), "SYSTEM");
 
     if (systype == Inpar::CONTACT::system_saddlepoint)
-      return strategy().lm_do_f_row_map_ptr(true);
+      return strategy().lm_dof_row_map_ptr();
     else
       return global_state().dof_row_map();
   }
@@ -386,7 +386,7 @@ void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
   if (Xslavemod == Teuchos::null) return;
 
   // create fully overlapping slave node map
-  Teuchos::RCP<Epetra_Map> slavemap = strategy_ptr_->slave_row_nodes_ptr();
+  Teuchos::RCP<const Epetra_Map> slavemap = strategy_ptr_->slave_row_nodes_ptr();
   Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::allreduce_e_map(*slavemap);
 
   // export modified node positions to column map of problem discretization

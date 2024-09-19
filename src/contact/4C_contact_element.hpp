@@ -45,7 +45,6 @@ namespace CONTACT
   /*!
    \brief A contact element
 
-
    */
   class Element : public Mortar::Element
   {

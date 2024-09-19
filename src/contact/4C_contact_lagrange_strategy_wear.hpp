@@ -119,6 +119,11 @@ namespace Wear
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
 
     /*!
+      \brief Reset the wear vector
+        */
+    void reset_wear() override;
+
+    /*!
     \brief Evaluate wear vector
 
     Evaluates the unweighted wear vector.
@@ -209,12 +214,15 @@ namespace Wear
     \brief Return vector of wear (t_n+1) - D^-1 \times weighted wear!
 
     */
-    Teuchos::RCP<Epetra_Vector> contact_wear() override { return wearoutput_; }  // for slave side
     Teuchos::RCP<const Epetra_Vector> contact_wear() const override
     {
       return wearoutput_;
-    }                                                                     // for slave side
-    Teuchos::RCP<Epetra_Vector> contact_wear2() { return wearoutput2_; }  // for master side
+    }  // for slave side
+
+    Teuchos::RCP<const Epetra_Vector> contact_wear2() const
+    {
+      return wearoutput2_;
+    }  // for master side
 
     /*!
     \brief Return wear interfaces
@@ -238,37 +246,37 @@ namespace Wear
      \brief Return discrete wear vector (t_n+1)
 
      */
-    Teuchos::RCP<Epetra_Vector> wear_var() { return w_; }
+    Teuchos::RCP<const Epetra_Vector> wear_var() const { return w_; }
 
     /*!
      \brief Return discrete wear vector (t_n+1) Master
 
      */
-    Teuchos::RCP<Epetra_Vector> wear_var_m() { return wm_; }
+    Teuchos::RCP<const Epetra_Vector> wear_var_m() const { return wm_; }
 
     /*!
      \brief Return wear rhs vector (only in saddle-point formulation
 
      */
-    Teuchos::RCP<Epetra_Vector> wear_rhs() override { return wearrhs_; }
+    Teuchos::RCP<const Epetra_Vector> wear_rhs() const override { return wearrhs_; }
 
     /*!
      \brief Return wear-master rhs vector (only in saddle-point formulation
 
      */
-    Teuchos::RCP<Epetra_Vector> wear_m_rhs() override { return wearmrhs_; }
+    Teuchos::RCP<const Epetra_Vector> wear_m_rhs() const override { return wearmrhs_; }
 
     /*!
      \brief Returns increment of W solution vector in SaddlePointSolve routine
 
      */
-    Teuchos::RCP<Epetra_Vector> w_solve_incr() override { return wincr_; }
+    Teuchos::RCP<const Epetra_Vector> w_solve_incr() const override { return wincr_; }
 
     /*!
      \brief Returns increment of W-master solution vector in SaddlePointSolve routine
 
      */
-    Teuchos::RCP<Epetra_Vector> wm_solve_incr() override { return wmincr_; }
+    Teuchos::RCP<const Epetra_Vector> wm_solve_incr() const override { return wmincr_; }
 
     /*!
      \brief Return global both sided wear status

@@ -530,26 +530,26 @@ double Solid::TimIntOneStepTheta::calc_ref_norm_force()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = Solid::calculate_vector_norm(iternorm_, fintn_);
+  fintnorm = Solid::calculate_vector_norm(iternorm_, *fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = Solid::calculate_vector_norm(iternorm_, fextn_);
+  fextnorm = Solid::calculate_vector_norm(iternorm_, *fextn_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertnorm = Solid::calculate_vector_norm(iternorm_, finertt_);
+  finertnorm = Solid::calculate_vector_norm(iternorm_, *finertt_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == Inpar::Solid::damp_rayleigh)
   {
-    fviscnorm = Solid::calculate_vector_norm(iternorm_, fvisct_);
+    fviscnorm = Solid::calculate_vector_norm(iternorm_, *fvisct_);
   }
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = Solid::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = Solid::calculate_vector_norm(iternorm_, *freact_);
 
   // return char norm
   return std::max(

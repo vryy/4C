@@ -71,8 +71,6 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
-
-
     //! @name Access methods
 
     /*!
@@ -85,21 +83,20 @@ namespace CONTACT
     \brief Return L2-norm of slip constraints
 
     */
-    double constraint_norm_tan() { return constrnormtan_; }
+    double constraint_norm_tan() const { return constrnormtan_; }
 
 
     /*!
     \brief Return initial penalty parameter for non-penetration
 
     */
-    double initial_penalty() override { return initialpenalty_; }
+    double initial_penalty() const override { return initialpenalty_; }
 
     /*!
     \brief Return initial penalty parameter for tangential direction
 
     */
-    double initial_penalty_tan() { return initialpenaltytan_; }
-
+    double initial_penalty_tan() const { return initialpenaltytan_; }
 
     //@}
 
@@ -126,7 +123,6 @@ namespace CONTACT
     Uzawa augmented lagrange strategy, thus this tiny routine here.
 
     */
-
     void predict_relative_movement() override;
 
     /*!
@@ -275,8 +271,8 @@ namespace CONTACT
       return Teuchos::null;
     };
     bool active_set_semi_smooth_converged() const override { return true; }
-    bool active_set_converged() override { return true; }
-    int active_set_steps() override { return 0; }
+    bool active_set_converged() const override { return true; }
+    int active_set_steps() const override { return 0; }
     void reset_active_set() override {}
     void recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
@@ -329,7 +325,7 @@ namespace CONTACT
     }
     Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const override;
     Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_np(const bool& redist) const override;
-    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() override;
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_old() const override;
     Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const override;
 
    protected:

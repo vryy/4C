@@ -306,8 +306,8 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -329,8 +329,8 @@ void CONTACT::PenaltyStrategy::evaluate_contact(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(dtilde, pgsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(dtilde, non_redist_gsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(mtilde, non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -490,8 +490,8 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(dtilde, pgsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(dtilde, non_redist_gsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(mtilde, non_redist_gmdofrowmap_);
   }
 
   // remove contact stiffness #2 from kteff
@@ -865,8 +865,8 @@ void CONTACT::PenaltyStrategy::assemble()
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -888,8 +888,8 @@ void CONTACT::PenaltyStrategy::assemble()
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(dtilde, pgsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(dtilde, non_redist_gsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(mtilde, non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -1092,7 +1092,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_old()
+Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::lagrange_multiplier_old() const
 {
   auto& dyn_params = Global::Problem::instance()->structural_dynamic_params();
   if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(dyn_params, "INT_STRATEGY") ==

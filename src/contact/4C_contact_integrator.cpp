@@ -85,8 +85,6 @@ CONTACT::Integrator::Integrator(
   }
 
   nonsmooth_ = imortar_.get<bool>("NONSMOOTH_GEOMETRIES");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -572,8 +570,6 @@ void CONTACT::Integrator::initialize_gp(Core::FE::CellType eletype)
       break;
     }
   }  // switch(eletype)
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -853,8 +849,6 @@ void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, doub
         derivjac, gpn, dnmap_unit, gap, dgapgp, sxi, mxi, dsxigp, dmxigp);
 
   }  // gp-loop
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1674,8 +1668,6 @@ void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
       if (iter_proj > 1) FOUR_C_THROW("Multiple feasible projections of one integration point!");
     }  // GP-loop
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1931,11 +1923,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
       integrate_gp_3d(sele, mele, sval, lmval, mval, sderiv, mderiv, lmderiv, dualmap, wgt, jac,
           jacintcellmap, cell->auxn(), cell->get_deriv_auxn(), gap, dgapgp, sxi, mxi, dsxigp,
           dmxigp);
-
   }  // end gp loop
-  //**********************************************************************
-
-  return;
 }
 
 
@@ -2685,12 +2673,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element&
         }  // loop over master nodes
       }
     }
-
-
   }  // end gp loop
-  //**********************************************************************
-
-  return;
 }
 
 
@@ -3710,12 +3693,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element&
         }  // loop over master nodes
       }
     }
-
-
   }  // end gp loop
-  //**********************************************************************
-
-  return;
 }
 
 
@@ -4193,8 +4171,6 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
       }
     }
   }  // gp loop
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4444,8 +4420,6 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
       }  // End Loop over all Master Elements
     }    // End Loop over all GP
   }      // boundary_ele check
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4652,8 +4626,6 @@ void CONTACT::Integrator::integrate_d(Mortar::Element& sele, const Epetra_Comm& 
 
   sele.mo_data().reset_dual_shape();
   sele.mo_data().reset_deriv_dual_shape();
-
-  return;
 }
 
 
@@ -4701,9 +4673,6 @@ void CONTACT::Integrator::integrate_kappa_penalty_lts(Mortar::Element& ele)
       mymrtrnode->data().kappa() += val[j] * jac * wgt;
     }
   }
-  //**********************************************************************
-
-  return;
 }
 
 
@@ -4775,9 +4744,6 @@ void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& sele, double*
     }
     // compute cell gap vector *******************************************
   }
-  //**********************************************************************
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -4857,25 +4823,22 @@ void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& sele,
     }
     // compute cell gap vector *******************************************
   }
-  //**********************************************************************
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiAB (2D)               popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, double& sxib,
-    Mortar::Element& mele, double& mxia, double& mxib,
-    std::vector<Core::Gen::Pairedvector<int, double>>& derivxi, bool& startslave, bool& endslave,
-    int& linsize)
+void CONTACT::Integrator::deriv_xi_a_b_2d(const Mortar::Element& sele, double sxia, double sxib,
+    const Mortar::Element& mele, double mxia, double mxib,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivxi, bool startslave, bool endslave,
+    int linsize) const
 {
   // check for problem dimension
   if (n_dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  Core::Nodes::Node** snodes = nullptr;
-  Core::Nodes::Node** mnodes = nullptr;
+  const Core::Nodes::Node* const* snodes = nullptr;
+  const Core::Nodes::Node* const* mnodes = nullptr;
   int numsnode = sele.num_node();
   int nummnode = mele.num_node();
 
@@ -4884,18 +4847,18 @@ void CONTACT::Integrator::deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, d
   snodes = sele.nodes();
   mnodes = mele.nodes();
 
-  std::vector<Mortar::Node*> smrtrnodes(numsnode);
-  std::vector<Mortar::Node*> mmrtrnodes(nummnode);
+  std::vector<const Mortar::Node*> smrtrnodes(numsnode);
+  std::vector<const Mortar::Node*> mmrtrnodes(nummnode);
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<Mortar::Node*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<const Mortar::Node*>(snodes[i]);
     if (!smrtrnodes[i]) FOUR_C_THROW("Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<Mortar::Node*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<const Mortar::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) FOUR_C_THROW("Null pointer!");
   }
 
@@ -4936,7 +4899,7 @@ void CONTACT::Integrator::deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, d
     double normal[3] = {0., 0., 0.};
     sele.compute_unit_normal_at_xi(psxia, normal);
     std::vector<Core::Gen::Pairedvector<int, double>> derivN;
-    dynamic_cast<CONTACT::Element*>(&sele)->deriv_unit_normal_at_xi(psxia, derivN);
+    dynamic_cast<const CONTACT::Element*>(&sele)->deriv_unit_normal_at_xi(psxia, derivN);
 
     Core::LinAlg::SerialDenseVector* mval = nullptr;
     Core::LinAlg::SerialDenseMatrix* mderiv = nullptr;
@@ -5015,7 +4978,7 @@ void CONTACT::Integrator::deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, d
     double normal[3] = {0., 0., 0.};
     sele.compute_unit_normal_at_xi(psxib, normal);
     std::vector<Core::Gen::Pairedvector<int, double>> derivN;
-    dynamic_cast<CONTACT::Element*>(&sele)->deriv_unit_normal_at_xi(psxib, derivN);
+    dynamic_cast<const CONTACT::Element*>(&sele)->deriv_unit_normal_at_xi(psxib, derivN);
 
     Core::LinAlg::SerialDenseVector* mval = nullptr;
     Core::LinAlg::SerialDenseMatrix* mderiv = nullptr;
@@ -5143,10 +5106,10 @@ void CONTACT::Integrator::deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, d
     // add derivatives of slave node normals
     for (int i = 0; i < numsnode; ++i)
     {
-      Core::Gen::Pairedvector<int, double>& nxmap_curr =
-          static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
-      Core::Gen::Pairedvector<int, double>& nymap_curr =
-          static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
+      const Core::Gen::Pairedvector<int, double>& nxmap_curr =
+          static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
+      const Core::Gen::Pairedvector<int, double>& nymap_curr =
+          static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
 
       for (_CI p = nxmap_curr.begin(); p != nxmap_curr.end(); ++p)
         dmap_sxia[p->first] -= valsxia[i] * fac_yslm_a * (p->second);
@@ -5223,10 +5186,10 @@ void CONTACT::Integrator::deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, d
     // add derivatives of slave node normals
     for (int i = 0; i < numsnode; ++i)
     {
-      Core::Gen::Pairedvector<int, double>& nxmap_curr =
-          static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
-      Core::Gen::Pairedvector<int, double>& nymap_curr =
-          static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
+      const Core::Gen::Pairedvector<int, double>& nxmap_curr =
+          static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
+      const Core::Gen::Pairedvector<int, double>& nymap_curr =
+          static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
 
       for (_CI p = nxmap_curr.begin(); p != nxmap_curr.end(); ++p)
         dmap_sxib[p->first] -= valsxib[i] * fac_yslm_b * (p->second);
@@ -5241,23 +5204,21 @@ void CONTACT::Integrator::deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, d
     // return map to DerivM() method
     derivxi[1] = dmap_sxib;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (2D)        popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::deriv_xi_gp_2d(Mortar::Element& sele, Mortar::Element& mele, double sxigp,
-    double mxigp, const Core::Gen::Pairedvector<int, double>& derivsxi,
-    Core::Gen::Pairedvector<int, double>& derivmxi, int& linsize)
+void CONTACT::Integrator::deriv_xi_gp_2d(const Mortar::Element& sele, const Mortar::Element& mele,
+    double sxigp, double mxigp, const Core::Gen::Pairedvector<int, double>& derivsxi,
+    Core::Gen::Pairedvector<int, double>& derivmxi, int linsize) const
 {
   // check for problem dimension
   if (n_dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  Core::Nodes::Node** snodes = nullptr;
-  Core::Nodes::Node** mnodes = nullptr;
+  const Core::Nodes::Node* const* snodes = nullptr;
+  const Core::Nodes::Node* const* mnodes = nullptr;
   int numsnode = sele.num_node();
   int nummnode = mele.num_node();
 
@@ -5266,18 +5227,18 @@ void CONTACT::Integrator::deriv_xi_gp_2d(Mortar::Element& sele, Mortar::Element&
   snodes = sele.nodes();
   mnodes = mele.nodes();
 
-  std::vector<Mortar::Node*> smrtrnodes(numsnode);
-  std::vector<Mortar::Node*> mmrtrnodes(nummnode);
+  std::vector<const Mortar::Node*> smrtrnodes(numsnode);
+  std::vector<const Mortar::Node*> mmrtrnodes(nummnode);
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<Mortar::Node*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<const Mortar::Node*>(snodes[i]);
     if (!smrtrnodes[i]) FOUR_C_THROW("Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<Mortar::Node*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<const Mortar::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) FOUR_C_THROW("Null pointer!");
   }
 
@@ -5374,10 +5335,10 @@ void CONTACT::Integrator::deriv_xi_gp_2d(Mortar::Element& sele, Mortar::Element&
 
   for (int i = 0; i < numsnode; ++i)
   {
-    Core::Gen::Pairedvector<int, double>& dmap_nxsl_i =
-        static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
-    Core::Gen::Pairedvector<int, double>& dmap_nysl_i =
-        static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
+    const Core::Gen::Pairedvector<int, double>& dmap_nxsl_i =
+        static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
+    const Core::Gen::Pairedvector<int, double>& dmap_nysl_i =
+        static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp_mod[p->first] += valsxigp[i] * (p->second);
@@ -5439,38 +5400,36 @@ void CONTACT::Integrator::deriv_xi_gp_2d(Mortar::Element& sele, Mortar::Element&
   // multiply all entries with cmxigp
   for (_CI p = derivmxi.begin(); p != derivmxi.end(); ++p)
     derivmxi[p->first] = cmxigp * (p->second);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (3D)        popp 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::deriv_xi_gp_3d(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::Integrator::deriv_xi_gp_3d(const Mortar::Element& sele, const Mortar::Element& mele,
     const double* sxigp, const double* mxigp,
     const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
-    std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi, const double alpha)
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi, const double alpha) const
 {
   // check for problem dimension
   if (n_dim() != 3) FOUR_C_THROW("3D integration method called for non-3D problem");
 
   // we need the participating slave and master nodes
-  Core::Nodes::Node** snodes = sele.nodes();
-  Core::Nodes::Node** mnodes = mele.nodes();
-  std::vector<Mortar::Node*> smrtrnodes(sele.num_node());
-  std::vector<Mortar::Node*> mmrtrnodes(mele.num_node());
+  const Core::Nodes::Node* const* snodes = sele.nodes();
+  const Core::Nodes::Node* const* mnodes = mele.nodes();
+  std::vector<const Mortar::Node*> smrtrnodes(sele.num_node());
+  std::vector<const Mortar::Node*> mmrtrnodes(mele.num_node());
   const int numsnode = sele.num_node();
   const int nummnode = mele.num_node();
 
   for (int i = 0; i < numsnode; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<Mortar::Node*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<const Mortar::Node*>(snodes[i]);
     if (!smrtrnodes[i]) FOUR_C_THROW("Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
-    mmrtrnodes[i] = dynamic_cast<Mortar::Node*>(mnodes[i]);
+    mmrtrnodes[i] = dynamic_cast<const Mortar::Node*>(mnodes[i]);
     if (!mmrtrnodes[i]) FOUR_C_THROW("Null pointer!");
   }
 
@@ -5514,7 +5473,7 @@ void CONTACT::Integrator::deriv_xi_gp_3d(Mortar::Element& sele, Mortar::Element&
   int linsize = 0;
   for (int i = 0; i < numsnode; ++i)
   {
-    Node* cnode = dynamic_cast<Node*>(snodes[i]);
+    const Node* cnode = dynamic_cast<const Node*>(snodes[i]);
     linsize += cnode->get_linsize();
   }
 
@@ -5524,12 +5483,12 @@ void CONTACT::Integrator::deriv_xi_gp_3d(Mortar::Element& sele, Mortar::Element&
 
   for (int i = 0; i < numsnode; ++i)
   {
-    Core::Gen::Pairedvector<int, double>& dmap_nxsl_i =
-        static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
-    Core::Gen::Pairedvector<int, double>& dmap_nysl_i =
-        static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
-    Core::Gen::Pairedvector<int, double>& dmap_nzsl_i =
-        static_cast<CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[2];
+    const Core::Gen::Pairedvector<int, double>& dmap_nxsl_i =
+        static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[0];
+    const Core::Gen::Pairedvector<int, double>& dmap_nysl_i =
+        static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[1];
+    const Core::Gen::Pairedvector<int, double>& dmap_nzsl_i =
+        static_cast<const CONTACT::Node*>(smrtrnodes[i])->data().get_deriv_n()[2];
 
     for (_CI p = dmap_nxsl_i.begin(); p != dmap_nxsl_i.end(); ++p)
       dmap_nxsl_gp[p->first] += valsxigp[i] * (p->second);
@@ -5624,29 +5583,27 @@ void CONTACT::Integrator::deriv_xi_gp_3d(Mortar::Element& sele, Mortar::Element&
   for (CI p=derivmxi[1].begin();p!=derivmxi[1].end();++p)
       std::cout << p->first << " " << p->second << std::endl;
   */
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Compute deriv. of XiGP slave / master AuxPlane (3D)       popp 03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::deriv_xi_gp_3d_aux_plane(Mortar::Element& ele, double* xigp, double* auxn,
-    std::vector<Core::Gen::Pairedvector<int, double>>& derivxi, double& alpha,
+void CONTACT::Integrator::deriv_xi_gp_3d_aux_plane(const Mortar::Element& ele, const double* xigp,
+    const double* auxn, std::vector<Core::Gen::Pairedvector<int, double>>& derivxi, double alpha,
     std::vector<Core::Gen::Pairedvector<int, double>>& derivauxn,
-    Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<3, 1>>& derivgp)
+    Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<3, 1>>& derivgp) const
 {
   // check for problem dimension
   if (n_dim() != 3) FOUR_C_THROW("3D integration method called for non-3D problem");
 
   // we need the participating element nodes
-  Core::Nodes::Node** nodes = ele.nodes();
-  std::vector<Mortar::Node*> mrtrnodes(ele.num_node());
+  const Core::Nodes::Node* const* nodes = ele.nodes();
+  std::vector<const Mortar::Node*> mrtrnodes(ele.num_node());
   const int numnode = ele.num_node();
 
   for (int i = 0; i < numnode; ++i)
   {
-    mrtrnodes[i] = dynamic_cast<Mortar::Node*>(nodes[i]);
+    mrtrnodes[i] = dynamic_cast<const Mortar::Node*>(nodes[i]);
     if (!mrtrnodes[i]) FOUR_C_THROW("Null pointer!");
   }
 
@@ -5672,7 +5629,7 @@ void CONTACT::Integrator::deriv_xi_gp_3d_aux_plane(Mortar::Element& ele, double*
   typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
   // see if this is an IntEle
-  Mortar::IntElement* ie = dynamic_cast<Mortar::IntElement*>(&ele);
+  const Mortar::IntElement* ie = dynamic_cast<const Mortar::IntElement*>(&ele);
 
   // (1) all nodes coordinates part
   if (!ie)
@@ -6305,8 +6262,6 @@ void CONTACT::Integrator::gp_dm(Mortar::Element& sele, Mortar::Element& mele,
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -6461,8 +6416,6 @@ void inline CONTACT::Integrator::gp_3d_dm_quad(Mortar::Element& sele, Mortar::El
   {
     FOUR_C_THROW("Invalid integration case for 3D quadratic mortar!");
   }
-
-  return;
 }
 
 
@@ -6500,8 +6453,6 @@ void inline CONTACT::Integrator::gp_2d_w_gap(Mortar::Element& sele,
     // add current Gauss point's contribution to gseg
     cnode->addg_value(prod);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -6617,8 +6568,6 @@ void CONTACT::Integrator::gp_3d_w_gap(Mortar::Element& sele, Core::LinAlg::Seria
       FOUR_C_THROW("Invalid integration case for 3D quadratic contact!");
     }
   }
-
-  return;
 }
 
 void CONTACT::Integrator::gap_3d(Mortar::Element& sele, Mortar::Element& mele,
@@ -6930,8 +6879,6 @@ void CONTACT::Integrator::gap_3d(Mortar::Element& sele, Mortar::Element& mele,
       }
     }
   }
-
-  return;
 }
 
 void CONTACT::Integrator::gap_2d(Mortar::Element& sele, Mortar::Element& mele,
@@ -7159,9 +7106,6 @@ void CONTACT::Integrator::gap_2d(Mortar::Element& sele, Mortar::Element& mele,
       }
     }
   }
-
-
-  return;
 }
 
 
@@ -7473,8 +7417,6 @@ void inline CONTACT::Integrator::gp_3d_g_quad_pwlin(Mortar::Element& sele,
       }
     }
   }
-
-  return;
 }
 
 
@@ -7588,8 +7530,6 @@ void inline CONTACT::Integrator::gp_2d_g_lin(int& iter, Mortar::Element& sele,
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -7642,9 +7582,6 @@ void inline CONTACT::Integrator::gp_3d_g_quad_pwlin_lin(int& iter, Mortar::IntEl
   }
   else
     FOUR_C_THROW("shapefcn-lagmult combination not supported!");
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -7773,8 +7710,6 @@ void inline CONTACT::Integrator::gp_3d_g_quad_lin(int& iter, Mortar::Element& se
         dgmap[p->first] += fac * (p->second);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -7891,8 +7826,6 @@ void CONTACT::Integrator::gp_g_lin(int& iter, Mortar::Element& sele, Mortar::Ele
       }
     }
   }
-
-  return;
 }
 
 
@@ -8244,8 +8177,6 @@ void CONTACT::Integrator::gp_3d_dm_lin_bound(Mortar::Element& sele, Mortar::Elem
   }
   else
     FOUR_C_THROW("unknwon shape function type!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -8562,8 +8493,6 @@ void inline CONTACT::Integrator::gp_2d_dm_lin_bound(Mortar::Element& sele, Morta
   }
   else
     FOUR_C_THROW("unknwon shape function type!");
-
-  return;
 }
 
 
@@ -8711,8 +8640,6 @@ void inline CONTACT::Integrator::gp_2d_dm_ele_lin(int& iter, bool& bound, Mortar
       // (6) Lin(dxdsxi) - slave GP coordinates --> 0
     }  // loop over master nodes
   }    // shape_fcn() switch
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -8986,7 +8913,6 @@ void inline CONTACT::Integrator::gp_2d_dm_lin(int& iter, bool& bound, bool& linl
     }    // shape_fcn() switch
   }
   // compute segment D/M linearization *********************************
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -9092,8 +9018,6 @@ void inline CONTACT::Integrator::gp_3d_dm_quad_pwlin_lin(int& iter, Mortar::Elem
     for (CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
       ddmap_jk[p->first] += fac * (p->second);
   }  // loop over slave nodes
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -9461,8 +9385,6 @@ void inline CONTACT::Integrator::gp_3d_dm_quad_lin(bool& duallin, Mortar::Elemen
         }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -9626,7 +9548,6 @@ void inline CONTACT::Integrator::gp_3d_dm_lin(Mortar::Element& sele, Mortar::Ele
     }
   }  // shape_fcn() switch
   // compute segment D/M linearization *********************************
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -9681,8 +9602,6 @@ void inline CONTACT::Integrator::gp_d2(Mortar::Element& sele, Mortar::Element& m
   }
   else
     FOUR_C_THROW("Both-sided wear just for dual shape functions!");
-
-  return;
 }
 
 
@@ -10020,8 +9939,6 @@ void inline CONTACT::Integrator::gp_2d_wear(Mortar::Element& sele, Mortar::Eleme
     for (_CI p = dmap_coord_y.begin(); p != dmap_coord_y.end(); ++p)
       dsliptmatrixgp[p->first] += xabsxT * gpt[1] * (p->second);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -10481,8 +10398,6 @@ void inline CONTACT::Integrator::gp_3d_wear(Mortar::Element& sele, Mortar::Eleme
         dsliptmatrixgp[p->first] += absx * (p->second) * jumptan(2, 0);
     }
   }
-
-  return;
 }
 
 
@@ -10548,9 +10463,6 @@ void inline CONTACT::Integrator::gp_te(Mortar::Element& sele,
   }
   else
     FOUR_C_THROW("Chosen wear shape function not supported!");
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -10637,8 +10549,6 @@ void inline CONTACT::Integrator::gp_te_master(Mortar::Element& sele, Mortar::Ele
   }
   else
     FOUR_C_THROW("Chosen wear shape function not supported!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -10775,8 +10685,6 @@ void inline CONTACT::Integrator::gp_2d_te_master_lin(int& iter,  // like k
   }
   else
     FOUR_C_THROW("Chosen shapefunctions not supported!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -10976,8 +10884,6 @@ void inline CONTACT::Integrator::gp_2d_te_lin(int& iter, Mortar::Element& sele,
   }
   else
     FOUR_C_THROW("Chosen shape functions not supported!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -11222,8 +11128,6 @@ void inline CONTACT::Integrator::gp_3d_te_lin(int& iter, Mortar::Element& sele,
   }
   else
     FOUR_C_THROW("Choosen shapefunctions not supported!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -11463,8 +11367,6 @@ void inline CONTACT::Integrator::gp_3d_te_master_lin(int& iter, Mortar::Element&
   }
   else
     FOUR_C_THROW("Chosen shape functions not supported!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -11633,8 +11535,6 @@ void inline CONTACT::Integrator::gp_2d_slip_incr(Mortar::Element& sele, Mortar::
     // add current Gauss point's contribution to jump
     snode->add_jump_value(prod, 0);
   }
-
-  return;
 }
 
 
@@ -12013,8 +11913,6 @@ void inline CONTACT::Integrator::gp_3d_slip_incr(Mortar::Element& sele, Mortar::
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -12067,8 +11965,6 @@ void inline CONTACT::Integrator::gp_2d_slip_incr_lin(int& iter, Mortar::Element&
   // (4) Lin(dxdsxi) - slave GP Jacobian
   fac = wgt * lmval[iter] * jumpvalv[0];
   for (_CI p = derivjac.begin(); p != derivjac.end(); ++p) djumpmap[p->first] += fac * (p->second);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -12150,8 +12046,6 @@ void inline CONTACT::Integrator::gp_3d_slip_incr_lin(int& iter, Mortar::Element&
     djumpmap1[p->first] += fac1 * (p->second);
     djumpmap2[p->first] += fac2 * (p->second);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -12252,8 +12146,6 @@ void inline CONTACT::Integrator::gp_2d_wear_lin(int& iter, Mortar::Element& sele
           wcoeff * lmval[iter] * jac * wgt * abs(jumpval[0]) * gpn[1] * lmval[bl];
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -12364,8 +12256,6 @@ void inline CONTACT::Integrator::gp_3d_wear_lin(int& iter, Mortar::Element& sele
           wearcoeff_ * lmval[iter] * jac * wgt * abs(jumpval[0]) * gpn[2] * lmval[bl];
     }
   }
-
-  return;
 }
 
 
@@ -12716,7 +12606,6 @@ void inline CONTACT::Integrator::gp_ncoup_deriv(Mortar::Element& sele, Mortar::E
       }
     }
   }
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -12864,7 +12753,6 @@ void inline CONTACT::Integrator::gp_ncoup_lin(int& iter, Mortar::Element& sele,
       dpresncoupmap[p->first] += fac * (p->second);
     }
   }
-  return;
 }
 
 /*-----------------------------------------------------------------------------*

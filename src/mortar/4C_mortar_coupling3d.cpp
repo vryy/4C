@@ -2642,7 +2642,7 @@ double Mortar::Coupling3d::polygon_area()
 /*----------------------------------------------------------------------*
  |  Compute and return area of slave element (3D)             popp 11/08|
  *----------------------------------------------------------------------*/
-double Mortar::Coupling3d::slave_element_area()
+double Mortar::Coupling3d::slave_element_area() const
 {
   // initialize
   double selearea = slave_int_element().mo_data().area();
@@ -3468,7 +3468,7 @@ bool Mortar::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInterf
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 07/11|
  *----------------------------------------------------------------------*/
-void Mortar::Coupling3d::gmsh_output_cells(int lid)
+void Mortar::Coupling3d::gmsh_output_cells(int lid) const
 {
   // every processor writes its own cell file
   int proc = idiscret_.get_comm().MyPID();

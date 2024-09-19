@@ -28,6 +28,7 @@ namespace Core::LinAlg
   class SerialDenseVector;
   class SerialDenseMatrix;
 }  // namespace Core::LinAlg
+
 namespace Mortar
 {
   class ElementNitscheContainer;
@@ -113,6 +114,7 @@ namespace Mortar
 
     */
     virtual double& area() { return area_; }
+    double area() const { return area_; }
 
     /*!
     \brief Return number of potentially contacting elements
@@ -125,18 +127,24 @@ namespace Mortar
 
     */
     virtual std::vector<int>& search_elements() { return searchelements_; }
+    const std::vector<int>& search_elements() const { return searchelements_; }
 
     /*!
     \brief Return matrix of dual shape function coefficients
 
     */
     virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dual_shape() { return dualshapecoeff_; }
+    Teuchos::RCP<const Core::LinAlg::SerialDenseMatrix> dual_shape() const
+    {
+      return dualshapecoeff_;
+    }
 
     /*!
     \brief Return trafo matrix for boundary modification
 
     */
     virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& trafo() { return trafocoeff_; }
+    Teuchos::RCP<const Core::LinAlg::SerialDenseMatrix> trafo() const { return trafocoeff_; }
 
     /*!
     \brief Return directional derivative of matrix of dual shape function coefficients
@@ -144,6 +152,17 @@ namespace Mortar
     */
     virtual Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>&
     deriv_dual_shape()
+    {
+      return derivdualshapecoeff_;
+    }
+
+    /*!
+    \brief Return directional derivative of matrix of dual shape function coefficients
+     (const version)
+
+    */
+    Teuchos::RCP<const Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>
+    get_deriv_dual_shape() const
     {
       return derivdualshapecoeff_;
     }
@@ -502,7 +521,8 @@ namespace Mortar
     \brief Return attached status
 
     */
-    virtual bool is_attached() { return attached_; }
+    virtual bool is_attached() const { return attached_; }
+
     /*!
     \brief Change slave (true) or master status
 
@@ -513,7 +533,7 @@ namespace Mortar
     virtual bool& set_slave() { return isslave_; }
 
     /*!
-    \brief Return attached status
+    \brief Set attached status
 
     */
     virtual bool& set_attached() { return attached_; }
@@ -522,7 +542,7 @@ namespace Mortar
     \brief Return ansatz type (true = quadratic) of element
 
     */
-    virtual bool is_quad()
+    virtual bool is_quad() const
     {
       bool isquad = false;
       switch (shape())
@@ -555,7 +575,7 @@ namespace Mortar
     \brief Return spatial dimension
 
     */
-    virtual int n_dim()
+    virtual int n_dim() const
     {
       switch (shape())
       {
@@ -591,7 +611,7 @@ namespace Mortar
     \brief Return nurbs (true) or not-nurbs (false) status
 
     */
-    virtual bool is_nurbs() { return nurbs_; }
+    virtual bool is_nurbs() const { return nurbs_; }
 
     /*!
     \brief Return data container of this element
@@ -601,6 +621,12 @@ namespace Mortar
 
     */
     inline Mortar::MortarEleDataContainer& mo_data()
+    {
+      FOUR_C_ASSERT(modata_ != Teuchos::null, "Mortar data container not set");
+      return *modata_;
+    }
+
+    inline const Mortar::MortarEleDataContainer& mo_data() const
     {
       FOUR_C_ASSERT(modata_ != Teuchos::null, "Mortar data container not set");
       return *modata_;
@@ -682,7 +708,8 @@ namespace Mortar
     /*!
     \brief Build element normal at node passed in
     */
-    virtual void build_normal_at_node(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens);
+    virtual void build_normal_at_node(
+        int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens) const;
 
     /*!
     \brief Compute element normal at local coordinate xi
@@ -690,12 +717,12 @@ namespace Mortar
            integrated into the whole nodal normal calculation process.
     */
     virtual void compute_normal_at_xi(
-        const double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens);
+        const double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens) const;
 
     /*!
     \brief Compute averaged nodal normal at local coordinate xi
     */
-    virtual double compute_averaged_unit_normal_at_xi(const double* xi, double* n);
+    virtual double compute_averaged_unit_normal_at_xi(const double* xi, double* n) const;
 
     /*!
     \brief Compute unit element normal at local coordinate xi
@@ -703,7 +730,7 @@ namespace Mortar
            for a CElement in order to compute a unit normal at any point.
            Returns the length of the non-unit interpolated normal at xi.
     */
-    virtual double compute_unit_normal_at_xi(const double* xi, double* n);
+    virtual double compute_unit_normal_at_xi(const double* xi, double* n) const;
 
     /*!
     \brief Compute element unit normal derivative at local coordinate xi
@@ -711,32 +738,32 @@ namespace Mortar
            for a Element in order to compute a unit normal derivative at any point.
     */
     virtual void deriv_unit_normal_at_xi(
-        const double* xi, std::vector<Core::Gen::Pairedvector<int, double>>& derivn);
+        const double* xi, std::vector<Core::Gen::Pairedvector<int, double>>& derivn) const;
 
     /*!
     \brief Get nodal reference / spatial coords of current element
 
     */
-    virtual void get_nodal_coords(Core::LinAlg::SerialDenseMatrix& coord);
+    virtual void get_nodal_coords(Core::LinAlg::SerialDenseMatrix& coord) const;
 
     /*! \brief Get nodal reference / spatial coords of current element
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode>
-    inline void get_nodal_coords(Core::LinAlg::Matrix<3, elenumnode>& coord)
+    inline void get_nodal_coords(Core::LinAlg::Matrix<3, elenumnode>& coord) const
     {
       Core::LinAlg::SerialDenseMatrix sdm_coord(Teuchos::View, coord.data(), 3, 3, elenumnode);
       get_nodal_coords(sdm_coord);
     }
 
-    double inline get_nodal_coords(const int direction, const int node)
+    double inline get_nodal_coords(const int direction, const int node) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      Node* mymrtrnode = dynamic_cast<Node*>(points()[node]);
+      const Node* mymrtrnode = dynamic_cast<const Node*>(points()[node]);
       if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
       return mymrtrnode->xspatial()[direction];
 #else
-      return static_cast<Node*>(points()[node])->xspatial()[direction];
+      return static_cast<const Node*>(points()[node])->xspatial()[direction];
 #endif
     }
 
@@ -745,17 +772,18 @@ namespace Mortar
 
     \param isinit (in): true if called for reference coords
     */
-    virtual void get_nodal_coords_old(Core::LinAlg::SerialDenseMatrix& coord, bool isinit = false);
+    virtual void get_nodal_coords_old(
+        Core::LinAlg::SerialDenseMatrix& coord, bool isinit = false) const;
 
-    double inline get_nodal_coords_old(const int direction, const int node)
+    double inline get_nodal_coords_old(const int direction, const int node) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      Node* mymrtrnode = dynamic_cast<Node*>(points()[node]);
+      const Node* mymrtrnode = dynamic_cast<const Node*>(points()[node]);
       if (!mymrtrnode) FOUR_C_THROW("GetNodalCoords: Null pointer!");
       return mymrtrnode->x()[direction] + mymrtrnode->uold()[direction];
 #else
-      return (static_cast<Node*>(points()[node])->x()[direction] +
-              static_cast<Node*>(points()[node])->uold()[direction]);
+      return (static_cast<const Node*>(points()[node])->x()[direction] +
+              static_cast<const Node*>(points()[node])->uold()[direction]);
 #endif
     }
 
@@ -764,44 +792,48 @@ namespace Mortar
 
     \param isinit (in): true if called for reference coords
     */
-    virtual void get_nodal_lag_mult(Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit = false);
+    virtual void get_nodal_lag_mult(
+        Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit = false) const;
 
     /*!
     \brief Evaluate element metrics (local basis vectors)
     */
-    virtual void metrics(const double* xi, double* gxi, double* geta);
+    virtual void metrics(const double* xi, double* gxi, double* geta) const;
 
     /*!
     \brief Evaluate Jacobian determinant for parameter space integration
     */
-    virtual double jacobian(const double* xi);
+    virtual double jacobian(const double* xi) const;
 
     /*!
     \brief Compute Jacobian determinant derivative
     */
-    virtual void deriv_jacobian(const double* xi, Core::Gen::Pairedvector<int, double>& derivjac);
+    virtual void deriv_jacobian(
+        const double* xi, Core::Gen::Pairedvector<int, double>& derivjac) const;
 
     /*!
     \brief Compute length/area of the element
     */
-    virtual double compute_area();
+    virtual double compute_area() const;
 
     /*!
     \brief Compute length/area of the element and its derivative
     */
-    virtual double compute_area_deriv(Core::Gen::Pairedvector<int, double>& area_deriv);
+    virtual double compute_area_deriv(Core::Gen::Pairedvector<int, double>& area_deriv) const;
 
     /*!
     \brief A repository for all kinds of 1D/2D shape functions
     */
     virtual void shape_functions(Element::ShapeType shape, const double* xi,
-        Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv);
+        Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv) const;
 
     /*!
     \brief A repository for 1D/2D shape function linearizations
 
     \param derivdual (in): derivative maps to be filled
                            (= derivatives of the dual coefficient matrix Ae)
+    Remark: this function cannot be marked const since it changes the underlying array for
+        dual shape function derivatives calculation
     */
     void shape_function_linearizations(Element::ShapeType shape,
         Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivdual);
@@ -810,7 +842,7 @@ namespace Mortar
     \brief Evaluate displacement shape functions and derivatives
     */
     virtual bool evaluate_shape(const double* xi, Core::LinAlg::SerialDenseVector& val,
-        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim, bool dualquad3d = false);
+        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim, bool dualquad3d = false) const;
 
     /*! \brief Evaluate displacement shape functions and derivatives
      *
@@ -818,7 +850,7 @@ namespace Mortar
     template <unsigned elenumnode, unsigned eledim>
     inline bool evaluate_shape(const double* xi, Core::LinAlg::Matrix<elenumnode, 1>& val,
         Core::LinAlg::Matrix<elenumnode, eledim>& deriv, unsigned valdim = elenumnode,
-        bool dualquad3d = false)
+        bool dualquad3d = false) const
     {
       Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.data(), elenumnode);
       Core::LinAlg::SerialDenseMatrix sdm_deriv(
@@ -831,7 +863,7 @@ namespace Mortar
     */
     virtual bool evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi,
         Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv,
-        const int valdim, bool boundtrafo = true);
+        const int valdim, bool boundtrafo = true) const;
 
     /*! \brief Evaluate Lagrange multiplier shape functions and derivatives
      *
@@ -839,7 +871,7 @@ namespace Mortar
     template <unsigned elenumnode, unsigned eledim>
     inline bool evaluate_shape_lag_mult(Inpar::Mortar::ShapeFcn lmtype, const double* xi,
         Core::LinAlg::Matrix<elenumnode, 1>& val, Core::LinAlg::Matrix<elenumnode, eledim>& deriv,
-        unsigned valdim, bool boundtrafo)
+        unsigned valdim, bool boundtrafo) const
     {
       Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.data(), elenumnode);
       Core::LinAlg::SerialDenseMatrix sdm_deriv(
@@ -853,7 +885,7 @@ namespace Mortar
     */
     virtual bool evaluate_shape_lag_mult_lin(const Inpar::Mortar::ShapeFcn& lmtype,
         const double* xi, Core::LinAlg::SerialDenseVector& val,
-        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim);
+        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim) const;
 
     /*!
     \brief Evaluate Lagrange multiplier shape functions and derivatives
@@ -861,7 +893,7 @@ namespace Mortar
     */
     virtual bool evaluate_shape_lag_mult_const(const Inpar::Mortar::ShapeFcn& lmtype,
         const double* xi, Core::LinAlg::SerialDenseVector& val,
-        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim);
+        Core::LinAlg::SerialDenseMatrix& deriv, const int valdim) const;
 
     /*! \brief Evaluate Lagrange multiplier shape functions and derivatives
      *  (special version for 3D quadratic mortar with linear Lagrange multipliers)
@@ -882,11 +914,11 @@ namespace Mortar
     \brief Evaluate 2nd derivative of shape functions
     */
     virtual bool evaluate2nd_deriv_shape(
-        const double* xi, Core::LinAlg::SerialDenseMatrix& secderiv, const int& valdim);
+        const double* xi, Core::LinAlg::SerialDenseMatrix& secderiv, const int& valdim) const;
 
     template <unsigned elenumnode>
     inline bool evaluate2nd_deriv_shape(
-        const double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv, const int& valdim)
+        const double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv, const int& valdim) const
     {
       Core::LinAlg::SerialDenseMatrix sdm_secderiv(
           Teuchos::View, secderiv.data(), elenumnode, elenumnode, 3);
@@ -915,7 +947,7 @@ namespace Mortar
                             set to 2 for derivative eta usage (3D only)
     \param globccord (out): interpolated global coordinates
     */
-    virtual bool local_to_global(const double* xi, double* globcoord, int inttype);
+    virtual bool local_to_global(const double* xi, double* globcoord, int inttype) const;
 
     /*!
     \brief Evaluate minimal edge size of this element
@@ -923,7 +955,7 @@ namespace Mortar
 
     \return Approximation of minimum geometric dimension of this element
     */
-    virtual double min_edge_size();
+    virtual double min_edge_size() const;
 
     /*!
     \brief Evaluate maximal edge size of this element
@@ -933,7 +965,7 @@ namespace Mortar
 
     \return Approximation of maximum geometric dimension of this element
     */
-    virtual double max_edge_size();
+    virtual double max_edge_size() const;
 
     /*!
     \brief Add one Mortar::Element to this Mortar::Element's potential contact partners
@@ -978,20 +1010,22 @@ namespace Mortar
     this is only the case if there are more than polynom degree + 1 multiple knot entries
 
     */
-    virtual bool& zero_sized() { return zero_sized_; };
+    virtual bool& zero_sized() { return zero_sized_; }
+    bool zero_sized() const { return zero_sized_; }
 
     /*!
     \brief factor for normal calculation (default 1.0)
 
     */
-    double& normal_fac() { return normalfac_; };
-    double normal_fac() const { return normalfac_; };
+    double& normal_fac() { return normalfac_; }
+    double normal_fac() const { return normalfac_; }
 
     /*!
     \brief get knot vectors for this mortar element
 
     */
-    virtual std::vector<Core::LinAlg::SerialDenseVector>& knots() { return mortarknots_; };
+    virtual std::vector<Core::LinAlg::SerialDenseVector>& knots() { return mortarknots_; }
+    const std::vector<Core::LinAlg::SerialDenseVector>& knots() const { return mortarknots_; }
 
     /*!
     \brief Get the linearization of the spatial position of the Nodes for this Ele.
@@ -1002,10 +1036,11 @@ namespace Mortar
            Needed to be overloaded by IntElement
     */
     virtual void node_linearization(
-        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin) const;
 
     // h.Willmann return physical type of the mortar element
-    PhysicalType& phys_type() { return physicaltype_; };
+    PhysicalType& phys_type() { return physicaltype_; }
+    PhysicalType phys_type() const { return physicaltype_; }
 
     /*!
     \brief Estimate mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.

@@ -3477,16 +3477,17 @@ void CONTACT::Interface::detect_non_smooth_geometries()
 /*----------------------------------------------------------------------*
  |  cpp to edge + Lin                                       farah 11/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mortar::Element& mele,
-    double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin)
+double CONTACT::Interface::compute_normal_node_to_edge(const Mortar::Node& snode,
+    const Mortar::Element& mele, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin) const
 {
   // define tolerance
   const double tol = 1e-8;
   double dist = 1e12;
   int nrow = mele.num_node();
 
-  Node* node1 = dynamic_cast<Node*>(mele.nodes()[0]);
-  Node* node2 = dynamic_cast<Node*>(mele.nodes()[1]);
+  const Node* node1 = dynamic_cast<const Node*>(mele.nodes()[0]);
+  const Node* node2 = dynamic_cast<const Node*>(mele.nodes()[1]);
 
   double length1 = sqrt(node1->mo_data().edge_tangent()[0] * node1->mo_data().edge_tangent()[0] +
                         node1->mo_data().edge_tangent()[1] * node1->mo_data().edge_tangent()[1] +
@@ -3530,13 +3531,13 @@ double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mort
 
     // tangent part
     std::array<double, 3> tangent = {0.0, 0.0, 0.0};
-    tangent[0] += sval[0] * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[0];
-    tangent[1] += sval[0] * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[1];
-    tangent[2] += sval[0] * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[2];
+    tangent[0] += sval[0] * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[0];
+    tangent[1] += sval[0] * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[1];
+    tangent[2] += sval[0] * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[2];
 
-    tangent[0] += sval[1] * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[0];
-    tangent[1] += sval[1] * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[1];
-    tangent[2] += sval[1] * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[2];
+    tangent[0] += sval[1] * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[0];
+    tangent[1] += sval[1] * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[1];
+    tangent[2] += sval[1] * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[2];
 
     double tangentSlave = 0.0;
     tangentSlave = tangent[0] * snode.xspatial()[0] + tangent[1] * snode.xspatial()[1] +
@@ -3612,13 +3613,13 @@ double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mort
 
   // tangent part
   std::array<double, 3> tangent = {0.0, 0.0, 0.0};
-  tangent[0] += sval[0] * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[0];
-  tangent[1] += sval[0] * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[1];
-  tangent[2] += sval[0] * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[2];
+  tangent[0] += sval[0] * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[0];
+  tangent[1] += sval[0] * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[1];
+  tangent[2] += sval[0] * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[2];
 
-  tangent[0] += sval[1] * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[0];
-  tangent[1] += sval[1] * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[1];
-  tangent[2] += sval[1] * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[2];
+  tangent[0] += sval[1] * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[0];
+  tangent[1] += sval[1] * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[1];
+  tangent[2] += sval[1] * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[2];
 
   // master part
   std::array<double, 3> master = {0.0, 0.0, 0.0};
@@ -3632,13 +3633,19 @@ double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mort
 
   // lin tangent part
   std::array<double, 3> lintangent = {0.0, 0.0, 0.0};
-  lintangent[0] += sderiv(0, 0) * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[0];
-  lintangent[1] += sderiv(0, 0) * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[1];
-  lintangent[2] += sderiv(0, 0) * dynamic_cast<Node*>(mele.nodes()[0])->mo_data().edge_tangent()[2];
+  lintangent[0] +=
+      sderiv(0, 0) * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[0];
+  lintangent[1] +=
+      sderiv(0, 0) * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[1];
+  lintangent[2] +=
+      sderiv(0, 0) * dynamic_cast<const Node*>(mele.nodes()[0])->mo_data().edge_tangent()[2];
 
-  lintangent[0] += sderiv(1, 0) * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[0];
-  lintangent[1] += sderiv(1, 0) * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[1];
-  lintangent[2] += sderiv(1, 0) * dynamic_cast<Node*>(mele.nodes()[1])->mo_data().edge_tangent()[2];
+  lintangent[0] +=
+      sderiv(1, 0) * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[0];
+  lintangent[1] +=
+      sderiv(1, 0) * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[1];
+  lintangent[2] +=
+      sderiv(1, 0) * dynamic_cast<const Node*>(mele.nodes()[1])->mo_data().edge_tangent()[2];
 
   // lin master part
   std::array<double, 3> linmaster = {0.0, 0.0, 0.0};
@@ -3761,7 +3768,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mort
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.num_element();
-  Core::Elements::Element** adjeles = snode.elements();
+  const Core::Elements::Element* const* adjeles = snode.elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -3773,7 +3780,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mort
   // elens(5,i): length/area of element itself
   //**********************************************************************
   Core::LinAlg::SerialDenseMatrix elens(6, nseg);
-  Mortar::Element* adjmrtrele = dynamic_cast<Mortar::Element*>(adjeles[0]);
+  const Mortar::Element* adjmrtrele = dynamic_cast<const Mortar::Element*>(adjeles[0]);
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the
@@ -3826,8 +3833,9 @@ double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mort
 /*----------------------------------------------------------------------*
  |  cpp to node + Lin                                       farah 01/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_normal_node_to_node(Mortar::Node& snode, Mortar::Node& mnode,
-    double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin)
+double CONTACT::Interface::compute_normal_node_to_node(const Mortar::Node& snode,
+    const Mortar::Node& mnode, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin) const
 {
   const int dim = n_dim();
 
@@ -3888,7 +3896,7 @@ double CONTACT::Interface::compute_normal_node_to_node(Mortar::Node& snode, Mort
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.num_element();
-  Core::Elements::Element** adjeles = snode.elements();
+  const Core::Elements::Element* const* adjeles = snode.elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -3900,7 +3908,7 @@ double CONTACT::Interface::compute_normal_node_to_node(Mortar::Node& snode, Mort
   // elens(5,i): length/area of element itself
   //**********************************************************************
   Core::LinAlg::SerialDenseMatrix elens(6, nseg);
-  Mortar::Element* adjmrtrele = dynamic_cast<Mortar::Element*>(adjeles[0]);
+  const Mortar::Element* adjmrtrele = dynamic_cast<const Mortar::Element*>(adjeles[0]);
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the
@@ -3990,7 +3998,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
     std::vector<Mortar::Node*> mnodes;
 
     // fill vector with possibly contacting meles
-    find_m_eles(*mrtrnode, meles);
+    find_master_elements(*mrtrnode, meles);
 
     // fallback solution if no mele is available
     if (meles.size() < 1)  // or !mrtrnode->IsOnCornerEdge())
@@ -4032,7 +4040,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
 /*----------------------------------------------------------------------*
  |  export master nodal normals (protected)                  farah 08/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::export_master_nodal_normals()
+void CONTACT::Interface::export_master_nodal_normals() const
 {
   std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
 
@@ -4254,8 +4262,6 @@ void CONTACT::Interface::export_master_nodal_normals()
   teta_x_val.clear();
   teta_y_val.clear();
   teta_z_val.clear();
-
-  return;
 }
 
 
@@ -4296,9 +4302,6 @@ void CONTACT::Interface::compute_scaling()
 
   // compute ltl scaling for point and line contact
   compute_scaling_ltl();
-
-  // bye
-  return;
 }
 
 
@@ -4828,9 +4831,9 @@ void CONTACT::Interface::scale_normals_3d() { FOUR_C_THROW("not yet implemented!
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_cpp_normal_2d(Mortar::Node& mrtrnode,
+double CONTACT::Interface::compute_cpp_normal_2d(const Mortar::Node& mrtrnode,
     std::vector<Mortar::Element*> meles, double* normal,
-    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin) const
 {
   // define tolerance
   const double tol = 1e-8;
@@ -4850,7 +4853,7 @@ double CONTACT::Interface::compute_cpp_normal_2d(Mortar::Node& mrtrnode,
   if (mrtrnode.is_on_corner())
   {
     pathdependent = true;
-    CONTACT::Node& coNode = dynamic_cast<CONTACT::Node&>(mrtrnode);
+    const CONTACT::Node& coNode = dynamic_cast<const CONTACT::Node&>(mrtrnode);
     if (coNode.active()) pathdependent = false;
 
     // calculate path
@@ -6931,7 +6934,7 @@ void CONTACT::Interface::evaluate_nts()
     std::vector<Mortar::Element*> meles;
 
     // fill vector with possibly contacting meles
-    find_m_eles(*mrtrnode, meles);
+    find_master_elements(*mrtrnode, meles);
 
     // skip calculation if no meles vector is empty
     if (meles.size() < 1) continue;
@@ -8438,7 +8441,7 @@ void CONTACT::Interface::set_condition_specific_parameters()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& outputParams)
+void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& outputParams) const
 {
   using Teuchos::RCP;
 

@@ -62,7 +62,7 @@ namespace CONTACT
     \brief Return initial penalty parameter
 
     */
-    double initial_penalty() override { return initialpenalty_; }
+    double initial_penalty() const override { return initialpenalty_; }
 
     //@}
 

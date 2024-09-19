@@ -466,8 +466,8 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!!!");
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
   }
 
   k_fseff->un_complete();
@@ -534,7 +534,8 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   {
     FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
-    Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(
+        *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;

@@ -351,14 +351,14 @@ namespace CONTACT
 
     \return Boolean flag to indicate self contact status of this interface
     */
-    virtual const bool& self_contact() const { return selfcontact_; }
+    bool self_contact() const { return selfcontact_; }
 
     /*!
     \brief Get two half pass status of this interface
 
     \return Boolean flag to indicate if two half pass algorithm shall be used
     */
-    virtual const bool& two_half_pass() const { return two_half_pass_; }
+    bool two_half_pass() const { return two_half_pass_; }
 
     /*!
     \brief Get row map of active nodes
@@ -366,34 +366,32 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> active_nodes() const
+    Teuchos::RCP<const Epetra_Map> active_nodes() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activenodes_;
     }
 
-
     /*!
     \brief Get row map of active dofs
 
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> active_dofs() const
+    Teuchos::RCP<const Epetra_Map> active_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activedofs_;
     }
 
-    virtual Teuchos::RCP<Epetra_Map> in_active_nodes() const
+    Teuchos::RCP<const Epetra_Map> inactive_nodes() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return inactivenodes_;
     }
-
 
     /*!
     \brief Get row map of active dofs
@@ -401,7 +399,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> in_active_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> inactive_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -414,7 +412,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> active_n_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> active_n_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -427,7 +425,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> active_t_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> active_t_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -440,7 +438,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> slip_nodes() const
+    virtual Teuchos::RCP<const Epetra_Map> slip_nodes() const
     {
       if (filled())
         return slipnodes_;
@@ -455,7 +453,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> slip_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> slip_dofs() const
     {
       if (filled())
         return slipdofs_;
@@ -470,7 +468,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> slip_t_dofs() const
+    virtual Teuchos::RCP<const Epetra_Map> slip_t_dofs() const
     {
       if (filled())
         return slipt_;
@@ -485,7 +483,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> non_smooth_nodes() const
+    virtual Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const
     {
       if (filled())
         return nonsmoothnodes_;
@@ -500,7 +498,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> smooth_nodes() const
+    virtual Teuchos::RCP<const Epetra_Map> smooth_nodes() const
     {
       if (filled())
         return smoothnodes_;
@@ -515,7 +513,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> sdof_vertex_rowmap() const
+    virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const
     {
       if (filled())
         return sdofVertexRowmap_;
@@ -529,7 +527,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<Epetra_Map> sdof_vertex_colmap() const
+    virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const
     {
       if (filled())
         return sdofVertexColmap_;
@@ -537,7 +535,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> sdof_edge_rowmap() const
+    virtual Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const
     {
       if (filled())
         return sdofEdgeRowmap_;
@@ -545,7 +543,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> sdof_edge_colmap() const
+    virtual Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const
     {
       if (filled())
         return sdofEdgeColmap_;
@@ -553,7 +551,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> sdof_surf_rowmap() const
+    virtual Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const
     {
       if (filled())
         return sdofSurfRowmap_;
@@ -561,7 +559,7 @@ namespace CONTACT
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
-    virtual Teuchos::RCP<Epetra_Map> sdof_surf_colmap() const
+    virtual Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const
     {
       if (filled())
         return sdofSurfColmap_;
@@ -574,19 +572,19 @@ namespace CONTACT
     \brief Get number of slave / master pairs of this interface (proc local)
 
     */
-    virtual const int& slave_master_pairs() { return smpairs_; }
+    virtual int slave_master_pairs() const { return smpairs_; }
 
     /*!
     \brief Get number of slave / master integration pairs of this interface (proc local)
 
     */
-    virtual const int& slave_master_int_pairs() { return smintpairs_; }
+    virtual int slave_master_int_pairs() const { return smintpairs_; }
 
     /*!
     \brief Get number of integration cells of this interface (proc local)
 
     */
-    virtual const int& integration_cells() { return intcells_; }
+    virtual int integration_cells() const { return intcells_; }
 
     //@}
 
@@ -1138,7 +1136,7 @@ namespace CONTACT
     \param[in] iter Nonlinear iteration index
     */
     void visualize_gmsh(
-        const int step, const int iter, const std::string& file_name_only_prefix) final;
+        const int step, const int iter, const std::string& file_name_only_prefix) const final;
 
     //! @name Finite difference checks
     //!@{
@@ -1278,13 +1276,41 @@ namespace CONTACT
     */
     void add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
-
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
     void add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
+    inline bool is_friction() const { return friction_; }
+
+    const Interface& get_ma_sharing_ref_interface() const;
+
+    //! @name Output
+    //! @{
+
+    //! [derived]
+    void postprocess_quantities(const Teuchos::ParameterList& outputParams) const final;
+
+    //! @}
+   public:
+    Teuchos::RCP<const Epetra_Vector> cn() const { return cnValues_; };
+
+    const Epetra_Vector& cn_ref() const
+    {
+      if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
+      return *cnValues_;
+    }
+
+    Teuchos::RCP<const Epetra_Vector> ct() const { return ctValues_; };
+
+    const Epetra_Vector& ct_ref() const
+    {
+      if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
+      return *ctValues_;
+    }
+
+   private:
     Teuchos::RCP<Epetra_Vector>& get_cn() { return cnValues_; };
 
     Epetra_Vector& get_cn_ref()
@@ -1300,18 +1326,6 @@ namespace CONTACT
       if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
     }
-
-    inline bool is_friction() const { return friction_; }
-
-    const Interface& get_ma_sharing_ref_interface() const;
-
-    //! @name Output
-    //! @{
-
-    //! [derived]
-    void postprocess_quantities(const Teuchos::ParameterList& outputParams) final;
-
-    //! @}
 
    protected:
     /** \brief split the interface elements into a far and a close set
@@ -1392,7 +1406,7 @@ namespace CONTACT
     \brief export master nodal normals for cpp calculation
 
     */
-    virtual void export_master_nodal_normals();
+    virtual void export_master_nodal_normals() const;
 
     /*!
     \brief evaluate cpp normals on slave side based on averaged normal field on master side
@@ -1420,9 +1434,9 @@ namespace CONTACT
     \brief 2D routine for cpp normal
 
     */
-    virtual double compute_cpp_normal_2d(Mortar::Node& mrtrnode,
+    virtual double compute_cpp_normal_2d(const Mortar::Node& mrtrnode,
         std::vector<Mortar::Element*> meles, double* normal,
-        std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin);
+        std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin) const;
 
     /*!
     \brief 3D routine for cpp normal
@@ -1436,15 +1450,16 @@ namespace CONTACT
     \brief Compute normal between slave and master node
 
     */
-    virtual double compute_normal_node_to_node(Mortar::Node& snode, Mortar::Node& mnode,
-        double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin);
+    virtual double compute_normal_node_to_node(const Mortar::Node& snode, const Mortar::Node& mnode,
+        double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin) const;
 
     /*!
     \brief Compute normal between slave node and master edge ele
 
     */
-    virtual double compute_normal_node_to_edge(Mortar::Node& snode, Mortar::Element& mele,
-        double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin);
+    virtual double compute_normal_node_to_edge(const Mortar::Node& snode,
+        const Mortar::Element& mele, double* normal,
+        std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin) const;
 
     /*!
     \brief Compute scaling factors for transition between nts, mortar etc.
@@ -1495,7 +1510,6 @@ namespace CONTACT
 
     */
     virtual void store_lt_svalues();
-
 
     /*!
     \brief These functions are not properly implemented/used!!!!

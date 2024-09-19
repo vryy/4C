@@ -641,13 +641,13 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     double haveDBC = 0;
-    pgsdirichtoggle_->Norm1(&haveDBC);
+    non_redist_gsdirichtoggle_->Norm1(&haveDBC);
     if (haveDBC > 0.)
     {
       Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*gactivedofs_, true);
       dInvA->extract_diagonal_copy(*diag);
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::create_vector(*gactivedofs_, true);
-      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*non_redist_gsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*gactivedofs_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -897,7 +897,7 @@ void CONTACT::LagrangeStrategyTsi::store_nodal_quantities(
       Core::LinAlg::export_to(*z_thr_, *tmp);
       vectorglobal = z_thr_;
       vectorglobal = coupST->slave_to_master(tmp);
-      Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
+      Teuchos::RCP<const Epetra_Map> sdofmap, snodemap;
       // loop over all interfaces
       for (int i = 0; i < (int)interface_.size(); ++i)
       {

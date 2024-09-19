@@ -43,8 +43,6 @@ CONTACT::FriNodeDataContainer::FriNodeDataContainer()
     traction_ltl()[i] = 0.0;
     tractionold_ltl()[i] = 0.0;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -99,8 +97,6 @@ void CONTACT::FriNodeDataContainer::pack(Core::Communication::PackBuffer& data) 
   {
     for (int i = 0; i < hasdataderivjump; i++) add_to_pack(data, (derivjump_[i]));
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -163,8 +159,6 @@ void CONTACT::FriNodeDataContainer::unpack(Core::Communication::UnpackBuffer& bu
       extract_from_pack(buffer, derivjump_[i]);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -176,7 +170,6 @@ CONTACT::FriNodeWearDataContainer::FriNodeWearDataContainer()
   wcurr_[0] = 0.0;
   wold_[0] = 0.0;
   waccu_[0] = 0.0;
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -199,8 +192,6 @@ void CONTACT::FriNodeWearDataContainer::pack(Core::Communication::PackBuffer& da
       add_to_pack(data, (d2rows_[i]));
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -224,7 +215,6 @@ void CONTACT::FriNodeWearDataContainer::unpack(Core::Communication::UnpackBuffer
       extract_from_pack(buffer, d2rows_[i]);
     }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -243,8 +233,6 @@ CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) : CONTACT::Node(old), wea
 {
   // not yet used and thus not necessarily consistent
   FOUR_C_THROW("FriNode copy-ctor not yet implemented");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -276,8 +264,6 @@ void CONTACT::FriNode::print(std::ostream& os) const
   CONTACT::Node::print(os);
   if (is_slave())
     if (is_init_active()) os << " InitActive ";
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -303,8 +289,6 @@ void CONTACT::FriNode::pack(Core::Communication::PackBuffer& data) const
   bool hasweardata = (weardata_ != Teuchos::null);
   add_to_pack(data, hasweardata);
   if (hasweardata) weardata_->pack(data);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -345,13 +329,12 @@ void CONTACT::FriNode::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // Check
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | calculate the apparent coefficient of friction            seitz 11/15|
  *----------------------------------------------------------------------*/
-double CONTACT::FriNode::fr_coeff(const double& frcoeff_in)
+double CONTACT::FriNode::fr_coeff(const double frcoeff_in) const
 {
   // return the friction coefficient, if we do not have a TSI problem
   if (cTSIdata_ == Teuchos::null) return frcoeff_in;
@@ -370,7 +353,7 @@ double CONTACT::FriNode::fr_coeff(const double& frcoeff_in)
  | calculate derivative of apparent coefficient of friction  seitz 11/15|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::deriv_fr_coeff_temp(
-    const double& frcoeff_in, std::map<int, double>& derivT, std::map<int, double>& derivDisp)
+    const double frcoeff_in, std::map<int, double>& derivT, std::map<int, double>& derivDisp) const
 {
   derivT.clear();
   derivDisp.clear();
@@ -403,27 +386,17 @@ void CONTACT::FriNode::deriv_fr_coeff_temp(
 /*----------------------------------------------------------------------*
  |  Add a value to the 'SNodes' set                        gitterle 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::add_s_node(int node)
-{
-  fri_data().get_s_nodes().insert(node);
-
-  return;
-}
+void CONTACT::FriNode::add_s_node(int node) { fri_data().get_s_nodes().insert(node); }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the 'MNodes' set                        gitterle 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::add_m_node(int node)
-{
-  fri_data().get_m_nodes().insert(node);
-
-  return;
-}
+void CONTACT::FriNode::add_m_node(int node) { fri_data().get_m_nodes().insert(node); }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the 'D2' map                              farah 06/13|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::add_d2_value(int& row, int& col, double& val)
+void CONTACT::FriNode::add_d2_value(int row, int col, double val)
 {
   // check if this is a master node or slave boundary node
   if (is_slave() == true) FOUR_C_THROW("AddD2Value: function called for slave node %i", id());
@@ -438,14 +411,12 @@ void CONTACT::FriNode::add_d2_value(int& row, int& col, double& val)
   // add the pair (col,val) to the given row
   std::map<int, double>& d2map = wear_data().get_d2()[row];
   d2map[col] += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the 'DerivJump' map                     gitterle 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::add_deriv_jump_value(int& row, const int& col, double val)
+void CONTACT::FriNode::add_deriv_jump_value(int row, int col, double val)
 {
   // check if this is a master node or slave boundary node
   if (is_slave() == false) FOUR_C_THROW("AddJumpValue: function called for master node %i", id());
@@ -462,8 +433,6 @@ void CONTACT::FriNode::add_deriv_jump_value(int& row, const int& col, double val
   // add the pair (col,val) to the given row
   std::map<int, double>& zmap = fri_data().get_deriv_jump()[row];
   zmap[col] += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -477,14 +446,12 @@ void CONTACT::FriNode::add_jump_value(double val, int k)
     FOUR_C_THROW("AddJumpValue: function called for boundary node %i", id());
 
   fri_data().jump_var()[k] += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the 'T' map                               farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::add_t_value(int& row, int& col, double& val)
+void CONTACT::FriNode::add_t_value(int row, int col, double val)
 {
   // check if this is a master node or slave boundary node
   //  if (IsSlave()==false)
@@ -500,14 +467,12 @@ void CONTACT::FriNode::add_t_value(int& row, int& col, double& val)
   // add the pair (col,val) to the given row
   std::map<int, double>& tmap = wear_data().get_t()[row];
   tmap[col] += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the 'E' map                               farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::add_e_value(int& row, int& col, double& val)
+void CONTACT::FriNode::add_e_value(int row, int col, double val)
 {
   // check if this is a master node or slave boundary node
   //  if (IsSlave()==false)
@@ -523,8 +488,6 @@ void CONTACT::FriNode::add_e_value(int& row, int& col, double& val)
   // add the pair (col,val) to the given row
   std::map<int, double>& emap = wear_data().get_e()[row];
   emap[col] += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -549,8 +512,6 @@ void CONTACT::FriNode::store_dm_old()
   // also vectors containing the according master nodes
   fri_data().get_m_nodes_old().clear();
   fri_data().get_m_nodes_old() = fri_data().get_m_nodes();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -562,14 +523,12 @@ void CONTACT::FriNode::store_trac_old()
   for (int j = 0; j < 3; ++j) fri_data().tractionold()[j] = fri_data().traction()[j];
 
   for (int j = 0; j < 3; ++j) fri_data().tractionold_ltl()[j] = fri_data().traction_ltl()[j];
-
-  return;
 }
 
 /*-----------------------------------------------------------------------*
  |  Set the value of deltawear                             gitterle 12/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::add_delta_weighted_wear_value(double& val)
+void CONTACT::FriNode::add_delta_weighted_wear_value(double val)
 {
   // add given value to deltawear_
   wear_data().delta_weighted_wear() += val;
@@ -606,8 +565,6 @@ void CONTACT::FriNode::initialize_data_container()
     if (weardata_ == Teuchos::null)
       weardata_ = Teuchos::rcp(new CONTACT::FriNodeWearDataContainer());
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -620,8 +577,6 @@ void CONTACT::FriNode::reset_data_container()
   weardata_ = Teuchos::null;
   codata_ = Teuchos::null;
   modata_ = Teuchos::null;
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

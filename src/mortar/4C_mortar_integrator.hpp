@@ -37,7 +37,6 @@ namespace Mortar
   class IntElement;
   class IntCell;
 
-
   /*!
   \brief A class to implement Mortar::IntegratorCalc
 
@@ -73,11 +72,11 @@ namespace Mortar
         Mortar::IntElement& sintele, Mortar::IntElement& mintele,
         Teuchos::RCP<Mortar::IntCell> cell, double* auxn) = 0;
 
-    virtual int n_gp() = 0;
+    virtual int n_gp() const = 0;
 
-    virtual double coordinate(int& gp, int dir) = 0;
+    virtual double coordinate(int& gp, int dir) const = 0;
 
-    virtual double weight(int& gp) = 0;
+    virtual double weight(int& gp) const = 0;
   };
 
 
@@ -187,19 +186,19 @@ namespace Mortar
     \brief Return number of Gauss points for this instance
 
     */
-    int n_gp() override { return ngp_; }
+    int n_gp() const override { return ngp_; }
 
     /*!
     \brief Return coordinates of a specific GP in 1D/2D CElement
 
     */
-    double coordinate(int& gp, int dir) override { return coords_(gp, dir); }
+    double coordinate(int& gp, int dir) const override { return coords_(gp, dir); }
 
     /*!
     \brief Return weight of a specific GP in 1D/2D CElement
 
     */
-    double weight(int& gp) override { return weights_[gp]; }
+    double weight(int& gp) const override { return weights_[gp]; }
 
    private:
     //----------------- GP EVALUATIONS ---------------
@@ -231,7 +230,6 @@ namespace Mortar
     std::vector<double> weights_;             // Gauss point weights
   };                                          // class Mortar::Integrator
 }  // namespace Mortar
-
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -2370,7 +2370,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
             // find associated master-side elements
             std::vector<Mortar::Element*> master_mortar_elements(0, nullptr);
-            interface.find_m_eles(*slavenode, master_mortar_elements);
+            interface.find_master_elements(*slavenode, master_mortar_elements);
 
             // loop over all master-side elements
             for (auto* master_mortar_ele : master_mortar_elements)
