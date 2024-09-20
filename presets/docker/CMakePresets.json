@@ -14,6 +14,7 @@
         "FOUR_C_TRILINOS_ROOT": "/opt/4C-dependencies",
         "FOUR_C_QHULL_ROOT": "/opt/4C-dependencies",
         "FOUR_C_PVPYTHON": "/opt/4C-dependencies-testing/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
+        "BUILD_SHARED_LIBS": "ON",
         "FOUR_C_WITH_GOOGLETEST": "ON",
         "FOUR_C_BUILD_DOXYGEN": "ON",
         "FOUR_C_BUILD_READTHEDOCS": "ON",
