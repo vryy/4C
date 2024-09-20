@@ -13,6 +13,8 @@
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 
+#include <unordered_map>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace

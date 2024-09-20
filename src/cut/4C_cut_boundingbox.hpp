@@ -16,6 +16,8 @@
 #include "4C_cut_tolerance.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 

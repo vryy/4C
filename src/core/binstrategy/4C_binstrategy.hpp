@@ -25,6 +25,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <functional>
 #include <list>
 #include <vector>
 

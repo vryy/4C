@@ -28,6 +28,8 @@
 #include "4C_scatra_timint_meshtying_strategy_s2i_elch.hpp"
 #include "4C_utils_parameter_list.hpp"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

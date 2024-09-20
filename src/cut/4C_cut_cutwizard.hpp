@@ -22,6 +22,7 @@ surface meshes
 #include <Teuchos_RCP.hpp>
 
 #include <filesystem>
+#include <functional>
 
 FOUR_C_NAMESPACE_OPEN
 

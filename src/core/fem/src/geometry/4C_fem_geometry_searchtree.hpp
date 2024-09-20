@@ -18,6 +18,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include <set>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 

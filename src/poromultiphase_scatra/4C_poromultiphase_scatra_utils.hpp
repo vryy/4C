@@ -15,8 +15,10 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
+#include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <cmath>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN

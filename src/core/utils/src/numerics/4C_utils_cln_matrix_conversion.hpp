@@ -14,6 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_utils_clnwrapper.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <cstddef>

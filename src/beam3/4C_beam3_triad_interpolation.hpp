@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace LargeRotations

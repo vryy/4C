@@ -12,6 +12,8 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat
