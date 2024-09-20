@@ -820,8 +820,6 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar
     }
 
   }  // loop-end over all gp
-
-  return;
 }
 
 

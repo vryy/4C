@@ -107,23 +107,23 @@ Mortar::Interface::Interface(Teuchos::RCP<Mortar::InterfaceDataContainer> interf
       oldnodecolmap_(interface_data_->old_node_col_map()),
       oldelecolmap_(interface_data_->old_ele_col_map()),
       snoderowmap_(interface_data_->s_node_row_map()),
-      snodecolmap_(interface_data_->s_node_col_map()),
-      mnoderowmap_(interface_data_->m_node_row_map()),
-      mnodecolmap_(interface_data_->m_node_col_map()),
-      snoderowmapbound_(interface_data_->s_node_row_map_bound()),
-      snodecolmapbound_(interface_data_->s_node_col_map_bound()),
-      mnoderowmapnobound_(interface_data_->m_node_row_map_no_bound()),
-      mnodecolmapnobound_(interface_data_->m_node_col_map_no_bound()),
-      selerowmap_(interface_data_->s_ele_row_map()),
-      selecolmap_(interface_data_->s_ele_col_map()),
-      melerowmap_(interface_data_->m_ele_row_map()),
-      melecolmap_(interface_data_->m_ele_col_map()),
-      sdofrowmap_(interface_data_->s_dof_row_map()),
-      sdofcolmap_(interface_data_->s_dof_col_map()),
-      mdofrowmap_(interface_data_->m_dof_row_map()),
-      mdofcolmap_(interface_data_->m_dof_col_map()),
-      psdofrowmap_(interface_data_->ps_dof_row_map()),
-      plmdofmap_(interface_data_->p_lm_dof_row_map()),
+      snodecolmap_(interface_data_->slave_node_col_map()),
+      mnoderowmap_(interface_data_->master_node_row_map()),
+      mnodecolmap_(interface_data_->master_node_col_map()),
+      snoderowmapbound_(interface_data_->slave_node_row_map_bound()),
+      snodecolmapbound_(interface_data_->slave_node_col_map_bound()),
+      mnoderowmapnobound_(interface_data_->master_node_row_map_no_bound()),
+      mnodecolmapnobound_(interface_data_->master_node_col_map_no_bound()),
+      selerowmap_(interface_data_->slave_element_row_map()),
+      selecolmap_(interface_data_->slave_element_col_map()),
+      melerowmap_(interface_data_->master_element_row_map()),
+      melecolmap_(interface_data_->master_element_col_map()),
+      sdofrowmap_(interface_data_->slave_dof_row_map()),
+      sdofcolmap_(interface_data_->slave_dof_col_map()),
+      mdofrowmap_(interface_data_->master_dof_row_map()),
+      mdofcolmap_(interface_data_->master_dof_col_map()),
+      psdofrowmap_(interface_data_->non_redist_slave_dof_row_map()),
+      plmdofmap_(interface_data_->non_redist_lm_dof_row_map()),
       lmdofmap_(interface_data_->lm_dof_row_map()),
       maxdofglobal_(interface_data_->max_dof_global()),
       searchalgo_(interface_data_->search_algorithm()),
@@ -177,23 +177,23 @@ Mortar::Interface::Interface(Teuchos::RCP<InterfaceDataContainer> interfaceData,
       oldnodecolmap_(interface_data_->old_node_col_map()),
       oldelecolmap_(interface_data_->old_ele_col_map()),
       snoderowmap_(interface_data_->s_node_row_map()),
-      snodecolmap_(interface_data_->s_node_col_map()),
-      mnoderowmap_(interface_data_->m_node_row_map()),
-      mnodecolmap_(interface_data_->m_node_col_map()),
-      snoderowmapbound_(interface_data_->s_node_row_map_bound()),
-      snodecolmapbound_(interface_data_->s_node_col_map_bound()),
-      mnoderowmapnobound_(interface_data_->m_node_row_map_no_bound()),
-      mnodecolmapnobound_(interface_data_->m_node_col_map_no_bound()),
-      selerowmap_(interface_data_->s_ele_row_map()),
-      selecolmap_(interface_data_->s_ele_col_map()),
-      melerowmap_(interface_data_->m_ele_row_map()),
-      melecolmap_(interface_data_->m_ele_col_map()),
-      sdofrowmap_(interface_data_->s_dof_row_map()),
-      sdofcolmap_(interface_data_->s_dof_col_map()),
-      mdofrowmap_(interface_data_->m_dof_row_map()),
-      mdofcolmap_(interface_data_->m_dof_col_map()),
-      psdofrowmap_(interface_data_->ps_dof_row_map()),
-      plmdofmap_(interface_data_->p_lm_dof_row_map()),
+      snodecolmap_(interface_data_->slave_node_col_map()),
+      mnoderowmap_(interface_data_->master_node_row_map()),
+      mnodecolmap_(interface_data_->master_node_col_map()),
+      snoderowmapbound_(interface_data_->slave_node_row_map_bound()),
+      snodecolmapbound_(interface_data_->slave_node_col_map_bound()),
+      mnoderowmapnobound_(interface_data_->master_node_row_map_no_bound()),
+      mnodecolmapnobound_(interface_data_->master_node_col_map_no_bound()),
+      selerowmap_(interface_data_->slave_element_row_map()),
+      selecolmap_(interface_data_->slave_element_col_map()),
+      melerowmap_(interface_data_->master_element_row_map()),
+      melecolmap_(interface_data_->master_element_col_map()),
+      sdofrowmap_(interface_data_->slave_dof_row_map()),
+      sdofcolmap_(interface_data_->slave_dof_col_map()),
+      mdofrowmap_(interface_data_->master_dof_row_map()),
+      mdofcolmap_(interface_data_->master_dof_col_map()),
+      psdofrowmap_(interface_data_->non_redist_slave_dof_row_map()),
+      plmdofmap_(interface_data_->non_redist_lm_dof_row_map()),
       lmdofmap_(interface_data_->lm_dof_row_map()),
       maxdofglobal_(interface_data_->max_dof_global()),
       searchalgo_(interface_data_->search_algorithm()),
@@ -1908,11 +1908,11 @@ Teuchos::RCP<Epetra_Map> Mortar::Interface::update_lag_mult_sets(
 void Mortar::Interface::store_unredistributed_maps()
 {
   psdofrowmap_ = Teuchos::rcp(new Epetra_Map(*sdofrowmap_));
-  interface_data_->pm_dof_row_map() = Teuchos::rcp(new Epetra_Map(*mdofrowmap_));
+  interface_data_->non_redist_master_dof_row_map() = Teuchos::rcp(new Epetra_Map(*mdofrowmap_));
   plmdofmap_ = Teuchos::rcp(new Epetra_Map(*lmdofmap_));
 
-  interface_data_->ps_node_row_map() = Teuchos::rcp(new Epetra_Map(*snoderowmap_));
-  interface_data_->pm_node_row_map() = Teuchos::rcp(new Epetra_Map(*mnoderowmap_));
+  interface_data_->non_redist_slave_node_row_map() = Teuchos::rcp(new Epetra_Map(*snoderowmap_));
+  interface_data_->non_redist_master_node_row_map() = Teuchos::rcp(new Epetra_Map(*mnoderowmap_));
 }
 
 /*----------------------------------------------------------------------*
@@ -2456,7 +2456,7 @@ void Mortar::Interface::evaluate_nts()
     std::vector<Mortar::Element*> meles;
 
     // fill vector with possibly contacting meles
-    find_m_eles(*mrtrnode, meles);
+    find_master_elements(*mrtrnode, meles);
 
     // skip calculation if no meles vector is empty
     if (meles.size() < 1) continue;
@@ -2600,20 +2600,21 @@ void Mortar::Interface::post_evaluate(const int step, const int iter)
 /*----------------------------------------------------------------------*
  |  find meles to snode                                     farah 01/16 |
  *----------------------------------------------------------------------*/
-void Mortar::Interface::find_m_eles(Node& mrtrnode, std::vector<Mortar::Element*>& meles) const
+void Mortar::Interface::find_master_elements(
+    const Node& mrtrnode, std::vector<Mortar::Element*>& meles) const
 {
   // clear vector
   meles.clear();
 
   // get adjacent elements for this node
-  Core::Elements::Element** adjeles = mrtrnode.elements();
+  const Core::Elements::Element* const* adjeles = mrtrnode.elements();
 
   // empty vector of master element pointers
   std::set<int> donebefore;
 
   for (int j = 0; j < mrtrnode.num_element(); ++j)
   {
-    auto* adjcele = dynamic_cast<Mortar::Element*>(adjeles[j]);
+    auto* adjcele = dynamic_cast<const Mortar::Element*>(adjeles[j]);
 
     // skip zero-sized nurbs elements (slave)
     if (adjcele->zero_sized()) continue;
@@ -2646,8 +2647,8 @@ void Mortar::Interface::find_m_eles(Node& mrtrnode, std::vector<Mortar::Element*
 /*----------------------------------------------------------------------*
  |  find mnodes to snode                                    farah 01/16 |
  *----------------------------------------------------------------------*/
-void Mortar::Interface::find_m_nodes(
-    Node& mrtrnode, std::vector<Mortar::Element*>& meles, std::vector<Node*>& mnodes)
+void Mortar::Interface::find_master_nodes(
+    const Node& mrtrnode, std::vector<Mortar::Element*>& meles, std::vector<Node*>& mnodes) const
 {
   // clear vector
   mnodes.clear();
@@ -4308,7 +4309,7 @@ void Mortar::Interface::add_ma_sharing_ref_interface(const Interface* ref_interf
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& outputParams)
+void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& outputParams) const
 {
   using Teuchos::RCP;
 

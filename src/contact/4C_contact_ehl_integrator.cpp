@@ -15,7 +15,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::IntegratorEhl::integrate_gp_3d(Mortar::Element& sele, Mortar::Element& mele,
@@ -175,8 +174,6 @@ void CONTACT::IntegratorEhl::gp_weighted_surf_grad_and_deriv(Mortar::Element& se
       }
     }
   }
-
-  return;
 }
 
 void CONTACT::IntegratorEhl::gp_weighted_av_rel_vel(Mortar::Element& sele, Mortar::Element& mele,
@@ -329,8 +326,6 @@ void CONTACT::IntegratorEhl::gp_weighted_av_rel_vel(Mortar::Element& sele, Morta
         cnode->ehl_data().get_weighted_av_tang_vel_deriv()[p->first](d) -=
             jac * wgt * lmval(i) * vt2 * p->second;
   }
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -169,11 +169,12 @@ namespace CONTACT
     bool has_poro_no_penetration() const override { return no_penetration_; }
 
     // Return Lagrange Multiplier for No Penetration Condition!
-    Teuchos::RCP<Epetra_Vector> lambda_no_pen() { return lambda_; }
+    Teuchos::RCP<Epetra_Vector>& lambda_no_pen() { return lambda_; }
     Teuchos::RCP<const Epetra_Vector> lambda_no_pen() const { return lambda_; }
 
     // Return all active fluid slave dofs
-    Teuchos::RCP<Epetra_Map> fluid_active_n_dof_map() { return fgactiven_; };
+    Teuchos::RCP<Epetra_Map>& fluid_active_n_dof_map() { return fgactiven_; };
+    Teuchos::RCP<const Epetra_Map> fluid_active_n_dof_map() const { return fgactiven_; };
 
    protected:
     // don't want = operator and cctor

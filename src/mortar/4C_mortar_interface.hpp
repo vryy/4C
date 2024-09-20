@@ -219,94 +219,111 @@ namespace Mortar
 
     inline Teuchos::RCP<Epetra_Map>& s_node_row_map() { return snoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> s_node_row_map() const { return snoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_node_row_map() const { return snoderowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& s_node_col_map() { return snodecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& slave_node_col_map() { return snodecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> s_node_col_map() const { return snodecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_node_col_map() const { return snodecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& m_node_row_map() { return mnoderowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& master_node_row_map() { return mnoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> m_node_row_map() const { return mnoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> master_node_row_map() const { return mnoderowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& ps_node_row_map() { return psnoderowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& non_redist_slave_node_row_map() { return psnoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> ps_node_row_map() const { return psnoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> non_redist_slave_node_row_map() const
+    {
+      return psnoderowmap_;
+    }
 
-    inline Teuchos::RCP<Epetra_Map>& pm_node_row_map() { return pmnoderowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& non_redist_master_node_row_map() { return pmnoderowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> pm_node_row_map() const { return pmnoderowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> non_redist_master_node_row_map() const
+    {
+      return pmnoderowmap_;
+    }
 
-    inline Teuchos::RCP<Epetra_Map>& m_node_col_map() { return mnodecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& master_node_col_map() { return mnodecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> m_node_col_map() const { return mnodecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> master_node_col_map() const { return mnodecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& s_node_row_map_bound() { return snoderowmapbound_; }
+    inline Teuchos::RCP<Epetra_Map>& slave_node_row_map_bound() { return snoderowmapbound_; }
 
-    inline Teuchos::RCP<const Epetra_Map> s_node_row_map_bound() const { return snoderowmapbound_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_node_row_map_bound() const
+    {
+      return snoderowmapbound_;
+    }
 
+    inline Teuchos::RCP<Epetra_Map>& slave_node_col_map_bound() { return snodecolmapbound_; }
 
-    inline Teuchos::RCP<Epetra_Map>& s_node_col_map_bound() { return snodecolmapbound_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_node_col_map_bound() const
+    {
+      return snodecolmapbound_;
+    }
 
-    inline Teuchos::RCP<const Epetra_Map> s_node_col_map_bound() const { return snodecolmapbound_; }
+    inline Teuchos::RCP<Epetra_Map>& master_node_row_map_no_bound() { return mnoderowmapnobound_; }
 
-    inline Teuchos::RCP<Epetra_Map>& m_node_row_map_no_bound() { return mnoderowmapnobound_; }
-
-    inline Teuchos::RCP<const Epetra_Map> m_node_row_map_no_bound() const
+    inline Teuchos::RCP<const Epetra_Map> master_node_row_map_no_bound() const
     {
       return mnoderowmapnobound_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& m_node_col_map_no_bound() { return mnodecolmapnobound_; }
+    inline Teuchos::RCP<Epetra_Map>& master_node_col_map_no_bound() { return mnodecolmapnobound_; }
 
-    inline Teuchos::RCP<const Epetra_Map> m_node_col_map_no_bound() const
+    inline Teuchos::RCP<const Epetra_Map> master_node_col_map_no_bound() const
     {
       return mnodecolmapnobound_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& s_ele_row_map() { return selerowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& slave_element_row_map() { return selerowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> s_ele_row_map() const { return selerowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_element_row_map() const { return selerowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& s_ele_col_map() { return selecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& slave_element_col_map() { return selecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> s_ele_col_map() const { return selecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_element_col_map() const { return selecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& m_ele_row_map() { return melerowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& master_element_row_map() { return melerowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> m_ele_row_map() const { return melerowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> master_element_row_map() const { return melerowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& m_ele_col_map() { return melecolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& master_element_col_map() { return melecolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> m_ele_col_map() const { return melecolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> master_element_col_map() const { return melecolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& s_dof_row_map() { return sdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& slave_dof_row_map() { return sdofrowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> s_dof_row_map() const { return sdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_dof_row_map() const { return sdofrowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& s_dof_col_map() { return sdofcolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& slave_dof_col_map() { return sdofcolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> s_dof_col_map() const { return sdofcolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> slave_dof_col_map() const { return sdofcolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& m_dof_row_map() { return mdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& master_dof_row_map() { return mdofrowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> m_dof_row_map() const { return mdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> master_dof_row_map() const { return mdofrowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& m_dof_col_map() { return mdofcolmap_; }
+    inline Teuchos::RCP<Epetra_Map>& master_dof_col_map() { return mdofcolmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> m_dof_col_map() const { return mdofcolmap_; }
+    inline Teuchos::RCP<const Epetra_Map> master_dof_col_map() const { return mdofcolmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& ps_dof_row_map() { return psdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& non_redist_slave_dof_row_map() { return psdofrowmap_; }
 
-    inline Teuchos::RCP<Epetra_Map>& pm_dof_row_map() { return pmdofrowmap_; }
+    inline Teuchos::RCP<Epetra_Map>& non_redist_master_dof_row_map() { return pmdofrowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> pm_dof_row_map() const { return pmdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> non_redist_master_dof_row_map() const
+    {
+      return pmdofrowmap_;
+    }
 
-    inline Teuchos::RCP<const Epetra_Map> ps_dof_row_map() const { return psdofrowmap_; }
+    inline Teuchos::RCP<const Epetra_Map> non_redist_slave_dof_row_map() const
+    {
+      return psdofrowmap_;
+    }
 
-    inline Teuchos::RCP<Epetra_Map>& p_lm_dof_row_map() { return plmdofmap_; }
+    inline Teuchos::RCP<Epetra_Map>& non_redist_lm_dof_row_map() { return plmdofmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> p_lm_dof_row_map() const { return plmdofmap_; }
+    inline Teuchos::RCP<const Epetra_Map> non_redist_lm_dof_row_map() const { return plmdofmap_; }
 
     inline Teuchos::RCP<Epetra_Map>& lm_dof_row_map() { return lmdofmap_; }
 
@@ -637,7 +654,7 @@ namespace Mortar
     /*!
     \brief Get global -> local processor map
     */
-    std::map<int, int>& procmap() { return procmap_; }
+    const std::map<int, int>& procmap() const { return procmap_; }
 
     //! @name Access methods
 
@@ -666,12 +683,12 @@ namespace Mortar
 
     Returns TRUE if at least one higher-order 2d/3d slave element in interface.
     */
-    const bool& quadslave() { return quadslave_; };
+    bool quadslave() const { return quadslave_; };
 
     /*!
     \brief Get flag indicating nurbs shape functions
     */
-    bool is_nurbs() { return nurbs_; };
+    bool is_nurbs() const { return nurbs_; };
 
     /*!
     \brief Get type of search algorithm
@@ -691,7 +708,7 @@ namespace Mortar
     /*!
     \brief Get column map of all interface nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& old_col_nodes() const
+    Teuchos::RCP<const Epetra_Map> old_col_nodes() const
     {
       if (filled())
         return oldnodecolmap_;
@@ -703,7 +720,7 @@ namespace Mortar
     /*!
     \brief Get column map of all interface elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& old_col_elements() const
+    Teuchos::RCP<const Epetra_Map> old_col_elements() const
     {
       if (filled())
         return oldelecolmap_;
@@ -715,7 +732,7 @@ namespace Mortar
     /*!
     \brief Get row map of slave nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_row_nodes() const
+    Teuchos::RCP<const Epetra_Map> slave_row_nodes() const
     {
       if (filled())
         return snoderowmap_;
@@ -729,17 +746,17 @@ namespace Mortar
 
     \note This is the slave row map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& p_slave_row_nodes() const
+    Teuchos::RCP<const Epetra_Map> non_redist_slave_row_nodes() const
     {
       if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->ps_node_row_map();
+      return interface_data_->non_redist_slave_node_row_map();
     }
 
     /*!
     \brief Get row map of master nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_row_nodes() const
+    Teuchos::RCP<const Epetra_Map> master_row_nodes() const
     {
       if (filled())
         return mnoderowmap_;
@@ -753,17 +770,17 @@ namespace Mortar
 
     \note This is the master row map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& p_master_row_nodes() const
+    Teuchos::RCP<const Epetra_Map> non_redist_master_row_nodes() const
     {
       if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->pm_node_row_map();
+      return interface_data_->non_redist_master_node_row_map();
     }
 
     /*!
     \brief Get column map of slave nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_col_nodes() const
+    Teuchos::RCP<const Epetra_Map> slave_col_nodes() const
     {
       if (filled())
         return snodecolmap_;
@@ -775,7 +792,7 @@ namespace Mortar
     /*!
     \brief Get column map of master nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_col_nodes() const
+    Teuchos::RCP<const Epetra_Map> master_col_nodes() const
     {
       if (filled())
         return mnodecolmap_;
@@ -787,7 +804,7 @@ namespace Mortar
     /*!
     \brief Get row map of slave nodes + boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_row_nodes_bound() const
+    Teuchos::RCP<const Epetra_Map> slave_row_nodes_bound() const
     {
       if (filled())
         return snoderowmapbound_;
@@ -799,7 +816,7 @@ namespace Mortar
     /*!
     \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_col_nodes_bound() const
+    Teuchos::RCP<const Epetra_Map> slave_col_nodes_bound() const
     {
       if (filled())
         return snodecolmapbound_;
@@ -811,7 +828,7 @@ namespace Mortar
     /*!
     \brief Get row map of master nodes - boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_row_nodes_no_bound() const
+    Teuchos::RCP<const Epetra_Map> master_row_nodes_no_bound() const
     {
       if (filled())
         return mnoderowmapnobound_;
@@ -823,7 +840,7 @@ namespace Mortar
     /*!
     \brief Get column map of master nodes - boundary nodes (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_col_nodes_no_bound() const
+    Teuchos::RCP<const Epetra_Map> master_col_nodes_no_bound() const
     {
       if (filled())
         return mnodecolmapnobound_;
@@ -835,7 +852,7 @@ namespace Mortar
     /*!
     \brief Get row map of slave elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_row_elements() const
+    Teuchos::RCP<const Epetra_Map> slave_row_elements() const
     {
       if (filled())
         return selerowmap_;
@@ -847,7 +864,7 @@ namespace Mortar
     /*!
     \brief Get row map of master elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_row_elements() const
+    Teuchos::RCP<const Epetra_Map> master_row_elements() const
     {
       if (filled())
         return melerowmap_;
@@ -859,7 +876,7 @@ namespace Mortar
     /*!
     \brief Get column map of slave elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_col_elements() const
+    Teuchos::RCP<const Epetra_Map> slave_col_elements() const
     {
       if (filled())
         return selecolmap_;
@@ -871,7 +888,7 @@ namespace Mortar
     /*!
     \brief Get column map of master elements (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_col_elements() const
+    Teuchos::RCP<const Epetra_Map> master_col_elements() const
     {
       if (filled())
         return melecolmap_;
@@ -883,7 +900,7 @@ namespace Mortar
     /*!
     \brief Get row map of slave dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_row_dofs() const
+    Teuchos::RCP<const Epetra_Map> slave_row_dofs() const
     {
       if (filled())
         return sdofrowmap_;
@@ -895,7 +912,7 @@ namespace Mortar
     /*!
     \brief Get column map of slave dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& slave_col_dofs() const
+    Teuchos::RCP<const Epetra_Map> slave_col_dofs() const
     {
       if (filled())
         return sdofcolmap_;
@@ -909,17 +926,17 @@ namespace Mortar
 
     \note This is the slave dof map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& p_slave_row_dofs() const
+    Teuchos::RCP<const Epetra_Map> non_redist_slave_row_dofs() const
     {
       if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->ps_dof_row_map();
+      return interface_data_->non_redist_slave_dof_row_map();
     }
 
     /*!
     \brief Get row map of master dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_row_dofs() const
+    Teuchos::RCP<const Epetra_Map> master_row_dofs() const
     {
       if (filled())
         return mdofrowmap_;
@@ -931,7 +948,7 @@ namespace Mortar
     /*!
     \brief Get column map of master dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& master_col_dofs() const
+    Teuchos::RCP<const Epetra_Map> master_col_dofs() const
     {
       if (filled())
         return mdofcolmap_;
@@ -945,17 +962,17 @@ namespace Mortar
 
     \note This is the master dof map before any parallel redistribution took place.
     */
-    const Teuchos::RCP<Epetra_Map>& p_master_row_dofs() const
+    Teuchos::RCP<const Epetra_Map> non_redist_master_row_dofs() const
     {
       if (not filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
-      return interface_data_->pm_dof_row_map();
+      return interface_data_->non_redist_master_dof_row_map();
     }
 
     /*!
     \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
     */
-    const Teuchos::RCP<Epetra_Map>& lag_mult_dofs() const
+    Teuchos::RCP<const Epetra_Map> lag_mult_dofs() const
     {
       if (filled())
         return lmdofmap_;
@@ -1306,12 +1323,12 @@ namespace Mortar
     /*!
     \brief find meles for one snode
     */
-    void find_m_eles(Node& mrtrnode, std::vector<Mortar::Element*>& meles) const;
+    void find_master_elements(const Node& mrtrnode, std::vector<Mortar::Element*>& meles) const;
 
     /*!
     \brief return integration time for current interface
     */
-    double inttime() { return inttime_interface_; };
+    double inttime() const { return inttime_interface_; };
 
     /*!
     \brief return bool if interface is redistributed
@@ -1326,12 +1343,12 @@ namespace Mortar
     \brief Visualize mortar stuff with gmsh (may be overloaded)
     */
     virtual void visualize_gmsh(
-        const int step, const int iter, const std::string& file_name_only_prefix);
+        const int step, const int iter, const std::string& file_name_only_prefix) const;
 
     /*!
     \brief Print shape function type (enum)
     */
-    void print_shape_fcn() { std::cout << shapefcn_ << std::endl; };
+    void print_shape_fcn() const { std::cout << shapefcn_ << std::endl; };
 
     void set_poro_flag(bool poro) { interface_data_->is_poro() = poro; }
     void set_poro_type(Inpar::Mortar::Problemtype type) { interface_data_->poro_type() = type; }
@@ -1355,7 +1372,7 @@ namespace Mortar
 
     \param[in] ouputParams Parameter list with stuff required by interfaces to write output
     */
-    virtual void postprocess_quantities(const Teuchos::ParameterList& outputParams);
+    virtual void postprocess_quantities(const Teuchos::ParameterList& outputParams) const;
 
     //! @}
 
@@ -1519,8 +1536,8 @@ namespace Mortar
     \brief find master nodes for one snode
 
     */
-    void find_m_nodes(
-        Node& mrtrnode, std::vector<Mortar::Element*>& meles, std::vector<Node*>& mnodes);
+    void find_master_nodes(const Node& mrtrnode, std::vector<Mortar::Element*>& meles,
+        std::vector<Node*>& mnodes) const;
 
     /*!
     \brief Initialize data container for nodes and elements
@@ -1737,6 +1754,7 @@ namespace Mortar
     */
     void communicate_quad_slave_status_among_all_procs();
 
+   public:
     /*!
     \brief Get a const reference to internal interface data
 
@@ -1833,10 +1851,8 @@ namespace Mortar
   };  // class Interface
 }  // namespace Mortar
 
-
 // << operator
 std::ostream& operator<<(std::ostream& os, const Mortar::Interface& interface);
-
 
 FOUR_C_NAMESPACE_CLOSE
 

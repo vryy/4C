@@ -656,7 +656,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 /*----------------------------------------------------------------------*
  |  read and check input parameters (public)                  popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
+bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams) const
 {
   // read parameter lists from Global::Problem
   const Teuchos::ParameterList& mortar = Global::Problem::instance()->mortar_coupling_params();
@@ -1281,7 +1281,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // *********************************************************************
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> gapnodes = get_strategy().problem_nodes();
-  Teuchos::RCP<Epetra_Vector> gaps =
+  Teuchos::RCP<const Epetra_Vector> gaps =
       Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strategy_)->contact_wgap();
   if (gaps != Teuchos::null)
   {
@@ -1302,12 +1302,12 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   Teuchos::RCP<Epetra_Map> problemdofs = get_strategy().problem_dofs();
 
   // normal direction
-  Teuchos::RCP<Epetra_Vector> normalstresses = get_strategy().contact_normal_stress();
+  Teuchos::RCP<const Epetra_Vector> normalstresses = get_strategy().contact_normal_stress();
   Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
-  Teuchos::RCP<Epetra_Vector> tangentialstresses = get_strategy().contact_tangential_stress();
+  Teuchos::RCP<const Epetra_Vector> tangentialstresses = get_strategy().contact_tangential_stress();
   Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
@@ -1319,12 +1319,12 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   if (get_strategy().contact_normal_force() != Teuchos::null)
   {
     // normal direction
-    Teuchos::RCP<Epetra_Vector> normalforce = get_strategy().contact_normal_force();
+    Teuchos::RCP<const Epetra_Vector> normalforce = get_strategy().contact_normal_force();
     Teuchos::RCP<Epetra_Vector> normalforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::export_to(*normalforce, *normalforceexp);
 
     // tangential plane
-    Teuchos::RCP<Epetra_Vector> tangentialforce = get_strategy().contact_tangential_force();
+    Teuchos::RCP<const Epetra_Vector> tangentialforce = get_strategy().contact_tangential_force();
     Teuchos::RCP<Epetra_Vector> tangentialforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::export_to(*tangentialforce, *tangentialforceexp);
 
@@ -1351,11 +1351,11 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     get_strategy().output_wear();
 
     // write output
-    Teuchos::RCP<Epetra_Vector> wearoutput = get_strategy().contact_wear();
+    Teuchos::RCP<const Epetra_Vector> wearoutput = get_strategy().contact_wear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     output.write_vector("wear", wearoutputexp);
-    get_strategy().contact_wear()->PutScalar(0.0);
+    get_strategy().reset_wear();
   }
 
   // *********************************************************************
@@ -1372,7 +1372,6 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     output.write_vector("poronopen_lambda", lambdaoutexp);
   }
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -1380,6 +1379,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 void CONTACT::Manager::postprocess_quantities_per_interface(
     Teuchos::RCP<Teuchos::ParameterList> outputParams)
 {
+  get_strategy().compute_contact_stresses();
   get_strategy().postprocess_quantities_per_interface(outputParams);
 }
 
@@ -1504,7 +1504,7 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
  |  Find Physical Type (Poro or Structure) of Poro Interface  ager 11/15|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::find_poro_interface_types(bool& poromaster, bool& poroslave,
-    bool& structmaster, bool& structslave, int& slavetype, int& mastertype)
+    bool& structmaster, bool& structslave, int& slavetype, int& mastertype) const
 {
   // find poro and structure elements when a poro coupling condition is applied on an element
   // and restrict to pure poroelastic or pure structural interfaces' sides.

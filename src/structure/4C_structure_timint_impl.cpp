@@ -455,14 +455,14 @@ void Solid::TimIntImpl::predict()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> fres = pressure_->extract_other_vector(fres_);
-    normfres_ = Solid::calculate_vector_norm(iternorm_, fres);
+    normfres_ = Solid::calculate_vector_norm(iternorm_, *fres);
     Teuchos::RCP<Epetra_Vector> fpres = pressure_->extract_cond_vector(fres_);
-    normpfres_ = Solid::calculate_vector_norm(iternorm_, fpres);
+    normpfres_ = Solid::calculate_vector_norm(iternorm_, *fpres);
   }
   else
   {
     // build residual force norm
-    normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+    normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
   }
 
   // determine characteristic norms
@@ -517,14 +517,14 @@ void Solid::TimIntImpl::prepare_partition_step()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> fres = pressure_->extract_other_vector(fres_);
-    normfres_ = Solid::calculate_vector_norm(iternorm_, fres);
+    normfres_ = Solid::calculate_vector_norm(iternorm_, *fres);
     Teuchos::RCP<Epetra_Vector> fpres = pressure_->extract_cond_vector(fres_);
-    normpfres_ = Solid::calculate_vector_norm(iternorm_, fpres);
+    normpfres_ = Solid::calculate_vector_norm(iternorm_, *fpres);
   }
   else
   {
     // build residual force norm
-    normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+    normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
   }
 
   // determine characteristic norms
@@ -695,26 +695,26 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   if (bPressure == false && bContactSP == false)
   {
     // build residual displacement norm
-    normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+    normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
   }
   if (bPressure)
   {
-    Teuchos::RCP<Epetra_Vector> pres = pressure_->extract_cond_vector(disi_);
-    Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector(disi_);
-    normpres_ = Solid::calculate_vector_norm(iternorm_, pres);
-    normdisi_ = Solid::calculate_vector_norm(iternorm_, disp);
+    Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(disi_);
+    Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(disi_);
+    normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+    normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
   }
   if (bContactSP)
   {
     // extract subvectors
-    Teuchos::RCP<Epetra_Vector> lagrincr =
+    Teuchos::RCP<const Epetra_Vector> lagrincr =
         cmtbridge_->get_strategy().lagrange_multiplier_increment();
 
     // build residual displacement norm
-    normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+    normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
     // build lagrange multiplier increment norm
     if (lagrincr != Teuchos::null)
-      normlagr_ = Solid::calculate_vector_norm(iternorm_, lagrincr);
+      normlagr_ = Solid::calculate_vector_norm(iternorm_, *lagrincr);
     else
       normlagr_ = -1.0;
   }
@@ -1145,10 +1145,10 @@ double Solid::TimIntImpl::calc_ref_norm_displacement()
   if (pressure_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector((*dis_)(0));
-    charnormdis = Solid::calculate_vector_norm(iternorm_, disp);
+    charnormdis = Solid::calculate_vector_norm(iternorm_, *disp);
   }
   else
-    charnormdis = Solid::calculate_vector_norm(iternorm_, (*dis_)(0));
+    charnormdis = Solid::calculate_vector_norm(iternorm_, *(*dis_)(0));
 
   // rise your hat
   return charnormdis;
@@ -1610,42 +1610,42 @@ int Solid::TimIntImpl::newton_full()
     if (bPressure == false && bContactSP == false)
     {
       // build residual force norm
-      normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+      normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
       // build residual displacement norm
-      normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+      normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
     }
     if (bPressure)
     {
-      Teuchos::RCP<Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
-      Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
-      normpfres_ = Solid::calculate_vector_norm(iternorm_, pres);
-      normfres_ = Solid::calculate_vector_norm(iternorm_, disp);
+      Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
+      Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
+      normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+      normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
       pres = pressure_->extract_cond_vector(disi_);
       disp = pressure_->extract_other_vector(disi_);
-      normpres_ = Solid::calculate_vector_norm(iternorm_, pres);
-      normdisi_ = Solid::calculate_vector_norm(iternorm_, disp);
+      normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+      normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
     }
     if (bContactSP)
     {
       // extract subvectors (for mt and contact use only contact lm)
-      Teuchos::RCP<Epetra_Vector> lagrincr =
+      Teuchos::RCP<const Epetra_Vector> lagrincr =
           cmtbridge_->get_strategy().lagrange_multiplier_increment();
-      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->get_strategy().constraint_rhs();
+      Teuchos::RCP<const Epetra_Vector> constrrhs = cmtbridge_->get_strategy().constraint_rhs();
 
       // build residual force norm
-      normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+      normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
       // build residual displacement norm
-      normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+      normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
       // build residual constraint norm
       if (constrrhs != Teuchos::null)
-        normcontconstr_ = Solid::calculate_vector_norm(iternorm_, constrrhs);
+        normcontconstr_ = Solid::calculate_vector_norm(iternorm_, *constrrhs);
       else
         normcontconstr_ = -1.0;
 
       // build lagrange multiplier increment norm
       if (lagrincr != Teuchos::null)
-        normlagr_ = Solid::calculate_vector_norm(iternorm_, lagrincr);
+        normlagr_ = Solid::calculate_vector_norm(iternorm_, *lagrincr);
       else
         normlagr_ = -1.0;
 
@@ -1657,31 +1657,31 @@ int Solid::TimIntImpl::newton_full()
 
       if (wtype == Inpar::Wear::wear_primvar)
       {
-        Teuchos::RCP<Epetra_Vector> wincr = cmtbridge_->get_strategy().w_solve_incr();
-        Teuchos::RCP<Epetra_Vector> wearrhs = cmtbridge_->get_strategy().wear_rhs();
+        Teuchos::RCP<const Epetra_Vector> wincr = cmtbridge_->get_strategy().w_solve_incr();
+        Teuchos::RCP<const Epetra_Vector> wearrhs = cmtbridge_->get_strategy().wear_rhs();
 
         if (wearrhs != Teuchos::null)
-          normwrhs_ = Solid::calculate_vector_norm(iternorm_, wearrhs);
+          normwrhs_ = Solid::calculate_vector_norm(iternorm_, *wearrhs);
         else
           normwrhs_ = -1.0;
 
         if (wincr != Teuchos::null)
-          normw_ = Solid::calculate_vector_norm(iternorm_, wincr);
+          normw_ = Solid::calculate_vector_norm(iternorm_, *wincr);
         else
           normw_ = -1.0;
 
         if (wside == Inpar::Wear::wear_both)
         {
-          Teuchos::RCP<Epetra_Vector> wmincr = cmtbridge_->get_strategy().wm_solve_incr();
-          Teuchos::RCP<Epetra_Vector> wearmrhs = cmtbridge_->get_strategy().wear_m_rhs();
+          Teuchos::RCP<const Epetra_Vector> wmincr = cmtbridge_->get_strategy().wm_solve_incr();
+          Teuchos::RCP<const Epetra_Vector> wearmrhs = cmtbridge_->get_strategy().wear_m_rhs();
 
           if (wearmrhs != Teuchos::null)
-            normwmrhs_ = Solid::calculate_vector_norm(iternorm_, wearmrhs);
+            normwmrhs_ = Solid::calculate_vector_norm(iternorm_, *wearmrhs);
           else
             normwmrhs_ = -1.0;
 
           if (wmincr != Teuchos::null)
-            normwm_ = Solid::calculate_vector_norm(iternorm_, wmincr);
+            normwm_ = Solid::calculate_vector_norm(iternorm_, *wmincr);
           else
             normwm_ = -1.0;
         }
@@ -2036,9 +2036,9 @@ int Solid::TimIntImpl::newton_ls()
     ***************************************************************/
 
     // build residual force norm
-    normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+    normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
     // build residual displacement norm
-    normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+    normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
 
     print_newton_iter();
 
@@ -2263,7 +2263,7 @@ int Solid::TimIntImpl::ls_eval_merit_fct(double& merit_fct)
 /*----------------------------------------------------------------------*/
 void Solid::TimIntImpl::ls_print_line_search_iter(double* mf_value, int iter_ls, double step_red)
 {
-  normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+  normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
   // print to standard out
   if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0) and printiter_)
   {
@@ -2297,9 +2297,6 @@ void Solid::TimIntImpl::ls_print_line_search_iter(double* mf_value, int iter_ls,
     fprintf(stdout, "%s\n", oss.str().c_str());
     fflush(stdout);
   }
-
-  // see you
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2608,22 +2605,22 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       if (pressure_ != Teuchos::null)
       {
-        Teuchos::RCP<Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
-        Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
-        normpfres_ = Solid::calculate_vector_norm(iternorm_, pres);
-        normfres_ = Solid::calculate_vector_norm(iternorm_, disp);
+        Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
+        Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
+        normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+        normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
         pres = pressure_->extract_cond_vector(disi_);
         disp = pressure_->extract_other_vector(disi_);
-        normpres_ = Solid::calculate_vector_norm(iternorm_, pres);
-        normdisi_ = Solid::calculate_vector_norm(iternorm_, disp);
+        normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+        normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
       }
       else
       {
         // build residual force norm
-        normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+        normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
         // build residual displacement norm
-        normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+        normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
         // build residual Lagrange multiplier norm
         normcon_ = conman_->get_error_norm();
       }
@@ -2776,15 +2773,15 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       if (pressure_ != Teuchos::null)
       {
-        Teuchos::RCP<Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
-        Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
-        normpfres_ = Solid::calculate_vector_norm(iternorm_, pres);
-        normfres_ = Solid::calculate_vector_norm(iternorm_, disp);
+        Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
+        Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
+        normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+        normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
         pres = pressure_->extract_cond_vector(disi_);
         disp = pressure_->extract_other_vector(disi_);
-        normpres_ = Solid::calculate_vector_norm(iternorm_, pres);
-        normdisi_ = Solid::calculate_vector_norm(iternorm_, disp);
+        normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+        normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
       }
       else
       {
@@ -2792,17 +2789,17 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
         {
           // build residual force norm with reduced force residual
           Teuchos::RCP<Epetra_Vector> fres_r = mor_->reduce_residual(fres_);
-          normfresr_ = Solid::calculate_vector_norm(iternorm_, fres_r);
+          normfresr_ = Solid::calculate_vector_norm(iternorm_, *fres_r);
 
           // build residual displacement norm with reduced residual displacements
           Teuchos::RCP<Epetra_Vector> disi_r = mor_->reduce_residual(disi_);
-          normdisir_ = Solid::calculate_vector_norm(iternorm_, disi_r);
+          normdisir_ = Solid::calculate_vector_norm(iternorm_, *disi_r);
         }
 
         // build residual force norm
-        normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+        normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
         // build residual displacement norm
-        normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+        normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
         // build residual 0D cardiovascular residual norm
         normcardvasc0d_ = cardvasc0dman_->get_cardiovascular0_drhs_norm();
         // build residual 0D cardiovascular residual dof increment norm
@@ -3427,41 +3424,41 @@ int Solid::TimIntImpl::ptc()
     if (bPressure == false && bContactSP == false)
     {
       // build residual force norm
-      normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+      normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
       // build residual displacement norm
-      normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+      normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
     }
     if (bPressure)
     {
       Teuchos::RCP<Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
       Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
-      normpfres_ = Solid::calculate_vector_norm(iternorm_, pres);
-      normfres_ = Solid::calculate_vector_norm(iternorm_, disp);
+      normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+      normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
       pres = pressure_->extract_cond_vector(disi_);
       disp = pressure_->extract_other_vector(disi_);
-      normpres_ = Solid::calculate_vector_norm(iternorm_, pres);
-      normdisi_ = Solid::calculate_vector_norm(iternorm_, disp);
+      normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
+      normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
     }
     if (bContactSP)
     {
       // extract subvectors
-      Teuchos::RCP<Epetra_Vector> lagrincr =
+      Teuchos::RCP<const Epetra_Vector> lagrincr =
           cmtbridge_->get_strategy().lagrange_multiplier_increment();
-      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->get_strategy().constraint_rhs();
+      Teuchos::RCP<const Epetra_Vector> constrrhs = cmtbridge_->get_strategy().constraint_rhs();
 
       // build residual force norm
-      normfres_ = Solid::calculate_vector_norm(iternorm_, fres_);
+      normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
       // build residual displacement norm
-      normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+      normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
       // build residual constraint norm
       if (constrrhs != Teuchos::null)
-        normcontconstr_ = Solid::calculate_vector_norm(iternorm_, constrrhs);
+        normcontconstr_ = Solid::calculate_vector_norm(iternorm_, *constrrhs);
       else
         normcontconstr_ = -1.0;
       // build lagrange multiplier increment norm
       if (lagrincr != Teuchos::null)
-        normlagr_ = Solid::calculate_vector_norm(iternorm_, lagrincr);
+        normlagr_ = Solid::calculate_vector_norm(iternorm_, *lagrincr);
       else
         normlagr_ = -1.0;
     }

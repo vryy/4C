@@ -149,7 +149,7 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
-    double initial_penalty() override { return 0.0; }
+    double initial_penalty() const override { return 0.0; }
     void reset_penalty() override {}
     void modify_penalty() override {}
     void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override {}

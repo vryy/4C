@@ -102,8 +102,8 @@ namespace CONTACT
         const double* mxi, const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
         const std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi);
   };
-
 }  // namespace CONTACT
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

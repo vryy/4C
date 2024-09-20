@@ -363,8 +363,6 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
   porolagstrategy_->poro_mt_initialize();
 
   firstinit_ = true;
-
-  return;
 }
 
 

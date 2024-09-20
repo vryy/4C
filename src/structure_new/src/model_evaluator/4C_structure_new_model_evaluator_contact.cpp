@@ -453,7 +453,7 @@ void Solid::ModelEvaluator::Contact::determine_stress_strain()
      *                                                         farah 06/13
      * ******************************************************************/
     // evaluate wear (not weighted)
-    strategy().contact_wear()->PutScalar(0.0);
+    strategy().reset_wear();
     strategy().output_wear();
   }
 }

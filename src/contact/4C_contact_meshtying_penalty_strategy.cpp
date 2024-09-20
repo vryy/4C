@@ -98,10 +98,10 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra
   // of the global problem (stored in the "p"-version of dof maps)
   if (par_redist())
   {
-    mtm_ = Mortar::matrix_row_transform(mtm_, pgmdofrowmap_);
-    mtd_ = Mortar::matrix_row_transform(mtd_, pgmdofrowmap_);
-    dtm_ = Mortar::matrix_row_transform(dtm_, pgsdofrowmap_);
-    dtd_ = Mortar::matrix_row_transform(dtd_, pgsdofrowmap_);
+    mtm_ = Mortar::matrix_row_transform(mtm_, non_redist_gmdofrowmap_);
+    mtd_ = Mortar::matrix_row_transform(mtd_, non_redist_gmdofrowmap_);
+    dtm_ = Mortar::matrix_row_transform(dtm_, non_redist_gsdofrowmap_);
+    dtd_ = Mortar::matrix_row_transform(dtd_, non_redist_gsdofrowmap_);
   }
 
   // full stiffness matrix

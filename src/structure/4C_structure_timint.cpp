@@ -898,7 +898,7 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> 
   if (Xslavemod == Teuchos::null) return;
 
   // create fully overlapping slave node map
-  Teuchos::RCP<Epetra_Map> slavemap =
+  Teuchos::RCP<const Epetra_Map> slavemap =
       cmtbridge_->mt_manager()->get_strategy().slave_row_nodes_ptr();
   Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::allreduce_e_map(*slavemap);
 
@@ -1321,11 +1321,13 @@ void Solid::TimInt::update_step_contact_vum()
 
       // maps
       const Epetra_Map* dofmap = discret_->dof_row_map();
-      Teuchos::RCP<Epetra_Map> activenodemap = cmtbridge_->get_strategy().active_row_nodes();
-      Teuchos::RCP<Epetra_Map> slavenodemap = cmtbridge_->get_strategy().slave_row_nodes_ptr();
-      Teuchos::RCP<Epetra_Map> notredistslavedofmap =
+      Teuchos::RCP<Epetra_Map> activenodemap =
+          Teuchos::rcp(new Epetra_Map(*cmtbridge_->get_strategy().active_row_nodes()));
+      Teuchos::RCP<const Epetra_Map> slavenodemap =
+          cmtbridge_->get_strategy().slave_row_nodes_ptr();
+      Teuchos::RCP<const Epetra_Map> notredistslavedofmap =
           cmtbridge_->get_strategy().non_redist_slave_row_dofs();
-      Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
+      Teuchos::RCP<const Epetra_Map> notredistmasterdofmap =
           cmtbridge_->get_strategy().non_redist_master_row_dofs();
       Teuchos::RCP<Epetra_Map> notactivenodemap =
           Core::LinAlg::split_map(*slavenodemap, *activenodemap);
@@ -1354,14 +1356,14 @@ void Solid::TimInt::update_step_contact_vum()
       Dd->Update(-1.0, (*dis_)[0], 1.0);
 
       // mortar operator Bc
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Mmat = cmtbridge_->get_strategy().m_matrix();
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Dmat = cmtbridge_->get_strategy().d_matrix();
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> Mmat = cmtbridge_->get_strategy().m_matrix();
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> Dmat = cmtbridge_->get_strategy().d_matrix();
       Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::rcp(new Epetra_Map(Dmat->range_map()));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Bc =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofmap, 10));
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> M =
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> M =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofmap, 10));
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> D =
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> D =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofmap, 10));
       if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
               cmtbridge_->get_strategy().params().sublist("PARALLEL REDISTRIBUTION"),
@@ -1385,7 +1387,7 @@ void Solid::TimInt::update_step_contact_vum()
           cmtbridge_->get_strategy().evaluate_normals(disn_);
 
       // lagrange multiplier z
-      Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->get_strategy().lagrange_multiplier();
+      Teuchos::RCP<const Epetra_Vector> LM = cmtbridge_->get_strategy().lagrange_multiplier();
       Teuchos::RCP<Epetra_Vector> Z = Core::LinAlg::create_vector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> z = Core::LinAlg::create_vector(*activenodemap, true);
       N->multiply(false, *LM, *Z);

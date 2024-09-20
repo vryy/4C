@@ -267,7 +267,7 @@ void Solid::TimAda::indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = sti_->get_dbc_map_extractor()->cond_map()->NumGlobalElements();
-  const double norm = Solid::calculate_vector_norm(errnorm_, locerrdisn_, numneglect);
+  const double norm = Solid::calculate_vector_norm(errnorm_, *locerrdisn_, numneglect);
 
   // check if acceptable
   accepted = (norm < errtol_);

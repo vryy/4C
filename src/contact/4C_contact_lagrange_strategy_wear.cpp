@@ -607,8 +607,8 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
   }
 
   kteff->un_complete();
@@ -639,8 +639,8 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_matrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
-        gndofrowmap_, ksmsm, ksmn, knsm, knn);
+    Core::LinAlg::split_matrix2x2(kteffmatrix, non_redist_gsmdofrowmap_, gndofrowmap_,
+        non_redist_gsmdofrowmap_, gndofrowmap_, ksmsm, ksmn, knsm, knn);
     ksmsm = Mortar::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = Mortar::matrix_row_transform(ksmn, gsmdofrowmap_);
     knsm = Mortar::matrix_col_transform(knsm, gsmdofrowmap_);
@@ -674,7 +674,8 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(
+        *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -1287,63 +1288,63 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
     // nothing to do (ndof-map independent of redistribution)
 
     //---------------------------------------------------------- SECOND LINE
-    kmnmod = Mortar::matrix_row_transform(kmnmod, pgmdofrowmap_);
-    kmmmod = Mortar::matrix_row_transform(kmmmod, pgmdofrowmap_);
-    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, pgmdofrowmap_);
-    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, pgmdofrowmap_);
+    kmnmod = Mortar::matrix_row_transform(kmnmod, non_redist_gmdofrowmap_);
+    kmmmod = Mortar::matrix_row_transform(kmmmod, non_redist_gmdofrowmap_);
+    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, non_redist_gmdofrowmap_);
+    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, non_redist_gmdofrowmap_);
 
     //----------------------------------------------------------- THIRD LINE
     if (iset)
     {
-      kinmod = Mortar::matrix_row_transform(kinmod, pgsdofrowmap_);
-      kimmod = Mortar::matrix_row_transform(kimmod, pgsdofrowmap_);
-      kiimod = Mortar::matrix_row_transform(kiimod, pgsdofrowmap_);
-      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, pgsdofrowmap_);
+      kinmod = Mortar::matrix_row_transform(kinmod, non_redist_gsdofrowmap_);
+      kimmod = Mortar::matrix_row_transform(kimmod, non_redist_gsdofrowmap_);
+      kiimod = Mortar::matrix_row_transform(kiimod, non_redist_gsdofrowmap_);
+      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, non_redist_gsdofrowmap_);
     }
 
     //---------------------------------------------------------- FOURTH LINE
     if (aset)
     {
-      smatrix_ = Mortar::matrix_row_transform(smatrix_, pgsdofrowmap_);
+      smatrix_ = Mortar::matrix_row_transform(smatrix_, non_redist_gsdofrowmap_);
 
       // implicit wear
       if (wearimpl_)
       {
-        kgnmod = Mortar::matrix_row_transform(kgnmod, pgsdofrowmap_);
-        kgmmod = Mortar::matrix_row_transform(kgmmod, pgsdofrowmap_);
-        if (iset) kgimod = Mortar::matrix_row_transform(kgimod, pgsdofrowmap_);
-        kgaamod = Mortar::matrix_row_transform(kgaamod, pgsdofrowmap_);
+        kgnmod = Mortar::matrix_row_transform(kgnmod, non_redist_gsdofrowmap_);
+        kgmmod = Mortar::matrix_row_transform(kgmmod, non_redist_gsdofrowmap_);
+        if (iset) kgimod = Mortar::matrix_row_transform(kgimod, non_redist_gsdofrowmap_);
+        kgaamod = Mortar::matrix_row_transform(kgaamod, non_redist_gsdofrowmap_);
       }
     }
 
     //----------------------------------------------------------- FIFTH LINE
     if (stickset)
     {
-      kstnmod = Mortar::matrix_row_transform(kstnmod, pgsdofrowmap_);
-      kstmmod = Mortar::matrix_row_transform(kstmmod, pgsdofrowmap_);
-      if (iset) kstimod = Mortar::matrix_row_transform(kstimod, pgsdofrowmap_);
-      if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, pgsdofrowmap_);
-      kststmod = Mortar::matrix_row_transform(kststmod, pgsdofrowmap_);
-      linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, pgsdofrowmap_);
+      kstnmod = Mortar::matrix_row_transform(kstnmod, non_redist_gsdofrowmap_);
+      kstmmod = Mortar::matrix_row_transform(kstmmod, non_redist_gsdofrowmap_);
+      if (iset) kstimod = Mortar::matrix_row_transform(kstimod, non_redist_gsdofrowmap_);
+      if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, non_redist_gsdofrowmap_);
+      kststmod = Mortar::matrix_row_transform(kststmod, non_redist_gsdofrowmap_);
+      linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, non_redist_gsdofrowmap_);
     }
 
     //----------------------------------------------------------- SIXTH LINE
     if (slipset)
     {
-      kslnmod = Mortar::matrix_row_transform(kslnmod, pgsdofrowmap_);
-      kslmmod = Mortar::matrix_row_transform(kslmmod, pgsdofrowmap_);
-      if (iset) kslimod = Mortar::matrix_row_transform(kslimod, pgsdofrowmap_);
-      if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, pgsdofrowmap_);
-      kslslmod = Mortar::matrix_row_transform(kslslmod, pgsdofrowmap_);
-      linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, pgsdofrowmap_);
+      kslnmod = Mortar::matrix_row_transform(kslnmod, non_redist_gsdofrowmap_);
+      kslmmod = Mortar::matrix_row_transform(kslmmod, non_redist_gsdofrowmap_);
+      if (iset) kslimod = Mortar::matrix_row_transform(kslimod, non_redist_gsdofrowmap_);
+      if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, non_redist_gsdofrowmap_);
+      kslslmod = Mortar::matrix_row_transform(kslslmod, non_redist_gsdofrowmap_);
+      linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, non_redist_gsdofrowmap_);
 
       // implicit wear
       if (wearimpl_)
       {
-        kslwnmod = Mortar::matrix_row_transform(kslwnmod, pgsdofrowmap_);
-        kslwmmod = Mortar::matrix_row_transform(kslwmmod, pgsdofrowmap_);
-        if (iset) kslwimod = Mortar::matrix_row_transform(kslwimod, pgsdofrowmap_);
-        kslwaamod = Mortar::matrix_row_transform(kslwaamod, pgsdofrowmap_);
+        kslwnmod = Mortar::matrix_row_transform(kslwnmod, non_redist_gsdofrowmap_);
+        kslwmmod = Mortar::matrix_row_transform(kslwmmod, non_redist_gsdofrowmap_);
+        if (iset) kslwimod = Mortar::matrix_row_transform(kslwimod, non_redist_gsdofrowmap_);
+        kslwaamod = Mortar::matrix_row_transform(kslwaamod, non_redist_gsdofrowmap_);
       }
     }
   }
@@ -1595,8 +1596,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
   }
 
   kteff->un_complete();
@@ -1627,8 +1628,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_matrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
-        gndofrowmap_, ksmsm, ksmn, knsm, knn);
+    Core::LinAlg::split_matrix2x2(kteffmatrix, non_redist_gsmdofrowmap_, gndofrowmap_,
+        non_redist_gsmdofrowmap_, gndofrowmap_, ksmsm, ksmn, knsm, knn);
     ksmsm = Mortar::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = Mortar::matrix_row_transform(ksmn, gsmdofrowmap_);
     knsm = Mortar::matrix_col_transform(knsm, gsmdofrowmap_);
@@ -1662,7 +1663,8 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(
+        *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -2385,58 +2387,58 @@ void Wear::LagrangeStrategyWear::condense_wear_discr(
     // nothing to do (ndof-map independent of redistribution)
 
     //---------------------------------------------------------- SECOND LINE
-    kmnmod = Mortar::matrix_row_transform(kmnmod, pgmdofrowmap_);
-    kmmmod = Mortar::matrix_row_transform(kmmmod, pgmdofrowmap_);
-    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, pgmdofrowmap_);
-    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, pgmdofrowmap_);
+    kmnmod = Mortar::matrix_row_transform(kmnmod, non_redist_gmdofrowmap_);
+    kmmmod = Mortar::matrix_row_transform(kmmmod, non_redist_gmdofrowmap_);
+    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, non_redist_gmdofrowmap_);
+    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, non_redist_gmdofrowmap_);
 
     //----------------------------------------------------------- THIRD LINE
     if (iset)
     {
-      kinmod = Mortar::matrix_row_transform(kinmod, pgsdofrowmap_);
-      kimmod = Mortar::matrix_row_transform(kimmod, pgsdofrowmap_);
-      kiimod = Mortar::matrix_row_transform(kiimod, pgsdofrowmap_);
-      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, pgsdofrowmap_);
+      kinmod = Mortar::matrix_row_transform(kinmod, non_redist_gsdofrowmap_);
+      kimmod = Mortar::matrix_row_transform(kimmod, non_redist_gsdofrowmap_);
+      kiimod = Mortar::matrix_row_transform(kiimod, non_redist_gsdofrowmap_);
+      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, non_redist_gsdofrowmap_);
     }
 
     //---------------------------------------------------------- FOURTH LINE
     if (aset)
     {
-      smatrix_ = Mortar::matrix_row_transform(smatrix_, pgsdofrowmap_);
+      smatrix_ = Mortar::matrix_row_transform(smatrix_, non_redist_gsdofrowmap_);
 
       // WEAR
-      if (slipset) kgnw = Mortar::matrix_row_transform(kgnw, pgsdofrowmap_);
-      if (slipset) kgmw = Mortar::matrix_row_transform(kgmw, pgsdofrowmap_);
-      if (slipset && iset) kgiw = Mortar::matrix_row_transform(kgiw, pgsdofrowmap_);
-      if (slipset) kgaw = Mortar::matrix_row_transform(kgaw, pgsdofrowmap_);
+      if (slipset) kgnw = Mortar::matrix_row_transform(kgnw, non_redist_gsdofrowmap_);
+      if (slipset) kgmw = Mortar::matrix_row_transform(kgmw, non_redist_gsdofrowmap_);
+      if (slipset && iset) kgiw = Mortar::matrix_row_transform(kgiw, non_redist_gsdofrowmap_);
+      if (slipset) kgaw = Mortar::matrix_row_transform(kgaw, non_redist_gsdofrowmap_);
     }
 
     //----------------------------------------------------------- FIFTH LINE
     if (stickset)
     {
-      kstnmod = Mortar::matrix_row_transform(kstnmod, pgsdofrowmap_);
-      kstmmod = Mortar::matrix_row_transform(kstmmod, pgsdofrowmap_);
-      if (iset) kstimod = Mortar::matrix_row_transform(kstimod, pgsdofrowmap_);
-      if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, pgsdofrowmap_);
-      kststmod = Mortar::matrix_row_transform(kststmod, pgsdofrowmap_);
-      linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, pgsdofrowmap_);
+      kstnmod = Mortar::matrix_row_transform(kstnmod, non_redist_gsdofrowmap_);
+      kstmmod = Mortar::matrix_row_transform(kstmmod, non_redist_gsdofrowmap_);
+      if (iset) kstimod = Mortar::matrix_row_transform(kstimod, non_redist_gsdofrowmap_);
+      if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, non_redist_gsdofrowmap_);
+      kststmod = Mortar::matrix_row_transform(kststmod, non_redist_gsdofrowmap_);
+      linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, non_redist_gsdofrowmap_);
     }
 
     //----------------------------------------------------------- SIXTH LINE
     if (slipset)
     {
-      kslnmod = Mortar::matrix_row_transform(kslnmod, pgsdofrowmap_);
-      kslmmod = Mortar::matrix_row_transform(kslmmod, pgsdofrowmap_);
-      if (iset) kslimod = Mortar::matrix_row_transform(kslimod, pgsdofrowmap_);
-      if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, pgsdofrowmap_);
-      kslslmod = Mortar::matrix_row_transform(kslslmod, pgsdofrowmap_);
-      linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, pgsdofrowmap_);
+      kslnmod = Mortar::matrix_row_transform(kslnmod, non_redist_gsdofrowmap_);
+      kslmmod = Mortar::matrix_row_transform(kslmmod, non_redist_gsdofrowmap_);
+      if (iset) kslimod = Mortar::matrix_row_transform(kslimod, non_redist_gsdofrowmap_);
+      if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, non_redist_gsdofrowmap_);
+      kslslmod = Mortar::matrix_row_transform(kslslmod, non_redist_gsdofrowmap_);
+      linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, non_redist_gsdofrowmap_);
 
       // WEAR
-      kslnw = Mortar::matrix_row_transform(kslnw, pgsdofrowmap_);
-      kslmw = Mortar::matrix_row_transform(kslmw, pgsdofrowmap_);
-      if (iset) ksliw = Mortar::matrix_row_transform(ksliw, pgsdofrowmap_);
-      kslaw = Mortar::matrix_row_transform(kslaw, pgsdofrowmap_);
+      kslnw = Mortar::matrix_row_transform(kslnw, non_redist_gsdofrowmap_);
+      kslmw = Mortar::matrix_row_transform(kslmw, non_redist_gsdofrowmap_);
+      if (iset) ksliw = Mortar::matrix_row_transform(ksliw, non_redist_gsdofrowmap_);
+      kslaw = Mortar::matrix_row_transform(kslaw, non_redist_gsdofrowmap_);
     }
   }
 
@@ -3049,8 +3051,8 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
   }
 
   // add contact stiffness
@@ -4045,6 +4047,11 @@ void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
 }
 
 /*-----------------------------------------------------------------------*
+|  Reset the wear vector                                                 |
+*-----------------------------------------------------------------------*/
+void Wear::LagrangeStrategyWear::reset_wear() { wearoutput_->PutScalar(0.0); }
+
+/*-----------------------------------------------------------------------*
 |  Output de-weighted wear vector                             farah 09/14|
 *-----------------------------------------------------------------------*/
 void Wear::LagrangeStrategyWear::output_wear()
@@ -4817,8 +4824,8 @@ void Wear::LagrangeStrategyWear::do_read_restart(
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithcontact) reader.read_vector(lagrange_multiplier(), "lagrmultold");
-  if (!restartwithcontact) reader.read_vector(lagrange_multiplier_old(), "lagrmultold");
+  if (!restartwithcontact) reader.read_vector(z_, "lagrmultold");
+  if (!restartwithcontact) reader.read_vector(data().old_lm_ptr(), "lagrmultold");
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4835,7 +4842,7 @@ void Wear::LagrangeStrategyWear::do_read_restart(
   if (st == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (!restartwithcontact) reader.read_vector(lagrange_multiplier_uzawa(), "lagrmultold");
+    if (!restartwithcontact) reader.read_vector(data().lm_uzawa_ptr(), "lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
 
@@ -5040,7 +5047,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // get global quantity to be stored in nodes
-    Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
+    Teuchos::RCP<const Epetra_Vector> vectorglobal = Teuchos::null;
 
     // start type switch
     switch (type)
@@ -5070,7 +5077,7 @@ void Wear::LagrangeStrategyWear::store_nodal_quantities(Mortar::StrategyBase::Qu
     // slave dof and node map of the interface
     // columnmap for current or updated LM
     // rowmap for remaining cases
-    Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
+    Teuchos::RCP<const Epetra_Map> sdofmap, snodemap;
     if (type == Mortar::StrategyBase::wupdate or type == Mortar::StrategyBase::wold or
         type == Mortar::StrategyBase::wupdateT)
     {

@@ -217,7 +217,7 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::vertex_linearization(
     std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
-    std::map<int, double>& projpar, bool printderiv)
+    std::map<int, double>& projpar, bool printderiv) const
 {
   // linearize all aux.plane slave and master nodes only ONCE
   // and use these linearizations later during lineclip linearization
@@ -248,7 +248,7 @@ bool CONTACT::Coupling3d::vertex_linearization(
   for (int i = 0; i < (int)clip().size(); ++i)
   {
     // references to current vertex and its linearization
-    Mortar::Vertex& currv = clip()[i];
+    const Mortar::Vertex& currv = clip()[i];
     std::vector<Core::Gen::Pairedvector<int, double>>& currlin = linvertex[i];
 
     // decision on vertex type (slave, projmaster, linclip)
@@ -303,8 +303,8 @@ bool CONTACT::Coupling3d::vertex_linearization(
       if (sindex1 < 0 || sindex2 < 0 || sindex1 == sindex2)
         FOUR_C_THROW("Lineclip linearization: (S) Something went wrong!");
 
-      Mortar::Vertex* sv1 = &slave_vertices()[sindex1];
-      Mortar::Vertex* sv2 = &slave_vertices()[sindex2];
+      const Mortar::Vertex* sv1 = &slave_vertices()[sindex1];
+      const Mortar::Vertex* sv2 = &slave_vertices()[sindex2];
 
       // get references to the two master vertices
       int mindex1 = -1;
@@ -317,8 +317,8 @@ bool CONTACT::Coupling3d::vertex_linearization(
       if (mindex1 < 0 || mindex2 < 0 || mindex1 == mindex2)
         FOUR_C_THROW("Lineclip linearization: (M) Something went wrong!");
 
-      Mortar::Vertex* mv1 = &master_vertices()[mindex1];
-      Mortar::Vertex* mv2 = &master_vertices()[mindex2];
+      const Mortar::Vertex* mv1 = &master_vertices()[mindex1];
+      const Mortar::Vertex* mv2 = &master_vertices()[mindex2];
 
       // do lineclip vertex linearization
       lineclip_vertex_linearization(currv, currlin, sv1, sv2, mv1, mv2, linsnodes, linmnodes);
@@ -335,7 +335,7 @@ bool CONTACT::Coupling3d::vertex_linearization(
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::slave_vertex_linearization(
-    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin) const
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -401,7 +401,7 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
+  const std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   // put everything together for slave vertex linearization
   // loop over all vertices
@@ -474,7 +474,7 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::master_vertex_linearization(
-    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin) const
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
@@ -540,7 +540,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
+  const std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   // linearization of the MasterIntEle spatial coords
   std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> mnodelin(0);
@@ -634,11 +634,11 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
 /*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::lineclip_vertex_linearization(Mortar::Vertex& currv,
-    std::vector<Core::Gen::Pairedvector<int, double>>& currlin, Mortar::Vertex* sv1,
-    Mortar::Vertex* sv2, Mortar::Vertex* mv1, Mortar::Vertex* mv2,
+bool CONTACT::Coupling3d::lineclip_vertex_linearization(const Mortar::Vertex& currv,
+    std::vector<Core::Gen::Pairedvector<int, double>>& currlin, const Mortar::Vertex* sv1,
+    const Mortar::Vertex* sv2, const Mortar::Vertex* mv1, const Mortar::Vertex* mv2,
     std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linsnodes,
-    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linmnodes)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linmnodes) const
 {
   // number of nodes
   const int nsrows = slave_int_element().num_node();
@@ -780,7 +780,7 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(Mortar::Vertex& currv,
   std::vector<Core::Gen::Pairedvector<int, double>>& masterlin1 = linmnodes[k];
 
   // linearization of element normal Auxn()
-  std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
+  const std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   const double ZNfac = Zfac / Nfac;
   const double ZNNfac = Zfac / (Nfac * Nfac);
@@ -842,7 +842,7 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(Mortar::Vertex& currv,
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::center_linearization(
     const std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
-    std::vector<Core::Gen::Pairedvector<int, double>>& lincenter)
+    std::vector<Core::Gen::Pairedvector<int, double>>& lincenter) const
 {
   // preparations
   int clipsize = (int)(clip().size());
@@ -1122,7 +1122,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
     }
 
     // special treatment of boundary elements
-    consist_dual_shape();
+    consistent_dual_shape();
 
     // TODO modification of boundary shapes!
 
@@ -1189,7 +1189,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
           }
 
           // special treatment of boundary elements
-          consist_dual_shape();
+          consistent_dual_shape();
 
           // integrate cells
           for (int i = 0; i < (int)coupling().size(); ++i)
@@ -1322,7 +1322,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
       }    // for saux
     }      // for m
 
-    consist_dual_shape();
+    consistent_dual_shape();
 
     // integrate cells
     for (int i = 0; i < (int)coupling().size(); ++i)
@@ -1404,7 +1404,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
           }    // for saux
         }      // for m
 
-        consist_dual_shape();
+        consistent_dual_shape();
 
         for (int i = 0; i < (int)coupling().size(); ++i)
         {
@@ -1468,7 +1468,7 @@ bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
 /*----------------------------------------------------------------------*
  |  Calculate dual shape functions                           seitz 07/13|
  *----------------------------------------------------------------------*/
-void CONTACT::Coupling3dManager::consist_dual_shape()
+void CONTACT::Coupling3dManager::consistent_dual_shape()
 {
   static const auto algo =
       Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
@@ -1495,7 +1495,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
   if (coupling().size() == 0) return;
 
   // check for boundary elements in segment-based integration
-  // (fast integration already has this check, so that consist_dual_shape()
+  // (fast integration already has this check, so that consistent_dual_shape()
   // is only called for boundary elements)
   //
   // For NURBS elements, always compute consistent dual functions.

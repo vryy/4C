@@ -39,7 +39,8 @@ namespace Mortar
      |  Get global coords for given local coords                 farah 01/14|
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    bool local_to_global(Mortar::Element& ele, const double* xi, double* globcoord, int inttype)
+    bool local_to_global(
+        const Mortar::Element& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
       if (!xi) FOUR_C_THROW("ERROR: local_to_global called with xi=nullptr");
@@ -48,7 +49,7 @@ namespace Mortar
       static constexpr int n = Core::FE::num_nodes<distype>;
       static constexpr int ndim = Core::FE::dim<distype> + 1;
 
-      Core::Nodes::Node** mynodes = ele.points();
+      const Core::Nodes::Node* const* mynodes = ele.points();
       if (!mynodes) FOUR_C_THROW("ERROR: local_to_global: Null pointer!");
 
       std::fill(globcoord, globcoord + ndim, 0.0);
@@ -119,7 +120,7 @@ namespace Mortar
 
           for (int i = 0; i < n; ++i)
           {
-            Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
+            const Node* mymrtrnode = static_cast<const Node*>(mynodes[i]);
             FOUR_C_ASSERT(mymrtrnode, "ERROR: local_to_global: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
@@ -195,7 +196,7 @@ namespace Mortar
           }
           for (int i = 0; i < n; ++i)
           {
-            Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
+            const Node* mymrtrnode = static_cast<const Node*>(mynodes[i]);
             FOUR_C_ASSERT(mymrtrnode, "ERROR: local_to_global: Null pointer!");
 
             for (int j = 0; j < ndim; ++j)
@@ -271,7 +272,7 @@ namespace Mortar
 
           for (int i = 0; i < n; ++i)
           {
-            Node* mymrtrnode = static_cast<Node*>(mynodes[i]);
+            const Node* mymrtrnode = static_cast<const Node*>(mynodes[i]);
             FOUR_C_ASSERT(mymrtrnode, "ERROR: local_to_global: Null pointer!");
 
             if constexpr (ndim > 2)

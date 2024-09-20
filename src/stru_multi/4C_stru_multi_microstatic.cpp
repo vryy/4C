@@ -347,7 +347,7 @@ void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defg
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = Solid::calculate_vector_norm(iternorm_, fresn_);
+  normfres_ = Solid::calculate_vector_norm(iternorm_, *fresn_);
 
   return;
 }  // MultiScale::MicroStatic::Predictor()
@@ -446,7 +446,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
   solver_->reset();
 
   // store norm of displacement increments
-  normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+  normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
 
   //---------------------------------- update mid configuration values
   // set Dirichlet increments in displacement increments
@@ -509,7 +509,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = Solid::calculate_vector_norm(iternorm_, fresn_);
+  normfres_ = Solid::calculate_vector_norm(iternorm_, *fresn_);
 
   return;
 }
@@ -603,9 +603,9 @@ void MultiScale::MicroStatic::full_newton()
     fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
     //---------------------------------------------- build residual norm
-    normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
+    normdisi_ = Solid::calculate_vector_norm(iternorm_, *disi_);
 
-    normfres_ = Solid::calculate_vector_norm(iternorm_, fresn_);
+    normfres_ = Solid::calculate_vector_norm(iternorm_, *fresn_);
 
     //--------------------------------- increment equilibrium loop index
     ++numiter_;

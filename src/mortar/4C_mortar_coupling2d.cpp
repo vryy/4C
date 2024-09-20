@@ -938,7 +938,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
 
     // special treatment of boundary elements
     // calculate consistent dual shape functions for this element
-    consist_dual_shape();
+    consistent_dual_shape();
 
     // do mortar integration
     for (int m = 0; m < (int)master_elements().size(); ++m)
@@ -1003,7 +1003,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
             }
 
             // calculate consistent dual shape functions for this element
-            consist_dual_shape();
+            consistent_dual_shape();
 
             // do mortar integration
             for (int m = 0; m < (int)master_elements().size(); ++m)
@@ -1084,7 +1084,7 @@ bool Mortar::Coupling2dManager::evaluate_coupling(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Coupling2dManager::consist_dual_shape()
+void Mortar::Coupling2dManager::consistent_dual_shape()
 {
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency

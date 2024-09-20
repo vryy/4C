@@ -43,7 +43,6 @@ namespace CONTACT
    the contact-specific stuff for 3d mortar coupling.
 
    */
-
   class Integrator
   {
    public:
@@ -203,27 +202,29 @@ namespace CONTACT
      Xi on a 1D slave / master overlap
 
      */
-    void deriv_xi_a_b_2d(Mortar::Element& sele, double& sxia, double& sxib, Mortar::Element& mele,
-        double& mxia, double& mxib, std::vector<Core::Gen::Pairedvector<int, double>>& derivxi,
-        bool& startslave, bool& endslave, int& linsize);
+    void deriv_xi_a_b_2d(const Mortar::Element& sele, double sxia, double sxib,
+        const Mortar::Element& mele, double mxia, double mxib,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivxi, bool startslave, bool endslave,
+        int linsize) const;
 
     /*!
      \brief Compute directional derivative of master Gauss point
      coordinates XiGP on a 1D slave / master overlap
 
      */
-    void deriv_xi_gp_2d(Mortar::Element& sele, Mortar::Element& mele, double sxigp, double mxigp,
-        const Core::Gen::Pairedvector<int, double>& derivsxi,
-        Core::Gen::Pairedvector<int, double>& derivmxi, int& linsize);
+    void deriv_xi_gp_2d(const Mortar::Element& sele, const Mortar::Element& mele, double sxigp,
+        double mxigp, const Core::Gen::Pairedvector<int, double>& derivsxi,
+        Core::Gen::Pairedvector<int, double>& derivmxi, int linsize) const;
 
     /*!
      \brief Compute directional derivative of master Gauss point
      coordinates XiGP on a 2D slave / master integration cell
 
      */
-    void deriv_xi_gp_3d(Mortar::Element& sele, Mortar::Element& mele, const double* sxigp,
-        const double* mxigp, const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
-        std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi, double alpha);
+    void deriv_xi_gp_3d(const Mortar::Element& sele, const Mortar::Element& mele,
+        const double* sxigp, const double* mxigp,
+        const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
+        std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi, const double alpha) const;
 
     /*!
      \brief Compute directional derivative of slave / master Gauss point
@@ -231,10 +232,10 @@ namespace CONTACT
      (This is the AuxPlane version, thus master and slave are projected)
 
      */
-    void deriv_xi_gp_3d_aux_plane(Mortar::Element& ele, double* xigp, double* auxn,
-        std::vector<Core::Gen::Pairedvector<int, double>>& derivxi, double& alpha,
-        std::vector<Core::Gen::Pairedvector<int, double>>& derivauxn,
-        Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<3, 1>>& derivgp);
+    void deriv_xi_gp_3d_aux_plane(const Mortar::Element& ele, const double* xigp,
+        const double* auxn, std::vector<Core::Gen::Pairedvector<int, double>>& derivxi,
+        double alpha, std::vector<Core::Gen::Pairedvector<int, double>>& derivauxn,
+        Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<3, 1>>& derivgp) const;
 
     /*!
      \brief Assemble g~ contribution of current overlap into slave nodes
@@ -256,19 +257,19 @@ namespace CONTACT
      \brief Return number of Gauss points for this instance
 
      */
-    int& n_gp() { return ngp_; }
+    int n_gp() const { return ngp_; }
 
     /*!
      \brief Return coordinates of a specific GP in 1D/2D CElement
 
      */
-    double& coordinate(int gp, int dir) { return coords_(gp, dir); }
+    double coordinate(int gp, int dir) const { return coords_(gp, dir); }
 
     /*!
      \brief Return weight of a specific GP in 1D/2D CElement
 
      */
-    double& weight(int gp) { return weights_[gp]; }
+    double weight(int gp) const { return weights_[gp]; }
 
     /*!
      \brief Get problem dimension

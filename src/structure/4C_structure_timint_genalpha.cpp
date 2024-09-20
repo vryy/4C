@@ -654,26 +654,26 @@ double Solid::TimIntGenAlpha::calc_ref_norm_force()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = Solid::calculate_vector_norm(iternorm_, fintm_);
+  fintnorm = Solid::calculate_vector_norm(iternorm_, *fintm_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = Solid::calculate_vector_norm(iternorm_, fextm_);
+  fextnorm = Solid::calculate_vector_norm(iternorm_, *fextm_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertnorm = Solid::calculate_vector_norm(iternorm_, finertm_);
+  finertnorm = Solid::calculate_vector_norm(iternorm_, *finertm_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_ == Inpar::Solid::damp_rayleigh)
   {
-    fviscnorm = Solid::calculate_vector_norm(iternorm_, fviscm_);
+    fviscnorm = Solid::calculate_vector_norm(iternorm_, *fviscm_);
   }
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = Solid::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = Solid::calculate_vector_norm(iternorm_, *freact_);
 
   // determine worst value ==> charactersitic norm
   return std::max(

@@ -309,7 +309,7 @@ namespace Mortar
      \brief Calculate consistent dual shape functions in boundary elements
 
      */
-    virtual void consist_dual_shape();
+    virtual void consistent_dual_shape();
 
    protected:
     // don't want = operator and cctor

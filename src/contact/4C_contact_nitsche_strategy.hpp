@@ -134,7 +134,10 @@ namespace CONTACT
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_old() const override
+    {
+      return Teuchos::null;
+    }
     Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const override
     {
       return Teuchos::null;
@@ -154,8 +157,8 @@ namespace CONTACT
     bool is_nitsche() const override { return true; }
     void print_active_set() const override{};
     bool active_set_semi_smooth_converged() const override { return true; }
-    bool active_set_converged() override { return true; }
-    int active_set_steps() override { return 0; }
+    bool active_set_converged() const override { return true; }
+    int active_set_steps() const override { return 0; }
     void reset_active_set() override {}
     void recover(Teuchos::RCP<Epetra_Vector> disi) override {}
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
@@ -198,7 +201,7 @@ namespace CONTACT
     }
     void reset_penalty() override {}
     void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override {}
-    double initial_penalty() override { return 0.0; }
+    double initial_penalty() const override { return 0.0; }
     double constraint_norm() const override { return 0.0; }
     bool is_penalty() const override { return false; }
 

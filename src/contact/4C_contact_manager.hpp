@@ -30,7 +30,6 @@ namespace CONTACT
   \brief 4C implementation of main class to control all contact
 
   */
-
   class Manager : public Mortar::ManagerBase
   {
    public:
@@ -53,8 +52,6 @@ namespace CONTACT
 
     */
     Manager(Core::FE::Discretization& discret, double alphaf = 0.0);
-
-
 
     //! @name Access methods
     //! @{
@@ -142,13 +139,13 @@ namespace CONTACT
     \param mastertype ??
     */
     void find_poro_interface_types(bool& poromaster, bool& poroslave, bool& structmaster,
-        bool& structslave, int& slavetype, int& mastertype);
+        bool& structslave, int& slavetype, int& mastertype) const;
 
     //! @}
 
    protected:
     //! the underlying problem discretization
-    Core::FE::Discretization& discret_;
+    const Core::FE::Discretization& discret_;
 
    private:
     /*!
@@ -160,7 +157,7 @@ namespace CONTACT
      sorted out and throw a FOUR_C_THROW.
 
      */
-    bool read_and_check_input(Teuchos::ParameterList& cparams);
+    bool read_and_check_input(Teuchos::ParameterList& cparams) const;
 
     //! don't want operator=
     Manager operator=(const Manager& old) = delete;

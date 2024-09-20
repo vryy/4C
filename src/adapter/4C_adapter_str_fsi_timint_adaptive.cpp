@@ -86,16 +86,14 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
       Teuchos::rcp(new Epetra_Vector(*interface_->extract_fsi_cond_vector(error)));
 
   // calculate L2-norms of different subsets of local discretization error vector
-  err = Solid::calculate_vector_norm(errnorm_, error, numdbcdofs_);
-  errcond = Solid::calculate_vector_norm(errnorm_, errorcond, numdbcfsidofs_);
-  errother = Solid::calculate_vector_norm(errnorm_, errorother, numdbcinnerdofs_);
+  err = Solid::calculate_vector_norm(errnorm_, *error, numdbcdofs_);
+  errcond = Solid::calculate_vector_norm(errnorm_, *errorcond, numdbcfsidofs_);
+  errother = Solid::calculate_vector_norm(errnorm_, *errorother, numdbcinnerdofs_);
 
   // calculate L-inf-norms of different subsets of local discretization error vector
-  errinf = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, error);
-  errinfcond = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorcond);
-  errinfother = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorother);
-
-  return;
+  errinf = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, *error);
+  errinfcond = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, *errorcond);
+  errinfother = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, *errorother);
 }
 
 /*----------------------------------------------------------------------------*/

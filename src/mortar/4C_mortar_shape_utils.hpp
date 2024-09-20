@@ -394,8 +394,6 @@ namespace Mortar
           break;
         }
       }
-
-      return;
     }
 
     /*----------------------------------------------------------------------*
@@ -404,7 +402,7 @@ namespace Mortar
      *----------------------------------------------------------------------*/
     template <class V>
     void evaluate_shape_lm_const(const Inpar::Mortar::ShapeFcn& lmtype, const double* xi, V& val,
-        Mortar::Element& ele, const int& valdim)
+        const Mortar::Element& ele, const int& valdim)
     {
       switch (ele.shape())
       {

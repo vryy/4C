@@ -382,7 +382,7 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
  |  Add a value to the weighted gap                           popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::addg_value(double& val)
+void CONTACT::Node::addg_value(const double val)
 {
   // check if this is a master node or slave boundary node
   if (is_slave() == false) FOUR_C_THROW("AddgValue: function called for master node %i", id());
@@ -393,15 +393,13 @@ void CONTACT::Node::addg_value(double& val)
 
   // add given value to grow_
   data().getg() += val;
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
  |  Add a value to the nts gap                               farah 01/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::addnts_gap_value(double& val)
+void CONTACT::Node::addnts_gap_value(const double val)
 {
   // check if this is a master node or slave boundary node
   // initialize if called for the first time
@@ -409,28 +407,24 @@ void CONTACT::Node::addnts_gap_value(double& val)
 
   // add given value to wGap_
   data().getgnts() += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the lts gap                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::addlts_gap_value(double& val)
+void CONTACT::Node::addlts_gap_value(const double val)
 {
   // initialize if called for the first time
   if (data().getglts() == 1.0e12) data().getglts() = 0;
 
   // add given value to wGap_
   data().getglts() += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the ltl gap                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::addltl_gap_value(double* val)
+void CONTACT::Node::addltl_gap_value(const double* val)
 {
   // check if this is a master node or slave boundary node
   if (is_slave() == false) FOUR_C_THROW("function called for master node %i", id());
@@ -449,14 +443,12 @@ void CONTACT::Node::addltl_gap_value(double* val)
   data().getgltl()[0] += val[0];
   data().getgltl()[1] += val[1];
   data().getgltl()[2] += val[2];
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  Add a value to the ltl jump                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::addltl_jump_value(double* val)
+void CONTACT::Node::addltl_jump_value(const double* val)
 {
   // check if this is a master node or slave boundary node
   if (is_slave() == false) FOUR_C_THROW("function called for master node %i", id());
@@ -475,15 +467,13 @@ void CONTACT::Node::addltl_jump_value(double* val)
   data().getjumpltl()[0] += val[0];
   data().getjumpltl()[1] += val[1];
   data().getjumpltl()[2] += val[2];
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
  |  Add a value to the 'DerivZ' map                           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::add_deriv_z_value(int& row, const int& col, double val)
+void CONTACT::Node::add_deriv_z_value(const int row, const int col, const double val)
 {
   // check if this is a master node or slave boundary node
   if (is_slave() == false) FOUR_C_THROW("AddZValue: function called for master node %i", id());
@@ -499,8 +489,6 @@ void CONTACT::Node::add_deriv_z_value(int& row, const int& col, double val)
   // add the pair (col,val) to the given row
   std::map<int, double>& zmap = data().get_deriv_z()[row];
   zmap[col] += val;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1245,7 +1233,7 @@ void CONTACT::Node::deriv_averaged_normal(
 /*----------------------------------------------------------------------*
  |  Add a value to the NCoup of this node                      ager 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::add_ncoup_value(double& val)
+void CONTACT::Node::add_ncoup_value(const double val)
 {
   // check if this is a master node or slave boundary node
   if (is_slave() == false) FOUR_C_THROW("AddNcoupValue: function called for master node %i", id());
@@ -1254,7 +1242,6 @@ void CONTACT::Node::add_ncoup_value(double& val)
 
   // add given value to ncoup
   poro_data().getn_coup() += val;
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -623,8 +623,8 @@ void EHL::Base::setup_field_coupling(
   mortaradapter_->integrate(idisp, dt());
 
   // Maps of the interface dofs
-  Teuchos::RCP<Epetra_Map> masterdofrowmap = mortaradapter_->interface()->master_row_dofs();
-  Teuchos::RCP<Epetra_Map> slavedofrowmap = mortaradapter_->interface()->slave_row_dofs();
+  Teuchos::RCP<const Epetra_Map> masterdofrowmap = mortaradapter_->interface()->master_row_dofs();
+  Teuchos::RCP<const Epetra_Map> slavedofrowmap = mortaradapter_->interface()->slave_row_dofs();
   Teuchos::RCP<Epetra_Map> mergeddofrowmap =
       Core::LinAlg::merge_map(masterdofrowmap, slavedofrowmap, false);
 
@@ -640,7 +640,7 @@ void EHL::Base::setup_field_coupling(
   //----------------------------------------------------------
   // 2. build coupling adapters
   //----------------------------------------------------------
-  Teuchos::RCP<Epetra_Map> strucnodes = mortaradapter_->interface()->slave_row_nodes();
+  Teuchos::RCP<const Epetra_Map> strucnodes = mortaradapter_->interface()->slave_row_nodes();
   const Epetra_Map* lubrinodes = lubricationdis->node_row_map();
   ada_strDisp_to_lubDisp_ = Teuchos::rcp(new Coupling::Adapter::Coupling);
   ada_strDisp_to_lubDisp_->setup_coupling(

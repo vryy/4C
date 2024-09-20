@@ -39,7 +39,6 @@ namespace CONTACT
    contact-specific stuff for 3d mortar coupling.
 
    */
-
   class Coupling3d : public Mortar::Coupling3d
   {
    public:
@@ -101,7 +100,7 @@ namespace CONTACT
      */
     bool vertex_linearization(
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
-        std::map<int, double>& projpar, bool printderiv = false) override;
+        std::map<int, double>& projpar, bool printderiv = false) const override;
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -111,7 +110,7 @@ namespace CONTACT
 
      */
     virtual bool slave_vertex_linearization(
-        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin) const;
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -120,7 +119,7 @@ namespace CONTACT
 
      */
     virtual bool master_vertex_linearization(
-        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin) const;
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -131,11 +130,11 @@ namespace CONTACT
      VertexLinearization3D!
 
      */
-    virtual bool lineclip_vertex_linearization(Mortar::Vertex& currv,
-        std::vector<Core::Gen::Pairedvector<int, double>>& currlin, Mortar::Vertex* sv1,
-        Mortar::Vertex* sv2, Mortar::Vertex* mv1, Mortar::Vertex* mv2,
+    virtual bool lineclip_vertex_linearization(const Mortar::Vertex& currv,
+        std::vector<Core::Gen::Pairedvector<int, double>>& currlin, const Mortar::Vertex* sv1,
+        const Mortar::Vertex* sv2, const Mortar::Vertex* mv1, const Mortar::Vertex* mv2,
         std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linsnodes,
-        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linmnodes);
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linmnodes) const;
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -148,13 +147,13 @@ namespace CONTACT
      */
     bool center_linearization(
         const std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
-        std::vector<Core::Gen::Pairedvector<int, double>>& lincenter) override;
+        std::vector<Core::Gen::Pairedvector<int, double>>& lincenter) const override;
 
     /*!
      \brief Return type of wear surface definition
 
      */
-    Inpar::Wear::WearType wear_type()
+    Inpar::Wear::WearType wear_type() const
     {
       return Teuchos::getIntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
     }
@@ -165,7 +164,6 @@ namespace CONTACT
     // don't want = operator and cctor
     Coupling3d operator=(const Coupling3d& old) = delete;
     Coupling3d(const Coupling3d& old) = delete;
-
 
     // new variables as compared to base class
     Inpar::CONTACT::SolvingStrategy stype_;
@@ -193,7 +191,6 @@ namespace CONTACT
    contact-specific stuff for 3d quadratic mortar coupling.
 
    */
-
   class Coupling3dQuad : public Coupling3d
   {
    public:
@@ -228,7 +225,7 @@ namespace CONTACT
      \brief Return the Lagrange multiplier interpolation and testing type
 
      */
-    Inpar::Mortar::LagMultQuad lag_mult_quad() override
+    Inpar::Mortar::LagMultQuad lag_mult_quad() const override
     {
       return Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -304,13 +301,13 @@ namespace CONTACT
      \brief Get number of integration cells
 
      */
-    virtual const int& integration_cells() { return ncells_; }
+    virtual int integration_cells() const { return ncells_; }
 
     /*!
      \brief Get integration type
 
      */
-    Inpar::Mortar::IntType int_type()
+    Inpar::Mortar::IntType int_type() const
     {
       return Teuchos::getIntegralValue<Inpar::Mortar::IntType>(imortar_, "INTTYPE");
     };
@@ -319,13 +316,13 @@ namespace CONTACT
      \brief Get coupling type
 
      */
-    virtual const bool& quad() { return quad_; };
+    virtual bool quad() const { return quad_; };
 
     /*!
      \brief Return the Lagrange multiplier interpolation and testing type
 
      */
-    Inpar::Mortar::LagMultQuad lag_mult_quad()
+    Inpar::Mortar::LagMultQuad lag_mult_quad() const
     {
       return Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -352,7 +349,7 @@ namespace CONTACT
      \brief Return the LM shape fcn type
 
      */
-    Inpar::Mortar::ShapeFcn shape_fcn()
+    Inpar::Mortar::ShapeFcn shape_fcn() const
     {
       return Teuchos::getIntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
@@ -364,7 +361,7 @@ namespace CONTACT
        - option CONSISTENT_DUAL_BOUND is not set
        - standard shape functions are used
      */
-    virtual void consist_dual_shape();
+    virtual void consistent_dual_shape();
 
     //@}
    private:
@@ -398,7 +395,7 @@ namespace CONTACT
   class Coupling3dQuadManager : public Mortar::Coupling3dQuadManager, public Coupling3dManager
   {
     // resolve ambiguity of multiple inheritance
-    using CONTACT::Coupling3dManager::consist_dual_shape;
+    using CONTACT::Coupling3dManager::consistent_dual_shape;
     using CONTACT::Coupling3dManager::coupling;
     using Mortar::Coupling3dQuadManager::get_comm;
     using Mortar::Coupling3dQuadManager::int_type;
@@ -428,7 +425,7 @@ namespace CONTACT
      \brief Get number of integration cells of this interface (proc local)
 
      */
-    const int& integration_cells() override { return intcells_; }
+    int integration_cells() const override { return intcells_; }
 
     /*!
      \brief Evaluate coupling pairs
@@ -446,7 +443,7 @@ namespace CONTACT
      \brief spatial dimension
 
      */
-    virtual int n_dim() { return Mortar::Coupling3dQuadManager::dim_; };
+    virtual int n_dim() const { return Mortar::Coupling3dQuadManager::dim_; };
 
     /*!
      \brief contact discretization

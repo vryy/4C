@@ -18,38 +18,37 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double Solid::calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,
-    const Teuchos::RCP<Epetra_Vector> vect, const int numneglect)
+double Solid::calculate_vector_norm(
+    const enum Inpar::Solid::VectorNorm norm, const Epetra_Vector& vect, const int numneglect)
 {
   // L1 norm
   if (norm == Inpar::Solid::norm_l1)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
+    vect.Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
   else if (norm == Inpar::Solid::norm_l2)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
+    vect.Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
   else if (norm == Inpar::Solid::norm_rms)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm / sqrt((double)(vect->GlobalLength() - numneglect));
+    vect.Norm2(&vectnorm);
+    return vectnorm / sqrt((double)(vect.GlobalLength() - numneglect));
   }
   // infinity/maximum norm
   else if (norm == Inpar::Solid::norm_inf)
   {
     double vectnorm;
-    vect->NormInf(&vectnorm);
+    vect.NormInf(&vectnorm);
     return vectnorm;
   }
   else

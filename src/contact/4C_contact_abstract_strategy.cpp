@@ -67,11 +67,11 @@ CONTACT::AbstractStrategy::AbstractStrategy(
       gsdofSurf_(data_ptr->global_slave_dof_surface_row_map_ptr()),
       unbalanceEvaluationTime_(data_ptr->unbalance_time_factors()),
       unbalanceNumSlaveElements_(data_ptr->unbalance_element_factors()),
-      pglmdofrowmap_(data_ptr->pg_lm_dof_row_map_ptr()),
-      pgsdofrowmap_(data_ptr->pg_sl_dof_row_map_ptr()),
-      pgmdofrowmap_(data_ptr->pg_ma_dof_row_map_ptr()),
-      pgsmdofrowmap_(data_ptr->pg_sl_ma_dof_row_map_ptr()),
-      pgsdirichtoggle_(data_ptr->pg_sl_dirich_toggle_dof_row_map_ptr()),
+      non_redist_glmdofrowmap_(data_ptr->non_redist_global_lm_dof_row_map_ptr()),
+      non_redist_gsdofrowmap_(data_ptr->non_redist_global_slave_dof_row_map_ptr()),
+      non_redist_gmdofrowmap_(data_ptr->non_redist_global_master_dof_row_map_ptr()),
+      non_redist_gsmdofrowmap_(data_ptr->non_redist_global_slave_master_dof_row_map_ptr()),
+      non_redist_gsdirichtoggle_(data_ptr->non_redist_global_slave_dirich_toggle_dof_row_map_ptr()),
       initial_elecolmap_(data_ptr->initial_sl_ma_ele_col_map()),
       dmatrix_(data_ptr->d_matrix_ptr()),
       mmatrix_(data_ptr->m_matrix_ptr()),
@@ -142,8 +142,6 @@ CONTACT::AbstractStrategy::AbstractStrategy(
   noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface);
   noxinterface_ptr_->init(Teuchos::rcp(this, false));
   noxinterface_ptr_->setup();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -249,7 +247,7 @@ void CONTACT::AbstractStrategy::compute_and_reset_parallel_balance_indicators(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::print_parallel_balance_indicators(
-    double& time_average, double& elements_average, const double& max_time_unbalance) const
+    const double time_average, const double elements_average, const double max_time_unbalance) const
 {
   // Screen output only on proc 0
   if (get_comm().MyPID() == 0)
@@ -546,9 +544,9 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interfaces()[i]->active_dofs(), false);
 
     ginactivenodes_ =
-        Core::LinAlg::merge_map(ginactivenodes_, interfaces()[i]->in_active_nodes(), false);
+        Core::LinAlg::merge_map(ginactivenodes_, interfaces()[i]->inactive_nodes(), false);
     ginactivedofs_ =
-        Core::LinAlg::merge_map(ginactivedofs_, interfaces()[i]->in_active_dofs(), false);
+        Core::LinAlg::merge_map(ginactivedofs_, interfaces()[i]->inactive_dofs(), false);
 
     gactiven_ = Core::LinAlg::merge_map(gactiven_, interfaces()[i]->active_n_dofs(), false);
     gactivet_ = Core::LinAlg::merge_map(gactivet_, interfaces()[i]->active_t_dofs(), false);
@@ -775,16 +773,14 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       for (std::size_t i = 0; i < interfaces().size(); ++i)
         interfaces()[i]->store_unredistributed_maps();
       if (lm_dof_row_map_ptr(true) != Teuchos::null)
-        pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(lm_dof_row_map(true)));
-      pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(slave_dof_row_map(true)));
-      pgmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
-      pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
+        non_redist_glmdofrowmap_ = Teuchos::rcp(new Epetra_Map(lm_dof_row_map(true)));
+      non_redist_gsdofrowmap_ = Teuchos::rcp(new Epetra_Map(slave_dof_row_map(true)));
+      non_redist_gmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
+      non_redist_gsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
     }
   }
 
   post_setup(redistributed, init);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -980,8 +976,6 @@ void CONTACT::AbstractStrategy::set_state(
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1059,8 +1053,6 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
     }
     z_ = tmp_ptr;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1087,7 +1079,6 @@ void CONTACT::AbstractStrategy::calc_mean_velocity_for_binning(const Epetra_Vect
 
     ivel_.push_back(meanVelocity);
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1190,8 +1181,6 @@ void CONTACT::AbstractStrategy::initialize_and_evaluate_interface(
   }
 #endif
   //**********************************************************************
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1295,8 +1284,6 @@ void CONTACT::AbstractStrategy::update_parallel_distribution_status(const double
     data().unbalance_element_factors().push_back(1);
   else
     data().unbalance_element_factors().push_back(0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1346,8 +1333,6 @@ void CONTACT::AbstractStrategy::initialize_mortar()
     // setup of dmatrixmod_
     dmatrixmod_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 10));
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1390,8 +1375,6 @@ void CONTACT::AbstractStrategy::assemble_mortar()
   // fill_complete() global Mortar matrices
   dmatrix_->complete();
   mmatrix_->complete(*gmdofrowmap_, slave_dof_row_map(true));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1480,8 +1463,6 @@ void CONTACT::AbstractStrategy::evaluate_reference_state()
   // (since the interface has been evaluated once above)
   unbalanceEvaluationTime_.resize(0);
   unbalanceNumSlaveElements_.resize(0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1523,8 +1504,6 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   if (not params().get<bool>("GP_SLIP_INCR"))
     for (int i = 0; i < (int)interfaces().size(); ++i)
       interfaces()[i]->evaluate_relative_movement(xsmod, dmatrixmod_, doldmod_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1538,8 +1517,6 @@ void CONTACT::AbstractStrategy::evaluate(Teuchos::RCP<Core::LinAlg::SparseOperat
     evaluate_friction(kteff, feff);
   else
     evaluate_contact(kteff, feff);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1579,7 +1556,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
   for (int i = 0; i < (int)interfaces().size(); ++i)
   {
     // get global quantity to be stored in nodes
-    Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
+    Teuchos::RCP<const Epetra_Vector> vectorglobal = Teuchos::null;
 
     // start type switch
     switch (type)
@@ -1613,7 +1590,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
     // slave dof and node map of the interface
     // columnmap for current or updated LM
     // rowmap for remaining cases
-    Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
+    Teuchos::RCP<const Epetra_Map> sdofmap, snodemap;
     if (type == Mortar::StrategyBase::lmupdate or type == Mortar::StrategyBase::lmcurrent)
     {
       sdofmap = interfaces()[i]->slave_col_dofs();
@@ -1701,8 +1678,6 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
       }
     }  // end slave loop
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1766,8 +1741,6 @@ void CONTACT::AbstractStrategy::compute_contact_stresses()
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1810,14 +1783,12 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
     }
   }
   // create old style dirichtoggle vector (supposed to go away)
-  pgsdirichtoggle_ = Core::LinAlg::create_vector(slave_dof_row_map(true), true);
+  non_redist_gsdirichtoggle_ = Core::LinAlg::create_vector(slave_dof_row_map(true), true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
-  Core::LinAlg::export_to(*temp, *pgsdirichtoggle_);
+  Core::LinAlg::export_to(*temp, *non_redist_gsdirichtoggle_);
 
   post_store_dirichlet_status(dbcmaps);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1845,8 +1816,6 @@ void CONTACT::AbstractStrategy::store_dm(const std::string& state)
   {
     FOUR_C_THROW("StoreDM: Unknown conversion requested!");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1856,8 +1825,6 @@ void CONTACT::AbstractStrategy::store_to_old(Mortar::StrategyBase::QuantityType 
 {
   // loop over all interfaces
   for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->store_to_old(type);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1913,8 +1880,6 @@ void CONTACT::AbstractStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
     // store nodal entries form penalty contact tractions to old ones
     store_to_old(Mortar::StrategyBase::pentrac);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1973,8 +1938,6 @@ void CONTACT::AbstractStrategy::do_write_restart(
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2069,8 +2032,8 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
                 Inpar::Solid::IntegrationStrategy::int_standard &&
             is_penalty()))
     {
-      reader.read_vector(lagrange_multiplier(), "lagrmultold");
-      reader.read_vector(lagrange_multiplier_old(), "lagrmultold");
+      reader.read_vector(z_, "lagrmultold");
+      reader.read_vector(data().old_lm_ptr(), "lagrmultold");
     }
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
@@ -2084,7 +2047,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   if (stype_ == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
-    if (!restartwithcontact) reader.read_vector(lagrange_multiplier_uzawa(), "lagrmultold");
+    if (!restartwithcontact) reader.read_vector(data().lm_uzawa_ptr(), "lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
 
@@ -2140,8 +2103,6 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   // (during restart the interface has been evaluated once)
   unbalanceEvaluationTime_.resize(0);
   unbalanceNumSlaveElements_.resize(0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2399,8 +2360,6 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
       fflush(stdout);
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2420,8 +2379,6 @@ void CONTACT::AbstractStrategy::print(std::ostream& os) const
     std::cout << *(interfaces()[i]);
   }
   get_comm().Barrier();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2782,14 +2739,12 @@ void CONTACT::AbstractStrategy::print_active_set() const
     printf("--------------------------------------------------------------------------------\n\n");
     fflush(stdout);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | Visualization of contact segments with gmsh                popp 08/08|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::visualize_gmsh(const int step, const int iter)
+void CONTACT::AbstractStrategy::visualize_gmsh(const int step, const int iter) const
 {
   // visualization with gmsh
   for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -2809,16 +2764,14 @@ void CONTACT::AbstractStrategy::collect_maps_for_preconditioner(
   // check if parallel redistribution is used
   // if parallel redistribution is activated, then use (original) maps before redistribution
   // otherwise we use just the standard master/slave maps
-  if (pgsdofrowmap_ != Teuchos::null)
-    SlaveDofMap = pgsdofrowmap_;
+  if (non_redist_gsdofrowmap_ != Teuchos::null)
+    SlaveDofMap = non_redist_gsdofrowmap_;
   else
     SlaveDofMap = gsdofrowmap_;
-  if (pgmdofrowmap_ != Teuchos::null)
-    MasterDofMap = pgmdofrowmap_;
+  if (non_redist_gmdofrowmap_ != Teuchos::null)
+    MasterDofMap = non_redist_gmdofrowmap_;
   else
     MasterDofMap = gmdofrowmap_;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -2828,8 +2781,6 @@ void CONTACT::AbstractStrategy::reset(
 {
   set_state(Mortar::state_new_displacement, dispnp);
   reset_lagrange_multipliers(cparams, xnew);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3024,8 +2975,6 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
   }
 
   post_evaluate(cparams);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3060,7 +3009,6 @@ void CONTACT::AbstractStrategy::evaluate_static_constraint_rhs(CONTACT::ParamsIn
 void CONTACT::AbstractStrategy::remove_condensed_contributions_from_rhs(
     Epetra_Vector& str_rhs) const
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3095,7 +3043,6 @@ void CONTACT::AbstractStrategy::run_pre_compute_x(
     const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir_mutable)
 {
   // do nothing
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3103,7 +3050,6 @@ void CONTACT::AbstractStrategy::run_pre_compute_x(
 void CONTACT::AbstractStrategy::run_post_iterate(const CONTACT::ParamsInterface& cparams)
 {
   // do nothing
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3121,7 +3067,6 @@ void CONTACT::AbstractStrategy::run_post_apply_jacobian_inverse(
     const Epetra_Vector& xold, const NOX::Nln::Group& grp)
 {
   // do nothing
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3192,14 +3137,14 @@ void CONTACT::AbstractStrategy::fill_maps_for_preconditioner(
    * maps */
 
   // (0) masterDofMap
-  if (pgmdofrowmap_ != Teuchos::null)
-    maps[0] = pgmdofrowmap_;
+  if (non_redist_gmdofrowmap_ != Teuchos::null)
+    maps[0] = non_redist_gmdofrowmap_;
   else
     maps[0] = gmdofrowmap_;
 
   // (1) slaveDofMap
-  if (pgsdofrowmap_ != Teuchos::null)
-    maps[1] = pgsdofrowmap_;
+  if (non_redist_gsdofrowmap_ != Teuchos::null)
+    maps[1] = non_redist_gsdofrowmap_;
   else
     maps[1] = gsdofrowmap_;
 
@@ -3208,8 +3153,6 @@ void CONTACT::AbstractStrategy::fill_maps_for_preconditioner(
 
   // (3) activeDofMap
   maps[3] = gactivedofs_;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -3272,7 +3215,7 @@ double CONTACT::AbstractStrategy::get_linearized_potential_value_terms(const Epe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::AbstractStrategy::postprocess_quantities_per_interface(
-    Teuchos::RCP<Teuchos::ParameterList> outputParams)
+    Teuchos::RCP<Teuchos::ParameterList> outputParams) const
 {
   using Teuchos::RCP;
 
@@ -3293,8 +3236,6 @@ void CONTACT::AbstractStrategy::postprocess_quantities_per_interface(
 
   // Postprocess contact stresses
   {
-    compute_contact_stresses();
-
     // Append data to parameter list
     outputParams->set<RCP<const Epetra_Vector>>("norcontactstress", stressnormal_);
     outputParams->set<RCP<const Epetra_Vector>>("tancontactstress", stresstangential_);

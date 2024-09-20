@@ -1289,8 +1289,8 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
       if (cnode->owner() != get_comm().MyPID())
         FOUR_C_THROW("AssembleLinStick: Node ownership inconsistency!");
 
-      cn = get_cn_ref()[get_cn_ref().Map().LID(cnode->id())];
-      ct = get_ct_ref()[get_ct_ref().Map().LID(cnode->id())];
+      cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
+      ct = ct_ref()[ct_ref().Map().LID(cnode->id())];
 
       // prepare assembly, get information from node
       std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->data().get_deriv_n();
@@ -1800,8 +1800,8 @@ void Wear::WearInterface::assemble_lin_slip_w(Core::LinAlg::SparseMatrix& linsli
       if (cnode->owner() != get_comm().MyPID())
         FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
-      cn = get_cn_ref()[get_cn_ref().Map().LID(cnode->id())];
-      ct = get_ct_ref()[get_ct_ref().Map().LID(cnode->id())];
+      cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
+      ct = ct_ref()[ct_ref().Map().LID(cnode->id())];
 
       // prepare assembly, get information from node
       std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->data().get_deriv_n();
@@ -1986,8 +1986,8 @@ void Wear::WearInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipL
       if (cnode->owner() != get_comm().MyPID())
         FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
-      cn = get_cn_ref()[get_cn_ref().Map().LID(cnode->id())];
-      ct = get_ct_ref()[get_ct_ref().Map().LID(cnode->id())];
+      cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
+      ct = ct_ref()[ct_ref().Map().LID(cnode->id())];
 
       // prepare assembly, get information from node
       std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->data().get_deriv_n();
@@ -2816,8 +2816,8 @@ void Wear::WearInterface::assemble_lin_w_lm_st(Core::LinAlg::SparseMatrix& sglob
 
     if (cnode->owner() != get_comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
-    cn = get_cn_ref()[get_cn_ref().Map().LID(cnode->id())];
-    ct = get_ct_ref()[get_ct_ref().Map().LID(cnode->id())];
+    cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
+    ct = ct_ref()[ct_ref().Map().LID(cnode->id())];
 
     // prepare assembly, get information from node
     std::map<int, double>& dwmap = cnode->data().get_deriv_wlm();
@@ -2901,8 +2901,8 @@ void Wear::WearInterface::assemble_lin_w_lm_sl(Core::LinAlg::SparseMatrix& sglob
     if (cnode->owner() != get_comm().MyPID())
       FOUR_C_THROW("AssembleLinSlip: Node ownership inconsistency!");
 
-    cn = get_cn_ref()[get_cn_ref().Map().LID(cnode->id())];
-    ct = get_ct_ref()[get_ct_ref().Map().LID(cnode->id())];
+    cn = cn_ref()[cn_ref().Map().LID(cnode->id())];
+    ct = ct_ref()[ct_ref().Map().LID(cnode->id())];
 
     // prepare assembly, get information from node
     std::map<int, double>& dwmap = cnode->data().get_deriv_wlm();

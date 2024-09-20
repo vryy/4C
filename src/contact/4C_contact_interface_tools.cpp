@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Visualize contact stuff with gmsh                         popp 08/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::visualize_gmsh(
-    const int step, const int iter, const std::string& file_name_only_prefix)
+    const int step, const int iter, const std::string& file_name_only_prefix) const
 {
   //**********************************************************************
   // GMSH output of all interface elements

@@ -421,7 +421,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*non_redist_gsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -441,8 +441,8 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     // transform if necessary
     if (parallel_redistribution_status())
     {
-      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
     }
 
     kteff->un_complete();
@@ -473,8 +473,8 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (parallel_redistribution_status())
     {
       // split and transform to redistributed maps
-      Core::LinAlg::split_matrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
-          gndofrowmap_, ksmsm, ksmn, knsm, knn);
+      Core::LinAlg::split_matrix2x2(kteffmatrix, non_redist_gsmdofrowmap_, gndofrowmap_,
+          non_redist_gsmdofrowmap_, gndofrowmap_, ksmsm, ksmn, knsm, knn);
       ksmsm = Mortar::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
       ksmn = Mortar::matrix_row_transform(ksmn, gsmdofrowmap_);
       knsm = Mortar::matrix_col_transform(knsm, gsmdofrowmap_);
@@ -508,7 +508,8 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     if (parallel_redistribution_status())
     {
       // split and transform to redistributed maps
-      Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+      Core::LinAlg::split_vector(
+          *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
       Core::LinAlg::export_to(*fsm, *fsmtemp);
       fsm = fsmtemp;
@@ -1023,46 +1024,46 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
       // nothing to do (ndof-map independent of redistribution)
 
       //---------------------------------------------------------- SECOND LINE
-      kmnmod = Mortar::matrix_row_transform(kmnmod, pgmdofrowmap_);
-      kmmmod = Mortar::matrix_row_transform(kmmmod, pgmdofrowmap_);
-      if (iset) kmimod = Mortar::matrix_row_transform(kmimod, pgmdofrowmap_);
-      if (aset) kmamod = Mortar::matrix_row_transform(kmamod, pgmdofrowmap_);
+      kmnmod = Mortar::matrix_row_transform(kmnmod, non_redist_gmdofrowmap_);
+      kmmmod = Mortar::matrix_row_transform(kmmmod, non_redist_gmdofrowmap_);
+      if (iset) kmimod = Mortar::matrix_row_transform(kmimod, non_redist_gmdofrowmap_);
+      if (aset) kmamod = Mortar::matrix_row_transform(kmamod, non_redist_gmdofrowmap_);
 
       //----------------------------------------------------------- THIRD LINE
       if (iset)
       {
-        kinmod = Mortar::matrix_row_transform(kinmod, pgsdofrowmap_);
-        kimmod = Mortar::matrix_row_transform(kimmod, pgsdofrowmap_);
-        kiimod = Mortar::matrix_row_transform(kiimod, pgsdofrowmap_);
-        if (aset) kiamod = Mortar::matrix_row_transform(kiamod, pgsdofrowmap_);
+        kinmod = Mortar::matrix_row_transform(kinmod, non_redist_gsdofrowmap_);
+        kimmod = Mortar::matrix_row_transform(kimmod, non_redist_gsdofrowmap_);
+        kiimod = Mortar::matrix_row_transform(kiimod, non_redist_gsdofrowmap_);
+        if (aset) kiamod = Mortar::matrix_row_transform(kiamod, non_redist_gsdofrowmap_);
       }
 
       //---------------------------------------------------------- FOURTH LINE
       if (aset)
       {
-        smatrix_ = Mortar::matrix_row_transform(smatrix_, pgsdofrowmap_);
+        smatrix_ = Mortar::matrix_row_transform(smatrix_, non_redist_gsdofrowmap_);
       }
 
       //----------------------------------------------------------- FIFTH LINE
       if (stickset)
       {
-        kstnmod = Mortar::matrix_row_transform(kstnmod, pgsdofrowmap_);
-        kstmmod = Mortar::matrix_row_transform(kstmmod, pgsdofrowmap_);
-        if (iset) kstimod = Mortar::matrix_row_transform(kstimod, pgsdofrowmap_);
-        if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, pgsdofrowmap_);
-        kststmod = Mortar::matrix_row_transform(kststmod, pgsdofrowmap_);
-        linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, pgsdofrowmap_);
+        kstnmod = Mortar::matrix_row_transform(kstnmod, non_redist_gsdofrowmap_);
+        kstmmod = Mortar::matrix_row_transform(kstmmod, non_redist_gsdofrowmap_);
+        if (iset) kstimod = Mortar::matrix_row_transform(kstimod, non_redist_gsdofrowmap_);
+        if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, non_redist_gsdofrowmap_);
+        kststmod = Mortar::matrix_row_transform(kststmod, non_redist_gsdofrowmap_);
+        linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, non_redist_gsdofrowmap_);
       }
 
       //----------------------------------------------------------- SIXTH LINE
       if (slipset)
       {
-        kslnmod = Mortar::matrix_row_transform(kslnmod, pgsdofrowmap_);
-        kslmmod = Mortar::matrix_row_transform(kslmmod, pgsdofrowmap_);
-        if (iset) kslimod = Mortar::matrix_row_transform(kslimod, pgsdofrowmap_);
-        if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, pgsdofrowmap_);
-        kslslmod = Mortar::matrix_row_transform(kslslmod, pgsdofrowmap_);
-        linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, pgsdofrowmap_);
+        kslnmod = Mortar::matrix_row_transform(kslnmod, non_redist_gsdofrowmap_);
+        kslmmod = Mortar::matrix_row_transform(kslmmod, non_redist_gsdofrowmap_);
+        if (iset) kslimod = Mortar::matrix_row_transform(kslimod, non_redist_gsdofrowmap_);
+        if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, non_redist_gsdofrowmap_);
+        kslslmod = Mortar::matrix_row_transform(kslslmod, non_redist_gsdofrowmap_);
+        linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, non_redist_gsdofrowmap_);
       }
     }
 
@@ -1232,8 +1233,8 @@ void CONTACT::LagrangeStrategy::evaluate_friction(
     // transform if necessary
     if (parallel_redistribution_status())
     {
-      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
     }
 
     // add contact stiffness
@@ -2180,7 +2181,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*non_redist_gsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -2209,7 +2210,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (parallel_redistribution_status())
-        trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = Mortar::matrix_row_col_transform(
+            trafo_, non_redist_gsmdofrowmap_, non_redist_gsmdofrowmap_);
       systrafo->add(*trafo_, false, 1.0, 1.0);
       systrafo->complete();
 
@@ -2224,8 +2226,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     // transform if necessary
     if (parallel_redistribution_status())
     {
-      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
     }
 
     kteffmatrix->un_complete();
@@ -2253,8 +2255,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (parallel_redistribution_status())
     {
       // split and transform to redistributed maps
-      Core::LinAlg::split_matrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
-          gndofrowmap_, ksmsm, ksmn, knsm, knn);
+      Core::LinAlg::split_matrix2x2(kteffmatrix, non_redist_gsmdofrowmap_, gndofrowmap_,
+          non_redist_gsmdofrowmap_, gndofrowmap_, ksmsm, ksmn, knsm, knn);
       ksmsm = Mortar::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
       ksmn = Mortar::matrix_row_transform(ksmn, gsmdofrowmap_);
       knsm = Mortar::matrix_col_transform(knsm, gsmdofrowmap_);
@@ -2287,7 +2289,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     if (parallel_redistribution_status())
     {
       // split and transform to redistributed maps
-      Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+      Core::LinAlg::split_vector(
+          *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
       Core::LinAlg::export_to(*fsm, *fsmtemp);
       fsm = fsmtemp;
@@ -2666,31 +2669,31 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
       // nothing to do (ndof-map independent of redistribution)
 
       //---------------------------------------------------------- SECOND LINE
-      kmnmod = Mortar::matrix_row_transform(kmnmod, pgmdofrowmap_);
-      kmmmod = Mortar::matrix_row_transform(kmmmod, pgmdofrowmap_);
-      if (iset) kmimod = Mortar::matrix_row_transform(kmimod, pgmdofrowmap_);
-      if (aset) kmamod = Mortar::matrix_row_transform(kmamod, pgmdofrowmap_);
+      kmnmod = Mortar::matrix_row_transform(kmnmod, non_redist_gmdofrowmap_);
+      kmmmod = Mortar::matrix_row_transform(kmmmod, non_redist_gmdofrowmap_);
+      if (iset) kmimod = Mortar::matrix_row_transform(kmimod, non_redist_gmdofrowmap_);
+      if (aset) kmamod = Mortar::matrix_row_transform(kmamod, non_redist_gmdofrowmap_);
 
       //----------------------------------------------------------- THIRD LINE
       if (iset)
       {
-        kinmod = Mortar::matrix_row_transform(kinmod, pgsdofrowmap_);
-        kimmod = Mortar::matrix_row_transform(kimmod, pgsdofrowmap_);
-        kiimod = Mortar::matrix_row_transform(kiimod, pgsdofrowmap_);
-        if (aset) kiamod = Mortar::matrix_row_transform(kiamod, pgsdofrowmap_);
+        kinmod = Mortar::matrix_row_transform(kinmod, non_redist_gsdofrowmap_);
+        kimmod = Mortar::matrix_row_transform(kimmod, non_redist_gsdofrowmap_);
+        kiimod = Mortar::matrix_row_transform(kiimod, non_redist_gsdofrowmap_);
+        if (aset) kiamod = Mortar::matrix_row_transform(kiamod, non_redist_gsdofrowmap_);
       }
 
       //---------------------------------------------------------- FOURTH LINE
-      if (aset) smatrix_ = Mortar::matrix_row_transform(smatrix_, pgsdofrowmap_);
+      if (aset) smatrix_ = Mortar::matrix_row_transform(smatrix_, non_redist_gsdofrowmap_);
 
       //----------------------------------------------------------- FIFTH LINE
       if (aset)
       {
-        kanmod = Mortar::matrix_row_transform(kanmod, pgsdofrowmap_);
-        kammod = Mortar::matrix_row_transform(kammod, pgsdofrowmap_);
-        kaamod = Mortar::matrix_row_transform(kaamod, pgsdofrowmap_);
-        if (iset) kaimod = Mortar::matrix_row_transform(kaimod, pgsdofrowmap_);
-        tderivmatrix_ = Mortar::matrix_row_transform(tderivmatrix_, pgsdofrowmap_);
+        kanmod = Mortar::matrix_row_transform(kanmod, non_redist_gsdofrowmap_);
+        kammod = Mortar::matrix_row_transform(kammod, non_redist_gsdofrowmap_);
+        kaamod = Mortar::matrix_row_transform(kaamod, non_redist_gsdofrowmap_);
+        if (iset) kaimod = Mortar::matrix_row_transform(kaimod, non_redist_gsdofrowmap_);
+        tderivmatrix_ = Mortar::matrix_row_transform(tderivmatrix_, non_redist_gsdofrowmap_);
       }
     }
 
@@ -2816,7 +2819,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
             Core::LinAlg::create_identity_matrix(*gndofrowmap_);
         systrafo->add(*eye, false, 1.0, 1.0);
         if (parallel_redistribution_status())
-          trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+          trafo_ = Mortar::matrix_row_col_transform(
+              trafo_, non_redist_gsmdofrowmap_, non_redist_gsmdofrowmap_);
         systrafo->add(*trafo_, false, 1.0, 1.0);
         systrafo->complete();
 
@@ -2838,8 +2842,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(
     // transform if necessary
     if (parallel_redistribution_status())
     {
-      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, pgsdofrowmap_);
-      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, pgmdofrowmap_);
+      lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
+      linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
     }
 
     // add contact stiffness
@@ -3093,9 +3097,10 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
    */
   if (parallel_redistribution_status())
   {
-    trkzd = Mortar::matrix_row_col_transform(trkzd, pglmdofrowmap_, problem_dofs());
-    trkzz = Mortar::matrix_row_col_transform(trkzz, pglmdofrowmap_, pglmdofrowmap_);
-    trkdz = Mortar::matrix_row_col_transform(trkdz, problem_dofs(), pglmdofrowmap_);
+    trkzd = Mortar::matrix_row_col_transform(trkzd, non_redist_glmdofrowmap_, problem_dofs());
+    trkzz =
+        Mortar::matrix_row_col_transform(trkzz, non_redist_glmdofrowmap_, non_redist_glmdofrowmap_);
+    trkdz = Mortar::matrix_row_col_transform(trkdz, problem_dofs(), non_redist_glmdofrowmap_);
   }
 
   // Assemble the saddle point system
@@ -3107,7 +3112,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     // Initialize merged system (matrix, rhs, sol)
     Teuchos::RCP<Epetra_Map> mergedmap = Teuchos::null;
     if (parallel_redistribution_status())
-      mergedmap = Core::LinAlg::merge_map(problem_dofs(), pglmdofrowmap_, false);
+      mergedmap = Core::LinAlg::merge_map(problem_dofs(), non_redist_glmdofrowmap_, false);
     else
       mergedmap = Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
 
@@ -3123,13 +3128,13 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
       Core::LinAlg::export_to(*dirichtoggle, *dirichtoggleexp);
       Teuchos::RCP<Epetra_Vector> lmDBC = Teuchos::null;
       if (parallel_redistribution_status())
-        lmDBC = Teuchos::rcp(new Epetra_Vector(*pgsdofrowmap_, true));
+        lmDBC = Teuchos::rcp(new Epetra_Vector(*non_redist_gsdofrowmap_, true));
       else
         lmDBC = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       Core::LinAlg::export_to(*dirichtoggle, *lmDBC);
 
       if (parallel_redistribution_status())
-        lmDBC->ReplaceMap(*pglmdofrowmap_);
+        lmDBC->ReplaceMap(*non_redist_glmdofrowmap_);
       else
         lmDBC->ReplaceMap(*glmdofrowmap_);
 
@@ -3153,10 +3158,10 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     Teuchos::RCP<Core::LinAlg::MapExtractor> dommapext = Teuchos::null;
     if (parallel_redistribution_status())
     {
-      rowmapext =
-          Teuchos::rcp(new Core::LinAlg::MapExtractor(*mergedmap, pglmdofrowmap_, problem_dofs()));
-      dommapext =
-          Teuchos::rcp(new Core::LinAlg::MapExtractor(*mergedmap, pglmdofrowmap_, problem_dofs()));
+      rowmapext = Teuchos::rcp(
+          new Core::LinAlg::MapExtractor(*mergedmap, non_redist_glmdofrowmap_, problem_dofs()));
+      dommapext = Teuchos::rcp(
+          new Core::LinAlg::MapExtractor(*mergedmap, non_redist_glmdofrowmap_, problem_dofs()));
     }
     else
     {
@@ -3207,10 +3212,11 @@ void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
   Teuchos::RCP<Epetra_Vector> sollm = Teuchos::null;
   if (parallel_redistribution_status())
   {
-    Teuchos::RCP<Epetra_Vector> sollmOrig = Teuchos::rcp(new Epetra_Vector(*pglmdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> sollmOrig =
+        Teuchos::rcp(new Epetra_Vector(*non_redist_glmdofrowmap_));
     Teuchos::RCP<Epetra_Map> mergedmapOrig =
-        Core::LinAlg::merge_map(problem_dofs(), pglmdofrowmap_, false);
-    Core::LinAlg::MapExtractor mapext(*mergedmapOrig, problem_dofs(), pglmdofrowmap_);
+        Core::LinAlg::merge_map(problem_dofs(), non_redist_glmdofrowmap_, false);
+    Core::LinAlg::MapExtractor mapext(*mergedmapOrig, problem_dofs(), non_redist_glmdofrowmap_);
     mapext.extract_cond_vector(blocksol, sold);
     mapext.extract_other_vector(blocksol, sollmOrig);
 
@@ -3399,14 +3405,16 @@ void CONTACT::LagrangeStrategy::evaluate_force(CONTACT::ParamsInterface& cparams
         Core::LinAlg::create_identity_matrix(*gndofrowmap_);
     systrafo_->add(*eye, false, 1.0, 1.0);
     if (parallel_redistribution_status())
-      trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+      trafo_ = Mortar::matrix_row_col_transform(
+          trafo_, non_redist_gsmdofrowmap_, non_redist_gsmdofrowmap_);
     systrafo_->add(*trafo_, false, 1.0, 1.0);
     systrafo_->complete();
 
     invsystrafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
     invsystrafo_->add(*eye, false, 1.0, 1.0);
     if (parallel_redistribution_status())
-      invtrafo_ = Mortar::matrix_row_col_transform(invtrafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+      invtrafo_ = Mortar::matrix_row_col_transform(
+          invtrafo_, non_redist_gsmdofrowmap_, non_redist_gsmdofrowmap_);
     invsystrafo_->add(*invtrafo_, false, 1.0, 1.0);
     invsystrafo_->complete();
   }
@@ -3670,7 +3678,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*non_redist_gsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -3928,7 +3936,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-      Core::LinAlg::export_to(*pgsdirichtoggle_, *lmDBC);
+      Core::LinAlg::export_to(*non_redist_gsdirichtoggle_, *lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*gsdofrowmap_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
@@ -4470,7 +4478,8 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (parallel_redistribution_status())
-        trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = Mortar::matrix_row_col_transform(
+            trafo_, non_redist_gsmdofrowmap_, non_redist_gsmdofrowmap_);
       systrafo->add(*trafo_, false, 1.0, 1.0);
       systrafo->complete();
       systrafo->multiply(false, *disi, *disi);
@@ -4552,7 +4561,8 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
       if (parallel_redistribution_status())
-        trafo_ = Mortar::matrix_row_col_transform(trafo_, pgsmdofrowmap_, pgsmdofrowmap_);
+        trafo_ = Mortar::matrix_row_col_transform(
+            trafo_, non_redist_gsmdofrowmap_, non_redist_gsmdofrowmap_);
       systrafo->add(*trafo_, false, 1.0, 1.0);
       systrafo->complete();
       systrafo->multiply(false, *disi, *disi);
@@ -4653,8 +4663,8 @@ void CONTACT::LagrangeStrategy::update_active_set()
           if (ftype == Inpar::CONTACT::friction_tresca)
           {
             FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-            double ct =
-                interface_[i]->get_ct_ref()[interface_[i]->get_ct_ref().Map().LID(frinode->id())];
+            const Epetra_Vector& ct_ref = interface_[i]->ct_ref();
+            double ct = ct_ref[ct_ref.Map().LID(frinode->id())];
 
             // CAREFUL: friction bound is now interface-local (popp 08/2012)
             double frbound = interface_[i]->interface_params().get<double>("FRBOUND");
@@ -4691,8 +4701,8 @@ void CONTACT::LagrangeStrategy::update_active_set()
           if (ftype == Inpar::CONTACT::friction_coulomb)
           {
             FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-            double ct =
-                interface_[i]->get_ct_ref()[interface_[i]->get_ct_ref().Map().LID(frinode->id())];
+            const Epetra_Vector& ct_ref = interface_[i]->ct_ref();
+            double ct = ct_ref[ct_ref.Map().LID(frinode->id())];
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
             double frcoeff = interface_[i]->interface_params().get<double>("FRCOEFF");
@@ -4767,9 +4777,8 @@ void CONTACT::LagrangeStrategy::update_active_set()
     gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interface_[i]->active_dofs(), false);
 
     ginactivenodes_ =
-        Core::LinAlg::merge_map(ginactivenodes_, interface_[i]->in_active_nodes(), false);
-    ginactivedofs_ =
-        Core::LinAlg::merge_map(ginactivedofs_, interface_[i]->in_active_dofs(), false);
+        Core::LinAlg::merge_map(ginactivenodes_, interface_[i]->inactive_nodes(), false);
+    ginactivedofs_ = Core::LinAlg::merge_map(ginactivedofs_, interface_[i]->inactive_dofs(), false);
 
     gactiven_ = Core::LinAlg::merge_map(gactiven_, interface_[i]->active_n_dofs(), false);
     gactivet_ = Core::LinAlg::merge_map(gactivet_, interface_[i]->active_t_dofs(), false);
@@ -4982,9 +4991,8 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
     gactivenodes_ = Core::LinAlg::merge_map(gactivenodes_, interface_[i]->active_nodes(), false);
     gactivedofs_ = Core::LinAlg::merge_map(gactivedofs_, interface_[i]->active_dofs(), false);
     ginactivenodes_ =
-        Core::LinAlg::merge_map(ginactivenodes_, interface_[i]->in_active_nodes(), false);
-    ginactivedofs_ =
-        Core::LinAlg::merge_map(ginactivedofs_, interface_[i]->in_active_dofs(), false);
+        Core::LinAlg::merge_map(ginactivenodes_, interface_[i]->inactive_nodes(), false);
+    ginactivedofs_ = Core::LinAlg::merge_map(ginactivedofs_, interface_[i]->inactive_dofs(), false);
     gactiven_ = Core::LinAlg::merge_map(gactiven_, interface_[i]->active_n_dofs(), false);
     gactivet_ = Core::LinAlg::merge_map(gactivet_, interface_[i]->active_t_dofs(), false);
 
@@ -5243,7 +5251,7 @@ void CONTACT::LagrangeStrategy::do_regularization_scaling(bool aset, bool iset,
   //---------------------------------------------------------- FOURTH LINE
   if (parallel_redistribution_status())
   {
-    if (aset) nderivmatrix_ = Mortar::matrix_row_transform(nderivmatrix_, pgsdofrowmap_);
+    if (aset) nderivmatrix_ = Mortar::matrix_row_transform(nderivmatrix_, non_redist_gsdofrowmap_);
   }
   /**********************************************************************/
   /* (10) Global setup of kteffnew (including contact)                  */
@@ -5480,8 +5488,8 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_matrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
-        gndofrowmap_, ksmsm, ksmn, knsm, knn);
+    Core::LinAlg::split_matrix2x2(kteffmatrix, non_redist_gsmdofrowmap_, gndofrowmap_,
+        non_redist_gsmdofrowmap_, gndofrowmap_, ksmsm, ksmn, knsm, knn);
     ksmsm = Mortar::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = Mortar::matrix_row_transform(ksmn, gsmdofrowmap_);
     knsm = Mortar::matrix_col_transform(knsm, gsmdofrowmap_);
@@ -5515,7 +5523,8 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(
+        *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -5943,46 +5952,46 @@ void CONTACT::LagrangeStrategy::condense_friction(
     // nothing to do (ndof-map independent of redistribution)
 
     //---------------------------------------------------------- SECOND LINE
-    kmnmod = Mortar::matrix_row_transform(kmnmod, pgmdofrowmap_);
-    kmmmod = Mortar::matrix_row_transform(kmmmod, pgmdofrowmap_);
-    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, pgmdofrowmap_);
-    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, pgmdofrowmap_);
+    kmnmod = Mortar::matrix_row_transform(kmnmod, non_redist_gmdofrowmap_);
+    kmmmod = Mortar::matrix_row_transform(kmmmod, non_redist_gmdofrowmap_);
+    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, non_redist_gmdofrowmap_);
+    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, non_redist_gmdofrowmap_);
 
     //----------------------------------------------------------- THIRD LINE
     if (iset)
     {
-      kinmod = Mortar::matrix_row_transform(kinmod, pgsdofrowmap_);
-      kimmod = Mortar::matrix_row_transform(kimmod, pgsdofrowmap_);
-      kiimod = Mortar::matrix_row_transform(kiimod, pgsdofrowmap_);
-      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, pgsdofrowmap_);
+      kinmod = Mortar::matrix_row_transform(kinmod, non_redist_gsdofrowmap_);
+      kimmod = Mortar::matrix_row_transform(kimmod, non_redist_gsdofrowmap_);
+      kiimod = Mortar::matrix_row_transform(kiimod, non_redist_gsdofrowmap_);
+      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, non_redist_gsdofrowmap_);
     }
 
     //---------------------------------------------------------- FOURTH LINE
     if (aset)
     {
-      smatrix_ = Mortar::matrix_row_transform(smatrix_, pgsdofrowmap_);
+      smatrix_ = Mortar::matrix_row_transform(smatrix_, non_redist_gsdofrowmap_);
     }
 
     //----------------------------------------------------------- FIFTH LINE
     if (stickset)
     {
-      kstnmod = Mortar::matrix_row_transform(kstnmod, pgsdofrowmap_);
-      kstmmod = Mortar::matrix_row_transform(kstmmod, pgsdofrowmap_);
-      if (iset) kstimod = Mortar::matrix_row_transform(kstimod, pgsdofrowmap_);
-      if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, pgsdofrowmap_);
-      kststmod = Mortar::matrix_row_transform(kststmod, pgsdofrowmap_);
-      linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, pgsdofrowmap_);
+      kstnmod = Mortar::matrix_row_transform(kstnmod, non_redist_gsdofrowmap_);
+      kstmmod = Mortar::matrix_row_transform(kstmmod, non_redist_gsdofrowmap_);
+      if (iset) kstimod = Mortar::matrix_row_transform(kstimod, non_redist_gsdofrowmap_);
+      if (slipset) kstslmod = Mortar::matrix_row_transform(kstslmod, non_redist_gsdofrowmap_);
+      kststmod = Mortar::matrix_row_transform(kststmod, non_redist_gsdofrowmap_);
+      linstickDIS_ = Mortar::matrix_row_transform(linstickDIS_, non_redist_gsdofrowmap_);
     }
 
     //----------------------------------------------------------- SIXTH LINE
     if (slipset)
     {
-      kslnmod = Mortar::matrix_row_transform(kslnmod, pgsdofrowmap_);
-      kslmmod = Mortar::matrix_row_transform(kslmmod, pgsdofrowmap_);
-      if (iset) kslimod = Mortar::matrix_row_transform(kslimod, pgsdofrowmap_);
-      if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, pgsdofrowmap_);
-      kslslmod = Mortar::matrix_row_transform(kslslmod, pgsdofrowmap_);
-      linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, pgsdofrowmap_);
+      kslnmod = Mortar::matrix_row_transform(kslnmod, non_redist_gsdofrowmap_);
+      kslmmod = Mortar::matrix_row_transform(kslmmod, non_redist_gsdofrowmap_);
+      if (iset) kslimod = Mortar::matrix_row_transform(kslimod, non_redist_gsdofrowmap_);
+      if (stickset) kslstmod = Mortar::matrix_row_transform(kslstmod, non_redist_gsdofrowmap_);
+      kslslmod = Mortar::matrix_row_transform(kslslmod, non_redist_gsdofrowmap_);
+      linslipDIS_ = Mortar::matrix_row_transform(linslipDIS_, non_redist_gsdofrowmap_);
     }
   }
 
@@ -6312,8 +6321,8 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_matrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
-        gndofrowmap_, ksmsm, ksmn, knsm, knn);
+    Core::LinAlg::split_matrix2x2(kteffmatrix, non_redist_gsmdofrowmap_, gndofrowmap_,
+        non_redist_gsmdofrowmap_, gndofrowmap_, ksmsm, ksmn, knsm, knn);
     ksmsm = Mortar::matrix_row_col_transform(ksmsm, gsmdofrowmap_, gsmdofrowmap_);
     ksmn = Mortar::matrix_row_transform(ksmn, gsmdofrowmap_);
     knsm = Mortar::matrix_col_transform(knsm, gsmdofrowmap_);
@@ -6346,7 +6355,8 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
-    Core::LinAlg::split_vector(*problem_dofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
+    Core::LinAlg::split_vector(
+        *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Epetra_Vector> fsmtemp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
@@ -6647,31 +6657,31 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     // nothing to do (ndof-map independent of redistribution)
 
     //---------------------------------------------------------- SECOND LINE
-    kmnmod = Mortar::matrix_row_transform(kmnmod, pgmdofrowmap_);
-    kmmmod = Mortar::matrix_row_transform(kmmmod, pgmdofrowmap_);
-    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, pgmdofrowmap_);
-    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, pgmdofrowmap_);
+    kmnmod = Mortar::matrix_row_transform(kmnmod, non_redist_gmdofrowmap_);
+    kmmmod = Mortar::matrix_row_transform(kmmmod, non_redist_gmdofrowmap_);
+    if (iset) kmimod = Mortar::matrix_row_transform(kmimod, non_redist_gmdofrowmap_);
+    if (aset) kmamod = Mortar::matrix_row_transform(kmamod, non_redist_gmdofrowmap_);
 
     //----------------------------------------------------------- THIRD LINE
     if (iset)
     {
-      kinmod = Mortar::matrix_row_transform(kinmod, pgsdofrowmap_);
-      kimmod = Mortar::matrix_row_transform(kimmod, pgsdofrowmap_);
-      kiimod = Mortar::matrix_row_transform(kiimod, pgsdofrowmap_);
-      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, pgsdofrowmap_);
+      kinmod = Mortar::matrix_row_transform(kinmod, non_redist_gsdofrowmap_);
+      kimmod = Mortar::matrix_row_transform(kimmod, non_redist_gsdofrowmap_);
+      kiimod = Mortar::matrix_row_transform(kiimod, non_redist_gsdofrowmap_);
+      if (aset) kiamod = Mortar::matrix_row_transform(kiamod, non_redist_gsdofrowmap_);
     }
 
     //---------------------------------------------------------- FOURTH LINE
-    if (aset) smatrix_ = Mortar::matrix_row_transform(smatrix_, pgsdofrowmap_);
+    if (aset) smatrix_ = Mortar::matrix_row_transform(smatrix_, non_redist_gsdofrowmap_);
 
     //----------------------------------------------------------- FIFTH LINE
     if (aset)
     {
-      kanmod = Mortar::matrix_row_transform(kanmod, pgsdofrowmap_);
-      kammod = Mortar::matrix_row_transform(kammod, pgsdofrowmap_);
-      kaamod = Mortar::matrix_row_transform(kaamod, pgsdofrowmap_);
-      if (iset) kaimod = Mortar::matrix_row_transform(kaimod, pgsdofrowmap_);
-      tderivmatrix_ = Mortar::matrix_row_transform(tderivmatrix_, pgsdofrowmap_);
+      kanmod = Mortar::matrix_row_transform(kanmod, non_redist_gsdofrowmap_);
+      kammod = Mortar::matrix_row_transform(kammod, non_redist_gsdofrowmap_);
+      kaamod = Mortar::matrix_row_transform(kaamod, non_redist_gsdofrowmap_);
+      if (iset) kaimod = Mortar::matrix_row_transform(kaimod, non_redist_gsdofrowmap_);
+      tderivmatrix_ = Mortar::matrix_row_transform(tderivmatrix_, non_redist_gsdofrowmap_);
     }
   }
 
