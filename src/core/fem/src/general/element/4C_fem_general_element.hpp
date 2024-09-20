@@ -20,8 +20,6 @@
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_io_input_parameter_container.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
-#include "4C_linalg_serialdensevector.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -61,6 +59,12 @@ namespace Core::FE
   class Discretization;
   class DiscretizationHDG;
 }  // namespace Core::FE
+
+namespace Core::LinAlg
+{
+  class SerialDenseMatrix;
+  class SerialDenseVector;
+}  // namespace Core::LinAlg
 
 namespace Core::Nodes
 {

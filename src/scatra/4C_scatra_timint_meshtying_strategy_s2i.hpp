@@ -21,6 +21,7 @@
 #include "4C_inpar_s2i.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 
 #include <Epetra_FEVector.h>

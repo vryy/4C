@@ -21,6 +21,7 @@
 
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_thermo.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
