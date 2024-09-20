@@ -18,6 +18,7 @@
 
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_general_node.hpp"
+#include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

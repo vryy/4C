@@ -11,6 +11,7 @@
 
 #include "4C_fem_dofset_transparent.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 FOUR_C_NAMESPACE_OPEN

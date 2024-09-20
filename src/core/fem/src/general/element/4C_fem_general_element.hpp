@@ -16,7 +16,6 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobject.hpp"
-#include "4C_fem_condition.hpp"
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
@@ -66,6 +65,11 @@ namespace Core::FE
 namespace Core::Nodes
 {
   class Node;
+}
+
+namespace Core::Conditions
+{
+  class Condition;
 }
 
 namespace Core::Elements

@@ -14,6 +14,7 @@ Here is everything related with reading a bc file
 
 #include "4C_config.hpp"
 
+#include "4C_legacy_enum_definitions_conditions.hpp"
 #include "4C_pre_exodus_reader.hpp"
 #include "4C_utils_exceptions.hpp"
 

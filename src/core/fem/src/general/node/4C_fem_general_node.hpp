@@ -17,7 +17,6 @@
 
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
-#include "4C_fem_condition.hpp"
 
 #include <Teuchos_RCP.hpp>
 
@@ -27,6 +26,12 @@ namespace Core::Elements
 {
   class Element;
 }
+
+namespace Core::Conditions
+{
+  class Condition;
+}
+
 
 namespace Core::FE
 {

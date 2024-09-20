@@ -11,6 +11,7 @@
 
 #include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"

@@ -9,6 +9,7 @@
 
 #include "4C_porofluidmultiphase_ele_boundary_calc.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_global_data.hpp"  // for curves and functions
