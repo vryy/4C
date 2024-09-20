@@ -19,6 +19,7 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_function_manager.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>

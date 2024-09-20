@@ -39,6 +39,8 @@
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 
+#include <Sacado.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -6580,7 +6582,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
 
         // H1 -error norm
         // sacado data type replaces "double"
-        typedef Sacado::Fad::DFad<double> FAD;  // for first derivs
+        using FAD = Sacado::Fad::DFad<double>;  // for first derivs
 
         FAD x = xyzint(0);
         x.diff(0, 3);  // independent variable 0 out of a total of 3

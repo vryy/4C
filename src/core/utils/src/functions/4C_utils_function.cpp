@@ -14,7 +14,7 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function_manager.hpp"
-#include "4C_utils_functionvariables.hpp"
+#include "4C_utils_symbolic_expression.hpp"
 
 #include <Sacado.hpp>
 
@@ -26,6 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
+  using SecondDerivativeType = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
+
   /// converts the values of variables from type double to FAD double and returns the modified
   /// vector of name-value-pairs
   std::vector<std::pair<std::string, Sacado::Fad::DFad<double>>>
@@ -380,7 +382,7 @@ Core::UTILS::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new Core::UTILS::SymbolicExpression<ValueType>(expression));
+          Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(expression));
       expr_.push_back(symbolicexpression);
     }
   }

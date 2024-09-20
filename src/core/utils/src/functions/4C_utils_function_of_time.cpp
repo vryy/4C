@@ -24,7 +24,7 @@ Core::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new Core::UTILS::SymbolicExpression<ValueType>(expression));
+          Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(expression));
       expr_.push_back(symbolicexpression);
     }
   }
@@ -33,7 +33,7 @@ Core::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
 double Core::UTILS::SymbolicFunctionOfTime::evaluate(
     const double time, const std::size_t component) const
 {
-  std::map<std::string, ValueType> variable_values;
+  std::map<std::string, double> variable_values;
 
   variable_values.emplace("t", time);
 
@@ -48,6 +48,7 @@ double Core::UTILS::SymbolicFunctionOfTime::evaluate(
 double Core::UTILS::SymbolicFunctionOfTime::evaluate_derivative(
     const double time, const std::size_t component) const
 {
+  using FirstDerivativeType = SymbolicExpression<double>::FirstDerivativeType;
   std::map<std::string, FirstDerivativeType> variable_values;
 
   // define FAD variables

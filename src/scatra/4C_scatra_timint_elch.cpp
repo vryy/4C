@@ -30,6 +30,8 @@
 #include "4C_utils_function_of_time.hpp"
 #include "4C_utils_parameter_list.hpp"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include <unordered_set>
 
 FOUR_C_NAMESPACE_OPEN

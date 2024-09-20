@@ -8,15 +8,10 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_io_linedefinition.hpp"
-#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
-#include "4C_utils_function_manager.hpp"
 #include "4C_utils_functionvariables.hpp"
-#include "4C_utils_symbolic_expression.hpp"
 
-#include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
 #include <complex>
@@ -76,11 +71,8 @@ namespace Core::UTILS
     [[nodiscard]] double evaluate_derivative(double time, std::size_t component = 0) const override;
 
    private:
-    using ValueType = double;
-    using FirstDerivativeType = Sacado::Fad::DFad<double>;
-
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> expr_;
 
 
     //! vector of the function variables and all their definitions
