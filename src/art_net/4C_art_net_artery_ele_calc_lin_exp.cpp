@@ -14,6 +14,7 @@
 #include "4C_art_net_art_junction.hpp"
 #include "4C_art_net_art_terminal_bc.hpp"
 #include "4C_art_net_artery_ele_calc.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"

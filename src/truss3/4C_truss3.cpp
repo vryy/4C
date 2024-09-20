@@ -11,6 +11,7 @@
 #include "4C_truss3.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"

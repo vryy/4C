@@ -25,44 +25,6 @@ Immersed::ImmersedBase::ImmersedBase() : issetup_(false), isinit_(false)
 }  // ImmersedBase
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Immersed::ImmersedBase::create_volume_condition(
-    const Teuchos::RCP<Core::FE::Discretization>& dis, const std::vector<int> dvol_fenode,
-    const Core::Conditions::ConditionType condtype, const std::string condname, bool buildgeometry)
-{
-  // determine id of condition
-  std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> allconditions;
-  allconditions = dis->get_all_conditions();
-  int id = (int)allconditions.size();
-  id += 1;
-
-  // build condition
-  Teuchos::RCP<Core::Conditions::Condition> condition =
-      Teuchos::rcp(new Core::Conditions::Condition(
-          id, condtype, buildgeometry, Core::Conditions::geometry_type_volume));
-
-  // add nodes to conditions
-  condition->set_nodes(dvol_fenode);
-
-  // add condition to discretization
-  dis->set_condition(condname, condition);
-
-  // fill complete if necessary
-  if (!dis->filled()) dis->fill_complete(false, false, buildgeometry);
-
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom =
-      dis->get_condition(condname)->geometry();
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator it;
-  for (it = geom.begin(); it != geom.end(); it++)
-  {
-    int id = it->second->id();
-    dis->g_element(id)->set_condition(condname, condition);
-  }
-
-  return;
-}  // create_volume_condition
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

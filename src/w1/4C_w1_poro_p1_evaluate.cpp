@@ -9,6 +9,7 @@
 */
 /*---------------------------------------------------------------------------*/
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_structporo.hpp"

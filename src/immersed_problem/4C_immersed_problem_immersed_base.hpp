@@ -15,6 +15,7 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_cut_boundingbox.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_immersed_node.hpp"
@@ -105,22 +106,6 @@ namespace Immersed
     \author rauch  */
     virtual void setup(){};
 
-
-    /*!
-    \brief create a volume condition on the fly
-
-    \author rauch
-    \date 05/14
-
-    \param dis           (in) : discretization on which condition is to be constructed
-    \param dvol_fenode   (in) : nodes to be conditioned
-    \param condtype      (in) : type of condition
-    \param condname      (in) : condition name
-    \param buildgeometry (in) : build geometry for condition or not
-    */
-    void create_volume_condition(const Teuchos::RCP<Core::FE::Discretization>& dis,
-        const std::vector<int> dvol_fenode, const Core::Conditions::ConditionType condtype,
-        const std::string condname, bool buildgeometry);
 
     /*!
     \brief construct the dof row map for a given condition.

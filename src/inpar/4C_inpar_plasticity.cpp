@@ -19,7 +19,6 @@ FOUR_C_NAMESPACE_OPEN
 
 void Inpar::Plasticity::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 

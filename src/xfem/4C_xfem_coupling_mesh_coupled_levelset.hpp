@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_xfem_coupling_base.hpp"
 #include "4C_xfem_coupling_levelset.hpp"
 #include "4C_xfem_coupling_mesh.hpp"

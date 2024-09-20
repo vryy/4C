@@ -11,6 +11,7 @@
 #include "4C_ssi_clonestrategy.hpp"
 
 #include "4C_adapter_structure_scatra_ele.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ssi.hpp"

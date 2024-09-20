@@ -10,6 +10,7 @@
 
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beam3_spatial_discretization_utils.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_largerotations.hpp"
