@@ -72,7 +72,6 @@ void Core::IO::InputParameterContainer::print(std::ostream& os) const
   printer(vecdoubledata_);
   printer(mapdata_);
   printer(stringdata_);
-  printer(matdata_);
   printer(anydata_);
 }
 

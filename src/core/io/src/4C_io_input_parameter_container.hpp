@@ -14,16 +14,13 @@
 
 #include "4C_config.hpp"
 
-#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_ENull.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-
 #include <any>
+#include <map>
 #include <string>
+#include <vector>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -103,8 +100,6 @@ namespace Core::IO
         mapdata_[name] = data;
       else if constexpr (std::is_same_v<T, std::string>)
         stringdata_[name] = data;
-      else if constexpr (std::is_same_v<T, Core::LinAlg::SerialDenseMatrix>)
-        matdata_[name] = data;
       else
         anydata_[name] = data;
     }
@@ -189,8 +184,6 @@ namespace Core::IO
         return access(mapdata_, name);
       else if constexpr (std::is_same_v<T, std::string>)
         return access(stringdata_, name);
-      else if constexpr (std::is_same_v<T, Core::LinAlg::SerialDenseMatrix>)
-        return access(matdata_, name);
       else
         return access_any(anydata_, name);
     }
@@ -217,9 +210,6 @@ namespace Core::IO
 
     //! a map to store string data in
     std::map<std::string, std::string> stringdata_;
-
-    //! a map to store matrices in
-    std::map<std::string, Core::LinAlg::SerialDenseMatrix> matdata_;
 
     //! a map to store anything
     std::map<std::string, std::any> anydata_;

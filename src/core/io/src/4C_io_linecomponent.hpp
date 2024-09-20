@@ -13,6 +13,7 @@
 
 #include "4C_io_input_parameter_container.hpp"
 
+#include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
 
 #include <functional>

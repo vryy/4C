@@ -17,6 +17,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_fluidporo_relpermeability_law.hpp"
 #include "4C_mat_fluidporo_viscosity_law.hpp"
 #include "4C_mat_material_factory.hpp"
