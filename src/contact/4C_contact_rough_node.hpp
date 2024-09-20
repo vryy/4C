@@ -10,6 +10,7 @@
 #include "4C_config.hpp"
 
 #include "4C_contact_node.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

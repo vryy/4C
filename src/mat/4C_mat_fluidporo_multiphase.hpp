@@ -21,6 +21,7 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_list.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
