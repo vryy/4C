@@ -23,7 +23,7 @@
 #include "4C_linalg_gauss_templates.hpp"
 #include "4C_utils_cln_matrix_conversion.hpp"
 #include "4C_utils_clnwrapper.hpp"
-#include "4C_utils_mathoperations.hpp"
+#include "4C_utils_mathoperations_cln.hpp"
 
 #include <unordered_map>
 

@@ -15,6 +15,8 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_geometry_element_coordtrafo.hpp"
 
+#include <Teuchos_RCP.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FE

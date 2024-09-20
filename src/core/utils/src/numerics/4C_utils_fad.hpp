@@ -16,8 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-
-#include <Sacado.hpp>
+#include "4C_utils_mathoperations_sacado.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
