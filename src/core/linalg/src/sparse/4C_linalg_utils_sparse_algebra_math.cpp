@@ -124,7 +124,9 @@ namespace Core::LinAlg
         {
           int err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
           if (err < 0 || err == 2) err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0) FOUR_C_THROW("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
+          if (err < 0)
+            FOUR_C_THROW(
+                "Epetra_CrsMatrix::InsertGlobalValues returned err=%d at row %d", err, Row);
         }
       }
 

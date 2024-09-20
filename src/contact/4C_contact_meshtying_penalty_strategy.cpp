@@ -428,7 +428,7 @@ void CONTACT::MtPenaltyStrategy::update_uzawa_augmented_lagrange()
  *----------------------------------------------------------------------------*/
 bool CONTACT::MtPenaltyStrategy::evaluate_force(const Teuchos::RCP<const Epetra_Vector> dis)
 {
-  if (force_.is_null()) force_ = Teuchos::rcp(new Epetra_Vector(*gdisprowmap_));
+  if (force_.is_null()) force_ = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   if (stiff_->multiply(false, *dis, *force_)) FOUR_C_THROW("multiply failed");
 
   return true;
