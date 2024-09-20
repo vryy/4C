@@ -121,8 +121,6 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra
   if (get_comm().MyPID() == 0)
     std::cout << "in...." << std::scientific << std::setprecision(6) << t_end << " secs"
               << std::endl;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -268,8 +266,6 @@ void CONTACT::MtPenaltyStrategy::evaluate_meshtying(
   Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Core::LinAlg::export_to(*fmold, *fmoldexp);
   feff->Update(-alphaf_, *fmoldexp, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -308,8 +304,6 @@ void CONTACT::MtPenaltyStrategy::initialize_uzawa(
   Teuchos::RCP<Epetra_Vector> fsexpnew = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
   Core::LinAlg::export_to(*fsnew, *fsexpnew);
   feff->Update(-1.0, *fsexpnew, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -326,8 +320,6 @@ void CONTACT::MtPenaltyStrategy::reset_penalty()
   {
     interface_[i]->interface_params().set<double>("PENALTYPARAM", initial_penalty());
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -347,8 +339,6 @@ void CONTACT::MtPenaltyStrategy::modify_penalty()
   {
     interface_[i]->interface_params().set<double>("PENALTYPARAM", pennew);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -406,7 +396,6 @@ void CONTACT::MtPenaltyStrategy::update_constraint_norm(int uzawaiter)
                 << params().get<double>("PENALTYPARAM") << "\n";
     std::cout << "********************************************\n";
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -420,8 +409,6 @@ void CONTACT::MtPenaltyStrategy::update_uzawa_augmented_lagrange()
   // Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = Teuchos::rcp(new Epetra_Vector(*z_));
   store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

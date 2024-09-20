@@ -29,7 +29,6 @@ CONTACT::PoroMtLagrangeStrategy::PoroMtLagrangeStrategy(const Epetra_Map* dof_ro
     double alphaf, int maxdof)
     : MtLagrangeStrategy(dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
-  return;
 }
 
 
@@ -44,8 +43,6 @@ void CONTACT::PoroMtLagrangeStrategy::initialize_poro_mt(
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteffoffdiag);
 
   fvelrow_ = Teuchos::rcp(new Epetra_Map(kteffmatrix->OperatorDomainMap()));
-
-  return;
 }
 
 
@@ -164,7 +161,6 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
   {
     FOUR_C_THROW("Trying to use not condensed PoroMeshtying --- Feel Free to implement!");
   }
-  return;
 }
 
 
@@ -185,7 +181,6 @@ void CONTACT::PoroMtLagrangeStrategy::recover_coupling_matrix_partof_lmp(
   zfluid->Scale(1 / (1 - alphaf_));
 
   z_->Update(1.0, *zfluid, 1.0);  // Add FluidCoupling Contribution to LM!
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -64,8 +64,6 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Core::FE::Discretization
           "interface-based output in the input file (or implement/fix it for frictional contact "
           "problems.");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -76,8 +74,6 @@ void CONTACT::MeshtyingContactBridge::store_dirichlet_status(
 {
   if (have_meshtying()) mt_manager()->get_strategy().store_dirichlet_status(dbcmaps);
   if (have_contact()) contact_manager()->get_strategy().store_dirichlet_status(dbcmaps);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -89,8 +85,6 @@ void CONTACT::MeshtyingContactBridge::set_state(Teuchos::RCP<Epetra_Vector> zero
     mt_manager()->get_strategy().set_state(Mortar::state_new_displacement, *zeros);
   if (have_contact())
     contact_manager()->get_strategy().set_state(Mortar::state_new_displacement, *zeros);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -117,8 +111,6 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities(
 
   // meshtying
   if (have_meshtying()) mt_manager()->postprocess_quantities(*output);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -136,8 +128,6 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities_per_interface(
     // meshtying
     if (have_meshtying()) mt_manager()->postprocess_quantities_per_interface(outputParams);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -150,8 +140,6 @@ void CONTACT::MeshtyingContactBridge::recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // contact
   if (have_contact()) contact_manager()->get_strategy().recover(disi);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -165,8 +153,6 @@ void CONTACT::MeshtyingContactBridge::read_restart(Core::IO::DiscretizationReade
 
   // meshtying
   if (have_meshtying()) mt_manager()->read_restart(reader, dis, zero);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -180,8 +166,6 @@ void CONTACT::MeshtyingContactBridge::write_restart(
 
   // meshtying
   if (have_meshtying()) mt_manager()->write_restart(*output, forcedrestart);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -194,8 +178,6 @@ void CONTACT::MeshtyingContactBridge::update(Teuchos::RCP<Epetra_Vector> dis)
 
   // meshtying
   if (have_meshtying()) mt_manager()->get_strategy().update(dis);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -208,8 +190,6 @@ void CONTACT::MeshtyingContactBridge::visualize_gmsh(const int istep, const int 
 
   // meshtying
   if (have_meshtying()) mt_manager()->get_strategy().visualize_gmsh(istep, iter);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
