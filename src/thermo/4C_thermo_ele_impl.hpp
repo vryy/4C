@@ -52,11 +52,11 @@ namespace Discret
       //!  This class does not provide a definition for this function, it
       //!  must be defined in TemperImpl.
       virtual int evaluate(const Core::Elements::Element* ele,  //!< current element
-          Teuchos::ParameterList& params,                  //!< parameter list, containing e.g., dt
-          const Core::FE::Discretization& discretization,  //!< current discretisation
-          const Core::Elements::Element::LocationArray& la,  //!< location array
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< conductivity matrix
-          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,   //!< capacity matrix
+          Teuchos::ParameterList& params,                   //!< parameter list, containing e.g., dt
+          const Core::FE::Discretization& discretization,   //!< current discretisation
+          const Core::Elements::LocationArray& la,          //!< location array
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
           Core::LinAlg::SerialDenseVector&
               elevec1_epetra,  //!< internal force, view on heat flux in x-direction
           Core::LinAlg::SerialDenseVector&
@@ -135,12 +135,12 @@ namespace Discret
       static constexpr int nquad_ = Thermo::DisTypeToNumGaussPoints<distype>::nquad;
 
       //! Evaluate for multiple dofsets
-      int evaluate(const Core::Elements::Element* ele,     //!< current element
-          Teuchos::ParameterList& params,                  //!< parameter list, containing e.g., dt
-          const Core::FE::Discretization& discretization,  //!< current discretisation
-          const Core::Elements::Element::LocationArray& la,  //!< location array
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< conductivity matrix
-          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,   //!< capacity matrix
+      int evaluate(const Core::Elements::Element* ele,      //!< current element
+          Teuchos::ParameterList& params,                   //!< parameter list, containing e.g., dt
+          const Core::FE::Discretization& discretization,   //!< current discretisation
+          const Core::Elements::LocationArray& la,          //!< location array
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
           Core::LinAlg::SerialDenseVector&
               elevec1_epetra,  //!< internal force, view on heat flux in x-direction
           Core::LinAlg::SerialDenseVector&
@@ -166,8 +166,7 @@ namespace Discret
       //!
       //! builds quantitites from linear/nonlinear and thermo/TSI specific routines
       void evaluate_tang_capa_fint(const Core::Elements::Element* ele, const double time,
-          const Core::FE::Discretization& discretization,
-          const Core::Elements::Element::LocationArray& la,
+          const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
@@ -182,8 +181,7 @@ namespace Discret
        * @param params ParameterList of options
        */
       void evaluate_coupled_tang(const Core::Elements::Element* ele,
-          const Core::FE::Discretization& discretization,
-          const Core::Elements::Element::LocationArray& la,
+          const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
           Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
           Teuchos::ParameterList& params);
 
@@ -440,7 +438,7 @@ namespace Discret
 
       //! extract displacement and velocity vector from discretization
       void extract_disp_vel(const Core::FE::Discretization& discretization,
-          const Core::Elements::Element::LocationArray& la, std::vector<double>& mydisp,
+          const Core::Elements::LocationArray& la, std::vector<double>& mydisp,
           std::vector<double>& myvel) const;
 
       //! copy matrix contents into character vector

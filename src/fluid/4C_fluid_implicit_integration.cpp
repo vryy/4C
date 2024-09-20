@@ -1147,7 +1147,7 @@ void FLD::FluidImplicitTimeInt::evaluate_mat_and_rhs(Teuchos::ParameterList& ele
     Core::FE::AssembleStrategy strategy(
         0, 0, sysmat, Teuchos::null, residual_col, Teuchos::null, Teuchos::null);
 
-    Core::Elements::Element::LocationArray la(1);
+    Core::Elements::LocationArray la(1);
 
     //------------------------------------------------------------
     // call standard loop over elements

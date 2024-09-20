@@ -56,7 +56,7 @@ namespace Discret
       //  return extracted values of phinp
       void extract_element_and_node_values(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la) override;
+          Core::Elements::LocationArray& la) override;
 
       //! evaluate shape functions and their derivatives at current integration point
       double eval_shape_func_and_derivs_at_int_point(

@@ -20,6 +20,7 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

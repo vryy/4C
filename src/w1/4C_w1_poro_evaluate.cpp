@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   if (scatra_coupling_)
   {
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Wall1Poro<distype>::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -138,7 +138,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::evaluate(Teuchos::ParameterList& para
 
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

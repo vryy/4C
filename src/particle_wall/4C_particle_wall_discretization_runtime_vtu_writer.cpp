@@ -11,6 +11,8 @@
 #include "4C_particle_wall_discretization_runtime_vtu_writer.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"

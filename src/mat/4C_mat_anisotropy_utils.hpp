@@ -27,7 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   class PackBuffer;
-}
+  class UnpackBuffer;
+}  // namespace Core::Communication
+
 namespace Input
 {
   class LineDefinition;

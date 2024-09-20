@@ -513,8 +513,8 @@ namespace ScaTra
      */
     void evaluate_mortar_cell(const Core::FE::Discretization& idiscret, Mortar::IntCell& cell,
         const Inpar::ScaTra::ImplType& impltype, Mortar::Element& slaveelement,
-        Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+        Mortar::Element& masterelement, Core::Elements::LocationArray& la_slave,
+        Core::Elements::LocationArray& la_master, const Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& cellmatrix1, Core::LinAlg::SerialDenseMatrix& cellmatrix2,
         Core::LinAlg::SerialDenseMatrix& cellmatrix3, Core::LinAlg::SerialDenseMatrix& cellmatrix4,
         Core::LinAlg::SerialDenseVector& cellvector1,
@@ -542,8 +542,8 @@ namespace ScaTra
     void evaluate_slave_node(const Core::FE::Discretization& idiscret,
         const Mortar::Node& slavenode, const double& lumpedarea,
         const Inpar::ScaTra::ImplType& impltype, Mortar::Element& slaveelement,
-        Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+        Mortar::Element& masterelement, Core::Elements::LocationArray& la_slave,
+        Core::Elements::LocationArray& la_master, const Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& ntsmatrix1, Core::LinAlg::SerialDenseMatrix& ntsmatrix2,
         Core::LinAlg::SerialDenseMatrix& ntsmatrix3, Core::LinAlg::SerialDenseMatrix& ntsmatrix4,
         Core::LinAlg::SerialDenseVector& ntsvector1,
@@ -565,7 +565,7 @@ namespace ScaTra
      * @param elevector2 element vector 2
      */
     void evaluate_mortar_element(const Core::FE::Discretization& idiscret, Mortar::Element& element,
-        const Inpar::ScaTra::ImplType& impltype, Core::Elements::Element::LocationArray& la,
+        const Inpar::ScaTra::ImplType& impltype, Core::Elements::LocationArray& la,
         const Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elematrix1,
         Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseMatrix& elematrix3,
         Core::LinAlg::SerialDenseMatrix& elematrix4, Core::LinAlg::SerialDenseVector& elevector1,
@@ -734,8 +734,8 @@ namespace ScaTra
         Mortar::IntCell& cell,                                       //!< mortar integration cell
         Mortar::Element& slaveelement,                               //!< slave-side mortar element
         Mortar::Element& masterelement,                              //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,            //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,           //!< master-side location array
+        Core::Elements::LocationArray& la_slave,                     //!< slave-side location array
+        Core::Elements::LocationArray& la_master,                    //!< master-side location array
         const Teuchos::ParameterList& params,                        //!< parameter list
         Core::LinAlg::SerialDenseMatrix& cellmatrix1,                //!< cell matrix 1
         Core::LinAlg::SerialDenseMatrix& cellmatrix2,                //!< cell matrix 2
@@ -751,24 +751,24 @@ namespace ScaTra
         const Mortar::Node& slavenode,             //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix1,        //!< node-to-segment matrix 1
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix2,        //!< node-to-segment matrix 2
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix3,        //!< node-to-segment matrix 3
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix4,        //!< node-to-segment matrix 4
-        Core::LinAlg::SerialDenseVector& ntsvector1,        //!< node-to-segment vector 1
-        Core::LinAlg::SerialDenseVector& ntsvector2         //!< node-to-segment vector 2
+        Mortar::Element& slaveelement,                //!< slave-side mortar element
+        Mortar::Element& masterelement,               //!< master-side mortar element
+        Core::Elements::LocationArray& la_slave,      //!< slave-side location array
+        Core::Elements::LocationArray& la_master,     //!< master-side location array
+        const Teuchos::ParameterList& params,         //!< parameter list
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix1,  //!< node-to-segment matrix 1
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix2,  //!< node-to-segment matrix 2
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix3,  //!< node-to-segment matrix 3
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix4,  //!< node-to-segment matrix 4
+        Core::LinAlg::SerialDenseVector& ntsvector1,  //!< node-to-segment vector 1
+        Core::LinAlg::SerialDenseVector& ntsvector2   //!< node-to-segment vector 2
         ) = 0;
 
     //! evaluate single mortar element
     virtual void evaluate_mortar_element(
         const Core::FE::Discretization& idiscret,     //!< interface discretization
         Mortar::Element& element,                     //!< mortar element
-        Core::Elements::Element::LocationArray& la,   //!< location array
+        Core::Elements::LocationArray& la,            //!< location array
         const Teuchos::ParameterList& params,         //!< parameter list
         Core::LinAlg::SerialDenseMatrix& elematrix1,  //!< element matrix 1
         Core::LinAlg::SerialDenseMatrix& elematrix2,  //!< element matrix 2
@@ -822,8 +822,8 @@ namespace ScaTra
         Mortar::IntCell& cell,                               //!< mortar integration cell
         Mortar::Element& slaveelement,                       //!< slave-side mortar element
         Mortar::Element& masterelement,                      //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,    //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,   //!< master-side location array
+        Core::Elements::LocationArray& la_slave,             //!< slave-side location array
+        Core::Elements::LocationArray& la_master,            //!< master-side location array
         const Teuchos::ParameterList& params,                //!< parameter list
         Core::LinAlg::SerialDenseMatrix& cellmatrix1,        //!< cell matrix 1
         Core::LinAlg::SerialDenseMatrix& cellmatrix2,        //!< cell matrix 2
@@ -838,24 +838,24 @@ namespace ScaTra
         const Mortar::Node& slavenode,                           //!< slave-side node
         const double&
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix1,        //!< node-to-segment matrix 1
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix2,        //!< node-to-segment matrix 2
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix3,        //!< node-to-segment matrix 3
-        Core::LinAlg::SerialDenseMatrix& ntsmatrix4,        //!< node-to-segment matrix 4
-        Core::LinAlg::SerialDenseVector& ntsvector1,        //!< node-to-segment vector 1
-        Core::LinAlg::SerialDenseVector& ntsvector2         //!< node-to-segment vector 2
+        Mortar::Element& slaveelement,                //!< slave-side mortar element
+        Mortar::Element& masterelement,               //!< master-side mortar element
+        Core::Elements::LocationArray& la_slave,      //!< slave-side location array
+        Core::Elements::LocationArray& la_master,     //!< master-side location array
+        const Teuchos::ParameterList& params,         //!< parameter list
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix1,  //!< node-to-segment matrix 1
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix2,  //!< node-to-segment matrix 2
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix3,  //!< node-to-segment matrix 3
+        Core::LinAlg::SerialDenseMatrix& ntsmatrix4,  //!< node-to-segment matrix 4
+        Core::LinAlg::SerialDenseVector& ntsvector1,  //!< node-to-segment vector 1
+        Core::LinAlg::SerialDenseVector& ntsvector2   //!< node-to-segment vector 2
         ) override;
 
     //! evaluate single mortar element
     void evaluate_mortar_element(
         const Core::FE::Discretization& idiscret,     //!< interface discretization
         Mortar::Element& element,                     //!< mortar element
-        Core::Elements::Element::LocationArray& la,   //!< location array
+        Core::Elements::LocationArray& la,            //!< location array
         const Teuchos::ParameterList& params,         //!< parameter list
         Core::LinAlg::SerialDenseMatrix& elematrix1,  //!< element matrix 1
         Core::LinAlg::SerialDenseMatrix& elematrix2,  //!< element matrix 2
@@ -897,13 +897,13 @@ namespace ScaTra
 
     //! evaluate and assemble interface linearizations and residuals
     virtual void evaluate_condition(
-        const Core::FE::Discretization& idiscret,           //!< interface discretization
-        Mortar::IntCell& cell,                              //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
+        const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                     //!< mortar integration cell
+        Mortar::Element& slaveelement,             //!< slave-side mortar element
+        Mortar::Element& masterelement,            //!< master-side mortar element
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master,  //!< master-side location array
+        const Teuchos::ParameterList& params,      //!< parameter list
         Core::LinAlg::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         Core::LinAlg::SerialDenseMatrix&
@@ -951,9 +951,9 @@ namespace ScaTra
 
     //! extract nodal state variables associated with mortar integration cell
     virtual void extract_node_values(
-        const Core::FE::Discretization& idiscret,          //!< interface discretization
-        Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master  //!< master-side location array
+        const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master   //!< master-side location array
     );
 
     /*!
@@ -966,7 +966,7 @@ namespace ScaTra
      * @param nds          number of relevant dofset
      */
     void extract_node_values(Core::LinAlg::Matrix<nen_slave_, 1>& estate_slave,
-        const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
+        const Core::FE::Discretization& idiscret, Core::Elements::LocationArray& la_slave,
         const std::string& statename = "iphinp", const int& nds = 0) const;
 
     /*!
@@ -982,8 +982,8 @@ namespace ScaTra
      */
     void extract_node_values(std::vector<Core::LinAlg::Matrix<nen_slave_, 1>>& estate_slave,
         std::vector<Core::LinAlg::Matrix<nen_master_, 1>>& estate_master,
-        const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master, const std::string& statename = "iphinp",
+        const Core::FE::Discretization& idiscret, Core::Elements::LocationArray& la_slave,
+        Core::Elements::LocationArray& la_master, const std::string& statename = "iphinp",
         const int& nds = 0) const;
 
     //! evaluate slave-side and master-side shape functions and domain integration factor at cell
@@ -1128,8 +1128,8 @@ namespace ScaTra
      * @param assembler_pid_master  ID of processor performing master-side matrix and vector
      *                              assembly
      */
-    void assemble_cell_matrices_and_vectors(Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master, const int assembler_pid_master) const;
+    void assemble_cell_matrices_and_vectors(Core::Elements::LocationArray& la_slave,
+        Core::Elements::LocationArray& la_master, const int assembler_pid_master) const;
 
     //! bool flag for assembly of system matrix 1
     bool assemble_matrix1() const { return systemmatrix1_ != Teuchos::null; };
@@ -1169,8 +1169,8 @@ namespace ScaTra
 
     //! initialize cell matrices and vectors
     void init_cell_matrices_and_vectors(
-        Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master  //!< master-side location array
+        Core::Elements::LocationArray& la_slave,  //!< slave-side location array
+        Core::Elements::LocationArray& la_master  //!< master-side location array
     );
 
    private:
@@ -1188,8 +1188,8 @@ namespace ScaTra
     void assemble_cell_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Core::LinAlg::SerialDenseMatrix& cellmatrix,
         const Inpar::S2I::InterfaceSides side_rows, const Inpar::S2I::InterfaceSides side_cols,
-        Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master, const int assembler_pid_master) const;
+        Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
+        const int assembler_pid_master) const;
 
     /*!
      * @brief  assemble cell vector into system vector
@@ -1203,8 +1203,8 @@ namespace ScaTra
      */
     void assemble_cell_vector(const Teuchos::RCP<Epetra_MultiVector>& systemvector,
         const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
-        Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master, const int assembler_pid_master) const;
+        Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
+        const int assembler_pid_master) const;
 
     /*!
      * @brief  initialize cell matrix
@@ -1217,8 +1217,7 @@ namespace ScaTra
      */
     void init_cell_matrix(Core::LinAlg::SerialDenseMatrix& cellmatrix,
         const Inpar::S2I::InterfaceSides side_rows, const Inpar::S2I::InterfaceSides side_cols,
-        Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master) const;
+        Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master) const;
 
     /*!
      * @brief  initialize cell vector
@@ -1229,8 +1228,8 @@ namespace ScaTra
      * @param la_master   master-side location array
      */
     void init_cell_vector(Core::LinAlg::SerialDenseVector& cellvector,
-        const Inpar::S2I::InterfaceSides side, Core::Elements::Element::LocationArray& la_slave,
-        Core::Elements::Element::LocationArray& la_master) const;
+        const Inpar::S2I::InterfaceSides side, Core::Elements::LocationArray& la_slave,
+        Core::Elements::LocationArray& la_master) const;
 
     //! cell matrix 1
     Core::LinAlg::SerialDenseMatrix cellmatrix1_;

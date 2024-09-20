@@ -81,7 +81,7 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::ScaTraEleCalcLsRein
 template <Core::FE::CellType distype, unsigned prob_dim>
 int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

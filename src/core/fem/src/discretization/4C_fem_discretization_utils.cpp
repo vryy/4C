@@ -12,6 +12,7 @@
 #include "4C_fem_discretization_utils.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_manager.hpp"

@@ -244,23 +244,23 @@ namespace Discret
 
       void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual) override;
 
       void evaluate_s2_i_coupling_capacitance(const Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual,
           Core::LinAlg::SerialDenseVector& emasterresidual) override;
 
       void evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la,
+          Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix) override;
 
       void evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix) override;
 
@@ -269,8 +269,7 @@ namespace Discret
 
       void calc_s2_i_coupling_flux(const Core::Elements::FaceElement* ele,
           const Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::FaceElement::LocationArray& la,
-          Core::LinAlg::SerialDenseVector& scalars) override;
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT
       virtual double get_frt() const;

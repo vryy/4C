@@ -12,6 +12,7 @@
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_scatra_multiporo.hpp"

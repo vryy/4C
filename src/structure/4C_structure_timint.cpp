@@ -1884,7 +1884,7 @@ void Solid::TimInt::read_restart_multi_scale()
     int my_pid = Global::Problem::instance()->get_dis("structure")->get_comm().MyPID();
     // set dummy displacements
     discret_->set_state("displacement", zeros_);
-    Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+    Core::Elements::LocationArray la(discret_->num_dof_sets());
     for (const auto* ele : discret_->my_col_element_range())
     {
       ele->location_vector(*discret_, la, false);

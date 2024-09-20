@@ -376,7 +376,7 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
               const int nsd = Core::FE::dim<distype>;
 
               // get nodal values of velocity field from secondary dofset
-              Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+              Core::Elements::LocationArray la(discret_->num_dof_sets());
               adjelements[iele]->location_vector(*discret_, la, false);
               const std::vector<int>& lmvel = la[nds_vel()].lm_;
               std::vector<double> myconvel(lmvel.size());

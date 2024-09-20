@@ -53,7 +53,7 @@ namespace Discret
           const int numdofpernode, const std::string& disname);
 
       int evaluate(Artery* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -72,8 +72,7 @@ namespace Discret
 
       int evaluate_service(Artery* ele, const Arteries::Action action,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -93,9 +92,8 @@ namespace Discret
         \param material[in]       artery material
         */
       void sysmat(Artery* ele, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::Matrix<my::iel_, my::iel_>& sysmat, Core::LinAlg::Matrix<my::iel_, 1>& rhs,
-          Teuchos::RCP<const Core::Mat::Material> material);
+          Core::Elements::LocationArray& la, Core::LinAlg::Matrix<my::iel_, my::iel_>& sysmat,
+          Core::LinAlg::Matrix<my::iel_, 1>& rhs, Teuchos::RCP<const Core::Mat::Material> material);
 
       /*!
         \brief Evaluate volumetric flow inside the element (for post-processing)
@@ -109,7 +107,7 @@ namespace Discret
         \note  only checked for line2 elements
         */
       void evaluate_flow(Artery* ele, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& flowVec,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& flowVec,
           Teuchos::RCP<const Core::Mat::Material> material);
 
       /*!
@@ -119,8 +117,8 @@ namespace Discret
         \param la[in]             element location array
         \return                   element length (either in current or deformed configuration)
        */
-      double calculate_ele_length(Artery* ele, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la);
+      double calculate_ele_length(
+          Artery* ele, Core::FE::Discretization& discretization, Core::Elements::LocationArray& la);
     };
 
   }  // namespace ELEMENTS

@@ -10,6 +10,7 @@
 #include "4C_adapter_fld_fluid_fsi.hpp"
 
 #include "4C_adapter_fld_fluid.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fluid_utils.hpp"

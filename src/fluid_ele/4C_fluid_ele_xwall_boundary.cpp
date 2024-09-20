@@ -10,6 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_boundary_parent_calc.hpp"
 #include "4C_fluid_ele_xwall.hpp"
@@ -80,7 +81,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::print(std::ostream& os) const
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::FluidXWallBoundary::location_vector(const Core::FE::Discretization& dis,
-    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
   // get the action required

@@ -11,6 +11,8 @@
 #include "4C_binstrategy_utils.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"

@@ -123,8 +123,7 @@ Thermo::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode)
 template <Core::FE::CellType distype>
 int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
-    const Core::Elements::Element::LocationArray& la,
-    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    const Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,

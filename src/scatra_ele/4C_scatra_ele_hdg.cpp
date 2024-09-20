@@ -13,6 +13,7 @@
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization_faces.hpp"
 #include "4C_fem_discretization_hdg.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_polynomial.hpp"
 #include "4C_global_data.hpp"
@@ -413,7 +414,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDG::create_face_
 |  evaluate the element (public)                         hoermann 09/15|
 *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::ScaTraHDG::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -670,7 +671,7 @@ int Discret::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterLis
   // build location array from location vector
   //(this a little ugly. one could fix this by introducing a evaluate_neumann() method
   // with LocationArray as input in the Core::Elements::Element ...)
-  LocationArray la(1);
+  Core::Elements::LocationArray la(1);
   la[0].lm_ = lm;
 
   Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::impl(this)->evaluate_neumann(
@@ -683,7 +684,7 @@ int Discret::ELEMENTS::ScaTraHDGBoundary::evaluate_neumann(Teuchos::ParameterLis
  |  Get degrees of freedom used by this element (public) hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ScaTraHDGBoundary::location_vector(const Core::FE::Discretization& dis,
-    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
   // we have to do it this way

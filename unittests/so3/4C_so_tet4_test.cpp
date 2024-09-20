@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_so3_tet4.hpp"
 

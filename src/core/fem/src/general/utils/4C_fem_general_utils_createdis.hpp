@@ -18,7 +18,9 @@
 
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fem_general_immersed_node.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"

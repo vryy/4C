@@ -289,7 +289,7 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
           "currpositions_struct", currpositions_struct);
       params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
 
-      Core::Elements::Element::LocationArray la(1);
+      Core::Elements::LocationArray la(1);
       immersedelebase->location_vector(*dis, la, false);
       strategy->clear_element_storage(la[row].size(), la[col].size());
 
@@ -353,7 +353,7 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
       Core::LinAlg::SerialDenseMatrix dummymat;
       Core::LinAlg::SerialDenseVector dummyvec;
 
-      Core::Elements::Element::LocationArray la(1);
+      Core::Elements::LocationArray la(1);
       immersedelebase->location_vector(*dis, la, false);
 
       immersedelebase->evaluate(
@@ -402,7 +402,7 @@ void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
           "currpositions_struct", currpositions_struct);
       params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
 
-      Core::Elements::Element::LocationArray la(dis->num_dof_sets());
+      Core::Elements::LocationArray la(dis->num_dof_sets());
       ele->location_vector(*dis, la, false);
       strategy->clear_element_storage(la[row].size(), la[col].size());
 
@@ -448,7 +448,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(
 
   params.set<int>("dummy_call", 0);
 
-  Core::Elements::Element::LocationArray la(evaldis->num_dof_sets());
+  Core::Elements::LocationArray la(evaldis->num_dof_sets());
 
   std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>::iterator fool;
 
@@ -588,7 +588,7 @@ void Immersed::ImmersedBase::evaluate_subset_elements(Teuchos::ParameterList& pa
   Core::Elements::Element* ele;
 
   // initialize location array
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval.begin();
        closele != elementstoeval.end(); closele++)

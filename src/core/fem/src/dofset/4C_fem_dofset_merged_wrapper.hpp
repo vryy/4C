@@ -18,6 +18,7 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset_proxy.hpp"
+#include "4C_fem_general_node.hpp"
 
 #include <Epetra_IntVector.h>
 

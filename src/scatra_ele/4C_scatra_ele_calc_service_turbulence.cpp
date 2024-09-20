@@ -1402,10 +1402,10 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::store_model_parameters_
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
-    Teuchos::ParameterList& params,             //!< parameter list
-    Core::Elements::Element* ele,               //!< pointer to element
-    Core::FE::Discretization& discretization,   //!< scatra discretization
-    Core::Elements::Element::LocationArray& la  //!< location array
+    Teuchos::ParameterList& params,            //!< parameter list
+    Core::Elements::Element* ele,              //!< pointer to element
+    Core::FE::Discretization& discretization,  //!< scatra discretization
+    Core::Elements::LocationArray& la          //!< location array
 )
 {
   // do some checks first

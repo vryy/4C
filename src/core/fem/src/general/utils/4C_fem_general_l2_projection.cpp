@@ -12,6 +12,8 @@
 #include "4C_fem_general_l2_projection.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
@@ -38,7 +40,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  Core::Elements::Element::LocationArray la(dis.num_dof_sets());
+  Core::Elements::LocationArray la(dis.num_dof_sets());
 
   // define element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;

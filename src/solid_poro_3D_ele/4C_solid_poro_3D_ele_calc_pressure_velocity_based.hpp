@@ -44,18 +44,16 @@ namespace Discret
       void evaluate_nonlinear_force_stiffness(const Core::Elements::Element& ele,
           Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
           AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
-          const Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
-          Core::LinAlg::SerialDenseVector* force_vector,
+          const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+          Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
           Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
           Core::LinAlg::SerialDenseMatrix* reactive_matrix);
 
       void evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
           Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
           AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
-          const Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
-          Core::LinAlg::SerialDenseMatrix* stiffness_matrix);
+          const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+          Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix* stiffness_matrix);
 
       void poro_setup(
           Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container);
@@ -65,7 +63,7 @@ namespace Discret
       void coupling_stress_poroelast(const Core::Elements::Element& ele,
           Mat::StructPoro& porostructmat, const Inpar::Solid::KinemType& kinematictype,
           const CouplStressIO& couplingstressIO, const Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+          Core::Elements::LocationArray& la, Teuchos::ParameterList& params);
 
 
 

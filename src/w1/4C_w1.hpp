@@ -850,7 +850,7 @@ namespace Discret
 
       //! Evaluate method on mutliple dofsets for wall element
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
           Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseVector& elevector1,
           Core::LinAlg::SerialDenseVector& elevector2,
           Core::LinAlg::SerialDenseVector& elevector3) override;

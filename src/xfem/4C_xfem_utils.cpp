@@ -149,7 +149,7 @@ void XFEM::UTILS::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::B
     Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const int nsd)
 {
   // get the other nds-set which is connected to the current one via this boundary-cell
-  Core::Elements::Element::LocationArray la(dis->num_dof_sets());
+  Core::Elements::LocationArray la(dis->num_dof_sets());
   element->location_vector(*dis, la, false);
 
   const size_t numnode = element->num_node();

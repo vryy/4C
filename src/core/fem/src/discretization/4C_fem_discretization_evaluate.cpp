@@ -13,7 +13,9 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
@@ -46,7 +48,7 @@ void Core::FE::Discretization::evaluate(
 {
   // Call the Evaluate method for the specific element
   evaluate(params, strategy,
-      [&](Core::Elements::Element& ele, Core::Elements::Element::LocationArray& la,
+      [&](Core::Elements::Element& ele, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3)
@@ -63,7 +65,7 @@ void Core::FE::Discretization::evaluate(
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
     Core::FE::AssembleStrategy& strategy,
-    const std::function<void(Core::Elements::Element&, Core::Elements::Element::LocationArray&,
+    const std::function<void(Core::Elements::Element&, Core::Elements::LocationArray&,
         Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
         Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&,
         Core::LinAlg::SerialDenseVector&)>& element_action)
@@ -84,7 +86,7 @@ void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
       strategy.systemmatrix1(), strategy.systemmatrix2(), strategy.systemvector1(),
       strategy.systemvector2(), strategy.systemvector3());
 
-  Core::Elements::Element::LocationArray la(dofsets_.size());
+  Core::Elements::LocationArray la(dofsets_.size());
 
   // loop over column elements
   for (auto* actele : my_col_element_range())
@@ -146,7 +148,7 @@ void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params)
   Core::LinAlg::SerialDenseVector elevector2;
   Core::LinAlg::SerialDenseVector elevector3;
 
-  Core::Elements::Element::LocationArray la(dofsets_.size());
+  Core::Elements::LocationArray la(dofsets_.size());
 
   evaluate(
       [&](Core::Elements::Element& ele)
@@ -380,7 +382,7 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
   // get the current time
   const double time = params.get("total time", -1.0);
 
-  Core::Elements::Element::LocationArray la(dofsets_.size());
+  Core::Elements::LocationArray la(dofsets_.size());
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
@@ -495,7 +497,7 @@ void Core::FE::Discretization::evaluate_scalars(
   for (const auto& actele : my_row_element_range())
   {
     // get element location vector
-    Core::Elements::Element::LocationArray la(dofsets_.size());
+    Core::Elements::LocationArray la(dofsets_.size());
     actele->location_vector(*this, la, false);
 
     // define element vector
@@ -573,7 +575,7 @@ void Core::FE::Discretization::evaluate_scalars(
           if (element->owner() == get_comm().MyPID())
           {
             // construct location vector for current element
-            Core::Elements::Element::LocationArray la(dofsets_.size());
+            Core::Elements::LocationArray la(dofsets_.size());
             element->location_vector(*this, la, false);
 
             // initialize result vector for current element
@@ -637,7 +639,7 @@ void Core::FE::Discretization::evaluate_scalars(
       FOUR_C_THROW("Proc does not have global element %d", actele->id());
 
     // get element location vector
-    Core::Elements::Element::LocationArray la(dofsets_.size());
+    Core::Elements::LocationArray la(dofsets_.size());
     actele->location_vector(*this, la, false);
 
     // define element vector

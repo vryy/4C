@@ -148,7 +148,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
     celltype>::evaluate_nonlinear_force_stiffness(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
     AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
-    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
     Core::LinAlg::SerialDenseMatrix* reactive_matrix)
@@ -342,7 +342,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
     celltype>::evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
     AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
-    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
 {
   // Create views to SerialDenseMatrices
@@ -460,7 +460,7 @@ template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<celltype>::coupling_stress_poroelast(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
     const Inpar::Solid::KinemType& kinematictype, const CouplStressIO& couplingstressIO,
-    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Teuchos::ParameterList& params)
 {
   // initialize the coupling stress

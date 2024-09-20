@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 void Discret::ELEMENTS::Shell::pre_evaluate_scatra_by_element(Core::Elements::Element& ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& dof_index_array)
+    Core::Elements::LocationArray& dof_index_array)
 {
   switch (ele.shape())
   {
@@ -47,7 +47,7 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra_by_element(Core::Elements::El
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& dof_index_array)
+    Core::Elements::LocationArray& dof_index_array)
 {
   Core::FE::IntegrationPoints2D intpoints_midsurface_ =
       create_gauss_integration_points<distype>(get_gauss_rule<distype>());

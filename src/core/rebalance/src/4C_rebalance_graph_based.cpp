@@ -11,6 +11,8 @@
 #include "4C_rebalance_graph_based.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_geometric_search_bounding_volume.hpp"
 #include "4C_fem_geometric_search_distributed_tree.hpp"
 #include "4C_fem_geometric_search_params.hpp"

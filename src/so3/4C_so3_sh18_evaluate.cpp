@@ -7,6 +7,7 @@
 *----------------------------------------------------------------------*/
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_global_data.hpp"

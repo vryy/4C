@@ -37,8 +37,7 @@ namespace Discret
       //! evaluate action
       int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,

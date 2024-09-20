@@ -360,7 +360,7 @@ int Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   // extract action parameter
   const auto action = Teuchos::getIntegralValue<ScaTra::Action>(params, "action");
@@ -489,7 +489,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     const int numfluidphases)
 {
   // resize state vectors based on number of phases

@@ -11,6 +11,7 @@
 #include "4C_thermo_timint.hpp"
 
 #include "4C_contact_nitsche_strategy_tsi.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

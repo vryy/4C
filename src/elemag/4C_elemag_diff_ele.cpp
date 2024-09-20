@@ -17,6 +17,7 @@
 #include "4C_elemag_ele_boundary_calc.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -348,7 +349,7 @@ int Discret::ELEMENTS::ElemagDiffBoundary::evaluate(Teuchos::ParameterList& para
  |  Get degrees of freedom used by this element (public) berardocco 03/19 |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::ElemagDiffBoundary::location_vector(const Core::FE::Discretization& dis,
-    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
   // we have to do it this way, just as for weak Dirichlet conditions

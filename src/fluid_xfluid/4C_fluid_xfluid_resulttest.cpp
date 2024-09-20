@@ -11,6 +11,7 @@
 #include "4C_fluid_xfluid_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_xfluid.hpp"
 #include "4C_fluid_xfluid_fluid.hpp"
 #include "4C_global_data.hpp"

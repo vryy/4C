@@ -377,8 +377,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype>
   inline FluidVariables<celltype> get_fluid_variables(const Core::Elements::Element& ele,
-      const Core::FE::Discretization& discretization,
-      const Core::Elements::Element::LocationArray& la)
+      const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la)
   {
     std::vector<double> fluid_ephi(la[1].lm_.size());
     Core::FE::extract_my_values(*(discretization.get_state(1, "fluidvel")), fluid_ephi, la[1].lm_);
@@ -416,8 +415,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype>
   inline SolidVariables<celltype> get_solid_variables(
-      const Core::FE::Discretization& discretization,
-      const Core::Elements::Element::LocationArray& la)
+      const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la)
   {
     SolidVariables<celltype> solid_variables{};
 

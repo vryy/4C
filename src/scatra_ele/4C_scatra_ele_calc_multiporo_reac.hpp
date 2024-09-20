@@ -73,13 +73,13 @@ namespace Discret
       //  return extracted values of phinp
       void extract_element_and_node_values(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la) override;
+          Core::Elements::LocationArray& la) override;
 
       //! extract element based or nodal values --> L2-projection case: called within
       //! extract_element_and_node_values
       //  return extracted values of phinp
       virtual void extract_nodal_flux(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           const int numfluidphases);
 
       //! set internal variables
@@ -1476,7 +1476,7 @@ namespace Discret
 
       //! Setup phasemanager and variablemanager of fluid
       void setup_poro_fluid_managers(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           const int numfluidphases, const int totalnummultiphasedofpernode)
       {
         // dummy parameter list
@@ -1505,7 +1505,7 @@ namespace Discret
       // extract the element and node values of the poro-fluid --> extract them from its
       // variablemanager
       void extract_element_and_node_values_of_poro_fluid(Core::Elements::Element* ele,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::Matrix<nsd, nen>& xyze)
       {
         // access from outside to the variablemananger: scatra-discretization has fluid-dis on

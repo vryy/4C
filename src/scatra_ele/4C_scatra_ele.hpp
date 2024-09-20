@@ -322,7 +322,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
@@ -631,7 +631,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
@@ -691,8 +691,9 @@ namespace Discret
       \param condstring (in): Name of condition to be evaluated
       \param condstring (in):  List of parameters for use at element level
       */
-      void location_vector(const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet,
-          const std::string& condstring, Teuchos::ParameterList& params) const override;
+      void location_vector(const Core::FE::Discretization& dis, Core::Elements::LocationArray& la,
+          bool doDirichlet, const std::string& condstring,
+          Teuchos::ParameterList& params) const override;
 
      private:
       // don't want = operator

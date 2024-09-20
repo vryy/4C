@@ -12,6 +12,8 @@
 
 #include "4C_fluid_turbulence_boxfilter.hpp"
 
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_newtonianfluid.hpp"
@@ -1046,7 +1048,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vec
     double volume_contribution = 0.0;
 
     // get element location vector, dirichlet flags and ownerships
-    Core::Elements::Element::LocationArray la(scatradiscret_->num_dof_sets());
+    Core::Elements::LocationArray la(scatradiscret_->num_dof_sets());
     ele->location_vector(*scatradiscret_, la, false);
 
     // call the element evaluate method to integrate functions

@@ -839,7 +839,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
   Core::FE::AssembleStrategy strategy(
       0, 0, state_->sysmat_, Teuchos::null, state_->residual_col_, Teuchos::null, Teuchos::null);
 
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
 
   //------------------------------------------------------------
   // call standard loop over elements
@@ -1077,7 +1077,7 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
                 // get the other nds-set which is connected to the current one via this
                 // boundary-cell
-                Core::Elements::Element::LocationArray la_other(1);
+                Core::Elements::LocationArray la_other(1);
 
                 if (bc->second.empty()) FOUR_C_THROW("no boundary cells stored!");
 
@@ -1349,7 +1349,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
   Core::FE::AssembleStrategy strategy(
       0, 0, Teuchos::null, Teuchos::null, w_col, Teuchos::null, Teuchos::null);
 
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
 
 
   //------------------------------------------------------------
@@ -1967,7 +1967,7 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
 
     Cut::ElementHandle* e = state_->wizard()()->get_element(actele);
 
-    Core::Elements::Element::LocationArray la(1);
+    Core::Elements::LocationArray la(1);
 
     Discret::ELEMENTS::FluidEleInterface* impl =
         Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");

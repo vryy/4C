@@ -48,20 +48,20 @@ namespace Discret::ELEMENTS
     void material_post_setup(const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
     void recover(const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+        const Core::Elements::LocationArray& la, Teuchos::ParameterList& params);
 
     void update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
-        const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+        const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
+        Teuchos::ParameterList& params);
 
     void calculate_stress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const StressIO& stressIO, const StrainIO& strainIO,
-        const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+        const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
+        Teuchos::ParameterList& params);
 
     double calculate_internal_energy(const Core::Elements::Element& ele,
         Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+        const Core::Elements::LocationArray& la, Teuchos::ParameterList& params);
 
     void initialize_gauss_point_data_output(const Core::Elements::Element& ele,
         const Mat::So3Material& solid_material,
@@ -76,14 +76,14 @@ namespace Discret::ELEMENTS
 
     void evaluate_nonlinear_force_stiffness_mass(const Core::Elements::Element& ele,
         Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+        const Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseVector* force_vector,
         Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
         Core::LinAlg::SerialDenseMatrix* mass_matrix);
 
     void evaluate_d_stress_d_scalar(const Core::Elements::Element& ele,
         Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+        const Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar);
 
     double get_normal_cauchy_stress_at_xi(const Core::Elements::Element& ele,

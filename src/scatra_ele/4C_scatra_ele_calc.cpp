@@ -149,7 +149,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::setup_calc(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -204,7 +204,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements:
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatrapara_->nds_vel();
@@ -340,8 +340,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
-    int& nlayer)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la, int& nlayer)
 {
   if (turbparams_->turb_model() != Inpar::FLUID::no_model or
       (scatraparatimint_->is_incremental() and turbparams_->fssgd()))

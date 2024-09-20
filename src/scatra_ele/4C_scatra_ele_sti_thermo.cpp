@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::extract_element_and_node_values(
-    Core::Elements::Element* ele,               //!< current element
-    Teuchos::ParameterList& params,             //!< parameter list
-    Core::FE::Discretization& discretization,   //!< discretization
-    Core::Elements::Element::LocationArray& la  //!< location array
+    Core::Elements::Element* ele,              //!< current element
+    Teuchos::ParameterList& params,            //!< parameter list
+    Core::FE::Discretization& discretization,  //!< discretization
+    Core::Elements::LocationArray& la          //!< location array
 )
 {
   // extract thermo state vector from discretization

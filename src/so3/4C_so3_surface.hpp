@@ -198,7 +198,7 @@ namespace Discret
 
       //! Evaluate method for StructuralSurface-Elements
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elematrix1,
           Core::LinAlg::SerialDenseMatrix& elematrix2, Core::LinAlg::SerialDenseVector& elevector1,
           Core::LinAlg::SerialDenseVector& elevector2,
           Core::LinAlg::SerialDenseVector& elevector3) override;
@@ -396,7 +396,7 @@ namespace Discret
 
       //! Submethod to compute surface porosity
       void calculate_surface_porosity(Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, LocationArray& la);
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la);
 
      private:
       //! Private Constructor to be called from StructuralSurfaceType

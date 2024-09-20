@@ -83,7 +83,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
 {
@@ -113,7 +113,7 @@ template <Core::FE::CellType distype>
 void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
     distype>::extract_element_and_node_values(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la)
+    Core::Elements::LocationArray& la)
 {
   // get additional state vector for ALE case: grid displacement
   if (params_->is_ale())
@@ -150,8 +150,7 @@ template <Core::FE::CellType distype>
 int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
-    Core::Elements::Element::LocationArray& la,
-    std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+    Core::Elements::LocationArray& la, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
 {
   // switch over action type
@@ -181,7 +180,7 @@ template <Core::FE::CellType distype>
 int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1)
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_> intpoints(

@@ -11,6 +11,8 @@
 #include "4C_post_vtk_vti_writer.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_post_common.hpp"

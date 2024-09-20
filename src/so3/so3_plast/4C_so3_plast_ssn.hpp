@@ -239,7 +239,7 @@ namespace Discret
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
+          Core::Elements::LocationArray& la,         //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1_epetra,  //!< (stiffness-)matrix to be filled by element.
           Core::LinAlg::SerialDenseMatrix&

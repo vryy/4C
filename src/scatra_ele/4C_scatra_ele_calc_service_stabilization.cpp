@@ -9,6 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_fem_condition_utils.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_scatra_ele_calc.hpp"
 #include "4C_scatra_ele_calc_utils.hpp"

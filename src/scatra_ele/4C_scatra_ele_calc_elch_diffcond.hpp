@@ -294,8 +294,7 @@ namespace Discret
       //! evaluate action
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const ScaTra::Action& action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -350,7 +349,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& erhs,                       //!< element residual
           Teuchos::ParameterList& params,                              //!< parameter list
           Core::FE::Discretization& discretization,                    //!< discretization
-          Core::Elements::Element::LocationArray& la                   //!< location array
+          Core::Elements::LocationArray& la                            //!< location array
           ) override;
 
       //! Correct RHS calculated from calc_rhs_lin_mass() for the linearized mass term
@@ -425,8 +424,7 @@ namespace Discret
       }
 
       void calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
-          const Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la,
+          const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseVector& conc) override;
 
       //! flag for used element formulation (material based)

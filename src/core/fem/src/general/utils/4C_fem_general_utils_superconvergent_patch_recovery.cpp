@@ -12,6 +12,8 @@
 #include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_gauss.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
@@ -114,7 +116,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  Core::Elements::Element::LocationArray la(dis.num_dof_sets());
+  Core::Elements::LocationArray la(dis.num_dof_sets());
 
   // define element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -132,7 +134,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
     Core::Elements::Element* actele = dis.l_row_element(i);
 
     // get element location vector
-    // Core::Elements::Element::LocationArray la(1);
+    // Core::Elements::LocationArray la(1);
     actele->location_vector(dis, la, false);
 
     // Reshape element matrices and vectors and initialize to zero

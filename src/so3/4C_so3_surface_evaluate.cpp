@@ -1357,7 +1357,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       Core::LinAlg::Matrix<3, 8> parent_deriv_notrafo;
 
       // get parent location matrix
-      Core::Elements::Element::LocationArray parent_la(immerseddis->num_dof_sets());
+      Core::Elements::LocationArray parent_la(immerseddis->num_dof_sets());
       this->parent_element()->location_vector(*immerseddis, parent_la, false);
 
       // get structural state and element displacements (parent element)
@@ -1958,7 +1958,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
 int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)
@@ -2380,7 +2380,8 @@ void Discret::ELEMENTS::StructuralSurface::build_normals_at_nodes(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::StructuralSurface::calculate_surface_porosity(
-    Teuchos::ParameterList& params, Core::FE::Discretization& discretization, LocationArray& la)
+    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
+    Core::Elements::LocationArray& la)
 {
   // get the parent element
   Core::Elements::Element* parentele = parent_element();

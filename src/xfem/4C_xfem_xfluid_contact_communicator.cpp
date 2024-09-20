@@ -302,7 +302,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   Discret::ELEMENTS::Fluid* ffluidele = dynamic_cast<Discret::ELEMENTS::Fluid*>(fluidele);
   // 1 // get element states
   {
-    Core::Elements::Element::LocationArray laf(1);
+    Core::Elements::LocationArray laf(1);
     fluidele->location_vector(*fluiddis_, fluid_nds, laf, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state = fluiddis_->get_state("velaf");
     Core::FE::extract_my_values(*matrix_state, velpres, laf[0].lm_);
@@ -319,7 +319,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
     }
   }
   {
-    Core::Elements::Element::LocationArray las(1);
+    Core::Elements::LocationArray las(1);
     sele->location_vector(*mc_[mcidx_]->get_cutter_dis(), las, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state =
         mc_[mcidx_]->get_cutter_dis()->get_state("ivelnp");
@@ -328,7 +328,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   static std::vector<double> ipfvel;
   if (isporo_)
   {
-    Core::Elements::Element::LocationArray las(1);
+    Core::Elements::LocationArray las(1);
     sele->location_vector(*mcfpi_ps_pf_->get_cutter_dis(), las, false);
     Teuchos::RCP<const Epetra_Vector> matrix_state =
         mcfpi_ps_pf_->get_cutter_dis()->get_state("ivelnp");

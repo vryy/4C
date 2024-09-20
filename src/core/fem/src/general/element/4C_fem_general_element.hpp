@@ -73,6 +73,74 @@ namespace Core::Elements
   class ElementType;
   class FaceElement;
 
+  /// Location data for one dof set
+  /*!
+    A helper that manages location vectors. Required since there can be an
+    arbitrary number of location vectors, matching the number of dofsets in
+    the discretization.
+
+   */
+  class LocationData
+  {
+   public:
+    /// clear all vectors
+    void clear()
+    {
+      lm_.clear();
+      lmdirich_.clear();
+      lmowner_.clear();
+      stride_.clear();
+    }
+
+    /// return number of dofs collected
+    int size() const { return lm_.size(); }
+
+    /// global dof numbers of elemental dofs
+    std::vector<int> lm_;
+
+    /// Dirichlet on/off flags
+    std::vector<int> lmdirich_;
+
+    /// Owner of dof (that is owner of node or element the dof belongs to)
+    std::vector<int> lmowner_;
+
+    /// Nodal stride (that is, how many dofs are guaranteed to be contiguous in the system matrix)
+    std::vector<int> stride_;
+  };
+
+
+  /// Location data for all dof sets
+  /*!
+    A helper that manages location vectors. Required since there can be an
+    arbitrary number of location vectors, matching the number of dofsets in
+    the discretization.
+
+   */
+  class LocationArray
+  {
+   public:
+    /// constructed with number of dofsets in discretization
+    explicit LocationArray(int size) : data_(size) {}
+
+    /// clear all location entries
+    void clear()
+    {
+      for (unsigned i = 0; i < data_.size(); ++i) data_[i].clear();
+    }
+
+    /// access location entry
+    LocationData& operator[](int i) { return data_[i]; }
+
+    /// access location entry
+    const LocationData& operator[](int i) const { return data_[i]; }
+
+    /// number of location entries, that is number of dofsets in discretization
+    int size() const { return data_.size(); }
+
+   private:
+    std::vector<LocationData> data_;
+  };
+
   /*!
   \brief A virtual class all elements that are used in DRT have to implement
 
@@ -92,86 +160,8 @@ namespace Core::Elements
   class Element : public Core::Communication::ParObject
   {
    public:
-    //! @name Enums and Friends
-
     template <typename>
     friend class Core::FE::MeshFree::MeshfreeBin;
-
-    //@}
-
-
-    /// Location data for one dof set
-    /*!
-      A helper that manages location vectors. Required since there can be an
-      arbitrary number of location vectors, matching the number of dofsets in
-      the discretization.
-
-      \author u.kue
-      \date 12/09
-     */
-    class LocationData
-    {
-     public:
-      /// clear all vectors
-      void clear()
-      {
-        lm_.clear();
-        lmdirich_.clear();
-        lmowner_.clear();
-        stride_.clear();
-      }
-
-      /// return number of dofs collected
-      int size() const { return lm_.size(); }
-
-      /// global dof numbers of elemental dofs
-      std::vector<int> lm_;
-
-      /// Dirichlet on/off flags
-      std::vector<int> lmdirich_;
-
-      /// Owner of dof (that is owner of node or element the dof belongs to)
-      std::vector<int> lmowner_;
-
-      /// Nodal stride (that is, how many dofs are guaranteed to be contiguous in the system matrix)
-      std::vector<int> stride_;
-    };
-
-
-    /// Location data for all dof sets
-    /*!
-      A helper that manages location vectors. Required since there can be an
-      arbitrary number of location vectors, matching the number of dofsets in
-      the discretization.
-
-      \author u.kue
-      \date 12/09
-     */
-    class LocationArray
-    {
-     public:
-      /// constructed with number of dofsets in discretization
-      explicit LocationArray(int size) : data_(size) {}
-
-      /// clear all location entries
-      void clear()
-      {
-        for (unsigned i = 0; i < data_.size(); ++i) data_[i].clear();
-      }
-
-      /// access location entry
-      LocationData& operator[](int i) { return data_[i]; }
-
-      /// access location entry
-      const LocationData& operator[](int i) const { return data_[i]; }
-
-      /// number of location entries, that is number of dofsets in discretization
-      int size() const { return data_.size(); }
-
-     private:
-      std::vector<LocationData> data_;
-    };
-
 
     //! @name Constructors and destructors and related methods
 

@@ -175,8 +175,8 @@ namespace Discret
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Core::FE::Discretization& discretization,   //!< pointer to discretization for de-assembly
-          Core::Elements::Element::LocationArray& la  //!< location array for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::Elements::LocationArray& la          //!< location array for de-assembly
       );
 
       /*!
@@ -193,7 +193,7 @@ namespace Discret
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
+          Core::Elements::LocationArray& la,         //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           Core::LinAlg::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
@@ -293,7 +293,7 @@ namespace Discret
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
+          Core::Elements::LocationArray& la,         //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           Core::LinAlg::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.

@@ -909,13 +909,13 @@ namespace Discret
         Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        Core::Elements::Element::LocationArray cutla(1);
+        Core::Elements::LocationArray cutla(1);
 
         // pointer to boundary element
         Core::Elements::Element* side = nullptr;
 
         // location array of element to couple with (only used for embedded fluid problems)
-        Core::Elements::Element::LocationArray coupl_la(1);
+        Core::Elements::LocationArray coupl_la(1);
 
         // coordinates of boundary element
         Core::LinAlg::SerialDenseMatrix side_xyze;
@@ -1546,7 +1546,7 @@ namespace Discret
         Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        Core::Elements::Element::LocationArray cutla(1);
+        Core::Elements::LocationArray cutla(1);
 
         // pointer to boundary element
         Core::Elements::Element* side = nullptr;
@@ -3349,7 +3349,7 @@ namespace Discret
         Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
-        Core::Elements::Element::LocationArray cutla(1);
+        Core::Elements::LocationArray cutla(1);
 
         // pointer to boundary element
         Core::Elements::Element* side = nullptr;

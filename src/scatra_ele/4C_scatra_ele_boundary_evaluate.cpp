@@ -33,7 +33,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& param
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -114,7 +114,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterLis
   // add Neumann boundary condition to parameter list
   params.set<Core::Conditions::Condition*>("condition", &condition);
 
-  LocationArray la(discretization.num_dof_sets());
+  Core::Elements::LocationArray la(discretization.num_dof_sets());
   Core::Elements::Element::location_vector(discretization, la, false);
 
   // evaluate boundary element
@@ -126,7 +126,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterLis
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::TransportBoundary::location_vector(const Core::FE::Discretization& dis,
-    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
   // check for the action parameter

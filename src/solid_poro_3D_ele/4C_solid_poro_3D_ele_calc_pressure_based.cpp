@@ -38,7 +38,7 @@ template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
     Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::Solid::KinemType& kinematictype,
-    const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
 {
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<
     celltype>::evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
     const Inpar::Solid::KinemType& kinematictype, const Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+    Core::Elements::LocationArray& la, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
 {
   // get primary variables of multiphase porous medium flow

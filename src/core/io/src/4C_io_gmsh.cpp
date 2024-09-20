@@ -106,7 +106,7 @@ void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
     // write node coordinates to Gmsh stream
     coordinates_to_stream(xyze, distype, s);
 
-    Core::Elements::Element::LocationArray la(discret->num_dof_sets());
+    Core::Elements::LocationArray la(discret->num_dof_sets());
     ele->location_vector(*discret, la, false);
 
     // extract local values from the global vector
@@ -223,7 +223,7 @@ void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->x()[idim];
     }
 
-    Core::Elements::Element::LocationArray la(discret->num_dof_sets());
+    Core::Elements::LocationArray la(discret->num_dof_sets());
     ele->location_vector(*discret, la, false);
 
     // extract local values from the global vector
@@ -297,7 +297,7 @@ void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
     // write node coordinates to Gmsh stream
     coordinates_to_stream(xyze, distype, s);
 
-    Core::Elements::Element::LocationArray la(discret->num_dof_sets());
+    Core::Elements::LocationArray la(discret->num_dof_sets());
     ele->location_vector(*discret, la, false);
 
     // extract local values from the global vector
@@ -411,7 +411,7 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->x()[idim];
     }
 
-    Core::Elements::Element::LocationArray la(discret->num_dof_sets());
+    Core::Elements::LocationArray la(discret->num_dof_sets());
     ele->location_vector(*discret, la, false);
 
     // extract local values from the global vector

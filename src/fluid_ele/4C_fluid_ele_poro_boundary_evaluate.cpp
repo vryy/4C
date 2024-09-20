@@ -71,7 +71,7 @@ int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& param
 }
 
 void Discret::ELEMENTS::FluidPoroBoundary::location_vector(const Core::FE::Discretization& dis,
-    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
   // get the action required

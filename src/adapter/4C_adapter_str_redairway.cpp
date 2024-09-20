@@ -11,6 +11,9 @@
 #include "4C_adapter_str_redairway.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

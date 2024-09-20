@@ -11,6 +11,7 @@
 
 #include "4C_fluid_timint_poro.hpp"
 
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"

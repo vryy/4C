@@ -68,7 +68,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::instance(
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -135,7 +135,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
 template <Core::FE::CellType distype>
 int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_service(Artery* ele,
     const Arteries::Action action, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

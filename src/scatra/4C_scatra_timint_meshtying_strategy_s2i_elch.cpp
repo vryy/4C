@@ -581,8 +581,8 @@ ScaTra::MortarCellCalcElch<distype_s, distype_m>::MortarCellCalcElch(
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
     const Core::FE::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
-    Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
-    Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    Mortar::Element& masterelement, Core::Elements::LocationArray& la_slave,
+    Core::Elements::LocationArray& la_master, const Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,
     Core::LinAlg::SerialDenseMatrix& k_ms, Core::LinAlg::SerialDenseMatrix& k_mm,
     Core::LinAlg::SerialDenseVector& r_s, Core::LinAlg::SerialDenseVector& r_m)
@@ -764,19 +764,19 @@ ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::MortarCellCalcElchSTI
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate(
-    const Core::FE::Discretization& idiscret,           //!< interface discretization
-    Mortar::IntCell& cell,                              //!< mortar integration cell
-    Mortar::Element& slaveelement,                      //!< slave-side mortar element
-    Mortar::Element& masterelement,                     //!< master-side mortar element
-    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,               //!< parameter list
-    Core::LinAlg::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
-    Core::LinAlg::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
-    Core::LinAlg::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
-    Core::LinAlg::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
-    Core::LinAlg::SerialDenseVector& cellvector1,       //!< cell vector 1
-    Core::LinAlg::SerialDenseVector& cellvector2        //!< cell vector 2
+    const Core::FE::Discretization& idiscret,      //!< interface discretization
+    Mortar::IntCell& cell,                         //!< mortar integration cell
+    Mortar::Element& slaveelement,                 //!< slave-side mortar element
+    Mortar::Element& masterelement,                //!< master-side mortar element
+    Core::Elements::LocationArray& la_slave,       //!< slave-side location array
+    Core::Elements::LocationArray& la_master,      //!< master-side location array
+    const Teuchos::ParameterList& params,          //!< parameter list
+    Core::LinAlg::SerialDenseMatrix& cellmatrix1,  //!< cell matrix 1
+    Core::LinAlg::SerialDenseMatrix& cellmatrix2,  //!< cell matrix 2
+    Core::LinAlg::SerialDenseMatrix& cellmatrix3,  //!< cell matrix 3
+    Core::LinAlg::SerialDenseMatrix& cellmatrix4,  //!< cell matrix 4
+    Core::LinAlg::SerialDenseVector& cellvector1,  //!< cell vector 1
+    Core::LinAlg::SerialDenseVector& cellvector2   //!< cell vector 2
 )
 {
   // extract and evaluate action
@@ -808,13 +808,13 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_condition_od(
-    const Core::FE::Discretization& idiscret,           //!< interface discretization
-    Mortar::IntCell& cell,                              //!< mortar integration cell
-    Mortar::Element& slaveelement,                      //!< slave-side mortar element
-    Mortar::Element& masterelement,                     //!< master-side mortar element
-    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,               //!< parameter list
+    const Core::FE::Discretization& idiscret,  //!< interface discretization
+    Mortar::IntCell& cell,                     //!< mortar integration cell
+    Mortar::Element& slaveelement,             //!< slave-side mortar element
+    Mortar::Element& masterelement,            //!< master-side mortar element
+    Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,      //!< parameter list
     Core::LinAlg::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
     Core::LinAlg::SerialDenseMatrix&
@@ -888,9 +888,9 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
  *------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::extract_node_values(
-    const Core::FE::Discretization& idiscret,          //!< interface discretization
-    Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-    Core::Elements::Element::LocationArray& la_master  //!< master-side location array
+    const Core::FE::Discretization& idiscret,  //!< interface discretization
+    Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::LocationArray& la_master   //!< master-side location array
 )
 {
   // call base class routine
@@ -977,19 +977,19 @@ ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::MortarCellCalcSTIElch(
  *--------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate(
-    const Core::FE::Discretization& idiscret,           //!< interface discretization
-    Mortar::IntCell& cell,                              //!< mortar integration cell
-    Mortar::Element& slaveelement,                      //!< slave-side mortar element
-    Mortar::Element& masterelement,                     //!< master-side mortar element
-    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,               //!< parameter list
-    Core::LinAlg::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
-    Core::LinAlg::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
-    Core::LinAlg::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
-    Core::LinAlg::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
-    Core::LinAlg::SerialDenseVector& cellvector1,       //!< cell vector 1
-    Core::LinAlg::SerialDenseVector& cellvector2        //!< cell vector 2
+    const Core::FE::Discretization& idiscret,      //!< interface discretization
+    Mortar::IntCell& cell,                         //!< mortar integration cell
+    Mortar::Element& slaveelement,                 //!< slave-side mortar element
+    Mortar::Element& masterelement,                //!< master-side mortar element
+    Core::Elements::LocationArray& la_slave,       //!< slave-side location array
+    Core::Elements::LocationArray& la_master,      //!< master-side location array
+    const Teuchos::ParameterList& params,          //!< parameter list
+    Core::LinAlg::SerialDenseMatrix& cellmatrix1,  //!< cell matrix 1
+    Core::LinAlg::SerialDenseMatrix& cellmatrix2,  //!< cell matrix 2
+    Core::LinAlg::SerialDenseMatrix& cellmatrix3,  //!< cell matrix 3
+    Core::LinAlg::SerialDenseMatrix& cellmatrix4,  //!< cell matrix 4
+    Core::LinAlg::SerialDenseVector& cellvector1,  //!< cell vector 1
+    Core::LinAlg::SerialDenseVector& cellvector2   //!< cell vector 2
 )
 {
   // extract and evaluate action
@@ -1030,13 +1030,13 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
-    const Core::FE::Discretization& idiscret,           //!< interface discretization
-    Mortar::IntCell& cell,                              //!< mortar integration cell
-    Mortar::Element& slaveelement,                      //!< slave-side mortar element
-    Mortar::Element& masterelement,                     //!< master-side mortar element
-    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,               //!< parameter list
+    const Core::FE::Discretization& idiscret,  //!< interface discretization
+    Mortar::IntCell& cell,                     //!< mortar integration cell
+    Mortar::Element& slaveelement,             //!< slave-side mortar element
+    Mortar::Element& masterelement,            //!< master-side mortar element
+    Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,      //!< parameter list
     Core::LinAlg::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
     Core::LinAlg::SerialDenseVector& r_s  //!< slave-side residual vector
@@ -1108,13 +1108,13 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
-    const Core::FE::Discretization& idiscret,           //!< interface discretization
-    Mortar::IntCell& cell,                              //!< mortar integration cell
-    Mortar::Element& slaveelement,                      //!< slave-side mortar element
-    Mortar::Element& masterelement,                     //!< master-side mortar element
-    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,               //!< parameter list
+    const Core::FE::Discretization& idiscret,  //!< interface discretization
+    Mortar::IntCell& cell,                     //!< mortar integration cell
+    Mortar::Element& slaveelement,             //!< slave-side mortar element
+    Mortar::Element& masterelement,            //!< master-side mortar element
+    Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::LocationArray& la_master,  //!< master-side location array
+    const Teuchos::ParameterList& params,      //!< parameter list
     Core::LinAlg::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
     Core::LinAlg::SerialDenseMatrix&
@@ -1185,9 +1185,9 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
  *------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::extract_node_values(
-    const Core::FE::Discretization& idiscret,          //!< interface discretization
-    Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-    Core::Elements::Element::LocationArray& la_master  //!< master-side location array
+    const Core::FE::Discretization& idiscret,  //!< interface discretization
+    Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::LocationArray& la_master   //!< master-side location array
 )
 {
   // extract nodal temperature variables associated with slave element

@@ -13,6 +13,8 @@
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
 #include "4C_art_net_artery_resulttest.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
@@ -562,7 +564,7 @@ void Arteries::ArtNetImplStationary::output_flow()
     Teuchos::ParameterList p;
     p.set<Arteries::Action>("action", Arteries::calc_flow_pressurebased);
 
-    Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+    Core::Elements::LocationArray la(discret_->num_dof_sets());
     actele->location_vector(*discret_, la, false);
     Core::LinAlg::SerialDenseVector flowVec(1);
 

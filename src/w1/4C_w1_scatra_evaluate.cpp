@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   const int numnode = num_node();
 
@@ -74,7 +74,7 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -88,7 +88,7 @@ int Discret::ELEMENTS::Wall1Scatra::my_evaluate(Teuchos::ParameterList& params,
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Wall1Scatra::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

@@ -16,6 +16,7 @@
 #include "4C_fbi_beam_to_fluid_meshtying_params.hpp"
 #include "4C_fbi_calc_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_fbi.hpp"
 #include "4C_linalg_serialdensevector.hpp"

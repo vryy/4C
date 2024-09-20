@@ -14,6 +14,7 @@
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_turbulence_boxfilter.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_scatra.hpp"

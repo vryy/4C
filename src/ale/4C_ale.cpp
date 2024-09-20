@@ -17,6 +17,8 @@
 #include "4C_fem_condition_locsys.hpp"
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_ale.hpp"
 #include "4C_inpar_fsi.hpp"
@@ -805,7 +807,7 @@ bool ALE::Ale::evaluate_element_quality()
       eleparams.set("action", "calc_jacobian_determinant");
 
       // initialize element vectors
-      Core::Elements::Element::LocationArray la(discretization()->num_dof_sets());
+      Core::Elements::LocationArray la(discretization()->num_dof_sets());
       actele->location_vector(*discretization(), la, false);
 
       // only two entries per element necessary (detJ and quality measure)

@@ -53,7 +53,7 @@ namespace Discret
 
       //! evaluate service routine
       int evaluate_service(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -70,14 +70,14 @@ namespace Discret
 
       //! Evaluate the element (Generic virtual interface function. Called via base pointer.)
       int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! evaluate action for off-diagonal system matrix block
       int evaluate_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override
@@ -95,7 +95,7 @@ namespace Discret
 
       //! projection of Dirichlet function field
       int project_dirich_field(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseVector& elevec1);
 
       //! update interior variables
@@ -110,7 +110,7 @@ namespace Discret
       int project_field(const Core::Elements::Element* ele,
           Core::FE::Discretization& discretization, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
-          Core::Elements::Element::LocationArray& la);
+          Core::Elements::LocationArray& la);
 
       //! project material field
       virtual int project_material_field(const Core::Elements::Element* ele) { return 0; };
@@ -350,7 +350,7 @@ namespace Discret
 
       //! reads from global vectors
       void read_global_vectors(Core::Elements::Element* ele,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la);
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la);
 
       //! local solver object
       Teuchos::RCP<LocalSolver> local_solver_;

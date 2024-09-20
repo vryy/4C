@@ -49,7 +49,7 @@ namespace Discret
           Teuchos::ParameterList& params,                    //!< parameter list
           Core::FE::Discretization& discretization,          //!< discretization
           ScaTra::BoundaryAction action,                     //!< action
-          Core::Elements::Element::LocationArray& la,        //!< location array
+          Core::Elements::LocationArray& la,                 //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,   //!< element matrix 2
           Core::LinAlg::SerialDenseVector& elevec1_epetra,   //!< element right-hand side vector 1
@@ -60,10 +60,10 @@ namespace Discret
       //! evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
       //! interface layer growth
       void evaluate_min_max_overpotential(
-          const Core::Elements::FaceElement* ele,     //!< current boundary element
-          Teuchos::ParameterList& params,             //!< parameter list
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+          const Core::Elements::FaceElement* ele,    //!< current boundary element
+          Teuchos::ParameterList& params,            //!< parameter list
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       /*!
@@ -79,7 +79,7 @@ namespace Discret
        */
       void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual) override;
 
@@ -89,7 +89,7 @@ namespace Discret
           const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
           Core::FE::Discretization& discretization,        ///< discretization
-          Core::Elements::Element::LocationArray& la,      ///< location array
+          Core::Elements::LocationArray& la,               ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
           Core::LinAlg::SerialDenseVector& eslaveresidual  ///< element residual for slave side
       );
@@ -100,7 +100,7 @@ namespace Discret
           const Core::Elements::FaceElement* ele,         ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::Discretization& discretization,       ///< discretization
-          Core::Elements::Element::LocationArray& la,     ///< location array
+          Core::Elements::LocationArray& la,              ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
           Core::LinAlg::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
       );
@@ -111,13 +111,13 @@ namespace Discret
           const Core::Elements::FaceElement* ele,        ///< current boundary element
           Teuchos::ParameterList& params,                ///< parameter list
           Core::FE::Discretization& discretization,      ///< discretization
-          Core::Elements::Element::LocationArray& la,    ///< location array
+          Core::Elements::LocationArray& la,             ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
       //! extract nodal state variables associated with boundary element
       void extract_node_values(const Core::FE::Discretization& discretization,  //!< discretization
-          Core::Elements::Element::LocationArray& la                            //!< location array
+          Core::Elements::LocationArray& la                                     //!< location array
           ) override;
 
       /*!

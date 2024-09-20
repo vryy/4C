@@ -11,6 +11,8 @@
 
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_exceptions.hpp"

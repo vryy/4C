@@ -8820,7 +8820,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
   xji.invert(xjm);
 
   // fill locationarray
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
   ele->location_vector(discretization, la, false);
   // extract local values of the global vectors
   std::vector<double> myvalues(la[0].lm_.size());
@@ -9264,7 +9264,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
     state = discretization.get_state("velnp");
 
     // fill locationarray
-    Core::Elements::Element::LocationArray la(1);
+    Core::Elements::LocationArray la(1);
     ele->location_vector(discretization, la, false);
 
     // extract local values of the global vectors

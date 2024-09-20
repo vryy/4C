@@ -67,8 +67,7 @@ namespace Discret
       //! evaluate action
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const ScaTra::Action& action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -115,13 +114,13 @@ namespace Discret
       //  return extracted values of phinp
       void extract_element_and_node_values(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la) override;
+          Core::Elements::LocationArray& la) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
       virtual void extract_element_and_node_values_poro(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la);
+          Core::Elements::LocationArray& la);
 
       //! get the material parameters
       void get_material_params(

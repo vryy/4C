@@ -647,7 +647,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   // output for accvec ?
   const bool acc_output(acc != Teuchos::null);
 
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
 
 
   if (nds.size() != 0)  // for element output of ghost values
@@ -784,7 +784,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   bool acc_output = true;
   if (accvec == Teuchos::null) acc_output = false;
 
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
 
   // get element location vector, dirichlet flags and ownerships
   actele->location_vector(discret, nds, la, false);

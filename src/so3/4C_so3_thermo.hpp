@@ -179,7 +179,7 @@ namespace Discret
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
+          Core::Elements::LocationArray& la,         //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           Core::LinAlg::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
@@ -194,8 +194,8 @@ namespace Discret
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Core::FE::Discretization& discretization,   //!< pointer to discretization for de-assembly
-          Core::Elements::Element::LocationArray& la  //!< location array for de-assembly
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::Elements::LocationArray& la          //!< location array for de-assembly
       );
 
       //@}
@@ -254,7 +254,7 @@ namespace Discret
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
-          Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
+          Core::Elements::LocationArray& la,         //!< location array for de-assembly
           Core::LinAlg::SerialDenseMatrix&
               elemat1,  //!< (stiffness-)matrix to be filled by element.
           Core::LinAlg::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
@@ -265,9 +265,9 @@ namespace Discret
       );
 
       //! Calculate temperature coupling term for the internal force (geometric linear)
-      virtual void lin_fint_tsi(Core::Elements::Element::LocationArray& la,  //!< location array
-          std::vector<double>& disp,                              //!< current displacements
-          std::vector<double>& temp,                              //!< current temperature
+      virtual void lin_fint_tsi(Core::Elements::LocationArray& la,  //!< location array
+          std::vector<double>& disp,                                //!< current displacements
+          std::vector<double>& temp,                                //!< current temperature
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
           Teuchos::ParameterList& params,          //!< algorithmic parameters e.g. time
@@ -275,7 +275,7 @@ namespace Discret
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-      virtual void lin_kd_t_tsi(Core::Elements::Element::LocationArray& la,
+      virtual void lin_kd_t_tsi(Core::Elements::LocationArray& la,
           std::vector<double>& disp,  //!< (i): current displacement
           std::vector<double>& temp,  // current temperatures
           Core::LinAlg::Matrix<numdofperelement_, nen_>*
@@ -283,11 +283,10 @@ namespace Discret
           Teuchos::ParameterList& params);
 
       //! Calculate nonlinear stiffness and mass matrix with temperature fraction
-      virtual void nln_stifffint_tsi(
-          Core::Elements::Element::LocationArray& la,  //!< location array
-          Core::FE::Discretization& discretization,    ///< discretisation to extract knot vector
-          std::vector<double>& disp,                   //!< current displacements
-          std::vector<double>& temp,                   //!< current temperature
+      virtual void nln_stifffint_tsi(Core::Elements::LocationArray& la,  //!< location array
+          Core::FE::Discretization& discretization,  ///< discretisation to extract knot vector
+          std::vector<double>& disp,                 //!< current displacements
+          std::vector<double>& temp,                 //!< current temperature
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,                                        // element stiffness matrix
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
@@ -297,7 +296,7 @@ namespace Discret
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-      virtual void nln_kd_t_tsi(Core::Elements::Element::LocationArray& la,
+      virtual void nln_kd_t_tsi(Core::Elements::LocationArray& la,
           Core::FE::Discretization& discretization,  ///< discretisation to extract knot vector
           std::vector<double>& disp,                 //!< (i): current displacement
           std::vector<double>& temp,                 //!< current temperature
@@ -361,10 +360,9 @@ namespace Discret
 
       //! Calculate nonlinear stiffness and mass matrix with temperature fraction
       //! implementation for hex8fbar elements differs from standard implementation
-      virtual void nln_stifffint_tsi_fbar(
-          Core::Elements::Element::LocationArray& la,  //!< location array
-          std::vector<double>& disp,                   //!< current displacements
-          std::vector<double>& temp,                   //!< current temperature
+      virtual void nln_stifffint_tsi_fbar(Core::Elements::LocationArray& la,  //!< location array
+          std::vector<double>& disp,  //!< current displacements
+          std::vector<double>& temp,  //!< current temperature
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,                                        // element stiffness matrix
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
@@ -374,7 +372,7 @@ namespace Discret
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-      virtual void nln_kd_t_tsi_fbar(Core::Elements::Element::LocationArray& la,
+      virtual void nln_kd_t_tsi_fbar(Core::Elements::LocationArray& la,
           std::vector<double>& disp,  //!< (i): current displacement
           std::vector<double>& temp,  //!< current temperature
           Core::LinAlg::Matrix<numdofperelement_, nen_>*

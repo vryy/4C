@@ -120,7 +120,7 @@ namespace Discret
       Core::Elements::ElementType& element_type() const override { return Truss3Type::instance(); }
 
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
@@ -162,8 +162,8 @@ namespace Discret
 
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
       // inherently handle (3)...
-      void location_vector(
-          const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const override;
+      void location_vector(const Core::FE::Discretization& dis, Core::Elements::LocationArray& la,
+          bool doDirichlet) const override;
 
       int num_dof_per_element() const override { return 0; }
 
@@ -233,7 +233,7 @@ namespace Discret
       //! \param[in] discretization  discretization
       //! \param[in] params          parameter list
       //! \param[out] ele_state      elemental states (depending on the instantiated element)
-      virtual void extract_elemental_variables(LocationArray& la,
+      virtual void extract_elemental_variables(Core::Elements::LocationArray& la,
           const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state);
 

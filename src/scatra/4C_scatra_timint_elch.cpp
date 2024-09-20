@@ -1106,7 +1106,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
     Core::Elements::Element* element = node->elements()[0];
 
     // determine location information
-    Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+    Core::Elements::LocationArray la(discret_->num_dof_sets());
     element->location_vector(*discret_, la, false);
 
     // dummy matrix and right-hand side vector
@@ -2712,7 +2712,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_condit
       Core::Elements::Element* element = node->elements()[0];
 
       // determine location information
-      Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+      Core::Elements::LocationArray la(discret_->num_dof_sets());
       element->location_vector(*discret_, la, false);
 
       // initialize element matrix

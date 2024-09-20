@@ -13,6 +13,8 @@
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fsi_fluidfluidmonolithic_fluidsplit_nonox.hpp"
 #include "4C_fsi_fluidfluidmonolithic_structuresplit_nonox.hpp"

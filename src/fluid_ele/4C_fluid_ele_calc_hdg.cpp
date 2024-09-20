@@ -762,7 +762,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
   matrix_state = discretization.get_state(0, "velnp");
 
   // we have always two dofsets
-  Core::Elements::Element::LocationArray la(2);
+  Core::Elements::LocationArray la(2);
   ele->location_vector(discretization, la, false);
   localDofs = la[0].lm_;
   solvalues.resize(localDofs.size());

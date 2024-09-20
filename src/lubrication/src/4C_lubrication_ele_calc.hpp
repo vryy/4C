@@ -93,7 +93,7 @@ namespace Discret
         Generic virtual interface function. Called via base pointer.
        */
       int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -102,7 +102,7 @@ namespace Discret
 
       // Evaluate the off-diagonal coupling block of monotlitic EHL matrix
       int evaluate_ehl_mon(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -112,8 +112,7 @@ namespace Discret
       //! evaluate action
       virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const LUBRICATION::Action& action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -121,7 +120,7 @@ namespace Discret
 
       //! evaluate service routine
       int evaluate_service(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -150,7 +149,7 @@ namespace Discret
       //  return extracted values of prenp
       virtual void extract_element_and_node_values(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la);
+          Core::Elements::LocationArray& la);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
       virtual void sysmat(Core::Elements::Element* ele,  //!< the element we are dealing with

@@ -60,7 +60,7 @@ namespace Discret
           Teuchos::ParameterList& params,                   //!< parameter list
           Core::FE::Discretization& discretization,         //!< discretization
           const ScaTra::Action& action,                     //!< action parameter
-          Core::Elements::Element::LocationArray& la,       //!< location array
+          Core::Elements::LocationArray& la,                //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
           Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -126,7 +126,7 @@ namespace Discret
       void extract_element_and_node_values(Core::Elements::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                                 //!< parameter list
           Core::FE::Discretization& discretization,                       //!< discretization
-          Core::Elements::Element::LocationArray& la                      //!< location array
+          Core::Elements::LocationArray& la                               //!< location array
           ) override;
 
       //! get material parameters

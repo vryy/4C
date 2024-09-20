@@ -13,6 +13,7 @@ to disk
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io.hpp"
 #include "4C_io_element_vtk_cell_type_register.hpp"
 #include "4C_io_visualization_manager.hpp"

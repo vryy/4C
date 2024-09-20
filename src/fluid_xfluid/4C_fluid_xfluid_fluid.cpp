@@ -833,7 +833,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
 
     Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
 
-    Core::Elements::Element::LocationArray la(1);
+    Core::Elements::LocationArray la(1);
 
     // get element location vector, dirichlet flags and ownerships
     actele->location_vector(*mc_xff_->get_cond_dis(), la, false);
