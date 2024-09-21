@@ -16,8 +16,10 @@
 
 #include <vector>
 
+// NOLINTBEGIN(readability-identifier-naming)
 class Epetra_Map;
 class Epetra_Vector;
+// NOLINTEND(readability-identifier-naming)
 
 FOUR_C_NAMESPACE_OPEN
 

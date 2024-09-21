@@ -20,6 +20,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
