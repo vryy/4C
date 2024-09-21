@@ -15,9 +15,9 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_ssi_clonestrategy.hpp"
 #include "4C_sti_clonestrategy.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

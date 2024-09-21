@@ -13,8 +13,6 @@
 
 #include "4C_linalg_sparseoperator.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
-
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN

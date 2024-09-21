@@ -18,9 +18,9 @@
 
 #include "4C_io_visualization_manager.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_ParameterList.hpp>
 
 #include <memory>
 #include <unordered_map>

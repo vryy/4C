@@ -19,9 +19,9 @@
 #include "4C_mat_structporo.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_poro_3D_ele_properties.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
 #include <numeric>

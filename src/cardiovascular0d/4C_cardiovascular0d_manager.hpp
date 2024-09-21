@@ -15,6 +15,7 @@
 
 #include "4C_inpar_cardiovascular0d.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>

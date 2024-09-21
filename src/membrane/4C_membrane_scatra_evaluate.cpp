@@ -13,6 +13,8 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_membrane_scatra.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

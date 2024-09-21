@@ -19,11 +19,11 @@
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_timestepping_mstep.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>

@@ -14,10 +14,7 @@
 
 #include "4C_config.hpp"
 
-namespace Teuchos
-{
-  class ParameterList;
-}
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

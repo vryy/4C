@@ -17,7 +17,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+
 
 FOUR_C_NAMESPACE_OPEN
 

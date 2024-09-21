@@ -16,8 +16,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-
-#include <Teuchos_ParameterList.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <vector>
 

@@ -16,11 +16,6 @@
 #include "4C_solver_nonlin_nox_statustest_factory.hpp"
 #include "4C_structure_new_nln_solver_nox.hpp"
 
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Solid::Nln::SOLVER

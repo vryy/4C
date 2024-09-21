@@ -21,7 +21,6 @@
 #include "4C_unittest_utils_assertions_test.hpp"
 
 #include <boost/mpl/protect.hpp>
-#include <Teuchos_RCPDecl.hpp>
 
 
 

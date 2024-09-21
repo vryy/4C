@@ -18,6 +18,7 @@
 #include "4C_porofluidmultiphase_ele_calc_utils.hpp"
 #include "4C_porofluidmultiphase_ele_variablemanager.hpp"
 
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
 #include <numeric>

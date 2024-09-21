@@ -24,6 +24,8 @@
 #include "4C_post_writer_base.hpp"
 #include "4C_thermo_ele_action.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN

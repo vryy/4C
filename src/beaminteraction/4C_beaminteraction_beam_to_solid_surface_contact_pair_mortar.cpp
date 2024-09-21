@@ -31,7 +31,7 @@
 #include "4C_utils_fad.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCPDecl.hpp>
+
 
 FOUR_C_NAMESPACE_OPEN
 

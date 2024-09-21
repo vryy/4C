@@ -19,7 +19,6 @@
 #include "4C_rebalance_graph_based.hpp"
 #include "4C_rebalance_print.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 

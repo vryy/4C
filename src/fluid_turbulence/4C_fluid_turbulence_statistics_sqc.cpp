@@ -15,6 +15,8 @@ turbulent flow past a square cylinder
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 #include <fstream>
 
 FOUR_C_NAMESPACE_OPEN

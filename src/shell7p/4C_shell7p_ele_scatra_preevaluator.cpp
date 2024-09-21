@@ -13,6 +13,8 @@
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_shell7p_ele_calc_lib.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

@@ -18,9 +18,9 @@
 #include "4C_adapter_fld_base_algorithm.hpp"
 #include "4C_adapter_fld_moving_boundary.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

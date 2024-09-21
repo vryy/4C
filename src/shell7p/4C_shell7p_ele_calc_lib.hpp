@@ -17,8 +17,7 @@
 #include "4C_linalg_fixedsizematrix_tensor_transformation.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_shell7p_ele.hpp"
-
-#include <Teuchos_ParameterList.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <numeric>
 

@@ -18,11 +18,6 @@
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
 #include "4C_io_visualization_parameters.hpp"
 
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Solid

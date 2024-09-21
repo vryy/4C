@@ -15,6 +15,8 @@
 #include "4C_particle_engine_interface.hpp"
 #include "4C_particle_interaction_utils.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*

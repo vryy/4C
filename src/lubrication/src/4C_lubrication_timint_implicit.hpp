@@ -18,9 +18,9 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_inpar_lubrication.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

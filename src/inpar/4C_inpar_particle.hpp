@@ -19,7 +19,9 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include <Teuchos_ParameterList.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
+
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 

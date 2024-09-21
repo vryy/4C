@@ -13,6 +13,8 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_utils_splitstrategy.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

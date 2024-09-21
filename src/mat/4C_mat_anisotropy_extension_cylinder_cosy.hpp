@@ -17,7 +17,7 @@ materials with @Mat::Anisotropy
 
 #include "4C_mat_anisotropy_extension_base.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+
 
 FOUR_C_NAMESPACE_OPEN
 

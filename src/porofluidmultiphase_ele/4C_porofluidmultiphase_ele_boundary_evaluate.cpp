@@ -14,6 +14,8 @@
 #include "4C_porofluidmultiphase_ele_boundary_factory.hpp"
 #include "4C_porofluidmultiphase_ele_interface.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

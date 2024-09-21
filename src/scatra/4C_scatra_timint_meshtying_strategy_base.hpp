@@ -16,9 +16,9 @@ strategy without meshtying)
 
 #include "4C_scatra_timint_convcheck_strategies.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

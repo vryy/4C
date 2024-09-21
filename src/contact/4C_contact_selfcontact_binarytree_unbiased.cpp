@@ -14,6 +14,8 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

@@ -17,9 +17,9 @@
 
 #include "4C_structure_timada.hpp"
 #include "4C_structure_timint.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

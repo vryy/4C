@@ -22,8 +22,7 @@
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_fs3i.hpp"
 #include "4C_inpar_fs3i.hpp"
-
-#include <Teuchos_ParameterList.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

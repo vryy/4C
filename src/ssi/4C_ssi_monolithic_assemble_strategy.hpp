@@ -14,9 +14,9 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_ssi_utils.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

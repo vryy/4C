@@ -15,6 +15,8 @@
 #include "4C_mat_so3_material.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

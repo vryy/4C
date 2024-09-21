@@ -16,6 +16,8 @@
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_manager.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*

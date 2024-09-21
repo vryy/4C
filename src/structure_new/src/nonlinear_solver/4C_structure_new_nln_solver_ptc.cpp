@@ -14,6 +14,8 @@
 #include "4C_structure_new_nln_solver_utils.hpp"
 #include "4C_structure_new_timint_base.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*

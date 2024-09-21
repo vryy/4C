@@ -23,6 +23,7 @@
 #include "4C_structure_new_timint_implicit.hpp"
 
 #include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

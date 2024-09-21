@@ -18,6 +18,7 @@
 #include "4C_linalg_mapextractor.hpp"
 
 #include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

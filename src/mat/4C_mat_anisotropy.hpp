@@ -17,9 +17,7 @@
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
-
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCPDecl.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <optional>
 

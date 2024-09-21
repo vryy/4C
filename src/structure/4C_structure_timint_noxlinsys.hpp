@@ -17,6 +17,8 @@
 /* headers */
 #include "4C_config.hpp"
 
+#include "4C_utils_parameter_list.fwd.hpp"
+
 #include <NOX.H>
 #include <NOX_Common.H>
 #include <NOX_Epetra_Group.H>
@@ -27,7 +29,6 @@
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 

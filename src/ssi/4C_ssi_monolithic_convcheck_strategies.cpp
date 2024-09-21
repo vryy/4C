@@ -23,6 +23,8 @@ derived from an abstract, purely virtual interface class.
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_ssi_utils.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

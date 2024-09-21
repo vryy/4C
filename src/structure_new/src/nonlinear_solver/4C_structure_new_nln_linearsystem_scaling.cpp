@@ -21,6 +21,7 @@
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>
+#include <Teuchos_ParameterList.hpp>
 
 #include <iostream>
 

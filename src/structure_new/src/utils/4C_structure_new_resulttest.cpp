@@ -19,7 +19,6 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_MultiVector.h>
-#include <Teuchos_RCPDecl.hpp>
 
 #include <optional>
 #include <string>

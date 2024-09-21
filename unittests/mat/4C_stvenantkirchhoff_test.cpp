@@ -13,6 +13,8 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 namespace
 {
   using namespace FourC;

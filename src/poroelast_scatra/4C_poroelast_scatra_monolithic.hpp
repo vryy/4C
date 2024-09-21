@@ -19,8 +19,8 @@
 #include "4C_inpar_poroscatra.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_scatra_base.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_Time.hpp>
 
 FOUR_C_NAMESPACE_OPEN

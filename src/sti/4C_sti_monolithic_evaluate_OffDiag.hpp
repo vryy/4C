@@ -14,9 +14,9 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_inpar_s2i.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

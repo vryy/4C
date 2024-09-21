@@ -18,6 +18,8 @@
 #include "4C_post_processor_single_field_writers.hpp"
 #include "4C_post_writer_base.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN

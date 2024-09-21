@@ -9,6 +9,8 @@
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_fem_general_node.hpp"
 
+#include <Teuchos_ArrayRCP.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FE

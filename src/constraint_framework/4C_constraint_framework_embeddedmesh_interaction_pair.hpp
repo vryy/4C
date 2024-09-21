@@ -17,9 +17,9 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_io_visualization_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 #include <unordered_set>

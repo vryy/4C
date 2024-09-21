@@ -14,6 +14,8 @@
 #include "4C_linalg_utils_densematrix_svd.hpp"
 #include "4C_so3_prestress.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 #include <algorithm>
 
 FOUR_C_NAMESPACE_OPEN
