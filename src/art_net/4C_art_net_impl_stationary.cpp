@@ -29,6 +29,7 @@
 #include "4C_utils_function.hpp"
 
 #include <Epetra_Vector.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

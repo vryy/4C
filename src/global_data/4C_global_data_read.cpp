@@ -41,6 +41,8 @@
 #include "4C_xfem_discretization.hpp"
 #include "4C_xfem_discretization_utils.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN

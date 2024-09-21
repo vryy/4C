@@ -23,6 +23,7 @@
 #include "4C_tsi_utils.hpp"
 
 #include <Epetra_MpiComm.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

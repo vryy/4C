@@ -20,6 +20,8 @@
 #include "4C_mat_fluid_weakly_compressible.hpp"
 #include "4C_mat_par_bundle.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

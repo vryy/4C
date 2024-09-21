@@ -25,6 +25,8 @@
 #include "4C_ssti_resulttest.hpp"
 #include "4C_ssti_utils.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

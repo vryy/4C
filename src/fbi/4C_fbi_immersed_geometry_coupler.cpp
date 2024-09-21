@@ -23,6 +23,7 @@ The current implementation does not scale at all!
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 

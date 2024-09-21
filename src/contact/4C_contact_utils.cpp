@@ -19,6 +19,8 @@
 #include "4C_io_every_iteration_writer.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <fstream>
 
 FOUR_C_NAMESPACE_OPEN

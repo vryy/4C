@@ -18,6 +18,8 @@
 #include "4C_lubrication_resulttest.hpp"
 #include "4C_lubrication_timint_stat.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

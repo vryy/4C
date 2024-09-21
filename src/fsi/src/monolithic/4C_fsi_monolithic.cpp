@@ -37,6 +37,7 @@
 
 #include <NOX_Direction_UserDefinedFactory.H>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 

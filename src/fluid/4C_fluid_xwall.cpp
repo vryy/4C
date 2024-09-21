@@ -32,6 +32,8 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

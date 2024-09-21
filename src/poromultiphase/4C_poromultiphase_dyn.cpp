@@ -16,6 +16,7 @@
 #include "4C_poromultiphase_base.hpp"
 #include "4C_poromultiphase_utils.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

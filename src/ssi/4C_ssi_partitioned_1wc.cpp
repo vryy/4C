@@ -18,6 +18,8 @@
 #include "4C_scatra_timint_cardiac_monodomain.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)

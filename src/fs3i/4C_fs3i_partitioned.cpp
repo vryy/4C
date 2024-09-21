@@ -43,6 +43,7 @@
 #include "4C_scatra_utils_clonestrategy.hpp"
 #include "4C_ssi_clonestrategy.hpp"
 #include "4C_structure_aux.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

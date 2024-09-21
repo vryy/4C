@@ -16,6 +16,7 @@
 #include "4C_inpar_immersed.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

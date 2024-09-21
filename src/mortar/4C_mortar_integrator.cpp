@@ -24,6 +24,8 @@ of two Mortar::Elements in 1D and 2D
 #include "4C_mortar_shape_utils.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

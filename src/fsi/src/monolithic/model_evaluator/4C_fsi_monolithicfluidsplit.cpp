@@ -33,6 +33,7 @@ with condensed fluid interface velocities
 #include "4C_structure_aux.hpp"
 
 #include <NOX_Epetra_LinearSystem.H>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

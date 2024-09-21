@@ -17,6 +17,7 @@
 #include "4C_legacy_enum_definitions_problem_type.hpp"
 
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

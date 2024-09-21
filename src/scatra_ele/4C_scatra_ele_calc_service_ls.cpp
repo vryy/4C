@@ -15,6 +15,8 @@
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_calc_ls.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

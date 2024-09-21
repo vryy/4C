@@ -25,6 +25,8 @@
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_scatra_ele.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

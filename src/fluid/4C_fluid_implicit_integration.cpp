@@ -65,6 +65,8 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_utils_function.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <cmath>
 #include <fstream>
 #include <iostream>

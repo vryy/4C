@@ -27,6 +27,8 @@
 #include "4C_fsi_slidingmonolithic_structuresplit.hpp"
 #include "4C_io_linedefinition.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN

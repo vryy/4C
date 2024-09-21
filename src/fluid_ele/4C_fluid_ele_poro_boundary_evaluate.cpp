@@ -15,6 +15,8 @@
 #include "4C_fluid_ele_poro.hpp"
 #include "4C_inpar_fluid.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& params,

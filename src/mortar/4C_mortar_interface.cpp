@@ -33,6 +33,7 @@
 #include "4C_poroelast_scatra_utils.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_SerialComm.h>

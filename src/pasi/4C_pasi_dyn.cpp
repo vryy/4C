@@ -18,6 +18,8 @@
 #include "4C_pasi_partitioned_twowaycoup.hpp"
 #include "4C_pasi_utils.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------------*

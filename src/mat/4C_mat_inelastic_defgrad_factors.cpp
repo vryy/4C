@@ -17,6 +17,8 @@
 #include "4C_mat_service.hpp"
 #include "4C_utils_function_of_time.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN

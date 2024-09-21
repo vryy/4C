@@ -22,6 +22,8 @@ class for handling of micro-macro transitions
 #include "4C_so3_shw6.hpp"
 #include "4C_stru_multi_microstatic.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <filesystem>
 
 FOUR_C_NAMESPACE_OPEN

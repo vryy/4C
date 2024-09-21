@@ -16,6 +16,8 @@ lid-driven cavity.
 #include "4C_fem_general_node.hpp"
 #include "4C_io.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <fstream>
 
 FOUR_C_NAMESPACE_OPEN

@@ -26,6 +26,7 @@
 #include "4C_utils_function.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

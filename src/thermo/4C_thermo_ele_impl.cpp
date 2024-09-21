@@ -30,6 +30,8 @@
 #include "4C_thermo_element.hpp"  // only for visualization of element data
 #include "4C_utils_function.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <algorithm>
 
 FOUR_C_NAMESPACE_OPEN

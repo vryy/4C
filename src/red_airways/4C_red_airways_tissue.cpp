@@ -21,6 +21,7 @@
 #include "4C_red_airways_implicitintegration.hpp"
 
 #include <stdio.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

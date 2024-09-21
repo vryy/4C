@@ -23,6 +23,8 @@ passive-scalar transport
 #include <fftw3.h>
 #endif
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 #define USE_TRAGET_SPECTRUM

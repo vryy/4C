@@ -14,6 +14,8 @@
 #include "4C_scatra_ele_boundary_factory.hpp"
 #include "4C_scatra_ele_parameter_elch.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

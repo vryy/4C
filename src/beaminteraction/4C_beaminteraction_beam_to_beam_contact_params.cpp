@@ -12,6 +12,8 @@
 
 #include "4C_global_data.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

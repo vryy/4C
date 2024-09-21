@@ -26,6 +26,8 @@
 #include "4C_ssti_utils.hpp"
 #include "4C_sti_monolithic_evaluate_OffDiag.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*

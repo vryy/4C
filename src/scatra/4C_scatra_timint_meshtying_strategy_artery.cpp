@@ -20,6 +20,8 @@
 #include "4C_poromultiphase_scatra_utils.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

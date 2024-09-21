@@ -28,6 +28,8 @@
 #include "4C_mortar_defines.hpp"
 #include "4C_mortar_projector.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 
