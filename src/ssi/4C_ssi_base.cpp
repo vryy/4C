@@ -38,6 +38,9 @@
 #include "4C_ssi_utils.hpp"
 #include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_utils_function_of_time.hpp"
+#include "4C_utils_parameter_list.hpp"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

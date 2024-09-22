@@ -9,9 +9,11 @@
 */
 /*----------------------------------------------------------------------------*/
 
+#include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
+#include "4C_fem_general_element.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -77,7 +79,7 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
         strategy.systemvector2(), strategy.systemvector3());
   }
 
-  Core::Elements::Element::LocationArray la(discret.num_dof_sets());
+  Core::Elements::LocationArray la(discret.num_dof_sets());
 
   bool is_subset = false;
   if (not col_ele_map)

@@ -22,6 +22,8 @@
 #include "4C_io.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -361,7 +363,7 @@ void FLD::TimIntHDG::set_initial_flow_field(
     initParams.set("startfuncno", startfuncno);
     initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
     // loop over all elements on the processor
-    Core::Elements::Element::LocationArray la(2);
+    Core::Elements::LocationArray la(2);
     double error = 0;
     for (int el = 0; el < discret_->num_my_col_elements(); ++el)
     {

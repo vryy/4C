@@ -7,8 +7,10 @@
 *----------------------------------------------------------------------*/
 
 #include "4C_constraint_element3.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

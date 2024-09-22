@@ -35,6 +35,8 @@ interaction.
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN

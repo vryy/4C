@@ -11,6 +11,7 @@
 #include "4C_truss3.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
@@ -352,7 +353,7 @@ void Discret::ELEMENTS::Truss3::scale_reference_length(double scalefac)
 // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
 // inherently handle (3)...
 void Discret::ELEMENTS::Truss3::location_vector(
-    const Core::FE::Discretization& dis, LocationArray& la, bool doDirichlet) const
+    const Core::FE::Discretization& dis, Core::Elements::LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
   const Core::Nodes::Node* const* nodes = Truss3::nodes();

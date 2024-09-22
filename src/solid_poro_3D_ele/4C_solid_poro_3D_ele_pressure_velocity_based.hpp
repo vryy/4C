@@ -124,7 +124,7 @@ namespace Discret::ELEMENTS
         const Core::IO::InputParameterContainer& container) override;
 
     int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-        Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
         Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseVector& elevec2,
         Core::LinAlg::SerialDenseVector& elevec3) override;

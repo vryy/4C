@@ -23,6 +23,7 @@
 #include "4C_structure_new_timint_basedataio_runtime_vtp_output.hpp"
 
 #include <NOX_Solver_Generic.H>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

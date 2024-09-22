@@ -23,6 +23,8 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_rebalance_binning_based.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN

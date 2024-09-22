@@ -20,6 +20,8 @@
 #include "4C_mat_fluid_weakly_compressible.hpp"
 #include "4C_mat_par_bundle.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
@@ -318,7 +320,7 @@ void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Epetra_Vector>
   params.set<FLD::Action>("action", FLD::update_local_solution);
 
   // location array
-  Core::Elements::Element::LocationArray la(2);
+  Core::Elements::LocationArray la(2);
 
   // interior dofs map
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
@@ -434,7 +436,7 @@ void FLD::TimIntHDGWeakComp::set_initial_flow_field(
   initParams.set<Inpar::FLUID::InitialField>("initfield", initfield);
 
   // loop over all elements on the processor
-  Core::Elements::Element::LocationArray la(2);
+  Core::Elements::LocationArray la(2);
   double error = 0;
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {

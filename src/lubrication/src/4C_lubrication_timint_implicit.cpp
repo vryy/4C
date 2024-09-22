@@ -13,6 +13,8 @@
 
 #include "4C_lubrication_timint_implicit.hpp"
 
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_lubrication.hpp"
 #include "4C_inpar_validparameters.hpp"

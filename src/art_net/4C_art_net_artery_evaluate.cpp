@@ -18,6 +18,8 @@
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -25,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)

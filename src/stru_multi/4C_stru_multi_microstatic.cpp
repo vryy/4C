@@ -234,7 +234,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
   // create the parameters for the discretization
   discret_->set_state("displacement", dis_);
-  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+  Core::Elements::LocationArray la(discret_->num_dof_sets());
   for (const auto* ele : discret_->my_row_element_range())
   {
     ele->location_vector(*discret_, la, false);

@@ -12,6 +12,8 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_geometry_pair.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

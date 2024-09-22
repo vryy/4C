@@ -10,6 +10,7 @@
 #include "4C_scatra_timint_poromulti.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io.hpp"
 #include "4C_poromultiphase_scatra_utils.hpp"
 #include "4C_scatra_ele_action.hpp"

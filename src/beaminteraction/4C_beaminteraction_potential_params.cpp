@@ -16,6 +16,8 @@
 #include "4C_io_value_parser.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*

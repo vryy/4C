@@ -8,6 +8,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elements_jacobian.hpp"
 #include "4C_fem_general_extract_values.hpp"

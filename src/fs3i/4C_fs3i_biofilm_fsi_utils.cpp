@@ -11,6 +11,7 @@
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 

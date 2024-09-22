@@ -22,6 +22,8 @@
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_timint_base.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

@@ -32,7 +32,7 @@ template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -779,7 +779,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_service(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -833,7 +833,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_service(
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   // extract scalar values from global vector
   Teuchos::RCP<const Epetra_Vector> scalar = discretization.get_state("scalar");
@@ -918,12 +918,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivative(
-    Core::Elements::Element* ele,               //!< current element
-    Core::LinAlg::SerialDenseMatrix& emat,      //!< element matrix
-    Core::LinAlg::SerialDenseVector& erhs,      //!< element residual
-    Teuchos::ParameterList& params,             //!< parameter list
-    Core::FE::Discretization& discretization,   //!< discretization
-    Core::Elements::Element::LocationArray& la  //!< location array
+    Core::Elements::Element* ele,              //!< current element
+    Core::LinAlg::SerialDenseMatrix& emat,     //!< element matrix
+    Core::LinAlg::SerialDenseVector& erhs,     //!< element residual
+    Teuchos::ParameterList& params,            //!< parameter list
+    Core::FE::Discretization& discretization,  //!< discretization
+    Core::Elements::LocationArray& la          //!< location array
 )
 {
   // extract relevant quantities from discretization and parameter list

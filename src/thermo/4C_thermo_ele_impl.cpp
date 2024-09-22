@@ -30,6 +30,8 @@
 #include "4C_thermo_element.hpp"  // only for visualization of element data
 #include "4C_utils_function.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <algorithm>
 
 FOUR_C_NAMESPACE_OPEN
@@ -138,9 +140,9 @@ Discret::ELEMENTS::TemperImpl<distype>::TemperImpl()
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Element* ele,
-    Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
-    const Core::Elements::Element::LocationArray& la,
+int Discret::ELEMENTS::TemperImpl<distype>::evaluate(
+    const Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  // Tangent ("stiffness")
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  // Capacity ("mass")
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // internal force vector
@@ -677,8 +679,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
     const Core::Elements::Element* ele, const double time,
-    const Core::FE::Discretization& discretization,
-    const Core::Elements::Element::LocationArray& la,
+    const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
@@ -737,7 +738,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(
     const Core::Elements::Element* ele, const Core::FE::Discretization& discretization,
-    const Core::Elements::Element::LocationArray& la,
+    const Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params)
 {
@@ -2647,9 +2648,8 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_heatflux_tempgrad(
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::TemperImpl<distype>::extract_disp_vel(
-    const Core::FE::Discretization& discretization,
-    const Core::Elements::Element::LocationArray& la, std::vector<double>& mydisp,
-    std::vector<double>& myvel) const
+    const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
+    std::vector<double>& mydisp, std::vector<double>& myvel) const
 {
   if ((discretization.has_state(1, "displacement")) and (discretization.has_state(1, "velocity")))
   {

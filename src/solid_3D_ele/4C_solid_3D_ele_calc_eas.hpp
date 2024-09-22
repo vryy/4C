@@ -17,6 +17,7 @@
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_solid_3D_ele_utils.hpp"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>

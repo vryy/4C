@@ -271,7 +271,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;
@@ -532,7 +532,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3) override;

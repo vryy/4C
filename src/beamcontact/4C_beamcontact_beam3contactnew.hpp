@@ -19,6 +19,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_inpar_beamcontact.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_utils_fad.hpp"
 

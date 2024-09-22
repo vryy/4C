@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_utils_elch.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_mat_ion.hpp"
 #include "4C_scatra_ele_calc_elch.hpp"
 #include "4C_utils_singleton_owner.hpp"

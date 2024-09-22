@@ -312,7 +312,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
     probdim>::extract_element_and_node_values(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la)
+    Core::Elements::LocationArray& la)
 {
   my::extract_element_and_node_values(ele, params, discretization, la);
 

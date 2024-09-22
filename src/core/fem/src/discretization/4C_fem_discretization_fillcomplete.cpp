@@ -10,7 +10,10 @@
 /*---------------------------------------------------------------------*/
 
 #include "4C_comm_parobjectfactory.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_exceptions.hpp"

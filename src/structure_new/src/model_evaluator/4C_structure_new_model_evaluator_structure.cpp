@@ -1663,7 +1663,7 @@ bool Solid::ModelEvaluator::Structure::determine_element_volumes(
   ele_vols = Teuchos::rcp(new Epetra_Vector(*relemap, true));
   const unsigned my_num_reles = relemap->NumMyElements();
 
-  Core::Elements::Element::LocationArray la(discret().num_dof_sets());
+  Core::Elements::LocationArray la(discret().num_dof_sets());
   Core::LinAlg::SerialDenseVector ele_vol(6, true);
 
   Core::LinAlg::SerialDenseMatrix empty_dummy_mat;

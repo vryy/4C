@@ -11,6 +11,7 @@
 
 #include "4C_fluid_result_test.hpp"
 
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fluid_utils.hpp"
 #include "4C_global_data.hpp"

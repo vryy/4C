@@ -15,6 +15,7 @@
 
 #include "4C_beam3_base.hpp"
 #include "4C_constraint_framework_equation_mpc.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_mpc_rve.hpp"

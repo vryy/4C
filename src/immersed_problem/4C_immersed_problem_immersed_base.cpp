@@ -25,44 +25,6 @@ Immersed::ImmersedBase::ImmersedBase() : issetup_(false), isinit_(false)
 }  // ImmersedBase
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Immersed::ImmersedBase::create_volume_condition(
-    const Teuchos::RCP<Core::FE::Discretization>& dis, const std::vector<int> dvol_fenode,
-    const Core::Conditions::ConditionType condtype, const std::string condname, bool buildgeometry)
-{
-  // determine id of condition
-  std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> allconditions;
-  allconditions = dis->get_all_conditions();
-  int id = (int)allconditions.size();
-  id += 1;
-
-  // build condition
-  Teuchos::RCP<Core::Conditions::Condition> condition =
-      Teuchos::rcp(new Core::Conditions::Condition(
-          id, condtype, buildgeometry, Core::Conditions::geometry_type_volume));
-
-  // add nodes to conditions
-  condition->set_nodes(dvol_fenode);
-
-  // add condition to discretization
-  dis->set_condition(condname, condition);
-
-  // fill complete if necessary
-  if (!dis->filled()) dis->fill_complete(false, false, buildgeometry);
-
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom =
-      dis->get_condition(condname)->geometry();
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator it;
-  for (it = geom.begin(); it != geom.end(); it++)
-  {
-    int id = it->second->id();
-    dis->g_element(id)->set_condition(condname, condition);
-  }
-
-  return;
-}  // create_volume_condition
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -289,7 +251,7 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
           "currpositions_struct", currpositions_struct);
       params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
 
-      Core::Elements::Element::LocationArray la(1);
+      Core::Elements::LocationArray la(1);
       immersedelebase->location_vector(*dis, la, false);
       strategy->clear_element_storage(la[row].size(), la[col].size());
 
@@ -353,7 +315,7 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
       Core::LinAlg::SerialDenseMatrix dummymat;
       Core::LinAlg::SerialDenseVector dummyvec;
 
-      Core::Elements::Element::LocationArray la(1);
+      Core::Elements::LocationArray la(1);
       immersedelebase->location_vector(*dis, la, false);
 
       immersedelebase->evaluate(
@@ -402,7 +364,7 @@ void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
           "currpositions_struct", currpositions_struct);
       params.set<Inpar::FLUID::PhysicalType>("Physical Type", Inpar::FLUID::poro_p1);
 
-      Core::Elements::Element::LocationArray la(dis->num_dof_sets());
+      Core::Elements::LocationArray la(dis->num_dof_sets());
       ele->location_vector(*dis, la, false);
       strategy->clear_element_storage(la[row].size(), la[col].size());
 
@@ -448,7 +410,7 @@ void Immersed::ImmersedBase::evaluate_interpolation_condition(
 
   params.set<int>("dummy_call", 0);
 
-  Core::Elements::Element::LocationArray la(evaldis->num_dof_sets());
+  Core::Elements::LocationArray la(evaldis->num_dof_sets());
 
   std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>::iterator fool;
 
@@ -588,7 +550,7 @@ void Immersed::ImmersedBase::evaluate_subset_elements(Teuchos::ParameterList& pa
   Core::Elements::Element* ele;
 
   // initialize location array
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
 
   for (std::map<int, std::set<int>>::const_iterator closele = elementstoeval.begin();
        closele != elementstoeval.end(); closele++)

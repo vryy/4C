@@ -442,7 +442,7 @@ Core::Conditions::Condition* Core::Elements::Element::get_condition(const std::s
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
 void Core::Elements::Element::location_vector(const Core::FE::Discretization& dis,
-    const std::vector<int>& nds, Core::Elements::Element::LocationArray& la, bool doDirichlet) const
+    const std::vector<int>& nds, Core::Elements::LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
   const Core::Nodes::Node* const* nodes = Element::nodes();

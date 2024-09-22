@@ -14,6 +14,7 @@
 #include "4C_inpar_mortar.hpp"
 
 #include <Epetra_Comm.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <vector>
 

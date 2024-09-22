@@ -468,7 +468,7 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
   {
     Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
     Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
-    Core::Elements::Element::LocationArray dummy(1);
+    Core::Elements::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
 
     const auto problem_type = *params.get<const Core::ProblemType*>("problem_type");

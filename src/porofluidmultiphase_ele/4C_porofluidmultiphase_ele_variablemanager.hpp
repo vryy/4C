@@ -118,9 +118,8 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         virtual void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Core::FE::Discretization& discretization,
-            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
-            const int dofsetnum = 0) = 0;
+            const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+            Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) = 0;
 
         //! evaluate variables at gauss point
         virtual void evaluate_gp_variables(
@@ -306,9 +305,8 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Core::FE::Discretization& discretization,
-            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
-            const int dofsetnum = 0) override;
+            const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+            Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate state vector at gauss point
         void evaluate_gp_variables(
@@ -486,9 +484,8 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Core::FE::Discretization& discretization,
-            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
-            const int dofsetnum = 0) override;
+            const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+            Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
         void evaluate_gp_variables(
@@ -559,9 +556,8 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Core::FE::Discretization& discretization,
-            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
-            const int dofsetnum = 0) override;
+            const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+            Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
         void evaluate_gp_variables(
@@ -646,9 +642,8 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Core::FE::Discretization& discretization,
-            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
-            const int dofsetnum = 0) override;
+            const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+            Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         void evaluate_gp_variables(
             const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
@@ -718,9 +713,8 @@ namespace Discret
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
         void extract_element_and_node_values(const Core::Elements::Element& ele,
-            const Core::FE::Discretization& discretization,
-            Core::Elements::Element::LocationArray& la, Core::LinAlg::Matrix<nsd, nen>& xyze,
-            const int dofsetnum = 0) override;
+            const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+            Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) override;
 
         //! evaluate variables at gauss point
         void evaluate_gp_variables(

@@ -486,7 +486,7 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
 
     std::vector<int> nds(nen, 0);
 
-    Core::Elements::Element::LocationArray la(1);
+    Core::Elements::LocationArray la(1);
     ele->location_vector(*discret_, nds, la, false);
 
     // extract local values of the global vectors
@@ -609,7 +609,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
       int numdof = element->num_dof_per_node(*(element->nodes()[0]));
 
       std::vector<int> nds(nen, 0);
-      Core::Elements::Element::LocationArray la(1);
+      Core::Elements::LocationArray la(1);
       element->location_vector(*discret_, nds, la, false);
 
       // extract local values of the global vectors
@@ -1459,7 +1459,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
-    Core::Elements::Element::LocationArray cutla(1);
+    Core::Elements::LocationArray cutla(1);
     side->location_vector(*boundarydis_, cutla, false);
 
     compute_start_point_side(
@@ -1574,14 +1574,14 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         std::copy(x, x + 3, &side_xyze_1(0, i));
       }
 
-      Core::Elements::Element::LocationArray cutla_1(1);
+      Core::Elements::LocationArray cutla_1(1);
       side_1->location_vector(*boundarydis_, cutla_1, false);
 
       //---------------------------------------------------------
       // side 2
       Core::Elements::Element* side_2;
       Core::LinAlg::SerialDenseMatrix side_xyze_2;
-      Core::Elements::Element::LocationArray cutla_2(1);
+      Core::Elements::LocationArray cutla_2(1);
       if (sid_2 != -1)
       {
         side_2 = boundarydis_->g_element(sid_2);
@@ -1647,7 +1647,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
         std::copy(x, x + 3, &side_xyze(0, i));
       }
 
-      Core::Elements::Element::LocationArray cutla(1);
+      Core::Elements::LocationArray cutla(1);
       side->location_vector(*boundarydis_, cutla, false);
 
       surr_sides.push_back(side);
@@ -2194,7 +2194,7 @@ void XFEM::XfluidStd::call_get_projxn_line(
   }
 
 
-  Core::Elements::Element::LocationArray cutla(1);
+  Core::Elements::LocationArray cutla(1);
   line->location_vector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element
@@ -2346,7 +2346,7 @@ void XFEM::XfluidStd::call_project_on_side(
   }
 
 
-  Core::Elements::Element::LocationArray cutla(1);
+  Core::Elements::LocationArray cutla(1);
   side->location_vector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element
@@ -2512,7 +2512,7 @@ void XFEM::XfluidStd::call_project_on_line(
   }
 
 
-  Core::Elements::Element::LocationArray cutla(1);
+  Core::Elements::LocationArray cutla(1);
   line->location_vector(*boundarydis_, cutla, false);
 
   // get number of dofs for this side element

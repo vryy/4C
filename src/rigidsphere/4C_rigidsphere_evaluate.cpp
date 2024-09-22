@@ -17,6 +17,7 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_browniandyn.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_stvenantkirchhoff.hpp"
 #include "4C_rigidsphere.hpp"

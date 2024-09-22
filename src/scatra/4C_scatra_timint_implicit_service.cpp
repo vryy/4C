@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "4C_coupling_adapter.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fluid_rotsym_periodicbc_utils.hpp"
@@ -1586,7 +1587,7 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
       Core::Elements::Element* ele = discret_->l_row_element(nele);
 
       // get element location vector, dirichlet flags and ownerships
-      Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+      Core::Elements::LocationArray la(discret_->num_dof_sets());
       ele->location_vector(*discret_, la, false);
 
       // call the element evaluate method to integrate functions

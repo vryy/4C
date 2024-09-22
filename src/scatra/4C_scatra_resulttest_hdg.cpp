@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "4C_scatra_resulttest_hdg.hpp"
 
+#include "4C_fem_general_node.hpp"
 #include "4C_scatra_timint_hdg.hpp"
 
 FOUR_C_NAMESPACE_OPEN

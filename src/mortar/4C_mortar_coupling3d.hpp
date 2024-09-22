@@ -16,6 +16,7 @@
 #include "4C_utils_pairedvector.hpp"
 
 #include <Epetra_Comm.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <vector>
 

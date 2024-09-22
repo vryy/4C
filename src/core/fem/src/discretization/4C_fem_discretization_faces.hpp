@@ -33,6 +33,11 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
+namespace Core::Elements
+{
+  class FaceElement;
+}
+
 namespace Core::FE
 {
   class DiscretizationFaces : public Core::FE::Discretization

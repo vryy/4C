@@ -11,6 +11,7 @@
 
 #include "4C_structure_new_integrator.hpp"
 
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"

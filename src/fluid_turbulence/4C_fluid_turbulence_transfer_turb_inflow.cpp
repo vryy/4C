@@ -13,7 +13,9 @@ boundary of the actual domain
 
 #include "4C_fluid_turbulence_transfer_turb_inflow.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_geometric_search_matchingoctree.hpp"
 #include "4C_global_data.hpp"
 #include "4C_utils_function_of_time.hpp"

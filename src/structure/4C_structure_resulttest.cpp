@@ -10,6 +10,7 @@
 #include "4C_structure_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_timint.hpp"

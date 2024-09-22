@@ -54,6 +54,7 @@
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_factory.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

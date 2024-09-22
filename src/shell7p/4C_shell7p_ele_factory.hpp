@@ -13,6 +13,8 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_inpar_structure.hpp"
 
+#include <set>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::ELEMENTS

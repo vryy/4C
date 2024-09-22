@@ -30,6 +30,7 @@
 #include "4C_utils_function.hpp"
 
 #include <stdio.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -43,8 +43,7 @@ namespace Discret
       //! evaluate action
       int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const ScaTra::Action& action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -208,7 +207,7 @@ namespace Discret
       virtual void calculate_electrode_soc_and_c_rate(
           const Core::Elements::Element* const& ele,       //!< the element we are dealing with
           const Core::FE::Discretization& discretization,  //!< discretization
-          Core::Elements::Element::LocationArray& la,      //!< location array
+          Core::Elements::LocationArray& la,               //!< location array
           Core::LinAlg::SerialDenseVector&
               scalars  //!< result vector for scalar integrals to be computed
       );
@@ -219,8 +218,8 @@ namespace Discret
       //! \param la               location array
       //! \param conc             result vector for scalar integrals to be computed
       virtual void calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
-          const Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& conc);
+          const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
+          Core::LinAlg::SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
       void calculate_flux(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k

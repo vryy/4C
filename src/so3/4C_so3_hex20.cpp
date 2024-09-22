@@ -25,6 +25,8 @@
 #include "4C_so3_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::SoHex20Type Discret::ELEMENTS::SoHex20Type::instance_;

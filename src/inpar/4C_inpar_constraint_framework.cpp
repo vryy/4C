@@ -10,6 +10,9 @@
 
 #include "4C_inpar_constraint_framework.hpp"
 
+#include "4C_utils_parameter_list.hpp"
+
+
 FOUR_C_NAMESPACE_OPEN
 
 /**
@@ -17,7 +20,6 @@ FOUR_C_NAMESPACE_OPEN
  */
 void Inpar::CONSTRAINTS::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 

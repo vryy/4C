@@ -16,6 +16,8 @@
 #include "4C_mat_crosslinkermat.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

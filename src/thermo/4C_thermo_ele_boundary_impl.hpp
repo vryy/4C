@@ -45,8 +45,7 @@ namespace Thermo
     //! This class does not provide a definition for this function, it
     //! must be defined in TemperBoundaryImpl.
     virtual int evaluate(const FaceElement* ele, Teuchos::ParameterList& params,
-        const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la,
+        const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
         Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
         Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -119,8 +118,7 @@ namespace Thermo
 
     //! Evaluate (la required in case of multiple dofsets)
     int evaluate(const FaceElement* ele, Teuchos::ParameterList& params,
-        const Core::FE::Discretization& discretization,
-        const Core::Elements::Element::LocationArray& la,
+        const Core::FE::Discretization& discretization, const Core::Elements::LocationArray& la,
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
         Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
         Core::LinAlg::SerialDenseVector& elevec1_epetra,

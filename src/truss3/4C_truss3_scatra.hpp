@@ -89,7 +89,7 @@ namespace Discret
       void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
      protected:
-      void extract_elemental_variables(LocationArray& la,
+      void extract_elemental_variables(Core::Elements::LocationArray& la,
           const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state) override;
 

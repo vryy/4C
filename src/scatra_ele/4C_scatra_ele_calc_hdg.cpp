@@ -135,7 +135,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::initialize_shapes(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&)
 {
@@ -171,7 +171,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::evaluate(Core::Elemen
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::evaluate_service(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -400,7 +400,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::node_based_values(
 template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::project_dirich_field(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get actual time
@@ -464,7 +464,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::project_dirich_field(
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::read_global_vectors(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la)
+    Core::Elements::LocationArray& la)
 {
   Discret::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
@@ -1876,7 +1876,7 @@ template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::project_field(
     const Core::Elements::Element* ele, Core::FE::Discretization& discretization,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec1,
-    Core::LinAlg::SerialDenseVector& elevec2, Core::Elements::Element::LocationArray& la)
+    Core::LinAlg::SerialDenseVector& elevec2, Core::Elements::LocationArray& la)
 {
   int nds_var_old = params.get<int>("nds_var_old");
   int nds_intvar_old = params.get<int>("nds_intvar_old");

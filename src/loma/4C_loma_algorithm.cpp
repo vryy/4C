@@ -25,6 +25,8 @@
 #include "4C_linear_solver_method_parameters.hpp"
 #include "4C_scatra_timint_loma.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

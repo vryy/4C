@@ -17,6 +17,7 @@
 #include "4C_elemag_ele_intfaces_calc.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_material_factory.hpp"
@@ -450,7 +451,7 @@ int Discret::ELEMENTS::ElemagBoundary::evaluate_neumann(Teuchos::ParameterList& 
  |  Get degrees of freedom used by this element (public) berardocco 02/18 |
  *------------------------------------------------------------------------*/
 void Discret::ELEMENTS::ElemagBoundary::location_vector(const Core::FE::Discretization& dis,
-    LocationArray& la, bool doDirichlet, const std::string& condstring,
+    Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {
   // we have to do it this way, just as for weak Dirichlet conditions

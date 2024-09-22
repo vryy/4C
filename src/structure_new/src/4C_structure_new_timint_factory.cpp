@@ -19,6 +19,7 @@
 #include "4C_structure_new_timint_implicit.hpp"
 
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

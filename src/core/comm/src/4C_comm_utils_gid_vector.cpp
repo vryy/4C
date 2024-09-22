@@ -12,6 +12,7 @@
 #include "4C_comm_utils_gid_vector.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

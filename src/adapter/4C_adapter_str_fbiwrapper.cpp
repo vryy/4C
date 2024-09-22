@@ -16,6 +16,8 @@
 #include "4C_structure_new_timint_basedataio.hpp"
 #include "4C_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

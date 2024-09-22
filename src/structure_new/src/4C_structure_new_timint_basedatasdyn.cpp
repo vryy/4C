@@ -20,6 +20,7 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_utils.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
 
 FOUR_C_NAMESPACE_OPEN

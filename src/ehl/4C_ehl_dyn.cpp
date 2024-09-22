@@ -16,6 +16,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

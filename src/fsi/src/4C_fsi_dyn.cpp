@@ -62,6 +62,7 @@
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_so3_base.hpp"
 #include "4C_solid_3D_ele.hpp"
+#include "4C_utils_parameter_list.hpp"
 #include "4C_utils_result_test.hpp"
 #include "4C_xfem_discretization.hpp"
 

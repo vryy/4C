@@ -23,6 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Communication
 {
+  class ParObject;
+  class UnpackBuffer;
+
   /*!
   \brief Create an instance of a ParObject depending on the type stored in data
 

@@ -16,6 +16,7 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"
+#include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_nurbs_discretization_control_point.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 
@@ -198,7 +199,6 @@ namespace Core::FE
 
       */
       template <Core::FE::CellType distype>
-
       void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<Core::Elements::Element> ele,
           const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,

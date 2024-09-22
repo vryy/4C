@@ -14,6 +14,7 @@
 #include "4C_beam3_base.hpp"
 #include "4C_beam3_reissner.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"

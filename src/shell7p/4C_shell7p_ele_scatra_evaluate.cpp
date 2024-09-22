@@ -19,6 +19,7 @@
 #include "4C_utils_function_of_time.hpp"
 
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -78,7 +79,7 @@ namespace
 }  // namespace
 
 int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)

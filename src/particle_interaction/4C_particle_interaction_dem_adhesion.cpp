@@ -27,6 +27,7 @@
 #include "4C_particle_wall_interface.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

@@ -25,6 +25,8 @@
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 #include "4C_ssi_monolithic.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN

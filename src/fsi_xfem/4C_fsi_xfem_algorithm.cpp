@@ -22,6 +22,8 @@
 #include "4C_io.hpp"
 #include "4C_poroelast_monolithic.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

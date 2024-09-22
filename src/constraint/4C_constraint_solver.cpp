@@ -18,6 +18,7 @@
 #include "4C_linear_solver_method_parameters.hpp"
 
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <iostream>
 

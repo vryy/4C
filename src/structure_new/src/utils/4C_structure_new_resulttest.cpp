@@ -11,6 +11,7 @@
 #include "4C_structure_new_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"

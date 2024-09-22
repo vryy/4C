@@ -22,6 +22,7 @@
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

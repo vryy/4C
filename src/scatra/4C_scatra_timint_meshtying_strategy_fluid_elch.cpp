@@ -12,6 +12,8 @@
 
 #include "4C_fluid_meshtying.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

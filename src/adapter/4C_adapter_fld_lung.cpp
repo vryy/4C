@@ -15,6 +15,7 @@ parenchyma balloon
 
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_global_data.hpp"

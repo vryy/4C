@@ -56,7 +56,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     probdim>::evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseMatrix& emastermatrix, Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
   // safety check
@@ -443,7 +443,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     probdim>::evaluate_s2_i_coupling_capacitance(const Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
     Core::LinAlg::SerialDenseMatrix& emastermatrix, Core::LinAlg::SerialDenseVector& eslaveresidual,
     Core::LinAlg::SerialDenseVector& emasterresidual)
 {
@@ -574,7 +574,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     probdim>::evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
   Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::null;
   if (ele->parent_element()->material()->material_type() ==
@@ -809,7 +809,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     probdim>::evaluate_s2_i_coupling_capacitance_od(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& eslavematrix, Core::LinAlg::SerialDenseMatrix& emastermatrix)
 {
   const auto differentiationtype =
@@ -1134,7 +1134,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     probdim>::calc_s2_i_coupling_flux(const Core::Elements::FaceElement* ele,
     const Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& scalars)
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& scalars)
 {
   // get condition specific parameters
   const auto condition_type = my::scatraparamsboundary_->condition_type();

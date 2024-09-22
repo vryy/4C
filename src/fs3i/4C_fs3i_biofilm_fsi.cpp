@@ -38,6 +38,8 @@
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_structure_aux.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

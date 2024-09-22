@@ -16,6 +16,7 @@
 #include "4C_ssti_monolithic.hpp"
 #include "4C_ssti_utils.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

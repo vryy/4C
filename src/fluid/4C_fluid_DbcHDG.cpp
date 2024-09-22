@@ -201,7 +201,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   {
     Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
     Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
-    Core::Elements::Element::LocationArray dummy(1);
+    Core::Elements::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
     if (Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::elemag or
         Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::scatra)

@@ -12,6 +12,7 @@
 
 #include "4C_fluid_coupling_red_models.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_fluid_ele_action.hpp"
 
 #include <math.h>

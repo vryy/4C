@@ -25,6 +25,7 @@
 #include "4C_mat_electromagnetic.hpp"
 #include "4C_utils_result_test.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -240,7 +241,7 @@ void EleMag::ElemagTimeInt::elements_init()
   Teuchos::ParameterList initParams;
 
   // loop over all elements on the processor
-  Core::Elements::Element::LocationArray la(2);
+  Core::Elements::LocationArray la(2);
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
     // Selecting the elements
@@ -315,7 +316,7 @@ void EleMag::ElemagTimeInt::set_initial_field(
       initParams.set<double>("dt", dtp_);
       initParams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
       // loop over all elements on the processor
-      Core::Elements::Element::LocationArray la(2);
+      Core::Elements::LocationArray la(2);
       for (int el = 0; el < discret_->num_my_col_elements(); ++el)
       {
         // Selecting the elements
@@ -358,7 +359,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
-  Core::Elements::Element::LocationArray la(2);
+  Core::Elements::LocationArray la(2);
 
   Core::LinAlg::SerialDenseVector elevec1, elevec2;  //, elevec3;
   Core::LinAlg::SerialDenseMatrix elemat;            //, elemat2;
@@ -536,7 +537,7 @@ void EleMag::ElemagTimeInt::project_field_test(const int startfuncno)
   initParams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
   // loop over all elements on the processor
-  Core::Elements::Element::LocationArray la(2);
+  Core::Elements::LocationArray la(2);
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
     // Selecting the elements
@@ -572,7 +573,7 @@ void EleMag::ElemagTimeInt::project_field_test_trace(const int startfuncno)
   initParams.set<bool>("padaptivity", false);
   initParams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
   // loop over all elements on the processor
-  Core::Elements::Element::LocationArray la(2);
+  Core::Elements::LocationArray la(2);
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
   {
     // Selecting the elements
@@ -858,7 +859,7 @@ namespace
     // Setting a name to the dofs maps
     dis.set_state(0, "trace", traceValues);
     // Declaring all the necessary entry for evaluate()
-    Core::Elements::Element::LocationArray la(2);
+    Core::Elements::LocationArray la(2);
     Core::LinAlg::SerialDenseMatrix dummyMat;
     Core::LinAlg::SerialDenseVector dummyVec;
     Core::LinAlg::SerialDenseVector interpolVec;

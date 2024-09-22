@@ -15,6 +15,8 @@
 #include "4C_inpar_porofluidmultiphase.hpp"
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Adapter

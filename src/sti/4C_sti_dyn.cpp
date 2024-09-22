@@ -20,6 +20,7 @@
 #include "4C_sti_partitioned.hpp"
 #include "4C_sti_resulttest.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

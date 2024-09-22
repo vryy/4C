@@ -60,7 +60,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_a
     Teuchos::ParameterList& params,                   //!< parameter list
     Core::FE::Discretization& discretization,         //!< discretization
     ScaTra::BoundaryAction action,                    //!< action
-    Core::Elements::Element::LocationArray& la,       //!< location array
+    Core::Elements::LocationArray& la,                //!< location array
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -99,7 +99,7 @@ template <Core::FE::CellType distype, int probdim>
 int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neumann(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
-    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
     const double scalar)
 {
   // call base class routine

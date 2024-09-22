@@ -76,7 +76,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::element_material_time_update()
 
   Core::LinAlg::SerialDenseMatrix dummyMat;
   Core::LinAlg::SerialDenseVector dummyVec;
-  Core::Elements::Element::LocationArray la(discret_->num_dof_sets());
+  Core::Elements::LocationArray la(discret_->num_dof_sets());
 
 
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
@@ -224,7 +224,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::project_material()
 
   Core::LinAlg::SerialDenseMatrix dummyMat;
   Core::LinAlg::SerialDenseVector dummyVec;
-  Core::Elements::Element::LocationArray dummy(1);
+  Core::Elements::LocationArray dummy(1);
 
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {

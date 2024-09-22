@@ -144,7 +144,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // parent element location array
-    Core::Elements::Element::LocationArray pla(discretization.num_dof_sets());
+    Core::Elements::LocationArray pla(discretization.num_dof_sets());
     pele->location_vector(discretization, pla, false);
 
     // determine number of velocity related dofs per node

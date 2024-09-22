@@ -19,6 +19,7 @@
 #include "4C_utils_pairedvector.hpp"
 
 #include <Epetra_FEVector.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

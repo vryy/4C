@@ -134,11 +134,11 @@ namespace ScaTra
     //! evaluate and assemble interface linearizations and residuals
     void evaluate_condition(const Core::FE::Discretization& idiscret,  //!< interface discretization
         Mortar::IntCell& cell,                                         //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
+        Mortar::Element& slaveelement,             //!< slave-side mortar element
+        Mortar::Element& masterelement,            //!< master-side mortar element
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master,  //!< master-side location array
+        const Teuchos::ParameterList& params,      //!< parameter list
         Core::LinAlg::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         Core::LinAlg::SerialDenseMatrix&
@@ -201,8 +201,8 @@ namespace ScaTra
         Mortar::IntCell& cell,                               //!< mortar integration cell
         Mortar::Element& slaveelement,                       //!< slave-side mortar element
         Mortar::Element& masterelement,                      //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,    //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,   //!< master-side location array
+        Core::Elements::LocationArray& la_slave,             //!< slave-side location array
+        Core::Elements::LocationArray& la_master,            //!< master-side location array
         const Teuchos::ParameterList& params,                //!< parameter list
         Core::LinAlg::SerialDenseMatrix& cellmatrix1,        //!< cell matrix 1
         Core::LinAlg::SerialDenseMatrix& cellmatrix2,        //!< cell matrix 2
@@ -231,13 +231,13 @@ namespace ScaTra
 
     //! evaluate and assemble off-diagonal interface linearizations
     void evaluate_condition_od(
-        const Core::FE::Discretization& idiscret,           //!< interface discretization
-        Mortar::IntCell& cell,                              //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
+        const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                     //!< mortar integration cell
+        Mortar::Element& slaveelement,             //!< slave-side mortar element
+        Mortar::Element& masterelement,            //!< master-side mortar element
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master,  //!< master-side location array
+        const Teuchos::ParameterList& params,      //!< parameter list
         Core::LinAlg::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         Core::LinAlg::SerialDenseMatrix&
@@ -246,9 +246,9 @@ namespace ScaTra
 
     //! extract nodal state variables associated with mortar integration cell
     void extract_node_values(
-        const Core::FE::Discretization& idiscret,          //!< interface discretization
-        Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master  //!< master-side location array
+        const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master   //!< master-side location array
         ) override;
 
     //! evaluate factor F/RT
@@ -279,8 +279,8 @@ namespace ScaTra
         Mortar::IntCell& cell,                               //!< mortar integration cell
         Mortar::Element& slaveelement,                       //!< slave-side mortar element
         Mortar::Element& masterelement,                      //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,    //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,   //!< master-side location array
+        Core::Elements::LocationArray& la_slave,             //!< slave-side location array
+        Core::Elements::LocationArray& la_master,            //!< master-side location array
         const Teuchos::ParameterList& params,                //!< parameter list
         Core::LinAlg::SerialDenseMatrix& cellmatrix1,        //!< cell matrix 1
         Core::LinAlg::SerialDenseMatrix& cellmatrix2,        //!< cell matrix 2
@@ -309,11 +309,11 @@ namespace ScaTra
     //! evaluate and assemble interface linearizations and residuals
     void evaluate_condition(const Core::FE::Discretization& idiscret,  //!< interface discretization
         Mortar::IntCell& cell,                                         //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
+        Mortar::Element& slaveelement,             //!< slave-side mortar element
+        Mortar::Element& masterelement,            //!< master-side mortar element
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master,  //!< master-side location array
+        const Teuchos::ParameterList& params,      //!< parameter list
         Core::LinAlg::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         Core::LinAlg::SerialDenseVector& r_s  //!< slave-side residual vector
@@ -321,13 +321,13 @@ namespace ScaTra
 
     //! evaluate and assemble off-diagonal interface linearizations
     void evaluate_condition_od(
-        const Core::FE::Discretization& idiscret,           //!< interface discretization
-        Mortar::IntCell& cell,                              //!< mortar integration cell
-        Mortar::Element& slaveelement,                      //!< slave-side mortar element
-        Mortar::Element& masterelement,                     //!< master-side mortar element
-        Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,               //!< parameter list
+        const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Mortar::IntCell& cell,                     //!< mortar integration cell
+        Mortar::Element& slaveelement,             //!< slave-side mortar element
+        Mortar::Element& masterelement,            //!< master-side mortar element
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master,  //!< master-side location array
+        const Teuchos::ParameterList& params,      //!< parameter list
         Core::LinAlg::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
         Core::LinAlg::SerialDenseMatrix&
@@ -336,9 +336,9 @@ namespace ScaTra
 
     //! extract nodal state variables associated with mortar integration cell
     void extract_node_values(
-        const Core::FE::Discretization& idiscret,          //!< interface discretization
-        Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-        Core::Elements::Element::LocationArray& la_master  //!< master-side location array
+        const Core::FE::Discretization& idiscret,  //!< interface discretization
+        Core::Elements::LocationArray& la_slave,   //!< slave-side location array
+        Core::Elements::LocationArray& la_master   //!< master-side location array
         ) override;
 
     //! nodal, slave-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}

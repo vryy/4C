@@ -40,6 +40,7 @@
 #include "4C_thermo_element.hpp"
 #include "4C_tsi_defines.hpp"
 #include "4C_tsi_utils.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

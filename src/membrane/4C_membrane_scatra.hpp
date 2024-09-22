@@ -174,7 +174,7 @@ namespace Discret
       \param la (in)        : location array for de-assembly
       */
       void pre_evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la);
+          Core::Elements::LocationArray& la);
 
       /*!
       \brief Evaluate an element
@@ -203,8 +203,7 @@ namespace Discret
       \return 0 if successful, negative otherwise
       */
       int evaluate(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,

@@ -142,7 +142,7 @@ namespace Discret
           const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
           Core::FE::Discretization& discretization,        ///< discretization
-          Core::Elements::Element::LocationArray& la,      ///< location array
+          Core::Elements::LocationArray& la,               ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
           Core::LinAlg::SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
           Core::LinAlg::SerialDenseVector& eslaveresidual  ///< element residual for slave side
@@ -154,7 +154,7 @@ namespace Discret
           const Core::Elements::FaceElement* ele,         ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::Discretization& discretization,       ///< discretization
-          Core::Elements::Element::LocationArray& la,     ///< location array
+          Core::Elements::LocationArray& la,              ///< location array
           Core::LinAlg::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
           Core::LinAlg::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
       );
@@ -164,7 +164,7 @@ namespace Discret
           Teuchos::ParameterList& params,                    //!< parameter list
           Core::FE::Discretization& discretization,          //!< discretization
           ScaTra::BoundaryAction action,                     //!< action
-          Core::Elements::Element::LocationArray& la,        //!< location array
+          Core::Elements::LocationArray& la,                 //!< location array
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,   //!< element matrix 2
           Core::LinAlg::SerialDenseVector& elevec1_epetra,   //!< element right-hand side vector 1
@@ -174,7 +174,7 @@ namespace Discret
 
       //! extract nodal state variables associated with boundary element
       void extract_node_values(const Core::FE::Discretization& discretization,  //!< discretization
-          Core::Elements::Element::LocationArray& la                            //!< location array
+          Core::Elements::LocationArray& la                                     //!< location array
           ) override;
 
       //! nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}

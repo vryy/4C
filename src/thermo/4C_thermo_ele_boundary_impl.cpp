@@ -25,6 +25,8 @@
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -123,8 +125,7 @@ Thermo::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode)
 template <Core::FE::CellType distype>
 int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     Teuchos::ParameterList& params, const Core::FE::Discretization& discretization,
-    const Core::Elements::Element::LocationArray& la,
-    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    const Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,

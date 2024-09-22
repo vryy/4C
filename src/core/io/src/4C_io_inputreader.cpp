@@ -12,6 +12,7 @@
 
 #include "4C_io_inputreader.hpp"
 
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"

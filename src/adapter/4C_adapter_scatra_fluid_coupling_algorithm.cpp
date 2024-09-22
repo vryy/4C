@@ -22,6 +22,8 @@
 #include "4C_levelset_algorithm.hpp"
 #include "4C_xfem_discretization.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

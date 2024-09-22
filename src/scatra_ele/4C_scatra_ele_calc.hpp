@@ -96,7 +96,7 @@ namespace Discret
         Generic virtual interface function. Called via base pointer.
        */
       int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -106,8 +106,7 @@ namespace Discret
       //! evaluate action
       virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const ScaTra::Action& action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -116,8 +115,7 @@ namespace Discret
       //! evaluate action for off-diagonal system matrix block
       virtual int evaluate_action_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const ScaTra::Action& action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -125,7 +123,7 @@ namespace Discret
 
       //! evaluate service routine
       int evaluate_service(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -133,7 +131,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       int evaluate_od(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -171,12 +169,11 @@ namespace Discret
       //  return extracted values of phinp
       virtual void extract_element_and_node_values(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la);
+          Core::Elements::LocationArray& la);
 
       //! extract turbulence approach
       void extract_turbulence_approach(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
-          int& nlayer);
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la, int& nlayer);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
       virtual void sysmat(Core::Elements::Element* ele,  //!< the element we are dealing with
@@ -256,7 +253,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& erhs,                               //!< element residual
           Teuchos::ParameterList& params,                                      //!< parameter list
           Core::FE::Discretization& discretization,                            //!< discretization
-          Core::Elements::Element::LocationArray& la                           //!< location array
+          Core::Elements::LocationArray& la                                    //!< location array
       );
 
       //! Correct RHS calculated from calc_rhs_lin_mass() for the linearized mass term
@@ -309,7 +306,7 @@ namespace Discret
 
       //! calculate filtered fields for turbulent Prandtl number
       void calc_box_filter(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la);
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la);
 
       //! calculate error of numerical solution with respect to analytical solution
       virtual void cal_error_compared_to_analyt_solution(
@@ -597,7 +594,7 @@ namespace Discret
       void calc_dissipation(Teuchos::ParameterList& params,  //!< parameter list
           Core::Elements::Element* ele,                      //!< pointer to element
           Core::FE::Discretization& discretization,          //!< scatra discretization
-          Core::Elements::Element::LocationArray& la         //!< location array
+          Core::Elements::LocationArray& la                  //!< location array
       );
 
       /*========================================================================*/

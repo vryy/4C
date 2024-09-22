@@ -12,6 +12,8 @@
 #include "4C_fem_condition_utils.hpp"
 
 #include "4C_fem_condition_selector.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 

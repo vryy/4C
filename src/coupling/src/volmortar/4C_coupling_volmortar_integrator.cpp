@@ -24,6 +24,8 @@
 #include "4C_mortar_calc_utils.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

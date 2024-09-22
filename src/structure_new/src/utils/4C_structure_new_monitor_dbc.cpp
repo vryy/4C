@@ -26,6 +26,8 @@
 #include "4C_structure_new_timint_basedataio.hpp"
 #include "4C_structure_new_timint_basedataio_monitor_dbc.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*

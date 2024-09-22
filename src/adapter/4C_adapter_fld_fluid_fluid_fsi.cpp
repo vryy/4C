@@ -14,6 +14,8 @@
 #include "4C_fluid_utils_mapextractor.hpp"
 #include "4C_fluid_xfluid_fluid.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

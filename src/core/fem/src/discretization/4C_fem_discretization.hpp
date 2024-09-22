@@ -14,8 +14,6 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_dofset_interface.hpp"
-#include "4C_fem_general_element.hpp"
-#include "4C_fem_general_node.hpp"
 #include "4C_fem_general_shape_function_type.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
@@ -26,18 +24,16 @@
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPDecl.hpp>
 
 #include <functional>
+#include <set>
 #include <vector>
 
 // forward declarations
 namespace Teuchos
 {
   class ParameterList;
-
-  template <class T>
-  class RCP;
 }  // namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
@@ -54,12 +50,24 @@ namespace Core::LinAlg
   class SparseOperator;
   class MapExtractor;
   class SerialDenseVector;
+  class SerialDenseMatrix;
 }  // namespace Core::LinAlg
 
 namespace Core::FE
 {
   class AssembleStrategy;
+}  // namespace Core::FE
+
+namespace Core::Conditions
+{
+  class Condition;
 }
+
+namespace Core::Elements
+{
+  class Element;
+  class LocationArray;
+}  // namespace Core::Elements
 
 namespace Core::DOFSets
 {
@@ -1707,7 +1715,7 @@ namespace Core::FE
      * actual Element's Evaluate call.
      */
     virtual void evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
-        const std::function<void(Core::Elements::Element&, Core::Elements::Element::LocationArray&,
+        const std::function<void(Core::Elements::Element&, Core::Elements::LocationArray&,
             Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
             Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&,
             Core::LinAlg::SerialDenseVector&)>& element_action);

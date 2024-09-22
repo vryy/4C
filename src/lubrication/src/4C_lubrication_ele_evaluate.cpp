@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate the element (public)                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::Lubrication::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)

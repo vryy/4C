@@ -15,6 +15,7 @@
 
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization_faces.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 

@@ -8,8 +8,11 @@
 \brief Nonlinear Membrane Finite Element line evaluation
 
 *----------------------------------------------------------------------*/
+#include "4C_fem_condition.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_membrane.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_function.hpp"

@@ -4,6 +4,7 @@
 \level 1
 *----------------------------------------------------------------------*/
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_fiber_node.hpp"

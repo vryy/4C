@@ -39,6 +39,8 @@
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_of_time.hpp"
 
+#include <Sacado.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -6580,7 +6582,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
 
         // H1 -error norm
         // sacado data type replaces "double"
-        typedef Sacado::Fad::DFad<double> FAD;  // for first derivs
+        using FAD = Sacado::Fad::DFad<double>;  // for first derivs
 
         FAD x = xyzint(0);
         x.diff(0, 3);  // independent variable 0 out of a total of 3
@@ -8818,7 +8820,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
   xji.invert(xjm);
 
   // fill locationarray
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
   ele->location_vector(discretization, la, false);
   // extract local values of the global vectors
   std::vector<double> myvalues(la[0].lm_.size());
@@ -9262,7 +9264,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
     state = discretization.get_state("velnp");
 
     // fill locationarray
-    Core::Elements::Element::LocationArray la(1);
+    Core::Elements::LocationArray la(1);
     ele->location_vector(discretization, la, false);
 
     // extract local values of the global vectors

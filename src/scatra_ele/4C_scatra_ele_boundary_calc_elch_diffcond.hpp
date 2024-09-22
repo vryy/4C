@@ -50,8 +50,7 @@ namespace Discret
 
       int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
-          Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -59,7 +58,7 @@ namespace Discret
 
       int evaluate_neumann(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
           const double scalar) override;
 
       void evaluate_elch_boundary_kinetics(const Core::Elements::Element* ele,
@@ -73,13 +72,13 @@ namespace Discret
 
       void evaluate_s2_i_coupling(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix,
           Core::LinAlg::SerialDenseMatrix& emastermatrix,
           Core::LinAlg::SerialDenseVector& eslaveresidual) override;
 
       void evaluate_s2_i_coupling_od(const Core::Elements::FaceElement* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la,
+          Core::Elements::LocationArray& la,
           Core::LinAlg::SerialDenseMatrix& eslavematrix) override;
 
       double get_valence(

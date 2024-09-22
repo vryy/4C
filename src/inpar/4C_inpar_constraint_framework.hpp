@@ -13,8 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_condition_definition.hpp"
-#include "4C_utils_parameter_list.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -137,7 +137,7 @@ namespace ScaTra
     virtual void adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_new,
         Teuchos::RCP<Epetra_Vector> phi_old, Teuchos::RCP<Epetra_Vector> intphi_new,
         Teuchos::RCP<Epetra_Vector> intphi_old, int nds_var_old, int nds_intvar_old,
-        std::vector<Core::Elements::Element::LocationArray> la_old);
+        std::vector<Core::Elements::LocationArray> la_old);
 
     //! calculate matrices on element
     virtual void calc_mat_initial();

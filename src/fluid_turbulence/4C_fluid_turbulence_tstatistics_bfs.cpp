@@ -10,7 +10,11 @@ turbulent flow over a backward-facing step
 */
 /*----------------------------------------------------------------------*/
 #include "4C_comm_exporter.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_turbulence_statistics_bfs.hpp"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <fstream>
 

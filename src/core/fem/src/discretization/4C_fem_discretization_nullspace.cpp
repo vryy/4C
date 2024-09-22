@@ -7,6 +7,7 @@
 
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

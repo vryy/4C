@@ -16,6 +16,7 @@
 #include "4C_post_monitor.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_legacy_table.hpp"

@@ -10,6 +10,7 @@
 #include "4C_porofluidmultiphase_ele_evaluator.hpp"
 
 #include "4C_global_data.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
 #include "4C_porofluidmultiphase_ele_phasemanager.hpp"
 #include "4C_porofluidmultiphase_ele_variablemanager.hpp"

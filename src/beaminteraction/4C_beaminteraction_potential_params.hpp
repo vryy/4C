@@ -15,6 +15,8 @@
 
 #include "4C_inpar_beampotential.hpp"
 
+#include <unordered_map>
+
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration

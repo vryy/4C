@@ -15,6 +15,7 @@
 
 #include "4C_comm_exporter.hpp"
 #include "4C_cut_boundingbox.hpp"
+#include "4C_fem_condition.hpp"
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_immersed_node.hpp"
@@ -105,22 +106,6 @@ namespace Immersed
     \author rauch  */
     virtual void setup(){};
 
-
-    /*!
-    \brief create a volume condition on the fly
-
-    \author rauch
-    \date 05/14
-
-    \param dis           (in) : discretization on which condition is to be constructed
-    \param dvol_fenode   (in) : nodes to be conditioned
-    \param condtype      (in) : type of condition
-    \param condname      (in) : condition name
-    \param buildgeometry (in) : build geometry for condition or not
-    */
-    void create_volume_condition(const Teuchos::RCP<Core::FE::Discretization>& dis,
-        const std::vector<int> dvol_fenode, const Core::Conditions::ConditionType condtype,
-        const std::string condname, bool buildgeometry);
 
     /*!
     \brief construct the dof row map for a given condition.
@@ -455,7 +440,7 @@ namespace Immersed
     params.set<std::string>("action", "calc_cur_normal_at_point");
     for (int i = 0; i < target_dim; ++i) (*targetxi_dense)(i) = targetxi[i];
 
-    Core::Elements::Element::LocationArray targetla(1);
+    Core::Elements::LocationArray targetla(1);
     targetele.location_vector(*targetdis, targetla, false);
 
     targetele.evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
@@ -529,7 +514,7 @@ namespace Immersed
             {
               Teuchos::RCP<const Epetra_Vector> state = sourcedis->get_state("dispnp");
 
-              Core::Elements::Element::LocationArray la(1);
+              Core::Elements::LocationArray la(1);
               curr->second->location_vector(*sourcedis, la, false);
               // extract local values of the global vectors
               myvalues.resize(la[0].lm_.size());
@@ -743,7 +728,7 @@ namespace Immersed
             if (validsource)
             {
               // fill locationarray
-              Core::Elements::Element::LocationArray sourcela(1);
+              Core::Elements::LocationArray sourcela(1);
               sourceele->location_vector(*sourcedis, sourcela, false);
               sourceele->evaluate(
                   params, *sourcedis, sourcela, dummy1, dummy2, *vectofill, *xi_dense, dummy3);
@@ -913,7 +898,7 @@ namespace Immersed
     if (doCommunication == false) numproc = 1;
 
     Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->get_state("displacement");
-    Core::Elements::Element::LocationArray la(1);
+    Core::Elements::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
     Mortar::UTILS::local_to_current_global<targetdistype>(
@@ -1059,7 +1044,7 @@ namespace Immersed
               Teuchos::ParameterList params;
               params.set<std::string>("action", action);
               // fill locationarray
-              Core::Elements::Element::LocationArray la(1);
+              Core::Elements::LocationArray la(1);
               sourceele->location_vector(*sourcedis, la, false);
 
               (*xi_dense)(0) = xi(0);
@@ -1250,7 +1235,7 @@ namespace Immersed
     // get current displacements and velocities of structure discretization
     Teuchos::RCP<const Epetra_Vector> dispnp = structdis->get_state("displacement");
     Teuchos::RCP<const Epetra_Vector> velnp = structdis->get_state("velocity");
-    Core::Elements::Element::LocationArray la(structdis->num_dof_sets());
+    Core::Elements::LocationArray la(structdis->num_dof_sets());
 
     // get current global coordinates of the given fluid node fluid_xi
     Mortar::UTILS::local_to_current_global<fluiddistype>(

@@ -2426,7 +2426,7 @@ void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(Core::Elements
   solidfaceele->set_parent_master_element(
       coupl_dis_->g_element(solidfaceele->parent_element_id()), solidfaceele->face_parent_number());
 
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
   solidfaceele->parent_element()->location_vector(*coupl_dis_, la, false);
 
   // extract eledisp here
@@ -2622,7 +2622,7 @@ void XFEM::MeshCouplingFluidFluid::estimate_nitsche_trace_max_eigenvalue(
     Core::Elements::Element* ele)
 {
   Teuchos::ParameterList params;
-  Core::Elements::Element::LocationArray la(1);
+  Core::Elements::LocationArray la(1);
   params.set<Teuchos::RCP<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
   Core::LinAlg::SerialDenseMatrix dummyelemat;

@@ -14,14 +14,12 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_general_utils_polynomial.hpp"
-#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_functionvariables.hpp"
 
-#include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <string>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -135,11 +133,8 @@ namespace Core::UTILS
     [[nodiscard]] std::size_t number_components() const override { return (expr_.size()); }
 
    private:
-    using ValueType = double;
-    using SecondDerivativeType = Sacado::Fad::DFad<Sacado::Fad::DFad<ValueType>>;
-
     /// vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> expr_;
 
     /// vector of the function variables and all their definitions
     std::vector<Teuchos::RCP<FunctionVariable>> variables_;

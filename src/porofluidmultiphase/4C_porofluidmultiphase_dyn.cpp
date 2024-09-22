@@ -20,6 +20,7 @@
 #include "4C_porofluidmultiphase_timint_ost.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

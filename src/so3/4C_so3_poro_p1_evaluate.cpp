@@ -47,7 +47,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::compute_porosity_and_lineari
 
 template <class So3Ele, Core::FE::CellType distype>
 int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -191,7 +191,7 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::evaluate(Teuchos::ParameterLi
 
 template <class So3Ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   Base::pre_evaluate(params, discretization, la);
 
@@ -206,7 +206,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::Parame
 
 template <class So3Ele, Core::FE::CellType distype>
 int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,

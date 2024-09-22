@@ -10,7 +10,10 @@
 
 #include "4C_art_net_art_junction.hpp"
 
-#include <stdio.h>
+#include "4C_fem_condition.hpp"
+#include "4C_fem_general_node.hpp"
+#include "4C_linalg_serialdensevector.hpp"
+
 
 FOUR_C_NAMESPACE_OPEN
 

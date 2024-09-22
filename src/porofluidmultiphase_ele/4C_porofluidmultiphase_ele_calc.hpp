@@ -89,7 +89,7 @@ namespace Discret
         Generic virtual interface function. Called via base pointer.
        */
       int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec) override;
 
@@ -105,15 +105,14 @@ namespace Discret
       //! evaluate action
       virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
-          Core::Elements::Element::LocationArray& la,
-          std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+          Core::Elements::LocationArray& la, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec);
 
       //! extract element based or nodal values
       //  return extracted values of phinp
       virtual void extract_element_and_node_values(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la);
+          Core::Elements::LocationArray& la);
 
       /// Setup element evaluation
       virtual void prepare_gauss_point_loop(
@@ -125,9 +124,9 @@ namespace Discret
           Core::Elements::Element* ele,                           //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       void gauss_point_loop_od_struct(
@@ -135,9 +134,9 @@ namespace Discret
           Core::Elements::Element* ele,                           //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       void gauss_point_loop_od_scatra(
@@ -145,45 +144,45 @@ namespace Discret
           Core::Elements::Element* ele,                           //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
       void gauss_point_loop(Core::Elements::Element* ele,         //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       //! evaluate at all Gauss points and average
       void gauss_point_loop_average(Core::Elements::Element* ele,  //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrices to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
       void gauss_point_loop_od_struct(Core::Elements::Element* ele,  //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       //! calculate off-diagonal fluid-scatra-coupling matrix. Here the whole thing is hidden.
       void gauss_point_loop_od_scatra(Core::Elements::Element* ele,  //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
       //! evaluate shape functions and their derivatives at current integration point
@@ -207,19 +206,19 @@ namespace Discret
       void node_loop(Core::Elements::Element* ele,                //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                  //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,    //!< discretization
-          Core::Elements::Element::LocationArray& la,  //!< location array
-          const bool jacobian_needed                   //!< necessary to compute Jacobian at node
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la,         //!< location array
+          const bool jacobian_needed                 //!< necessary to compute Jacobian at node
       );
 
       //! evaluate just the element
       void evaluate_only_element(Core::Elements::Element* ele,    //!< current element
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
           std::vector<Core::LinAlg::SerialDenseVector*>&
-              elevec,                                 //!< element rhs vectors to calculate
-          Core::FE::Discretization& discretization,   //!< discretization
-          Core::Elements::Element::LocationArray& la  //!< location array
+              elevec,                                //!< element rhs vectors to calculate
+          Core::FE::Discretization& discretization,  //!< discretization
+          Core::Elements::LocationArray& la          //!< location array
       );
 
      private:

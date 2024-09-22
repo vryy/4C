@@ -13,6 +13,7 @@ passive-scalar transport
 #include "4C_scatra_turbulence_hit_scalar_forcing.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_scatra_timint_genalpha.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
@@ -21,6 +22,8 @@ passive-scalar transport
 #ifdef FOUR_C_WITH_FFTW
 #include <fftw3.h>
 #endif
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

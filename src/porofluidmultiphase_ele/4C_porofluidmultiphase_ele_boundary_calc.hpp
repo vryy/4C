@@ -53,7 +53,7 @@ namespace Discret
 
       //! Evaluate the element (using location array)
       int evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec) override;
 
@@ -66,19 +66,18 @@ namespace Discret
       //  return extracted values of phinp
       virtual void extract_element_and_node_values(Core::Elements::Element* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-          Core::Elements::Element::LocationArray& la);
+          Core::Elements::LocationArray& la);
 
       //! evaluate action
       virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
-          Core::Elements::Element::LocationArray& la,
-          std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+          Core::Elements::LocationArray& la, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec);
 
       //! evaluate Neumann boundary condition
       virtual int evaluate_neumann(Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
-          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1);
+          Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1);
 
       //! evaluate shape functions and derivatives at int. point
       double eval_shape_func_and_int_fac(

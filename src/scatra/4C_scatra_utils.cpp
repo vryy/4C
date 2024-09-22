@@ -15,6 +15,7 @@
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_geometry_position_array.hpp"
 #include "4C_inpar_s2i.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -12,6 +12,8 @@
 #include "4C_fluid_turbulence_hit_forcing.hpp"
 
 #include "4C_comm_exporter.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_implicit_integration.hpp"
 #include "4C_fluid_timint_genalpha.hpp"
@@ -24,6 +26,8 @@
 #ifdef FOUR_C_WITH_FFTW
 #include <fftw3.h>
 #endif
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -1922,7 +1926,7 @@ namespace FLD
       initParams.set<FLD::Action>("action", FLD::project_hdg_force_on_dof_vec_for_hit);
 
       // loop over all elements on the processor
-      Core::Elements::Element::LocationArray la(2);
+      Core::Elements::LocationArray la(2);
       for (int el = 0; el < discret_->num_my_row_elements(); ++el)
       {
         // 1st evaluate

@@ -6,6 +6,7 @@
 
  *----------------------------------------------------------------------*/
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
@@ -32,7 +33,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate(Teuchos::ParameterL
  |  evaluate the element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
 int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate(Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
@@ -74,7 +75,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::evaluate_neumann(Teuchos::Pa
   params.set<Core::Conditions::Condition*>("condition", &condition);
 
   // build the location array
-  LocationArray la(discretization.num_dof_sets());
+  Core::Elements::LocationArray la(discretization.num_dof_sets());
   Core::Elements::Element::location_vector(discretization, la, false);
 
   // evaluate boundary element

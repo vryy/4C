@@ -134,7 +134,7 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype,
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   //---------------------------------------------------------------------------------------------
   //                                 SCATRA

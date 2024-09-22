@@ -11,10 +11,15 @@
 #include "4C_contact_utils.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_contact.hpp"
 #include "4C_inpar_mortar.hpp"
 #include "4C_io_every_iteration_writer.hpp"
+#include "4C_linalg_serialdensematrix.hpp"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <fstream>
 

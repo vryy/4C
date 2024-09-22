@@ -12,6 +12,7 @@
 
 #include "4C_fem_general_assemblestrategy.hpp"
 #include "4C_fem_general_l2_projection.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"

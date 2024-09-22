@@ -11,6 +11,7 @@
 
 #include "4C_art_net_art_write_gnuplot.hpp"
 
+#include "4C_fem_condition.hpp"
 #include "4C_fem_general_extract_values.hpp"
 
 #include <fstream>

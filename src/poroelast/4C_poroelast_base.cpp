@@ -33,6 +33,7 @@
 #include "4C_so3_base.hpp"
 #include "4C_solid_3D_ele.hpp"
 #include "4C_structure_aux.hpp"
+#include "4C_utils_parameter_list.hpp"
 
 #include <cstddef>
 

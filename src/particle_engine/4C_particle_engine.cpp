@@ -13,6 +13,7 @@
 #include "4C_binstrategy.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils_factory.hpp"
+#include "4C_fem_general_element.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_particle.hpp"
 #include "4C_io.hpp"

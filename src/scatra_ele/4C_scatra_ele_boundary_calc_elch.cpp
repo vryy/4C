@@ -45,7 +45,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_act
     Teuchos::ParameterList& params,                   //!< parameter list
     Core::FE::Discretization& discretization,         //!< discretization
     ScaTra::BoundaryAction action,                    //!< action
-    Core::Elements::Element::LocationArray& la,       //!< location array
+    Core::Elements::LocationArray& la,                //!< location array
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
     Core::Elements::FaceElement* ele,                 ///< current element
     Teuchos::ParameterList& params,                   ///< parameter list
     Core::FE::Discretization& discretization,         ///< discretization
-    Core::Elements::Element::LocationArray& la,       ///< location array
+    Core::Elements::LocationArray& la,                ///< location array
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_linearization(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
@@ -324,10 +324,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_cell_voltage(
-    const Core::Elements::Element* ele,          //!< the element we are dealing with
-    Teuchos::ParameterList& params,              //!< parameter list
-    Core::FE::Discretization& discretization,    //!< discretization
-    Core::Elements::Element::LocationArray& la,  //!< location array
+    const Core::Elements::Element* ele,        //!< the element we are dealing with
+    Teuchos::ParameterList& params,            //!< parameter list
+    Core::FE::Discretization& discretization,  //!< discretization
+    Core::Elements::LocationArray& la,         //!< location array
     Core::LinAlg::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {

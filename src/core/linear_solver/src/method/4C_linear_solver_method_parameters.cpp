@@ -13,6 +13,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_nullspace.hpp"
 #include "4C_fem_general_elementtype.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Xpetra_EpetraIntMultiVector.hpp>

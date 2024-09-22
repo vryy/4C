@@ -15,6 +15,8 @@
 #include "4C_inpar_bio.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

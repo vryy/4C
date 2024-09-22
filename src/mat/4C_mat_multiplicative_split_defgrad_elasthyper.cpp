@@ -22,6 +22,8 @@ multiplicatively into elastic and inelastic parts
 #include "4C_mat_service.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace

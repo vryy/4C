@@ -15,9 +15,6 @@
 #include "4C_config.hpp"
 
 #include "4C_io_linedefinition.hpp"
-#include "4C_utils_symbolic_expression.hpp"
-
-#include <Sacado.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,6 +32,9 @@ struct Periodicstruct
 /*----------------------------------------------------------------------*/
 namespace Core::UTILS
 {
+  template <class T>
+  class SymbolicExpression;
+
   /// class that defines the main properties of a time dependent variable
   class FunctionVariable
   {

@@ -12,6 +12,8 @@
 #include "4C_io.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_fem_general_element.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_legacy_table.hpp"
