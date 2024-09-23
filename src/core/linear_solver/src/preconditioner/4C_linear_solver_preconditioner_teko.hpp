@@ -45,7 +45,7 @@ namespace Core::LinearSolver
     Teuchos::ParameterList& tekolist_;
 
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> pmatrix_;
+    Teuchos::RCP<const Thyra::LinearOpBase<double>> pmatrix_;
 
     //! preconditioner
     Teuchos::RCP<Epetra_Operator> p_;

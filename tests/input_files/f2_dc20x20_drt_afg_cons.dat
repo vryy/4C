@@ -45,7 +45,6 @@ START_THETA                     0.67
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 CONVFORM                        conservative
-BLOCKMATRIX                     yes
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1.0E-9
 TOL_VEL_INC	  1.0E-9
@@ -67,47 +66,9 @@ REYNOLDS-STRESS                 no_reynolds
 NAME                            Fluid_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
-AZPREC                          CheapSIMPLE
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/fluid.xml
 AZTOL                           1.0E-4
-AZITER                          600
-AZSUB                           25
-SUB_SOLVER1                     2
-SUB_SOLVER2                     3
---------------------------------------------------------------------SOLVER 2
-NAME                            Simple_Predictor
-SOLVER                          Belos
-AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
-AZTOL                           1.0E-4
-AZITER                          600
-AZSUB                           25
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  SGS
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     2 3 1
-ML_DAMPFINE                     0.89
---------------------------------------------------------------------SOLVER 3
-NAME                            Fluid_Pressure_Solver
-SOLVER                          Belos
-AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
-AZTOL                           1.0E-6
-AZITER                          500
-AZSUB                           25
-ML_MAXCOARSESIZE                2000
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  SGS
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     2 3 1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4
