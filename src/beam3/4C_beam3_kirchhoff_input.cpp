@@ -26,8 +26,8 @@ bool Discret::Elements::Beam3k::read_element(const std::string& eletype, const s
   set_material(0, Mat::factory(material_id));
 
   const auto mat_type = material()->parameter()->type();
-  FOUR_C_THROW_UNLESS(mat_type == Core::Materials::m_beam_kirchhoff_elast_hyper ||
-                          mat_type == Core::Materials::m_beam_kirchhoff_elast_hyper_bymodes,
+  FOUR_C_ASSERT_ALWAYS(mat_type == Core::Materials::m_beam_kirchhoff_elast_hyper ||
+                           mat_type == Core::Materials::m_beam_kirchhoff_elast_hyper_bymodes,
       "The material parameter definition '%s' is not supported by Beam3k element! "
       "Choose MAT_BeamKirchhoffElastHyper or MAT_BeamKirchhoffElastHyper_ByModes!",
       to_string(mat_type).data());

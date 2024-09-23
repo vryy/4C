@@ -186,7 +186,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
   sparse_matrix_ = block_sparse_matrix_->merge();
   a_ = std::dynamic_pointer_cast<Epetra_Operator>(sparse_matrix_->epetra_matrix());
   auto crsA = std::dynamic_pointer_cast<Epetra_CrsMatrix>(a_);
-  FOUR_C_THROW_UNLESS(crsA, "Houston, something went wrong in merging the matrix");
+  FOUR_C_ASSERT_ALWAYS(crsA, "Houston, something went wrong in merging the matrix");
 
   // Set sol vector and rhs
   x_ = std::make_shared<Core::LinAlg::MultiVector<double>>(

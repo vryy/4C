@@ -158,7 +158,7 @@ namespace Discret::Elements
 
     [[nodiscard]] inline FourC::Solid::Elements::ParamsInterface& get_solid_params_interface() const
     {
-      FOUR_C_THROW_UNLESS(solid_interface_ptr_.get(),
+      FOUR_C_ASSERT_ALWAYS(solid_interface_ptr_.get(),
           "The parameter interface pointer is not set or not a solid parameter interface.");
       return *solid_interface_ptr_;
     }

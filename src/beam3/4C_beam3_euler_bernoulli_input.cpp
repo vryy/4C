@@ -24,7 +24,7 @@ bool Discret::Elements::Beam3eb::read_element(const std::string& eletype,
   set_material(0, Mat::factory(material_id));
 
   const auto mat_type = material()->parameter()->type();
-  FOUR_C_THROW_UNLESS(
+  FOUR_C_ASSERT_ALWAYS(
       mat_type == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper ||
           mat_type == Core::Materials::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes,
       "The material parameter definition '%s' is not supported by Beam3eb element! "

@@ -44,7 +44,7 @@ namespace Core
 
       [[noreturn]] void throw_error(const std::string& format, ...) const;
     };
-  }  // namespace INTERNAL
+  }  // namespace Internal
 
   /**
    * @brief Base class for all 4C exceptions.
@@ -92,6 +92,9 @@ namespace Core
 /**
  * Throw an error in the form of a Core::Exception.
  *
+ * @note Consider using the more expressive FOUR_C_ASSERT and FOUR_C_ASSERT_ALWAYS macros which
+ * take a violated assertion as an argument and print it in the error message.
+ *
  * This macro takes an error message, which may contain C-style formatting.
  * All format arguments are passed as additional arguments. For example:
  *
@@ -103,19 +106,19 @@ namespace Core
   FourC::Core::Internal::ErrorHelper { .file_name = __FILE__, .line_number = __LINE__ }
 
 /**
- * Throw an error in the form of a Core::Exception, unless the @p test is true.
+ * Assert that @p test is `true`. If not issue an error in the form of a Core::Exception.
  *
- * This macro takes an error message, which may contain C-style formatting.
+ * This macro takes the test to evaluate and an error message which may contain C-style formatting.
  * All format arguments are passed as additional arguments. For example:
  *
  * @code
- *   FOUR_C_THROW_UNLESS(vector.size() == dim, "Vector size does not equal dimension d=%d.", dim);
+ *   FOUR_C_ASSERT_ALWAYS(vector.size() == dim, "Vector size does not equal dimension d=%d.", dim);
  * @endcode
  */
-#define FOUR_C_THROW_UNLESS(test, args...)                                                       \
+#define FOUR_C_ASSERT_ALWAYS(test, args...)                                                      \
   if (!(test))                                                                                   \
   {                                                                                              \
-    FourC::Core::INTERNAL::ErrorHelper{                                                          \
+    FourC::Core::Internal::ErrorHelper{                                                          \
         .file_name = __FILE__, .line_number = __LINE__, .failed_assertion_string = #test}(args); \
   }                                                                                              \
   static_assert(true, "Terminate with a comma.")
@@ -125,17 +128,17 @@ namespace Core
 
 /**
  * Assert that @p test is `true`. If not issue an error in the form of a Core::Exception.
- * This macro is only active if FOUR_C_ENABLE_ASSERTIONS is set. Otherwise, the @p test is not
- * even evaluated.
+ * This macro is only active if FOUR_C_ENABLE_ASSERTIONS is set and may therefore be used for
+ * expensive checks. Use FOUR_C_ASSERT_ALWAYS if you want to evaluate the test in any case.
  *
- * This macro takes the test to evaluate and an error message.
- * For example:
+ * This macro takes the test to evaluate and an error message which may contain C-style formatting.
+ * All format arguments are passed as additional arguments. For example:
  *
  * @code
  *   FOUR_C_ASSERT(vector.size() == dim, "Vector size does not equal dimension.");
  * @endcode
  */
-#define FOUR_C_ASSERT(test, args...) FOUR_C_THROW_UNLESS(test, args)
+#define FOUR_C_ASSERT(test, args...) FOUR_C_ASSERT_ALWAYS(test, args)
 
 #else
 

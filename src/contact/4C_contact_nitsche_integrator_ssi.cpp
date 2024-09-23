@@ -215,7 +215,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
           auto* solid_scatra_ele =
               dynamic_cast<Discret::Elements::SolidScatra*>(mortar_ele.parent_element());
 
-          FOUR_C_THROW_UNLESS(solid_scatra_ele,
+          FOUR_C_ASSERT_ALWAYS(solid_scatra_ele,
               "Nitsche contact is not implemented for this element (expecting SOLIDSCATRA "
               "element)!");
 
@@ -236,7 +236,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
           auto* solid_scatra_ele =
               dynamic_cast<Discret::Elements::SolidScatra*>(mortar_ele.parent_element());
 
-          FOUR_C_THROW_UNLESS(solid_scatra_ele,
+          FOUR_C_ASSERT_ALWAYS(solid_scatra_ele,
               "Nitsche contact is not implemented for this element (expecting SOLIDSCATRA "
               "element)!");
 

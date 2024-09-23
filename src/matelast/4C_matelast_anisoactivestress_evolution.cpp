@@ -122,7 +122,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
           params.get<std::shared_ptr<std::vector<double>>>("scalars");
 
       // safety check
-      FOUR_C_THROW_UNLESS(scalars != nullptr, "Activation is not provided via scalars parameter");
+      FOUR_C_ASSERT_ALWAYS(scalars != nullptr, "Activation is not provided via scalars parameter");
 
       // check if activation is above the given threshold
       if (scalars->at(0) >= params_->activationthreshold_)

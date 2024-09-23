@@ -218,7 +218,7 @@ void Core::Elements::Element::set_node_ids(
 void Core::Elements::Element::set_material(
     const int index, std::shared_ptr<Core::Mat::Material> mat)
 {
-  FOUR_C_THROW_UNLESS(mat != nullptr,
+  FOUR_C_ASSERT_ALWAYS(mat != nullptr,
       "Invalid material given to the element. \n"
       "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
       "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"

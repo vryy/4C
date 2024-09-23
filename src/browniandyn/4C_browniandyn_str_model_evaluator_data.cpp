@@ -78,9 +78,9 @@ void Solid::ModelEvaluator::BrownianDynData::init(
           "Too many values for beam damping coefficients are provided within the input file!");
     }
 
-    FOUR_C_THROW_UNLESS(std::all_of(beams_damping_coefficient_prefactors_perunitlength_.begin(),
-                            beams_damping_coefficient_prefactors_perunitlength_.end(),
-                            [](double damping_coefficient) { return damping_coefficient >= 0.0; }),
+    FOUR_C_ASSERT_ALWAYS(std::all_of(beams_damping_coefficient_prefactors_perunitlength_.begin(),
+                             beams_damping_coefficient_prefactors_perunitlength_.end(),
+                             [](double damping_coefficient) { return damping_coefficient >= 0.0; }),
         "The damping coefficients for beams must not be negative!");
   }
   // safety check for valid input parameter

@@ -133,7 +133,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   ele1length_ = lvec1.norm2();
   ele2length_ = lvec2.norm2();
 
-  FOUR_C_THROW_UNLESS(element1->element_type() == element2->element_type(),
+  FOUR_C_ASSERT_ALWAYS(element1->element_type() == element2->element_type(),
       "The class beam3contact only works for contact pairs of the same beam element type!");
 
   if (element1->id() >= element2->id())
@@ -144,7 +144,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   const Discret::Elements::Beam3Base* beamele1 =
       static_cast<const Discret::Elements::Beam3Base*>(element1_);
 
-  FOUR_C_THROW_UNLESS(beamele1, "cast to beam base failed!");
+  FOUR_C_ASSERT_ALWAYS(beamele1, "cast to beam base failed!");
 
   radius1_ = MANIPULATERADIUS * beamele1->get_circular_cross_section_radius_for_interactions();
 

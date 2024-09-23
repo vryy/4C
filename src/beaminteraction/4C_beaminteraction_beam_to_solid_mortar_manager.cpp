@@ -71,7 +71,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
         std::dynamic_pointer_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
             beam_to_solid_params_);
 
-    FOUR_C_THROW_UNLESS(beam_to_volume_params || beam_to_surface_params,
+    FOUR_C_ASSERT_ALWAYS(beam_to_volume_params || beam_to_surface_params,
         "The params object should be either of beam-to-solid volume or surface type.");
     if (beam_to_volume_params != nullptr)
     {

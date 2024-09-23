@@ -168,7 +168,7 @@ namespace Core::IO
       {
         included_file = current_file.parent_path() / included_file;
       }
-      FOUR_C_THROW_UNLESS(
+      FOUR_C_ASSERT_ALWAYS(
           std::filesystem::status(included_file).type() == std::filesystem::file_type::regular,
           "Included file '%s' is not a regular file. Does the file exist?", included_file.c_str());
       return included_file;
@@ -347,7 +347,7 @@ namespace Core::IO
           else if (entries.IsSequence())
             for (const auto& entry : entries)
             {
-              FOUR_C_THROW_UNLESS(
+              FOUR_C_ASSERT_ALWAYS(
                   entry.IsScalar(), "Only scalar entries are supported in the INCLUDES section.");
               const auto line = entry.as<std::string>();
               included_files.emplace_back(get_include_path(line, file_path));
@@ -364,7 +364,7 @@ namespace Core::IO
         {
           for (const auto& entry : node)
           {
-            FOUR_C_THROW_UNLESS(entry.IsScalar(),
+            FOUR_C_ASSERT_ALWAYS(entry.IsScalar(),
                 "While reading section '%s': "
                 "only scalar entries are supported in sequences.",
                 section_name.c_str());
@@ -377,7 +377,7 @@ namespace Core::IO
         {
           for (const auto& entry : node)
           {
-            FOUR_C_THROW_UNLESS(entry.first.IsScalar() && entry.second.IsScalar(),
+            FOUR_C_ASSERT_ALWAYS(entry.first.IsScalar() && entry.second.IsScalar(),
                 "While reading section '%s': "
                 "only scalar key-value pairs are supported in maps.",
                 section_name.c_str());
@@ -654,7 +654,7 @@ namespace Core::IO
             std::string dommarker = disname + " DOMAIN";
             std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
 
-            FOUR_C_THROW_UNLESS(input.has_section(dommarker),
+            FOUR_C_ASSERT_ALWAYS(input.has_section(dommarker),
                 "Inputreader: Couldn't find domain section for discretization %s !",
                 disname.c_str());
 
@@ -1188,7 +1188,7 @@ namespace Core::IO
           }
         }
 
-        FOUR_C_THROW_UNLESS(static_cast<int>(lines_.size()) == num_lines,
+        FOUR_C_ASSERT_ALWAYS(static_cast<int>(lines_.size()) == num_lines,
             "line count mismatch: %d lines expected but %d lines received", num_lines,
             lines_.size());
       }

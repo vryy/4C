@@ -34,7 +34,7 @@ namespace
 
   TEST(ExceptionsTest, AssertAlwaysPrintsTest)
   {
-    const auto always = []() { FOUR_C_THROW_UNLESS(1 == 2, "Throw."); };
+    const auto always = []() { FOUR_C_ASSERT_ALWAYS(1 == 2, "Throw."); };
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(always(), Core::Exception, "1 == 2");
   }

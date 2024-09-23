@@ -2109,7 +2109,7 @@ void Global::read_materials(Global::Problem& problem, Core::IO::InputFile& input
         FOUR_C_THROW("failed to read material object number '%s'", number.c_str());
     }
 
-    FOUR_C_THROW_UNLESS(problem.materials()->id_exists(matid),
+    FOUR_C_ASSERT_ALWAYS(problem.materials()->id_exists(matid),
         "Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
   }
 }

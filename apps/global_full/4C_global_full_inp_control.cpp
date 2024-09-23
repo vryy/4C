@@ -97,7 +97,7 @@ void ntainp_ccadiscret(
   // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
   // we also want to have the printing above being finished.
   lcomm->Barrier();
-  FOUR_C_THROW_UNLESS(all_ok,
+  FOUR_C_ASSERT_ALWAYS(all_ok,
       "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
 }
 

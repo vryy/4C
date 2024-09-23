@@ -43,7 +43,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(!std::is_integral_v<NumberType>);
 
-    FOUR_C_THROW_UNLESS(
+    FOUR_C_ASSERT_ALWAYS(
         static_cast<int>(funct.num_rows() * funct.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
@@ -371,7 +371,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(!std::is_integral_v<NumberType>);
 
-    FOUR_C_THROW_UNLESS(static_cast<int>(deriv1.num_cols()) >= Internal::num_nodes(distype),
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(deriv1.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
     const int dr = 0;
@@ -1024,7 +1024,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(!std::is_integral_v<NumberType>);
 
-    FOUR_C_THROW_UNLESS(static_cast<int>(deriv2.num_cols()) >= Internal::num_nodes(distype),
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(deriv2.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
     const NumberType Q18 = 1.0 / 8.0;
@@ -1997,7 +1997,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(!std::is_integral_v<NumberType>);
 
-    FOUR_C_THROW_UNLESS(
+    FOUR_C_ASSERT_ALWAYS(
         static_cast<int>(funct.num_rows() * funct.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
@@ -2139,7 +2139,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert((not std::is_same<int, NumberType>::value));
 
-    FOUR_C_THROW_UNLESS(static_cast<int>(deriv1.num_cols()) >= Internal::num_nodes(distype),
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(deriv1.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
     const int dr = 0;
@@ -2336,7 +2336,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(not std::is_same_v<int, NumberType>);
 
-    FOUR_C_THROW_UNLESS(static_cast<int>(deriv2.num_cols()) >= Internal::num_nodes(distype),
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(deriv2.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
     const int drdr = 0;
@@ -2577,7 +2577,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(!std::is_integral_v<NumberType>);
 
-    FOUR_C_THROW_UNLESS(
+    FOUR_C_ASSERT_ALWAYS(
         static_cast<int>(funct.num_rows() * funct.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
@@ -2688,7 +2688,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(!std::is_integral_v<NumberType>);
 
-    FOUR_C_THROW_UNLESS(static_cast<int>(deriv1.num_cols()) >= Internal::num_nodes(distype),
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(deriv1.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
     const int dr = 0;
@@ -2797,7 +2797,7 @@ namespace Core::FE
     // if the given template parameter is of type int, the error occurs during compilation
     static_assert(!std::is_integral_v<NumberType>);
 
-    FOUR_C_THROW_UNLESS(static_cast<int>(deriv2.num_cols()) >= Internal::num_nodes(distype),
+    FOUR_C_ASSERT_ALWAYS(static_cast<int>(deriv2.num_cols()) >= Internal::num_nodes(distype),
         "Internal error: size mismatch.");
 
     const int drdr = 0;
@@ -2805,14 +2805,14 @@ namespace Core::FE
     {
       case Core::FE::CellType::point1:
       {
-        FOUR_C_THROW_UNLESS(
+        FOUR_C_ASSERT_ALWAYS(
             static_cast<int>(deriv2.num_cols()) == 1, "Internal error: size mismatch.");
         deriv2(drdr, 0) = 0.0;
         break;
       }
       case Core::FE::CellType::line2:
       {
-        FOUR_C_THROW_UNLESS(
+        FOUR_C_ASSERT_ALWAYS(
             static_cast<int>(deriv2.num_cols()) == 2, "Internal error: size mismatch.");
         deriv2(drdr, 0) = 0.0;
         deriv2(drdr, 1) = 0.0;
@@ -2820,7 +2820,7 @@ namespace Core::FE
       }
       case Core::FE::CellType::line3:
       {
-        FOUR_C_THROW_UNLESS(
+        FOUR_C_ASSERT_ALWAYS(
             static_cast<int>(deriv2.num_cols()) == 3, "Internal error: size mismatch.");
         deriv2(drdr, 0) = 1.0;
         deriv2(drdr, 1) = 1.0;
@@ -2829,7 +2829,7 @@ namespace Core::FE
       }
       case Core::FE::CellType::line4:
       {
-        FOUR_C_THROW_UNLESS(
+        FOUR_C_ASSERT_ALWAYS(
             static_cast<int>(deriv2.num_cols()) == 4, "Internal error: size mismatch.");
         deriv2(drdr, 0) = +(9.0 / 8.0) - (27.0 / 16.0) * 2 * r;
         deriv2(drdr, 1) = +(9.0 / 8.0) + (27.0 / 16.0) * 2 * r;

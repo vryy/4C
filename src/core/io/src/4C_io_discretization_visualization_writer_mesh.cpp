@@ -92,14 +92,14 @@ namespace Core::IO
     }
 
     // safety checks
-    FOUR_C_THROW_UNLESS(point_coordinates.size() == num_spatial_dimensions * pointcounter,
+    FOUR_C_ASSERT_ALWAYS(point_coordinates.size() == num_spatial_dimensions * pointcounter,
         "Expected %i coordinate values, but got %i.", num_spatial_dimensions * pointcounter,
         point_coordinates.size());
 
-    FOUR_C_THROW_UNLESS(cell_types.size() == num_row_elements - num_skipped_eles,
+    FOUR_C_ASSERT_ALWAYS(cell_types.size() == num_row_elements - num_skipped_eles,
         "Expected %i cell type values, but got %i.", num_row_elements, cell_types.size());
 
-    FOUR_C_THROW_UNLESS(cell_offsets.size() == num_row_elements - num_skipped_eles,
+    FOUR_C_ASSERT_ALWAYS(cell_offsets.size() == num_row_elements - num_skipped_eles,
         "Expected %i cell offset values, but got %i.", num_row_elements, cell_offsets.size());
 
     // store node row and col maps (needed to check for changed parallel distribution)
@@ -235,7 +235,7 @@ namespace Core::IO
     }
 
     // sanity check
-    FOUR_C_THROW_UNLESS(point_result_data.size() == result_num_dofs_per_node * pointcounter,
+    FOUR_C_ASSERT_ALWAYS(point_result_data.size() == result_num_dofs_per_node * pointcounter,
         "Expected %i result values, but got %i.", result_num_dofs_per_node * pointcounter,
         point_result_data.size());
 
@@ -303,7 +303,7 @@ namespace Core::IO
     }
 
     // sanity check
-    FOUR_C_THROW_UNLESS(point_result_data.size() == result_num_components_per_node * pointcounter,
+    FOUR_C_ASSERT_ALWAYS(point_result_data.size() == result_num_components_per_node * pointcounter,
         "Expected %i result values, but got %i.", result_num_components_per_node * pointcounter,
         point_result_data.size());
 
@@ -356,7 +356,7 @@ namespace Core::IO
     }
 
     // sanity check
-    FOUR_C_THROW_UNLESS(cell_result_data.size() == result_num_components_per_element * cellcounter,
+    FOUR_C_ASSERT_ALWAYS(cell_result_data.size() == result_num_components_per_element * cellcounter,
         "Expected %i result values, but got %i.", result_num_components_per_element * cellcounter,
         cell_result_data.size());
 

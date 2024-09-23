@@ -1065,7 +1065,7 @@ std::shared_ptr<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_bin
   {
     std::vector<std::array<double, 3>> relevant_points;
     const auto* mortar_ele = dynamic_cast<const Mortar::Element*>(&ele);
-    FOUR_C_THROW_UNLESS(mortar_ele, "Element is not a Mortar::Element.");
+    FOUR_C_ASSERT_ALWAYS(mortar_ele, "Element is not a Mortar::Element.");
 
     for (int j = 0; j < mortar_ele->num_node(); ++j)
     {

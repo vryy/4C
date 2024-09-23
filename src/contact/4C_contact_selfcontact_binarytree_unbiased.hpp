@@ -159,8 +159,8 @@ namespace CONTACT
     const Core::Nodes::Node* const* nodes = element->nodes();
     const int nodedim = nodes[0]->n_dim();
 
-    FOUR_C_THROW_UNLESS(nodes, "ERROR: Did not get nodes of element!");
-    FOUR_C_THROW_UNLESS(probdim == nodedim,
+    FOUR_C_ASSERT_ALWAYS(nodes, "ERROR: Did not get nodes of element!");
+    FOUR_C_ASSERT_ALWAYS(probdim == nodedim,
         "Problem dimension: %i and dimension of nodes: %i does not match!", probdim, nodedim);
 
     for (int i = 0; i < Core::FE::num_nodes<distype>; ++i)
@@ -196,8 +196,8 @@ namespace CONTACT
     const Core::Nodes::Node* const* nodes = element->nodes();
     const int nodedim = nodes[0]->n_dim();
 
-    FOUR_C_THROW_UNLESS(nodes, "ERROR: Did not get nodes of element!");
-    FOUR_C_THROW_UNLESS(nodedim == 3, "ERROR: Only implemented for 3D cases so far!");
+    FOUR_C_ASSERT_ALWAYS(nodes, "ERROR: Did not get nodes of element!");
+    FOUR_C_ASSERT_ALWAYS(nodedim == 3, "ERROR: Only implemented for 3D cases so far!");
 
     for (int i = 0; i < Core::FE::num_nodes<distype>; ++i)
     {

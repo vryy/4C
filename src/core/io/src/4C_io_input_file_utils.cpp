@@ -263,7 +263,7 @@ namespace
 void Core::IO::InputFileUtils::print_section_header(std::ostream& out, const std::string& header)
 {
   constexpr std::size_t max_line_width = 65ul;
-  FOUR_C_THROW_UNLESS(header.length() <= max_line_width, "Header '%s' too long", header.c_str());
+  FOUR_C_ASSERT_ALWAYS(header.length() <= max_line_width, "Header '%s' too long", header.c_str());
 
   out << "--";
   out << std::string(std::max(max_line_width - header.length(), 0ul), '-');

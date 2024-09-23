@@ -851,7 +851,7 @@ namespace Cut
         // 2-dimensional side element embedded in 3-dimensional space
         case 2:
         {
-          FOUR_C_THROW_UNLESS(probdim == 3, "Internal error: dimension mismatch!");
+          FOUR_C_ASSERT_ALWAYS(probdim == 3, "Internal error: dimension mismatch!");
           // cross product to get the normal at the point
           normal(0) = A(0, 1) * A(1, 2) - A(0, 2) * A(1, 1);
           normal(1) = A(0, 2) * A(1, 0) - A(0, 0) * A(1, 2);
@@ -915,7 +915,7 @@ namespace Cut
         }
         case 2:
         {
-          FOUR_C_THROW_UNLESS(probdim == 3, "Internal error: dimension mismatch!");
+          FOUR_C_ASSERT_ALWAYS(probdim == 3, "Internal error: dimension mismatch!");
           // set the second tangential vector
           t2(0) = A(1, 0);
           t2(1) = A(1, 1);
