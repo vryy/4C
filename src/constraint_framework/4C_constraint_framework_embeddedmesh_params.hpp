@@ -18,6 +18,8 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_inpar_constraint_framework.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace CONSTRAINTS::EMBEDDEDMESH

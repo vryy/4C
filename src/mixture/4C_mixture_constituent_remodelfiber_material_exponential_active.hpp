@@ -13,8 +13,6 @@ contribution
 
 #include "4C_mixture_constituent_remodelfiber_material_exponential.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN

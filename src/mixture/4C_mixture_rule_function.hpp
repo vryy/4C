@@ -18,15 +18,8 @@
 #include "4C_mixture_rule.hpp"
 #include "4C_utils_function.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
-
 #include <memory>
 #include <vector>
-
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 FOUR_C_NAMESPACE_OPEN
 

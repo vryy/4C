@@ -21,10 +21,7 @@
 // forward declarations
 class Epetra_Map;
 class Epetra_Vector;
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

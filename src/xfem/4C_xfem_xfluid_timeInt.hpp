@@ -25,11 +25,6 @@
 
 class Epetra_Map;
 class Epetra_Vector;
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Communication

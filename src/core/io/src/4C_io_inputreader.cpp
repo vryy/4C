@@ -18,6 +18,7 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_utils_string.hpp"
 
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_Time.hpp>
 
 #include <sstream>

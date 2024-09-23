@@ -15,9 +15,9 @@
 #include "4C_ssi_utils.hpp"
 #include "4C_ssti_monolithic.hpp"
 #include "4C_ssti_utils.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

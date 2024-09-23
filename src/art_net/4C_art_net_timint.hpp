@@ -15,8 +15,8 @@
 #include "4C_adapter_art_net.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_inpar_bio.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 FOUR_C_NAMESPACE_OPEN

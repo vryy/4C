@@ -18,9 +18,9 @@
 #include "4C_inpar_levelset.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_scatra_timint_implicit.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 #define USE_PHIN_FOR_VEL  // TODO

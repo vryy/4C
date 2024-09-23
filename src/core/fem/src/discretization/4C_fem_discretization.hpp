@@ -16,6 +16,7 @@
 #include "4C_fem_dofset_interface.hpp"
 #include "4C_fem_general_shape_function_type.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
 
 #include <Epetra_Comm.h>
@@ -24,17 +25,10 @@
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_RCPDecl.hpp>
 
 #include <functional>
 #include <set>
 #include <vector>
-
-// forward declarations
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 

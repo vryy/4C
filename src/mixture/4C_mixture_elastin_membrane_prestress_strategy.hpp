@@ -13,15 +13,9 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-
-#include <Teuchos_ParameterList.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
 
 // forward declarations
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Mat

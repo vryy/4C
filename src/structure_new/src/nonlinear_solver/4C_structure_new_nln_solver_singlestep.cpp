@@ -17,6 +17,7 @@
 #include "4C_structure_new_timint_base.hpp"
 
 #include <NOX_Solver_Generic.H>
+#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

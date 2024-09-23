@@ -14,6 +14,8 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 
 FOUR_C_NAMESPACE_OPEN
 

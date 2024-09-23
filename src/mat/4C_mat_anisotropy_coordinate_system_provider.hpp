@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+#include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

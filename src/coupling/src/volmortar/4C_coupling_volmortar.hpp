@@ -18,6 +18,7 @@
 #include "4C_mortar_coupling3d_classes.hpp"
 
 #include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

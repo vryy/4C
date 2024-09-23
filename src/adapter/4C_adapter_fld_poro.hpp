@@ -19,8 +19,8 @@
 #include "4C_fem_condition.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_poroelast_utils.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

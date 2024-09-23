@@ -18,8 +18,8 @@ parenchyma balloon
 
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_fem_condition.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 #include <set>

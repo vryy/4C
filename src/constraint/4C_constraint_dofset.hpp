@@ -57,8 +57,8 @@ namespace CONSTRAINTS
     virtual int first_gid()
     {
       int lmin = dofrowmap_->MinMyGID();
-      if (dofrowmap_->NumMyElements() == 0) lmin = INT_MAX;
-      int gmin = INT_MAX;
+      if (dofrowmap_->NumMyElements() == 0) lmin = std::numeric_limits<int>::max();
+      int gmin = std::numeric_limits<int>::max();
       dofrowmap_->Comm().MinAll(&lmin, &gmin, 1);
       return gmin;
     };

@@ -24,11 +24,6 @@
 #include "4C_mixture_rule_simple.hpp"
 #include "4C_utils_exceptions.hpp"
 
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations

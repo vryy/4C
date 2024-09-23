@@ -14,11 +14,7 @@
 #include "4C_inpar_contact.hpp"
 #include "4C_mortar_element.hpp"
 #include "4C_mortar_strategy_factory.hpp"
-
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

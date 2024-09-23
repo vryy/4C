@@ -20,6 +20,7 @@ the routines called during the possible actions is contained in red_air_blood_sc
 #include "4C_red_airways_elementbase.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN

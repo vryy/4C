@@ -16,12 +16,12 @@
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

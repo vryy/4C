@@ -15,11 +15,6 @@
 
 #include <Teuchos_RCP.hpp>
 
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations

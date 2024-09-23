@@ -17,14 +17,9 @@
 
 #include "4C_adapter_str_structure.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <set>
-
-// forward declarations
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -20,6 +20,8 @@
 #include "4C_rebalance_print.hpp"
 #include "4C_xfem_discretization.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*

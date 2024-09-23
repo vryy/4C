@@ -19,8 +19,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
-
-#include <Teuchos_ParameterList.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

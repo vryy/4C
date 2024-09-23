@@ -21,6 +21,8 @@
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_graph_based.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 #include <algorithm>
 
 FOUR_C_NAMESPACE_OPEN

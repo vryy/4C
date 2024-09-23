@@ -19,14 +19,11 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_condition.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Vector;
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 FOUR_C_NAMESPACE_OPEN
 

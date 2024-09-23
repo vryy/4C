@@ -18,13 +18,13 @@
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fsi_algorithm.hpp"
 #include "4C_io.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Vector.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Required.H>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

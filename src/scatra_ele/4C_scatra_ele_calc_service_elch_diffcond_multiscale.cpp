@@ -17,6 +17,7 @@ multi-scale framework
 #include "4C_scatra_ele_calc_elch_diffcond_multiscale.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN

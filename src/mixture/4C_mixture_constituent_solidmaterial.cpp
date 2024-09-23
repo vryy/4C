@@ -17,7 +17,7 @@
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+
 
 FOUR_C_NAMESPACE_OPEN
 

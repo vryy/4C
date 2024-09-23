@@ -14,13 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 // forward declaration
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace ScaTra

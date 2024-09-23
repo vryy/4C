@@ -14,12 +14,12 @@
 #include "4C_inpar_contact.hpp"     // for the Inpar::CONTACT enums
 #include "4C_mortar_interface.hpp"  // for the enum state type
 #include "4C_solver_nonlin_nox_constraint_interface_preconditioner.hpp"  // interface specifications
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

@@ -19,6 +19,7 @@
 #include "4C_io_inputreader.hpp"
 
 #include <Epetra_CrsGraph.h>
+#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

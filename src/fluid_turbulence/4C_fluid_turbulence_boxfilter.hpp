@@ -39,9 +39,9 @@ References are
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 

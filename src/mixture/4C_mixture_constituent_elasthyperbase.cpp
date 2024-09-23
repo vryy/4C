@@ -18,7 +18,7 @@
 #include "4C_mat_service.hpp"
 #include "4C_mixture_prestress_strategy.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+
 
 FOUR_C_NAMESPACE_OPEN
 

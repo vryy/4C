@@ -14,10 +14,10 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_condition.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 
 #include <set>
 

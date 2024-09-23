@@ -24,6 +24,7 @@
 #include <Epetra_Vector.h>
 #include <NOX_Abstract_ImplicitWeighting.H>
 #include <NOX_Observer_Vector.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

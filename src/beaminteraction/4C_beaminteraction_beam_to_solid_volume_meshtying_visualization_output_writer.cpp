@@ -25,6 +25,8 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 #include <unordered_set>
 #include <utility>
 

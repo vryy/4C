@@ -10,8 +10,9 @@ managers
 
 #include "4C_config.hpp"
 
+#include "4C_utils_parameter_list.fwd.hpp"
+
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 
 #ifndef FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP
 #define FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP

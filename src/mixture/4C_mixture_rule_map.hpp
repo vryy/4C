@@ -18,16 +18,9 @@ values per element
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_mixture_rule.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
-
 #include <memory>
 #include <unordered_map>
 #include <vector>
-
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 FOUR_C_NAMESPACE_OPEN
 

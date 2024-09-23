@@ -18,7 +18,7 @@
 #include "4C_mat_service.hpp"
 #include "4C_matelast_coupanisoexpo.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+
 
 namespace
 {

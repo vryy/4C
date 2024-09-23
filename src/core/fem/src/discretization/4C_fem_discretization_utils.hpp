@@ -16,21 +16,13 @@
 
 #include "4C_fem_condition.hpp"
 #include "4C_linalg_sparseoperator.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_IntVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>
-
-class Epetra_Vector;
-namespace Teuchos
-{
-  class ParameterList;
-
-  template <class T>
-  class RCP;
-}  // namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 

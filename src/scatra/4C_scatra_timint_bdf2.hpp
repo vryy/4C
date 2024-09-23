@@ -16,6 +16,8 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace ScaTra

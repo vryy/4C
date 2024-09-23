@@ -21,6 +21,8 @@
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

@@ -17,18 +17,13 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Teuchos_ENull.hpp>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_RCPDecl.hpp>
 
 #include <memory>
 #include <utility>
-
-namespace Teuchos
-{
-  class ParameterList;
-}
 
 FOUR_C_NAMESPACE_OPEN
 

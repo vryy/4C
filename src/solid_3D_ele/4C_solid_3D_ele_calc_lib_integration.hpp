@@ -13,8 +13,7 @@
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
-
-#include <Teuchos_ParameterList.hpp>
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 namespace Discret::ELEMENTS

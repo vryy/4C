@@ -12,11 +12,11 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

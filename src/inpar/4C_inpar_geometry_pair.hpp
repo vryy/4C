@@ -17,10 +17,7 @@
 #include "4C_fem_general_utils_integration.hpp"
 
 // Forward declaration.
-namespace Teuchos
-{
-  class ParameterList;
-}  // namespace Teuchos
+#include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

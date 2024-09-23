@@ -21,11 +21,6 @@
 #include <set>
 
 // forward declaration
-namespace Teuchos
-{
-  class ParameterList;
-}
-
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg

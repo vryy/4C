@@ -25,6 +25,8 @@ Kloeppel
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN

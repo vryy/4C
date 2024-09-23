@@ -16,6 +16,8 @@
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 Discret::ELEMENTS::Torsion3Type Discret::ELEMENTS::Torsion3Type::instance_;

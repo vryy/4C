@@ -19,8 +19,8 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

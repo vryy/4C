@@ -14,10 +14,10 @@
 
 #include "4C_adapter_fld_wrapper.hpp"
 #include "4C_inpar_fsi.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

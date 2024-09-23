@@ -14,11 +14,11 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_geometric_search_params.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

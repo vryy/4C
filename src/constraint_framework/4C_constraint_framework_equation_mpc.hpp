@@ -14,7 +14,7 @@
 #include "4C_inpar_mpc_rve.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+
 
 FOUR_C_NAMESPACE_OPEN
 namespace CONSTRAINTS::SUBMODELEVALUATOR

@@ -16,6 +16,9 @@
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_anisotropy_utils.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 Mat::Anisotropy::Anisotropy()

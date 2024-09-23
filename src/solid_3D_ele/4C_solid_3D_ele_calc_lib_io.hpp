@@ -20,8 +20,8 @@
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_utils.hpp"
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN

@@ -16,6 +16,8 @@
 #include "4C_shell7p_line.hpp"
 #include "4C_shell7p_utils.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 

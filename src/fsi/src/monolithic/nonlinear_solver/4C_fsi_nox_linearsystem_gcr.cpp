@@ -19,6 +19,7 @@
 #include <Epetra_RowMatrix.h>
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 
 #include <vector>
 

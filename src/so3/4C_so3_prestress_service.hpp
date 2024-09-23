@@ -15,8 +15,8 @@
 
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
