@@ -12,3 +12,17 @@ set(SOURCE_LIST
     )
 
 four_c_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
+
+set(TESTNAME unittests_linalg_parallel)
+set(SOURCE_LIST
+    # cmake-format: sortable
+    4C_linalg_vector_test.cpp
+    )
+
+four_c_add_google_test_executable(
+  ${TESTNAME}
+  NP
+  2
+  SOURCE
+  ${SOURCE_LIST}
+  )
