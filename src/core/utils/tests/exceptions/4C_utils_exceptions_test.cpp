@@ -24,11 +24,18 @@ namespace
     return (a / b);
   }
 
-  TEST(CoreUtilsTest, Exception)
+  TEST(ExceptionsTest, Exception)
   {
     int a = 1, b = 0;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
         division(a, b), Core::Exception, "Division by zero condition!");
+  }
+
+  TEST(ExceptionsTest, AssertAlwaysPrintsTest)
+  {
+    const auto always = []() { FOUR_C_THROW_UNLESS(1 == 2, "Throw."); };
+
+    FOUR_C_EXPECT_THROW_WITH_MESSAGE(always(), Core::Exception, "1 == 2");
   }
 }  // namespace
