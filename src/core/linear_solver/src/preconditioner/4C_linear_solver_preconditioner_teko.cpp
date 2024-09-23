@@ -116,29 +116,36 @@ void Core::LinearSolver::TekoPreconditioner::setup(
         // Get the single field preconditioner sub-list of a matrix block hardwired under
         // "Inverse<1...n>".
         std::string inverse = "Inverse" + std::to_string(block + 1);
-        Teuchos::ParameterList& inverseList = tekolist_.sublist(inverse);
 
-        if (tekoParams->sublist("Inverse Factory Library")
-                .sublist(inverse)
-                .get<std::string>("Type") == "MueLu")
+        if (tekolist_.isSublist(inverse))
         {
-          const int number_of_equations = inverseList.get<int>("PDE equations");
+          // Get the single field preconditioner sub-list of a matrix block hardwired under
+          // "Inverse<1...n>".
+          Teuchos::ParameterList& inverseList = tekolist_.sublist(inverse);
 
-          Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
-              Teuchos::rcp(new EpetraMultiVector(
-                  inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace")));
+          if (tekoParams->sublist("Inverse Factory Library")
+                  .sublist(inverse)
+                  .get<std::string>("Type") == "MueLu")
+          {
+            const int number_of_equations = inverseList.get<int>("PDE equations");
 
-          Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> coordinates =
-              Teuchos::rcp(new EpetraMultiVector(
-                  inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates")));
+            Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
+                Teuchos::rcp(new EpetraMultiVector(
+                    inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace")));
 
-          tekoParams->sublist("Inverse Factory Library")
-              .sublist(inverse)
-              .set("number of equations", number_of_equations);
-          Teuchos::ParameterList& userParamList =
-              tekoParams->sublist("Inverse Factory Library").sublist(inverse).sublist("user data");
-          userParamList.set("Nullspace", nullspace);
-          userParamList.set("Coordinates", coordinates);
+            Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> coordinates =
+                Teuchos::rcp(new EpetraMultiVector(
+                    inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates")));
+
+            tekoParams->sublist("Inverse Factory Library")
+                .sublist(inverse)
+                .set("number of equations", number_of_equations);
+            Teuchos::ParameterList& userParamList = tekoParams->sublist("Inverse Factory Library")
+                                                        .sublist(inverse)
+                                                        .sublist("user data");
+            userParamList.set("Nullspace", nullspace);
+            userParamList.set("Coordinates", coordinates);
+          }
         }
       }
     }
