@@ -457,54 +457,23 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
   {
     case Inpar::Cardiovascular0D::cardvasc0dsolve_direct:
       break;
-    case Inpar::Cardiovascular0D::cardvasc0dsolve_simple:
+    case Inpar::Cardiovascular0D::cardvasc0dsolve_block:
     {
-      const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-          Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
-      switch (prec)
-      {
-        case Core::LinearSolver::PreconditionerType::cheap_simple:
-        {
-          // add Inverse1 block for velocity dofs
-          // tell Inverse1 block about nodal_block_information
-          Teuchos::ParameterList& inv1 =
-              linsolver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-          inv1.sublist("nodal_block_information") =
-              linsolver->params().sublist("nodal_block_information");
+      linsolver->put_solver_params_to_sub_params("Inverse1",
+          Global::Problem::instance()->solver_params(linsolvernumber),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse1"), true);
 
-          // calculate null space information
-          actdis.compute_null_space_if_necessary(
-              linsolver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
-          actdis.compute_null_space_if_necessary(
-              linsolver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
-
-          linsolver->params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
-          linsolver->params().set("CONSTRAINT", true);
-        }
-        break;
-        case Core::LinearSolver::PreconditionerType::block_teko:
-        {
-          linsolver->put_solver_params_to_sub_params("Inverse1",
-              Global::Problem::instance()->solver_params(linsolvernumber),
-              Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-          actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse1"), true);
-
-          linsolver->put_solver_params_to_sub_params("Inverse2",
-              Global::Problem::instance()->solver_params(linsolvernumber),
-              Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-          actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse2"), true);
-        }
-        break;
-        default:
-          // do nothing
-          break;
-      }
+      linsolver->put_solver_params_to_sub_params("Inverse2",
+          Global::Problem::instance()->solver_params(linsolvernumber),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
+      actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse2"), true);
+      break;
     }
-    break;
     default:
       FOUR_C_THROW("Unknown 0D cardiovascular-structural solution technique!");
   }

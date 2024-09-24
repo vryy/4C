@@ -33,8 +33,7 @@ namespace Inpar
     enum Cardvasc0DSolveAlgo
     {
       cardvasc0dsolve_direct,  ///< build monolithic 0D cardiovascular-structural system
-      cardvasc0dsolve_simple,  ///< use simple preconditioner for iterative solve
-      cardvasc0dsolve_AMGnxn
+      cardvasc0dsolve_block,   ///< use block preconditioner for iterative solve
     };
 
     enum Cardvasc0DAtriumModel
