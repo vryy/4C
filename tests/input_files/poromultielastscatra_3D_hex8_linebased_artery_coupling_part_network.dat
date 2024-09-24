@@ -112,22 +112,20 @@ NAME                            solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            iterative_solver_porofluid_artery_coupl
-SOLVER                          Belos
-AZOUTPUT                        10
-AZPREC                          AMGnxn
-AMGNXN_TYPE                     XML
-AMGNXN_XML_FILE                 poromultielastscatra_3D_hex8_linebased_artery_coupling_part_network_porofluid_artery_BGS-AMG_2x2.xml
-AZSUB                           100
+SOLVER                          UMFPACK
+AZSOLVE                         GMRES
+TEKO_XML_FILE                   xml/block_preconditioner/artery.xml
+AZPREC                          Teko
 AZTOL                           1.0e-12
+AZOUTPUT                        10
 --------------------------------------------------------------------SOLVER 3
 NAME                            iterative_solver_scatra_artery_scatra_coupl
-SOLVER                          Belos
-AZOUTPUT                        10
-AZPREC                          AMGnxn
-AMGNXN_TYPE                     XML
-AMGNXN_XML_FILE                 poromultielastscatra_3D_hex8_linebased_artery_coupling_part_network_scatra_artery-scatra_BGS-AMG_2x2.xml
-AZSUB                           100
+SOLVER                          UMFPACK
+AZSOLVE                         GMRES
+TEKO_XML_FILE                   xml/block_preconditioner/artery.xml
+AZPREC                          Teko
 AZTOL                           1.0e-12
+AZOUTPUT                        10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhaseReactions LOCAL No PERMEABILITY 1.0e-3 NUMMAT 2 MATIDS 14 15 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 0 NUMREAC 1 REACIDS 50
 MAT 50 MAT_FluidPoroSingleReaction NUMSCAL 1 TOTALNUMDOF 2 NUMVOLFRAC 1 SCALE 1 -1 COUPLING scalar_by_function FUNCTID 7

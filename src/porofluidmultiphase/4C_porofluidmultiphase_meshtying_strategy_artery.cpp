@@ -17,6 +17,7 @@
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
 #include "4C_poromultiphase_scatra_artery_coupling_base.hpp"
 #include "4C_poromultiphase_scatra_utils.hpp"
@@ -168,30 +169,23 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::initialize_linear_solver(
   // plausibility check
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::block_teko:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
     }
     break;
     default:
-      FOUR_C_THROW("AMGnxn preconditioner expected");
+      FOUR_C_THROW("Block Gauss-Seidel preconditioner expected.");
       break;
   }
 
-  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
-  // computation
   Teuchos::ParameterList& blocksmootherparams1 = solver->params().sublist("Inverse1");
-  blocksmootherparams1.sublist("Belos Parameters");
-  blocksmootherparams1.sublist("MueLu Parameters");
-
-  porofluidmultitimint_->discretization()->compute_null_space_if_necessary(blocksmootherparams1);
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *porofluidmultitimint_->discretization(), blocksmootherparams1);
 
   Teuchos::ParameterList& blocksmootherparams2 = solver->params().sublist("Inverse2");
-  blocksmootherparams2.sublist("Belos Parameters");
-  blocksmootherparams2.sublist("MueLu Parameters");
-
-  arterydis_->compute_null_space_if_necessary(blocksmootherparams2);
+  Core::LinearSolver::Parameters::compute_solver_parameters(*arterydis_, blocksmootherparams2);
 }
 
 /*--------------------------------------------------------------------------*

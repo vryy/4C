@@ -73,7 +73,7 @@ AZSOLVE                         GMRES
 AZTOL                           1e-9
 AZCONV                          AZ_r0
 AZPREC                          Teko
-TEKO_XML_FILE                   xml/block_preconditioner/poro.xml
+TEKO_XML_FILE                   xml/block_preconditioner/porofluid.xml
 AZREUSE                         10
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.8

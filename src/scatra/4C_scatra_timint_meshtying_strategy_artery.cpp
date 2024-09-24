@@ -16,6 +16,7 @@
 #include "4C_inpar_bio.hpp"
 #include "4C_linear_solver_method.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 #include "4C_poromultiphase_scatra_artery_coupling_nodebased.hpp"
 #include "4C_poromultiphase_scatra_utils.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -162,7 +163,7 @@ void ScaTra::MeshtyingStrategyArtery::initialize_linear_solver(
   // plausibility check
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::block_teko:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -173,19 +174,11 @@ void ScaTra::MeshtyingStrategyArtery::initialize_linear_solver(
       break;
   }
 
-  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
-  // computation
   Teuchos::ParameterList& blocksmootherparams1 = solver().params().sublist("Inverse1");
-  blocksmootherparams1.sublist("Belos Parameters");
-  blocksmootherparams1.sublist("MueLu Parameters");
-
-  scatradis_->compute_null_space_if_necessary(blocksmootherparams1);
+  Core::LinearSolver::Parameters::compute_solver_parameters(*scatradis_, blocksmootherparams1);
 
   Teuchos::ParameterList& blocksmootherparams2 = solver().params().sublist("Inverse2");
-  blocksmootherparams2.sublist("Belos Parameters");
-  blocksmootherparams2.sublist("MueLu Parameters");
-
-  artscatradis_->compute_null_space_if_necessary(blocksmootherparams2);
+  Core::LinearSolver::Parameters::compute_solver_parameters(*artscatradis_, blocksmootherparams2);
 }
 
 /*-----------------------------------------------------------------------*

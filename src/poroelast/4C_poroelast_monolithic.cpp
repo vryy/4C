@@ -681,14 +681,6 @@ void PoroElast::Monolithic::create_linear_solver()
 
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
-    {
-      structure_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse1"));
-      fluid_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse2"));
-    }
-    break;
     case Core::LinearSolver::PreconditionerType::block_teko:
     {
       Core::LinearSolver::Parameters::compute_solver_parameters(
@@ -698,7 +690,7 @@ void PoroElast::Monolithic::create_linear_solver()
     }
     break;
     default:
-      FOUR_C_THROW("Block Gauss-Seidel BGS2x2 preconditioner expected");
+      FOUR_C_THROW("Block Gauss-Seidel preconditioner expected.");
   }
 }
 
