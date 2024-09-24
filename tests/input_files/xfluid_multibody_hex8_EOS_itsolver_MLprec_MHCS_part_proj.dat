@@ -26,6 +26,7 @@ FLUID_STRESS                    No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
+VERBOSITY                       standard
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 INITIALFIELD                    zero_field
@@ -88,27 +89,13 @@ GHOST_PENALTY_FAC               0.1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos
-AZOUTPUT                        10
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
-AZREUSE                         1
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/xfluid_template.xml
 AZTOL                           1.0E-08
 AZCONV                          AZ_r0
-AZITER                          1000
-IFPACKOVERLAP                   0
-ML_MAXCOARSESIZE                1
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  0.0
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     3 3 1
-ML_DAMPFINE                     0.7
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
+AZREUSE                         1
+AZOUTPUT                        10
 -------------------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
