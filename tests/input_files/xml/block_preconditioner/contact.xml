@@ -19,7 +19,7 @@
     <ParameterList name="Inverse1">
       <Parameter name="Type" type="string" value="MueLu"/>
       <Parameter name="multigrid algorithm" type="string" value="sa"/>
-      <Parameter name="verbosity" type="string" value="None"/>
+      <Parameter name="verbosity" type="string" value="Extreme"/>
       <Parameter name="coarse: max size" type="int" value="200"/>
       <Parameter name="smoother: type" type="string" value="RELAXATION"/>
       <ParameterList name="smoother: params">
@@ -30,7 +30,14 @@
     </ParameterList>
     <!-- ===========  SINGLE FIELD PRECONDITIONER FOR LAGRANGE MULTIPLIER ================ -->
     <ParameterList name="Inverse2">
-      <Parameter name="Type" type="string" value="Ifpack"/>
+      <Parameter name="Type" type="string" value="MueLu"/>
+      <Parameter name="multigrid algorithm" type="string" value="sa"/>
+      <Parameter name="verbosity" type="string" value="Extreme"/>
+      <Parameter name="coarse: max size" type="int" value="200"/>
+      <Parameter name="smoother: type" type="string" value="RILUK"/>
+      <ParameterList name="smoother: params">
+        <Parameter name="fact: iluk level-of-fill" type="int" value="1"/>
+      </ParameterList>
     </ParameterList>
   </ParameterList>
 </ParameterList>
