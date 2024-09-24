@@ -105,8 +105,7 @@ void Solid::ModelEvaluator::Meshtying::setup()
   strategy_ptr_->evaluate_reference_state();
   strategy_ptr_->inttime_init();
   set_time_integration_info(*strategy_ptr_);
-  strategy_ptr_->redistribute_contact(integrator().get_dbc().get_zeros_ptr(),
-      integrator().get_dbc().get_zeros_ptr());  // ToDo redistribute_meshtying??
+  strategy_ptr_->redistribute_meshtying();
   strategy_ptr_->mortar_coupling(integrator().get_dbc().get_zeros_ptr());
 
   strategy_ptr_->nox_interface_ptr()->init(global_state_ptr());
@@ -122,23 +121,43 @@ void Solid::ModelEvaluator::Meshtying::setup()
     {
       Teuchos::RCP<const Epetra_Vector> Xslavemod =
           dynamic_cast<Mortar::StrategyBase&>(*strategy_ptr_).mesh_initialization();
+      Teuchos::RCP<const Epetra_Vector> Xslavemod_noredist;
       if (Xslavemod != Teuchos::null)
       {
         mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map()));
-        for (int i = 0; i < strategy_ptr_->slave_row_nodes_ptr()->NumMyElements(); ++i)
+        const auto gdiscret = global_state().get_discret();
+        if (strategy_ptr_->par_redist())
+        {
+          Teuchos::RCP<Epetra_Vector> original_vec =
+              Teuchos::rcp(new Epetra_Vector(*(strategy_ptr_->non_redist_slave_row_dofs()), true));
+
+          Teuchos::RCP<Epetra_Export> exporter = Teuchos::rcp(
+              new Epetra_Export(Xslavemod->Map(), *strategy_ptr_->non_redist_slave_row_dofs()));
+
+          int err = original_vec->Export(*Xslavemod, *exporter, Insert);
+          if (err) FOUR_C_THROW("Import failed with err=%d", err);
+
+          Xslavemod_noredist = original_vec;
+        }
+        else
+        {
+          Xslavemod_noredist = Xslavemod;
+        }
+
+        for (const auto& node : gdiscret->my_row_node_range())
+        {
           for (int d = 0; d < strategy_ptr_->n_dim(); ++d)
           {
-            int gid = global_state().get_discret()->dof(
-                global_state().get_discret()->g_node(strategy_ptr_->slave_row_nodes_ptr()->GID(i)),
-                d);
-            mesh_relocation_->operator[](mesh_relocation_->Map().LID(gid)) =
-                global_state()
-                    .get_discret()
-                    ->g_node(strategy_ptr_->slave_row_nodes_ptr()->GID(i))
-                    ->x()[d] -
-                Xslavemod->operator[](Xslavemod->Map().LID(gid));
+            int dof = gdiscret->dof(node, d);
+            if (strategy_ptr_->non_redist_slave_row_dofs()->LID(dof) != -1)
+            {
+              mesh_relocation_->operator[](mesh_relocation_->Map().LID(dof)) =
+                  node->x()[d] - Xslavemod_noredist->operator[](Xslavemod_noredist->Map().LID(dof));
+            }
           }
-        apply_mesh_initialization(Xslavemod);
+        }
+
+        apply_mesh_initialization(Xslavemod_noredist);
       }
     }
     else if (mesh_relocation_parameter == Inpar::Mortar::relocation_timestep)

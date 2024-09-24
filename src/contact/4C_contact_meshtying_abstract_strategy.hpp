@@ -509,6 +509,8 @@ namespace CONTACT
       return non_redist_gmdofrowmap_;
     }
     Teuchos::RCP<const Epetra_Map> slip_row_nodes() const override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Map> slave_dof_row_map_ptr() const { return gsdofrowmap_; }
+    Teuchos::RCP<const Epetra_Map> master_dof_row_map_ptr() const { return gmdofrowmap_; }
 
     //! @}
 

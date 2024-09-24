@@ -224,6 +224,9 @@ namespace CONTACT
     //! Access to #mhatmatrix_
     virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_m_hat() { return mhatmatrix_; };
 
+    //! Access to non-redistributed mhatmatrix
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_non_redist_m_hat();
+
     //! Access to #invd_
     virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_d_inverse() { return invd_; };
 

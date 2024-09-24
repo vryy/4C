@@ -48,13 +48,10 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
   // store interface maps with parallel distribution of underlying
   // problem discretization (i.e. interface maps before parallel
   // redistribution of slave and master sides)
-  if (par_redist())
-  {
-    non_redist_glmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*glmdofrowmap_));
-    non_redist_gsdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsdofrowmap_));
-    non_redist_gmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
-    non_redist_gsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
-  }
+  non_redist_glmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*glmdofrowmap_));
+  non_redist_gsdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsdofrowmap_));
+  non_redist_gmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
+  non_redist_gsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new CONTACT::MtNoxInterface());
@@ -157,6 +154,8 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
   // merge interface maps to global maps
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
+    interface_[i]->create_search_tree();
+
     // build Lagrange multiplier dof map
     interface_[i]->update_lag_mult_sets(offset_if);
 
@@ -579,8 +578,6 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Epetra_Vector
   mmatrix_->multiply(false, *xm, *Mxm);
   g_->Update(1.0, *Dxs, 1.0);
   g_->Update(-1.0, *Mxm, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

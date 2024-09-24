@@ -1027,7 +1027,6 @@ bool CONTACT::MtLagrangeStrategy::evaluate_stiff(const Teuchos::RCP<const Epetra
   else
     temp = constrmt;
 
-
   // always transform column GIDs of constraint matrix
   dm_matrix_ = Mortar::matrix_col_transform_gids(temp, lm_dof_row_map_ptr());
   dm_matrix_t_ =
@@ -1124,6 +1123,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::MtLagrangeStrategy::get_matrix
   return mat_ptr;
 }
 
+Teuchos::RCP<const Core::LinAlg::SparseMatrix> CONTACT::MtLagrangeStrategy::get_non_redist_m_hat()
+{
+  return Mortar::matrix_row_col_transform(
+      mhatmatrix_, non_redist_slave_row_dofs(), non_redist_master_row_dofs());
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
@@ -1147,7 +1152,8 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
       systrafo_->multiply(true, *r, *r);
     }
 
-    Mortar::UTILS::mortar_matrix_condensation(k, mhatmatrix_, mhatmatrix_);
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> non_redist_mhatmatrix = get_non_redist_m_hat();
+    Mortar::UTILS::mortar_matrix_condensation(k, non_redist_mhatmatrix, non_redist_mhatmatrix);
     *kteff = *k;
 
     Mortar::UTILS::mortar_rhs_condensation(r, mhatmatrix_);

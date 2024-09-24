@@ -151,6 +151,7 @@ namespace CONTACT
       else
         return lm_dof_row_map_ptr(false);
     };
+
     virtual const Epetra_Map& lin_system_lm_dof_row_map() const
     {
       return *lin_system_lm_dof_row_map_ptr();
