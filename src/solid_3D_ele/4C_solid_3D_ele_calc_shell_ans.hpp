@@ -15,9 +15,9 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_solid_3D_ele_calc.hpp"
+#include "4C_solid_3D_ele_calc_eas_helpers.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_utils_exceptions.hpp"
-#include "internal/4C_solid_3D_ele_calc_eas_helpers.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

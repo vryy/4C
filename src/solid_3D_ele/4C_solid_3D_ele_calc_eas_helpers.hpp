@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_fem_general_cell_type.hpp"
+#include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 
 FOUR_C_NAMESPACE_OPEN
