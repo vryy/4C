@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Unit tests for the fixed size matrix.
+\brief Unit tests for the Vector wrapper
 
 \level 0
 */
@@ -31,7 +31,7 @@ namespace
    protected:
     VectorTest()
     {
-      // set up comunicator
+      // set up communicator
       comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
 
       // set up a map
@@ -39,7 +39,7 @@ namespace
     }
   };
 
-  TEST_F(VectorTest, Constructors_and_Norms)
+  TEST_F(VectorTest, ConstructorsAndNorms)
   {
     // create an epetra vector
     Epetra_Vector my_epetra_vector = Epetra_Vector(*map_, true);
@@ -54,8 +54,8 @@ namespace
     double norm_of_test_vector = 1;
 
     test_vector.Print(std::cout);
+    test_vector.Norm2(&norm_of_test_vector);
     // test norm2 and success of both vectors
-    std::cout << test_vector.Norm2(&norm_of_test_vector) << std::endl;
     ASSERT_FLOAT_EQ(0.0, norm_of_test_vector);
 
     // reset value
@@ -77,6 +77,31 @@ namespace
     // check result of NormInf
     test_vector.NormInf(&norm_of_test_vector);
     ASSERT_FLOAT_EQ(100.0, norm_of_test_vector);
+  }
+
+  TEST_F(VectorTest, DeepCopying)
+  {
+    Core::LinAlg::Vector a(*map_, true);
+    a.PutScalar(1.0);
+
+    Core::LinAlg::Vector b(*map_, true);
+    // copy assign
+    b = a;
+    b.PutScalar(2.0);
+    double norm_a = 0.0;
+    double norm_b = 0.0;
+    a.Norm2(&norm_a);
+    b.Norm2(&norm_b);
+
+    EXPECT_FLOAT_EQ(norm_a, 1.0 * std::sqrt(NumGlobalElements));
+    EXPECT_FLOAT_EQ(norm_b, 2.0 * std::sqrt(NumGlobalElements));
+
+    // copy constructor
+    Core::LinAlg::Vector c(a);
+    c.PutScalar(3.0);
+    double norm_c = 0.0;
+    c.Norm2(&norm_c);
+    EXPECT_FLOAT_EQ(norm_c, 3.0 * std::sqrt(NumGlobalElements));
   }
 
   TEST_F(VectorTest, PutScalar)
@@ -124,6 +149,25 @@ namespace
   }
 
 
+  TEST_F(VectorTest, View)
+  {
+    Epetra_Vector a(*map_, true);
+    a.PutScalar(1.0);
+    // Scope in which a is modified by the view
+    {
+      Core::LinAlg::VectorView a_view(a);
+
+      double norm = 0.0;
+      ((Core::LinAlg::Vector&)a_view).Norm2(&norm);
+      EXPECT_EQ(norm, std::sqrt(NumGlobalElements));
+
+      ((Core::LinAlg::Vector&)a_view).PutScalar(2.0);
+
+      // Change must be reflected in a
+      a.Norm2(&norm);
+      EXPECT_EQ(norm, 2.0 * std::sqrt(NumGlobalElements));
+    }
+  }
 }  // namespace
 
 FOUR_C_NAMESPACE_CLOSE
