@@ -67,7 +67,7 @@ void FLD::XFluidResultTest::test_node(
 
 void FLD::XFluidResultTest::test_node(const Core::IO::InputParameterContainer& container, int& nerr,
     int& test_count, int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector>& velnp)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& velnp)
 {
   int havenode(discret->have_global_node(node));
   int isnodeofanybody(0);

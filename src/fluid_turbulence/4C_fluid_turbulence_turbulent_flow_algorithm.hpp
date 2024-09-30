@@ -65,7 +65,7 @@ namespace FLD
     /// number of development steps
     int numtimesteps_;
     /// velocity/pressure at time n+1 to be transferred to the complete fluid field
-    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
   };
 
 }  // namespace FLD

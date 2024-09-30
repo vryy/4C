@@ -121,7 +121,7 @@ namespace GEOMETRYPAIR
      * @param displacement (in) Current displacement vector.
      * @param face_elements (in) Map with all the faces in this condition.
      */
-    virtual void set_state(const Teuchos::RCP<const Core::LinAlg::Vector>& displacement,
+    virtual void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
@@ -225,7 +225,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector>& displacement,
+    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -360,7 +360,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector>& displacement,
+    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -440,7 +440,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the needed displacement vectors for this face (derived).
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector>& displacement,
+    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 

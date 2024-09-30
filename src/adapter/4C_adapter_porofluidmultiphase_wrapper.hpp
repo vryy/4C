@@ -69,38 +69,40 @@ namespace Adapter
 
     //! apply moving mesh data
     void apply_mesh_movement(
-        Teuchos::RCP<const Core::LinAlg::Vector> dispnp  //!< displacement vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
         ) override;
 
     //! set state on discretization
     void set_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector> state) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> state) override;
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector> vel  //!< velocity vector
+    void set_velocity_field(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel  //!< velocity vector
         ) override;
 
     //! set solution of scatra problem
-    void set_scatra_solution(unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector> scalars);
+    void set_scatra_solution(
+        unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> scalars);
 
     //! return primary field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector> phinp() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp() const override;
 
     //! return primary field at time n
-    Teuchos::RCP<const Core::LinAlg::Vector> phin() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin() const override;
 
     //! return solid pressure field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector> solid_pressure() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_pressure() const override;
 
     //! return pressure field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector> pressure() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure() const override;
 
     //! return saturation field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector> saturation() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> saturation() const override;
 
     //! return valid volume fraction species dof vector
-    Teuchos::RCP<const Core::LinAlg::Vector> valid_vol_frac_spec_dofs() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const override;
 
     //! return phase flux field at time n+1
     Teuchos::RCP<const Epetra_MultiVector> flux() const override;
@@ -133,13 +135,13 @@ namespace Adapter
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const override;
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const override;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    Teuchos::RCP<const Core::LinAlg::Vector> artery_porofluid_rhs() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const override;
 
     //! iterative update of phinp
-    void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector> inc) override;
+    void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) override;
 
     //! reconstruct pressures and saturation from current solution
     void reconstruct_pressures_and_saturations() override;

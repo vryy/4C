@@ -231,7 +231,8 @@ UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::get_cardi
 |Initialization routine computes ref base values and activates conditions |
  *------------------------------------------------------------------------*/
 void UTILS::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::Vector> sysvec1, Teuchos::RCP<Core::LinAlg::Vector> sysvec2)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
 {
   FOUR_C_THROW("Overridden by derived class!");
   return;
@@ -245,9 +246,12 @@ void UTILS::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
 void UTILS::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Core::LinAlg::Vector> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector> sysvec2, Teuchos::RCP<Core::LinAlg::Vector> sysvec3,
-    const Teuchos::RCP<Core::LinAlg::Vector> sysvec4, Teuchos::RCP<Core::LinAlg::Vector> sysvec5)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5)
 {
   FOUR_C_THROW("Overridden by derived class!");
   return;
@@ -302,8 +306,8 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
     int coupcondID = coupcond->parameters().get<int>("coupling_id");
     params.set("coupling_id", coupcondID);
 
-    Teuchos::RCP<const Core::LinAlg::Vector> disp =
-        params.get<Teuchos::RCP<const Core::LinAlg::Vector>>("new disp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        params.get<Teuchos::RCP<const Core::LinAlg::Vector<double>>>("new disp");
     actdisc_->set_state("displacement", disp);
 
     // global and local ID of this bc in the redundant vectors
@@ -343,7 +347,8 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
       xc.shape(numnode, 3);
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
-      Teuchos::RCP<const Core::LinAlg::Vector> curdispl = actdisc_->get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> curdispl =
+          actdisc_->get_state("displacement");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*curdispl, mydisp, lm);
 
@@ -493,7 +498,7 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0D::set_state(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Core::LinAlg::Vector> V                           ///< values to set
+    Teuchos::RCP<Core::LinAlg::Vector<double>> V                   ///< values to set
 )
 {
   actdisc_->set_state(state, V);

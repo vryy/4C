@@ -55,7 +55,7 @@ namespace Solid
 
       /// set the state of the nox group and the global state data container
       /// see class \ref Adapter::StructureNew for a detailed documentation.
-      void set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x) override;
+      void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) override;
 
       /*! \brief nonlinear solve
        *
@@ -106,12 +106,13 @@ namespace Solid
       };
 
       /// Update State Incrementally for coupled problems with monolithic approach
-      void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override;
+      void update_state_incrementally(
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
 
       void determine_stress_strain() override;
 
       ///  Evaluate routine for coupled problems with monolithic approach
-      void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override;
+      void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
       void evaluate() override;
 
       /** \brief Print structural jacobian matrix into a text file for later use

@@ -38,8 +38,9 @@ namespace CONSTRAINTS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
-                                                          ///< by assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            systemvector3  ///< distributed vector that may be filled
+                           ///< by assembly of element contributions
         ) override;
 
     /// initialization routine called by the manager ctor
@@ -62,14 +63,15 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
-                                                          ///< by assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            systemvector3  ///< distributed vector that may be filled
+                           ///< by assembly of element contributions
         ) override;
 
    private:
@@ -91,13 +93,13 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
         override;  ///< distributed vector that may be filled by
                    ///< assembly of element contributions
 
@@ -106,7 +108,7 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::FE::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector3,  ///< distributed vector that may be filled by
                             ///< aasembly of element contributions
         bool init = false);
@@ -132,8 +134,8 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Import> errorimport_;
     Teuchos::RCP<Epetra_Map> rederrormap_;
     Teuchos::RCP<Epetra_Map> errormap_;
-    Teuchos::RCP<Core::LinAlg::Vector> initerror_;
-    Teuchos::RCP<Core::LinAlg::Vector> acterror_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> initerror_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acterror_;
 
 
   };  // class

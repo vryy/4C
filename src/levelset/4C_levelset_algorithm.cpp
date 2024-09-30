@@ -234,7 +234,7 @@ void ScaTra::LevelSetAlgorithm::setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& phinp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& phinp,
     const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus) const
 {
   double volplus = 0.0;

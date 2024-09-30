@@ -63,8 +63,8 @@ namespace UTILS
       \brief Constructor of cardiovascular0d manager
     */
     Cardiovascular0DManager(
-        Teuchos::RCP<Core::FE::Discretization> disc,    ///< standard discretization
-        Teuchos::RCP<const Core::LinAlg::Vector> disp,  ///< current displacement
+        Teuchos::RCP<Core::FE::Discretization> disc,            ///< standard discretization
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,  ///< current displacement
         Teuchos::ParameterList
             strparams,  ///<  parameterlist from structural time integration algorithm
         Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
@@ -76,9 +76,10 @@ namespace UTILS
     /*!
       \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem
     */
-    void evaluate_force_stiff(const double time,           ///< time at end of time step
-        Teuchos::RCP<const Core::LinAlg::Vector> disp,     ///< displacement at end of time step
-        Teuchos::RCP<Core::LinAlg::Vector> fint,           ///< vector of internal structural forces
+    void evaluate_force_stiff(const double time,  ///< time at end of time step
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            disp,                                          ///< displacement at end of time step
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,   ///< vector of internal structural forces
         Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  ///< structural stiffness matrix
         Teuchos::ParameterList scalelist);
 
@@ -138,20 +139,21 @@ namespace UTILS
     void reset_step();
 
     /// Add a vector as residual increment to the cardiovascular0d dof vector
-    void update_cv0_d_dof(Teuchos::RCP<Core::LinAlg::Vector> cv0ddofincrement  ///< vector to add
+    void update_cv0_d_dof(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincrement  ///< vector to add
     );
 
     ///
     void evaluate_neumann_cardiovascular0_d_coupling(
-        Teuchos::ParameterList params, const Teuchos::RCP<Core::LinAlg::Vector> actpres,
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector,         ///< structural rhs
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix  ///< structural stiffness matrix
+        Teuchos::ParameterList params, const Teuchos::RCP<Core::LinAlg::Vector<double>> actpres,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< structural rhs
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix   ///< structural stiffness matrix
     );
 
     /*!
          \brief Return cardiovascular0d rhs at generalized midpoint $t_{n+\theta}$
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get_cardiovascular0_drhs() const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_cardiovascular0_drhs() const
     {
       return cardvasc0d_res_m_;
     }
@@ -186,37 +188,37 @@ namespace UTILS
     /*!
       \brief Return dof vector
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_dof_np() const { return cv0ddof_np_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_dof_np() const { return cv0ddof_np_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_dof_n() const { return cv0ddof_n_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_dof_n() const { return cv0ddof_n_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_dof_m() const { return cv0ddof_m_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_dof_m() const { return cv0ddof_m_; };
 
     /*!
       \brief Return vol vector
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_vol_np() const { return v_np_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_vol_np() const { return v_np_; };
 
 
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_df_np() const { return cardvasc0d_df_np_; };
-
-    /*!
-      \brief Return dof vector of last converged step
-    */
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_df_n() const { return cardvasc0d_df_n_; };
-
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_f_np() const { return cardvasc0d_f_np_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_df_np() const { return cardvasc0d_df_np_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get0_d_f_n() const { return cardvasc0d_f_n_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_df_n() const { return cardvasc0d_df_n_; };
+
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_f_np() const { return cardvasc0d_f_np_; };
+
+    /*!
+      \brief Return dof vector of last converged step
+    */
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_f_n() const { return cardvasc0d_f_n_; };
 
     /*!
      \brief Return if there are Cardiovascular0Ds
@@ -241,20 +243,23 @@ namespace UTILS
     Teuchos::RCP<Core::LinAlg::Solver>& get_solver() { return solver_; }
 
     /// Reset reference base values for restart computations
-    void set0_d_v_n(Teuchos::RCP<Core::LinAlg::Vector> newval  ///< new reference base values
+    void set0_d_v_n(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> newval  ///< new reference base values
     )
     {
       v_n_->Update(1.0, *newval, 0.0);
     }
 
     /// set df_n, f_n
-    void set0_d_df_n(Teuchos::RCP<Core::LinAlg::Vector> newval  ///< new Cardiovascular0D dofs
+    void set0_d_df_n(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> newval  ///< new Cardiovascular0D dofs
     )
     {
       cardvasc0d_df_n_->Update(1.0, *newval, 0.0);
       return;
     }
-    void set0_d_f_n(Teuchos::RCP<Core::LinAlg::Vector> newval  ///< new Cardiovascular0D dofs
+    void set0_d_f_n(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> newval  ///< new Cardiovascular0D dofs
     )
     {
       cardvasc0d_f_n_->Update(1.0, *newval, 0.0);
@@ -262,7 +267,8 @@ namespace UTILS
     }
 
     /// Reset dofs
-    void set0_d_dof_n(Teuchos::RCP<Core::LinAlg::Vector> newdof  ///< new Cardiovascular0D dofs
+    void set0_d_dof_n(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> newdof  ///< new Cardiovascular0D dofs
     )
     {
       cv0ddof_np_->Update(1.0, *newdof, 0.0);
@@ -283,9 +289,9 @@ namespace UTILS
 
 
     int solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Core::LinAlg::Vector> dispinc,          ///< displacement increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsstruct,  ///< standard right hand side
-        const double k_ptc                                   ///< for 3D-0D PTC
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstruct,  ///< standard right hand side
+        const double k_ptc                                           ///< for 3D-0D PTC
     );
 
     Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d4_element_windkessel()
@@ -349,32 +355,38 @@ namespace UTILS
         redcardiovascular0dmap_;  ///< fully redundant map of Cardiovascular0D values
     Teuchos::RCP<Epetra_Export> cardvasc0dimpo_;  ///< importer for fully redundant Cardiovascular0D
                                                   ///< vector into distributed one
-    Teuchos::RCP<Core::LinAlg::Vector> cv0ddofincrement_;  ///< increment of cvdof
-    Teuchos::RCP<Core::LinAlg::Vector> cv0ddof_n_;         ///< cvdof vector at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector> cv0ddof_np_;        ///< cvdof vector at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector> cv0ddof_m_;         ///< cvdof vector at mid-point
-    Teuchos::RCP<Core::LinAlg::Vector> dcv0ddof_m_;        ///< cvdof rate vector at mid-point
-    Teuchos::RCP<Core::LinAlg::Vector> v_n_;               ///< vol vector at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector> v_np_;              ///< vol vector at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector> v_m_;               ///< vol vector at mid-point
-    Teuchos::RCP<Core::LinAlg::Vector> cv0ddof_t_n_;       ///< cvdof vector at periodic time T_{N}
-    Teuchos::RCP<Core::LinAlg::Vector> cv0ddof_t_np_;  ///< cvdof vector at periodic time T_{N+1}
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincrement_;  ///< increment of cvdof
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_n_;         ///< cvdof vector at t_{n}
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_np_;        ///< cvdof vector at t_{n+1}
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_m_;         ///< cvdof vector at mid-point
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dcv0ddof_m_;  ///< cvdof rate vector at mid-point
+    Teuchos::RCP<Core::LinAlg::Vector<double>> v_n_;         ///< vol vector at t_{n}
+    Teuchos::RCP<Core::LinAlg::Vector<double>> v_np_;        ///< vol vector at t_{n+1}
+    Teuchos::RCP<Core::LinAlg::Vector<double>> v_m_;         ///< vol vector at mid-point
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        cv0ddof_t_n_;  ///< cvdof vector at periodic time T_{N}
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        cv0ddof_t_np_;  ///< cvdof vector at periodic time T_{N+1}
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         cardvasc0d_res_m_;  ///< Cardiovascular0D full rhs vector, at t_{n+theta}
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         cardvasc0d_df_n_;  ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector> cardvasc0d_df_np_;  ///< Cardiovascular0D rhs part associated
-                                                           ///< with time derivaties, at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector> cardvasc0d_df_m_;   ///< Cardiovascular0D rhs part associated
-                                                           ///< with time derivaties, at t_{n+theta}
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        cardvasc0d_df_np_;  ///< Cardiovascular0D rhs part associated
+                            ///< with time derivaties, at t_{n+1}
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        cardvasc0d_df_m_;  ///< Cardiovascular0D rhs part associated
+                           ///< with time derivaties, at t_{n+theta}
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         cardvasc0d_f_n_;  ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector> cardvasc0d_f_np_;  ///< Cardiovascular0D rhs part associated
-                                                          ///< with non-derivatives, at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector> cardvasc0d_f_m_;   ///< Cardiovascular0D rhs part associated
-                                                          ///< with non-derivatives, at t_{n+theta}
-    const double t_period_;                               ///< periodic time
-    const double eps_periodic_;                           ///< tolerance for periodic state
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        cardvasc0d_f_np_;  ///< Cardiovascular0D rhs part associated
+                           ///< with non-derivatives, at t_{n+1}
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        cardvasc0d_f_m_;           ///< Cardiovascular0D rhs part associated
+                                   ///< with non-derivatives, at t_{n+theta}
+    const double t_period_;        ///< periodic time
+    const double eps_periodic_;    ///< tolerance for periodic state
     bool is_periodic_;             ///< true, if periodic state is reached, false otherwise
     double cycle_error_;           ///< perdiodicity error
     int num_cardiovascular0_did_;  ///< number of Cardiovascular0D bcs
@@ -400,9 +412,10 @@ namespace UTILS
     double tolres_struct_;      ///< tolerace for structural residual
     double tolres_cardvasc0d_;  ///< tolerace for cardiovascular0d residual
     Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo algochoice_;
-    Teuchos::RCP<Core::LinAlg::Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet
-                                                       ///< toggle -- monitor its target change!
-    Teuchos::RCP<Core::LinAlg::Vector> zeros_;         ///< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        dirichtoggle_;                                  ///< \b only for compatability: dirichlet
+                                                        ///< toggle -- monitor its target change!
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  ///< a zero vector of full length
     const double theta_;                 ///< time-integration factor for One Step Theta scheme
     const bool enhanced_output_;         ///< for enhanced output
     const bool ptc_3d0d_;                ///< if we want to use PTC (pseudo-transient continuation)

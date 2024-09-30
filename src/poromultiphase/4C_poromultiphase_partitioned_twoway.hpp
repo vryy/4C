@@ -48,7 +48,7 @@ namespace POROMULTIPHASE
     void update_and_output() override;
 
     // update
-    Teuchos::RCP<const Core::LinAlg::Vector> relaxed_fluid_phinp() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> relaxed_fluid_phinp() const override
     {
       return fluidphinp_;
     }
@@ -72,7 +72,8 @@ namespace POROMULTIPHASE
     virtual bool convergence_check(int itnum);
 
     //! perform relaxation
-    void perform_relaxation(Teuchos::RCP<const Core::LinAlg::Vector> phi, const int itnum) override;
+    void perform_relaxation(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, const int itnum) override;
 
     /// set (relaxed) fluid solution on structure field
     void set_relaxed_fluid_solution() override;
@@ -81,20 +82,20 @@ namespace POROMULTIPHASE
     void aitken_relaxation(double& omega, const int itnum);
 
     //! pressure increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> phiincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiincnp_;
     //! artery pressure increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> arterypressincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> arterypressincnp_;
     //! displacement increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> dispincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispincnp_;
 
     //! fluid primary variable at time n+1, iteration i+1
-    Teuchos::RCP<Core::LinAlg::Vector> fluidphinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidphinp_;
     //! fluid primary variable at time n+1, iteration i
-    Teuchos::RCP<Core::LinAlg::Vector> fluidphioldnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidphioldnp_;
     //! fluid primary variable increment: phi,n+1^i+1 - phi,n+1^i
-    Teuchos::RCP<Core::LinAlg::Vector> fluidphiincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidphiincnp_;
     //! old fluid primary variablee increment: phi,n+1^i+1 - phi,n+1^i
-    Teuchos::RCP<Core::LinAlg::Vector> fluidphiincnpold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidphiincnpold_;
 
     //! convergence tolerance
     double ittol_;

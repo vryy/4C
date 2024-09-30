@@ -980,7 +980,7 @@ void SSI::SsiMono::update_iter_scatra()
 void SSI::SsiMono::update_iter_structure()
 {
   // set up structural increment vector
-  const Teuchos::RCP<Core::LinAlg::Vector> increment_structure =
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> increment_structure =
       maps_sub_problems()->extract_vector(
           ssi_vectors_->increment(), UTILS::SSIMaps::get_problem_position(Subproblem::structure));
 
@@ -1233,7 +1233,7 @@ void SSI::SsiMono::calc_initial_potential_field()
           scatra_elch_splitter->other_map(), structure_field()->dof_row_map());
     }
 
-    auto dbc_zeros = Teuchos::rcp(new Core::LinAlg::Vector(*pseudo_dbc_map, true));
+    auto dbc_zeros = Teuchos::rcp(new Core::LinAlg::Vector<double>(*pseudo_dbc_map, true));
 
     auto rhs = ssi_vectors_->residual();
     Core::LinAlg::apply_dirichlet_to_system(*ssi_matrices_->system_matrix(),
@@ -1350,7 +1350,7 @@ void SSI::SsiMono::calc_initial_time_derivative()
 
   // fill ones on main diag of structure block (not solved)
   auto ones_struct =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->dof_row_map(), true));
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
   ones_struct->PutScalar(1.0);
   matrix_type() == Core::LinAlg::MatrixType::sparse
       ? Core::LinAlg::insert_my_row_diagonal_into_unfilled_matrix(
@@ -1362,10 +1362,11 @@ void SSI::SsiMono::calc_initial_time_derivative()
             *ones_struct);
 
   // extract residuals of scatra and manifold from global residual
-  auto rhs_scatra = Teuchos::rcp(new Core::LinAlg::Vector(*scatra_field()->dof_row_map(), true));
+  auto rhs_scatra =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatra_field()->dof_row_map(), true));
   auto rhs_manifold =
       is_scatra_manifold()
-          ? Teuchos::rcp(new Core::LinAlg::Vector(*scatra_manifold()->dof_row_map(), true))
+          ? Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatra_manifold()->dof_row_map(), true))
           : Teuchos::null;
 
   rhs_scatra->Update(1.0,
@@ -1491,8 +1492,8 @@ void SSI::SsiMono::calc_initial_time_derivative()
   }
 
   // reconstruct global residual from partial residuals
-  auto rhs_system =
-      Teuchos::RCP<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*dof_row_map(), true));
+  auto rhs_system = Teuchos::RCP<Core::LinAlg::Vector<double>>(
+      new Core::LinAlg::Vector<double>(*dof_row_map(), true));
   maps_sub_problems()->insert_vector(
       rhs_scatra, UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport), rhs_system);
   if (is_scatra_manifold())
@@ -1516,11 +1517,11 @@ void SSI::SsiMono::calc_initial_time_derivative()
   else
     pseudo_dbc_map = Teuchos::rcp(new Epetra_Map(*structure_field()->dof_row_map()));
 
-  auto dbc_zeros = Teuchos::rcp(new Core::LinAlg::Vector(*pseudo_dbc_map, true));
+  auto dbc_zeros = Teuchos::rcp(new Core::LinAlg::Vector<double>(*pseudo_dbc_map, true));
 
   // temporal derivative of transported scalars
-  auto phidtnp_system =
-      Teuchos::RCP<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*dof_row_map(), true));
+  auto phidtnp_system = Teuchos::RCP<Core::LinAlg::Vector<double>>(
+      new Core::LinAlg::Vector<double>(*dof_row_map(), true));
   Core::LinAlg::apply_dirichlet_to_system(
       *massmatrix_system, *phidtnp_system, *rhs_system, *dbc_zeros, *(pseudo_dbc_map));
 
@@ -1664,7 +1665,8 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SsiMono::set_scatra_manifold_solution(Teuchos::RCP<const Core::LinAlg::Vector> phi)
+void SSI::SsiMono::set_scatra_manifold_solution(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi)
 {
   // scatra values on master side copied to manifold
   auto manifold_on_scatra =

@@ -85,37 +85,38 @@ namespace Adapter
     double time_scaling() const override;
 
     /// Return interface forces
-    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_struct_interface_forces();
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_struct_interface_forces();
 
     /// Return interface velocity at old time level n
-    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_struct_interface_veln();
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_struct_interface_veln();
 
     /// Return interface velocity at new time level n+1
-    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_struct_interface_velnp()
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_struct_interface_velnp()
     {
       FOUR_C_THROW("Not implemented, yet!");
       return Teuchos::null;
     }
 
     /// apply the interface velocities to the fluid
-    virtual void apply_struct_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector> ivel);
+    virtual void apply_struct_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector<double>> ivel);
 
     /// apply the interface displacements to the fluid
     virtual void apply_struct_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector> interface_disp);
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> interface_disp);
 
     /// convert increment of displacement to increment in velocity
-    void displacement_to_velocity(Teuchos::RCP<Core::LinAlg::Vector> fcx) override;
+    void displacement_to_velocity(Teuchos::RCP<Core::LinAlg::Vector<double>> fcx) override;
 
     /// Apply initial mesh displacement
     void apply_initial_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector> initfluiddisp) override
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented, yet!");
     }
 
     /// apply the interface displacements to the fluid
-    void apply_mesh_displacement(Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp) override;
+    void apply_mesh_displacement(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp) override;
 
     void set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
 
@@ -124,7 +125,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::SparseMatrix> c_fluid_struct_matrix();
     Teuchos::RCP<Core::LinAlg::SparseMatrix> c_struct_struct_matrix();
 
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs_struct_vec();
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_struct_vec();
 
     Teuchos::RCP<FLD::XFluid> my_fluid() { return xfluid_; }
 
@@ -142,8 +143,10 @@ namespace Adapter
     void gmsh_output(const std::string& name,  ///< name for output file
         const int step,                        ///< step number
         const int count,                       ///< counter for iterations within a global time step
-        Teuchos::RCP<Core::LinAlg::Vector> vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<Core::LinAlg::Vector> acc = Teuchos::null  ///< vector holding accelerations
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            vel,  ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<Core::LinAlg::Vector<double>> acc =
+            Teuchos::null  ///< vector holding accelerations
     );
 
    protected:

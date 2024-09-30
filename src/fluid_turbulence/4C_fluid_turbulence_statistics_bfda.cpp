@@ -429,7 +429,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
 
 
-void FLD::TurbulenceStatisticsBfda::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp)
+void FLD::TurbulenceStatisticsBfda::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
 {
   //----------------------------------------------------------------------
   // increase sample counter

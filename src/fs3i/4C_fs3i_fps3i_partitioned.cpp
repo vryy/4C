@@ -469,8 +469,8 @@ void FS3I::PartFPS3I::setup_system()
   {
     for (unsigned i = 0; i < scatravec_.size(); ++i)
     {
-      Teuchos::RCP<Core::LinAlg::Vector> scatracoupforce =
-          Teuchos::rcp(new Core::LinAlg::Vector(*(scatraglobalex_->Map(i)), true));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> scatracoupforce =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(scatraglobalex_->Map(i)), true));
       scatracoupforce_.push_back(scatracoupforce);
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> scatracoupmat =
@@ -478,7 +478,8 @@ void FS3I::PartFPS3I::setup_system()
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->scatra_field()->discretization()->dof_row_map();
-      Teuchos::RCP<Core::LinAlg::Vector> zeros = Core::LinAlg::create_vector(*dofrowmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
+          Core::LinAlg::create_vector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
   }
@@ -487,9 +488,10 @@ void FS3I::PartFPS3I::setup_system()
       Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *scatraglobalex_, *scatraglobalex_, 27, false, true));
   // create scatra rhs vector
-  scatrarhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*scatraglobalex_->full_map(), true));
+  scatrarhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatraglobalex_->full_map(), true));
   // create scatra increment vector
-  scatraincrement_ = Teuchos::rcp(new Core::LinAlg::Vector(*scatraglobalex_->full_map(), true));
+  scatraincrement_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatraglobalex_->full_map(), true));
   // check whether potential Dirichlet conditions at scatra interface are
   // defined for both discretizations
   check_interface_dirichlet_bc();
@@ -648,8 +650,8 @@ void FS3I::PartFPS3I::set_velocity_fields()
     }
     case Inpar::ScaTra::velocity_Navier_Stokes:
     {
-      std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> convel;
-      std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> vel;
+      std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> convel;
+      std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> vel;
       extract_vel(convel, vel);
 
       for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -667,7 +669,7 @@ void FS3I::PartFPS3I::set_velocity_fields()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::set_wall_shear_stresses()
 {
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> wss;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> wss;
   extract_wss(wss);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -682,7 +684,7 @@ void FS3I::PartFPS3I::set_wall_shear_stresses()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::set_pressure_fields()
 {
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> pressure;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> pressure;
   extract_pressure(pressure);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -712,7 +714,7 @@ void FS3I::PartFPS3I::evaluate_scatra_fields()
     // add contributions due to finite interface permeability
     if (!infperm_)
     {
-      Teuchos::RCP<Core::LinAlg::Vector> coupforce = scatracoupforce_[i];
+      Teuchos::RCP<Core::LinAlg::Vector<double>> coupforce = scatracoupforce_[i];
       Teuchos::RCP<Core::LinAlg::SparseMatrix> coupmat = scatracoupmat_[i];
 
       coupforce->PutScalar(0.0);
@@ -733,8 +735,9 @@ void FS3I::PartFPS3I::evaluate_scatra_fields()
 /*----------------------------------------------------------------------*
  |  Extract velocities                                    hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& convel,
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& vel)
+void FS3I::PartFPS3I::extract_vel(
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& convel,
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& vel)
 {
   // ############ Fluid Field ###############
   convel.push_back(fpsi_->fluid_field()->convective_vel());
@@ -749,7 +752,8 @@ void FS3I::PartFPS3I::extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::V
 /*----------------------------------------------------------------------*
  |  Extract wall shear stresses                           hemmler 07/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFPS3I::extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& wss)
+void FS3I::PartFPS3I::extract_wss(
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& wss)
 {
   // ############ Fluid Field ###############
 
@@ -757,7 +761,7 @@ void FS3I::PartFPS3I::extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::V
       Teuchos::rcp_dynamic_cast<Adapter::FluidFSI>(fpsi_->fluid_field());
   if (fluid == Teuchos::null) FOUR_C_THROW("Dynamic cast to Adapter::FluidFSI failed!");
 
-  Teuchos::RCP<Core::LinAlg::Vector> WallShearStress =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> WallShearStress =
       fluid->calculate_wall_shear_stresses();  // CalcWallShearStress();
   wss.push_back(WallShearStress);
 
@@ -776,7 +780,7 @@ void FS3I::PartFPS3I::extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::V
   WallShearStress = fpsi_->fpsi_coupl()->i_fluid_to_porofluid(WallShearStress);
 
   // insert porofluid interface entries into vector with full porofluid length
-  Teuchos::RCP<Core::LinAlg::Vector> porofluid =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> porofluid =
       Core::LinAlg::create_vector(*(fpsi_->poro_field()->fluid_field()->dof_row_map()), true);
 
   // Parameter int block of function InsertVector:
@@ -790,7 +794,7 @@ void FS3I::PartFPS3I::extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::V
  |  Extract pressures                                     hemmler 07/14 |
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::extract_pressure(
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& pressure)
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& pressure)
 {
   // ############ Fluid Field ###############
   pressure.push_back(

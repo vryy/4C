@@ -32,6 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
+  template <typename T>
   class Vector;
 }
 
@@ -142,7 +143,7 @@ namespace Solid
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual void reset(const Core::LinAlg::Vector& x) = 0;
+      virtual void reset(const Core::LinAlg::Vector<double>& x) = 0;
 
       /*! \brief Evaluate the current right-hand-side at \f$t_{n+1}\f$
        *
@@ -202,7 +203,7 @@ namespace Solid
        * @param[in/out] rhs right-hand side vector
        *
        * \author hiermeier \date 03/18 */
-      virtual void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector& rhs) {}
+      virtual void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector<double>& rhs) {}
 
       /*! \brief Assemble the force right-hand-side
        *
@@ -226,7 +227,8 @@ namespace Solid
        * \date 07/2016
        * \author hiermeier
        */
-      virtual bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const = 0;
+      virtual bool assemble_force(
+          Core::LinAlg::Vector<double>& f, const double& timefac_np) const = 0;
 
       /*! \brief Assemble the jacobian
        *
@@ -239,7 +241,8 @@ namespace Solid
       virtual bool assemble_jacobian(
           Core::LinAlg::SparseOperator& jac, const double& timefac_np) const = 0;
 
-      virtual bool assemble_cheap_soc_rhs(Core::LinAlg::Vector& f, const double& timefac_np) const
+      virtual bool assemble_cheap_soc_rhs(
+          Core::LinAlg::Vector<double>& f, const double& timefac_np) const
       {
         return true;
       };
@@ -275,14 +278,14 @@ namespace Solid
        *  Do NOT use it to reset your model variables! Use the reset() method instead.
        *
        *  \author hiermeier \date 07/2016 */
-      virtual void run_post_compute_x(const Core::LinAlg::Vector& xold,
-          const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew) = 0;
+      virtual void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
+          const Core::LinAlg::Vector<double>& dir, const Core::LinAlg::Vector<double>& xnew) = 0;
 
       /*! \brief Executed before the solution vector is going to be updated
        *
        *  \author hiermeier \date 03/17 */
-      virtual void run_pre_compute_x(const Core::LinAlg::Vector& xold,
-          Core::LinAlg::Vector& dir_mutable, const NOX::Nln::Group& curr_grp) = 0;
+      virtual void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) = 0;
 
       /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
        *
@@ -309,8 +312,8 @@ namespace Solid
        *  \param grp   : read only access to the group object
        *
        *  \author hiermeier \date 12/17 */
-      virtual void run_post_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
-          Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+      virtual void run_post_apply_jacobian_inverse(const Core::LinAlg::Vector<double>& rhs,
+          Core::LinAlg::Vector<double>& result, const Core::LinAlg::Vector<double>& xold,
           const NOX::Nln::Group& grp)
       { /* empty */
       }
@@ -327,8 +330,8 @@ namespace Solid
        *  \param grp   : read only access to the group object
        *
        *  \author hiermeier \date 12/17 */
-      virtual void run_pre_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
-          Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+      virtual void run_pre_apply_jacobian_inverse(const Core::LinAlg::Vector<double>& rhs,
+          Core::LinAlg::Vector<double>& result, const Core::LinAlg::Vector<double>& xold,
           const NOX::Nln::Group& grp)
       { /* empty */
       }
@@ -415,7 +418,7 @@ namespace Solid
        *  global state in terms of the x-vector is stored more globally.
        *
        *  \author hiermeier \date 12/17 */
-      virtual void create_backup_state(const Core::LinAlg::Vector& dir){
+      virtual void create_backup_state(const Core::LinAlg::Vector<double>& dir){
           /* do nothing in default */};
 
       /** \brief Recover from the previously created backup state
@@ -434,18 +437,19 @@ namespace Solid
 
       /*! Returns a pointer to the current model solution vector (usually the
        *  Lagrange multiplier vector) */
-      virtual Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const = 0;
+      virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const = 0;
 
       /*! Returns a pointer to the model solution vector of the last time step
        *  (usually the Lagrange multiplier vector) */
-      virtual Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const = 0;
+      virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+          const = 0;
 
       /// access the current external load increment
-      Teuchos::RCP<Core::LinAlg::Vector> get_fext_incr() const;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> get_fext_incr() const;
 
       //! Get the mechanical stress state vector (read access)
-      [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> get_mechanical_stress_state()
-          const
+      [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>>
+      get_mechanical_stress_state() const
       {
         return Teuchos::null;
       }

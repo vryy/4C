@@ -100,7 +100,7 @@ namespace Solid
       void post_evaluate() override{/* currently unused */};
 
       //! derived
-      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override;
 
       //! derived
       bool assemble_jacobian(
@@ -117,15 +117,16 @@ namespace Solid
       void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
-      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
-          const NOX::Nln::Group& curr_grp) override
+      void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override
       {
         return;
       };
 
       //! derived
-      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
-          const Core::LinAlg::Vector& xnew) override;
+      void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
+          const Core::LinAlg::Vector<double>& dir,
+          const Core::LinAlg::Vector<double>& xnew) override;
 
       //! derived
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
@@ -155,10 +156,11 @@ namespace Solid
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+          const override;
 
       //! derived
       void post_output() override;
@@ -169,7 +171,7 @@ namespace Solid
 
      protected:
       //! derived
-      void reset(const Core::LinAlg::Vector& x) override;
+      void reset(const Core::LinAlg::Vector<double>& x) override;
 
       //!@name routines for submodel management
       //! @{
@@ -277,10 +279,10 @@ namespace Solid
       Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> ia_state_ptr_;
 
       //! force based on ia_discret at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> ia_force_beaminteraction_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> ia_force_beaminteraction_;
 
       //! global force based on discret() at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> force_beaminteraction_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> force_beaminteraction_;
 
       //! structural stiffness matrix based on discret()
       Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_beaminteraction_;
@@ -298,7 +300,7 @@ namespace Solid
       Teuchos::RCP<Epetra_Map> rowbins_;
 
       //! displacement of nodes since last redistribution
-      Teuchos::RCP<Core::LinAlg::Vector> dis_at_last_redistr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> dis_at_last_redistr_;
 
       //! depending on which submodels are active this variable has different values
       //! and determines how often a redistribution needs to be done

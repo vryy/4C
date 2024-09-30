@@ -60,10 +60,10 @@ namespace Mortar
     void condense_matrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
-    void condense_rhs(Teuchos::RCP<Core::LinAlg::Vector>& rhs);
+    void condense_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs);
 
     /// recover condensed primal slave-sided dofs
-    void recover_incr(Teuchos::RCP<Core::LinAlg::Vector>& incr);
+    void recover_incr(Teuchos::RCP<Core::LinAlg::Vector<double>>& incr);
 
    private:
     std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> p_;

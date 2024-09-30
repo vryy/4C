@@ -111,9 +111,9 @@ namespace FS3I
 
     //! set-up of global rhs of the monolithic ScaTra problem
     void setup_coupled_scatra_vector(
-        Teuchos::RCP<Core::LinAlg::Vector> globalvec,    //!< resulting global vector
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec1,  //!< vector in fluid ScaTra map
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec2   //!< vector in solid ScaTra map
+        Teuchos::RCP<Core::LinAlg::Vector<double>> globalvec,    //!< resulting global vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec1,  //!< vector in fluid ScaTra map
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec2   //!< vector in solid ScaTra map
     );
 
     //! set-up of global rhs of the monolithic ScaTra problem
@@ -122,11 +122,11 @@ namespace FS3I
     //! set-up of global matrix of the monolithic ScaTra problem
     void setup_coupled_scatra_matrix();
 
-    Teuchos::RCP<Core::LinAlg::Vector> scatra2_to_scatra1(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra2_to_scatra1(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
 
-    Teuchos::RCP<Core::LinAlg::Vector> scatra1_to_scatra2(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra1_to_scatra2(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
 
     //! linear solution of monolithic ScaTra problem
     void linear_solve_scatra();
@@ -136,29 +136,31 @@ namespace FS3I
 
     //! extraction of field-specific vectors from global ScaTra vector
     void extract_scatra_field_vectors(
-        Teuchos::RCP<const Core::LinAlg::Vector> globalvec,  //!< global vector
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec1,  //!< resulting vector in fluid ScaTra map
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec2   //!< resulting vector in solid ScaTra map
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,  //!< global vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>&
+            vec1,  //!< resulting vector in fluid ScaTra map
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>&
+            vec2  //!< resulting vector in solid ScaTra map
     );
 
    private:
     /// extracts membrane concentration in membrane (interface)
     void extract_membrane_concentration(
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& MembraneConcentration) const;
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& MembraneConcentration) const;
 
     /// Calculation of membane concentration in the membrane between fluid-scatra and
     /// structure-scatra
-    Teuchos::RCP<Core::LinAlg::Vector> calc_membrane_concentration() const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> calc_membrane_concentration() const;
 
    protected:
     /// vector of scatra algorithms
     std::vector<Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>> scatravec_;
 
     /// scatra rhs vector
-    Teuchos::RCP<Core::LinAlg::Vector> scatrarhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatrarhs_;
 
     /// scatra increment vector
-    Teuchos::RCP<Core::LinAlg::Vector> scatraincrement_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraincrement_;
 
     /// dof row map of scatra problems splitted in (field) blocks
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> scatraglobalex_;
@@ -172,13 +174,13 @@ namespace FS3I
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> scatrasystemmatrix_;
 
     /// coupling forces (in case of surface permeability)
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>> scatracoupforce_;
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> scatracoupforce_;
 
     /// coupling matrices (in case of surface permeability)
     std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> scatracoupmat_;
 
     /// zero vector (needed for application of Dirichlet BC on coupling vector)
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>> scatrazeros_;
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrazeros_;
 
     /// scatra solver
     Teuchos::RCP<Core::LinAlg::Solver> scatrasolver_;

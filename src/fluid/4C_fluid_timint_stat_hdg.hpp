@@ -97,7 +97,7 @@ namespace FLD
    protected:
     //! @name velocity gradient, velocity and pressure at time n+1, n, n-1
     //!  and n+alpha_F for element interior in HDG
-    Teuchos::RCP<Core::LinAlg::Vector> intvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnp_;
 
    private:
     ///< Keep track of whether we do the first assembly because we reconstruct the local HDG

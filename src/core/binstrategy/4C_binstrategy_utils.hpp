@@ -96,7 +96,7 @@ namespace Core::Binstrategy::Utils
    * @param[out] currpos current position of node
    */
   void get_current_node_pos(const Core::FE::Discretization& discret, Core::Nodes::Node const* node,
-      Teuchos::RCP<const Core::LinAlg::Vector> const disnp, double* currpos);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> const disnp, double* currpos);
 
 }  // namespace Core::Binstrategy::Utils
 

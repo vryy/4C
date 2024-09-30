@@ -44,12 +44,12 @@ XFEM::XfluidTimeintBase::XfluidTimeintBase(
     Teuchos::RCP<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
         oldVectors,  /// vector of col-vectors w.r.t. old interface position
-    Teuchos::RCP<Core::LinAlg::Vector> dispn,   /// old col displacement vector
-    Teuchos::RCP<Core::LinAlg::Vector> dispnp,  /// col displacment n +1
-    const Epetra_Map& olddofcolmap,             /// dofcolmap w.r.t. old interface position
-    const Epetra_Map& newdofrowmap,             /// dofcolmap w.r.t. new interface position
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispn,   /// old col displacement vector
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,  /// col displacment n +1
+    const Epetra_Map& olddofcolmap,                     /// dofcolmap w.r.t. old interface position
+    const Epetra_Map& newdofrowmap,                     /// dofcolmap w.r.t. new interface position
     const Teuchos::RCP<std::map<int, std::vector<int>>>
         pbcmap  /// map of periodic boundary conditions
     )
@@ -100,7 +100,7 @@ void XFEM::XfluidTimeintBase::type(int iter, int iterMax)
  * algorithms data structure                                                         schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidTimeintBase::handle_vectors(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& newRowVectorsn)
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn)
 {
   newVectors_ = newRowVectorsn;
 
@@ -873,9 +873,9 @@ XFEM::XfluidStd::XfluidStd(
     const std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
         reconstr_method,                      ///< reconstruction map for nodes and its dofsets
     Inpar::XFEM::XFluidTimeInt& timeIntType,  ///< type of time integration
-    const Teuchos::RCP<Core::LinAlg::Vector> veln,  ///< velocity at time t^n in col map
-    const double& dt,                               ///< time step size
-    const bool initialize                           ///< is initialization?
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,  ///< velocity at time t^n in col map
+    const double& dt,                                       ///< time step size
+    const bool initialize                                   ///< is initialization?
     )
     : XFEM::XfluidTimeintBase::XfluidTimeintBase(timeInt),
       timeIntType_(timeIntType),
@@ -985,7 +985,8 @@ XFEM::XfluidStd::XfluidStd(
 /*------------------------------------------------------------------------------------------------*
  * out of order!                                                                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XfluidStd::compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& newRowVectorsn)
+void XFEM::XfluidStd::compute(
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn)
 {
   FOUR_C_THROW("Unused function! Use a function of the derived classes");
 }
@@ -1075,8 +1076,9 @@ void XFEM::XfluidStd::get_gp_values(Core::Elements::Element* ele,  ///< pointer 
     Core::LinAlg::Matrix<3, 3>& vel_deriv,   ///< determine velocity derivatives at point
     double& pres,                            ///< pressure
     Core::LinAlg::Matrix<1, 3>& pres_deriv,  ///< pressure gradient
-    Teuchos::RCP<const Core::LinAlg::Vector> vel_vec,  ///< vector used for interpolating at gp
-    bool compute_deriv                                 ///< shall derivatives be computed?
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        vel_vec,        ///< vector used for interpolating at gp
+    bool compute_deriv  ///< shall derivatives be computed?
 ) const
 {
   switch (ele->shape())
@@ -1112,8 +1114,9 @@ void XFEM::XfluidStd::get_gp_values_t(Core::Elements::Element* ele,  ///< pointe
     Core::LinAlg::Matrix<3, 3>& vel_deriv,   ///< determine velocity derivatives at point
     double& pres,                            ///< pressure
     Core::LinAlg::Matrix<1, 3>& pres_deriv,  ///< pressure gradient
-    Teuchos::RCP<const Core::LinAlg::Vector> vel_vec,  ///< vector used for interpolating at gp
-    bool compute_deriv                                 ///< shall derivatives be computed?
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        vel_vec,        ///< vector used for interpolating at gp
+    bool compute_deriv  ///< shall derivatives be computed?
 ) const
 {
   if (vel_vec == Teuchos::null) FOUR_C_THROW("vector is not filled");
@@ -1668,7 +1671,7 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
     // get the coordinates of the projection point at time tn
     const std::string state = "idispn";
 
-    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = boundarydis_->get_state(state);
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = boundarydis_->get_state(state);
     if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // extract local values of the global vectors
@@ -2283,7 +2286,7 @@ void XFEM::XfluidStd::addeidisp(
 
 
   // get state of the global vector
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = cutdis.get_state(state);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = cutdis.get_state(state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -3073,7 +3076,7 @@ void XFEM::XfluidStd::project_on_point(
     double& dist                          ///< distance from point to its projection
 )
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = boundarydis_->get_state(state);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = boundarydis_->get_state(state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors

@@ -295,8 +295,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get xwall toggle
   {
-    const Teuchos::RCP<Core::LinAlg::Vector> xwalltoggle =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector>>("xwalltoggle");
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> xwalltoggle =
+        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("xwalltoggle");
 
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *xwalltoggle);
@@ -324,8 +324,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get wall distance
   {
-    const Teuchos::RCP<Core::LinAlg::Vector> walldist =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector>>("walldist");
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> walldist =
+        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("walldist");
     //      std::cout << *walldist << std::endl;
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *walldist);
@@ -338,8 +338,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get tauw
   {
-    const Teuchos::RCP<Core::LinAlg::Vector> tauw =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector>>("tauw");
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> tauw =
+        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("tauw");
 
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *tauw);
@@ -352,8 +352,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get increment of tauw
   {
-    const Teuchos::RCP<Core::LinAlg::Vector> inctauw =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector>>("inctauw");
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> inctauw =
+        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("inctauw");
 
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *inctauw);
@@ -389,8 +389,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     // get old wall distance in case of ale
     if (ele->is_ale())
     {
-      const Teuchos::RCP<Core::LinAlg::Vector> incwdist =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("incwalldist");
+      const Teuchos::RCP<Core::LinAlg::Vector<double>> incwdist =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("incwalldist");
 
       std::vector<double> mylocal(ele->num_node());
       Core::FE::extract_my_node_based_values(ele, mylocal, *incwdist);
@@ -413,8 +413,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
 
   // get element mk for stabilization
-  const Teuchos::RCP<Core::LinAlg::Vector> mkvec =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("mk");
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> mkvec =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("mk");
   mk_ = (*mkvec)[mkvec->Map().LID(ele->id())];
 
   numgpnorm_ = params.get<int>("gpnorm");

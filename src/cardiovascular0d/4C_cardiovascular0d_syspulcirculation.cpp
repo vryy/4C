@@ -111,9 +111,12 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
 void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Core::LinAlg::Vector> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector> sysvec2, Teuchos::RCP<Core::LinAlg::Vector> sysvec3,
-    const Teuchos::RCP<Core::LinAlg::Vector> sysvec4, Teuchos::RCP<Core::LinAlg::Vector> sysvec5)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5)
 {
   if (!actdisc_->filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -696,7 +699,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::Vector> sysvec1, Teuchos::RCP<Core::LinAlg::Vector> sysvec2)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");

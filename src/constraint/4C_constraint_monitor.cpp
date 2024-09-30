@@ -72,7 +72,7 @@ CONSTRAINTS::Monitor::MoniType CONSTRAINTS::Monitor::get_moni_type(const std::st
 |Evaluate Monitors, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void CONSTRAINTS::Monitor::evaluate(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector> systemvector)
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
 {
   switch (montype_)
   {
@@ -100,7 +100,7 @@ void CONSTRAINTS::Monitor::evaluate(
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::Monitor::evaluate_monitor(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector> systemvector)
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -157,7 +157,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::Monitor::set_state(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Core::LinAlg::Vector> V                        ///< values to set
+    Teuchos::RCP<Core::LinAlg::Vector<double>> V                ///< values to set
 )
 {
   actdisc_->set_state(state, V);

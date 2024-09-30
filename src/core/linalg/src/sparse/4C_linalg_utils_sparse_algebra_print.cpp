@@ -102,7 +102,7 @@ void Core::LinAlg::print_block_matrix_in_matlab_format(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::LinAlg::print_vector_in_matlab_format(
-    const std::string& filename, const Core::LinAlg::Vector& vector, const bool newfile)
+    const std::string& filename, const Core::LinAlg::Vector<double>& vector, const bool newfile)
 {
   const auto& comm = vector.Comm();
 

@@ -44,10 +44,10 @@ namespace Adapter
      coupltype                 (i) coupling type, determines which matrix is to be evaluated (0==
      fluid-fluid, 1== fluid -structure)
      */
-    void evaluate_no_penetration_cond(Teuchos::RCP<Core::LinAlg::Vector> Cond_RHS,
+    void evaluate_no_penetration_cond(Teuchos::RCP<Core::LinAlg::Vector<double>> Cond_RHS,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
-        Teuchos::RCP<Core::LinAlg::Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> condVector, Teuchos::RCP<std::set<int>> condIDs,
         PoroElast::Coupltype coupltype = PoroElast::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator

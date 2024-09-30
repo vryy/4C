@@ -63,10 +63,10 @@ namespace ScaTra
         ) override;
 
     //! accessor to interior concentrations
-    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_phinp() { return intphinp_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_phin() { return intphin_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_phinp() { return intphinp_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_phin() { return intphin_; }
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector> interpolated_phinp() const
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> interpolated_phinp() const
     {
       return interpolatedPhinp_;
     }
@@ -97,13 +97,13 @@ namespace ScaTra
     //! @name concentration and concentration gradient at different times for element interior for
     //! HDG
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> intphinp_;  //!< concentration at time \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> intphin_;   //!< concentration at time \f$t^{n}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intphinp_;  //!< concentration at time \f$t^{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intphin_;   //!< concentration at time \f$t^{n}\f$
     //@}
 
     //! @name other HDG-specific auxiliary vectors
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         interpolatedPhinp_;  //!< concentrations for output at time \f$t^{n+1}\f$
     //@}
 
@@ -114,15 +114,16 @@ namespace ScaTra
     void compute_interior_values() override;
 
     //! update interior variables
-    virtual void update_interior_variables(Teuchos::RCP<Core::LinAlg::Vector> updatevector);
+    virtual void update_interior_variables(Teuchos::RCP<Core::LinAlg::Vector<double>> updatevector);
 
     //! write problem specific output
-    virtual void write_problem_specific_output(Teuchos::RCP<Core::LinAlg::Vector> interpolatedPhi)
+    virtual void write_problem_specific_output(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPhi)
     {
     }
 
     virtual void collect_problem_specific_runtime_output_data(
-        Teuchos::RCP<Core::LinAlg::Vector> interpolatedPhi)
+        Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPhi)
     {
     }
 
@@ -139,9 +140,10 @@ namespace ScaTra
     virtual void adapt_degree();
 
     //! adapt variable vectors required due to the change of the degrees of the test functions
-    virtual void adapt_variable_vector(Teuchos::RCP<Core::LinAlg::Vector> phi_new,
-        Teuchos::RCP<Core::LinAlg::Vector> phi_old, Teuchos::RCP<Core::LinAlg::Vector> intphi_new,
-        Teuchos::RCP<Core::LinAlg::Vector> intphi_old, int nds_var_old, int nds_intvar_old,
+    virtual void adapt_variable_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> phi_new,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> phi_old,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> intphi_new,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> intphi_old, int nds_var_old, int nds_intvar_old,
         std::vector<Core::Elements::LocationArray> la_old);
 
     //! calculate matrices on element
@@ -173,7 +175,7 @@ namespace ScaTra
     double theta_;
 
     //! activation_time at times n+1
-    Teuchos::RCP<Core::LinAlg::Vector> activation_time_interpol_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> activation_time_interpol_np_;
 
     //! HDG discretization
     Core::FE::DiscretizationHDG* hdgdis_;
@@ -192,7 +194,7 @@ namespace ScaTra
     double padaptdegreemax_;
 
     //! element degree
-    Teuchos::RCP<Core::LinAlg::Vector> elementdegree_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elementdegree_;
 
   };  // class TimIntHDG
 }  // namespace ScaTra

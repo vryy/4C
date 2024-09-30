@@ -38,7 +38,7 @@ namespace Adapter
     /// compute contribution of mechanical state to eq. system
     virtual void evaluate_additional_solution_depending_models(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Core::LinAlg::Vector> rhs                    //!< rhs vector
+        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs            //!< rhs vector
     );
 
 
@@ -59,7 +59,7 @@ namespace Adapter
     virtual int nds_disp() { return scatra_timint_->nds_disp(); };
 
     /// return rcp ptr to neumann loads vector
-    Teuchos::RCP<Core::LinAlg::Vector> get_neumann_loads_ptr() override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_neumann_loads_ptr() override
     {
       return scatra_timint_->get_neumann_loads_ptr();
     };
@@ -71,7 +71,7 @@ namespace Adapter
     };
 
     //! return scalar field phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector> phin() override { return scatra_timint_->phin(); }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phin() override { return scatra_timint_->phin(); }
 
    private:
     Teuchos::RCP<ScatraInterface> scatra_timint_;  ///< underlying structural time integration

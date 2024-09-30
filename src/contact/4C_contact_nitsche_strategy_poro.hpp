@@ -52,18 +52,19 @@ namespace CONTACT
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
-        const int step, const int iter, bool predictor) override;
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+        bool predictor) override;
 
     //  void Integrate(CONTACT::ParamsInterface& cparams);
     void set_state(
-        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) override;
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) override;
 
-    void set_parent_state(const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec,
-        const Core::FE::Discretization& dis) override;
+    void set_parent_state(const enum Mortar::StateType& statename,
+        const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
 
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(

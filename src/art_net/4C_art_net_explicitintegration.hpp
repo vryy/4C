@@ -83,7 +83,7 @@ namespace Arteries
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> vel){};
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
@@ -126,8 +126,8 @@ namespace Arteries
     void calc_postprocessing_values();
 
 
-    void calc_scatra_from_scatra_fw(
-        Teuchos::RCP<Core::LinAlg::Vector> scatra, Teuchos::RCP<Core::LinAlg::Vector> scatra_fb);
+    void calc_scatra_from_scatra_fw(Teuchos::RCP<Core::LinAlg::Vector<double>> scatra,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_fb);
 
     /*!
     \brief read restart data
@@ -137,16 +137,16 @@ namespace Arteries
 
     //! @name access methods for composite algorithms
 
-    //  Teuchos::RCP<Core::LinAlg::Vector> Residual() { return residual_; } //This variable might be
-    //  needed in future!
-    Teuchos::RCP<Core::LinAlg::Vector> qnp() { return qnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector> q_anp() { return qanp_; }
-    Teuchos::RCP<Core::LinAlg::Vector> areanp() { return areanp_; }
-    // Teuchos::RCP<Core::LinAlg::Vector> Presnp() { return presnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector> qn() { return qn_; }
-    Teuchos::RCP<Core::LinAlg::Vector> q_an() { return qan_; }
-    Teuchos::RCP<Core::LinAlg::Vector> arean() { return arean_; }
-    // Teuchos::RCP<Core::LinAlg::Vector> Presn()  { return presn_; }
+    //  Teuchos::RCP<Core::LinAlg::Vector<double>> Residual() { return residual_; } //This variable
+    //  might be needed in future!
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qnp() { return qnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> q_anp() { return qanp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> areanp() { return areanp_; }
+    // Teuchos::RCP<Core::LinAlg::Vector<double>> Presnp() { return presnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qn() { return qn_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> q_an() { return qan_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> arean() { return arean_; }
+    // Teuchos::RCP<Core::LinAlg::Vector<double>> Presn()  { return presn_; }
 
     /// provide access to the Dirichlet map
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
@@ -156,14 +156,14 @@ namespace Arteries
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichlet();
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector> inv_dirichlet();
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inv_dirichlet();
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix()
     {
@@ -178,91 +178,91 @@ namespace Arteries
     Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
 
     /// maps for scatra Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::Vector> nodeIds_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatra_bcval_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatra_dbctog_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> nodeIds_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_bcval_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_dbctog_;
 
     //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> qanp_;
-    Teuchos::RCP<Core::LinAlg::Vector> qan_;
-    Teuchos::RCP<Core::LinAlg::Vector> qanm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qanp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qan_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qanm_;
     //@}
 
     //! @name Volumetric Flow rate and Cross-Sectional area at time n before solving Fluid 3D
-    Teuchos::RCP<Core::LinAlg::Vector> qan_3D_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qan_3D_;
     //@}
 
     //! @name Volumetric Flow rate at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> qnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> qn_;
-    Teuchos::RCP<Core::LinAlg::Vector> qnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qnm_;
     //@}
 
     //! @name Pressure at time n
-    Teuchos::RCP<Core::LinAlg::Vector> pn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pn_;
     //@}
 
     //! @name Area at time n
-    Teuchos::RCP<Core::LinAlg::Vector> an_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> an_;
     //@}
 
     //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> Wfo_;
-    Teuchos::RCP<Core::LinAlg::Vector> Wbo_;
-    Teuchos::RCP<Core::LinAlg::Vector> Wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> Wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector> Wfnm_;
-    Teuchos::RCP<Core::LinAlg::Vector> Wbnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> Wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector> Wbnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfo_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbo_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbnm_;
     //@}
 
     //! @name scalar transport vectors at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2wbnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wfn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wfnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wbn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wbnp_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2wbnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wfn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wfnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wbn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wbnp_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> export_scatra_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> export_scatra_;
     //@}
 
     //! @name saving state vectors
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qanp_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qan_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qanm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qanp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qan_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qanm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> saved_Wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_Wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_Wfnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wfnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wfn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wfnm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> saved_Wbnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_Wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_Wbnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wbnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wbn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wbnm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> saved_scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2nm_;
     //@}
 
     //! @name cross-sectional area at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> arean_;
-    Teuchos::RCP<Core::LinAlg::Vector> areanp_;
-    Teuchos::RCP<Core::LinAlg::Vector> areanm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> arean_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> areanp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> areanm_;
     //@}
 
     //! @name Dirichlet boundary condition vectors
-    Teuchos::RCP<Core::LinAlg::Vector> bcval_;
-    Teuchos::RCP<Core::LinAlg::Vector> dbctog_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> bcval_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog_;
     //@}
 
     //! @name Junction boundary condition

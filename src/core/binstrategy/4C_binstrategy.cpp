@@ -40,9 +40,9 @@ namespace
      */
     std::pair<std::array<double, 3>, std::array<double, 3>> compute_aabb(
         const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
-        Teuchos::RCP<const Core::LinAlg::Vector> disnp,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp,
         const std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-            const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector>)>&
+            const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>>)>&
             determine_relevant_points)
     {
       std::pair<std::array<double, 3>, std::array<double, 3>> aabb{
@@ -71,7 +71,7 @@ namespace
 
 std::vector<std::array<double, 3>> Core::Binstrategy::DefaultRelevantPoints::operator()(
     const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
-    Teuchos::RCP<const Core::LinAlg::Vector> disnp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
 {
   std::vector<std::array<double, 3>> relevant_points;
   const Core::Nodes::Node* const* nodes = ele.nodes();
@@ -91,10 +91,10 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
     const int my_rank,
     std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node,
     std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-        const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
+        const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)>
         determine_relevant_points,
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> disnp)
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disnp)
     : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
       deforming_simulation_domain_handler_(Teuchos::null),
       writebinstype_(Teuchos::getIntegralValue<WriteBins>(binning_params, ("WRITEBINS"))),
@@ -790,7 +790,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
   visbindis_->fill_complete(true, true, false);
 
   // create vector that shows ghosting
-  Teuchos::RCP<Core::LinAlg::Vector> ownedghostsvec =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> ownedghostsvec =
       Core::LinAlg::create_vector(*visbindis_->element_row_map(), true);
   for (int i = 0; i < visbindis_->num_my_row_elements(); ++i)
   {
@@ -892,7 +892,7 @@ void Core::Binstrategy::BinningStrategy::add_ijk_to_axis_aligned_ijk_range(
 
 void Core::Binstrategy::BinningStrategy::distribute_single_element_to_bins_using_ele_aabb(
     const Core::FE::Discretization& discret, Core::Elements::Element* eleptr,
-    std::vector<int>& binIds, Teuchos::RCP<const Core::LinAlg::Vector> const& disnp) const
+    std::vector<int>& binIds, Teuchos::RCP<const Core::LinAlg::Vector<double>> const& disnp) const
 {
   binIds.clear();
 
@@ -988,7 +988,7 @@ void Core::Binstrategy::BinningStrategy::remove_all_eles_from_bins()
 void Core::Binstrategy::BinningStrategy::distribute_row_nodes_to_bins(
     Teuchos::RCP<Core::FE::Discretization> discret,
     std::map<int, std::vector<int>>& bin_to_rownodes_map,
-    Teuchos::RCP<const Core::LinAlg::Vector> disnp) const
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp) const
 {
   // current position of nodes
   double currpos[3] = {0.0, 0.0, 0.0};
@@ -1024,8 +1024,8 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::
 {
   // initialize dummys
   std::vector<std::map<int, std::set<int>>> dummy1(discret.size());
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> dummy2(discret.size());
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> mutabledummy2(discret.size());
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> dummy2(discret.size());
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> mutabledummy2(discret.size());
 
   // ------------------------------------------------------------------------
   // create bins, weight them according to number of nodes (of discrets) they
@@ -1115,7 +1115,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::
 
 Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distribution_of_bins_to_procs(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& disnp,
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& disnp,
     std::vector<std::map<int, std::vector<int>>>& row_nodes_to_bin_map, double const& weight,
     bool repartition) const
 {
@@ -1174,9 +1174,9 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
     bingraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, *rowbins, 108, false));
   }
 
-  // Now we're going to create a Core::LinAlg::Vector with vertex/node weights to be
+  // Now we're going to create a Core::LinAlg::Vector<double> with vertex/node weights to be
   // used for the partitioning operation (weights must be at least one for zoltan)
-  Teuchos::RCP<Core::LinAlg::Vector> vweights = Core::LinAlg::create_vector(*rowbins, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> vweights = Core::LinAlg::create_vector(*rowbins, true);
 
   // set weights of bins related to the number of nodes of discrets that are contained
   // empty bins have weight of 1
@@ -1206,7 +1206,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
       int lid = rowbins->LID(biniter->first);
       // safety check
       if (lid < 0)
-        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector",
+        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
             discret[i]->get_comm().MyPID(), biniter->first);
 
       // weighting
@@ -1386,7 +1386,7 @@ void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretizati
 
 void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
     Teuchos::RCP<Core::FE::Discretization>& discret, Teuchos::RCP<Epetra_Map> const& rowbins,
-    Teuchos::RCP<Core::LinAlg::Vector>& disnp, Teuchos::RCP<Epetra_Map>& stdelecolmap,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& disnp, Teuchos::RCP<Epetra_Map>& stdelecolmap,
     Teuchos::RCP<Epetra_Map>& stdnodecolmap) const
 {
   // each owner of a bin gets owner of the nodes this bin contains
@@ -1396,10 +1396,10 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
 
   // Todo introduced this export to column map due to special handling of
   //      beam nodes without own position DoFs in Utils::GetCurrentNodePos()
-  Teuchos::RCP<Core::LinAlg::Vector> disnp_col = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_col = Teuchos::null;
   if (discret->have_dofs() and disnp != Teuchos::null)
   {
-    disnp_col = Teuchos::rcp(new Core::LinAlg::Vector(*discret->dof_col_map()));
+    disnp_col = Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret->dof_col_map()));
     Core::LinAlg::export_to(*disnp, *disnp_col);
   }
 
@@ -1461,7 +1461,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   else
   {
     discret->fill_complete(true, false, false);
-    Teuchos::RCP<Core::LinAlg::Vector> old;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> old;
     old = disnp;
     disnp = Core::LinAlg::create_vector(*discret->dof_row_map(), true);
     Core::LinAlg::export_to(*old, *disnp);
@@ -1558,7 +1558,7 @@ void Core::Binstrategy::BinningStrategy::revert_extended_ghosting(
 void Core::Binstrategy::BinningStrategy::
     compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
-        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> disnp,
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disnp,
         Core::LinAlg::Matrix<3, 2>& domain_bounding_box_corner_positions,
         bool set_bin_size_lower_bound_)
 {
@@ -1601,7 +1601,7 @@ void Core::Binstrategy::BinningStrategy::
 double Core::Binstrategy::BinningStrategy::
     compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
-        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> disnp)
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disnp)
 {
   double bin_size_lower_bound = 0.0;
 
@@ -1689,7 +1689,7 @@ void Core::Binstrategy::BinningStrategy::
 void Core::Binstrategy::BinningStrategy::
     compute_min_binning_domain_containing_all_elements_of_single_discret(
         Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Matrix<3, 2>& XAABB,
-        Teuchos::RCP<const Core::LinAlg::Vector> disnp, bool set_bin_size_lower_bound_)
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp, bool set_bin_size_lower_bound_)
 {
   // set_bin_size_lower_bound_ as largest element in discret on each proc
   double locmax_set_bin_size_lower_bound = 0.0;
@@ -1752,7 +1752,8 @@ void Core::Binstrategy::BinningStrategy::
 }
 
 void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
-    Teuchos::RCP<Core::FE::Discretization>& discret, Teuchos::RCP<const Core::LinAlg::Vector> disnp,
+    Teuchos::RCP<Core::FE::Discretization>& discret,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp,
     std::map<int, std::set<int>>& bintorowelemap)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements");

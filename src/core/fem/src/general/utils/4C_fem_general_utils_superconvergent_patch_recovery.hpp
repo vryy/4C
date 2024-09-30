@@ -39,11 +39,11 @@ namespace Core::FE
    */
   template <int dim>
   Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
-      Core::FE::Discretization& dis,      ///< underlying discretization
-      const Core::LinAlg::Vector& state,  ///< state vector needed on element level
-      const std::string& statename,       ///< name of state which will be set
-      const int numvec,                   ///< number of entries per node to project
-      Teuchos::ParameterList& params      ///< parameter list that contains the element action
+      Core::FE::Discretization& dis,              ///< underlying discretization
+      const Core::LinAlg::Vector<double>& state,  ///< state vector needed on element level
+      const std::string& statename,               ///< name of state which will be set
+      const int numvec,                           ///< number of entries per node to project
+      Teuchos::ParameterList& params  ///< parameter list that contains the element action
   );
 }  // namespace Core::FE
 

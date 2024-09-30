@@ -46,7 +46,8 @@ namespace CONTACT
     */
     virtual void assemble_lin_stick(Core::LinAlg::SparseMatrix& linstickLMglobal,
         Core::LinAlg::SparseMatrix& linstickDISglobal,
-        Core::LinAlg::SparseMatrix& linstickTEMPglobal, Core::LinAlg::Vector& linstickRHSglobal);
+        Core::LinAlg::SparseMatrix& linstickTEMPglobal,
+        Core::LinAlg::Vector<double>& linstickRHSglobal);
 
     /*!
     \brief Assemble matrix LinSlip containing linearizations
@@ -59,7 +60,7 @@ namespace CONTACT
     */
     virtual void assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLMglobal,
         Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::SparseMatrix& linslipTEMPglobal,
-        Core::LinAlg::Vector& linslipRHSglobal);
+        Core::LinAlg::Vector<double>& linslipRHSglobal);
 
 
     /*!

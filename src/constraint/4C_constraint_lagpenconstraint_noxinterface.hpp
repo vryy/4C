@@ -44,23 +44,23 @@ namespace LAGPENCONSTRAINT
     /// @name Supported basic interface functions
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
-    double get_constraint_rhs_norms(const Core::LinAlg::Vector& F,
+    double get_constraint_rhs_norms(const Core::LinAlg::Vector<double>& F,
         NOX::Nln::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
-    double get_lagrange_multiplier_update_rms(const Core::LinAlg::Vector& xNew,
-        const Core::LinAlg::Vector& xOld, double aTol, double rTol,
+    double get_lagrange_multiplier_update_rms(const Core::LinAlg::Vector<double>& xNew,
+        const Core::LinAlg::Vector<double>& xOld, double aTol, double rTol,
         NOX::Nln::StatusTest::QuantityType checkQuantity,
         bool disable_implicit_weighting) const override;
 
     /// Returns the increment norm of the largange multiplier DoFs
-    double get_lagrange_multiplier_update_norms(const Core::LinAlg::Vector& xNew,
-        const Core::LinAlg::Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
+    double get_lagrange_multiplier_update_norms(const Core::LinAlg::Vector<double>& xNew,
+        const Core::LinAlg::Vector<double>& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
         ::NOX::Abstract::Vector::NormType type, bool isScaled) const override;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
-    double get_previous_lagrange_multiplier_norms(const Core::LinAlg::Vector& xOld,
+    double get_previous_lagrange_multiplier_norms(const Core::LinAlg::Vector<double>& xOld,
         NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
     /// @}

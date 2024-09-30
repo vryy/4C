@@ -22,7 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::get_component_of_rotated_vector_field(const int idf,
-    const Teuchos::RCP<const Core::LinAlg::Vector> proc0data, const int lid, const double rotangle)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> proc0data, const int lid,
+    const double rotangle)
 {
   switch (idf)
   {

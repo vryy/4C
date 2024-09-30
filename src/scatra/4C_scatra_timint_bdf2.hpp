@@ -56,16 +56,16 @@ namespace ScaTra
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return scalar field phi at time step n+alpha_F
-    Teuchos::RCP<Core::LinAlg::Vector> phiaf() override { return Teuchos::null; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf() override { return Teuchos::null; }
 
     /// routine to return scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector> phiam() override { return Teuchos::null; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiam() override { return Teuchos::null; }
 
     /// routine to return time derivative of scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector> phidtam() override { return Teuchos::null; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtam() override { return Teuchos::null; }
 
     /// routine to return fine-scale scalar field fsphi at time step n+1
-    Teuchos::RCP<Core::LinAlg::Vector> fs_phi() override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fs_phi() override
     {
       if (Sep_ != Teuchos::null) Sep_->multiply(false, *phinp_, *fsphinp_);
       return fsphinp_;
@@ -131,10 +131,10 @@ namespace ScaTra
     double theta_;
 
     /// solution vector phi at time n-1
-    Teuchos::RCP<Core::LinAlg::Vector> phinm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinm_;
 
     /// fine-scale solution vector at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> fsphinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fsphinp_;
   };  // class TimIntBDF2
 }  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE

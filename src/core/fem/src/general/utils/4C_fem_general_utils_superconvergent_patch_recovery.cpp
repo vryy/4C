@@ -29,8 +29,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <int dim>
 Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery(
-    Core::FE::Discretization& dis, const Core::LinAlg::Vector& state, const std::string& statename,
-    const int numvec, Teuchos::ParameterList& params)
+    Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& state,
+    const std::string& statename, const int numvec, Teuchos::ParameterList& params)
 {
   const int dimp = dim + 1;
   const int myrank = dis.get_comm().MyPID();
@@ -577,13 +577,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 }
 
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<1>(
-    Core::FE::Discretization&, const Core::LinAlg::Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Core::LinAlg::Vector<double>&, const std::string&, const int,
     Teuchos::ParameterList&);
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<2>(
-    Core::FE::Discretization&, const Core::LinAlg::Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Core::LinAlg::Vector<double>&, const std::string&, const int,
     Teuchos::ParameterList&);
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<3>(
-    Core::FE::Discretization&, const Core::LinAlg::Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Core::LinAlg::Vector<double>&, const std::string&, const int,
     Teuchos::ParameterList&);
 
 FOUR_C_NAMESPACE_CLOSE

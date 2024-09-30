@@ -67,14 +67,14 @@ namespace Adapter
     /// solve for pure fluid-fluid-ale problem
     void solve() override;
 
-    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector> ivel) override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override
     {
       FOUR_C_THROW("Do not call RexationSolve for XFFSI.");
       return Teuchos::null;
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override
     {
       FOUR_C_THROW("Do not call extract_interface_forces for XFFSI.");
       return Teuchos::null;
@@ -92,12 +92,12 @@ namespace Adapter
       return mergedfluidinterface_;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector> grid_vel() override;
-    Teuchos::RCP<Core::LinAlg::Vector> write_access_grid_vel();
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> grid_vel() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_grid_vel();
 
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp() override;
-    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp();
-    Teuchos::RCP<const Core::LinAlg::Vector> dispn() override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp();
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() override;
 
     /// get the velocity row map of the embedded fluid
     Teuchos::RCP<const Epetra_Map> velocity_row_map() override;
@@ -118,17 +118,18 @@ namespace Adapter
 
     /// Apply initial mesh displacement
     void apply_initial_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector> initfluiddisp) override
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented, yet!");
     }
 
     // apply ALE-mesh displacements to embedded fluid
-    void apply_mesh_displacement(Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp) override;
+    void apply_mesh_displacement(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp) override;
 
     /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in
     /// the DOF-maps
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 

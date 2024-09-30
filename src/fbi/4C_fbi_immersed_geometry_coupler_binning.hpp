@@ -67,7 +67,7 @@ namespace FBI
      * \param[in] structure_displacement vector containing the column structure displacement
      */
     void setup(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
-        Teuchos::RCP<const Core::LinAlg::Vector> structure_displacement) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement) override;
 
     /**
      * \brief Performs the search to find possible beam-fluid element pairs
@@ -84,7 +84,7 @@ namespace FBI
      */
     Teuchos::RCP<std::map<int, std::vector<int>>> search(
         std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-        Teuchos::RCP<const Core::LinAlg::Vector>& column_structure_displacement) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& column_structure_displacement) override;
 
     /** \brief Update distribution of elements to bins
      *
@@ -92,7 +92,7 @@ namespace FBI
      * \param[in] structure_displacement vector containing the column structure displacement
      */
     void update_binning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
-        Teuchos::RCP<const Core::LinAlg::Vector> structure_column_displacement) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_column_displacement) override;
 
    protected:
     /**
@@ -110,7 +110,7 @@ namespace FBI
      */
     void compute_current_positions(Core::FE::Discretization& dis,
         Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
-        Teuchos::RCP<const Core::LinAlg::Vector> disp) const override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) const override;
 
     /** \brief Setup the Binning object
      *
@@ -118,7 +118,7 @@ namespace FBI
      * \param[in] structure_displacement vector containing the column structure displacement
      */
     virtual void setup_binning(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
-        Teuchos::RCP<const Core::LinAlg::Vector> structure_displacement);
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement);
 
     /** \brief Partition the Problem into bins
      *
@@ -126,7 +126,7 @@ namespace FBI
      * \param[in] structure_displacement vector containing the column structure displacement
      */
     virtual void partition_geometry(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
-        Teuchos::RCP<const Core::LinAlg::Vector> structure_displacement);
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement);
 
    private:
     /// binning strategy

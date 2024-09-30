@@ -94,14 +94,14 @@ namespace FSI
     //@}
 
     //! @name Transfer helpers
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector> iv);
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector> iv);
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_struct(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv);
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv);
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
     //@}
 
     /// return the structure fluid coupling object

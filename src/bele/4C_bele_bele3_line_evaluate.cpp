@@ -45,7 +45,7 @@ int Discret::ELEMENTS::Bele3Line::evaluate(Teuchos::ParameterList& params,
   {
     case integrate_Shapefunction:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;
 
       //      if (parent_->IsMoving())

@@ -673,27 +673,27 @@ namespace Core::LinAlg
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
     /*!
-    \brief A distributed vector class that implements Core::LinAlg::Vector
+    \brief A distributed vector class that implements Core::LinAlg::Vector<double>
 
-    All Core::LinAlg::Vector functionality can be used. Additionally, this class overloads a series
-    of operators used in ANA linear algebra expressions.
+    All Core::LinAlg::Vector<double> functionality can be used. Additionally, this class overloads a
+    series of operators used in ANA linear algebra expressions.
 
-    \sa LightWeightOperatorBase, Core::LinAlg::Vector
+    \sa LightWeightOperatorBase, Core::LinAlg::Vector<double>
 
     */
     class Vector : public Epetra_Vector
     {
      public:
-      /// Implements Core::LinAlg::Vector ctor
+      /// Implements Core::LinAlg::Vector<double> ctor
       Vector(const Epetra_BlockMap& m, bool init = true) : Epetra_Vector(m, init) {}
 
-      /// Implements Core::LinAlg::Vector ctor
+      /// Implements Core::LinAlg::Vector<double> ctor
       Vector(const Vector& Source) : Epetra_SrcDistObject(Source), Epetra_Vector(Source) {}
 
-      /// Implements Core::LinAlg::Vector ctor
+      /// Implements Core::LinAlg::Vector<double> ctor
       Vector(Epetra_DataAccess CV, const Epetra_BlockMap& m, double* V) : Epetra_Vector(CV, m, V) {}
 
-      /// Implements Core::LinAlg::Vector ctor
+      /// Implements Core::LinAlg::Vector<double> ctor
       Vector(Epetra_DataAccess CV, const Epetra_MultiVector& mv, int i) : Epetra_Vector(CV, mv, i)
       {
       }

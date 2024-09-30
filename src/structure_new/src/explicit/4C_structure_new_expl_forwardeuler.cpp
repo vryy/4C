@@ -73,7 +73,7 @@ void Solid::EXPLICIT::ForwardEuler::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::EXPLICIT::ForwardEuler::set_state(const Core::LinAlg::Vector& x)
+void Solid::EXPLICIT::ForwardEuler::set_state(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
@@ -82,7 +82,7 @@ void Solid::EXPLICIT::ForwardEuler::set_state(const Core::LinAlg::Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().extract_displ_entries(x);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_acc_np()->Scale(1.0, *accnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -109,7 +109,8 @@ void Solid::EXPLICIT::ForwardEuler::set_state(const Core::LinAlg::Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::EXPLICIT::ForwardEuler::add_visco_mass_contributions(Core::LinAlg::Vector& f) const
+void Solid::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
+    Core::LinAlg::Vector<double>& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);

@@ -164,7 +164,7 @@ void Solid::Integrator::check_init_setup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Integrator::reset_model_states(const Core::LinAlg::Vector& x)
+void Solid::Integrator::reset_model_states(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
   model_eval().reset_states(x);
@@ -177,8 +177,8 @@ void Solid::Integrator::equilibrate_initial_state()
   check_init();
 
   // temporary right-hand-side
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   // initialize a temporal structural stiffness matrix
   Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_ptr = Teuchos::rcp(
@@ -188,9 +188,9 @@ void Solid::Integrator::equilibrate_initial_state()
   // overwrite initial state vectors with Dirichlet BCs
   // note that we get accelerations resulting from inhomogeneous Dirichlet conditions here
   const double& timen = (*global_state().get_multi_time())[0];
-  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Core::LinAlg::Vector> velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
   dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
 
@@ -251,8 +251,8 @@ void Solid::Integrator::equilibrate_initial_state()
   NOX::Nln::Aux::set_printing_parameters(p_nox, global_state().get_comm());
 
   // create a copy of the initial displacement vector
-  Teuchos::RCP<Core::LinAlg::Vector> soln_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> soln_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
   // wrap the soln_ptr in a nox_epetra_Vector
   Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(
       soln_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
@@ -315,14 +315,14 @@ bool Solid::Integrator::current_state_is_equilibrium(const double& tol)
   check_init();
 
   // temporary right-hand-side
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   // overwrite initial state vectors with Dirichlet BCs
   const double& timen = (*global_state().get_multi_time())[0];
-  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Core::LinAlg::Vector> velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
   dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
   // set the evaluate parameters of the current base class
@@ -362,7 +362,7 @@ void Solid::Integrator::determine_energy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::Integrator::get_model_value(const Core::LinAlg::Vector& x)
+double Solid::Integrator::get_model_value(const Core::LinAlg::Vector<double>& x)
 {
   FOUR_C_THROW(
       "This routine is not supported in the currently active time "
@@ -372,7 +372,7 @@ double Solid::Integrator::get_model_value(const Core::LinAlg::Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::Integrator::get_total_mid_time_str_energy(const Core::LinAlg::Vector& x)
+double Solid::Integrator::get_total_mid_time_str_energy(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
   if (not mt_energy_.is_correctly_configured())
@@ -382,21 +382,22 @@ double Solid::Integrator::get_total_mid_time_str_energy(const Core::LinAlg::Vect
         " Please add a meaningful MIDTIME_ENERGY_TYPE to the ---STRUCTURAL DYNAMIC"
         " section of your Input file.");
 
-  Teuchos::RCP<const Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
-  const Core::LinAlg::Vector& disnp = *disnp_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp_ptr =
+      global_state().extract_displ_entries(x);
+  const Core::LinAlg::Vector<double>& disnp = *disnp_ptr;
 
   set_state(disnp);
 
-  Teuchos::RCP<const Core::LinAlg::Vector> velnp_ptr = global_state().get_vel_np();
-  const Core::LinAlg::Vector& velnp = *velnp_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
+  const Core::LinAlg::Vector<double>& velnp = *velnp_ptr;
 
   eval_data().clear_values_for_all_energy_types();
   Solid::ModelEvaluator::Structure& str_model =
       dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
 
-  Teuchos::RCP<const Core::LinAlg::Vector> dis_avg =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dis_avg =
       mt_energy_.average(disnp, *global_state().get_dis_n(), get_int_param());
-  Teuchos::RCP<const Core::LinAlg::Vector> vel_avg =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_avg =
       mt_energy_.average(velnp, *global_state().get_vel_n(), get_int_param());
 
   str_model.determine_energy(*dis_avg, vel_avg.get(), true);
@@ -431,7 +432,7 @@ void Solid::Integrator::determine_optional_quantity()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::Integrator::determine_element_volumes(
-    const Core::LinAlg::Vector& x, Teuchos::RCP<Core::LinAlg::Vector>& ele_vols)
+    const Core::LinAlg::Vector<double>& x, Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols)
 {
   check_init_setup();
   Solid::ModelEvaluator::Generic& model = evaluator(Inpar::Solid::model_structure);
@@ -692,7 +693,7 @@ const Solid::TimeInt::Base& Solid::Integrator::tim_int() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Integrator::create_backup_state(const Core::LinAlg::Vector& dir)
+void Solid::Integrator::create_backup_state(const Core::LinAlg::Vector<double>& dir)
 {
   check_init_setup();
   model_eval().create_backup_state(dir);
@@ -760,13 +761,14 @@ double Solid::Integrator::MidTimeEnergy::get_total() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Solid::Integrator::MidTimeEnergy::average(
-    const Core::LinAlg::Vector& state_np, const Core::LinAlg::Vector& state_n,
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::Integrator::MidTimeEnergy::average(
+    const Core::LinAlg::Vector<double>& state_np, const Core::LinAlg::Vector<double>& state_n,
     const double fac_n) const
 {
   const double fac_np = 1.0 - fac_n;
 
-  Teuchos::RCP<Core::LinAlg::Vector> state_avg = Teuchos::rcp(new Core::LinAlg::Vector(state_np));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> state_avg =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(state_np));
   switch (avg_type_)
   {
     case Inpar::Solid::midavg_vague:

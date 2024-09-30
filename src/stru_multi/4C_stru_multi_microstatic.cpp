@@ -343,7 +343,7 @@ void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defg
         "Importing reaction forces of prescribed dofs using importer returned err=%d", err);
 
   // blank residual at DOFs on Dirichlet BC
-  Core::LinAlg::Vector fresncopy(*fresn_);
+  Core::LinAlg::Vector<double> fresncopy(*fresn_);
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
@@ -359,7 +359,7 @@ void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defg
 void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Core::LinAlg::Vector> dbcinc =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcinc =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   // copy last converged displacements
@@ -417,7 +417,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Core::LinAlg::Vector> freact =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> freact =
         Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
     stiff_->multiply(false, *dbcinc, *freact);
 
@@ -427,7 +427,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
 
   // blank residual at DOFs on Dirichlet BC
   {
-    Core::LinAlg::Vector fresncopy(*fresn_);
+    Core::LinAlg::Vector<double> fresncopy(*fresn_);
     fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
   }
 
@@ -505,7 +505,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
         "Importing reaction forces of prescribed dofs using importer returned err=%d", err);
 
   // blank residual at DOFs on Dirichlet BC
-  Core::LinAlg::Vector fresncopy(*fresn_);
+  Core::LinAlg::Vector<double> fresncopy(*fresn_);
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
@@ -599,7 +599,7 @@ void MultiScale::MicroStatic::full_newton()
           "Importing reaction forces of prescribed dofs using importer returned err=%d", err);
 
     // blank residual DOFs which are on Dirichlet BC
-    Core::LinAlg::Vector fresncopy(*fresn_);
+    Core::LinAlg::Vector<double> fresncopy(*fresn_);
     fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
     //---------------------------------------------- build residual norm
@@ -753,7 +753,7 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::Vector> dis,
+void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
     Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
     std::string name)
 {
@@ -781,7 +781,7 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::
 
 
 void MultiScale::MicroStatic::evaluate_micro_bc(
-    Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Core::LinAlg::Vector> disp)
+    Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Core::LinAlg::Vector<double>> disp)
 {
   std::vector<Core::Conditions::Condition*> conds;
   discret_->get_condition("MicroBoundary", conds);
@@ -835,8 +835,8 @@ void MultiScale::MicroStatic::evaluate_micro_bc(
   }
 }
 
-void MultiScale::MicroStatic::set_state(Teuchos::RCP<Core::LinAlg::Vector> dis,
-    Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<std::vector<char>> stress,
+void MultiScale::MicroStatic::set_state(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disn, Teuchos::RCP<std::vector<char>> stress,
     Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
     Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
     Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha,
@@ -869,8 +869,8 @@ void MultiScale::MicroStatic::set_time(
   stepn_ = stepn;
 }
 
-// Teuchos::RCP<Core::LinAlg::Vector> MultiScale::MicroStatic::ReturnNewDism() { return
-// Teuchos::rcp(new Core::LinAlg::Vector(*dism_)); }
+// Teuchos::RCP<Core::LinAlg::Vector<double>> MultiScale::MicroStatic::ReturnNewDism() { return
+// Teuchos::rcp(new Core::LinAlg::Vector<double>(*dism_)); }
 
 void MultiScale::MicroStatic::clear_state()
 {

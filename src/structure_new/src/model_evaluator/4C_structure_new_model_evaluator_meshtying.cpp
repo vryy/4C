@@ -120,17 +120,19 @@ void Solid::ModelEvaluator::Meshtying::setup()
 
     if (mesh_relocation_parameter == Inpar::Mortar::relocation_initial)
     {
-      Teuchos::RCP<const Core::LinAlg::Vector> Xslavemod =
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> Xslavemod =
           dynamic_cast<Mortar::StrategyBase&>(*strategy_ptr_).mesh_initialization();
-      Teuchos::RCP<const Core::LinAlg::Vector> Xslavemod_noredist;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> Xslavemod_noredist;
       if (Xslavemod != Teuchos::null)
       {
-        mesh_relocation_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map()));
+        mesh_relocation_ =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map()));
         const auto gdiscret = global_state().get_discret();
         if (strategy_ptr_->par_redist())
         {
-          Teuchos::RCP<Core::LinAlg::Vector> original_vec = Teuchos::rcp(
-              new Core::LinAlg::Vector(*(strategy_ptr_->non_redist_slave_row_dofs()), true));
+          Teuchos::RCP<Core::LinAlg::Vector<double>> original_vec =
+              Teuchos::rcp(new Core::LinAlg::Vector<double>(
+                  *(strategy_ptr_->non_redist_slave_row_dofs()), true));
 
           auto exporter = Teuchos::rcp(
               new Epetra_Export(Xslavemod->Map(), *strategy_ptr_->non_redist_slave_row_dofs()));
@@ -176,9 +178,9 @@ void Solid::ModelEvaluator::Meshtying::setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Meshtying::assemble_force(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> block_vec_ptr = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> block_vec_ptr = Teuchos::null;
   if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
       strategy().is_penalty())
@@ -337,7 +339,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Meshtying::get_block_dof_r
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Meshtying::get_current_solution_ptr() const
 {
   return Teuchos::null;
@@ -345,7 +347,7 @@ Solid::ModelEvaluator::Meshtying::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Meshtying::get_last_time_step_solution_ptr() const
 {
   return Teuchos::null;
@@ -354,19 +356,19 @@ Solid::ModelEvaluator::Meshtying::get_last_time_step_solution_ptr() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Meshtying::run_pre_apply_jacobian_inverse(
-    const Core::LinAlg::Vector& rhs, Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
-    const NOX::Nln::Group& grp)
+    const Core::LinAlg::Vector<double>& rhs, Core::LinAlg::Vector<double>& result,
+    const Core::LinAlg::Vector<double>& xold, const NOX::Nln::Group& grp)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = global_state().jacobian_displ_block();
   const_cast<CONTACT::MtAbstractStrategy&>(strategy())
-      .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Core::LinAlg::Vector&>(rhs));
+      .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Core::LinAlg::Vector<double>&>(rhs));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Meshtying::run_post_apply_jacobian_inverse(
-    const Core::LinAlg::Vector& rhs, Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
-    const NOX::Nln::Group& grp)
+    const Core::LinAlg::Vector<double>& rhs, Core::LinAlg::Vector<double>& result,
+    const Core::LinAlg::Vector<double>& xold, const NOX::Nln::Group& grp)
 {
   const_cast<CONTACT::MtAbstractStrategy&>(strategy()).run_post_apply_jacobian_inverse(result);
 }
@@ -403,7 +405,7 @@ bool Solid::ModelEvaluator::Meshtying::evaluate_stiff()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
-    Teuchos::RCP<const Core::LinAlg::Vector> Xslavemod)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> Xslavemod)
 {
   // check modified positions vector
   if (Xslavemod == Teuchos::null) return;
@@ -415,12 +417,13 @@ void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
   // export modified node positions to column map of problem discretization
   const Epetra_Map* dof_colmap = discret_ptr()->dof_col_map();
   const Epetra_Map* node_colmap = discret_ptr()->node_col_map();
-  Teuchos::RCP<Core::LinAlg::Vector> Xslavemodcol = Core::LinAlg::create_vector(*dof_colmap, false);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> Xslavemodcol =
+      Core::LinAlg::create_vector(*dof_colmap, false);
   Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
   const int numdim = Global::Problem::instance()->n_dim();
-  const Core::LinAlg::Vector& gvector = *Xslavemodcol;
+  const Core::LinAlg::Vector<double>& gvector = *Xslavemodcol;
 
   // loop over all slave nodes (for all procs)
   for (int index = 0; index < numnode; ++index)
@@ -443,7 +446,7 @@ void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        FOUR_C_THROW("ERROR: Proc %d: Cannot find gid=%d in Core::LinAlg::Vector",
+        FOUR_C_THROW("ERROR: Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
             gvector.Comm().MyPID(), nodedofs[i]);
 
       nvector[i] += gvector[lid];
@@ -459,8 +462,8 @@ void Solid::ModelEvaluator::Meshtying::apply_mesh_initialization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Meshtying::run_post_compute_x(const Core::LinAlg::Vector& xold,
-    const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew)
+void Solid::ModelEvaluator::Meshtying::run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
+    const Core::LinAlg::Vector<double>& dir, const Core::LinAlg::Vector<double>& xnew)
 {
   check_init_setup();
 
@@ -470,7 +473,7 @@ void Solid::ModelEvaluator::Meshtying::run_post_compute_x(const Core::LinAlg::Ve
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Meshtying::remove_condensed_contributions_from_rhs(
-    Core::LinAlg::Vector& rhs)
+    Core::LinAlg::Vector<double>& rhs)
 {
   check_init_setup();
 
@@ -486,8 +489,8 @@ void Solid::ModelEvaluator::Meshtying::write_restart(
     iowriter.write_vector("mesh_relocation", mesh_relocation_);
   else
   {
-    Teuchos::RCP<Core::LinAlg::Vector> tmp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map(), true));
     iowriter.write_vector("mesh_relocation", tmp);
   }
 }
@@ -496,7 +499,7 @@ void Solid::ModelEvaluator::Meshtying::write_restart(
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Meshtying::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
-  mesh_relocation_ = Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map(), true));
+  mesh_relocation_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map(), true));
   ioreader.read_vector(mesh_relocation_, "mesh_relocation");
 
   strategy_ptr_->set_state(Mortar::state_new_displacement, *mesh_relocation_);

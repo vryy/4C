@@ -66,8 +66,8 @@ namespace XFEM
 
     bool is_bj() const { return full_bj_; }
 
-    void set_full_state(Teuchos::RCP<const Core::LinAlg::Vector> dispnp,
-        Teuchos::RCP<const Core::LinAlg::Vector> pres)
+    void set_full_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> pres)
     {
       fulldispnp_ = dispnp;
       fullpres_ = pres;
@@ -126,10 +126,10 @@ namespace XFEM
     void read_restart(const int step) override;
 
     // interface foces
-    Teuchos::RCP<Core::LinAlg::Vector> i_true_residual() { return itrueresidual_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_true_residual() { return itrueresidual_; }
 
     // for assembly of fluid interface forces
-    Teuchos::RCP<Core::LinAlg::Vector> i_forcecol() { return iforcecol_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_forcecol() { return iforcecol_; }
 
     //! Caluculate the Porosity for this FaceElement Gausspoint
     double calc_porosity(
@@ -233,9 +233,9 @@ namespace XFEM
 
     //------------------------------- vectors -----------------------------
     //! @name cutter-dis state vectors
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         itrueresidual_;  //! interface forces acting on the structural surface (= -iforcenp)
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         iforcecol_;  //! interface forces acting on the fluid surface (column vector assembly)
     //@}
 
@@ -247,8 +247,8 @@ namespace XFEM
     bool full_bj_;
     bool sub_tang_;
 
-    Teuchos::RCP<const Core::LinAlg::Vector> fulldispnp_;
-    Teuchos::RCP<const Core::LinAlg::Vector> fullpres_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fulldispnp_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fullpres_;
 
     //! map from structural x dof to pres dof of a node!
     std::map<int, int> lm_struct_x_lm_pres_;

@@ -121,7 +121,7 @@ enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::SingleStep::solve()
   // copy the solution group into the class variable
   group() = nlnsolver_->getSolutionGroup();
 
-  integrator().set_state(Core::LinAlg::Vector(x_epetra.getEpetraVector()));
+  integrator().set_state(Core::LinAlg::Vector<double>(x_epetra.getEpetraVector()));
 
   return convert_final_status(stepstatus);
 }

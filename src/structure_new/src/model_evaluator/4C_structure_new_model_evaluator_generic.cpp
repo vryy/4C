@@ -212,14 +212,14 @@ const int& Solid::ModelEvaluator::Generic::dof_offset() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Solid::ModelEvaluator::Generic::get_fext_incr() const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Generic::get_fext_incr() const
 {
   check_init_setup();
-  const Core::LinAlg::Vector& fextn = *global_state().get_fext_n();
-  const Core::LinAlg::Vector& fextnp = *global_state().get_fext_np();
+  const Core::LinAlg::Vector<double>& fextn = *global_state().get_fext_n();
+  const Core::LinAlg::Vector<double>& fextnp = *global_state().get_fext_np();
 
-  Teuchos::RCP<Core::LinAlg::Vector> fext_incr =
-      Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(fextnp));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fext_incr =
+      Teuchos::rcp<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(fextnp));
   fext_incr->Update(-1.0, fextn, 1.0);
 
   return fext_incr;

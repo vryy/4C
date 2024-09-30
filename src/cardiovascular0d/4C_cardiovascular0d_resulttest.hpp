@@ -51,7 +51,7 @@ class Cardiovascular0DResultTest : public Core::UTILS::ResultTest
  private:
   Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
 
-  const Teuchos::RCP<Core::LinAlg::Vector> cardvasc0d_dof_;
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> cardvasc0d_dof_;
 
   const bool havecardio_4elementwindkessel_;
   const bool havecardio_arterialproxdist_;

@@ -19,16 +19,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CONTACT::NitscheStrategyFsi::apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
-    const int step, const int iter, bool predictor)
+void CONTACT::NitscheStrategyFsi::apply_force_stiff_cmt(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter, bool predictor)
 {
   if (predictor) return;
   CONTACT::NitscheStrategy::apply_force_stiff_cmt(dis, kt, f, step, iter, predictor);
 }
 
 void CONTACT::NitscheStrategyFsi::set_state(
-    const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec)
+    const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec)
 {
   CONTACT::NitscheStrategy::set_state(statename, vec);
   if (statename == Mortar::state_new_displacement)

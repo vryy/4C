@@ -482,10 +482,10 @@ void PARTICLEWALL::WallHandlerDiscretCondition::distribute_wall_elements_and_nod
       walldatastate_->get_ref_disp_row(), stdelecolmap, stdnodecolmapdummy);
 
   // export displacement vector
-  Teuchos::RCP<Core::LinAlg::Vector> disn_col = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col = Teuchos::null;
   if (walldatastate_->get_disp_row() != Teuchos::null)
   {
-    disn_col = Teuchos::rcp(new Core::LinAlg::Vector(*walldiscretization_->dof_col_map()));
+    disn_col = Teuchos::rcp(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map()));
     Core::LinAlg::export_to(*walldatastate_->get_disp_row(), *disn_col);
   }
 

@@ -59,10 +59,10 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     //! assemble RHS
-    void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
-        Teuchos::RCP<const Core::LinAlg::Vector> rhs_scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> rhs_structure,
-        Teuchos::RCP<const Core::LinAlg::Vector> rhs_manifold);
+    void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_scatra,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_structure,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_manifold);
 
     //! assemble ScaTra-ScaTra-Block into system matrix
     virtual void assemble_scatra_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,

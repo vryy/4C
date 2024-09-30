@@ -38,12 +38,12 @@ FOUR_C_NAMESPACE_OPEN
  |  and calls evaluate routine                             schott 03/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
-    Teuchos::ParameterList& eleparams,                      ///< element parameter list
-    Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
-    Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector,        ///< systemvector
-    Teuchos::RCP<Cut::CutWizard> wizard,                    ///< cut wizard
+    Teuchos::ParameterList& eleparams,                        ///< element parameter list
+    Teuchos::RCP<Core::FE::Discretization> discret,           ///< discretization
+    Discret::ELEMENTS::FluidIntFace* faceele,                 ///< face element
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
+    Teuchos::RCP<Cut::CutWizard> wizard,                      ///< cut wizard
     bool include_inner,        ///< stabilize also facets with inside position
     bool include_inner_faces,  ///< stabilize also faces with inside position if possible
     bool gmsh_eos_out          ///< stabilization gmsh output
@@ -602,8 +602,8 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
     std::vector<int>& nds_master,                   ///< nodal dofset vector w.r.t. master element
     std::vector<int>& nds_slave,                    ///< nodal dofset vector w.r.t. slave element
     Core::FE::DiscretizationFaces& xdiscret,        ///< XFEM discretization
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
   // If Saftey check is passed, both elements contain the same material and with the same settings
@@ -666,11 +666,11 @@ void XFEM::XfemEdgeStab::reset()
  |  prepares edge based stabilization for standard fluid   schott 05/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
-    Teuchos::ParameterList& eleparams,                      ///< element parameter list
-    Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
-    Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+    Teuchos::ParameterList& eleparams,                       ///< element parameter list
+    Teuchos::RCP<Core::FE::Discretization> discret,          ///< discretization
+    Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
   Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
@@ -723,9 +723,9 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
     Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
     Teuchos::RCP<Core::FE::Discretization>
         boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-    Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+    Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
   Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =

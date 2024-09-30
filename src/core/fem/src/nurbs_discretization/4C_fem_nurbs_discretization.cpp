@@ -100,8 +100,8 @@ Core::FE::Nurbs::NurbsDiscretization::get_knot_vector() const
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, Core::FE::UTILS::Dbc::DbcInfo& info,
-    Teuchos::RCP<std::set<int>>* dbcgids) const
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+    Core::FE::UTILS::Dbc::DbcInfo& info, Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------- Step 1 ---------------------------------------
   Core::FE::UTILS::Dbc::evaluate(params, discret, time, systemvectors, info, dbcgids);
@@ -151,7 +151,7 @@ void Core::FE::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // default call
@@ -230,7 +230,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
-  Teuchos::RCP<Core::LinAlg::Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+  Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectoraux =
+      Teuchos::null;  // auxiliar system vector
   if (systemvectors[0] != Teuchos::null)
   {
     deg = 0;
@@ -258,19 +259,20 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // -------------------------------------------------------------------
   // create empty right hand side vector
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
-  Teuchos::RCP<Core::LinAlg::Vector> dbcvector = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcvector =
+      Core::LinAlg::create_vector(*dofrowmap, true);
 
-  Teuchos::RCP<Core::LinAlg::Vector> rhsd = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector> dbcvectord = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhsd = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcvectord = Teuchos::null;
   if (systemvectors[1] != Teuchos::null)
   {
     rhsd = Core::LinAlg::create_vector(*dofrowmap, true);
     dbcvectord = Core::LinAlg::create_vector(*dofrowmap, true);
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector> rhsdd = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector> dbcvectordd = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhsdd = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcvectordd = Teuchos::null;
   if (systemvectors[2] != Teuchos::null)
   {
     rhsdd = Core::LinAlg::create_vector(*dofrowmap, true);

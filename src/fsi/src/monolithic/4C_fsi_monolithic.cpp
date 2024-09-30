@@ -162,7 +162,8 @@ void FSI::MonolithicBase::prepare_time_step()
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::prepare_time_step_fsi()
 {
-  ddgpred_ = Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->extract_interface_dispnp()));
+  ddgpred_ = Teuchos::rcp(
+      new Core::LinAlg::Vector<double>(*structure_field()->extract_interface_dispnp()));
   ddgpred_->Update(-1.0, *structure_field()->extract_interface_dispn(), 1.0);
 
   return;
@@ -210,112 +211,112 @@ void FSI::MonolithicBase::output()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::struct_to_ale(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_ale(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_->master_to_slave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::ale_to_struct(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_struct(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::struct_to_fluid(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_fluid(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_->master_to_slave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::fluid_to_struct(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_struct(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::ale_to_fluid(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::fluid_to_ale_interface(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_ale_interface(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->master_to_slave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::ale_to_fluid_interface(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid_interface(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::struct_to_ale(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_ale(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_->master_to_slave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::ale_to_struct(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_struct(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::struct_to_fluid(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_fluid(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_->master_to_slave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::fluid_to_struct(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_struct(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::ale_to_fluid(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::fluid_to_ale_interface(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_ale_interface(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->master_to_slave(iv);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::MonolithicBase::ale_to_fluid_interface(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid_interface(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->slave_to_master(iv);
 }
@@ -624,8 +625,8 @@ void FSI::Monolithic::time_step(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   // Get initial guess.
   // The initial system is there, so we can happily extract the
   // initial guess. (The Dirichlet conditions are already build in!)
-  Teuchos::RCP<Core::LinAlg::Vector> initial_guess_v =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess_v =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
   initial_guess(initial_guess_v);
 
   ::NOX::Epetra::Vector noxSoln(
@@ -819,7 +820,7 @@ void FSI::Monolithic::non_lin_error_check()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> step_increment)
+void FSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
 
@@ -828,9 +829,9 @@ void FSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> step_inc
   check_if_dts_same();
 #endif
 
-  Teuchos::RCP<const Core::LinAlg::Vector> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector> fx;
-  Teuchos::RCP<const Core::LinAlg::Vector> ax;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
 
   if (step_increment != Teuchos::null)
   {
@@ -865,7 +866,7 @@ void FSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> step_inc
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
@@ -986,9 +987,9 @@ Teuchos::RCP<::NOX::Direction::Generic> FSI::Monolithic::buildDirection(
 bool FSI::Monolithic::computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeF");
-  Core::LinAlg::Vector x_new = Core::LinAlg::Vector(x);
+  Core::LinAlg::Vector<double> x_new = Core::LinAlg::Vector<double>(x);
   evaluate(Teuchos::rcp(&x_new, false));
-  Core::LinAlg::Vector F_new = Core::LinAlg::Vector(F);
+  Core::LinAlg::Vector<double> F_new = Core::LinAlg::Vector<double>(F);
   setup_rhs(F_new);
   F = F_new;
   return true;
@@ -1010,7 +1011,7 @@ bool FSI::Monolithic::computePreconditioner(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::setup_rhs(Core::LinAlg::Vector& f, bool firstcall)
+void FSI::Monolithic::setup_rhs(Core::LinAlg::Vector<double>& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::setup_rhs");
 
@@ -1032,9 +1033,10 @@ void FSI::Monolithic::setup_rhs(Core::LinAlg::Vector& f, bool firstcall)
       Teuchos::null)  // ToDo: Remove if-"Abfrage" after 'dbcmaps_' has been introduced in lung fsi
   {
     // Finally, we take care of Dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector> rhs = Teuchos::rcp(new Core::LinAlg::Vector(f));
-    Teuchos::RCP<const Core::LinAlg::Vector> zeros =
-        Teuchos::rcp(new const Core::LinAlg::Vector(f.Map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(f));
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> zeros =
+        Teuchos::rcp(new const Core::LinAlg::Vector<double>(f.Map(), true));
     Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros, *(dbcmaps_->cond_map()));
     f.Update(1.0, *rhs, 0.0);
   }
@@ -1047,7 +1049,7 @@ void FSI::Monolithic::setup_rhs(Core::LinAlg::Vector& f, bool firstcall)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector> initial_guess)
+void FSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::initial_guess");
 
@@ -1057,9 +1059,10 @@ void FSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector> initial_g
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::combine_field_vectors(Core::LinAlg::Vector& v,
-    Teuchos::RCP<const Core::LinAlg::Vector> sv, Teuchos::RCP<const Core::LinAlg::Vector> fv,
-    Teuchos::RCP<const Core::LinAlg::Vector> av)
+void FSI::Monolithic::combine_field_vectors(Core::LinAlg::Vector<double>& v,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> av)
 {
   extractor().add_vector(*sv, 0, v);
   extractor().add_vector(*fv, 1, v);
@@ -1101,7 +1104,7 @@ bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector& x, Epetra_Operat
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
 
-  Core::LinAlg::Vector x_new = Core::LinAlg::Vector(x);
+  Core::LinAlg::Vector<double> x_new = Core::LinAlg::Vector<double>(x);
   evaluate(Teuchos::rcp(&x_new, false));
   Core::LinAlg::BlockSparseMatrixBase& mat =
       Teuchos::dyn_cast<Core::LinAlg::BlockSparseMatrixBase>(Jac);

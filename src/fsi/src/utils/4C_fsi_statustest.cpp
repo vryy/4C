@@ -179,11 +179,11 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
   const ::NOX::Abstract::Vector& abstract_f = grp.getF();
   const ::NOX::Epetra::Vector& f = Teuchos::dyn_cast<const ::NOX::Epetra::Vector>(abstract_f);
 
-  Teuchos::RCP<Core::LinAlg::Vector> f_copy =
-      Teuchos::RCP<Core::LinAlg::Vector>(new Core::LinAlg::Vector(f.getEpetraVector()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f_copy = Teuchos::RCP<Core::LinAlg::Vector<double>>(
+      new Core::LinAlg::Vector<double>(f.getEpetraVector()));
   // extract the inner vector elements we are interested in
 
-  Teuchos::RCP<Core::LinAlg::Vector> v = extractor_.extract_vector(*f_copy, blocknum_);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v = extractor_.extract_vector(*f_copy, blocknum_);
 
   double norm = FSI::GenericNormF::compute_norm(*v);
 
@@ -221,14 +221,15 @@ double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp
   // extract the block epetra vector
 
   const ::NOX::Abstract::Vector& abstract_f = grp.getF();
-  const Core::LinAlg::Vector& f = Teuchos::dyn_cast<const Core::LinAlg::Vector>(abstract_f);
+  const Core::LinAlg::Vector<double>& f =
+      Teuchos::dyn_cast<const Core::LinAlg::Vector<double>>(abstract_f);
 
   // extract the inner vector elements we are interested in
 
-  Teuchos::RCP<Core::LinAlg::Vector> v1 = extractor1_.extract_cond_vector(f);
-  Teuchos::RCP<Core::LinAlg::Vector> v2 = extractor2_.extract_cond_vector(f);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v1 = extractor1_.extract_cond_vector(f);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v2 = extractor2_.extract_cond_vector(f);
 
-  Teuchos::RCP<Core::LinAlg::Vector> v = converter_->src_to_dst(v2);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v = converter_->src_to_dst(v2);
   v->Update(scale1_, *v1, scale2_);
 
   double norm = FSI::GenericNormF::compute_norm(*v);
@@ -418,7 +419,7 @@ NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 /*----------------------------------------------------------------------*/
 double NOX::FSI::PartialNormUpdate::compute_norm(const Epetra_Vector& v)
 {
-  Core::LinAlg::Vector v_new = Core::LinAlg::Vector(v);
+  Core::LinAlg::Vector<double> v_new = Core::LinAlg::Vector<double>(v);
   return FSI::GenericNormUpdate::compute_norm(*extractor_.extract_vector(v_new, blocknum_));
 }
 

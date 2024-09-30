@@ -57,8 +57,8 @@ Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidAleXFEM::struct_inte
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidAleXFEM::nonlinear_solve(
-    Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel)
+void Adapter::FluidAleXFEM::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
 {
   // if we have values at the interface we need to apply them
 
@@ -77,8 +77,8 @@ void Adapter::FluidAleXFEM::nonlinear_solve(
   // Update the ale update part
   if (fluid_field()->interface()->au_cond_relevant())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Core::LinAlg::Vector> audispnp =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> audispnp =
         fluid_field()->interface()->extract_au_cond_vector(dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
@@ -90,7 +90,7 @@ void Adapter::FluidAleXFEM::nonlinear_solve(
 
 
   ale_field()->solve();
-  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
   fluid_field()->solve();
 }
@@ -98,8 +98,8 @@ void Adapter::FluidAleXFEM::nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAleXFEM::relaxation_solve(
-    Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt)
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAleXFEM::relaxation_solve(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt)
 {
   FOUR_C_THROW("RelaxationSolve for XFEM useful?");
   std::cout << "WARNING: RelaxationSolve for XFEM useful?" << std::endl;
@@ -113,7 +113,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAleXFEM::relaxation_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAleXFEM::extract_interface_forces()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAleXFEM::extract_interface_forces()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
   return xfluid->extract_struct_interface_forces();
@@ -122,7 +122,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAleXFEM::extract_interface_forc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAleXFEM::extract_interface_velnp()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAleXFEM::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
@@ -132,7 +132,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAleXFEM::extract_interface_veln
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAleXFEM::extract_interface_veln()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAleXFEM::extract_interface_veln()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
   return xfluid->extract_struct_interface_veln();

@@ -22,6 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
+  template <typename T>
   class Vector;
 }
 
@@ -83,17 +84,17 @@ namespace NOX
          protected:
           /// set the internal class variables by calling the related evaluate routine
           ::NOX::Abstract::Group::ReturnType set_element_volumes(const ::NOX::Abstract::Group& grp,
-              Teuchos::RCP<Core::LinAlg::Vector>& ele_vols) const;
+              Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols) const;
 
           /// get the number of bad elements
           int number_of_bad_elements();
 
          protected:
           /// reference element volumes
-          Teuchos::RCP<Core::LinAlg::Vector> ref_ele_vols_;
+          Teuchos::RCP<Core::LinAlg::Vector<double>> ref_ele_vols_;
 
           /// current (trial) element volumes
-          Teuchos::RCP<Core::LinAlg::Vector> curr_ele_vols_;
+          Teuchos::RCP<Core::LinAlg::Vector<double>> curr_ele_vols_;
 
           /// volume change input-parameters
           const VolumeChangeParams params_;

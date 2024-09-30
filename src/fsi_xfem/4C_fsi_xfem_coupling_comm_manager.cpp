@@ -69,8 +69,8 @@ XFEM::CouplingCommManager::CouplingCommManager(
 03/2016|
 *--------------------------------------------------------------------------------------------------------------*/
 void XFEM::CouplingCommManager::insert_vector(const int idxA,
-    Teuchos::RCP<const Core::LinAlg::Vector> vecA, const int idxB,
-    Teuchos::RCP<Core::LinAlg::Vector> vecB, const CouplingCommManager::TransferType ttype,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vecA, const int idxB,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vecB, const CouplingCommManager::TransferType ttype,
     bool add, double scale)
 {
   switch (ttype)
@@ -78,8 +78,8 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     case CouplingCommManager::full_to_full:
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = get_map_extractor(idxB);
-      Teuchos::RCP<Core::LinAlg::Vector> tmpvec =
-          Teuchos::rcp(new Core::LinAlg::Vector(*mmeb->Map(1), true));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmpvec =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mmeb->Map(1), true));
       insert_vector(idxA, vecA, idxB, tmpvec, CouplingCommManager::full_to_partial, false, scale);
       if (!add)
         mmeb->insert_vector(tmpvec, 1, vecB);
@@ -96,8 +96,8 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     case CouplingCommManager::partial_to_full:
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = get_map_extractor(idxB);
-      Teuchos::RCP<Core::LinAlg::Vector> tmpvec =
-          Teuchos::rcp(new Core::LinAlg::Vector(*mmeb->Map(1), true));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmpvec =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mmeb->Map(1), true));
       insert_vector(
           idxA, vecA, idxB, tmpvec, CouplingCommManager::partial_to_partial, false, scale);
       if (!add)
@@ -140,8 +140,8 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     case CouplingCommManager::partial_to_global:
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
-      Teuchos::RCP<Core::LinAlg::Vector> fullvec =
-          Teuchos::rcp(new Core::LinAlg::Vector(*mme->Map(idxB), true));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> fullvec =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
       insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::partial_to_full, false, scale);
       if (!add)
         mme->insert_vector(fullvec, idxB, vecB);
@@ -152,8 +152,8 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     case CouplingCommManager::full_to_global:
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
-      Teuchos::RCP<Core::LinAlg::Vector> fullvec =
-          Teuchos::rcp(new Core::LinAlg::Vector(*mme->Map(idxB), true));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> fullvec =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
       insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::full_to_full, false, scale);
       if (!add)
         mme->insert_vector(fullvec, idxB, vecB);

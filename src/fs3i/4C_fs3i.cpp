@@ -93,8 +93,8 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
   const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->cond_map();
 
   // filter out master dirichlet dofs associated with the interface
-  Teuchos::RCP<Core::LinAlg::Vector> masterifdirich =
-      Teuchos::rcp(new Core::LinAlg::Vector(*mastermap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> masterifdirich =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*mastermap, true));
   for (int i = 0; i < mastermap->NumMyElements(); ++i)
   {
     int gid = mastermap->GID(i);
@@ -103,7 +103,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
       (*masterifdirich)[i] = 1.0;
     }
   }
-  Teuchos::RCP<Core::LinAlg::Vector> test_slaveifdirich =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> test_slaveifdirich =
       scatracoup_->master_to_slave(masterifdirich);
 
   const Teuchos::RCP<const Core::LinAlg::MapExtractor> slavedirichmapex =
@@ -111,8 +111,8 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
   const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->cond_map();
 
   // filter out slave dirichlet dofs associated with the interface
-  Teuchos::RCP<Core::LinAlg::Vector> slaveifdirich =
-      Teuchos::rcp(new Core::LinAlg::Vector(*slavemap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> slaveifdirich =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavemap, true));
   for (int i = 0; i < slavemap->NumMyElements(); ++i)
   {
     int gid = slavemap->GID(i);
@@ -121,7 +121,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
       (*slaveifdirich)[i] = 1.0;
     }
   }
-  Teuchos::RCP<Core::LinAlg::Vector> test_masterifdirich =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> test_masterifdirich =
       scatracoup_->slave_to_master(slaveifdirich);
 
   // check if the locations of non-zero entries do not match
@@ -467,7 +467,7 @@ void FS3I::FS3IBase::evaluate_scatra_fields()
     // add contributions due to finite interface permeability
     if (!infperm_)
     {
-      Teuchos::RCP<Core::LinAlg::Vector> coupforce = scatracoupforce_[i];
+      Teuchos::RCP<Core::LinAlg::Vector<double>> coupforce = scatracoupforce_[i];
       Teuchos::RCP<Core::LinAlg::SparseMatrix> coupmat = scatracoupmat_[i];
 
       coupforce->PutScalar(0.0);
@@ -476,7 +476,7 @@ void FS3I::FS3IBase::evaluate_scatra_fields()
       scatra->surface_permeability(coupmat, coupforce);
 
       // apply Dirichlet boundary conditions to coupling matrix and vector
-      Teuchos::RCP<Core::LinAlg::Vector> zeros = scatrazeros_[i];
+      Teuchos::RCP<Core::LinAlg::Vector<double>> zeros = scatrazeros_[i];
       const Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmapex = scatra->dirich_maps();
       const Teuchos::RCP<const Epetra_Map> dbcmap = dbcmapex->cond_map();
       coupmat->apply_dirichlet(*dbcmap, false);
@@ -490,7 +490,7 @@ void FS3I::FS3IBase::evaluate_scatra_fields()
  *----------------------------------------------------------------------*/
 void FS3I::FS3IBase::set_membrane_concentration() const
 {
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> MembraneConc;
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> MembraneConc;
   extract_membrane_concentration(MembraneConc);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -504,10 +504,10 @@ void FS3I::FS3IBase::set_membrane_concentration() const
  |  Extract membrane concentration                           thon 08/16 |
  *----------------------------------------------------------------------*/
 void FS3I::FS3IBase::extract_membrane_concentration(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& MembraneConcentration) const
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& MembraneConcentration) const
 {
   // ############ Fluid Field ###############
-  Teuchos::RCP<Core::LinAlg::Vector> MembraneConcentration1 = calc_membrane_concentration();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> MembraneConcentration1 = calc_membrane_concentration();
   MembraneConcentration.push_back(MembraneConcentration1);
 
   // ############ Poro Field ###############
@@ -515,11 +515,11 @@ void FS3I::FS3IBase::extract_membrane_concentration(
   //  Fluid-Scatra Field into the Structure-Scatra Field
 
   // extract interface values
-  Teuchos::RCP<Core::LinAlg::Vector> interface_phin =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> interface_phin =
       scatrafieldexvec_[0]->extract_vector(MembraneConcentration1, 1);
 
   // insert interface values from Fluid Field into Poro Field;
-  Teuchos::RCP<Core::LinAlg::Vector> MembraneConcentration2 =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> MembraneConcentration2 =
       scatrafieldexvec_[1]->insert_vector(scatra1_to_scatra2(interface_phin), 1);
   MembraneConcentration.push_back(MembraneConcentration2);
 }
@@ -527,35 +527,35 @@ void FS3I::FS3IBase::extract_membrane_concentration(
 /*----------------------------------------------------------------------*
  |  Calculate membrane concentration                         thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::FS3IBase::calc_membrane_concentration() const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::FS3IBase::calc_membrane_concentration() const
 {
   // Get concentration phi2 in scatrafield2
   // Hint: in the following we talk of phi1 and phi2, but they mean the same concentration just on
   // different scatrafields
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra2 = scatravec_[1];
-  Teuchos::RCP<Core::LinAlg::Vector> scatrafield2_phi2np = scatra2->scatra_field()->phinp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> scatrafield2_phi2np = scatra2->scatra_field()->phinp();
 
   // extract interface values from phi2 but we are still on scatrafield2
-  Teuchos::RCP<Core::LinAlg::Vector> interface2_phi2np =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> interface2_phi2np =
       scatrafieldexvec_[1]->extract_vector(scatrafield2_phi2np, 1);
 
   // insert interface values from scatrafield2 into scatrafield1; scatrafield1_phi2n is again of
   // full length, i.e. of size of scatrafield1; all values that do not belong to the interface are
   // zero
-  Teuchos::RCP<Core::LinAlg::Vector> scatrafield1_phi2np =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> scatrafield1_phi2np =
       scatrafieldexvec_[0]->insert_vector(scatra2_to_scatra1(interface2_phi2np), 1);
 
   // Get concentration phi1 in scatrafield1
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra1 = scatravec_[0];
-  Teuchos::RCP<Core::LinAlg::Vector> scatrafield1_phi1np = scatra1->scatra_field()->phinp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> scatrafield1_phi1np = scatra1->scatra_field()->phinp();
 
   // extract interface values from phi1 but we are still on scatrafield1
-  Teuchos::RCP<Core::LinAlg::Vector> interface1_phi1np =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> interface1_phi1np =
       scatrafieldexvec_[0]->extract_vector(scatrafield1_phi1np, 1);
 
   // insert interface values interface1_phi1n from scatrafield1 into the full scatrafield1 again;
   // this is just to obtain a vector whose entries are zero except for the nodes of the interface
-  Teuchos::RCP<Core::LinAlg::Vector> temp =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
       scatrafieldexvec_[0]->insert_vector(interface1_phi1np, 1);
 
   // nodewise calculation of mean concentration in the interface
@@ -593,29 +593,31 @@ void FS3I::FS3IBase::setup_coupled_scatra_system()
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::setup_coupled_scatra_rhs()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> scatra1 = scatravec_[0]->scatra_field()->residual();
-  Teuchos::RCP<const Core::LinAlg::Vector> scatra2 = scatravec_[1]->scatra_field()->residual();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra1 =
+      scatravec_[0]->scatra_field()->residual();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra2 =
+      scatravec_[1]->scatra_field()->residual();
   setup_coupled_scatra_vector(scatrarhs_, scatra1, scatra2);
 
   // additional contributions in case of finite interface permeability
   if (!infperm_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> coup1 = scatracoupforce_[0];
-    Teuchos::RCP<Core::LinAlg::Vector> coup2 = scatracoupforce_[1];
+    Teuchos::RCP<Core::LinAlg::Vector<double>> coup1 = scatracoupforce_[0];
+    Teuchos::RCP<Core::LinAlg::Vector<double>> coup2 = scatracoupforce_[1];
 
     // contribution of the same field
     scatraglobalex_->add_vector(*coup1, 0, *scatrarhs_, 1.0);
     scatraglobalex_->add_vector(*coup2, 1, *scatrarhs_, 1.0);
 
     // contribution of the respective other field
-    Teuchos::RCP<Core::LinAlg::Vector> coup1_boundary =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> coup1_boundary =
         scatrafieldexvec_[0]->extract_vector(coup1, 1);
-    Teuchos::RCP<Core::LinAlg::Vector> temp =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
         scatrafieldexvec_[1]->insert_vector(scatra1_to_scatra2(coup1_boundary), 1);
     temp->Scale(-1.0);
     scatraglobalex_->add_vector(*temp, 1, *scatrarhs_);
 
-    Teuchos::RCP<Core::LinAlg::Vector> coup2_boundary =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> coup2_boundary =
         scatrafieldexvec_[1]->extract_vector(coup2, 1);
     temp = scatrafieldexvec_[0]->insert_vector(scatra2_to_scatra1(coup2_boundary), 1);
     temp->Scale(-1.0);
@@ -626,18 +628,21 @@ void FS3I::FS3IBase::setup_coupled_scatra_rhs()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::setup_coupled_scatra_vector(Teuchos::RCP<Core::LinAlg::Vector> globalvec,
-    Teuchos::RCP<const Core::LinAlg::Vector>& vec1, Teuchos::RCP<const Core::LinAlg::Vector>& vec2)
+void FS3I::FS3IBase::setup_coupled_scatra_vector(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> globalvec,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec1,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec2)
 {
   if (infperm_)
   {
     // concentrations are assumed to be equal at the interface
     // extract the inner (uncoupled) dofs from second field
-    Teuchos::RCP<Core::LinAlg::Vector> vec2_other = scatrafieldexvec_[1]->extract_vector(vec2, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_other =
+        scatrafieldexvec_[1]->extract_vector(vec2, 0);
 
-    Teuchos::RCP<Core::LinAlg::Vector> vec2_boundary =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_boundary =
         scatrafieldexvec_[1]->extract_vector(vec2, 1);
-    Teuchos::RCP<Core::LinAlg::Vector> temp =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
         scatrafieldexvec_[0]->insert_vector(scatra2_to_scatra1(vec2_boundary), 1);
     temp->Update(1.0, *vec1, 1.0);
 
@@ -726,8 +731,8 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::FS3IBase::scatra2_to_scatra1(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::FS3IBase::scatra2_to_scatra1(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return scatracoup_->slave_to_master(iv);
 }
@@ -735,8 +740,8 @@ Teuchos::RCP<Core::LinAlg::Vector> FS3I::FS3IBase::scatra2_to_scatra1(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::FS3IBase::scatra1_to_scatra2(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::FS3IBase::scatra1_to_scatra2(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return scatracoup_->master_to_slave(iv);
 }
@@ -760,8 +765,8 @@ void FS3I::FS3IBase::scatra_iter_update()
 {
   // define incremental vectors for fluid- and structure-based scatra
   // fields and extract respective vectors
-  Teuchos::RCP<const Core::LinAlg::Vector> inc1;
-  Teuchos::RCP<const Core::LinAlg::Vector> inc2;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> inc1;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> inc2;
   extract_scatra_field_vectors(scatraincrement_, inc1, inc2);
 
   // update both fluid- and structure-based solution vectors
@@ -772,8 +777,9 @@ void FS3I::FS3IBase::scatra_iter_update()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::FS3IBase::extract_scatra_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector> globalvec,
-    Teuchos::RCP<const Core::LinAlg::Vector>& vec1, Teuchos::RCP<const Core::LinAlg::Vector>& vec2)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec1,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec2)
 {
   if (infperm_)
   {
@@ -781,13 +787,13 @@ void FS3I::FS3IBase::extract_scatra_field_vectors(
     vec1 = scatraglobalex_->extract_vector(globalvec, 0);
 
     // process structure scatra unknowns at the boundary
-    Teuchos::RCP<Core::LinAlg::Vector> vec1_boundary =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec1_boundary =
         scatrafieldexvec_[0]->extract_vector(vec1, 1);
-    Teuchos::RCP<const Core::LinAlg::Vector> vec2_inner =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec2_inner =
         scatraglobalex_->extract_vector(globalvec, 1);
-    Teuchos::RCP<Core::LinAlg::Vector> vec2_boundary = scatra1_to_scatra2(vec1_boundary);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_boundary = scatra1_to_scatra2(vec1_boundary);
 
-    Teuchos::RCP<Core::LinAlg::Vector> vec2_temp =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_temp =
         scatrafieldexvec_[1]->insert_vector(vec2_inner, 0);
     scatrafieldexvec_[1]->insert_vector(vec2_boundary, 1, vec2_temp);
     vec2 = vec2_temp;

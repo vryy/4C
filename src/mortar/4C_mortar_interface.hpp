@@ -1158,7 +1158,7 @@ namespace Mortar
     \param[in] Enum to encode type of state
     \param[in] Vector with state data
     */
-    void set_state(const enum StateType& statetype, const Core::LinAlg::Vector& vec);
+    void set_state(const enum StateType& statetype, const Core::LinAlg::Vector<double>& vec);
 
     /*!
     \brief Create integration cells for interface
@@ -1256,7 +1256,7 @@ namespace Mortar
     \brief Assemble lagrange multipliers into global z vector (penalty strategy)
 
     */
-    void assemble_lm(Core::LinAlg::Vector& zglobal);
+    void assemble_lm(Core::LinAlg::Vector<double>& zglobal);
 
     /*!
     \brief Assemble Mortar matrices D and M

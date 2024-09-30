@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, const std::string& fieldstring,
-    Teuchos::RCP<Core::LinAlg::Vector> fieldvector, const std::vector<int>& locids)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fieldvector, const std::vector<int>& locids)
 {
   // get initial field conditions
   std::vector<Core::Conditions::Condition*> initfieldconditions;
@@ -64,7 +64,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::do_initial_field(const Core::UTILS::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
-    Core::LinAlg::Vector& fieldvector, const std::vector<int>& locids)
+    Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids)
 {
   const std::vector<int> cond_nodeids = *cond.get_nodes();
   if (cond_nodeids.empty()) FOUR_C_THROW("Initfield condition does not have nodal cloud.");

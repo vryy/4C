@@ -60,7 +60,7 @@ namespace Core::FE
     void apply_nurbs_initial_condition(Core::FE::Discretization& dis,
         const Teuchos::ParameterList& solverparams,
         const Core::UTILS::FunctionOfSpaceTime& start_function,
-        Teuchos::RCP<Core::LinAlg::Vector> initialvals);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> initialvals);
 
   }  // namespace Nurbs
 

@@ -615,8 +615,8 @@ void TSI::Monolithic::newton_full()
     // include all stuff here related with convergence test
     normrhs_ = calculate_vector_norm(iternorm_, rhs_);
     // vector of displacement and temperature residual
-    Teuchos::RCP<Core::LinAlg::Vector> strrhs;
-    Teuchos::RCP<Core::LinAlg::Vector> thrrhs;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> strrhs;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> thrrhs;
     // extract field vectors
     extract_field_vectors(rhs_, strrhs, thrrhs);
     normstrrhs_ = calculate_vector_norm(iternormstr_, strrhs);
@@ -624,8 +624,8 @@ void TSI::Monolithic::newton_full()
 
     // --------------------------------- build residual incremental norms
     // vector of displacement and temperature increments
-    Teuchos::RCP<Core::LinAlg::Vector> sx;
-    Teuchos::RCP<Core::LinAlg::Vector> tx;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
     // extract field vectors
     extract_field_vectors(iterinc_, sx, tx);
     norminc_ = calculate_vector_norm(iternorm_, iterinc_);
@@ -778,10 +778,10 @@ void TSI::Monolithic::ptc()
 
     // modify structural diagonal block k_ss
     {
-      Teuchos::RCP<Core::LinAlg::Vector> tmp_SS =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_SS =
           Core::LinAlg::create_vector(structure_field()->system_matrix()->row_map(), false);
       tmp_SS->PutScalar(dti);
-      Teuchos::RCP<Core::LinAlg::Vector> diag_SS =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> diag_SS =
           Core::LinAlg::create_vector(structure_field()->system_matrix()->row_map(), false);
       structure_field()->system_matrix()->extract_diagonal_copy(*diag_SS);
 
@@ -791,10 +791,10 @@ void TSI::Monolithic::ptc()
     }
     // modify thermal diagonal block k_tt
     {
-      Teuchos::RCP<Core::LinAlg::Vector> tmp_tt =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_tt =
           Core::LinAlg::create_vector(thermo_field()->system_matrix()->row_map(), false);
       tmp_tt->PutScalar(dti);
-      Teuchos::RCP<Core::LinAlg::Vector> diag_tt =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> diag_tt =
           Core::LinAlg::create_vector(thermo_field()->system_matrix()->row_map(), false);
       thermo_field()->system_matrix()->extract_diagonal_copy(*diag_tt);
       diag_tt->Update(1.0, *tmp_tt, 1.0);
@@ -843,8 +843,8 @@ void TSI::Monolithic::ptc()
     // include all stuff here related with convergence test
     normrhs_ = calculate_vector_norm(iternorm_, rhs_);
     // vector of displacement and temperature residual
-    Teuchos::RCP<Core::LinAlg::Vector> strrhs;
-    Teuchos::RCP<Core::LinAlg::Vector> thrrhs;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> strrhs;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> thrrhs;
     // extract field vectors
     extract_field_vectors(rhs_, strrhs, thrrhs);
     normstrrhs_ = calculate_vector_norm(iternormstr_, strrhs);
@@ -852,8 +852,8 @@ void TSI::Monolithic::ptc()
 
     // --------------------------------- build residual incremental norms
     // vector of displacement and temperature increments
-    Teuchos::RCP<Core::LinAlg::Vector> sx;
-    Teuchos::RCP<Core::LinAlg::Vector> tx;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
     // extract field vectors
     extract_field_vectors(iterinc_, sx, tx);
     norminc_ = calculate_vector_norm(iternorm_, iterinc_);
@@ -919,7 +919,7 @@ void TSI::Monolithic::ptc()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                                dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector> stepinc)
+void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc)
 {
 #ifdef TSI_DEBUG
 #ifndef TFSI
@@ -930,8 +930,8 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector> stepinc)
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
 
   // displacement and temperature incremental vector
-  Teuchos::RCP<Core::LinAlg::Vector> sx;
-  Teuchos::RCP<Core::LinAlg::Vector> tx;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
 
   // if an increment vector exists
   if (stepinc != Teuchos::null)
@@ -983,8 +983,8 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector> stepinc)
 #endif  // TSIPARALLEL
 
 #ifdef TSIMONOLITHASOUTPUT
-  Teuchos::RCP<Core::LinAlg::Vector> tempera =
-      Teuchos::rcp(new Core::LinAlg::Vector(ThermoField()->Tempn()->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tempera =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(ThermoField()->Tempn()->Map(), true));
 
   if (ThermoField()->Tempnp() != Teuchos::null) tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
 
@@ -1060,8 +1060,8 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector> stepinc)
  | extract field vectors for calling evaluate() of the       dano 11/10 |
  | single fields                                                        |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector> x,
-    Teuchos::RCP<Core::LinAlg::Vector>& sx, Teuchos::RCP<Core::LinAlg::Vector>& tx)
+void TSI::Monolithic::extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& sx, Teuchos::RCP<Core::LinAlg::Vector<double>>& tx)
 {
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::extract_field_vectors");
 
@@ -1246,11 +1246,11 @@ void TSI::Monolithic::setup_rhs()
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::setup_rhs");
 
   // create full monolithic rhs vector
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   // get the structural rhs
-  Teuchos::RCP<Core::LinAlg::Vector> str_rhs =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->rhs()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> str_rhs =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->rhs()));
   if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
           Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") ==
       Inpar::Solid::int_standard)
@@ -1350,7 +1350,7 @@ void TSI::Monolithic::linear_solve()
 /*----------------------------------------------------------------------*
  | initial guess of the displacements/temperatures           dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig)
+void TSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig)
 {
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::initial_guess");
 
@@ -1368,8 +1368,9 @@ void TSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig)
 /*----------------------------------------------------------------------*
  | setup vector of the structure and thermo field            dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::setup_vector(Core::LinAlg::Vector& f,
-    Teuchos::RCP<const Core::LinAlg::Vector> sv, Teuchos::RCP<const Core::LinAlg::Vector> tv)
+void TSI::Monolithic::setup_vector(Core::LinAlg::Vector<double>& f,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> tv)
 {
   // extract dofs of the two fields
   // and put the structural/thermal field vector into the global vector f
@@ -2221,8 +2222,8 @@ void TSI::Monolithic::recover_struct_therm_lm()
   if (contact_strategy_lagrange_ == Teuchos::null) return;
 
   // split the increment
-  Teuchos::RCP<Core::LinAlg::Vector> sx;
-  Teuchos::RCP<Core::LinAlg::Vector> tx;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
 
   // extract field vectors
   extract_field_vectors(iterinc_, sx, tx);
@@ -2238,7 +2239,7 @@ void TSI::Monolithic::recover_struct_therm_lm()
  | block system before solving system                                   |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::scale_system(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector<double>& b)
 {
   // should we scale the system?
   const bool scaling_infnorm = tsidynmono_.get<bool>("INFNORMSCALING");
@@ -2248,8 +2249,8 @@ void TSI::Monolithic::scale_system(
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
-    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
+    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(srowsum_->get_ref_of_Epetra_Vector());
     A->InvColSums(scolsum_->get_ref_of_Epetra_Vector());
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
@@ -2258,8 +2259,8 @@ void TSI::Monolithic::scale_system(
       FOUR_C_THROW("structure scaling failed");
 
     A = mat.matrix(1, 1).epetra_matrix();
-    trowsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
-    tcolsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
+    trowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    tcolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(trowsum_->get_ref_of_Epetra_Vector());
     A->InvColSums(tcolsum_->get_ref_of_Epetra_Vector());
     if ((A->LeftScale(*trowsum_)) or (A->RightScale(*tcolsum_)) or
@@ -2267,8 +2268,8 @@ void TSI::Monolithic::scale_system(
         (mat.matrix(0, 1).epetra_matrix()->RightScale(*tcolsum_)))
       FOUR_C_THROW("thermo scaling failed");
 
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor()->extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> tx = extractor()->extract_vector(b, 1);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor()->extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tx = extractor()->extract_vector(b, 1);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (tx->Multiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
@@ -2282,15 +2283,15 @@ void TSI::Monolithic::scale_system(
 /*----------------------------------------------------------------------*
  | unscale solution after solving the linear system          dano 02/13 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::unscale_solution(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b)
+void TSI::Monolithic::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
+    Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b)
 {
   const bool scaling_infnorm = tsidynmono_.get<bool>("INFNORMSCALING");
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> sy = extractor()->extract_vector(x, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> ty = extractor()->extract_vector(x, 1);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sy = extractor()->extract_vector(x, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ty = extractor()->extract_vector(x, 1);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ty->Multiply(1.0, *tcolsum_, *ty, 0.0)) FOUR_C_THROW("thermo scaling failed");
@@ -2298,8 +2299,8 @@ void TSI::Monolithic::unscale_solution(
     extractor()->insert_vector(*sy, 0, x);
     extractor()->insert_vector(*ty, 1, x);
 
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor()->extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> tx = extractor()->extract_vector(b, 1);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor()->extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tx = extractor()->extract_vector(b, 1);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (tx->ReciprocalMultiply(1.0, *trowsum_, *tx, 0.0)) FOUR_C_THROW("thermo scaling failed");
@@ -2331,8 +2332,8 @@ void TSI::Monolithic::unscale_solution(
 /*----------------------------------------------------------------------*
  | calculate vector norm                                     dano 04/13 |
  *----------------------------------------------------------------------*/
-double TSI::Monolithic::calculate_vector_norm(
-    const enum Inpar::TSI::VectorNorm norm, const Teuchos::RCP<const Core::LinAlg::Vector> vect)
+double TSI::Monolithic::calculate_vector_norm(const enum Inpar::TSI::VectorNorm norm,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
@@ -2633,9 +2634,9 @@ void TSI::Monolithic::calculate_necking_tsi_results()
 
   // ---------------------------------------------------------------- top force
   // nodal reaction force at outer edge for whole support area
-  Teuchos::RCP<Core::LinAlg::Vector> tension =
-      Teuchos::rcp(new Core::LinAlg::Vector(*newdofmap,  // map containing
-                                                         // all DOFs at top surf with DBC
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tension =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*newdofmap,  // map containing
+                                                                 // all DOFs at top surf with DBC
           false));
   // copy the structural reaction force to tension
   Core::LinAlg::export_to(*(structure_field()->freact()), *tension);
@@ -2838,7 +2839,8 @@ void TSI::Monolithic::prepare_contact_strategy()
  |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::apply_struct_coupling_state(
-    Teuchos::RCP<const Core::LinAlg::Vector> disp, Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   if (matchinggrid_)
   {
@@ -2954,7 +2956,7 @@ void TSI::Monolithic::apply_dbc()
 
   if (locsysman_ != Teuchos::null)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> s_rhs, t_rhs;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> s_rhs, t_rhs;
     extract_field_vectors(rhs_, s_rhs, t_rhs);
     locsysman_->rotate_global_to_local(s_rhs);
     Core::LinAlg::apply_dirichlet_to_system(

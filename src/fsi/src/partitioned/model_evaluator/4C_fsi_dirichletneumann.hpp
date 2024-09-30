@@ -85,8 +85,8 @@ namespace FSI
      * \param[in, out] F residual vector
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    void fsi_op(
-        const Core::LinAlg::Vector &x, Core::LinAlg::Vector &F, const FillType fillFlag) override;
+    void fsi_op(const Core::LinAlg::Vector<double> &x, Core::LinAlg::Vector<double> &F,
+        const FillType fillFlag) override;
 
     /** \brief interface fluid operator
      * \param[in] icoup kinematic interface variable
@@ -94,8 +94,8 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Core::LinAlg::Vector> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector> icoup, const FillType fillFlag) override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> icoup, const FillType fillFlag) override = 0;
 
     /** \brief interface structural operator
      * \param[in] iforce interface force
@@ -103,10 +103,10 @@ namespace FSI
      *
      * \returns kinematic interface variable
      */
-    Teuchos::RCP<Core::LinAlg::Vector> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag) override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) override = 0;
 
-    Teuchos::RCP<Core::LinAlg::Vector> initial_guess() override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess() override = 0;
 
    private:
     /**

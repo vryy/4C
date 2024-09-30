@@ -329,12 +329,13 @@ void STI::Monolithic::fd_check()
     std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR STI SYSTEM MATRIX" << std::endl;
 
   // create global state vector
-  Teuchos::RCP<Core::LinAlg::Vector> statenp(Core::LinAlg::create_vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> statenp(
+      Core::LinAlg::create_vector(*dof_row_map(), true));
   maps_->insert_vector(scatra_field()->phinp(), 0, statenp);
   maps_->insert_vector(thermo_field()->phinp(), 1, statenp);
 
   // make a copy of global state vector to undo perturbations later
-  auto statenp_original = Teuchos::rcp(new Core::LinAlg::Vector(*statenp));
+  auto statenp_original = Teuchos::rcp(new Core::LinAlg::Vector<double>(*statenp));
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
@@ -352,7 +353,7 @@ void STI::Monolithic::fd_check()
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
-  auto rhs_original = Teuchos::rcp(new Core::LinAlg::Vector(*residual_));
+  auto rhs_original = Teuchos::rcp(new Core::LinAlg::Vector<double>(*residual_));
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);
@@ -1155,10 +1156,10 @@ void STI::Monolithic::assemble_mat_and_rhs()
 
   // create full monolithic right-hand side vector
   maps_->insert_vector(scatra_field()->residual(), 0, residual_);
-  Teuchos::RCP<Core::LinAlg::Vector> thermoresidual(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> thermoresidual(Teuchos::null);
   if (condensationthermo_)
   {
-    thermoresidual = Teuchos::rcp(new Core::LinAlg::Vector(*maps_->Map(1)));
+    thermoresidual = Teuchos::rcp(new Core::LinAlg::Vector<double>(*maps_->Map(1)));
     Core::LinAlg::export_to(*thermo_field()->residual(), *thermoresidual);
   }
   else
@@ -1573,15 +1574,15 @@ void STI::Monolithic::solve()
     scatra_field()->compute_intermediate_values();
 
     // update thermo field
-    Teuchos::RCP<Core::LinAlg::Vector> thermoincrement(Teuchos::null);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> thermoincrement(Teuchos::null);
     if (condensationthermo_)
     {
-      thermoincrement =
-          Teuchos::rcp(new Core::LinAlg::Vector(*thermo_field()->discretization()->dof_row_map()));
+      thermoincrement = Teuchos::rcp(
+          new Core::LinAlg::Vector<double>(*thermo_field()->discretization()->dof_row_map()));
       Core::LinAlg::export_to(*maps_->extract_vector(increment_, 1), *thermoincrement);
-      const Teuchos::RCP<const Core::LinAlg::Vector> masterincrement =
+      const Teuchos::RCP<const Core::LinAlg::Vector<double>> masterincrement =
           strategythermo_->interface_maps()->extract_vector(*thermoincrement, 2);
-      const Teuchos::RCP<Core::LinAlg::Vector> slaveincrement =
+      const Teuchos::RCP<Core::LinAlg::Vector<double>> slaveincrement =
           Core::LinAlg::create_vector(*strategythermo_->interface_maps()->Map(1));
       switch (strategyscatra_->coupling_type())
       {

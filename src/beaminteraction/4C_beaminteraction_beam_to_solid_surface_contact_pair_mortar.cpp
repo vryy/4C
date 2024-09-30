@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair
   this->cast_geometry_pair()->evaluate(
@@ -232,7 +232,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Core::LinAlg::Vector& global_lambda, const Core::LinAlg::Vector& displacement_vector)
+    const Core::LinAlg::Vector<double>& global_lambda,
+    const Core::LinAlg::Vector<double>& displacement_vector)
 {
   // At this point the pair is already evaluated in the current deformation state, so we don't have
   // to perform the projections or integration again, we can simply take the values previously
@@ -330,8 +331,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
         visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
             "mortar_manager");
-    Teuchos::RCP<Core::LinAlg::Vector> lambda =
-        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector>>("lambda");
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
+        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda");
 
     // Get the lambda GIDs of this pair.
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);

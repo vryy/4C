@@ -189,11 +189,12 @@ void Core::LinAlg::BlockSparseMatrixBase::un_complete()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::BlockSparseMatrixBase::apply_dirichlet(
-    const Core::LinAlg::Vector& dbctoggle, bool diagonalblock)
+    const Core::LinAlg::Vector<double>& dbctoggle, bool diagonalblock)
 {
   for (int rblock = 0; rblock < rows(); ++rblock)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> rowtoggle = rangemaps_.extract_vector(dbctoggle, rblock);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rowtoggle =
+        rangemaps_.extract_vector(dbctoggle, rblock);
     for (int cblock = 0; cblock < cols(); ++cblock)
     {
       Core::LinAlg::SparseMatrix& bmat = matrix(rblock, cblock);

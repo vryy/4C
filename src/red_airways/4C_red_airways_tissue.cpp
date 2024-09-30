@@ -102,16 +102,16 @@ Airway::RedAirwayTissue::RedAirwayTissue(
 
 
   Epetra_Map redundantmap(tmp.size(), tmp.size(), tmp.data(), 0, comm);
-  couppres_ip_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  couppres_ip_tilde_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  couppres_im_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  couppres_im_tilde_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  couppres_il_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  omega_np_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  coupflux_ip_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  coupflux_im_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  coupvol_ip_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
-  coupvol_im_ = Teuchos::rcp(new Core::LinAlg::Vector(redundantmap, true));
+  couppres_ip_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  couppres_ip_tilde_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  couppres_im_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  couppres_im_tilde_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  couppres_il_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  omega_np_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  coupflux_ip_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  coupflux_im_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  coupvol_ip_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
+  coupvol_im_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(redundantmap, true));
 
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
 
@@ -277,8 +277,8 @@ void Airway::RedAirwayTissue::relax_pressure(int iter)
         //  \tilde{p}_{i+2} = couppres_ip_tilde_
         omega_np_->Update(1.0, *couppres_il_, -1.0, *couppres_im_, 0.0);
 
-        Teuchos::RCP<Core::LinAlg::Vector> denominator =
-            Teuchos::rcp(new Core::LinAlg::Vector(*omega_np_));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> denominator =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(*omega_np_));
         denominator->Update(-1.0, *couppres_im_tilde_, +1.0, *couppres_ip_tilde_, 1.0);
 
         omega_np_->ReciprocalMultiply(1.0, *denominator, *omega_np_, 0.0);
@@ -357,14 +357,14 @@ void Airway::RedAirwayTissue::do_structure_step()
  */
 bool Airway::RedAirwayTissue::not_converged(int iter)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> pres_inc =
-      Teuchos::rcp(new Core::LinAlg::Vector(*couppres_ip_));
-  Teuchos::RCP<Core::LinAlg::Vector> scaled_pres_inc =
-      Teuchos::rcp(new Core::LinAlg::Vector(*couppres_ip_));
-  Teuchos::RCP<Core::LinAlg::Vector> flux_inc =
-      Teuchos::rcp(new Core::LinAlg::Vector(*coupflux_ip_));
-  Teuchos::RCP<Core::LinAlg::Vector> scaled_flux_inc =
-      Teuchos::rcp(new Core::LinAlg::Vector(*coupflux_ip_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> pres_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*couppres_ip_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_pres_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*couppres_ip_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> flux_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*coupflux_ip_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_flux_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*coupflux_ip_));
 
   // Calculate Pressure Norm
   for (int i = 0; i < couppres_ip_->Map().NumMyElements(); ++i)
@@ -415,9 +415,10 @@ bool Airway::RedAirwayTissue::not_converged(int iter)
 /*----------------------------------------------------------------------*
  |  Output of one iteration between fields               yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayTissue::output_iteration(Teuchos::RCP<Core::LinAlg::Vector> pres_inc,
-    Teuchos::RCP<Core::LinAlg::Vector> scaled_pres_inc, Teuchos::RCP<Core::LinAlg::Vector> flux_inc,
-    Teuchos::RCP<Core::LinAlg::Vector> scaled_flux_inc, int iter)
+void Airway::RedAirwayTissue::output_iteration(Teuchos::RCP<Core::LinAlg::Vector<double>> pres_inc,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_pres_inc,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> flux_inc,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_flux_inc, int iter)
 {
   if (couppres_ip_->Comm().MyPID() == 0)
   {

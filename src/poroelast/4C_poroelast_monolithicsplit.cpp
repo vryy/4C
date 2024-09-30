@@ -65,14 +65,14 @@ void PoroElast::MonolithicSplit::prepare_time_step()
 
     double timescale = fluid_field()->time_scaling();
 
-    Teuchos::RCP<const Core::LinAlg::Vector> idispnp =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp =
         structure_field()->interface()->extract_fsi_cond_vector(structure_field()->dispnp());
-    Teuchos::RCP<const Core::LinAlg::Vector> idispn =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> idispn =
         structure_field()->interface()->extract_fsi_cond_vector(structure_field()->dispn());
-    Teuchos::RCP<const Core::LinAlg::Vector> ivelnp =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> ivelnp =
         structure_field()->interface()->extract_fsi_cond_vector(structure_field()->velnp());
-    Teuchos::RCP<Core::LinAlg::Vector> ifvelnp = fluid_field()->extract_interface_velnp();
-    Teuchos::RCP<Core::LinAlg::Vector> ifveln = fluid_field()->extract_interface_veln();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ifvelnp = fluid_field()->extract_interface_velnp();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ifveln = fluid_field()->extract_interface_veln();
 
     ddi_->Update(1.0, *idispnp, -1.0, *idispn, 0.0);
     ddi_->Update(-1.0, *ifveln, timescale);
@@ -81,9 +81,9 @@ void PoroElast::MonolithicSplit::prepare_time_step()
     {
       // if there are DBCs on FSI conditioned nodes, they have to be treated seperately
 
-      Teuchos::RCP<Core::LinAlg::Vector> ibcveln =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> ibcveln =
           fsibcextractor_->extract_cond_vector(structure_to_fluid_at_interface(ivelnp));
-      Teuchos::RCP<Core::LinAlg::Vector> inobcveln =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> inobcveln =
           fsibcextractor_->extract_other_vector(structure_to_fluid_at_interface(ddi_));
 
       // DBCs at FSI-Interface
@@ -99,14 +99,16 @@ void PoroElast::MonolithicSplit::prepare_time_step()
   }
 }
 
-Teuchos::RCP<Core::LinAlg::Vector> PoroElast::MonolithicSplit::structure_to_fluid_at_interface(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+PoroElast::MonolithicSplit::structure_to_fluid_at_interface(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfs_->master_to_slave(iv);
 }
 
-Teuchos::RCP<Core::LinAlg::Vector> PoroElast::MonolithicSplit::fluid_to_structure_at_interface(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+PoroElast::MonolithicSplit::fluid_to_structure_at_interface(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfs_->slave_to_master(iv);
 }
@@ -136,8 +138,8 @@ Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
   Teuchos::RCP<Epetra_Map> structfsibcmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(structmaps);
 
-  Teuchos::RCP<Core::LinAlg::Vector> gidmarker_struct =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->interface()->fsi_cond_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> gidmarker_struct = Teuchos::rcp(
+      new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map(), true));
 
   // Todo this is ugly, fix it!
   const int mylength = structfsibcmap->NumMyElements();  // on each processor (lids)
@@ -153,7 +155,7 @@ Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
   }
 
   // transfer to fluid side
-  Teuchos::RCP<Core::LinAlg::Vector> gidmarker_fluid =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> gidmarker_fluid =
       structure_to_fluid_at_interface(gidmarker_struct);
 
   std::vector<int> structfsidbcvector;
@@ -196,9 +198,9 @@ void PoroElast::MonolithicSplit::setup_coupling_and_matrices()
           new Core::LinAlg::MapExtractor(*fluid_field()->interface()->fsi_cond_map(), fsibcmap_));
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector> idispnp =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp =
         structure_field()->interface()->extract_fsi_cond_vector(structure_field()->dispnp());
-    ddi_ = Teuchos::rcp(new Core::LinAlg::Vector(idispnp->Map(), true));
+    ddi_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(idispnp->Map(), true));
   }
 
   // initialize Poroelasticity-systemmatrix_

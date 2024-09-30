@@ -32,14 +32,15 @@ namespace ScaTra::ScaTraUtils
   template <const int dim>
   Teuchos::RCP<Epetra_MultiVector> compute_gradient_at_nodes_mean_average(
       Teuchos::RCP<Core::FE::Discretization> discret,
-      const Teuchos::RCP<const Core::LinAlg::Vector> state, const int scatra_dofid);
+      const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int scatra_dofid);
 
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
   template <const int dim, Core::FE::CellType distype>
   Core::LinAlg::Matrix<dim, 1> do_mean_value_averaging_of_element_gradient_node(
       Teuchos::RCP<Core::FE::Discretization> discret,
       std::vector<const Core::Elements::Element*> elements,
-      Teuchos::RCP<Core::LinAlg::Vector> phinp_node, const int nodegid, const int scatra_dofid);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_node, const int nodegid,
+      const int scatra_dofid);
 
 }  // namespace ScaTra::ScaTraUtils
 FOUR_C_NAMESPACE_CLOSE

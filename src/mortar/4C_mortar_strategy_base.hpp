@@ -250,30 +250,33 @@ namespace Mortar
     virtual Teuchos::RCP<const Epetra_Map> non_redist_master_row_dofs() const = 0;
     virtual bool active_set_converged() const = 0;
     virtual bool active_set_semi_smooth_converged() const = 0;
-    virtual void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
-        const int step, const int iter, bool predictor = false) = 0;
+    virtual void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+        bool predictor = false) = 0;
     virtual void assemble_mortar() = 0;
     virtual void collect_maps_for_preconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
         Teuchos::RCP<Epetra_Map>& ActiveDofMap) const = 0;
     virtual double constraint_norm() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> contact_normal_stress() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> contact_tangential_stress() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> contact_normal_force() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> contact_tangential_force() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_stress() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_stress() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_force() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_force() const = 0;
     virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> d_matrix() const = 0;
-    virtual void do_read_restart(
-        Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Core::LinAlg::Vector> dis) = 0;
+    virtual void do_read_restart(Core::IO::DiscretizationReader& reader,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
     virtual void do_write_restart(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>& restart_vectors,
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>& restart_vectors,
         bool forcedrestart = false) const = 0;
     virtual void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector> dis) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) = 0;
     virtual void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector> dis) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) = 0;
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> evaluate_normals(
-        Teuchos::RCP<Core::LinAlg::Vector> dis) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) = 0;
     virtual void evaluate_reference_state() = 0;
     virtual void evaluate_relative_movement() = 0;
     virtual void predict_relative_movement() = 0;
@@ -282,19 +285,20 @@ namespace Mortar
     virtual void initialize_mortar() = 0;
     virtual void initialize() = 0;
     virtual void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) = 0;
     virtual double initial_penalty() const = 0;
     virtual void interface_forces(bool output = false) = 0;
     virtual double inttime() const = 0;
     virtual void inttime_init() = 0;
     virtual bool is_in_contact() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_old() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> constraint_rhs() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_increment() const = 0;
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> mesh_initialization() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> constraint_rhs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_increment()
+        const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> mesh_initialization() = 0;
     virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> m_matrix() const = 0;
-    virtual void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector>& dis) = 0;
+    virtual void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dis) = 0;
     virtual int number_of_active_nodes() const = 0;
     virtual int number_of_slip_nodes() const = 0;
     virtual void compute_contact_stresses() = 0;
@@ -311,28 +315,30 @@ namespace Mortar
 
     virtual void print(std::ostream& os) const = 0;
     virtual void print_active_set() const = 0;
-    virtual void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) = 0;
-    virtual bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector> dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) = 0;
+    virtual void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) = 0;
+    virtual bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) = 0;
     virtual void redistribute_meshtying() = 0;
     virtual void reset_active_set() = 0;
     virtual void reset_penalty() = 0;
     virtual void modify_penalty() = 0;
     virtual void restrict_meshtying_zone() = 0;
     virtual void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Core::LinAlg::Vector> fd, Teuchos::RCP<Core::LinAlg::Vector> sold,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Core::LinAlg::Vector>& blocksol,
-        Teuchos::RCP<Core::LinAlg::Vector>& blockrhs) = 0;
-    virtual void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector> sold,
-        Teuchos::RCP<const Core::LinAlg::Vector> blocksol) = 0;
-    virtual void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector> dis) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs) = 0;
+    virtual void update_displacements_and_l_mincrements(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol) = 0;
+    virtual void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
     virtual void set_state(
-        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) = 0;
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) = 0;
     virtual Teuchos::RCP<const Epetra_Map> slip_row_nodes() const = 0;
     virtual void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) = 0;
     virtual void store_nodal_quantities(Mortar::StrategyBase::QuantityType type) = 0;
-    virtual void update(Teuchos::RCP<const Core::LinAlg::Vector> dis) = 0;
+    virtual void update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
     virtual void update_active_set() = 0;
     virtual void update_active_set_semi_smooth(const bool firstStepPredictor = false) = 0;
     virtual void update_uzawa_augmented_lagrange() = 0;
@@ -350,11 +356,26 @@ namespace Mortar
     // wear stuff
     virtual bool weighted_wear() const { return false; }
     virtual bool wear_both_discrete() const { return false; }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> wear_rhs() const { return Teuchos::null; }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> wear_m_rhs() const { return Teuchos::null; }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> w_solve_incr() const { return Teuchos::null; }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> wm_solve_incr() const { return Teuchos::null; }
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> contact_wear() const { return Teuchos::null; }
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_rhs() const
+    {
+      return Teuchos::null;
+    }
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_m_rhs() const
+    {
+      return Teuchos::null;
+    }
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> w_solve_incr() const
+    {
+      return Teuchos::null;
+    }
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> wm_solve_incr() const
+    {
+      return Teuchos::null;
+    }
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_wear() const
+    {
+      return Teuchos::null;
+    }
     virtual void reset_wear() {}
     virtual void output_wear() {}
     virtual Teuchos::RCP<const Epetra_Map> master_slip_nodes() const { return Teuchos::null; }

@@ -41,7 +41,7 @@ void Solid::ModelEvaluator::PartitionedFSI::setup()
 {
   // fsi interface force at t_{n+1}
   interface_force_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map(), true));
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
 
   // set flag
   issetup_ = true;
@@ -65,7 +65,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::PartitionedFSI::get_block_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::PartitionedFSI::get_current_solution_ptr() const
 {
   check_init();
@@ -74,7 +74,7 @@ Solid::ModelEvaluator::PartitionedFSI::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::PartitionedFSI::get_last_time_step_solution_ptr() const
 {
   check_init();
@@ -84,7 +84,7 @@ Solid::ModelEvaluator::PartitionedFSI::get_last_time_step_solution_ptr() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::PartitionedFSI::assemble_force(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   Core::LinAlg::assemble_my_vector(1.0, f, -timefac_np, *interface_force_np_ptr_);
   return true;
@@ -97,7 +97,8 @@ void Solid::ModelEvaluator::PartitionedFSI::update_step_state(const double& time
   if (not is_relaxationsolve_)  // standard case
   {
     // add the old time factor scaled contributions to the residual
-    Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr =
+        global_state().get_fstructure_old();
     fstructold_ptr->Update(-timefac_n, *interface_force_np_ptr_, 1.0);
   }
   else
@@ -109,7 +110,7 @@ void Solid::ModelEvaluator::PartitionedFSI::update_step_state(const double& time
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::PartitionedFSI::solve_relaxation_linear(
     Teuchos::RCP<Adapter::Structure> structure)
 {
@@ -182,7 +183,8 @@ Solid::ModelEvaluator::PartitionedFSI::solve_relaxation_linear(
       dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getNewton());
 
   // return the increment
-  return Teuchos::RCP<Core::LinAlg::Vector>(new Core::LinAlg::Vector(increment.getEpetraVector()));
+  return Teuchos::RCP<Core::LinAlg::Vector<double>>(
+      new Core::LinAlg::Vector<double>(increment.getEpetraVector()));
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

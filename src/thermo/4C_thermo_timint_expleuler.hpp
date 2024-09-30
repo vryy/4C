@@ -108,10 +108,10 @@ namespace Thermo
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext() override { return fextn_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext_new()
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new()
     {
       FOUR_C_THROW("FextNew() not available in ExplEuler");
       return Teuchos::null;
@@ -128,10 +128,10 @@ namespace Thermo
    protected:
     //! @name Global forces at \f$t_{n+1}\f$
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> fextn_;  //!< external force
-                                                //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fintn_;  //!< internal force
-                                                //!< \f$F_{int;n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;  //!< external force
+                                                        //!< \f$F_{int;n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;  //!< internal force
+                                                        //!< \f$F_{int;n+1}\f$
     //@}
 
   };  // class TimIntExplEuler

@@ -32,7 +32,7 @@ Mat::PAR::ScatraMat::ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata) :
   Epetra_Map dummy_map(1, 1, 0, comm);
   for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::rcp(new Core::LinAlg::Vector(dummy_map, true)));
+    matparams_.push_back(Teuchos::rcp(new Core::LinAlg::Vector<double>(dummy_map, true)));
   }
   matparams_.at(diff)->PutScalar(matdata.parameters.get<double>("DIFFUSIVITY"));
   matparams_.at(reac)->PutScalar(matdata.parameters.get<double>("REACOEFF"));

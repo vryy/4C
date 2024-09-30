@@ -73,12 +73,12 @@ namespace Adapter
     /*========================================================================*/
 
     /// nonlinear solve
-    void nonlinear_solve(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
+    void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt) override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -86,7 +86,7 @@ namespace Adapter
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -94,10 +94,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_velnp() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_veln() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
     //@}
 
     /*========================================================================*/
@@ -117,13 +117,13 @@ namespace Adapter
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     /// create the testing of fields
     Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
     /// Get velocity at timestep n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> velnp();
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp();
 
     virtual Teuchos::RCP<const FLD::Meshtying> get_meshtying();
 
@@ -147,8 +147,8 @@ namespace Adapter
      * \param[in] ivel unused in this implementation     *
      *
      */
-    void apply_interface_values(Teuchos::RCP<Core::LinAlg::Vector> iforce,
-        Teuchos::RCP<Core::LinAlg::Vector> ivel = Teuchos::null) override;
+    void apply_interface_values(Teuchos::RCP<Core::LinAlg::Vector<double>> iforce,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null) override;
 
     /**
      * \brief Resets the external forces acting on the fluid to zero

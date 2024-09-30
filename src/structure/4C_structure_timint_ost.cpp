@@ -669,13 +669,13 @@ void Solid::TimIntOneStepTheta::update_step_element()
     discret_->set_state("velocity", (*vel_)(0));
     discret_->set_state("acceleration", (*acc_)(0));
 
-    Teuchos::RCP<Core::LinAlg::Vector> update_disp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> update_disp;
     update_disp = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Core::LinAlg::Vector> update_vel;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> update_vel;
     update_vel = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Core::LinAlg::Vector> update_acc;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> update_acc;
     update_acc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
 

@@ -75,7 +75,7 @@ namespace Thermo
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> tempi) override;
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -211,8 +211,8 @@ namespace Thermo
 
     //! Update iteration incrementally with prescribed residual
     //! temperatures
-    void update_iter_incrementally(
-        const Teuchos::RCP<const Core::LinAlg::Vector> tempi  //!< input residual temperatures
+    void update_iter_incrementally(const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            tempi  //!< input residual temperatures
     );
 
     //! Update iteration iteratively
@@ -240,7 +240,7 @@ namespace Thermo
     void update() override;
 
     //! update Newton step
-    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector> tempi) override;
+    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override;
 
     //@}
 
@@ -303,10 +303,10 @@ namespace Thermo
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext() override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override = 0;
 
     //! Return external force \f$F_{ext,n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fext_new() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() = 0;
 
     //! Return reaction forces
     //!
@@ -317,7 +317,7 @@ namespace Thermo
     //! component is stored in global Cartesian components.
     //! The reaction force resultant is not affected by
     //! this operation.
-    Teuchos::RCP<Core::LinAlg::Vector> freact() override { return freact_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override { return freact_; }
 
     //! Read and set external forces from file
     void read_restart_force() override = 0;
@@ -326,24 +326,24 @@ namespace Thermo
     void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! Return residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector> temp_res() const { return tempi_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> temp_res() const { return tempi_; }
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override { return tempi_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override { return tempi_; }
 
     //! Set residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
-    void set_temp_residual(
-        const Teuchos::RCP<const Core::LinAlg::Vector> tempi  //!< input residual temperatures
+    void set_temp_residual(const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            tempi  //!< input residual temperatures
     )
     {
       if (tempi != Teuchos::null) tempi_->Update(1.0, *tempi, 0.0);
     }
 
     //! Return effective residual force \f$R_{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector> force_res() const { return fres_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> force_res() const { return fres_; }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override { return fres_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return fres_; }
 
     //@}
 
@@ -381,22 +381,23 @@ namespace Thermo
     double tolfres_;        //!< tolerance force residual
     int iter_;              //!< iteration step
     int resetiter_;  //<! number of iterations already performed in resets of the current step
-    double normcharforce_;                        //!< characteristic norm for residual force
-    double normchartemp_;                         //!< characteristic norm for residual temperatures
-    double normfres_;                             //!< norm of residual forces
-    double normtempi_;                            //!< norm of residual temperatures
-    Teuchos::RCP<Core::LinAlg::Vector> tempi_;    //!< residual temperatures
-                                                  //!< \f$\Delta{T}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> tempinc_;  //!< sum of temperature vectors already applied,
-                                                  //!< i.e. the incremental temperature
-    Teuchos::Time timer_;                         //!< timer for solution technique
+    double normcharforce_;  //!< characteristic norm for residual force
+    double normchartemp_;   //!< characteristic norm for residual temperatures
+    double normfres_;       //!< norm of residual forces
+    double normtempi_;      //!< norm of residual temperatures
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tempi_;  //!< residual temperatures
+                                                        //!< \f$\Delta{T}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        tempinc_;          //!< sum of temperature vectors already applied,
+                           //!< i.e. the incremental temperature
+    Teuchos::Time timer_;  //!< timer for solution technique
     Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
     //@}
 
     //! @name Various global forces
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> fres_;    //!< force residual used for solution
-    Teuchos::RCP<Core::LinAlg::Vector> freact_;  //!< reaction force
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fres_;    //!< force residual used for solution
+    Teuchos::RCP<Core::LinAlg::Vector<double>> freact_;  //!< reaction force
     //@}
 
   };  // class TimIntImpl

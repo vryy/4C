@@ -72,7 +72,7 @@ namespace Solid
       void post_evaluate() override{/* currently unused */};
 
       //! derived
-      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override;
 
       //! derived
       bool assemble_jacobian(
@@ -89,15 +89,16 @@ namespace Solid
       void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
-      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
-          const NOX::Nln::Group& curr_grp) override
+      void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override
       {
         return;
       };
 
       //! derived
-      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
-          const Core::LinAlg::Vector& xnew) override;
+      void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
+          const Core::LinAlg::Vector<double>& dir,
+          const Core::LinAlg::Vector<double>& xnew) override;
 
       //! derived
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override { return; };
@@ -124,10 +125,11 @@ namespace Solid
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+          const override;
 
       //! derived
       void post_output() override;
@@ -138,7 +140,7 @@ namespace Solid
 
      protected:
       //! derived
-      void reset(const Core::LinAlg::Vector& x) override;
+      void reset(const Core::LinAlg::Vector<double>& x) override;
 
      private:
       //! apply brownian (stochastic and damping forces)
@@ -154,17 +156,17 @@ namespace Solid
       bool apply_force_stiff_external();
 
       //! evaluate brownian specific neumann conditions
-      void evaluate_neumann_brownian_dyn(Teuchos::RCP<Core::LinAlg::Vector> eval_vec,
+      void evaluate_neumann_brownian_dyn(Teuchos::RCP<Core::LinAlg::Vector<double>> eval_vec,
           Teuchos::RCP<Core::LinAlg::SparseOperator> eval_mat);
 
       //! evaluate brownian (stochastic and damping forces)
       void evaluate_brownian(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
+          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
 
       //! evaluate brownian (stochastic and damping forces)
       void evaluate_brownian(Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
+          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
 
       //! \brief retrieve random numbers per element
       void random_numbers_per_element();
@@ -185,10 +187,10 @@ namespace Solid
       Teuchos::RCP<Solid::ModelEvaluator::BrownianDynData> eval_browniandyn_ptr_;
 
       //! global internal force at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> f_brown_np_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> f_brown_np_ptr_;
 
       //! global external force at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> f_ext_np_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> f_ext_np_ptr_;
 
       //! stiffness contributions from brownian dynamics simulations
       Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_brownian_ptr_;

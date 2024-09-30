@@ -87,8 +87,8 @@ namespace PoroElastScaTra
     virtual void setup_system_matrix();
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(
-        Teuchos::RCP<const Core::LinAlg::Vector> stepinc  //!< increment between time step n and n+1
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            stepinc  //!< increment between time step n and n+1
     );
 
     //! solve one time step
@@ -109,7 +109,7 @@ namespace PoroElastScaTra
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix();
 
     //! right hand side vector
-    Teuchos::RCP<Core::LinAlg::Vector> rhs() { return rhs_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs() { return rhs_; };
 
     //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map() const;
@@ -150,9 +150,10 @@ namespace PoroElastScaTra
 
    private:
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void setup_vector(Core::LinAlg::Vector& f,        //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> pv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> sv   //!< vector containing only fluid dofs
+    void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            pv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv  //!< vector containing only fluid dofs
     );
 
     //! perform one time step (setup + solve + output)
@@ -260,9 +261,10 @@ namespace PoroElastScaTra
 
     int iter_;  //!< iteration step
 
-    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;  //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        iterinc_;  //!< increment between Newton steps k and k+1
 
-    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
 
     //@}
 
@@ -272,7 +274,7 @@ namespace PoroElastScaTra
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! rhs of monolithic system
-    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
 
     //! structure-scatra coupling matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k_pss_;

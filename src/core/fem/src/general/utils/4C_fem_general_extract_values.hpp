@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::FE
 {
   /*!
-  \brief Locally extract a subset of values from an Core::LinAlg::Vector
+  \brief Locally extract a subset of values from an Core::LinAlg::Vector<double>
 
   Extracts lm.size() values from a distributed epetra vector and stores them into local.
   this is NOT a parallel method, meaning that all values to be extracted on a processor
@@ -37,18 +37,18 @@ namespace Core::FE
   \param lm     (in): vector containing global ids to be extracted. Size of lm
                       determines number of values to be extracted.
   */
-  void extract_my_values(
-      const Core::LinAlg::Vector& global, std::vector<double>& local, const std::vector<int>& lm);
-
-  void extract_my_values(const Core::LinAlg::Vector& global, Core::LinAlg::SerialDenseVector& local,
+  void extract_my_values(const Core::LinAlg::Vector<double>& global, std::vector<double>& local,
       const std::vector<int>& lm);
+
+  void extract_my_values(const Core::LinAlg::Vector<double>& global,
+      Core::LinAlg::SerialDenseVector& local, const std::vector<int>& lm);
 
   void extract_my_values(
       const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
 
   template <class Matrix>
-  void extract_my_values(
-      const Core::LinAlg::Vector& global, std::vector<Matrix>& local, const std::vector<int>& lm)
+  void extract_my_values(const Core::LinAlg::Vector<double>& global, std::vector<Matrix>& local,
+      const std::vector<int>& lm)
   {
     // safety check
     if (local[0].n() != 1 or local.size() * (unsigned)local[0].m() != lm.size())
@@ -65,8 +65,8 @@ namespace Core::FE
 
         // safety check
         if (lid < 0)
-          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(),
-              lm[inode * local.size() + idof]);
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
+              global.Comm().MyPID(), lm[inode * local.size() + idof]);
 
         // store current dof in local matrix vector consisting of ndof matrices of size nnode x 1,
         // where nnode denotes the number of element nodes and ndof denotes the number of degrees
@@ -78,7 +78,7 @@ namespace Core::FE
 
   template <class Matrix>
   void extract_my_values(
-      const Core::LinAlg::Vector& global, Matrix& local, const std::vector<int>& lm)
+      const Core::LinAlg::Vector<double>& global, Matrix& local, const std::vector<int>& lm)
   {
     // safety check
     if ((unsigned)(local.num_rows() * local.num_cols()) != lm.size())
@@ -96,8 +96,8 @@ namespace Core::FE
 
         // safety check
         if (lid < 0)
-          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(),
-              lm[index]);
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
+              global.Comm().MyPID(), lm[index]);
 
         // store current dof in local matrix, which is filled column-wise with the dofs listed in
         // the lm vector
@@ -170,7 +170,7 @@ namespace Core::FE
         const int nodegid = (ele->nodes()[j])->id();
         const int lid = global->Map().LID(nodegid);
         if (lid < 0)
-          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector",
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
               (*global).Comm().MyPID(), nodegid);
         localmatrix(i, j) = globalcolumn[lid];
       }
@@ -199,10 +199,10 @@ namespace Core::FE
       const int nodegid = (ele->nodes()[i])->id();
       const int lid = global.Map().LID(nodegid);
       if (lid < 0)
-        FOUR_C_THROW(
-            "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(), nodegid);
+        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
+            global.Comm().MyPID(), nodegid);
 
-      // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector)
+      // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector<double>)
       for (int col = 0; col < numcol; col++)
       {
         double* globalcolumn = (global)[col];

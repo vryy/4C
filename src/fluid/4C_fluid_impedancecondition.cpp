@@ -103,7 +103,7 @@ void FLD::UTILS::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<i
  |  Wrap update of residual                                  Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(const double dta,
-    const double time, Teuchos::RCP<Core::LinAlg::Vector>& residual,
+    const double time, Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
     Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
@@ -303,7 +303,8 @@ void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Core::LinAlg::Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> flowrates =
+      Core::LinAlg::create_vector(*dofrowmap, true);
 
   discret_->evaluate_condition(eleparams, flowrates, "ImpedanceCond", condid);
 
@@ -330,7 +331,7 @@ void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
  |  Apply Impedance to outflow boundary                      Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
-    Teuchos::RCP<Core::LinAlg::Vector>& residual,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
     Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat, const double dta, const double time,
     const int condid)
 {
@@ -404,7 +405,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   {
     // calculate dQ/du = ( \phi o n )_Gamma
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Core::LinAlg::Vector> dQdu = Core::LinAlg::create_vector(*dofrowmap, true);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dQdu = Core::LinAlg::create_vector(*dofrowmap, true);
 
     Teuchos::ParameterList eleparams2;
     // action for elements
@@ -414,8 +415,8 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
 
     // now move dQdu to one proc
     Teuchos::RCP<Epetra_Map> dofrowmapred = Core::LinAlg::allreduce_e_map(*dofrowmap);
-    Teuchos::RCP<Core::LinAlg::Vector> dQdu_full =
-        Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmapred, true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dQdu_full =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmapred, true));
 
     Core::LinAlg::export_to(*dQdu, *dQdu_full);  //!!! add off proc components
 

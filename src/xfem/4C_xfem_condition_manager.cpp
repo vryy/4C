@@ -402,9 +402,9 @@ void XFEM::ConditionManager::set_level_set_field(const double time)
 
 
 void XFEM::ConditionManager::write_access_geometric_quantities(
-    Teuchos::RCP<Core::LinAlg::Vector>& scalaraf,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& scalaraf,
     Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,
-    Teuchos::RCP<Core::LinAlg::Vector>& curvatureaf)
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& curvatureaf)
 {
   // TOOD: when using two-phase in combination with other levelset, how to access to the right
   // coupling twophase coupling object?
@@ -416,13 +416,13 @@ void XFEM::ConditionManager::write_access_geometric_quantities(
 }
 
 
-Teuchos::RCP<const Core::LinAlg::Vector> XFEM::ConditionManager::get_level_set_field_col()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> XFEM::ConditionManager::get_level_set_field_col()
 {
   if (levelset_coupl_.size() == 0) return Teuchos::null;
 
   // export nodal level-set values to node column map
-  Teuchos::RCP<Core::LinAlg::Vector> bg_phinp_col =
-      Teuchos::rcp(new Core::LinAlg::Vector(*bg_dis_->node_col_map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> bg_phinp_col =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*bg_dis_->node_col_map()));
   Core::LinAlg::export_to(*get_level_set_field(), *bg_phinp_col);
 
   return bg_phinp_col;
@@ -473,7 +473,8 @@ void XFEM::ConditionManager::update_level_set_field()
             "the first Boundary-Condition level-set coupling (WDBC or NEUMANN) should always use "
             "BOOLEANTYPE=none ! Check your boolean operations");
 
-      Teuchos::RCP<Core::LinAlg::Vector> tmp = coupling->get_level_set_field_as_node_row_vector();
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
+          coupling->get_level_set_field_as_node_row_vector();
       const int err = bg_phinp_->Update(1.0, *tmp, 0.0);
       if (err) FOUR_C_THROW("update did not work - vectors based on wrong maps?");
     }
@@ -485,7 +486,8 @@ void XFEM::ConditionManager::update_level_set_field()
             "Check your boolean operations");
 
       // need to live here
-      Teuchos::RCP<Core::LinAlg::Vector> tmp = coupling->get_level_set_field_as_node_row_vector();
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
+          coupling->get_level_set_field_as_node_row_vector();
       combine_level_set_field(bg_phinp_, tmp, lsc, node_lsc_coup_idx, ls_boolean_type);
     }
 
@@ -533,8 +535,9 @@ void XFEM::ConditionManager::update_level_set_field()
   is_levelset_uptodate_ = true;
 }
 
-void XFEM::ConditionManager::combine_level_set_field(Teuchos::RCP<Core::LinAlg::Vector>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::combine_level_set_field(
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx,
     XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type)
 {
@@ -560,14 +563,15 @@ void XFEM::ConditionManager::combine_level_set_field(Teuchos::RCP<Core::LinAlg::
 
 
 void XFEM::ConditionManager::check_for_equal_maps(
-    const Teuchos::RCP<Core::LinAlg::Vector>& vec1, const Teuchos::RCP<Core::LinAlg::Vector>& vec2)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2)
 {
   if (not vec1->Map().PointSameAs(vec2->Map())) FOUR_C_THROW("maps do not match!");
 }
 
 
-void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
 {
   int err = -1;
@@ -594,8 +598,8 @@ void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector>& vec
 }
 
 
-void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
 {
   int err = -1;
@@ -621,8 +625,8 @@ void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector>& vec
 }
 
 
-void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
 {
   int err = -1;
@@ -647,8 +651,9 @@ void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector>& 
   }
 }
 
-void XFEM::ConditionManager::set_symmetric_difference(Teuchos::RCP<Core::LinAlg::Vector>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_symmetric_difference(
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
     Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
 {
   int err = -1;
@@ -685,7 +690,8 @@ void XFEM::ConditionManager::set_symmetric_difference(Teuchos::RCP<Core::LinAlg:
 }
 
 
-void XFEM::ConditionManager::build_complementary_level_set(Teuchos::RCP<Core::LinAlg::Vector>& vec1)
+void XFEM::ConditionManager::build_complementary_level_set(
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1)
 {
   vec1->Scale(-1.0);
 }

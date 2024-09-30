@@ -524,7 +524,7 @@ Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::stress_data_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Core::LinAlg::Vector& Solid::ModelEvaluator::Data::current_element_volume_data() const
+const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Data::current_element_volume_data() const
 {
   FOUR_C_ASSERT(!elevolumes_ptr_.is_null(), "Undefined reference to element volume data!");
   return *elevolumes_ptr_;

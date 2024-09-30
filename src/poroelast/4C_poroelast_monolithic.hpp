@@ -122,13 +122,13 @@ namespace PoroElast
     Teuchos::RCP<const Epetra_Map> combined_dbc_map() const override { return combinedDBCMap_; }
 
     //! right hand side vector
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override { return rhs_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return rhs_; }
 
     //! zero all entries in iterinc vector
     void clear_poro_iterinc();
 
     //! replaces the iterinc with poroinc
-    void update_poro_iterinc(Teuchos::RCP<const Core::LinAlg::Vector> poroinc);
+    void update_poro_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<double>> poroinc);
 
     //! iter_ += 1
     void increment_poro_iter();
@@ -151,39 +151,39 @@ namespace PoroElast
     void create_linear_solver();
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector> iterinc  //!< increment between iteration i and i+1
+    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            iterinc  //!< increment between iteration i and i+1
         ) override;
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc (with structural and fluid
     //! increment separately)
-    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc,
-        Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc);
+    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc);
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
                       iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     //! and assemble systemmatrix and rhs-vector
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
                       s_iterinc,  //!< structural increment between iteration i and i+1
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             f_iterinc,  //!< fluid increment between iteration i and i+1
         bool firstiter) override;
 
     //! evaluate fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector> iterinc);
+    virtual void evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc);
 
     //! evaluate fields seperately at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc,
-        Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc);
+    virtual void evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc);
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
-    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig);
+    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -233,7 +233,7 @@ namespace PoroElast
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next time step
     virtual void recover_lagrange_multiplier_after_newton_step(
-        Teuchos::RCP<const Core::LinAlg::Vector> iterinc);
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc);
 
     //! Setup solver for monolithic system
     bool setup_solver() override;
@@ -273,9 +273,9 @@ namespace PoroElast
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (e.g. velocities and pressure)
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
-        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
-        bool firstcall = false);
+    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false);
 
     //! @name General purpose algorithm members
     //!@{
@@ -295,9 +295,9 @@ namespace PoroElast
     //!@}
 
     //! @name Global vectors
-    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
 
-    Teuchos::RCP<Core::LinAlg::Vector> rhs_;  //!< rhs of Poroelasticity system
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of Poroelasticity system
 
     //!@}
 
@@ -351,9 +351,10 @@ namespace PoroElast
     //!@}
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    virtual void setup_vector(Core::LinAlg::Vector& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> sv,    //!< vector containing only structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> fv     //!< vector containing only fluid dofs
+    virtual void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv  //!< vector containing only fluid dofs
     );
 
     //! @name Iterative solution technique
@@ -406,7 +407,8 @@ namespace PoroElast
 
     //! @name Various global forces
 
-    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;  //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
     //!@}
@@ -418,10 +420,10 @@ namespace PoroElast
 
     //! difference of last two solutions
     // del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^i_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector> del_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> del_;
     //! difference of difference of last two pair of solutions
     // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-    Teuchos::RCP<Core::LinAlg::Vector> delhist_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> delhist_;
     //! Aitken factor
     double mu_;
     //!@}

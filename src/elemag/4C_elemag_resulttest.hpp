@@ -49,7 +49,7 @@ namespace EleMag
     /// Teuchos::RCP to elemagstical discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
-    Teuchos::RCP<Core::LinAlg::Vector> mysol_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mysol_;
     /// Error vector
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> error_;
 

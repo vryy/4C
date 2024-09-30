@@ -140,9 +140,9 @@ void FLD::Boxfilter::initialize_vreman_scatra(Teuchos::RCP<Core::FE::Discretizat
 /*---------------------------------------------------------------------*
  | Perform box filter operation                                        |
  *---------------------------------------------------------------------*/
-void FLD::Boxfilter::apply_filter(const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle)
+void FLD::Boxfilter::apply_filter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   // perform filtering depending on the LES model
   apply_box_filter(velocity, scalar, thermpress, dirichtoggle);
@@ -150,9 +150,9 @@ void FLD::Boxfilter::apply_filter(const Teuchos::RCP<const Core::LinAlg::Vector>
   return;
 }
 
-void FLD::Boxfilter::apply_filter_scatra(const Teuchos::RCP<const Core::LinAlg::Vector> scalar,
-    const double thermpress, const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
-    const int ndsvel)
+void FLD::Boxfilter::apply_filter_scatra(
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle, const int ndsvel)
 {
   // perform filtering depending on the LES model
   apply_box_filter_scatra(scalar, thermpress, dirichtoggle, ndsvel);
@@ -164,9 +164,10 @@ void FLD::Boxfilter::apply_filter_scatra(const Teuchos::RCP<const Core::LinAlg::
  | perform box filtering                                      (private) |
  |                                                            rasthofer |
  *----------------------------------------------------------------------*/
-void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle)
+void FLD::Boxfilter::apply_box_filter(
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_cs");
 
@@ -196,8 +197,8 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Core::LinAlg::Vec
   const Epetra_Map* noderowmap = discret_->node_row_map();
 
   // alloc an additional vector to store/add up the patch volume
-  Teuchos::RCP<Core::LinAlg::Vector> patchvol =
-      Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> patchvol =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
 
   // free mem and reallocate to zero out vecs
   if (velocity_) filtered_vel_ = Teuchos::null;
@@ -221,15 +222,16 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Core::LinAlg::Vec
         Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim * numdim, true));
   if (densvelocity_)
     filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim, true));
-  if (density_) filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+  if (density_) filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
   if (densstrainrate_)
-    filtered_dens_strainrate_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+    filtered_dens_strainrate_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
   if (strainrate_)
     filtered_strainrate_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim * numdim, true));
-  if (expression_) filtered_expression_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+  if (expression_)
+    filtered_expression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
   if (alphaij_)
     filtered_alphaij_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim * numdim, true));
-  if (alpha2_) filtered_alpha2_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+  if (alpha2_) filtered_alpha2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
 
   if (finescale_velocity_)
     fs_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim, true));
@@ -903,15 +905,18 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Core::LinAlg::Vec
   if (finescale_velocity_) col_fs_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   if (densvelocity_)
     col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
-  if (density_) col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+  if (density_)
+    col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
   if (densstrainrate_)
-    col_filtered_dens_strainrate_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+    col_filtered_dens_strainrate_ =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
   if (strainrate_)
     col_filtered_strainrate_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
   if (alphaij_) col_filtered_alphaij_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
   if (expression_)
-    col_filtered_expression_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-  if (alpha2_) col_filtered_alpha2_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+    col_filtered_expression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  if (alpha2_)
+    col_filtered_alpha2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
 
   // export filtered vectors in rowmap to columnmap format
   if (velocity_) Core::LinAlg::export_to(*filtered_vel_, *col_filtered_vel_);
@@ -938,9 +943,9 @@ void FLD::Boxfilter::apply_box_filter(const Teuchos::RCP<const Core::LinAlg::Vec
  | perform box filtering                                      (private) |
  |                                                      rasthofer 08/12 |
  *----------------------------------------------------------------------*/
-void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Core::LinAlg::Vector> scalar,
-    const double thermpress, const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
-    const int ndsvel)
+void FLD::Boxfilter::apply_box_filter_scatra(
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle, const int ndsvel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_prt");
   if (apply_box_filter_ == true) FOUR_C_THROW("not yet considered");
@@ -971,8 +976,8 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Core::LinA
   const Epetra_Map* noderowmap = scatradiscret_->node_row_map();
 
   // alloc an additional vector to store/add up the patch volume
-  Teuchos::RCP<Core::LinAlg::Vector> patchvol =
-      Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> patchvol =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
 
   // free mem and reallocate to zero out vecs
   filtered_dens_vel_temp_ = Teuchos::null;
@@ -992,13 +997,13 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Core::LinA
       Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim, true));
   filtered_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim, true));
   filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim, true));
-  filtered_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
-  filtered_dens_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
-  filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+  filtered_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
+  filtered_dens_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
+  filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
   if (phi_) filtered_phi_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim, true));
-  if (phi2_) filtered_phi2_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+  if (phi2_) filtered_phi2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
   if (phiexpression_)
-    filtered_phiexpression_ = Teuchos::rcp(new Core::LinAlg::Vector(*noderowmap, true));
+    filtered_phiexpression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*noderowmap, true));
   if (alphaijsc_)
     filtered_alphaijsc_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, numdim * numdim, true));
 
@@ -1292,7 +1297,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Core::LinA
 
   // ---------------------------------------------------------------
   // extract convective velocity from scatra discretization
-  Teuchos::RCP<const Core::LinAlg::Vector> convel =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
       scatradiscret_->get_state(ndsvel, "convective velocity field");
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot extract convective velocity field");
 
@@ -1527,13 +1532,13 @@ void FLD::Boxfilter::apply_box_filter_scatra(const Teuchos::RCP<const Core::LinA
   col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   col_filtered_dens_vel_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   col_filtered_dens_rateofstrain_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
-  col_filtered_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-  col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-  col_filtered_dens_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+  col_filtered_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  col_filtered_dens_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
   if (phi_) col_filtered_phi_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
-  if (phi2_) col_filtered_phi2_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+  if (phi2_) col_filtered_phi2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
   if (phiexpression_)
-    col_filtered_phiexpression_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+    col_filtered_phiexpression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
   if (alphaijsc_)
     col_filtered_alphaijsc_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
 

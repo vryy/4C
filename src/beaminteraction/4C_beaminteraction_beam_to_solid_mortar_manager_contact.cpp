@@ -36,8 +36,8 @@ BEAMINTERACTION::BeamToSolidMortarManagerContact::BeamToSolidMortarManagerContac
 /**
  *
  */
-std::tuple<Teuchos::RCP<Core::LinAlg::Vector>, Teuchos::RCP<Core::LinAlg::Vector>,
-    Teuchos::RCP<Core::LinAlg::Vector>>
+std::tuple<Teuchos::RCP<Core::LinAlg::Vector<double>>, Teuchos::RCP<Core::LinAlg::Vector<double>>,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>>
 BEAMINTERACTION::BeamToSolidMortarManagerContact::get_penalty_regularization(
     const bool compute_linearization) const
 {
@@ -50,7 +50,7 @@ BEAMINTERACTION::BeamToSolidMortarManagerContact::get_penalty_regularization(
   // vector (averaged gap) and the scaling vector (kappa)
   auto create_lambda_row_vector_with_zeros = [this]()
   {
-    auto row_vector = Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
+    auto row_vector = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_rowmap_));
     row_vector->PutScalar(0.0);
     return row_vector;
   };

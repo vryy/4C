@@ -67,9 +67,9 @@ namespace Discret
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
           const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          Core::FE::DiscretizationFaces& discretization,          ///< faces discretization
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-          Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+          Core::FE::DiscretizationFaces& discretization,           ///< faces discretization
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
           ) = 0;
 
       //! Evaluate internal faces
@@ -138,9 +138,9 @@ namespace Discret
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
           const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          Core::FE::DiscretizationFaces& discretization,          ///< faces discretization
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-          Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+          Core::FE::DiscretizationFaces& discretization,           ///< faces discretization
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
           ) override;
 
       //! Evaluate internal faces

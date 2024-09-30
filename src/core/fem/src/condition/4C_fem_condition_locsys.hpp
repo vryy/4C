@@ -103,7 +103,7 @@ namespace Core::Conditions
      * nodenormals my remain empty. It is only required for
      * calc_rotation_vector_for_normal_system().
      */
-    void update(double time, std::vector<Teuchos::RCP<Core::LinAlg::Vector>> nodenormals,
+    void update(double time, std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals,
         const Core::UTILS::FunctionManager& function_manager);
 
     /*!
@@ -200,7 +200,8 @@ namespace Core::Conditions
      */
     void rotate_global_to_local(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
-        Teuchos::RCP<Core::LinAlg::Vector> rhs  ///< right-hand-side vector, will be transformed
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            rhs  ///< right-hand-side vector, will be transformed
     ) const;
 
     /*!
@@ -213,21 +214,23 @@ namespace Core::Conditions
      * \brief Apply forward transformation of a single vector
      *
      */
-    void rotate_global_to_local(Teuchos::RCP<Core::LinAlg::Vector> vec, bool offset = false) const;
+    void rotate_global_to_local(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset = false) const;
 
     /*!
      * \brief Apply backward transformation of result and linear system of equations
      *
      */
-    void rotate_local_to_global(Teuchos::RCP<Core::LinAlg::Vector> result,
+    void rotate_local_to_global(Teuchos::RCP<Core::LinAlg::Vector<double>> result,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector> rhs) const;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) const;
 
     /*!
      * \brief Apply backward transformation of a single vector
      *
      */
-    void rotate_local_to_global(Teuchos::RCP<Core::LinAlg::Vector> vec, bool offset = false) const;
+    void rotate_local_to_global(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset = false) const;
 
     /*!
      * \brief Apply backward transformation of a matrix
@@ -267,7 +270,7 @@ namespace Core::Conditions
     int numlocsys_;
 
     /// list of Node Normals for massConsistent BC
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>> nodenormals_;
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals_;
 
     /// types of local system conditions
     std::vector<Core::Conditions::ConditionType> typelocsys_;
@@ -281,7 +284,7 @@ namespace Core::Conditions
     std::map<int, Core::LinAlg::Matrix<3, 1>> nodalrotvectors_;
 
     /// assignment of local systems to nodes
-    Teuchos::RCP<Core::LinAlg::Vector> locsystoggle_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> locsystoggle_;
 
     /// maps containing the DOFs affected by locsys
     Teuchos::RCP<Epetra_Map> locsysdofmap_;

@@ -57,20 +57,20 @@ namespace XFEM
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! we need to think if inserting the ale matrixes are modifications (might conflict with other
     //! modifications)
     virtual bool modify_sysmatand_rhs(Core::LinAlg::BlockSparseMatrixBase& systemmatrix,
-        Teuchos::RCP<Core::LinAlg::Vector> rhs, const Core::LinAlg::MultiMapExtractor& me)
+        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs, const Core::LinAlg::MultiMapExtractor& me)
     {
       return false;
     }
 
     //! nothing to do
     virtual void post_linear_solve(
-        Teuchos::RCP<Core::LinAlg::Vector> inc, const Core::LinAlg::MultiMapExtractor& me)
+        Teuchos::RCP<Core::LinAlg::Vector<double>> inc, const Core::LinAlg::MultiMapExtractor& me)
     {
       return;
     }

@@ -507,7 +507,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
   else
     FOUR_C_THROW("id must be 1 or 2");
 
-  Core::LinAlg::Vector prod(*((*temp)(0)));
+  Core::LinAlg::Vector<double> prod(*((*temp)(0)));
   for (int i = 1; i < nsdim_; ++i) prod.Multiply(1.0, *((*temp)(i)), prod, 1.0);
   int numnonzero = 0;
   for (int i = 0; i < prod.MyLength(); ++i)

@@ -112,8 +112,8 @@ namespace FS3I
     const Epetra_Comm& get_comm() const { return comm_; }
 
     /// extract fluid convective and structure convective velocities
-    void extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& vel,
-        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& convel) const;
+    void extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& vel,
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& convel) const;
 
     void set_velocity_fields() const;
 
@@ -127,36 +127,36 @@ namespace FS3I
     virtual void set_wall_shear_stresses() const;
 
     /// extract Wall Shear Stresses at the interface
-    void extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& wss) const;
+    void extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& wss) const;
 
     Teuchos::ParameterList& manipulate_fsi_time_params(const Teuchos::ParameterList& fs3idyn) const;
 
     //@}
 
     /// transport quantity from fluid to fluid-scalar
-    Teuchos::RCP<const Core::LinAlg::Vector> fluid_to_fluid_scalar(
-        const Teuchos::RCP<const Core::LinAlg::Vector> fluidvector) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_to_fluid_scalar(
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvector) const;
 
     /// transport quantity from fluid-scalar to fluid
-    Teuchos::RCP<const Core::LinAlg::Vector> fluid_scalar_to_fluid(
-        const Teuchos::RCP<const Core::LinAlg::Vector> fluidscalarvector) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_scalar_to_fluid(
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidscalarvector) const;
 
     /// transport quantity from structure to structure-scalar
-    Teuchos::RCP<const Core::LinAlg::Vector> structure_to_structure_scalar(
-        const Teuchos::RCP<const Core::LinAlg::Vector> structurevector) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_to_structure_scalar(
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> structurevector) const;
 
     /// transport quantity from structure-scalar to structure
-    Teuchos::RCP<const Core::LinAlg::Vector> structure_scalar_to_structure(
-        const Teuchos::RCP<const Core::LinAlg::Vector> structurescalavector) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_scalar_to_structure(
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> structurescalavector) const;
 
    private:
     /// transport quantity from i-th volmortar master to i-th volmortar slave
-    Teuchos::RCP<const Core::LinAlg::Vector> vol_mortar_master_to_slavei(
-        const int i, const Teuchos::RCP<const Core::LinAlg::Vector> mastervector) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vol_mortar_master_to_slavei(
+        const int i, const Teuchos::RCP<const Core::LinAlg::Vector<double>> mastervector) const;
 
     /// transport quantity from i-th volmortar slave to i-th volmortar master
-    Teuchos::RCP<const Core::LinAlg::Vector> vol_mortar_slave_to_masteri(
-        const int i, const Teuchos::RCP<const Core::LinAlg::Vector> slavevector) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vol_mortar_slave_to_masteri(
+        const int i, const Teuchos::RCP<const Core::LinAlg::Vector<double>> slavevector) const;
 
    protected:
     /// fsi algorithm

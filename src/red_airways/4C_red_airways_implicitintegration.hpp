@@ -132,7 +132,7 @@ namespace Airway
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> vel){};
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
@@ -184,7 +184,7 @@ namespace Airway
     */
     void compute_nearest_acinus(Teuchos::RCP<Core::FE::Discretization const> search_discret,
         std::set<int>* elecolset, std::set<int>* nodecolset,
-        Teuchos::RCP<Core::LinAlg::Vector> airway_acinus_dep);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep);
 
     /*!
     \brief Assembling of the RHS Vector and the LHS Matrix
@@ -204,8 +204,8 @@ namespace Airway
            We use this to find the total lung volume by summing up
            the acinar volumes
     */
-    bool sum_all_col_elem_val(Teuchos::RCP<Core::LinAlg::Vector> vec,
-        Teuchos::RCP<Core::LinAlg::Vector> sumCond, double& sum);
+    bool sum_all_col_elem_val(Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sumCond, double& sum);
 
 
     /*!
@@ -219,11 +219,11 @@ namespace Airway
 
     //! @name access methods for composite algorithms
     /// Return nodal values
-    Teuchos::RCP<Core::LinAlg::Vector> pnp() { return pnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector> pn() { return pn_; }
-    Teuchos::RCP<Core::LinAlg::Vector> pnm() { return pnm_; }
-    Teuchos::RCP<Core::LinAlg::Vector> qin_np() { return qin_np_; }
-    Teuchos::RCP<Core::LinAlg::Vector> qout_np() { return qout_np_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pnp() { return pnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pn() { return pn_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pnm() { return pnm_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_np() { return qin_np_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
@@ -233,14 +233,14 @@ namespace Airway
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichlet();
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector> inv_dirichlet();
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inv_dirichlet();
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix()
     {
@@ -255,19 +255,19 @@ namespace Airway
     int itemax() const { return params_.get<int>("max nonlin iter steps"); }
     void set_itemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
-    Teuchos::RCP<Core::LinAlg::Vector> pext_np() { return p_extnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pext_np() { return p_extnp_; }
 
     /// Return elemental acini volume
-    Teuchos::RCP<Core::LinAlg::Vector> acini_volume() { return acini_e_volumenp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_volume() { return acini_e_volumenp_; }
 
     /// Return elemental airway volume
-    Teuchos::RCP<Core::LinAlg::Vector> airway_volume() { return elemVolumenp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> airway_volume() { return elemVolumenp_; }
 
     /// Return elemental airway status regarding opening
-    Teuchos::RCP<Core::LinAlg::Vector> open() { return open_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> open() { return open_; }
 
     /// Return elemental airway trajectory describing opening tendency
-    Teuchos::RCP<Core::LinAlg::Vector> opening_trajectory() { return x_np_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> opening_trajectory() { return x_np_; }
 
     //@}
 
@@ -275,8 +275,8 @@ namespace Airway
     //! @name methods related to coupling with 3D tissue models
 
     void setup_for_coupling();
-    void set_airway_flux_from_tissue(Teuchos::RCP<Core::LinAlg::Vector> coupflux);
-    void extract_pressure(Teuchos::RCP<Core::LinAlg::Vector> couppres);
+    void set_airway_flux_from_tissue(Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux);
+    void extract_pressure(Teuchos::RCP<Core::LinAlg::Vector<double>> couppres);
 
     /// Hand over outputwriter to redairway_tissue
     Core::IO::DiscretizationWriter& get_output_writer() { return output_; }
@@ -339,91 +339,91 @@ namespace Airway
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// rhs: right hand side vector
-    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
 
 
     //! @name pressures at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> pnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> pn_;
-    Teuchos::RCP<Core::LinAlg::Vector> pnm_;
-    Teuchos::RCP<Core::LinAlg::Vector> p_nonlin_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p_nonlin_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> n_intr_ac_ln_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> n_intr_ac_ln_;
     //@}
 
     //! @name inlet volumetric flow rates at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> qin_np_;
-    Teuchos::RCP<Core::LinAlg::Vector> qin_n_;
-    Teuchos::RCP<Core::LinAlg::Vector> qin_nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_nm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> qi_nl_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qi_nl_np_;
     //@}
 
     //! @trajectory vector x at time n+1 and n
-    Teuchos::RCP<Core::LinAlg::Vector> x_np_;
-    Teuchos::RCP<Core::LinAlg::Vector> x_n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> x_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> x_n_;
 
     //! @state of airway open or closed
-    Teuchos::RCP<Core::LinAlg::Vector> open_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> open_;
 
     //! @neighbouring acinus of airway
-    Teuchos::RCP<Core::LinAlg::Vector> airway_acinus_dep_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep_;
 
     //! @external pressure of airway
-    Teuchos::RCP<Core::LinAlg::Vector> p_extnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> p_extn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extn_;
     // p vector in colmap format for computing p_extnp_ and p_extn_
-    Teuchos::RCP<Core::LinAlg::Vector> pnp_colmap_;
-    Teuchos::RCP<Core::LinAlg::Vector> pn_colmap_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pnp_colmap_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pn_colmap_;
 
     //! @name outlet volumetric flow rates at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> qout_np_;
-    Teuchos::RCP<Core::LinAlg::Vector> qout_n_;
-    Teuchos::RCP<Core::LinAlg::Vector> qout_nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_nm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> qo_nl_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qo_nl_np_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> qexp_;
-    Teuchos::RCP<Core::LinAlg::Vector> qexp2_;
-    Teuchos::RCP<Core::LinAlg::Vector> pexp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qexp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qexp2_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pexp_;
     //@}
 
     //! @name element volume at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector> elemVolumenp_;
-    Teuchos::RCP<Core::LinAlg::Vector> elemVolumen_;
-    Teuchos::RCP<Core::LinAlg::Vector> elemVolumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector> elemVolume0_;
-    Teuchos::RCP<Core::LinAlg::Vector> elemArea0_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumenp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumen_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumenm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolume0_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemArea0_;
 
     //! @name element radius at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> elemRadiusnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemRadiusnp_;
     //@}
 
     //@}
     //! @name node Id vector
-    Teuchos::RCP<Core::LinAlg::Vector> nodeIds_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> nodeIds_;
     //@}
 
     //! @name radii vector
-    Teuchos::RCP<Core::LinAlg::Vector> radii_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> radii_;
     //@}
 
     //! @name generations vector
-    Teuchos::RCP<Core::LinAlg::Vector> generations_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> generations_;
     //@}
 
     //! @name Dirichlet boundary condition vectors
-    Teuchos::RCP<Core::LinAlg::Vector> bcval_;
-    Teuchos::RCP<Core::LinAlg::Vector> dbctog_;
-    Teuchos::RCP<Core::LinAlg::Vector> acini_bc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> bcval_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_bc_;
 
     //! @name acinar elementel values
-    Teuchos::RCP<Core::LinAlg::Vector> acini_e_volume0_;
-    Teuchos::RCP<Core::LinAlg::Vector> acini_e_volumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector> acini_e_volumen_;
-    Teuchos::RCP<Core::LinAlg::Vector> acini_e_volumenp_;
-    Teuchos::RCP<Core::LinAlg::Vector> acini_e_volume_strain_;
-    Teuchos::RCP<Core::LinAlg::Vector> acini_max_strain_location_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volume0_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volumenm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volumen_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volumenp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volume_strain_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_max_strain_location_;
 
     bool calcV0PreStress_;
     double transpulmpress_;
@@ -431,28 +431,28 @@ namespace Airway
     //@}
 
     //! @name scalar transport variables inside airways
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> e1scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> e2scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> e1scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> e2scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector> e1scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector> e2scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector> dscatraO2_;
-    Teuchos::RCP<Core::LinAlg::Vector> dVolumeO2_;
-    Teuchos::RCP<Core::LinAlg::Vector> acinarDO2_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dscatraO2_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dVolumeO2_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acinarDO2_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> scatraCO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2np_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> junctionVolumeInMix_;
-    Teuchos::RCP<Core::LinAlg::Vector> jVDofRowMix_;
-    Teuchos::RCP<Core::LinAlg::Vector> junVolMix_Corrector_;
-    Teuchos::RCP<Core::LinAlg::Vector> diffusionArea_;
-    Teuchos::RCP<Core::LinAlg::Vector> cfls_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> junctionVolumeInMix_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> jVDofRowMix_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> junVolMix_Corrector_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> diffusionArea_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cfls_;
 
     bool solveScatra_;
     bool compAwAcInter_;
@@ -462,53 +462,53 @@ namespace Airway
     //! @name state saving vectors
 
     // saving vector for pressure
-    Teuchos::RCP<Core::LinAlg::Vector> saved_pnm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_pn_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_pnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_pnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_pn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_pnp_;
 
     // saving vector for inflow rate
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qin_nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qin_n_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qin_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qin_nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qin_n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qin_np_;
 
     // saving vector for trajectory
-    Teuchos::RCP<Core::LinAlg::Vector> saved_x_n_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_x_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_x_n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_x_np_;
 
     // saving vector for outflow rates
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qout_nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qout_n_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_qout_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qout_nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qout_n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qout_np_;
 
     // saving vector for acinar volume
-    Teuchos::RCP<Core::LinAlg::Vector> saved_acini_e_volumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_acini_e_volumen_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_acini_e_volumenp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_acini_e_volumenm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_acini_e_volumen_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_acini_e_volumenp_;
 
     // saving vector for element volume
-    Teuchos::RCP<Core::LinAlg::Vector> saved_elemVolumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_elemVolumen_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_elemVolumenp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumenm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumen_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumenp_;
 
     // saving vector for nodal O2 concentration
-    Teuchos::RCP<Core::LinAlg::Vector> saved_scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2np_;
 
     // saving vector for element inlet O2 concentration
-    Teuchos::RCP<Core::LinAlg::Vector> saved_e1scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_e1scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_e1scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e1scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e1scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e1scatraO2np_;
 
     // saving vector for element outlet O2 concentration
-    Teuchos::RCP<Core::LinAlg::Vector> saved_e2scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_e2scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector> saved_e2scatraO2np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e2scatraO2nm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e2scatraO2n_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e2scatraO2np_;
     //@}
 
     //! Error vector that shows the convergenece of the nonlinear problem
-    Teuchos::RCP<Core::LinAlg::Vector> residual_;
-    Teuchos::RCP<Core::LinAlg::Vector> bc_residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> bc_residual_;
     //@}
 
     //! connection between master and slave nodes on this proc

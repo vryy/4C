@@ -50,8 +50,8 @@ namespace CONSTRAINTS
     virtual ~MPConstraint() { ; };
 
     /// Set state of the underlying constraint discretization
-    void set_constr_state(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<const Core::LinAlg::Vector> V   ///< values to set
+    void set_constr_state(const std::string& state,         ///< name of state to set
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> V  ///< values to set
     );
 
     /// initialization routine called by the manager ctor to get correct reference base values and
@@ -59,8 +59,9 @@ namespace CONSTRAINTS
     virtual void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
-                                                          ///< by assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            systemvector3  ///< distributed vector that may be filled
+                           ///< by assembly of element contributions
         ) = 0;
 
     /// initialization routine called at restart to activate the right conditions
@@ -78,14 +79,15 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
-                                                          ///< by assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            systemvector3  ///< distributed vector that may be filled
+                           ///< by assembly of element contributions
         ) = 0;
 
     //! Is there a constraint defined in this class?
@@ -110,14 +112,15 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
-                                                          ///< by assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            systemvector3  ///< distributed vector that may be filled
+                           ///< by assembly of element contributions
         ) = 0;
 
     //! creating a new discretization based on conditions containing constraint elements

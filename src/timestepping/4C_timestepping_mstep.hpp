@@ -274,15 +274,16 @@ namespace TimeStepping
 
   /*====================================================================*/
   /*! \brief Specialize general #TimIntMStepBase object
-   *         for \c Core::LinAlg::Vector as needed for state vectors
+   *         for \c Core::LinAlg::Vector<double> as needed for state vectors
    *         like displacements, velocities and accelerations
    */
   template <>
-  class TimIntMStep<Core::LinAlg::Vector> : public TimIntMStepBase<Core::LinAlg::Vector>
+  class TimIntMStep<Core::LinAlg::Vector<double>>
+      : public TimIntMStepBase<Core::LinAlg::Vector<double>>
   {
    protected:
     //! base template class
-    typedef TimIntMStepBase<Core::LinAlg::Vector> MStepBase;
+    typedef TimIntMStepBase<Core::LinAlg::Vector<double>> MStepBase;
 
    public:
     //! @name Life
@@ -302,7 +303,7 @@ namespace TimeStepping
       // allocate the vectors themselves
       for (int index = 0; index < steps_; ++index)
       {
-        state_.push_back(Core::LinAlg::Vector(*dofrowmap, inittozero));
+        state_.push_back(Core::LinAlg::Vector<double>(*dofrowmap, inittozero));
       }
 
       return;
@@ -331,7 +332,7 @@ namespace TimeStepping
         for (int past = MStepBase::steppast_; past > steppast; --past)
         {
           MStepBase::state_.insert(
-              MStepBase::state_.begin(), Core::LinAlg::Vector(*dofrowmap, inittozero));
+              MStepBase::state_.begin(), Core::LinAlg::Vector<double>(*dofrowmap, inittozero));
         }
         MStepBase::steppast_ = steppast;
         MStepBase::steps_ = MStepBase::stepfuture_ - MStepBase::steppast_ + 1;
@@ -352,7 +353,7 @@ namespace TimeStepping
       // allocate the vectors themselves
       for (int index = 0; index < steps_; ++index)
       {
-        state_.push_back(Core::LinAlg::Vector(*dofrowmap, true));
+        state_.push_back(Core::LinAlg::Vector<double>(*dofrowmap, true));
       }
 
       return;
@@ -370,7 +371,7 @@ namespace TimeStepping
      *       state_{n} := state_{n+1},
      *       etc.
      */
-    void update_steps(const Core::LinAlg::Vector& staten  //!< state_{n+1}
+    void update_steps(const Core::LinAlg::Vector<double>& staten  //!< state_{n+1}
     )
     {
       for (int ind = 0; ind < MStepBase::steps_ - 1; ++ind)
@@ -384,7 +385,7 @@ namespace TimeStepping
 
     //@}
 
-  };  // class TimIntMStep<Core::LinAlg::Vector>
+  };  // class TimIntMStep<Core::LinAlg::Vector<double>>
 }  // namespace TimeStepping
 
 /*----------------------------------------------------------------------*/

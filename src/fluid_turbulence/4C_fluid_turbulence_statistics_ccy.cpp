@@ -29,8 +29,9 @@ FOUR_C_NAMESPACE_OPEN
 
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Discretization> actdis,
-    bool alefluid, Teuchos::RCP<Core::LinAlg::Vector> dispnp, Teuchos::ParameterList& params,
-    const std::string& statistics_outfilename, const bool withscatra)
+    bool alefluid, Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
+    Teuchos::ParameterList& params, const std::string& statistics_outfilename,
+    const bool withscatra)
     : discret_(actdis),
       dispnp_(dispnp),
       params_(params),
@@ -473,8 +474,9 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
                             'sum' vectors.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector> scanp, Teuchos::RCP<Core::LinAlg::Vector> fullphinp)
+void FLD::TurbulenceStatisticsCcy::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scanp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fullphinp)
 {
   // we have an additional sample
   numsamp_++;
@@ -715,7 +717,7 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
       actscatraele->location_vector(*scatranurbsdis, scatralm, scatralmowner, scatralmstride);
 
-      Teuchos::RCP<const Core::LinAlg::Vector> phinp =
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp =
           scatranurbsdis->get_state("phinp_for_statistics");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
@@ -1494,7 +1496,8 @@ Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::add_scatra_results(
-    Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Core::LinAlg::Vector> phinp)
+    Teuchos::RCP<Core::FE::Discretization> scatradis,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp)
 {
   if (withscatra_)
   {

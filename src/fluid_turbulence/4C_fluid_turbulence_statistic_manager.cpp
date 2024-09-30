@@ -830,25 +830,25 @@ namespace FLD
               FOUR_C_THROW("No dissipation rates for this flow type!");
 
             // set vector values needed by elements
-            std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs;
+            std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs;
             std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss;
-            std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> scatrastatevecs;
+            std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrastatevecs;
             std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> scatrafieldvecs;
 
-            statevecs.insert(
-                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("hist", myhist_));
-            statevecs.insert(
-                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("accam", myaccam_));
-            statevecs.insert(
-                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("scaaf", myscaaf_));
-            statevecs.insert(
-                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("scaam", myscaam_));
+            statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                "hist", myhist_));
+            statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                "accam", myaccam_));
+            statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                "scaaf", myscaaf_));
+            statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                "scaam", myscaam_));
 
             if (alefluid_)
             {
-              statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("dispnp", mydispnp_));
-              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                  "dispnp", mydispnp_));
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
                   "gridv", mygridvelaf_));
               if (scatradis_ != Teuchos::null) FOUR_C_THROW("Not supported!");
             }
@@ -859,32 +859,37 @@ namespace FLD
             if (time_int_algo == Inpar::FLUID::timeint_afgenalpha or
                 time_int_algo == Inpar::FLUID::timeint_npgenalpha)
             {
-              statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velaf", myvelaf_));
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                  "velaf", myvelaf_));
               if (time_int_algo == Inpar::FLUID::timeint_npgenalpha)
-                statevecs.insert(
-                    std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velnp", myvelnp_));
+                statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                    "velnp", myvelnp_));
 
               // additional scatra vectors
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("phinp", myphiaf_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                      "phinp", myphiaf_));
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("phiam", myphiam_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                      "phiam", myphiam_));
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("hist", myphidtam_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                      "hist", myphidtam_));
             }
             else
             {
-              statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velaf", myvelnp_));
-              statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velaf", myvelnp_));
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                  "velaf", myvelnp_));
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                  "velaf", myvelnp_));
 
               // additional scatra vectors
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("phinp", myphinp_));
-              scatrastatevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
-                  "hist", myscatrahist_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                      "phinp", myphinp_));
+              scatrastatevecs.insert(
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                      "hist", myscatrahist_));
             }
 
             if (Teuchos::getIntegralValue<Inpar::FLUID::FineSubgridVisc>(
@@ -892,7 +897,7 @@ namespace FLD
                     Inpar::FLUID::FineSubgridVisc::no_fssgv or
                 turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
             {
-              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
                   "fsvelaf", myfsvelaf_));
               if (myfsvelaf_ == Teuchos::null) FOUR_C_THROW("Have not got fsvel!");
 
@@ -900,7 +905,7 @@ namespace FLD
                       *params_, "Physical Type") == Inpar::FLUID::loma and
                   turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
               {
-                statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+                statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
                     "fsscaaf", myfsscaaf_));
                 if (myfsscaaf_ == Teuchos::null) FOUR_C_THROW("Have not got fssca!");
               }
@@ -908,8 +913,9 @@ namespace FLD
               // additional scatra vectors
               if (withscatra_)
               {
-                scatrastatevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
-                    "fsphinp", myfsphi_));
+                scatrastatevecs.insert(
+                    std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                        "fsphinp", myfsphi_));
                 if (myfsphi_ == Teuchos::null) FOUR_C_THROW("Have not got fsphi!");
               }
             }
@@ -1038,8 +1044,10 @@ namespace FLD
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::do_time_sample(int step,
-      Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> force,
-      Teuchos::RCP<Core::LinAlg::Vector> phi, Teuchos::RCP<const Core::DOFSets::DofSet> stddofset)
+      Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+      Teuchos::RCP<Core::LinAlg::Vector<double>> force,
+      Teuchos::RCP<Core::LinAlg::Vector<double>> phi,
+      Teuchos::RCP<const Core::DOFSets::DofSet> stddofset)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1081,7 +1089,8 @@ namespace FLD
     get current velnp pointer from fluid
     necessary for meshtying                                    bk 02/14
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::get_current_velnp(Teuchos::RCP<Core::LinAlg::Vector> velnp)
+  void TurbulenceStatisticManager::get_current_velnp(
+      Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
   {
     myvelnp_ = velnp;
     return;

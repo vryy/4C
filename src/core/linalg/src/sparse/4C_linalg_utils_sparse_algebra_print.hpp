@@ -40,8 +40,8 @@ namespace Core::LinAlg
 
   //! Print content of @p vector in Matlab format to file @p filename. Create new file or overwrite
   //! exisiting one if @p newfile is true
-  void print_vector_in_matlab_format(
-      const std::string& filename, const Core::LinAlg::Vector& vector, const bool newfile = true);
+  void print_vector_in_matlab_format(const std::string& filename,
+      const Core::LinAlg::Vector<double>& vector, const bool newfile = true);
 
   //! Print content of @p map in Matlab format to file @p filename. Create new file or overwrite
   //! exisiting one if @p newfile is true

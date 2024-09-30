@@ -53,10 +53,12 @@ namespace Cardiovascular0D
     Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Teuchos::RCP<Epetra_MultiVector> v);
 
     //! v_red = V^T * v
-    Teuchos::RCP<Core::LinAlg::Vector> reduce_residual(Teuchos::RCP<Core::LinAlg::Vector> v);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> reduce_residual(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> v);
 
     //! v = V * v_red
-    Teuchos::RCP<Core::LinAlg::Vector> extend_solution(Teuchos::RCP<Core::LinAlg::Vector> v);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extend_solution(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> v);
 
     bool have_mor() { return havemor_; };
 

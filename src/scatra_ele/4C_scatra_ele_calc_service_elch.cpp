@@ -59,9 +59,9 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       const int ndsvel = my::scatrapara_->nds_vel();
 
       // get velocity values at nodes
-      const Teuchos::RCP<const Core::LinAlg::Vector> convel =
+      const Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
           discretization.get_state(ndsvel, "convective velocity field");
-      const Teuchos::RCP<const Core::LinAlg::Vector> vel =
+      const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
           discretization.get_state(ndsvel, "velocity field");
 
       // safety check
@@ -86,7 +86,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
 
       // need current values of transported scalar
       // -> extract local values from global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
@@ -186,7 +186,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_action(
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
-      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
@@ -332,7 +332,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
 )
 {
   // get actual values of transported scalars
-  Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // extract local values from the global vector
@@ -341,7 +341,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get history variable (needed for double layer modeling)
-  Teuchos::RCP<const Core::LinAlg::Vector> hist = discretization.get_state("hist");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // extract local values from the global vector
@@ -447,7 +447,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   else
   {
     // get actual values of transported scalars
-    Teuchos::RCP<const Core::LinAlg::Vector> phidtnp = discretization.get_state("phidtnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp = discretization.get_state("phidtnp");
     if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     // extract local values from the global vector
     std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(

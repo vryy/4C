@@ -84,20 +84,20 @@ namespace Adapter
         const Epetra_Comm& comm);
 
     virtual void integrate_lin_d(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
 
     virtual void integrate_lin_dm(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
 
     virtual void integrate_all(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
 
     virtual void evaluate_sliding(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
 
     virtual void print_interface(std::ostream& os);
 
@@ -134,7 +134,7 @@ namespace Adapter
     // create projection operator Dinv*M
     void create_p() override;
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector> gap()
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> gap()
     {
       if (gap_ == Teuchos::null) FOUR_C_THROW("ERROR: gap vector is null pointer!");
       return gap_;
@@ -235,9 +235,9 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         T_;  ///< Matrix containing the tangent vectors of the slave nodes
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
-        N_;                                   ///< Matrix containing the (weighted) gap derivatives
-                                              ///< with respect to master and slave dofs
-    Teuchos::RCP<Core::LinAlg::Vector> gap_;  ///< gap vector
+        N_;  ///< Matrix containing the (weighted) gap derivatives
+             ///< with respect to master and slave dofs
+    Teuchos::RCP<Core::LinAlg::Vector<double>> gap_;  ///< gap vector
 
     Teuchos::RCP<CONTACT::Interface> interface_;  ///< interface
   };

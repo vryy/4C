@@ -66,7 +66,7 @@ namespace XFEM
       return cutter_dis_->g_element(sid);
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector> get_cutter_disp_col();
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_cutter_disp_col();
 
     /// fill lm vector for coupling element
     virtual void get_coupling_ele_location_vector(const int sid, std::vector<int>& patchlm);
@@ -118,14 +118,14 @@ namespace XFEM
     //! do not cut, but only mark part of boundary loaded into cut
     virtual void set_marked_geometry(bool markgeometry) { mark_geometry_ = markgeometry; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_velnp() { return ivelnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector> i_veln() { return iveln_; }
-    Teuchos::RCP<Core::LinAlg::Vector> i_velnm() { return ivelnm_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_velnp() { return ivelnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_veln() { return iveln_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_velnm() { return ivelnm_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_dispnp() { return idispnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector> i_dispn() { return idispn_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_dispnp() { return idispnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_dispn() { return idispn_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_dispnpi() { return idispnpi_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_dispnpi() { return idispnpi_; }
 
     /// Get background fluid mesh h scaling
     virtual double get_h() { return h_scaling_; }
@@ -178,13 +178,13 @@ namespace XFEM
     //------------------------------- vectors -----------------------------
     // TODO: these vectors are not required for Neumann and WDBC conditions, derive class
     //! @name cutter-dis state vectors
-    Teuchos::RCP<Core::LinAlg::Vector> ivelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> iveln_;
-    Teuchos::RCP<Core::LinAlg::Vector> ivelnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivelnm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> idispnp_;  ///< current displacements at t^n+1
-    Teuchos::RCP<Core::LinAlg::Vector> idispn_;   ///< last displacements at t^n
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp_;  ///< current displacements at t^n+1
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispn_;   ///< last displacements at t^n
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         idispnpi_;  ///< displacements of last Newton increment at t^n+1 (for monolithic approaches)
 
     bool mark_geometry_;
@@ -351,7 +351,7 @@ namespace XFEM
 
     virtual void set_interface_velocity();
 
-    virtual void evaluate_condition(Teuchos::RCP<Core::LinAlg::Vector> ivec,
+    virtual void evaluate_condition(Teuchos::RCP<Core::LinAlg::Vector<double>> ivec,
         const std::string& condname, const double time, const double dt = 0.0);
 
     bool has_moving_interface() override;
@@ -613,10 +613,10 @@ namespace XFEM
         const Core::Conditions::Condition* cond) override;
 
     // interface foces
-    Teuchos::RCP<Core::LinAlg::Vector> i_true_residual() { return itrueresidual_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_true_residual() { return itrueresidual_; }
 
     // for assembly of fluid interface forces
-    Teuchos::RCP<Core::LinAlg::Vector> i_forcecol() { return iforcecol_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_forcecol() { return iforcecol_; }
 
     // evaluate structural cauchy stress and linearization in case we don't have xfluid sided
     // weighting
@@ -724,9 +724,9 @@ namespace XFEM
 
     //------------------------------- vectors -----------------------------
     //! @name cutter-dis state vectors
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         itrueresidual_;  //! interface forces acting on the structural surface (= -iforcenp)
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         iforcecol_;  //! interface forces acting on the fluid surface (column vector assembly)
     //@}
 

@@ -122,8 +122,8 @@ void SSI::SSICouplingMatchingVolume::assign_material_pointers(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_mechanical_stress_state(
-    Core::FE::Discretization& scatradis, Teuchos::RCP<const Core::LinAlg::Vector> stress_state,
-    unsigned nds)
+    Core::FE::Discretization& scatradis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_state, unsigned nds)
 {
   scatradis.set_state(nds, "mechanicalStressState", stress_state);
 }
@@ -132,7 +132,7 @@ void SSI::SSICouplingMatchingVolume::set_mechanical_stress_state(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_mesh_disp(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> disp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(disp);
 }
@@ -141,7 +141,8 @@ void SSI::SSICouplingMatchingVolume::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_velocity_fields(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> convvel, Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(convvel,  // convective vel.
       Teuchos::null,                                   // acceleration
@@ -152,16 +153,16 @@ void SSI::SSICouplingMatchingVolume::set_velocity_fields(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::set_scalar_field(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+void SSI::SSICouplingMatchingVolume::set_scalar_field(Core::FE::Discretization& dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", phi);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolume::set_scalar_field_micro(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+void SSI::SSICouplingMatchingVolume::set_scalar_field_micro(Core::FE::Discretization& dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "MicroCon", phi);
 }
@@ -169,7 +170,7 @@ void SSI::SSICouplingMatchingVolume::set_scalar_field_micro(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_temperature_field(
-    Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector> temp)
+    Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector<double>> temp)
 {
   structdis.set_state(2, "temperature", temp);
 }
@@ -177,7 +178,7 @@ void SSI::SSICouplingMatchingVolume::set_temperature_field(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_temperature_field(
-    Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector> temp)
+    Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector<double>> temp)
 {
   structdis.set_state(2, "temperature", temp);
 }
@@ -280,7 +281,7 @@ void SSI::SSICouplingNonMatchingBoundary::assign_material_pointers(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::set_mesh_disp(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> disp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(
       adaptermeshtying_->master_to_slave(extractor_->extract_cond_vector(disp)));
@@ -290,7 +291,8 @@ void SSI::SSICouplingNonMatchingBoundary::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> convvel, Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(
       adaptermeshtying_->master_to_slave(
@@ -303,8 +305,8 @@ void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::set_scalar_field(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+void SSI::SSICouplingNonMatchingBoundary::set_scalar_field(Core::FE::Discretization& dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   FOUR_C_THROW(
       "transferring scalar state to structure discretization not implemented for "
@@ -313,8 +315,8 @@ void SSI::SSICouplingNonMatchingBoundary::set_scalar_field(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingBoundary::set_scalar_field_micro(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+void SSI::SSICouplingNonMatchingBoundary::set_scalar_field_micro(Core::FE::Discretization& dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
@@ -403,7 +405,7 @@ void SSI::SSICouplingNonMatchingVolume::assign_material_pointers(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::set_mesh_disp(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> disp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(
       volcoupl_structurescatra_->apply_vector_mapping21(disp));
@@ -413,7 +415,8 @@ void SSI::SSICouplingNonMatchingVolume::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> convvel, Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(
       volcoupl_structurescatra_->apply_vector_mapping21(convvel),  // convective vel.
@@ -425,16 +428,16 @@ void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::set_scalar_field(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+void SSI::SSICouplingNonMatchingVolume::set_scalar_field(Core::FE::Discretization& dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", volcoupl_structurescatra_->apply_vector_mapping12(phi));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingNonMatchingVolume::set_scalar_field_micro(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+void SSI::SSICouplingNonMatchingVolume::set_scalar_field_micro(Core::FE::Discretization& dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
@@ -602,7 +605,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::assign_material_pointers(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_mesh_disp(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> disp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(disp);
 }
@@ -611,7 +614,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_velocity_fields(
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> convvel, Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(convvel,  // convective vel.
       Teuchos::null,                                   // acceleration
@@ -622,8 +626,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_velocity_fields(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSICouplingMatchingVolumeAndBoundary::set_scalar_field(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+void SSI::SSICouplingMatchingVolumeAndBoundary::set_scalar_field(Core::FE::Discretization& dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", phi);
 }
@@ -631,7 +635,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_scalar_field(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_scalar_field_micro(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds)
+    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
+    unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }

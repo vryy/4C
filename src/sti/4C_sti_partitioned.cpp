@@ -259,8 +259,8 @@ void STI::Partitioned::solve_two_way()
     case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
     {
       // initialize relaxed scatra state vector
-      const Teuchos::RCP<Core::LinAlg::Vector> scatra_relaxed =
-          Teuchos::rcp(new Core::LinAlg::Vector(*scatra_field()->phiafnp()));
+      const Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_relaxed =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatra_field()->phiafnp()));
 
       // begin outer iteration loop
       while (true)
@@ -310,7 +310,7 @@ void STI::Partitioned::solve_two_way()
         else
         {
           // compute difference between current and previous increments of scatra state vector
-          Core::LinAlg::Vector scatra_inc_diff(*scatra_field()->phinp_inc());
+          Core::LinAlg::Vector<double> scatra_inc_diff(*scatra_field()->phinp_inc());
           if (scatra_inc_diff.Update(-1., *scatra_field()->phinp_inc_old(), 1.))
             FOUR_C_THROW("Update failed!");
 
@@ -352,9 +352,9 @@ void STI::Partitioned::solve_two_way()
             for (int idof = 0; idof < scatra_field()->splitter()->num_maps(); ++idof)
             {
               // extract subvectors associated with current degree of freedom
-              const Teuchos::RCP<const Core::LinAlg::Vector> scatra_inc_dof =
+              const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra_inc_dof =
                   scatra_field()->splitter()->extract_vector(*scatra_field()->phinp_inc(), idof);
-              const Teuchos::RCP<const Core::LinAlg::Vector> scatra_inc_diff_dof =
+              const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra_inc_diff_dof =
                   scatra_field()->splitter()->extract_vector(scatra_inc_diff, idof);
 
               // compute L2 norm of difference between current and previous increments of current
@@ -396,8 +396,8 @@ void STI::Partitioned::solve_two_way()
     case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       // initialize relaxed thermo state vector
-      const Teuchos::RCP<Core::LinAlg::Vector> thermo_relaxed =
-          Teuchos::rcp(new Core::LinAlg::Vector(*thermo_field()->phiafnp()));
+      const Teuchos::RCP<Core::LinAlg::Vector<double>> thermo_relaxed =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*thermo_field()->phiafnp()));
 
       // begin outer iteration loop
       while (true)
@@ -439,7 +439,7 @@ void STI::Partitioned::solve_two_way()
         if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
         {
           // compute difference between current and previous increments of thermo state vector
-          Core::LinAlg::Vector thermo_inc_diff(*thermo_field()->phinp_inc());
+          Core::LinAlg::Vector<double> thermo_inc_diff(*thermo_field()->phinp_inc());
           if (thermo_inc_diff.Update(-1., *thermo_field()->phinp_inc_old(), 1.))
             FOUR_C_THROW("Update failed!");
 

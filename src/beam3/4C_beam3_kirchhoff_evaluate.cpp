@@ -119,7 +119,8 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and
       // residual values for each degree of freedom get element displacements
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state("displacement");
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
@@ -165,13 +166,14 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state("velocity");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::extract_my_values(*vel, myvel, lm);
@@ -2079,7 +2081,8 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
   const unsigned int nnodecl = 2;
 
   // get element displacements
-  Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement new");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   Core::FE::extract_my_values(*disp, mydisp, lm);

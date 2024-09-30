@@ -126,7 +126,7 @@ namespace PoroElast
     }
 
     //! return rhs of poro problem
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override
     {
       FOUR_C_THROW("RHS() only available for monolithic schemes!");
       return Teuchos::null;
@@ -135,30 +135,30 @@ namespace PoroElast
     //!@}
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector> iterinc  //!< increment between iteration i and i+1
+    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            iterinc  //!< increment between iteration i and i+1
         ) override
     {
       FOUR_C_THROW("update_state_incrementally() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void evaluate(
-        Teuchos::RCP<const Core::LinAlg::Vector> iterinc  //!< increment between iteration i and i+1
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            iterinc  //!< increment between iteration i and i+1
         ) override
     {
       FOUR_C_THROW("evaluate() only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate(
-        Teuchos::RCP<const Core::LinAlg::Vector> sx, Teuchos::RCP<const Core::LinAlg::Vector> fx)
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> sx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fx)
     {
       FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
                       iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override
     {
@@ -166,8 +166,8 @@ namespace PoroElast
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> sx,
-        Teuchos::RCP<const Core::LinAlg::Vector> fx, bool firstiter)
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> sx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fx, bool firstiter)
     {
       FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
@@ -213,8 +213,8 @@ namespace PoroElast
     //! @name Transfer helpers
 
     //! field transform
-    Teuchos::RCP<Core::LinAlg::Vector> structure_to_fluid_field(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_fluid_field(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv);
 
     //!@}
 
@@ -322,8 +322,8 @@ namespace PoroElast
     void buid_no_penetration_map(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
 
     //! apply rhs terms of no penetration condition to global rhs vector
-    void apply_cond_rhs(
-        Teuchos::RCP<Core::LinAlg::Vector> iterinc, Teuchos::RCP<Core::LinAlg::Vector> rhs);
+    void apply_cond_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs);
 
     //! return no penetration map extractor
     Teuchos::RCP<const Core::LinAlg::MapExtractor> extractor() { return nopenetration_; }
@@ -332,13 +332,13 @@ namespace PoroElast
     Teuchos::RCP<std::set<int>> cond_i_ds() { return cond_ids_; }
 
     //! return vector containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<Core::LinAlg::Vector> cond_vector() { return cond_dofs_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cond_vector() { return cond_dofs_; }
 
     //! check if a no penetration condition exists
     bool has_cond() { return has_cond_; }
 
     //! return condrhs
-    Teuchos::RCP<Core::LinAlg::Vector> rhs() { return cond_rhs_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs() { return cond_rhs_; }
 
     //! clear everything that is needed for coupling
     void clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
@@ -358,10 +358,10 @@ namespace PoroElast
     Teuchos::RCP<std::set<int>> cond_ids_;
 
     //! vector marking dofs with no penetration condition
-    Teuchos::RCP<Core::LinAlg::Vector> cond_dofs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cond_dofs_;
 
     //! vector containing rhs terms from no penetration condition
-    Teuchos::RCP<Core::LinAlg::Vector> cond_rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cond_rhs_;
 
     //! vector containing no penetration - conditions
     std::vector<Core::Conditions::Condition*> nopencond_;

@@ -210,7 +210,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate(
-    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint, const double& pp,
+    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint, const double& pp,
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
 {
@@ -385,7 +385,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_fc_contact(const double& pp,
-    Core::LinAlg::Vector* fint,
+    Core::LinAlg::Vector<double>* fint,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD,
@@ -1095,7 +1095,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_stiffc_contact
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::evaluate_algorithmic_force(
-    const double& pp, Core::LinAlg::Vector* fint,
+    const double& pp, Core::LinAlg::Vector<double>* fint,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD,

@@ -63,8 +63,8 @@ namespace CONSTRAINTS
     bool have_monitor() { return montype_ != none; };
 
     /// Set state of the underlying discretization
-    void set_state(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<Core::LinAlg::Vector> V  ///< values to set
+    void set_state(const std::string& state,          ///< name of state to set
+        Teuchos::RCP<Core::LinAlg::Vector<double>> V  ///< values to set
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
@@ -72,8 +72,9 @@ namespace CONSTRAINTS
     void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector1  ///< distributed vector that may be filled
-                                                          ///< by assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            systemvector1  ///< distributed vector that may be filled
+                           ///< by assembly of element contributions
     );
 
 
@@ -105,8 +106,9 @@ namespace CONSTRAINTS
     void evaluate_monitor(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector  ///< distributed vector that may be filled
-                                                         ///< by aasembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            systemvector  ///< distributed vector that may be filled
+                          ///< by aasembly of element contributions
     );
   };  // class
 }  // namespace CONSTRAINTS

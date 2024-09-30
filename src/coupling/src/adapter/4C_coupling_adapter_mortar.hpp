@@ -153,21 +153,21 @@ namespace Coupling::Adapter
     virtual void evaluate();
 
     /// Compute mortar matrices
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector> idisp  ///< [in] ??
+    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp  ///< [in] ??
     );
 
     /// Compute mortar matrices (case of transferring same dofs on two different meshes)
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector> idispma,  ///< [in] ??
-        Teuchos::RCP<Core::LinAlg::Vector> idispsl                     ///< [in] ??
+    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idispma,  ///< [in] ??
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idispsl                     ///< [in] ??
     );
 
     //! Compute mortar matrices after performing a mesh correction step
     virtual void evaluate_with_mesh_relocation(
-        Teuchos::RCP<Core::FE::Discretization> slavedis,  ///< slave discretization
-        Teuchos::RCP<Core::FE::Discretization> aledis,    ///< ALE discretization
-        Teuchos::RCP<Core::LinAlg::Vector>& idisp,        ///< ALE displacements
-        const Epetra_Comm& comm,                          ///< communicator
-        bool slavewithale                                 ///< flag defining if slave is ALE
+        Teuchos::RCP<Core::FE::Discretization> slavedis,    ///< slave discretization
+        Teuchos::RCP<Core::FE::Discretization> aledis,      ///< ALE discretization
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
+        const Epetra_Comm& comm,                            ///< communicator
+        bool slavewithale                                   ///< flag defining if slave is ALE
     );
 
     //! Get the mortar interface itself
@@ -208,8 +208,8 @@ namespace Coupling::Adapter
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::Vector> mv  ///< [in] master vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> mv  ///< [in] master vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from master to slave
@@ -224,8 +224,9 @@ namespace Coupling::Adapter
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::Vector> mv  ///< [in] master vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            mv  ///< [in] master vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
@@ -240,8 +241,8 @@ namespace Coupling::Adapter
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::Vector> sv  ///< [in] slave vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from slave to master
@@ -256,8 +257,9 @@ namespace Coupling::Adapter
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::Vector> sv  ///< [in] slave vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
@@ -298,16 +300,17 @@ namespace Coupling::Adapter
 
     /// do condensation of Lagrange multiplier and slave-sided dofs
     void mortar_condensation(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
-                                                      ///< out: tangent matrix w/  condensation
-        Teuchos::RCP<Core::LinAlg::Vector>& rhs       ///< in:  rhs vector     w/o condensation
-                                                      ///< out: rhs vector     w/  condensation
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,     ///< in:  tangent matrix w/o condensation
+                                                         ///< out: tangent matrix w/  condensation
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs  ///< in:  rhs vector     w/o condensation
+                                                         ///< out: rhs vector     w/  condensation
     ) const;
 
     /// recover slave-sided dofs
     void mortar_recover(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in: tangent matrix
-        Teuchos::RCP<Core::LinAlg::Vector>& inc  ///< in:  solution vector     w/o condensation
-                                                 ///< out: solution vector     w/  condensation
+        Teuchos::RCP<Core::LinAlg::Vector<double>>&
+            inc  ///< in:  solution vector     w/o condensation
+                 ///< out: solution vector     w/  condensation
     ) const;
 
     //@}
@@ -348,10 +351,10 @@ namespace Coupling::Adapter
         Teuchos::RCP<const Epetra_Map>
             masterdofrowmap,  ///< [in] DOF row map of master discretization
         Teuchos::RCP<const Epetra_Map>
-            slavedofrowmap,                         ///< [in] DOF row map of slave discretization
-        Teuchos::RCP<Core::LinAlg::Vector>& idisp,  ///< [in] ALE displacements
-        const Epetra_Comm& comm,                    ///< [in] Communicator
-        bool slavewithale                           ///< [in] Flag defining if slave is ALE
+            slavedofrowmap,  ///< [in] DOF row map of slave discretization
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp,  ///< [in] ALE displacements
+        const Epetra_Comm& comm,                            ///< [in] Communicator
+        bool slavewithale                                   ///< [in] Flag defining if slave is ALE
     );
 
    protected:

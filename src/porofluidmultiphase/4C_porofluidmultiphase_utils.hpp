@@ -66,8 +66,8 @@ namespace POROFLUIDMULTIPHASE
       nodes)
      */
     Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_node_based_multi_vector(
-        const Core::FE::Discretization& dis, const Core::LinAlg::Vector& vector, const int nds,
-        const int numdofpernode);
+        const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& vector,
+        const int nds, const int numdofpernode);
 
     /// create solution algorithm depending on input file
     Teuchos::RCP<Adapter::PoroFluidMultiphase> create_algorithm(
@@ -137,8 +137,8 @@ namespace POROFLUIDMULTIPHASE
 
     //! Determine norm of vector
     double calculate_vector_norm(
-        const enum Inpar::POROFLUIDMULTIPHASE::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Core::LinAlg::Vector> vect      //!< the vector of interest
+        const enum Inpar::POROFLUIDMULTIPHASE::VectorNorm norm,      //!< norm to use
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
     );
 
     /*!

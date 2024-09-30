@@ -124,9 +124,10 @@ namespace UTILS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vector that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            sysvec1,  ///< distributed vector that may be filled by
+                      ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
         ) override;
 
@@ -140,11 +141,13 @@ namespace UTILS
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat3,  ///< Cardiovascular0D offdiagonal matrix dfext/dp
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vectors that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec2, Teuchos::RCP<Core::LinAlg::Vector> sysvec3,
-        const Teuchos::RCP<Core::LinAlg::Vector> sysvec4,
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec5) override;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            sysvec1,  ///< distributed vectors that may be filled by
+                      ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5) override;
 
     // cbO2 and its derivatives
     double cb_o2(double ppCO2, double ppO2);
@@ -181,8 +184,8 @@ namespace UTILS
     //! #EvaluateCardiovascular0D routine is called
     virtual void evaluate_respiratory(Teuchos::ParameterList& params, std::vector<double>& df_np,
         std::vector<double>& f_np, Core::LinAlg::SerialDenseMatrix& wkstiff,
-        Teuchos::RCP<Core::LinAlg::Vector> dofvec, Teuchos::RCP<Core::LinAlg::Vector> volvec,
-        bool evalstiff);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dofvec,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> volvec, bool evalstiff);
 
    private:
     // number of degrees of freedom for submodels

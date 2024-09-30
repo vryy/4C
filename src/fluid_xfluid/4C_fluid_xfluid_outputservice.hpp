@@ -81,8 +81,8 @@ namespace FLD
     /// standard output routine
     void output(int step, double time, bool write_restart_data,
         Teuchos::RCP<const FLD::XFluidState> state,
-        Teuchos::RCP<Core::LinAlg::Vector> dispnp = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::Vector> gridvnp = Teuchos::null);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnp = Teuchos::null);
 
     /// Gmsh solution output
     virtual void gmsh_solution_output(const std::string& filename_base,  ///< name for output file
@@ -131,9 +131,9 @@ namespace FLD
         int step,                                               ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> acc =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
             Teuchos::null  ///< vector holding acceleration
     ){};
 
@@ -155,7 +155,7 @@ namespace FLD
     Teuchos::RCP<Core::DOFSets::IndependentDofSet> dofset_out_;
 
     //! output vector (mapped to initial fluid dofrowmap)
-    Teuchos::RCP<Core::LinAlg::Vector> outvec_fluid_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> outvec_fluid_;
 
     //! vel-pres splitter for output purpose
     Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_out_;
@@ -219,11 +219,11 @@ namespace FLD
         int step,                                       ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> acc =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
             Teuchos::null,  ///< vector holding acceleration
-        Teuchos::RCP<const Core::LinAlg::Vector> dispnp =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
             Teuchos::null  ///< vector holding ale displacements
     );
 
@@ -241,11 +241,11 @@ namespace FLD
         std::ofstream& acc_f,               ///< output file stream for acceleration
         Core::Elements::Element* actele,    ///< element
         std::vector<int>& nds,              ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> acc =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
             Teuchos::null,  ///< vector holding acceleration
-        Teuchos::RCP<const Core::LinAlg::Vector> dispnp =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
             Teuchos::null  ///< vector holding ale displacements
     );
 
@@ -259,9 +259,9 @@ namespace FLD
         Cut::ElementHandle* e,              ///< elementhandle
         Cut::VolumeCell* vc,                ///< volumecell
         const std::vector<int>& nds,        ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             velvec,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector> accvec =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> accvec =
             Teuchos::null  ///< vector holding acceleration
     );
 

@@ -133,7 +133,7 @@ void FLD::XFluidFluid::create_initial_state()
   }
 
   if (ale_embfluid_)
-    dispnpoldstate_ = Teuchos::rcp(new Core::LinAlg::Vector(*embedded_fluid_->dispnp()));
+    dispnpoldstate_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*embedded_fluid_->dispnp()));
 
   return;
 }
@@ -191,7 +191,7 @@ void FLD::XFluidFluid::prepare_time_step()
   XFluid::prepare_time_step();
 }
 
-Teuchos::RCP<const Core::LinAlg::Vector> FLD::XFluidFluid::initial_guess()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> FLD::XFluidFluid::initial_guess()
 {
   xff_state_->xffluidsplitter_->insert_fluid_vector(
       embedded_fluid_->initial_guess(), xff_state_->xffluidincvel_);
@@ -204,7 +204,7 @@ void FLD::XFluidFluid::prepare_xfem_solve()
 {
   XFluid::prepare_xfem_solve();
 
-  // merge the velnp each into one large Core::LinAlg::Vector for the composed system
+  // merge the velnp each into one large Core::LinAlg::Vector<double> for the composed system
   xff_state_->xffluidsplitter_->insert_x_fluid_vector(
       xff_state_->velnp_, xff_state_->xffluidvelnp_);
   xff_state_->xffluidsplitter_->insert_fluid_vector(
@@ -215,13 +215,13 @@ void FLD::XFluidFluid::prepare_xfem_solve()
       embedded_fluid_->veln(), xff_state_->xffluidveln_);
 }
 
-void FLD::XFluidFluid::evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+void FLD::XFluidFluid::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
         stepinc  ///< solution increment between time step n and n+1
 )
 {
   // split step increment
-  Teuchos::RCP<Core::LinAlg::Vector> stepinc_xfluid = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector> stepinc_emb = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc_xfluid = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc_emb = Teuchos::null;
 
   if (stepinc != Teuchos::null)
   {
@@ -261,7 +261,8 @@ void FLD::XFluidFluid::evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
 
   xff_state_->xffluidincvel_->PutScalar(0.0);
 
-  xff_state_->trueresidual_ = Teuchos::rcp(new Core::LinAlg::Vector(*xff_state_->xffluidresidual_));
+  xff_state_->trueresidual_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*xff_state_->xffluidresidual_));
   xff_state_->trueresidual_->PutScalar(residual_scaling());
 }
 
@@ -505,7 +506,7 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
   faceparams.set("ghost_penalty_reconstruct", false);
 
   //------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector> residual_col =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> residual_col =
       Core::LinAlg::create_vector(*xdiscret->dof_col_map(), true);
 
   //------------------------------------------------------------
@@ -546,7 +547,7 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
   //------------------------------------------------------------
   // need to export residual_col to embedded fluid residual
   {
-    Core::LinAlg::Vector res_tmp(embedded_fluid_->residual()->Map(), true);
+    Core::LinAlg::Vector<double> res_tmp(embedded_fluid_->residual()->Map(), true);
     Epetra_Export exporter(residual_col->Map(), res_tmp.Map());
     int err = res_tmp.Export(*residual_col, exporter, Add);
     if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
@@ -560,19 +561,21 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
  *----------------------------------------------------------------------*/
 bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
     const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
         newRowStateVectors,  ///< vectors to be reconstructed
-    Teuchos::RCP<const Core::LinAlg::Vector>
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>
         target_dispnp,     ///< displacement col - vector timestep n+1
     const bool screen_out  ///< screen output?
 )
 {
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> oldStateVectors;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> oldStateVectors;
 
-  Teuchos::RCP<const Core::LinAlg::Vector> velncol = Core::Rebalance::get_col_version_of_row_vector(
-      embedded_fluid_->discretization(), embedded_fluid_->veln());
-  Teuchos::RCP<const Core::LinAlg::Vector> accncol = Core::Rebalance::get_col_version_of_row_vector(
-      embedded_fluid_->discretization(), embedded_fluid_->accn());
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velncol =
+      Core::Rebalance::get_col_version_of_row_vector(
+          embedded_fluid_->discretization(), embedded_fluid_->veln());
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> accncol =
+      Core::Rebalance::get_col_version_of_row_vector(
+          embedded_fluid_->discretization(), embedded_fluid_->accn());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
@@ -580,8 +583,9 @@ bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
   std::map<int, std::set<int>>& projection_nodeToDof =
       xfluid_timeint->get_node_to_dof_map_for_reconstr(Inpar::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
-  Teuchos::RCP<const Core::LinAlg::Vector> disp = Core::Rebalance::get_col_version_of_row_vector(
-      embedded_fluid_->discretization(), dispnpoldstate_);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      Core::Rebalance::get_col_version_of_row_vector(
+          embedded_fluid_->discretization(), dispnpoldstate_);
   projector_->set_source_position_vector(disp);
   projector_->set_source_state_vectors(oldStateVectors);
 
@@ -647,27 +651,31 @@ void FLD::XFluidFluid::interpolate_embedded_state_vectors()
 {
   XFEM::MeshProjector embedded_projector(
       embedded_fluid_->discretization(), embedded_fluid_->discretization(), *params_);
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> newRowStateVectors;
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowStateVectors;
 
   newRowStateVectors.push_back(embedded_fluid_->write_access_velnp());
   newRowStateVectors.push_back(embedded_fluid_->write_access_accnp());
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> oldStateVectors;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> oldStateVectors;
 
-  Teuchos::RCP<const Core::LinAlg::Vector> velncol = Core::Rebalance::get_col_version_of_row_vector(
-      embedded_fluid_->discretization(), embedded_fluid_->velnp());
-  Teuchos::RCP<const Core::LinAlg::Vector> accncol = Core::Rebalance::get_col_version_of_row_vector(
-      embedded_fluid_->discretization(), embedded_fluid_->accnp());
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velncol =
+      Core::Rebalance::get_col_version_of_row_vector(
+          embedded_fluid_->discretization(), embedded_fluid_->velnp());
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> accncol =
+      Core::Rebalance::get_col_version_of_row_vector(
+          embedded_fluid_->discretization(), embedded_fluid_->accnp());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
-  Teuchos::RCP<const Core::LinAlg::Vector> srcdisp = Core::Rebalance::get_col_version_of_row_vector(
-      embedded_fluid_->discretization(), dispnpoldstate_);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> srcdisp =
+      Core::Rebalance::get_col_version_of_row_vector(
+          embedded_fluid_->discretization(), dispnpoldstate_);
   embedded_projector.set_source_position_vector(srcdisp);
   embedded_projector.set_source_state_vectors(oldStateVectors);
 
-  Teuchos::RCP<const Core::LinAlg::Vector> tardisp = Core::Rebalance::get_col_version_of_row_vector(
-      embedded_fluid_->discretization(), embedded_fluid_->dispnp());
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> tardisp =
+      Core::Rebalance::get_col_version_of_row_vector(
+          embedded_fluid_->discretization(), embedded_fluid_->dispnp());
 
   embedded_projector.project_in_full_target_discretization(newRowStateVectors, tardisp);
 

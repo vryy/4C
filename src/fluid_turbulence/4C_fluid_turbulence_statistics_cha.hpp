@@ -94,7 +94,7 @@ namespace FLD
 
     */
     TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Discretization> actdis, bool alefluid,
-        Teuchos::RCP<Core::LinAlg::Vector> dispnp, Teuchos::ParameterList& params,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, bool subgrid_dissipation,
         Teuchos::RCP<FLD::XWall> xwallobj);
 
@@ -123,8 +123,8 @@ namespace FLD
     moments for velocities, pressure and Cs are added to global
     'sum' vectors.
     */
-    void do_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector> force);
+    void do_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> force);
 
 
     /*!
@@ -132,9 +132,9 @@ namespace FLD
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void do_loma_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector> scanp,
-        const Teuchos::RCP<const Core::LinAlg::Vector> force, const double eosfac);
+    void do_loma_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> force, const double eosfac);
 
 
     /*!
@@ -142,9 +142,9 @@ namespace FLD
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void do_scatra_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector> scanp,
-        const Teuchos::RCP<const Core::LinAlg::Vector> force);
+    void do_scatra_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> force);
 
 
     /*!
@@ -215,8 +215,8 @@ namespace FLD
              subgrid-scales model
     */
 
-    void add_model_params_multifractal(const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector> fsvelnp, const bool withscatra);
+    void add_model_params_multifractal(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvelnp, const bool withscatra);
 
     /*!
       \brief do averaging of residuals, dissipation rates etc
@@ -224,11 +224,12 @@ namespace FLD
 
     */
 
-    void evaluate_residuals(std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs,
+    void evaluate_residuals(
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
         std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss,
         const double thermpressaf, const double thermpressam, const double thermpressdtaf,
         const double thermpressdtam,
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> scatrastatevecs,
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrastatevecs,
         std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> scatrafieldvecs);
 
     //@}
@@ -332,7 +333,7 @@ namespace FLD
     bool alefluid_;
 
     //! node displacements due to mesh motion
-    Teuchos::RCP<Core::LinAlg::Vector> dispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_;
 
     //! contains plane normal direction etc --- this is the original
     //! fluid dynamic parameterlist
@@ -375,18 +376,18 @@ namespace FLD
     Teuchos::ParameterList scatraeleparams_;
 
     //! pointer to mean vel/pres and scalar field
-    Teuchos::RCP<Core::LinAlg::Vector> meanvelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> meanscanp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> meanvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> meanscanp_;
 
     //! pointer to vel/pres^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector> squaredvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredvelnp_;
 
     //! toogle vectors --- sums are computed by scalarproducts
     //  with these toggle vectors
-    Teuchos::RCP<Core::LinAlg::Vector> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglep_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
 
     //! the dim_-coordinates of the homogeneous planes containing nodes
     Teuchos::RCP<std::vector<double>> nodeplanes_;
@@ -460,7 +461,7 @@ namespace FLD
     //!--------------------------------------------------
     //
     //! vector of squared velocities and pressures
-    Teuchos::RCP<Core::LinAlg::Vector> pointsquaredvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pointsquaredvelnp_;
 
     //! sum over u (over one plane in each component)
     Teuchos::RCP<std::vector<double>> pointsumu_;

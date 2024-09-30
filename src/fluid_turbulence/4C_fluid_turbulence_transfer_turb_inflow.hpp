@@ -57,8 +57,8 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    virtual void transfer(const Teuchos::RCP<Core::LinAlg::Vector> veln,
-        Teuchos::RCP<Core::LinAlg::Vector> velnp, const double time);
+    virtual void transfer(const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const double time);
 
    protected:
     //! there are two types of tranfer conditions. values are transferred
@@ -91,7 +91,8 @@ namespace FLD
 
     //! for all values avaible on the processor, do the final setting of the value
     virtual void set_values_available_on_this_proc(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vel, Teuchos::RCP<Core::LinAlg::Vector> velnp);
+        std::vector<std::vector<double>>& mymasters_vel,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp);
 
     //! flag active boundary condition (may be used to switch off everything)
     bool active_;
@@ -131,14 +132,14 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    void transfer(const Teuchos::RCP<Core::LinAlg::Vector> veln,
-        Teuchos::RCP<Core::LinAlg::Vector> velnp, const double time) override;
+    void transfer(const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const double time) override;
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
     void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vel,
-        Teuchos::RCP<Core::LinAlg::Vector> velnp) override;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> velnp) override;
   };
 
 
@@ -162,8 +163,8 @@ namespace FLD
            dummy Dirichlet values on the slave boundary by the values
            of the last time step on the master boundary
     */
-    void transfer(const Teuchos::RCP<Core::LinAlg::Vector> invec,
-        Teuchos::RCP<Core::LinAlg::Vector> outvec, const double time) override;
+    void transfer(const Teuchos::RCP<Core::LinAlg::Vector<double>> invec,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> outvec, const double time) override;
 
     bool is_active() { return active_; }
 
@@ -171,7 +172,7 @@ namespace FLD
     //! for all values avaible on the processor, do the final setting of the value
     void set_values_available_on_this_proc(std::vector<int>& mymasters,
         std::vector<std::vector<double>>& mymasters_vec,
-        Teuchos::RCP<Core::LinAlg::Vector> outvec) override;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> outvec) override;
   };
 
 }  // end namespace FLD

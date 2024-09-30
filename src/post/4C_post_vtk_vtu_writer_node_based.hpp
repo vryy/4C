@@ -79,7 +79,8 @@ class PostVtuWriterNode : public PostVtuWriter
   const std::string& writer_suffix() const override;
 
   //! Write a single result step
-  void write_dof_result_step(std::ofstream& file, const Teuchos::RCP<Core::LinAlg::Vector>& data,
+  void write_dof_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) override;
@@ -111,11 +112,11 @@ class PostVtuWriterNode : public PostVtuWriter
   //! Write a single result step for one Nurbs Element
   virtual void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution,
-      Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from, const bool fillzeros);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData, const int from, const bool fillzeros);
 
   void write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
-      Teuchos::RCP<Core::LinAlg::Vector>& ghostedData, const int& from,
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& ghostedData, const int& from,
       const bool fillzeros) override;
 
   //! Write a single result step for one Nurbs Element

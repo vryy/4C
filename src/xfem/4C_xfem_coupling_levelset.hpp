@@ -54,9 +54,10 @@ namespace XFEM
         const Teuchos::RCP<Core::FE::Discretization>& dis_B);
 
     void map_cutter_to_bg_vector(const Teuchos::RCP<Core::FE::Discretization>& source_dis,
-        const Teuchos::RCP<Core::LinAlg::Vector>& source_vec_dofbased, const int source_nds,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& source_vec_dofbased, const int source_nds,
         const Teuchos::RCP<Core::FE::Discretization>& target_dis,
-        const Teuchos::RCP<Core::LinAlg::Vector>& target_vec_dofbased, const int target_nds);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& target_vec_dofbased,
+        const int target_nds);
 
     // TODO: sort the functions...
 
@@ -90,7 +91,7 @@ namespace XFEM
     void gmsh_output(const std::string& filename_base, const int step, const int gmsh_step_diff,
         const bool gmsh_debug_out_screen) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector> get_level_set_field_as_node_row_vector();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_level_set_field_as_node_row_vector();
 
     virtual void read_restart(const int step, const int lsc_idx = 0);
 
@@ -121,7 +122,7 @@ namespace XFEM
     //! @name fluid discretization related state vectors
 
     //! fluid-dis (bgdis) state vectors for levelset applications
-    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
 
 
     //@}
@@ -130,17 +131,17 @@ namespace XFEM
 
     //! scatra-dis (cutterdis) state vectors for levelset applications, prepares nonmatching
     //! discretizations between scatra and fluid
-    Teuchos::RCP<Core::LinAlg::Vector> cutter_phinp_;
-    Teuchos::RCP<Core::LinAlg::Vector> cutter_phinp_col_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cutter_phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cutter_phinp_col_;
 
     //! The nodal curvature and smoothed gradient of the levelset field. (Stored w.r.t to the
     //! scatra-dis = cutter-dis)
-    Teuchos::RCP<Core::LinAlg::Vector> curvaturenp_node_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> curvaturenp_node_;
     Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_node_;
     // Teuchos::RCP<Epetra_MultiVector>   gradphi2np_smoothed_node_;
 
     //! and column versions
-    Teuchos::RCP<Core::LinAlg::Vector> curvaturenp_node_col_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> curvaturenp_node_col_;
     Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_node_col_;
 
     //! boolean operation type on level-set for current ls-field and previous combination of
@@ -551,9 +552,9 @@ namespace XFEM
 
 
   /// set levelset field by given vector
-  void write_access_geometric_quantities(Teuchos::RCP<Core::LinAlg::Vector>& scalaraf,
+  void write_access_geometric_quantities(Teuchos::RCP<Core::LinAlg::Vector<double>>& scalaraf,
       Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,
-      Teuchos::RCP<Core::LinAlg::Vector>& curvatureaf);
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& curvatureaf);
 
 
   /// set material pointer for coupling slave side

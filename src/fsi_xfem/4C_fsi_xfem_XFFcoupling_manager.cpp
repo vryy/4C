@@ -58,8 +58,8 @@ void XFEM::XffCouplingManager::set_coupling_states()
   Core::LinAlg::export_to(*fluid_->velnp(), *mcffi_->i_velnp());
   Core::LinAlg::export_to(*fluid_->veln(), *mcffi_->i_veln());
 
-  Teuchos::RCP<Core::LinAlg::Vector> tmp_diff =
-      Teuchos::rcp(new Core::LinAlg::Vector((*mcffi_->i_dispnp()).Map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_diff =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>((*mcffi_->i_dispnp()).Map()));
   tmp_diff->Update(1.0, *mcffi_->i_dispnp(), -1.0, *mcffi_->i_dispnpi(), 0.0);
 
   double norm = 0.0;
@@ -114,17 +114,17 @@ void XFEM::XffCouplingManager::add_coupling_matrix(
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XffCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+void XFEM::XffCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
     const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   // REMARK: Copy this vector to store the correct lambda_ in update!
-  Teuchos::RCP<Core::LinAlg::Vector> coup_rhs_sum =
-      Teuchos::rcp(new Core::LinAlg::Vector(*xfluid_->rhs_s_vec(cond_name_)));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> coup_rhs_sum =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*xfluid_->rhs_s_vec(cond_name_)));
 
   coup_rhs_sum->Scale(scaling);
 
-  Teuchos::RCP<Core::LinAlg::Vector> coup_rhs =
-      Teuchos::rcp(new Core::LinAlg::Vector(*me.Map(idx_[0]), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> coup_rhs =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*me.Map(idx_[0]), true));
   Core::LinAlg::export_to(*coup_rhs_sum, *coup_rhs);
   me.add_vector(coup_rhs, idx_[0], rhs);
 

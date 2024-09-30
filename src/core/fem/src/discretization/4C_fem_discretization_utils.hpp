@@ -65,7 +65,7 @@ namespace Core::FE
      */
     void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector>& systemvector,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate the elements of the given discretization and fill the
@@ -85,7 +85,7 @@ namespace Core::FE
      */
     void evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
         std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& systemvector,
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate the elements of the given discretization and fill the
@@ -112,9 +112,9 @@ namespace Core::FE
      */
     void evaluate_dirichlet(const Core::FE::Discretization& discret,
         const Teuchos::ParameterList& params,
-        const Teuchos::RCP<Core::LinAlg::Vector>& systemvector,
-        const Teuchos::RCP<Core::LinAlg::Vector>& systemvectord,
-        const Teuchos::RCP<Core::LinAlg::Vector>& systemvectordd,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
         const Teuchos::RCP<Epetra_IntVector>& toggle,
         const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor);
 
@@ -125,9 +125,9 @@ namespace Core::FE
      */
     inline void evaluate_dirichlet(const Core::FE::Discretization& discret,
         const Teuchos::ParameterList& params,
-        const Teuchos::RCP<Core::LinAlg::Vector>& systemvector,
-        const Teuchos::RCP<Core::LinAlg::Vector>& systemvectord,
-        const Teuchos::RCP<Core::LinAlg::Vector>& systemvectordd,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
         const Teuchos::RCP<Epetra_IntVector>& toggle)
     {
       evaluate_dirichlet(
@@ -147,7 +147,7 @@ namespace Core::FE
     */
     void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
         const Core::FE::Discretization& discret, const std::string& fieldstring,
-        Teuchos::RCP<Core::LinAlg::Vector> fieldvector, const std::vector<int>& locids);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fieldvector, const std::vector<int>& locids);
 
 
     /*!
@@ -158,7 +158,7 @@ namespace Core::FE
     */
     void do_initial_field(const Core::UTILS::FunctionManager& function_manager,
         const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
-        Core::LinAlg::Vector& fieldvector, const std::vector<int>& locids);
+        Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids);
 
     /** \brief Build a Dbc object
      *
@@ -199,7 +199,7 @@ namespace Core::FE
          * \brief the prescribed value assigned to dof
          * \note This is necessary to check the DBC consistency
          */
-        Core::LinAlg::Vector values;
+        Core::LinAlg::Vector<double> values;
 
         /*!
          * \brief constructor using the toggle vector as input
@@ -209,7 +209,7 @@ namespace Core::FE
             : toggle(toggle_input),
               hierarchy(Epetra_IntVector(toggle_input.Map())),
               condition(Epetra_IntVector(toggle_input.Map())),
-              values(Core::LinAlg::Vector(toggle_input.Map(), true))
+              values(Core::LinAlg::Vector<double>(toggle_input.Map(), true))
         {
           hierarchy.PutValue(std::numeric_limits<int>::max());
           condition.PutValue(-1);
@@ -223,7 +223,7 @@ namespace Core::FE
             : toggle(Epetra_IntVector(toggle_map)),
               hierarchy(Epetra_IntVector(toggle_map)),
               condition(Epetra_IntVector(toggle_map)),
-              values(Core::LinAlg::Vector(toggle_map, true))
+              values(Core::LinAlg::Vector<double>(toggle_map, true))
         {
           hierarchy.PutValue(std::numeric_limits<int>::max());
           condition.PutValue(-1);
@@ -242,9 +242,9 @@ namespace Core::FE
        *  evaluation process can start
        */
       void operator()(const Core::FE::Discretization& discret, const Teuchos::ParameterList& params,
-          const Teuchos::RCP<Core::LinAlg::Vector>& systemvector,
-          const Teuchos::RCP<Core::LinAlg::Vector>& systemvectord,
-          const Teuchos::RCP<Core::LinAlg::Vector>& systemvectordd,
+          const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
+          const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
+          const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
           const Teuchos::RCP<Epetra_IntVector>& toggle,
           const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
@@ -252,7 +252,7 @@ namespace Core::FE
       /// create the toggle vector based on the given systemvector maps
       Teuchos::RCP<Epetra_IntVector> create_toggle_vector(
           const Teuchos::RCP<Epetra_IntVector> toggle_input,
-          const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors) const;
+          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors) const;
 
       /** \brief Evaluate Dirichlet boundary conditions
        *
@@ -295,7 +295,7 @@ namespace Core::FE
        */
       virtual void evaluate(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, double time,
-          const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, DbcInfo& info,
+          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief loop through Dirichlet conditions and evaluate them
@@ -383,15 +383,15 @@ namespace Core::FE
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-          const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-          const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids,
+          const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum Core::Conditions::ConditionType& type) const;
 
       /** \brief Apply the Dirichlet values to the system vectors
@@ -435,7 +435,7 @@ namespace Core::FE
        */
       virtual void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors,
+          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
           const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired

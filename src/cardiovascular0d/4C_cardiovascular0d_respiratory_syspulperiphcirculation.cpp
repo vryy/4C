@@ -238,9 +238,12 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
 void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Core::LinAlg::Vector> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector> sysvec2, Teuchos::RCP<Core::LinAlg::Vector> sysvec3,
-    const Teuchos::RCP<Core::LinAlg::Vector> sysvec4, Teuchos::RCP<Core::LinAlg::Vector> sysvec5)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5)
 {
   if (!actdisc_->filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -1091,8 +1094,8 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
 
 void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respiratory(
     Teuchos::ParameterList& params, std::vector<double>& df_np, std::vector<double>& f_np,
-    Core::LinAlg::SerialDenseMatrix& wkstiff, Teuchos::RCP<Core::LinAlg::Vector> dofvec,
-    Teuchos::RCP<Core::LinAlg::Vector> volvec, bool evalstiff)
+    Core::LinAlg::SerialDenseMatrix& wkstiff, Teuchos::RCP<Core::LinAlg::Vector<double>> dofvec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> volvec, bool evalstiff)
 {
   // get time-integrator dependent values
   const double theta = params.get("scale_theta", 1.0);
@@ -9059,8 +9062,8 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_c_o2_dpp_
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector> sysvec2)
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");

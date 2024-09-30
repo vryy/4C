@@ -66,11 +66,11 @@ namespace Arteries
     /// Teuchos::RCP to scalar transport discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
-    Teuchos::RCP<const Core::LinAlg::Vector> mysol_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> mysol_;
     /// Teuchos::RCP to element volumetric flow
-    Teuchos::RCP<const Core::LinAlg::Vector> myelevolflow_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> myelevolflow_;
     /// Teuchos::RCP to element radius
-    Teuchos::RCP<const Core::LinAlg::Vector> myeleradius_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> myeleradius_;
   };
 
 }  // namespace Arteries

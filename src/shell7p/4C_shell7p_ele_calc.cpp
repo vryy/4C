@@ -95,8 +95,9 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
   // need update
   double intenergy = 0.0;
 
-  Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
-  Teuchos::RCP<const Core::LinAlg::Vector> res = discretization.get_state("residual displacement");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      discretization.get_state("residual displacement");
   if (disp == Teuchos::null || res == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
@@ -199,8 +200,9 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
       intpoints_midsurface_.num_points(), Mat::NUM_STRESS_3D);
 
 
-  Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
-  Teuchos::RCP<const Core::LinAlg::Vector> res = discretization.get_state("residual displacement");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      discretization.get_state("residual displacement");
   if (disp == Teuchos::null || res == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
@@ -303,8 +305,9 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
-  Teuchos::RCP<const Core::LinAlg::Vector> res = discretization.get_state("residual displacement");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      discretization.get_state("residual displacement");
   if (disp == Teuchos::null || res == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
   std::vector<double> displacement(dof_index_array.size());
@@ -488,7 +491,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::extract_my_values(*disp, displacement, dof_index_array);

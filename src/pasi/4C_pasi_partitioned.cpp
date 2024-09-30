@@ -175,9 +175,9 @@ void PaSI::PartitionedAlgo::extract_interface_states()
 }
 
 void PaSI::PartitionedAlgo::set_interface_states(
-    Teuchos::RCP<const Core::LinAlg::Vector> intfdispnp,
-    Teuchos::RCP<const Core::LinAlg::Vector> intfvelnp,
-    Teuchos::RCP<const Core::LinAlg::Vector> intfaccnp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfdispnp,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfvelnp,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfaccnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::set_interface_states");
 

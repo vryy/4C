@@ -157,8 +157,8 @@ namespace CONTACT
     are assembles into global force resdiual and global stiffness matrix.
 
     */
-    void evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fres,
-        const Core::LinAlg::Vector& disrow, Teuchos::ParameterList timeintparams,
+    void evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fres,
+        const Core::LinAlg::Vector<double>& disrow, Teuchos::ParameterList timeintparams,
         bool newsti = false, double time = 0.0);
 
     /*!
@@ -169,7 +169,8 @@ namespace CONTACT
     visualization in GMSH will be written. Also some output to screen is done.
 
     */
-    void update(const Core::LinAlg::Vector& disrow, const int& timestep, const int& newtonstep);
+    void update(
+        const Core::LinAlg::Vector<double>& disrow, const int& timestep, const int& newtonstep);
 
     /*!
     \brief Update constraint norm
@@ -196,8 +197,8 @@ namespace CONTACT
     method only works safely for the serial case, the parallel case is not yet implemented!
 
     */
-    void gmsh_output(const Core::LinAlg::Vector& disrow, const int& timestep, const int& newtonstep,
-        bool endoftimestep = false);
+    void gmsh_output(const Core::LinAlg::Vector<double>& disrow, const int& timestep,
+        const int& newtonstep, bool endoftimestep = false);
 
     /*!
     \brief Print active set
@@ -366,10 +367,10 @@ namespace CONTACT
     double maxeleradius_;
 
     //! contact forces of current time step
-    Teuchos::RCP<Core::LinAlg::Vector> fc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fc_;
 
     //! contact forces of previous time step (for generalized alpha)
-    Teuchos::RCP<Core::LinAlg::Vector> fcold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fcold_;
 
     //! contact stiffness matrix of current time step
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stiffc_;
@@ -420,10 +421,10 @@ namespace CONTACT
     double totpenaltywork_;
 
     //! current displacement vector
-    Teuchos::RCP<Core::LinAlg::Vector> dis_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis_;
 
     //! displacement vector of last time step
-    Teuchos::RCP<Core::LinAlg::Vector> dis_old_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis_old_;
 
     //! inf-norm of dis_ - dis_old_
     double maxdeltadisp_;
@@ -559,7 +560,8 @@ namespace CONTACT
     \brief Shift map of displacement vector
 
     */
-    void shift_dis_map(const Core::LinAlg::Vector& disrow, Core::LinAlg::Vector& disccol);
+    void shift_dis_map(
+        const Core::LinAlg::Vector<double>& disrow, Core::LinAlg::Vector<double>& disccol);
 
 
     /** \brief set up the discretization btsoldiscret_ to be used within beam contact manager
@@ -573,7 +575,7 @@ namespace CONTACT
 
     */
     void set_current_positions(std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
-        const Core::LinAlg::Vector& disccol);
+        const Core::LinAlg::Vector<double>& disccol);
 
     /*!
     \brief Set displacment state on contact element pair level
@@ -582,7 +584,7 @@ namespace CONTACT
     the current tangent vectors in case of Kirchhoff beam elements
     */
     void set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
-        const Core::LinAlg::Vector& disccol);
+        const Core::LinAlg::Vector<double>& disccol);
 
     /*!
     \brief Evaluate all pairs stored in the different pairs vectors (BTB, BTSPH, BTSOL; contact and
@@ -664,14 +666,14 @@ namespace CONTACT
     /*!
     \brief GMSH-Surface-Output for solid elements
     */
-    void gmsh_solid(const Core::Elements::Element* element, const Core::LinAlg::Vector& disrow,
-        std::stringstream& gmshfilecontent);
+    void gmsh_solid(const Core::Elements::Element* element,
+        const Core::LinAlg::Vector<double>& disrow, std::stringstream& gmshfilecontent);
 
     /*!
     \brief GMSH-Surface-Output for solid surfaces
     */
     void gmsh_solid_surface_element_numbers(const Core::Elements::Element* element,
-        const Core::LinAlg::Vector& disrow, std::stringstream& gmshfilecontent);
+        const Core::LinAlg::Vector<double>& disrow, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Get color of solid element surfaces for GMSH-Output

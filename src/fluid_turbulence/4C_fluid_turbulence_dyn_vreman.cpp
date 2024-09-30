@@ -62,17 +62,17 @@ void FLD::Vreman::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
  |                                                           krank 09/13|
  *----------------------------------------------------------------------*/
 void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   const Epetra_Map* nodecolmap = discret_->node_col_map();
 
 
   col_filtered_strainrate_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
   col_filtered_alphaij_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
-  col_filtered_expression_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-  col_filtered_alpha2_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+  col_filtered_expression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  col_filtered_alpha2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
 
 
   // perform filtering
@@ -91,15 +91,15 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
 }
 
 void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
-    const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle,
     Teuchos::ParameterList& extraparams, const int ndsvel)
 {
   const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
 
   col_filtered_phi_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
-  col_filtered_phi2_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-  col_filtered_phiexpression_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+  col_filtered_phi2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  col_filtered_phiexpression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
   col_filtered_alphaijsc_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
 
 

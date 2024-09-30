@@ -174,8 +174,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
     Teuchos::RCP<const BEAMINTERACTION::BeamToFluidMortarManager> mortar_manager =
         visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToFluidMortarManager>>(
             "mortar_manager");
-    Teuchos::RCP<Core::LinAlg::Vector> lambda =
-        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector>>("lambda");
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
+        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda");
 
     // Get the lambda GIDs of this pair.
     Teuchos::RCP<const BeamContactPair> this_rcp = Teuchos::rcp(this, false);

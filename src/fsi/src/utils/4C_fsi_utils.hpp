@@ -79,8 +79,9 @@ namespace FSI
       /// remesh ALE corresponding
       void remeshing(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
           Teuchos::RCP<Core::FE::Discretization> fluiddis,     ///< fluid discretization
-          Teuchos::RCP<Core::LinAlg::Vector> idispale,  ///< standard ALE interface displacement
-          Teuchos::RCP<Core::LinAlg::Vector>
+          Teuchos::RCP<Core::LinAlg::Vector<double>>
+              idispale,  ///< standard ALE interface displacement
+          Teuchos::RCP<Core::LinAlg::Vector<double>>
               iprojdispale,                           ///< projected ALE interface displacement
           Coupling::Adapter::CouplingMortar& coupsf,  ///< mortar adapter
           const Epetra_Comm& comm                     ///< communicator
@@ -88,20 +89,21 @@ namespace FSI
 
       /// Compute new coupling matrices D and M for solid/fluid
       void evaluate_mortar(
-          Teuchos::RCP<Core::LinAlg::Vector> idispstruct,  ///< displacement of structure
-          Teuchos::RCP<Core::LinAlg::Vector> idispfluid,   ///< (proj.) displacement of ale
-          Coupling::Adapter::CouplingMortar& coupsf        ///< mortar adapter
+          Teuchos::RCP<Core::LinAlg::Vector<double>> idispstruct,  ///< displacement of structure
+          Teuchos::RCP<Core::LinAlg::Vector<double>> idispfluid,   ///< (proj.) displacement of ale
+          Coupling::Adapter::CouplingMortar& coupsf                ///< mortar adapter
       );
 
       /// Compute new coupling matrices D and M for solid/ale coupling
       void evaluate_fluid_mortar(
-          Teuchos::RCP<Core::LinAlg::Vector> ima,  ///< displacement of structure
-          Teuchos::RCP<Core::LinAlg::Vector> isl   ///< (proj.) displacement of ale
+          Teuchos::RCP<Core::LinAlg::Vector<double>> ima,  ///< displacement of structure
+          Teuchos::RCP<Core::LinAlg::Vector<double>> isl   ///< (proj.) displacement of ale
       );
 
       /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after
       /// sliding
-      Teuchos::RCP<Core::LinAlg::Vector> interpolate_fluid(Teuchos::RCP<const Core::LinAlg::Vector>
+      Teuchos::RCP<Core::LinAlg::Vector<double>> interpolate_fluid(
+          Teuchos::RCP<const Core::LinAlg::Vector<double>>
               uold  ///< fluid velocity in configuration before sliding
       );
 
@@ -119,18 +121,18 @@ namespace FSI
       );
 
       /// compute approximate interface rotation (structuresplit)
-      void rotation(Core::FE::Discretization& mtrdis,   ///< mtr interface  discretization
-          Teuchos::RCP<Core::LinAlg::Vector> idispale,  ///< vector of ALE displacements
-          const Epetra_Comm& comm,                      ///< communicator
+      void rotation(Core::FE::Discretization& mtrdis,           ///< mtr interface  discretization
+          Teuchos::RCP<Core::LinAlg::Vector<double>> idispale,  ///< vector of ALE displacements
+          const Epetra_Comm& comm,                              ///< communicator
           std::map<int, double>& rotrat,  ///< rotation ratio of tangential displacements
-          Teuchos::RCP<Core::LinAlg::Vector>
+          Teuchos::RCP<Core::LinAlg::Vector<double>>
               rotfull  ///< vector of full displacements in tangential directions
       );
 
 
       /// calculate current position of structure interface nodes
       std::map<int, Core::LinAlg::Matrix<3, 1>> current_struct_pos(
-          Teuchos::RCP<Core::LinAlg::Vector>
+          Teuchos::RCP<Core::LinAlg::Vector<double>>
               reddisp,                             ///< redundant version of structure displacements
           Core::FE::Discretization& interfacedis,  ///< interface discretization
           std::map<int, double>& maxcoord);
@@ -139,8 +141,9 @@ namespace FSI
       /// project ALE nodes onto the structure surface
       void slide_projection(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
           Teuchos::RCP<Core::FE::Discretization> fluiddis,            ///< fluid discretization
-          Teuchos::RCP<Core::LinAlg::Vector> idispale,  ///< standard ALE interface displacement
-          Teuchos::RCP<Core::LinAlg::Vector>
+          Teuchos::RCP<Core::LinAlg::Vector<double>>
+              idispale,  ///< standard ALE interface displacement
+          Teuchos::RCP<Core::LinAlg::Vector<double>>
               iprojdispale,                           ///< projected ALE interface displacement
           Coupling::Adapter::CouplingMortar& coupsf,  ///< mortar adapter
           const Epetra_Comm& comm                     ///< communicator
@@ -154,7 +157,7 @@ namespace FSI
 
      private:
       const Inpar::FSI::SlideALEProj aletype_;
-      Teuchos::RCP<Core::LinAlg::Vector>
+      Teuchos::RCP<Core::LinAlg::Vector<double>>
           idispms_;  ///< merged vector of displacements (struct and fluid interface)
       std::vector<double> centerdisptotal_;  ///< sum over all center displacement increments
       double maxmindist_;                    ///< maximal distance between fluidpairs
@@ -188,7 +191,7 @@ namespace FSI
 
       int maxid_;
 
-      Teuchos::RCP<Core::LinAlg::Vector> iprojhist_;  ///< history of final displacements
+      Teuchos::RCP<Core::LinAlg::Vector<double>> iprojhist_;  ///< history of final displacements
 
       bool structcoupmaster_;  ///< is structure master of coupling?
 

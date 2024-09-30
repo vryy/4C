@@ -40,7 +40,7 @@ namespace Adapter
     explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
-    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_immersed_interface_dispnp();
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_immersed_interface_dispnp();
 
     /// Get mutable reference to DBC object
     Solid::Dbc& get_dbc();
@@ -54,7 +54,7 @@ namespace Adapter
     void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
 
     /// set the state of the nox group and the global state data container
-    void set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x) override;
+    void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) override;
 
     /// @name Apply interface forces
 
@@ -63,8 +63,8 @@ namespace Adapter
     /// This prepares a new solve of the structural field within one time
     /// step. The middle values are newly created.
     ///
-    void apply_immersed_interface_forces(Teuchos::RCP<Core::LinAlg::Vector> iforce_fsi,
-        Teuchos::RCP<Core::LinAlg::Vector> iforce_immersed);
+    void apply_immersed_interface_forces(Teuchos::RCP<Core::LinAlg::Vector<double>> iforce_fsi,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce_immersed);
 
     /*!
       \brief Write extra output for specified step and time.

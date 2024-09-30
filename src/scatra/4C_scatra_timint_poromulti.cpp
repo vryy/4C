@@ -62,7 +62,7 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
   for (int curphase = 0; curphase < totalnumdof; ++curphase)
   {
     // initialize velocity vectors
-    Teuchos::RCP<Core::LinAlg::Vector> phaseflux =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phaseflux =
         Core::LinAlg::create_vector(*discret_->dof_row_map(nds_vel()), true);
 
     std::stringstream statename;
@@ -105,8 +105,8 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
  | set solution fields on given dof sets              kremheller  07/17 |
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntPoroMulti::set_solution_field_of_multi_fluid(
-    Teuchos::RCP<const Core::LinAlg::Vector> phinp_fluid,
-    Teuchos::RCP<const Core::LinAlg::Vector> phin_fluid)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_fluid,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_fluid)
 {
   if (nds_pressure() >= discret_->num_dof_sets())
     FOUR_C_THROW("Too few dofsets on scatra discretization!");
@@ -139,7 +139,8 @@ void ScaTra::ScaTraTimIntPoroMulti::collect_runtime_output_data()
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discret_->get_state(nds_disp(), "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+        discret_->get_state(nds_disp(), "dispnp");
     if (dispnp == Teuchos::null)
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
@@ -166,7 +167,7 @@ void ScaTra::ScaTraTimIntPoroMulti::collect_runtime_output_data()
   // pressure
   if (conditions.size() > 0)
   {
-    auto oxypartpress = Core::LinAlg::Vector(*discret_->node_row_map(), true);
+    auto oxypartpress = Core::LinAlg::Vector<double>(*discret_->node_row_map(), true);
 
     // this condition is supposed to be for output of oxygen partial pressure over whole domain
     // it does not make sense to have more than one condition

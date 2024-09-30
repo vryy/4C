@@ -318,7 +318,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
   // get map and validdof-vector
   const Epetra_Map* elecolmap = scatra_algo()->scatra_field()->discretization()->element_col_map();
-  Teuchos::RCP<const Core::LinAlg::Vector> valid_volfracspec_dofs =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_volfracspec_dofs =
       poro_field()->fluid_field()->valid_vol_frac_spec_dofs();
 
   // we identify the volume fraction species dofs which do not have a physical meaning and set a

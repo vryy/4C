@@ -51,13 +51,13 @@ namespace FLD
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors,
+          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
           const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors,
+          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
           const Epetra_IntVector& toggle) const;
     };  // class DbcHDG_Fluid
   }     // namespace UTILS

@@ -103,7 +103,8 @@ namespace Core::IO
      * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_dof_based_result_data_vector(const Core::LinAlg::Vector& result_data_dofbased,
+    void append_dof_based_result_data_vector(
+        const Core::LinAlg::Vector<double>& result_data_dofbased,
         unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
         const std::string& resultname);
 

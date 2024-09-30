@@ -125,19 +125,19 @@ namespace Mat
     int step_;
 
     //! micro-scale state vector at old time step
-    Teuchos::RCP<Core::LinAlg::Vector> phin_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phin_;
 
     //! micro-scale state vector at new time step
-    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
 
     //! time derivative of micro-scale state vector at old time step
-    Teuchos::RCP<Core::LinAlg::Vector> phidtn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtn_;
 
     //! time derivative of micro-scale state vector at new time step
-    Teuchos::RCP<Core::LinAlg::Vector> phidtnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnp_;
 
     //! micro-scale history vector
-    Teuchos::RCP<Core::LinAlg::Vector> hist_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> hist_;
 
     //! micro-scale discretization writer
     Teuchos::RCP<Core::IO::DiscretizationWriter> micro_output_;

@@ -174,7 +174,7 @@ namespace Discret::ELEMENTS
   ElementNodes<celltype> evaluate_element_nodes(const Core::Elements::Element& ele,
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
-    const Core::LinAlg::Vector& displacements = *discretization.get_state("displacement");
+    const Core::LinAlg::Vector<double>& displacements = *discretization.get_state("displacement");
 
     std::vector<double> mydisp(lm.size());
     Core::FE::extract_my_values(displacements, mydisp, lm);

@@ -44,7 +44,7 @@ namespace Core::Rebalance
       const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
       std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node = nullptr,
       std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-          const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
+          const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)>
           determine_relevant_points = nullptr,
       bool revertextendedghosting = false);
 
@@ -106,9 +106,9 @@ namespace Core::Rebalance
 
   \param name (in): discretization
   \param state (in): vector of some data  */
-  Teuchos::RCP<const Core::LinAlg::Vector> get_col_version_of_row_vector(
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> get_col_version_of_row_vector(
       const Teuchos::RCP<const Core::FE::Discretization> dis,
-      const Teuchos::RCP<const Core::LinAlg::Vector> state, const int nds = 0);
+      const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int nds = 0);
 
 
   /// recompute nodecolmap of standard discretization to include all nodes as of subdicretization

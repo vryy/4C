@@ -51,8 +51,8 @@ namespace ScaTra
 
     //! set solution field of the multiphase fluid
     virtual void set_solution_field_of_multi_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> phinp_fluid,
-        Teuchos::RCP<const Core::LinAlg::Vector> phin_fluid);
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_fluid,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_fluid);
 
     //! set the velocity field (zero or field by function)
     virtual void set_velocity_field(const int nds)
@@ -64,11 +64,11 @@ namespace ScaTra
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    virtual void set_velocity_field(
-        Teuchos::RCP<const Core::LinAlg::Vector> convvel,  //!< convective velocity/press. vector
-        Teuchos::RCP<const Core::LinAlg::Vector> acc,      //!< acceleration vector
-        Teuchos::RCP<const Core::LinAlg::Vector> vel,      //!< velocity vector
-        Teuchos::RCP<const Core::LinAlg::Vector> fsvel,    //!< fine-scale velocity vector
+    virtual void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+                                        convvel,  //!< convective velocity/press. vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,    //!< acceleration vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,    //!< velocity vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel,  //!< fine-scale velocity vector
         const int nds,  //!< number of the dofset the velocity/pressure state belongs to
         const bool setpressure =
             false  //!< flag whether the fluid pressure needs to be known for the scatra

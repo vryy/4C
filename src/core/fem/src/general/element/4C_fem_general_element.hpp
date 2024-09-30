@@ -1218,7 +1218,8 @@ might become invalid after a redistribution of the discretization.
      * @return Number of points added by this element.
      */
     virtual unsigned int append_visualization_dof_based_result_data_vector(
-        const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
+        const Core::FE::Discretization& discret,
+        const Core::LinAlg::Vector<double>& result_data_dofbased,
         unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
 
@@ -1240,7 +1241,8 @@ might become invalid after a redistribution of the discretization.
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
     virtual Core::GeometricSearch::BoundingVolume get_bounding_volume(
-        const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
+        const Core::FE::Discretization& discret,
+        const Core::LinAlg::Vector<double>& result_data_dofbased,
         const Core::GeometricSearch::GeometricSearchParams& params) const;
     /// @}
 

@@ -240,12 +240,13 @@ namespace CONTACT
     };
 
     //! return global dirichlet toggle of all slave dofs (before parallel redistribution)
-    Teuchos::RCP<Core::LinAlg::Vector>& non_redist_global_slave_dirich_toggle_dof_row_map_ptr()
+    Teuchos::RCP<Core::LinAlg::Vector<double>>&
+    non_redist_global_slave_dirich_toggle_dof_row_map_ptr()
     {
       return non_redist_gsdirichtoggle_;
     };
-    Teuchos::RCP<const Core::LinAlg::Vector> non_redist_global_slave_dirich_toggle_dof_row_map_ptr()
-        const
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    non_redist_global_slave_dirich_toggle_dof_row_map_ptr() const
     {
       return non_redist_gsdirichtoggle_;
     };
@@ -279,22 +280,25 @@ namespace CONTACT
     }
 
     //! return global weighted gap vector g
-    Teuchos::RCP<Core::LinAlg::Vector>& w_gap_ptr() { return wgap_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> w_gap_ptr() const { return wgap_; };
-    Core::LinAlg::Vector& w_gap()
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& w_gap_ptr() { return wgap_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> w_gap_ptr() const { return wgap_; };
+    Core::LinAlg::Vector<double>& w_gap()
     {
       if (wgap_.is_null()) FOUR_C_THROW("The wgap_ is not initialized!");
       return *wgap_;
     }
 
     //! return global tangential rhs vector
-    Teuchos::RCP<Core::LinAlg::Vector>& tang_rhs_ptr() { return tangrhs_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> tang_rhs_ptr() const { return tangrhs_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& tang_rhs_ptr() { return tangrhs_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> tang_rhs_ptr() const { return tangrhs_; };
 
     //! return gloabl inactive rhs vector
-    Teuchos::RCP<Core::LinAlg::Vector>& inactive_rhs_ptr() { return inactiverhs_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> inactive_rhs_ptr() const { return inactiverhs_; };
-    Core::LinAlg::Vector& inactive_rhs()
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& inactive_rhs_ptr() { return inactiverhs_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> inactive_rhs_ptr() const
+    {
+      return inactiverhs_;
+    };
+    Core::LinAlg::Vector<double>& inactive_rhs()
     {
       if (inactiverhs_.is_null()) FOUR_C_THROW("The inactiverhs_ is not initialized!");
       return *inactiverhs_;
@@ -302,21 +306,24 @@ namespace CONTACT
 
     //! Return the structural contact right-hand-side contributions of the current time step
     //! \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector>& str_contact_rhs_ptr() { return str_contact_rhs_ptr_; }
-    Teuchos::RCP<const Core::LinAlg::Vector> str_contact_rhs_ptr() const
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& str_contact_rhs_ptr()
     {
       return str_contact_rhs_ptr_;
     }
-    Core::LinAlg::Vector& str_contact_rhs()
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> str_contact_rhs_ptr() const
+    {
+      return str_contact_rhs_ptr_;
+    }
+    Core::LinAlg::Vector<double>& str_contact_rhs()
     {
       if (str_contact_rhs_ptr_.is_null()) FOUR_C_THROW("The strContactRhsPtr_ is not initialized!");
       return *str_contact_rhs_ptr_;
     }
 
     //! return global constraint rhs vector (only for saddlepoint problems)
-    Teuchos::RCP<Core::LinAlg::Vector>& constr_rhs_ptr() { return constrrhs_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> constr_rhs_ptr() const { return constrrhs_; };
-    Core::LinAlg::Vector& constr_rhs()
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& constr_rhs_ptr() { return constrrhs_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> constr_rhs_ptr() const { return constrrhs_; };
+    Core::LinAlg::Vector<double>& constr_rhs()
     {
       if (constrrhs_.is_null()) FOUR_C_THROW("The constrrhs_ is not initialized!");
       return *constrrhs_;
@@ -361,41 +368,50 @@ namespace CONTACT
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> old_m_matrix_ptr() const { return mold_; };
 
     //! return current vector of Lagrange multipliers at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector>& lm_ptr() { return z_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> lm_ptr() const { return z_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& lm_ptr() { return z_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm_ptr() const { return z_; };
 
     //! return old vector of Lagrange multipliers at \f$t_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector>& old_lm_ptr() { return zold_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> old_lm_ptr() const { return zold_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& old_lm_ptr() { return zold_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> old_lm_ptr() const { return zold_; };
 
     /*! \brief Return Lagrange multiplier vector increment
      *
      *  \remark This is NOT the increment of z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!) */
-    Teuchos::RCP<Core::LinAlg::Vector>& lm_incr_ptr() { return zincr_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> lm_incr_ptr() const { return zincr_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& lm_incr_ptr() { return zincr_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm_incr_ptr() const { return zincr_; };
 
     //! return vector of Lagrange multipliers from last Uzawa step
-    Teuchos::RCP<Core::LinAlg::Vector>& lm_uzawa_ptr() { return zuzawa_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> lm_uzawa_ptr() const { return zuzawa_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& lm_uzawa_ptr() { return zuzawa_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm_uzawa_ptr() const { return zuzawa_; };
 
     //! return vector of normal contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector>& stress_normal_ptr() { return stressnormal_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> stress_normal_ptr() const { return stressnormal_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& stress_normal_ptr() { return stressnormal_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_normal_ptr() const
+    {
+      return stressnormal_;
+    };
 
     //! return vector of tangential contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector>& stress_tangential_ptr() { return stresstangential_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> stress_tangential_ptr() const
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& stress_tangential_ptr()
+    {
+      return stresstangential_;
+    };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_tangential_ptr() const
     {
       return stresstangential_;
     };
 
     //! return vector of normal contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector>& force_normal_ptr() { return forcenormal_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> force_normal_ptr() const { return forcenormal_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& force_normal_ptr() { return forcenormal_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> force_normal_ptr() const
+    {
+      return forcenormal_;
+    };
 
     //! return vector of tangential contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector>& force_tangential_ptr() { return forcetangential_; };
-    Teuchos::RCP<const Core::LinAlg::Vector> force_tangential_ptr() const
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& force_tangential_ptr() { return forcetangential_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> force_tangential_ptr() const
     {
       return forcetangential_;
     };
@@ -580,7 +596,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Map> non_redist_gsmdofrowmap_;
 
     //! global dirichlet toggle of all slave dofs (before parallel redistribution)
-    Teuchos::RCP<Core::LinAlg::Vector> non_redist_gsdirichtoggle_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> non_redist_gsdirichtoggle_;
 
     //! parallel redistribution type
     Inpar::Mortar::ParallelRedist partype_;
@@ -602,22 +618,22 @@ namespace CONTACT
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_;
 
     //! global weighted gap vector \f$g\f$
-    Teuchos::RCP<Core::LinAlg::Vector> wgap_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> wgap_;
 
     //! global tangential right-hand side vector (formulation with incremental #z_)
-    Teuchos::RCP<Core::LinAlg::Vector> tangrhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tangrhs_;
 
     /*! \brief Gloabl inactive right-hand side vector
      *
      * This is used for the formulation with incremental #z_ and saddle point system.
      */
-    Teuchos::RCP<Core::LinAlg::Vector> inactiverhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> inactiverhs_;
 
     //! structural contact right-hand-side vector at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> str_contact_rhs_ptr_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> str_contact_rhs_ptr_;
 
     //! global constraint right-hand side vector (only for saddlepoint problems)
-    Teuchos::RCP<Core::LinAlg::Vector> constrrhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> constrrhs_;
 
     //! global Matrix LinD containing slave fc derivatives
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lindmatrix_;
@@ -635,31 +651,31 @@ namespace CONTACT
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mold_;
 
     //! current vector of Lagrange multipliers at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> z_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> z_;
 
     //! old vector of Lagrange multipliers at \f$t_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> zold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zold_;
 
     /*! \brief Lagrange multiplier vector increment within SaddlePointSolve
      *
      *  \remark This is \em not the increment of #z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!)
      */
-    Teuchos::RCP<Core::LinAlg::Vector> zincr_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zincr_;
 
     //! vector of Lagrange multipliers from last Uzawa step
-    Teuchos::RCP<Core::LinAlg::Vector> zuzawa_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zuzawa_;
 
     //! vector of normal contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> stressnormal_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> stressnormal_;
 
     //! vector of tangential contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> stresstangential_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> stresstangential_;
 
     //! vector of normal contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> forcenormal_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> forcenormal_;
 
     //! vector of tangential contact forces at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> forcetangential_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> forcetangential_;
 
     //! @name Counters and indices
     //!@{

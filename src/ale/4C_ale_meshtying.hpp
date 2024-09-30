@@ -78,7 +78,7 @@ namespace ALE
 
     //! Set up mesh-tying framework
     virtual Teuchos::RCP<Core::LinAlg::SparseOperator> setup(
-        std::vector<int> coupleddof, Teuchos::RCP<Core::LinAlg::Vector>& dispnp);
+        std::vector<int> coupleddof, Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp);
 
     //! Use the split of the ale mesh tying for the sysmat
     Teuchos::RCP<Core::LinAlg::SparseOperator> msht_split();
@@ -90,9 +90,9 @@ namespace ALE
     //! Prepare matrix and residual for meshtying
     void prepare_meshtying_system(Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                       sysmat,  ///> sysmat established by the element routine
-        Teuchos::RCP<Core::LinAlg::Vector>&
+        Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        Teuchos::RCP<Core::LinAlg::Vector>& dispnp);  ///> current ALE displacement vector
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp);  ///> current ALE displacement vector
 
     //! Set the flag for multifield problems
     void is_multifield(const Core::LinAlg::MultiMapExtractor&
@@ -125,25 +125,27 @@ namespace ALE
     virtual void condensation_operation_block_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
-        Teuchos::RCP<Core::LinAlg::Vector>&
+        Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        Teuchos::RCP<Core::LinAlg::Vector>& dispnp);  ///> current displacement vector
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp);  ///> current displacement vector
 
     //! Compute and update the increments of the slave node
-    virtual void update_slave_dof(
-        Teuchos::RCP<Core::LinAlg::Vector>& inc, Teuchos::RCP<Core::LinAlg::Vector>& dispnp);
+    virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp);
 
     //! Recover method for Lagrange multipliers (do nothing in mesh tying case)
-    virtual void recover(Teuchos::RCP<Core::LinAlg::Vector>& inc){};
+    virtual void recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc){};
 
     //! Solve ALE mesh tying problem
     virtual int solve_meshtying(Core::LinAlg::Solver& solver,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Core::LinAlg::Vector>& disi,
-        Teuchos::RCP<Core::LinAlg::Vector> residual, Teuchos::RCP<Core::LinAlg::Vector>& dispnp);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& disi,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp);
 
-    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector> >
-    void split_vector(Teuchos::RCP<Core::LinAlg::Vector> vector,  ///> vector to split
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
+    void split_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vector,  ///> vector to split
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitvector);  ///> container for the split vector
 
    protected:
@@ -165,10 +167,10 @@ namespace ALE
     Teuchos::RCP<Epetra_Map> mergedmap_;
 
    private:
-    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector> >
-    void split_vector_based_on3x3(
-        Teuchos::RCP<Core::LinAlg::Vector> orgvector,  ///> original vector based on 3x3 blockmatrix
-        Teuchos::RCP<Core::LinAlg::Vector>
+    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
+    void split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>>
+                                      orgvector,  ///> original vector based on 3x3 blockmatrix
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 
    private:
@@ -194,14 +196,14 @@ namespace ALE
 
     //! vector containing time-depending values of the dirichlet condition
     /// valuesdc_ = (dispnp after applying DC) - (dispn)
-    Teuchos::RCP<Core::LinAlg::Vector> valuesdc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> valuesdc_;
 
     //! adapter to mortar framework
     Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmatsolve_;
-    Teuchos::RCP<Core::LinAlg::Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
 
     //! flag defining if Dirichlet  or Dirichlet-like boundary conditions are defined on the master
     //! side of the internal interface

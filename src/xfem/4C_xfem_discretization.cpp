@@ -121,14 +121,14 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
 void XFEM::DiscretizationXFEM::export_initialto_active_vector(
-    Teuchos::RCP<const Core::LinAlg::Vector>& initialvec,
-    Teuchos::RCP<Core::LinAlg::Vector>& activevec)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& initialvec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& activevec)
 {
   // Is the discretization initialized?
   initialized();
 
-  Teuchos::RCP<Core::LinAlg::Vector> fullvec =
-      Teuchos::rcp(new Core::LinAlg::Vector(*initialpermdofrowmap_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fullvec =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*initialpermdofrowmap_, true));
 
   {  // Export manually as target.Map().UniqueGIDs() gives = true, although this shouldn't be the
      // case
@@ -154,8 +154,8 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
 void XFEM::DiscretizationXFEM::export_activeto_initial_vector(
-    Teuchos::RCP<const Core::LinAlg::Vector> activevec,
-    Teuchos::RCP<Core::LinAlg::Vector> initialvec)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> activevec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> initialvec)
 {
   // Is the discretization initialized?
   initialized();
@@ -215,7 +215,7 @@ Teuchos::RCP<Epetra_Map> XFEM::DiscretizationXFEM::extend_map(
  |  set a reference to a data vector (public)                mwgee 12/06|
  *----------------------------------------------------------------------*/
 void XFEM::DiscretizationXFEM::set_initial_state(
-    unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state)
+    unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::DiscretizationXFEM::SetInitialState");
 
@@ -243,7 +243,7 @@ void XFEM::DiscretizationXFEM::set_initial_state(
           name.c_str());
     }
 #endif
-    Teuchos::RCP<Core::LinAlg::Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
     Core::LinAlg::export_to(*state, *tmp);
     state_[nds][name] = tmp;
   }

@@ -243,13 +243,15 @@ void LowMach::Algorithm::setup()
             lomablockdofrowmap_, lomablockdofrowmap_, 135, false, true));
 
     // create loma rhs vector
-    lomarhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*lomablockdofrowmap_.full_map(), true));
+    lomarhs_ =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*lomablockdofrowmap_.full_map(), true));
 
     // create loma increment vector
-    lomaincrement_ = Teuchos::rcp(new Core::LinAlg::Vector(*lomablockdofrowmap_.full_map(), true));
+    lomaincrement_ =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*lomablockdofrowmap_.full_map(), true));
 
     // create vector of zeros for enforcing zero Dirichlet boundary conditions
-    zeros_ = Teuchos::rcp(new Core::LinAlg::Vector(*lomablockdofrowmap_.full_map(), true));
+    zeros_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lomablockdofrowmap_.full_map(), true));
 
     // create combined Dirichlet boundary condition map
     const Teuchos::RCP<const Epetra_Map> fdbcmap =
@@ -760,8 +762,8 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
 void LowMach::Algorithm::setup_mono_loma_rhs()
 {
   // define fluid and scatra residual vectors
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidres = fluid_field()->rhs();
-  Teuchos::RCP<const Core::LinAlg::Vector> scatrares = scatra_field()->residual();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidres = fluid_field()->rhs();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrares = scatra_field()->residual();
 
   // insert fluid and scatra residual vectors into loma residual vector
   lomablockdofrowmap_.insert_vector(*fluidres, 0, *lomarhs_);
@@ -796,8 +798,8 @@ void LowMach::Algorithm::mono_loma_system_solve()
 void LowMach::Algorithm::iter_update()
 {
   // define incremental fluid and scatra solution vectors
-  Teuchos::RCP<const Core::LinAlg::Vector> incfluid;
-  Teuchos::RCP<const Core::LinAlg::Vector> incscatra;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> incfluid;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> incscatra;
 
   // extract incremental fluid and scatra solution vectors
   // from incremental low-Mach-number solution vector

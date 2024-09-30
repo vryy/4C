@@ -1063,7 +1063,7 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
   // Special case for mortar nodes that store their displacements themselves
   const auto determine_relevant_points =
       [](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
-          Teuchos::RCP<const Core::LinAlg::Vector>) -> std::vector<std::array<double, 3>>
+          Teuchos::RCP<const Core::LinAlg::Vector<double>>) -> std::vector<std::array<double, 3>>
   {
     std::vector<std::array<double, 3>> relevant_points;
     const auto* mortar_ele = dynamic_cast<const Mortar::Element*>(&ele);
@@ -2024,15 +2024,16 @@ void Mortar::Interface::initialize()
 /*----------------------------------------------------------------------*
  |  set current and old deformation state                      popp 12/07|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::set_state(const enum StateType& statetype, const Core::LinAlg::Vector& vec)
+void Mortar::Interface::set_state(
+    const enum StateType& statetype, const Core::LinAlg::Vector<double>& vec)
 {
   switch (statetype)
   {
     case state_new_displacement:
     {
       // alternative method to get vec to full overlap
-      Teuchos::RCP<Core::LinAlg::Vector> global =
-          Teuchos::rcp(new Core::LinAlg::Vector(*idiscret_->dof_col_map(), false));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> global =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*idiscret_->dof_col_map(), false));
       Core::LinAlg::export_to(vec, *global);
 
       // set displacements in interface discretization
@@ -2065,8 +2066,8 @@ void Mortar::Interface::set_state(const enum StateType& statetype, const Core::L
     case state_lagrange_multiplier:
     {
       // alternative method to get vec to full overlap
-      Teuchos::RCP<Core::LinAlg::Vector> global =
-          Teuchos::rcp(new Core::LinAlg::Vector(*idiscret_->dof_col_map(), false));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> global =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*idiscret_->dof_col_map(), false));
       Core::LinAlg::export_to(vec, *global);
 
       // loop over all nodes to set current displacement
@@ -2093,8 +2094,8 @@ void Mortar::Interface::set_state(const enum StateType& statetype, const Core::L
     case state_old_displacement:
     {
       // alternative method to get vec to full overlap
-      Teuchos::RCP<Core::LinAlg::Vector> global =
-          Teuchos::rcp(new Core::LinAlg::Vector(*idiscret_->dof_col_map(), false));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> global =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*idiscret_->dof_col_map(), false));
       Core::LinAlg::export_to(vec, *global);
 
       // set displacements in interface discretization
@@ -3395,7 +3396,7 @@ bool Mortar::Interface::split_int_elements(
 /*----------------------------------------------------------------------*
  |  Assemble geometry-dependent lagrange multipliers (global)      popp 05/09|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::assemble_lm(Core::LinAlg::Vector& zglobal)
+void Mortar::Interface::assemble_lm(Core::LinAlg::Vector<double>& zglobal)
 {
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
@@ -4135,8 +4136,8 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
   // STEP 1: Build tying info for slave node row map (locally+globally)
   //**********************************************************************
   // global vector for tying info
-  Teuchos::RCP<Core::LinAlg::Vector> rowtied =
-      Teuchos::rcp(new Core::LinAlg::Vector(*snoderowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rowtied =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*snoderowmap_));
 
   // loop over proc's slave row nodes of the interface for detection
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -4182,8 +4183,8 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
   // STEP 2: Communicate tying info to slave node column map (globally)
   //**********************************************************************
   // communicate tying information to standard column map
-  Teuchos::RCP<Core::LinAlg::Vector> coltied =
-      Teuchos::rcp(new Core::LinAlg::Vector(*snodecolmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> coltied =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*snodecolmap_));
   Core::LinAlg::export_to(*rowtied, *coltied);
 
   //**********************************************************************
@@ -4352,9 +4353,10 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
    */
   {
     // Get full displacement vector and extract interface displacement
-    RCP<const Core::LinAlg::Vector> disp =
-        outputParams.get<RCP<const Core::LinAlg::Vector>>("displacement");
-    RCP<Core::LinAlg::Vector> iDisp = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector<double>> disp =
+        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("displacement");
+    RCP<Core::LinAlg::Vector<double>> iDisp =
+        Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*disp, *iDisp);
 
     // Write the interface displacement field
@@ -4364,9 +4366,10 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   // Write Lagrange multiplier field
   {
     // Get full Lagrange multiplier vector and extract values of this interface
-    RCP<const Core::LinAlg::Vector> lagMult =
-        outputParams.get<RCP<const Core::LinAlg::Vector>>("interface traction");
-    RCP<Core::LinAlg::Vector> iLagMult = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector<double>> lagMult =
+        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("interface traction");
+    RCP<Core::LinAlg::Vector<double>> iLagMult =
+        Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
@@ -4376,9 +4379,10 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   // Write nodal forces of slave side
   {
     // Get nodal forces
-    RCP<const Core::LinAlg::Vector> slaveforces =
-        outputParams.get<RCP<const Core::LinAlg::Vector>>("slave forces");
-    RCP<Core::LinAlg::Vector> forces = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector<double>> slaveforces =
+        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("slave forces");
+    RCP<Core::LinAlg::Vector<double>> forces =
+        Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*slaveforces, *forces);
 
     // Write to output
@@ -4388,9 +4392,10 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   // Write nodal forces of master side
   {
     // Get nodal forces
-    RCP<const Core::LinAlg::Vector> masterforces =
-        outputParams.get<RCP<const Core::LinAlg::Vector>>("master forces");
-    RCP<Core::LinAlg::Vector> forces = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector<double>> masterforces =
+        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("master forces");
+    RCP<Core::LinAlg::Vector<double>> forces =
+        Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*masterforces, *forces);
 
     // Write to output
@@ -4400,11 +4405,13 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
 
   // Nodes: node-based vector with '0' at slave nodes and '1' at master nodes
   {
-    RCP<Core::LinAlg::Vector> masterVec = Teuchos::rcp(new Core::LinAlg::Vector(*mnoderowmap_));
+    RCP<Core::LinAlg::Vector<double>> masterVec =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*mnoderowmap_));
     masterVec->PutScalar(1.0);
 
     RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
-    RCP<Core::LinAlg::Vector> masterSlaveVec = Core::LinAlg::create_vector(*nodeRowMap, true);
+    RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
+        Core::LinAlg::create_vector(*nodeRowMap, true);
     Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
@@ -4412,11 +4419,13 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
 
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
   {
-    RCP<Core::LinAlg::Vector> masterVec = Teuchos::rcp(new Core::LinAlg::Vector(*melerowmap_));
+    RCP<Core::LinAlg::Vector<double>> masterVec =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*melerowmap_));
     masterVec->PutScalar(1.0);
 
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Core::LinAlg::Vector> masterSlaveVec = Core::LinAlg::create_vector(*eleRowMap, true);
+    RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
+        Core::LinAlg::create_vector(*eleRowMap, true);
     Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector(
@@ -4426,7 +4435,7 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
   // Write element owners
   {
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Core::LinAlg::Vector> owner = Core::LinAlg::create_vector(*eleRowMap);
+    RCP<Core::LinAlg::Vector<double>> owner = Core::LinAlg::create_vector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->element_row_map()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->l_row_element(i)->owner();

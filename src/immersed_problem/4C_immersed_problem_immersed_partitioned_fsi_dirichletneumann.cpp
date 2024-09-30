@@ -183,11 +183,11 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
   // vector of fluid stresses interpolated to structural bdry. int. points and integrated over
   // structural surface
   struct_bdry_traction_ =
-      Teuchos::rcp(new Core::LinAlg::Vector(*(immersedstructure_->dof_row_map()), true));
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(immersedstructure_->dof_row_map()), true));
 
   // vector with fluid velocities interpolated from structure
   fluid_artificial_velocity_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(mb_fluid_field()->fluid_field()->dof_row_map()), true));
+      new Core::LinAlg::Vector<double>(*(mb_fluid_field()->fluid_field()->dof_row_map()), true));
 
   // build 3D search tree for fluid domain
   fluid_SearchTree_ = Teuchos::rcp(new Core::Geo::SearchTree(5));
@@ -266,7 +266,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
-    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& F, const FillType fillFlag)
+    const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& F, const FillType fillFlag)
 {
   check_is_init();
   check_is_setup();
@@ -274,8 +274,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
   if (displacementcoupling_)
   {
     // get the current artificial velocity state
-    const Teuchos::RCP<Core::LinAlg::Vector> artificial_velocity_n =
-        Teuchos::rcp(new Core::LinAlg::Vector(x));
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> artificial_velocity_n =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(x));
 
     ////////////////////
     // CALL FluidOp
@@ -290,7 +290,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
     struct_op(immersedstructure_->interface()->extract_immersed_cond_vector(struct_bdry_traction_),
         fillFlag);                 //!< solve the structure
     reset_immersed_information();  //!< structure moved; immersed info are invalid -> reset
-    const Teuchos::RCP<Core::LinAlg::Vector> artificial_velocity_np =
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> artificial_velocity_np =
         calc_artificial_velocity();  //!< calc new projected velocities and update immersed
                                      //!< information
 
@@ -300,7 +300,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
   else if (!displacementcoupling_)  // FORCE COUPLING
   {
     // get the current interface force state
-    const Teuchos::RCP<Core::LinAlg::Vector> iforcen = Teuchos::rcp(new Core::LinAlg::Vector(x));
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> iforcen =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(x));
 
     ////////////////////
     // CALL StructOp
@@ -349,8 +350,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
 
     // !!! EXPERIMENTAL !!!
     // set F to zero to tell NOX that this timestep is converged
-    Teuchos::RCP<Core::LinAlg::Vector> zeros =
-        Teuchos::rcp(new Core::LinAlg::Vector(F.Map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(F.Map(), true));
     F.Update(1.0, *zeros, 0.0);
     // !!! EXPERIMENTAL !!!
 
@@ -369,8 +370,9 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Immersed::ImmersedPartitionedFSIDirichletNeumann::fluid_op(
-    Teuchos::RCP<Core::LinAlg::Vector> fluid_artificial_velocity, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Immersed::ImmersedPartitionedFSIDirichletNeumann::fluid_op(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_artificial_velocity, const FillType fillFlag)
 {
   // print
   FSI::Partitioned::fluid_op(fluid_artificial_velocity, fillFlag);
@@ -410,8 +412,9 @@ Teuchos::RCP<Core::LinAlg::Vector> Immersed::ImmersedPartitionedFSIDirichletNeum
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Immersed::ImmersedPartitionedFSIDirichletNeumann::struct_op(
-    Teuchos::RCP<Core::LinAlg::Vector> struct_bdry_traction, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Immersed::ImmersedPartitionedFSIDirichletNeumann::struct_op(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_bdry_traction, const FillType fillFlag)
 {
   FSI::Partitioned::struct_op(struct_bdry_traction, fillFlag);
 
@@ -442,7 +445,8 @@ Teuchos::RCP<Core::LinAlg::Vector> Immersed::ImmersedPartitionedFSIDirichletNeum
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Immersed::ImmersedPartitionedFSIDirichletNeumann::initial_guess()
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Immersed::ImmersedPartitionedFSIDirichletNeumann::initial_guess()
 {
   if (myrank_ == 0) std::cout << "\n Do Initial Guess." << std::endl;
 
@@ -501,8 +505,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedPartitionedFSIDirichletNeumann::do_immersed_dirichlet_cond(
-    Teuchos::RCP<Core::LinAlg::Vector> statevector, Teuchos::RCP<Core::LinAlg::Vector> dirichvals,
-    Teuchos::RCP<Epetra_Map> dbcmap)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> statevector,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap)
 {
   int mynumvals = dbcmap->NumMyElements();
   double* myvals = dirichvals->Values();
@@ -631,7 +635,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
   // discretization
   //
   // get state
-  Teuchos::RCP<const Core::LinAlg::Vector> displacements = immersedstructure_->dispnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> displacements = immersedstructure_->dispnp();
 
   // find current positions for immersed structural discretization
   std::map<int, Core::LinAlg::Matrix<3, 1>> my_currpositions_struct;
@@ -761,7 +765,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::prepare_fluid_op()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector>
+Teuchos::RCP<Core::LinAlg::Vector<double>>
 Immersed::ImmersedPartitionedFSIDirichletNeumann::extract_interface_dispnp()
 {
   return immersedstructure_->extract_immersed_interface_dispnp();
@@ -770,7 +774,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::extract_interface_dispnp()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedPartitionedFSIDirichletNeumann::apply_interface_forces(
-    Teuchos::RCP<Core::LinAlg::Vector> full_traction_vec)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> full_traction_vec)
 {
   double normorstructbdrytraction;
   full_traction_vec->Norm2(&normorstructbdrytraction);
@@ -807,9 +811,9 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::remove_dirich_cond()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int Immersed::ImmersedPartitionedFSIDirichletNeumann::calc_residual(Core::LinAlg::Vector& F,
-    const Teuchos::RCP<Core::LinAlg::Vector> newstate,
-    const Teuchos::RCP<Core::LinAlg::Vector> oldstate)
+int Immersed::ImmersedPartitionedFSIDirichletNeumann::calc_residual(Core::LinAlg::Vector<double>& F,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> newstate,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> oldstate)
 {
   int err = -1234;
 
@@ -884,7 +888,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::calc_fluid_tractions_on_s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector>
+Teuchos::RCP<Core::LinAlg::Vector<double>>
 Immersed::ImmersedPartitionedFSIDirichletNeumann::calc_artificial_velocity()
 {
   if (not artificial_velocity_isvalid_)
@@ -947,7 +951,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::calc_artificial_velocity()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Immersed::ImmersedPartitionedFSIDirichletNeumann::apply_immersed_dirichlet(
-    Teuchos::RCP<Core::LinAlg::Vector> artificial_velocity)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> artificial_velocity)
 {
   build_immersed_dirich_map(mb_fluid_field()->discretization(), dbcmap_immersed_,
       mb_fluid_field()->fluid_field()->get_dbc_map_extractor()->cond_map());

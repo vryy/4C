@@ -120,10 +120,11 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
 void ScaTra::MeshtyingStrategyArtery::setup_meshtying()
 {
   // Initialize rhs vector
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*arttoscatracoupling_->full_map(), true));
+  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*arttoscatracoupling_->full_map(), true));
 
   // Initialize increment vector
-  comb_increment_ = Teuchos::rcp(new Core::LinAlg::Vector(*arttoscatracoupling_->full_map(), true));
+  comb_increment_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*arttoscatracoupling_->full_map(), true));
 
   // initialize scatra-artery_scatra-systemmatrix_
   comb_systemmatrix_ =
@@ -230,9 +231,9 @@ void ScaTra::MeshtyingStrategyArtery::init_conv_check_strategy()
 void ScaTra::MeshtyingStrategyArtery::solve(
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,                //!< solver
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Core::LinAlg::Vector>& increment,             //!< increment vector
-    const Teuchos::RCP<Core::LinAlg::Vector>& residual,              //!< residual vector
-    const Teuchos::RCP<Core::LinAlg::Vector>& phinp,                 //!< state vector at time n+1
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,         //!< state vector at time n+1
     const int iteration,  //!< number of current Newton-Raphson iteration
     Core::LinAlg::SolverParams& solver_params) const
 {
@@ -251,8 +252,8 @@ void ScaTra::MeshtyingStrategyArtery::solve(
   solver->solve(comb_systemmatrix_->epetra_operator(), comb_increment_, rhs_, solver_params);
 
   // extract increments of scatra and artery-scatra field
-  Teuchos::RCP<const Core::LinAlg::Vector> artscatrainc;
-  Teuchos::RCP<const Core::LinAlg::Vector> myinc;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> artscatrainc;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> myinc;
   extract_single_field_vectors(comb_increment_, myinc, artscatrainc);
 
   // update the scatra increment, update iter is performed outside
@@ -268,7 +269,7 @@ void ScaTra::MeshtyingStrategyArtery::solve(
  *------------------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyArtery::setup_system(
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Core::LinAlg::Vector>& residual               //!< residual vector
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual       //!< residual vector
 ) const
 {
   arttoscatracoupling_->set_solution_vectors(
@@ -291,10 +292,10 @@ void ScaTra::MeshtyingStrategyArtery::setup_system(
  | set time integrator for scalar transport in arteries   kremheller 04/18 |
  *------------------------------------------------------------------------ */
 void ScaTra::MeshtyingStrategyArtery::update_art_scatra_iter(
-    Teuchos::RCP<const Core::LinAlg::Vector> combined_inc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_inc)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> artscatrainc;
-  Teuchos::RCP<const Core::LinAlg::Vector> myinc;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> artscatrainc;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> myinc;
   extract_single_field_vectors(combined_inc, myinc, artscatrainc);
 
   artscatratimint_->update_iter(artscatrainc);
@@ -306,9 +307,9 @@ void ScaTra::MeshtyingStrategyArtery::update_art_scatra_iter(
  | extract single field vectors                           kremheller 10/20 |
  *------------------------------------------------------------------------ */
 void ScaTra::MeshtyingStrategyArtery::extract_single_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector> globalvec,
-    Teuchos::RCP<const Core::LinAlg::Vector>& vec_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector>& vec_art) const
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_cont,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art) const
 {
   arttoscatracoupling_->extract_single_field_vectors(globalvec, vec_cont, vec_art);
 

@@ -415,7 +415,8 @@ namespace Discret
        * @return bounding volume of the respective element
        */
       Core::GeometricSearch::BoundingVolume get_bounding_volume(
-          const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
+          const Core::FE::Discretization& discret,
+          const Core::LinAlg::Vector<double>& result_data_dofbased,
           const Core::GeometricSearch::GeometricSearchParams& params) const override;
 
       //@}

@@ -206,10 +206,10 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::set_lambda()
 {
-  lambda_ =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->interface()->fsi_cond_map(), true));
-  lambdaold_ =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->interface()->fsi_cond_map(), true));
+  lambda_ = Teuchos::rcp(
+      new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
+  lambdaold_ = Teuchos::rcp(
+      new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
 
   return;
 }
@@ -279,7 +279,8 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
     // build ale system matrix in splitted system
     ale_field()->create_system_matrix(ale_field()->interface());
 
-    aleresidual_ = Teuchos::rcp(new Core::LinAlg::Vector(*ale_field()->interface()->other_map()));
+    aleresidual_ =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*ale_field()->interface()->other_map()));
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
@@ -300,8 +301,9 @@ void FSI::MortarMonolithicFluidSplit::setup_system()
       slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(structure_field()->discretization(),
           fluid_field()->discretization(), *coupsfm_, true, aleproj_));
 
-      iprojdispinc_ = Teuchos::rcp(new Core::LinAlg::Vector(*coupsfm_->slave_dof_map(), true));
-      iprojdisp_ = Teuchos::rcp(new Core::LinAlg::Vector(*coupsfm_->slave_dof_map(), true));
+      iprojdispinc_ =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*coupsfm_->slave_dof_map(), true));
+      iprojdisp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*coupsfm_->slave_dof_map(), true));
     }
     notsetup_ = false;
   }
@@ -382,7 +384,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FSI::MortarMonolithicFluidSpli
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector& f)
+void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector<double>& f)
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
@@ -396,26 +398,29 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector& f
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortarp = coupsfm_->get_mortar_matrix_p();
 
   // get single field residuals
-  Teuchos::RCP<const Core::LinAlg::Vector> sv =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->rhs()));
-  Teuchos::RCP<const Core::LinAlg::Vector> fv =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->rhs()));
-  Teuchos::RCP<const Core::LinAlg::Vector> av =
-      Teuchos::rcp(new Core::LinAlg::Vector(*ale_field()->rhs()));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->rhs()));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->rhs()));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> av =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*ale_field()->rhs()));
 
   // extract only inner DOFs from fluid (=slave) and ALE field
-  Teuchos::RCP<Core::LinAlg::Vector> fov = fluid_field()->interface()->extract_other_vector(fv);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
+      fluid_field()->interface()->extract_other_vector(fv);
   fov = fluid_field()->interface()->insert_other_vector(fov);
-  Teuchos::RCP<const Core::LinAlg::Vector> aov = ale_field()->interface()->extract_other_vector(av);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> aov =
+      ale_field()->interface()->extract_other_vector(av);
 
   /* add fluid interface residual to structure interface residual considering
    * temporal scaling
    */
-  Teuchos::RCP<Core::LinAlg::Vector> fcv = fluid_field()->interface()->extract_fsi_cond_vector(fv);
-  Teuchos::RCP<Core::LinAlg::Vector> scv =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fcv =
+      fluid_field()->interface()->extract_fsi_cond_vector(fv);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> scv =
       Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
   mortarp->multiply(true, *fcv, *scv);
-  Teuchos::RCP<Core::LinAlg::Vector> modsv =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> modsv =
       structure_field()->interface()->insert_fsi_cond_vector(scv);
   modsv->Update(1.0, *sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
 
@@ -436,7 +441,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector& f
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplit::setup_rhs_lambda(Core::LinAlg::Vector& f)
+void FSI::MortarMonolithicFluidSplit::setup_rhs_lambda(Core::LinAlg::Vector<double>& f)
 {
   if (lambdaold_ != Teuchos::null)
   {
@@ -450,10 +455,10 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_lambda(Core::LinAlg::Vector& f)
 
     /* project Lagrange multiplier field onto the master interface DOFs and
      * consider temporal scaling */
-    Teuchos::RCP<Core::LinAlg::Vector> lambda =
-        Teuchos::rcp(new Core::LinAlg::Vector(mortarm->domain_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarm->domain_map(), true));
     mortarm->multiply(true, *lambdaold_, *lambda);
-    Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
         structure_field()->interface()->insert_fsi_cond_vector(lambda);
     lambdafull->Scale(stiparam - (ftiparam * (1.0 - stiparam)) / (1.0 - ftiparam));
 
@@ -466,7 +471,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_lambda(Core::LinAlg::Vector& f)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& f)
+void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<double>& f)
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
@@ -478,7 +483,8 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
   const double scale = fluid_field()->residual_scaling();
 
   // old interface velocity of fluid field
-  const Teuchos::RCP<const Core::LinAlg::Vector> fveln = fluid_field()->extract_interface_veln();
+  const Teuchos::RCP<const Core::LinAlg::Vector<double>> fveln =
+      fluid_field()->extract_interface_veln();
 
   // get the Mortar projection matrix P = D^{-1} * M
   const Teuchos::RCP<const Core::LinAlg::SparseMatrix> mortarp = coupsfm_->get_mortar_matrix_p();
@@ -507,9 +513,10 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
   const Core::LinAlg::SparseMatrix& aig = blocka->matrix(0, 1);  // A_{I\Gamma}
 
   // some often re-used vectors
-  Teuchos::RCP<Core::LinAlg::Vector> rhs = Teuchos::null;  // right hand side of single set of DOFs
-  Teuchos::RCP<Core::LinAlg::Vector> auxvec = Teuchos::null;  // just for convenience
-  Teuchos::RCP<Core::LinAlg::Vector> tmpvec = Teuchos::null;  // just for convenience
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
+      Teuchos::null;  // right hand side of single set of DOFs
+  Teuchos::RCP<Core::LinAlg::Vector<double>> auxvec = Teuchos::null;  // just for convenience
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tmpvec = Teuchos::null;  // just for convenience
 
   /* Different contributions/terms to the rhs are separated by the following
    * comment line */
@@ -530,8 +537,8 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->domain_map(), true));
-  auxvec = Teuchos::rcp(new Core::LinAlg::Vector(fgg.row_map(), true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->domain_map(), true));
+  auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fgg.row_map(), true));
 
   fgg.Apply(*fveln, *auxvec);
   mortarp->multiply(true, *auxvec, *rhs);
@@ -549,9 +556,9 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
   // ----------end of term 1
 
   // ----------addressing term 2
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->domain_map(), true));
-  auxvec = Teuchos::rcp(new Core::LinAlg::Vector(fgg.range_map(), true));
-  tmpvec = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->range_map(), true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->domain_map(), true));
+  auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fgg.range_map(), true));
+  tmpvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
 
   mortarp->Apply(*ddgpred_, *tmpvec);
   fgg.Apply(*tmpvec, *auxvec);
@@ -569,9 +576,9 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
     // extract F^{G}_{\Gamma\Gamma}
     const Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(1, 1);
 
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->domain_map(), true));
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector(fmgg.range_map(), true));
-    tmpvec = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->range_map(), true));
+    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->domain_map(), true));
+    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgg.range_map(), true));
+    tmpvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
 
     mortarp->Apply(*ddgpred_, *tmpvec);
     fmgg.Apply(*tmpvec, *auxvec);
@@ -602,7 +609,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(fig.row_map(), true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fig.row_map(), true));
 
   fig.Apply(*fveln, *rhs);
 
@@ -614,8 +621,8 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
   // ----------end of term 1
 
   // ----------addressing term 2
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(fig.range_map(), true));
-  auxvec = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->range_map(), true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fig.range_map(), true));
+  auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
 
   mortarp->Apply(*ddgpred_, *auxvec);
   fig.Apply(*auxvec, *rhs);
@@ -633,8 +640,8 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
     // extract F^{G}_{I \Gamma}
     const Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 1);
 
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector(fmig.range_map(), true));
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->range_map(), true));
+    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmig.range_map(), true));
+    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
 
     mortarp->Apply(*ddgpred_, *auxvec);
     fmig.Apply(*auxvec, *rhs);
@@ -657,8 +664,8 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(aig.range_map(), true));
-  auxvec = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->range_map(), true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(aig.range_map(), true));
+  auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
 
   mortarp->Apply(*ddgpred_, *auxvec);
   aig.Apply(*fluid_to_ale_interface(auxvec), *rhs);
@@ -679,7 +686,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
       FOUR_C_THROW("expect ale block matrix");
     }
 
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector(a->matrix(0, 1).row_map()));
+    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(a->matrix(0, 1).row_map()));
 
     a->matrix(0, 1).Apply(*fluid_to_ale_interface(iprojdispinc_), *rhs);
 
@@ -693,17 +700,17 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
       Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 1);
       Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(1, 1);
 
-      rhs = Teuchos::rcp(new Core::LinAlg::Vector(fmgg.row_map()));
+      rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgg.row_map()));
 
       fmgg.Apply(*iprojdispinc_, *rhs);
 
-      Teuchos::RCP<Core::LinAlg::Vector> tmprhs =
-          Teuchos::rcp(new Core::LinAlg::Vector(mortarp->domain_map()));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmprhs =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->domain_map()));
       mortarp->multiply(true, *rhs, *tmprhs);
 
       rhs = structure_field()->interface()->insert_fsi_cond_vector(tmprhs);
 
-      auto zeros = Teuchos::rcp(new const Core::LinAlg::Vector(rhs->Map(), true));
+      auto zeros = Teuchos::rcp(new const Core::LinAlg::Vector<double>(rhs->Map(), true));
       Core::LinAlg::apply_dirichlet_to_system(
           *rhs, *zeros, *(structure_field()->get_dbc_map_extractor()->cond_map()));
 
@@ -716,13 +723,13 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector& 
       rhs->Scale(dt() * timescale * (1. - stiparam) / (1. - ftiparam));
       extractor().add_vector(*rhs, 0, f);
 
-      rhs = Teuchos::rcp(new Core::LinAlg::Vector(fmig.row_map()));
+      rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmig.row_map()));
 
       fmig.Apply(*iprojdispinc_, *rhs);
 
       rhs = fluid_field()->interface()->insert_other_vector(rhs);
 
-      zeros = Teuchos::rcp(new const Core::LinAlg::Vector(rhs->Map(), true));
+      zeros = Teuchos::rcp(new const Core::LinAlg::Vector<double>(rhs->Map(), true));
       Core::LinAlg::apply_dirichlet_to_system(
           *rhs, *zeros, *(structure_field()->get_dbc_map_extractor()->cond_map()));
 
@@ -990,7 +997,7 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::scale_system(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector<double>& b)
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -1002,8 +1009,8 @@ void FSI::MortarMonolithicFluidSplit::scale_system(
 
     // do scaling of structure rows
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
-    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
+    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(*srowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*scolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
@@ -1015,8 +1022,8 @@ void FSI::MortarMonolithicFluidSplit::scale_system(
 
     // do scaling of ale rows
     A = mat.matrix(2, 2).epetra_matrix();
-    arowsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
-    acolsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
+    arowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    acolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(*arowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*acolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
@@ -1027,8 +1034,8 @@ void FSI::MortarMonolithicFluidSplit::scale_system(
       FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor().extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> ax = extractor().extract_vector(b, 2);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ax = extractor().extract_vector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
@@ -1040,8 +1047,8 @@ void FSI::MortarMonolithicFluidSplit::scale_system(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplit::unscale_solution(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b)
+void FSI::MortarMonolithicFluidSplit::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
+    Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b)
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -1049,8 +1056,8 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> sy = extractor().extract_vector(x, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> ay = extractor().extract_vector(x, 2);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sy = extractor().extract_vector(x, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ay = extractor().extract_vector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
@@ -1065,8 +1072,8 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(
     extractor().insert_vector(*sy, 0, x);
     extractor().insert_vector(*ay, 2, x);
 
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor().extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> ax = extractor().extract_vector(b, 2);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ax = extractor().extract_vector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
@@ -1103,13 +1110,13 @@ void FSI::MortarMonolithicFluidSplit::unscale_solution(
 
   // very simple hack just to see the linear solution
 
-  Core::LinAlg::Vector r(b.Map());
+  Core::LinAlg::Vector<double> r(b.Map());
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Core::LinAlg::Vector> sr = extractor().extract_vector(r, 0);
-  Teuchos::RCP<Core::LinAlg::Vector> fr = extractor().extract_vector(r, 1);
-  Teuchos::RCP<Core::LinAlg::Vector> ar = extractor().extract_vector(r, 2);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sr = extractor().extract_vector(r, 0);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fr = extractor().extract_vector(r, 1);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> ar = extractor().extract_vector(r, 2);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
@@ -1340,8 +1347,10 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MortarMonolithicFluidSplit::create_s
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector> x, Teuchos::RCP<const Core::LinAlg::Vector>& sx,
-    Teuchos::RCP<const Core::LinAlg::Vector>& fx, Teuchos::RCP<const Core::LinAlg::Vector>& ax)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::extract_field_vectors");
 
@@ -1363,19 +1372,19 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
   // process ale unknowns
   // ---------------------------------------------------------------------------
   // extract inner ALE solution increment from NOX increment
-  Teuchos::RCP<const Core::LinAlg::Vector> aox = extractor().extract_vector(x, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> aox = extractor().extract_vector(x, 2);
 
   // convert structure solution increment to ALE solution increment at the interface
-  Teuchos::RCP<Core::LinAlg::Vector> scx =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> scx =
       structure_field()->interface()->extract_fsi_cond_vector(sx);
   scx->Update(1.0, *ddgpred_, 1.0);
-  Teuchos::RCP<Core::LinAlg::Vector> acx =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> acx =
       Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map());
   mortarp->Apply(*scx, *acx);
   acx = fluid_to_ale_interface(acx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Core::LinAlg::Vector> a = ale_field()->interface()->insert_other_vector(aox);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> a = ale_field()->interface()->insert_other_vector(aox);
   ale_field()->interface()->insert_fsi_cond_vector(acx, a);
   ax = a;
 
@@ -1383,15 +1392,16 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract inner fluid solution increment from NOX increment
-  Teuchos::RCP<const Core::LinAlg::Vector> fox = extractor().extract_vector(x, 1);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor().extract_vector(x, 1);
   fox = fluid_field()->interface()->extract_other_vector(fox);
 
   // convert ALE solution increment to fluid solution increment at the interface
-  Teuchos::RCP<Core::LinAlg::Vector> fcx = ale_to_fluid_interface(acx);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fcx = ale_to_fluid_interface(acx);
   fluid_field()->displacement_to_velocity(fcx);
 
   // put inner and interface fluid solution increments together
-  Teuchos::RCP<Core::LinAlg::Vector> f = fluid_field()->interface()->insert_other_vector(fox);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f =
+      fluid_field()->interface()->insert_other_vector(fox);
   fluid_field()->interface()->insert_fsi_cond_vector(fcx, f);
   fx = f;
 
@@ -1402,7 +1412,7 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
   if (disgprev_ != Teuchos::null)
     ddginc_->Update(1.0, *scx, -1.0, *disgprev_, 0.0);  // compute current iteration increment
   else
-    ddginc_ = Teuchos::rcp(new Core::LinAlg::Vector(*scx));  // first iteration increment
+    ddginc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*scx));  // first iteration increment
 
   disgprev_ = scx;  // store current step increment
   // ------------------------------------
@@ -1411,7 +1421,7 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
   if (aleiprev_ != Teuchos::null)
     ddialeinc_->Update(1.0, *aox, -1.0, *aleiprev_, 0.0);  // compute current iteration increment
   else
-    ddialeinc_ = Teuchos::rcp(new Core::LinAlg::Vector(*aox));  // first iteration increment
+    ddialeinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*aox));  // first iteration increment
 
   aleiprev_ = aox;  // store current step increment
   // ------------------------------------
@@ -1421,7 +1431,7 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
     duiinc_->Update(1.0, *fox, -1.0, *veliprev_, 0.0);
   else
     // first iteration increment
-    duiinc_ = Teuchos::rcp(new Core::LinAlg::Vector(*fox));
+    duiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fox));
   // store current step increment
   veliprev_ = fox;
   // ------------------------------------
@@ -1437,8 +1447,8 @@ void FSI::MortarMonolithicFluidSplit::update()
   // update history variabels for sliding ale
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
-    iprojdisp_ = Teuchos::rcp(new Core::LinAlg::Vector(*coupsfm_->slave_dof_map(), true));
-    Teuchos::RCP<Core::LinAlg::Vector> idispale = ale_to_fluid_interface(
+    iprojdisp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*coupsfm_->slave_dof_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispale = ale_to_fluid_interface(
         ale_field()->interface()->extract_fsi_cond_vector(ale_field()->dispnp()));
 
     slideale_->remeshing(*structure_field(), fluid_field()->discretization(), idispale, iprojdisp_,
@@ -1450,13 +1460,14 @@ void FSI::MortarMonolithicFluidSplit::update()
         structure_field()->extract_interface_dispnp(), iprojdisp_, *coupsfm_);
     slideale_->evaluate_fluid_mortar(idispale, iprojdisp_);
 
-    Teuchos::RCP<Core::LinAlg::Vector> temp = Teuchos::rcp(new Core::LinAlg::Vector(*iprojdisp_));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*iprojdisp_));
     temp->ReplaceMap(idispale->Map());
-    Teuchos::RCP<Core::LinAlg::Vector> acx = fluid_to_ale_interface(temp);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acx = fluid_to_ale_interface(temp);
     ale_field()->apply_interface_displacements(acx);
     fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->dispnp()));
 
-    Teuchos::RCP<Core::LinAlg::Vector> unew =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> unew =
         slideale_->interpolate_fluid(fluid_field()->extract_interface_velnp());
     fluid_field()->apply_interface_velocities(unew);
   }
@@ -1504,7 +1515,7 @@ void FSI::MortarMonolithicFluidSplit::output_lambda()
    * 'lambdafull' that is defined on the entire fluid field. Then, write
    * output or restart data.
    */
-  Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
       fluid_field()->interface()->insert_fsi_cond_vector(lambda_);
   const int uprestart = timeparams_.get<int>("RESTARTEVRY");
   const int upres = timeparams_.get<int>("RESULTSEVRY");
@@ -1526,8 +1537,8 @@ void FSI::MortarMonolithicFluidSplit::read_restart(int step)
   const bool restartfrompartfsi = timeparams_.get<bool>("RESTART_FROM_PART_FSI");
   if (not restartfrompartfsi)  // standard restart
   {
-    Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
-        Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
     Core::IO::DiscretizationReader reader =
         Core::IO::DiscretizationReader(fluid_field()->discretization(), input_control_file, step);
     reader.read_vector(lambdafull, "fsilambda");
@@ -1605,10 +1616,10 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->shape_derivatives();
 
   // some often re-used vectors
-  Teuchos::RCP<Core::LinAlg::Vector> tmpvec =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tmpvec =
       Teuchos::null;  // stores intermediate result of terms (3)-(8)
-  Teuchos::RCP<Core::LinAlg::Vector> auxvec = Teuchos::null;     // just for convenience
-  Teuchos::RCP<Core::LinAlg::Vector> auxauxvec = Teuchos::null;  // just for convenience
+  Teuchos::RCP<Core::LinAlg::Vector<double>> auxvec = Teuchos::null;     // just for convenience
+  Teuchos::RCP<Core::LinAlg::Vector<double>> auxauxvec = Teuchos::null;  // just for convenience
 
   /* Recovery of Lagrange multiplier \lambda_^{n+1} is done by the following
    * condensation expression:
@@ -1658,16 +1669,16 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
   // ---------End of term (1)
 
   // ---------Addressing term (3)
-  Teuchos::RCP<Core::LinAlg::Vector> fluidresidual =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluidresidual =
       fluid_field()->interface()->extract_fsi_cond_vector(fluid_field()->rhs());
   fluidresidual->Scale(-1.0);
-  tmpvec = Teuchos::rcp(new Core::LinAlg::Vector(*fluidresidual));
+  tmpvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluidresidual));
   // ---------End of term (3)
 
   // ---------Addressing term (4)
-  auxvec = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->range_map(), true));
+  auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
   mortarp->Apply(*ddginc_, *auxvec);
-  auxauxvec = Teuchos::rcp(new Core::LinAlg::Vector(fggprev_->range_map(), true));
+  auxauxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fggprev_->range_map(), true));
   fggprev_->Apply(*auxvec, *auxauxvec);
   tmpvec->Update(timescale, *auxauxvec, 1.0);
   // ---------End of term (4)
@@ -1675,7 +1686,7 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
   // ---------Addressing term (5)
   if (fmggprev_ != Teuchos::null)
   {
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector(mortarp->range_map(), true));
+    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
     mortarp->Apply(*ddginc_, *auxvec);
     fmggprev_->Apply(*auxvec, *auxauxvec);
     tmpvec->Update(1.0, *auxauxvec, 1.0);
@@ -1683,7 +1694,7 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
   // ---------End of term (5)
 
   // ---------Addressing term (6)
-  auxvec = Teuchos::rcp(new Core::LinAlg::Vector(fgiprev_->range_map(), true));
+  auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fgiprev_->range_map(), true));
   fgiprev_->Apply(*duiinc_, *auxvec);
   tmpvec->Update(1.0, *auxvec, 1.0);
   // ---------End of term (6)
@@ -1713,18 +1724,18 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
         *fluid_field()->velocity_row_map(), *interface_fluid_ale_coupling().master_dof_map());
     Core::LinAlg::MapExtractor velothermapext =
         Core::LinAlg::MapExtractor(*fluid_field()->velocity_row_map(), velothermap, false);
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector(*velothermap, true));
+    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(*velothermap, true));
     velothermapext.extract_other_vector(
         ale_to_fluid(ale_field()->interface()->insert_other_vector(ddialeinc_)), auxvec);
 
     // add pressure DOFs
     Core::LinAlg::MapExtractor velotherpressuremapext =
         Core::LinAlg::MapExtractor(fmgiprev_->domain_map(), velothermap);
-    auxauxvec = Teuchos::rcp(new Core::LinAlg::Vector(fmgiprev_->domain_map(), true));
+    auxauxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgiprev_->domain_map(), true));
     velotherpressuremapext.insert_cond_vector(auxvec, auxauxvec);
 
     // prepare vector to store result of matrix-vector-product
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector(fmgiprev_->range_map(), true));
+    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgiprev_->range_map(), true));
 
     // Now, do the actual matrix-vector-product
     fmgiprev_->Apply(*auxauxvec, *auxvec);
@@ -1735,14 +1746,14 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
   // ---------Addressing term (8)
   if (firstcall_)
   {
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector(fggprev_->range_map(), true));
+    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fggprev_->range_map(), true));
     fggprev_->Apply(*fluid_field()->extract_interface_veln(), *auxvec);
     tmpvec->Update(dt() * timescale, *auxvec, 1.0);
   }
   // ---------End of term (8)
 
   // ---------Addressing term (2)
-  auxvec = Teuchos::rcp(new Core::LinAlg::Vector(mortardinv->domain_map(), true));
+  auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(mortardinv->domain_map(), true));
   mortardinv->multiply(true, *tmpvec, *auxvec);
   lambda_->Update(scale, *auxvec, 1.0);  // scale with residual_scaling() to get [N/m^2]
   // ---------End of term (2)
@@ -1773,16 +1784,16 @@ void FSI::MortarMonolithicFluidSplit::calculate_interface_energy_increment()
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortarm = coupsfm_->get_mortar_matrix_m();
 
   // interface traction weighted by time integration factors
-  Teuchos::RCP<Core::LinAlg::Vector> tractionfluid =
-      Teuchos::rcp(new Core::LinAlg::Vector(lambda_->Map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector> tractionstructure =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->interface()->fsi_cond_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionfluid =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(lambda_->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionstructure = Teuchos::rcp(
+      new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map(), true));
   tractionfluid->Update(stiparam - ftiparam, *lambdaold_, ftiparam - stiparam, *lambda_, 0.0);
   mortarm->multiply(true, *tractionfluid, *tractionstructure);
 
   // displacement increment of this time step
-  Teuchos::RCP<Core::LinAlg::Vector> deltad =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> deltad =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
   deltad->Update(1.0, *structure_field()->dispnp(), -1.0, *structure_field()->dispn(), 0.0);
 
   // calculate the energy increment
@@ -1813,20 +1824,22 @@ void FSI::MortarMonolithicFluidSplit::check_kinematic_constraint()
 #endif
 
   // get interface displacements and velocities
-  const Teuchos::RCP<Core::LinAlg::Vector> disnp = structure_field()->extract_interface_dispnp();
-  const Teuchos::RCP<Core::LinAlg::Vector> disn = structure_field()->extract_interface_dispn();
-  const Teuchos::RCP<Core::LinAlg::Vector> velnp = fluid_field()->extract_interface_velnp();
-  const Teuchos::RCP<Core::LinAlg::Vector> veln = fluid_field()->extract_interface_veln();
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> disnp =
+      structure_field()->extract_interface_dispnp();
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> disn =
+      structure_field()->extract_interface_dispn();
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> velnp = fluid_field()->extract_interface_velnp();
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> veln = fluid_field()->extract_interface_veln();
 
   // prepare vectors for projected interface quantities
-  Teuchos::RCP<Core::LinAlg::Vector> disnpproj =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortarm->range_map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector> disnproj =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortarm->range_map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector> velnpproj =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortard->range_map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector> velnproj =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortard->range_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disnpproj =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarm->range_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disnproj =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarm->range_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> velnpproj =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortard->range_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> velnproj =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortard->range_map(), true));
 
   // projection of interface displacements
   mortarm->Apply(*disnp, *disnpproj);
@@ -1837,7 +1850,8 @@ void FSI::MortarMonolithicFluidSplit::check_kinematic_constraint()
   mortard->Apply(*veln, *velnproj);
 
   // calculate violation of kinematic interface constraint
-  Teuchos::RCP<Core::LinAlg::Vector> violation = Teuchos::rcp(new Core::LinAlg::Vector(*disnpproj));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> violation =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*disnpproj));
   violation->Update(-1.0, *disnproj, 1.0);
   violation->Update(-1.0 / timescale, *velnpproj, 1.0 / timescale, *velnproj, 1.0);
   violation->Update(-dt(), *velnproj, 1.0);
@@ -1875,18 +1889,18 @@ void FSI::MortarMonolithicFluidSplit::check_dynamic_equilibrium()
 #endif
 
   // auxiliary vectors
-  Teuchos::RCP<Core::LinAlg::Vector> tractionmaster =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortarm->domain_map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector> tractionslave =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortard->domain_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionmaster =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarm->domain_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionslave =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortard->domain_map(), true));
 
   // calculate tractions on master and slave side
   mortarm->multiply(true, *lambda_, *tractionmaster);
   mortard->multiply(true, *lambda_, *tractionslave);
 
   // calculate violation of dynamic equilibrium
-  Teuchos::RCP<Core::LinAlg::Vector> violation =
-      Teuchos::rcp(new Core::LinAlg::Vector(*tractionmaster));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> violation =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*tractionmaster));
   violation->Update(-1.0, *tractionslave, 1.0);
 
   // calculate some norms
@@ -1910,16 +1924,20 @@ void FSI::MortarMonolithicFluidSplit::check_dynamic_equilibrium()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplit::combine_field_vectors(Core::LinAlg::Vector& v,
-    Teuchos::RCP<const Core::LinAlg::Vector> sv, Teuchos::RCP<const Core::LinAlg::Vector> fv,
-    Teuchos::RCP<const Core::LinAlg::Vector> av, const bool slave_vectors_contain_interface_dofs)
+void FSI::MortarMonolithicFluidSplit::combine_field_vectors(Core::LinAlg::Vector<double>& v,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> av,
+    const bool slave_vectors_contain_interface_dofs)
 {
   if (slave_vectors_contain_interface_dofs)
   {
     // extract inner DOFs from slave vectors
-    Teuchos::RCP<Core::LinAlg::Vector> fov = fluid_field()->interface()->extract_other_vector(fv);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
+        fluid_field()->interface()->extract_other_vector(fv);
     fov = fluid_field()->interface()->insert_other_vector(fov);
-    Teuchos::RCP<Core::LinAlg::Vector> aov = ale_field()->interface()->extract_other_vector(av);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> aov =
+        ale_field()->interface()->extract_other_vector(av);
 
     // put them together
     FSI::Monolithic::combine_field_vectors(v, sv, fov, aov);

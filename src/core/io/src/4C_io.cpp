@@ -74,7 +74,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_vector(std
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_vector(
-    Teuchos::RCP<Core::LinAlg::Vector> vec, std::string name)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, std::string name)
 {
   read_vector(vec->get_ptr_of_Epetra_MultiVector(), name);
 }
@@ -823,7 +823,7 @@ void Core::IO::DiscretizationWriter::write_int(const std::string name, const int
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationWriter::write_vector(
-    const std::string name, Teuchos::RCP<const Core::LinAlg::Vector> vec, IO::VectorType vt)
+    const std::string name, Teuchos::RCP<const Core::LinAlg::Vector<double>> vec, IO::VectorType vt)
 {
   write_multi_vector(name, vec->get_ptr_of_const_Epetra_Vector(), vt);
 }

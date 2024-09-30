@@ -55,7 +55,7 @@ namespace XFEM
     void add_coupling_matrix(
         Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
-    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep)
@@ -98,8 +98,8 @@ namespace XFEM
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie forces onto the structure,
     //! Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> lambda_ps_;
-    Teuchos::RCP<Core::LinAlg::Vector> lambda_pf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_ps_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_pf_;
   };
 }  // namespace XFEM
 FOUR_C_NAMESPACE_CLOSE

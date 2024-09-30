@@ -121,8 +121,8 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    virtual bool evaluate(
-        Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint, const double& pp) = 0;
+    virtual bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
+        Core::LinAlg::Vector<double>& fint, const double& pp) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<Beam3tosolidcontactinterface> impl(const int numnodessol,
@@ -291,7 +291,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint,
+    bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint,
         const double& pp) override;
 
     /*!
@@ -573,7 +573,8 @@ namespace CONTACT
     */
     void assemble_fc_and_stiffc_contact(
         const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> fc1,
-        const Core::LinAlg::Matrix<3 * numnodessol, 1, TYPEBTS> fc2, Core::LinAlg::Vector* fint,
+        const Core::LinAlg::Matrix<3 * numnodessol, 1, TYPEBTS> fc2,
+        Core::LinAlg::Vector<double>* fint,
         const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues,
             3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>
             stiffc1,

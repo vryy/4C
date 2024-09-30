@@ -90,7 +90,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
     SolidToSolidMortarManager(Teuchos::RCP<Core::FE::Discretization>& discret,
-        const Core::LinAlg::Vector& displacement_vector,
+        const Core::LinAlg::Vector<double>& displacement_vector,
         CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params,
         Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager,
         int start_value_lambda_gid);
@@ -100,7 +100,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      * multiplier DOFs.
      * @param displacement_vector (in) global displacement vector.
      */
-    void setup(const Core::LinAlg::Vector& displacement_vector);
+    void setup(const Core::LinAlg::Vector<double>& displacement_vector);
 
     /**
      * \brief Get the global IDs of all Lagrange multipliers for the interaction pair.
@@ -116,7 +116,8 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      * global matrices.
      * @param displacement_vector (in) global displacement vector.
      */
-    void evaluate_global_coupling_contributions(const Core::LinAlg::Vector& displacement_vector);
+    void evaluate_global_coupling_contributions(
+        const Core::LinAlg::Vector<double>& displacement_vector);
 
     /**
      *
@@ -124,27 +125,27 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     void add_global_force_stiffness_penalty_contributions(
         const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& data_state,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Core::LinAlg::Vector> force) const;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> force) const;
 
     /**
      *
      */
-    Teuchos::RCP<Core::LinAlg::Vector> penalty_invert_kappa() const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> penalty_invert_kappa() const;
 
     /**
      *
      */
-    Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda() const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda() const;
 
     /**
      *
      */
-    Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda_col() const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda_col() const;
 
     /**
      * \brief Sets the current position of the elements of the embedded mesh coupling pairs
      */
-    void set_state(const Core::LinAlg::Vector& displacement_vector);
+    void set_state(const Core::LinAlg::Vector<double>& displacement_vector);
 
     /**
      * \brief Throw an error if the local maps were not build.
@@ -217,7 +218,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      *
      * @params displacement_vector (in) global displacement vector.
      */
-    void set_local_maps(const Core::LinAlg::Vector& displacement_vector);
+    void set_local_maps(const Core::LinAlg::Vector<double>& displacement_vector);
 
     //! Pointer to the discretization containing the solid and beam elements.
     Teuchos::RCP<Core::FE::Discretization> discret_;

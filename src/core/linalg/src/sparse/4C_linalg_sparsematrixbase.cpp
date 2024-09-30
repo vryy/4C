@@ -92,7 +92,7 @@ double Core::LinAlg::SparseMatrixBase::norm_frobenius() const { return sysmat_->
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int Core::LinAlg::SparseMatrixBase::multiply(
-    bool TransA, const Core::LinAlg::Vector& x, Core::LinAlg::Vector& y) const
+    bool TransA, const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& y) const
 {
   return sysmat_->Multiply(TransA, x.get_ref_of_Epetra_Vector(), y.get_ref_of_Epetra_Vector());
 }
@@ -109,7 +109,7 @@ int Core::LinAlg::SparseMatrixBase::multiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::left_scale(const Core::LinAlg::Vector& x)
+int Core::LinAlg::SparseMatrixBase::left_scale(const Core::LinAlg::Vector<double>& x)
 {
   return sysmat_->LeftScale(x);
 }
@@ -117,7 +117,7 @@ int Core::LinAlg::SparseMatrixBase::left_scale(const Core::LinAlg::Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::right_scale(const Core::LinAlg::Vector& x)
+int Core::LinAlg::SparseMatrixBase::right_scale(const Core::LinAlg::Vector<double>& x)
 {
   return sysmat_->RightScale(x);
 }
@@ -141,14 +141,16 @@ int Core::LinAlg::SparseMatrixBase::scale(double ScalarConstant)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::replace_diagonal_values(const Core::LinAlg::Vector& Diagonal)
+int Core::LinAlg::SparseMatrixBase::replace_diagonal_values(
+    const Core::LinAlg::Vector<double>& Diagonal)
 {
   return sysmat_->ReplaceDiagonalValues(Diagonal);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::extract_diagonal_copy(Core::LinAlg::Vector& Diagonal) const
+int Core::LinAlg::SparseMatrixBase::extract_diagonal_copy(
+    Core::LinAlg::Vector<double>& Diagonal) const
 {
   return sysmat_->ExtractDiagonalCopy(Diagonal.get_ref_of_Epetra_Vector());
 }

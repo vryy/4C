@@ -40,9 +40,9 @@ FOUR_C_NAMESPACE_OPEN
 void Discret::ELEMENTS::FluidType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<FLD::Action>(p, "action");
 
@@ -164,9 +164,9 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
           // distributed vectors
           // --------------------------------------------------
           // velocity/pressure and scalar values (n+1)
-          Teuchos::RCP<const Core::LinAlg::Vector> velnp =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp =
               discretization.get_state("u and p (n+1,converged)");
-          Teuchos::RCP<const Core::LinAlg::Vector> scanp =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp =
               discretization.get_state("scalar (n+1,converged)");
           if (velnp == Teuchos::null || scanp == Teuchos::null)
             FOUR_C_THROW("Cannot get state vectors 'velnp' and/or 'scanp'");
@@ -221,9 +221,9 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
           // global distributed vectors
           // --------------------------------------------------
           // velocity/pressure and scalar values (n+1)
-          Teuchos::RCP<const Core::LinAlg::Vector> velnp =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp =
               discretization.get_state("u and p (n+1,converged)");
-          Teuchos::RCP<const Core::LinAlg::Vector> scanp =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp =
               discretization.get_state("scalar (n+1,converged)");
           if (velnp == Teuchos::null || scanp == Teuchos::null)
             FOUR_C_THROW("Cannot get state vectors 'velnp' and/or 'scanp'");
@@ -288,7 +288,8 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         // velocity, pressure and temperature values (most recent
         // intermediate solution, i.e. n+alphaF for genalpha
         // and n+1 for one-step-theta)
-        Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state("u and p (trial)");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+            discretization.get_state("u and p (trial)");
         if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'vel'");
         // extract local values from the global vectors
         std::vector<double> myvel(lm.size());
@@ -302,7 +303,8 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
             Discret::ELEMENTS::FluidEleParameterStd::instance();
         if (fldpara->physical_type() == Inpar::FLUID::loma)
         {
-          Teuchos::RCP<const Core::LinAlg::Vector> temp = discretization.get_state("T (trial)");
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> temp =
+              discretization.get_state("T (trial)");
           if (temp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'temp'");
           Core::FE::extract_my_values(*temp, tmp_temp, lm);
 
@@ -389,15 +391,16 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
             Discret::ELEMENTS::FluidEleParameterStd::instance();
         // add potential loma specific vectors
         Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel = Teuchos::null;
-        Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens = Teuchos::null;
-        Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens_strainrate = Teuchos::null;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens = Teuchos::null;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_strainrate = Teuchos::null;
         if (fldpara->physical_type() == Inpar::FLUID::loma)
         {
           col_filtered_dens_vel =
               params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_dens_vel");
-          col_filtered_dens = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("col_filtered_dens");
-          col_filtered_dens_strainrate =
-              params.get<Teuchos::RCP<Core::LinAlg::Vector>>("col_filtered_dens_strainrate");
+          col_filtered_dens =
+              params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_dens");
+          col_filtered_dens_strainrate = params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+              "col_filtered_dens_strainrate");
         }
 
         double LijMij = 0.0;
@@ -482,11 +485,12 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaij =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_alphaij");
         // pointer to class FluidEleParameter (access to the general parameter)
-        Teuchos::RCP<Core::LinAlg::Vector> col_filtered_expression = Teuchos::null;
-        Teuchos::RCP<Core::LinAlg::Vector> col_filtered_alpha2 = Teuchos::null;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_expression = Teuchos::null;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_alpha2 = Teuchos::null;
         col_filtered_expression =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector>>("col_filtered_expression");
-        col_filtered_alpha2 = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("col_filtered_alpha2");
+            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_expression");
+        col_filtered_alpha2 =
+            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_alpha2");
 
         double cv_numerator = 0.0;
         double cv_denominator = 0.0;
@@ -532,9 +536,10 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
       if (nsd == 3)
       {
         // velocity values
-        Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
         // fine-scale velocity values
-        Teuchos::RCP<const Core::LinAlg::Vector> fsvelnp = discretization.get_state("fsvelnp");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvelnp =
+            discretization.get_state("fsvelnp");
         if (velnp == Teuchos::null or fsvelnp == Teuchos::null)
         {
           FOUR_C_THROW("Cannot get state vectors");
@@ -586,9 +591,9 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
 
         // velocity values
         // renamed to "velaf" to be consistent i fluidimplicitintegration.cpp (krank 12/13)
-        Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state("velaf");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel = discretization.get_state("velaf");
         // scalar values
-        Teuchos::RCP<const Core::LinAlg::Vector> sca = discretization.get_state("scalar");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sca = discretization.get_state("scalar");
         if (vel == Teuchos::null or sca == Teuchos::null)
         {
           FOUR_C_THROW("Cannot get state vectors");
@@ -772,9 +777,9 @@ int Discret::ELEMENTS::Fluid::evaluate_neumann(Teuchos::ParameterList& params,
 void Discret::ELEMENTS::FluidIntFaceType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<FLD::Action>(p, "action");
 

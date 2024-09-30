@@ -87,15 +87,15 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vector& F,
-    NOX::Nln::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
-    bool isScaled) const
+double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(
+    const Core::LinAlg::Vector<double>& F, NOX::Nln::StatusTest::QuantityType chQ,
+    ::NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
   if (chQ != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
 
-  auto F_copy = Teuchos::rcp(new Core::LinAlg::Vector(F));
-  Teuchos::RCP<Core::LinAlg::Vector> constrRhs =
+  auto F_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(F));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> constrRhs =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *F_copy);
 
   // no constraint contributions present
@@ -115,19 +115,20 @@ double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(const Core::LinA
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(
-    const Core::LinAlg::Vector& xNew, const Core::LinAlg::Vector& xOld, double aTol, double rTol,
-    NOX::Nln::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
+    const Core::LinAlg::Vector<double>& xNew, const Core::LinAlg::Vector<double>& xOld, double aTol,
+    double rTol, NOX::Nln::StatusTest::QuantityType checkQuantity,
+    bool disable_implicit_weighting) const
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
   double rms = -1.0;
 
-  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector(xOld));
-  auto xNew_copy = Teuchos::rcp(new Core::LinAlg::Vector(xNew));
+  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xOld));
+  auto xNew_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xNew));
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector> lagincr_ptr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *xOld_copy);
-  Teuchos::RCP<const Core::LinAlg::Vector> lagnew_ptr =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagnew_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *xNew_copy);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
@@ -144,19 +145,19 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
-    const Core::LinAlg::Vector& xNew, const Core::LinAlg::Vector& xOld,
+    const Core::LinAlg::Vector<double>& xNew, const Core::LinAlg::Vector<double>& xOld,
     NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
-  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector(xOld));
-  auto xNew_copy = Teuchos::rcp(new Core::LinAlg::Vector(xNew));
+  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xOld));
+  auto xNew_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xNew));
 
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector> lagincr_ptr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *xOld_copy);
-  Teuchos::RCP<const Core::LinAlg::Vector> lagnew_ptr =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagnew_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *xNew_copy);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
@@ -176,15 +177,15 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
-    const Core::LinAlg::Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
+    const Core::LinAlg::Vector<double>& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
     ::NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
-  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector(xOld));
+  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xOld));
 
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector> lagold_ptr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lagold_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *xOld_copy);
 
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(

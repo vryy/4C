@@ -54,8 +54,9 @@ namespace PoroElast
 
    private:
     //! build block vector from field vectors
-    void setup_vector(Core::LinAlg::Vector& f, Teuchos::RCP<const Core::LinAlg::Vector> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector> fv, double fluidscale);
+    void setup_vector(Core::LinAlg::Vector<double>& f,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv, double fluidscale);
 
     //! extract the field vectors from a given composed vector
     /*!
@@ -63,9 +64,9 @@ namespace PoroElast
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (e.g. velocities and pressure)
      */
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
-        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
-        bool firstcall = false) override;
+    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step

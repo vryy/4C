@@ -63,15 +63,16 @@ namespace FLD
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
       void evaluate_velocities(
-          const Teuchos::RCP<Core::LinAlg::Vector> velocities, const double time);
+          const Teuchos::RCP<Core::LinAlg::Vector<double>> velocities, const double time);
 
 
-      void insert_cond_vector(Core::LinAlg::Vector& vec1, Core::LinAlg::Vector& vec2);
+      void insert_cond_vector(
+          Core::LinAlg::Vector<double>& vec1, Core::LinAlg::Vector<double>& vec2);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual);
+      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
 
 
       /*!
@@ -117,19 +118,19 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
-      void evaluate_velocities(
-          Teuchos::RCP<Core::LinAlg::Vector> velocities, double time, double theta, double dta);
+      void evaluate_velocities(Teuchos::RCP<Core::LinAlg::Vector<double>> velocities, double time,
+          double theta, double dta);
 
       /*!
       \brief export and set boundary values
       */
-      void export_and_set_boundary_values(Teuchos::RCP<Core::LinAlg::Vector> source,
-          Teuchos::RCP<Core::LinAlg::Vector> target, std::string name);
+      void export_and_set_boundary_values(Teuchos::RCP<Core::LinAlg::Vector<double>> source,
+          Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name);
 
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual);
+      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
 
 
       /*!
@@ -228,16 +229,17 @@ namespace FLD
       /*!
       \brief update_residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual);
+      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
 
       /*!
       \brief Evaluate velocities
       */
       void velocities(Teuchos::RCP<Core::FE::Discretization> disc,
-          Teuchos::RCP<Core::LinAlg::Vector> bcdof, Teuchos::RCP<Epetra_Map> cond_noderowmap,
-          Teuchos::RCP<Core::LinAlg::Vector> local_radii,
-          Teuchos::RCP<Core::LinAlg::Vector> border_radii, Teuchos::RCP<std::vector<double>> normal,
-          Teuchos::RCP<Teuchos::ParameterList> params);
+          Teuchos::RCP<Core::LinAlg::Vector<double>> bcdof,
+          Teuchos::RCP<Epetra_Map> cond_noderowmap,
+          Teuchos::RCP<Core::LinAlg::Vector<double>> local_radii,
+          Teuchos::RCP<Core::LinAlg::Vector<double>> border_radii,
+          Teuchos::RCP<std::vector<double>> normal, Teuchos::RCP<Teuchos::ParameterList> params);
 
       /*!
       \brief Polynomail shaped velocity profile
@@ -268,7 +270,7 @@ namespace FLD
       /*!
       \brief Calculate the Flowrate on a boundary
       */
-      void set_velocities(const Teuchos::RCP<Core::LinAlg::Vector> velocities);
+      void set_velocities(const Teuchos::RCP<Core::LinAlg::Vector<double>> velocities);
 
       /*!
       \brief Reset condition velocities
@@ -285,8 +287,8 @@ namespace FLD
       /*!
       \brief export and set boundary values
       */
-      void export_and_set_boundary_values(Teuchos::RCP<Core::LinAlg::Vector> source,
-          Teuchos::RCP<Core::LinAlg::Vector> target, std::string name);
+      void export_and_set_boundary_values(Teuchos::RCP<Core::LinAlg::Vector<double>> source,
+          Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name);
 
       /*!
       \brief reset traction velocity components
@@ -390,19 +392,19 @@ namespace FLD
       Teuchos::RCP<Epetra_Map> cond_dofrowmap_;
 
       //! A map of the local radii
-      Teuchos::RCP<Core::LinAlg::Vector> local_radii_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> local_radii_;
 
       //! A map of corresponding border radii
-      Teuchos::RCP<Core::LinAlg::Vector> border_radii_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> border_radii_;
 
       //! A map of only condition velocites
-      Teuchos::RCP<Core::LinAlg::Vector> cond_velocities_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> cond_velocities_;
 
       //! A dof col map of only condition velocites
-      Teuchos::RCP<Core::LinAlg::Vector> drt_velocities_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> drt_velocities_;
 
       //! A map of only condition velocites
-      Teuchos::RCP<Core::LinAlg::Vector> cond_traction_vel_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> cond_traction_vel_;
 
       //! initial area of the codition surface
       double area_;

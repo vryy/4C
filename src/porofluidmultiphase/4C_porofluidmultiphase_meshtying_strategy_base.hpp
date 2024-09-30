@@ -69,12 +69,14 @@ namespace POROFLUIDMULTIPHASE
     //! solve linear system of equations
     virtual void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
         Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector> increment, Teuchos::RCP<Core::LinAlg::Vector> residual,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> increment,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
         Core::LinAlg::SolverParams& solver_params) = 0;
 
     //! calculate norms for convergence checks
     virtual void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
-        std::vector<double>& prenorm, const Teuchos::RCP<const Core::LinAlg::Vector> increment) = 0;
+        std::vector<double>& prenorm,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment) = 0;
 
     //! create the field test
     virtual void create_field_test() = 0;
@@ -86,8 +88,8 @@ namespace POROFLUIDMULTIPHASE
     virtual void evaluate() = 0;
 
     //! extract increments and update mesh tying
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> extract_and_update_iter(
-        const Teuchos::RCP<const Core::LinAlg::Vector> inc) = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_and_update_iter(
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) = 0;
 
     // return arterial network time integrator
     virtual Teuchos::RCP<Adapter::ArtNet> art_net_tim_int()
@@ -112,18 +114,19 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! right-hand side alias the dynamic force residual for coupled system
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> artery_porofluid_rhs() const
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const
     {
       FOUR_C_THROW("ArteryPorofluidRHS() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;
     }
 
     //! access to global (combined) increment of coupled problem
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> combined_increment(
-        Teuchos::RCP<const Core::LinAlg::Vector> inc) const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_increment(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) const = 0;
 
     //! check if initial fields on coupled DOFs are equal (only for node-based coupling)
-    virtual void check_initial_fields(Teuchos::RCP<const Core::LinAlg::Vector> vec_cont) const = 0;
+    virtual void check_initial_fields(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont) const = 0;
 
     //! set the element pairs that are close as found by search algorithm
     virtual void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) = 0;
@@ -135,7 +138,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void apply_mesh_movement() const = 0;
 
     //! return blood vessel volume fraction
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> blood_vessel_volume_fraction()
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction()
     {
       FOUR_C_THROW(
           "blood_vessel_volume_fraction() not implemented in base class, wrong mesh tying object?");

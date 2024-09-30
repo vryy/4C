@@ -105,9 +105,9 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
     std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
     const Inpar::XFEM::FaceType& face_type,       ///< which type of face std, ghost, ghost-penalty
     Teuchos::ParameterList& params,               ///< parameter list
-    Core::FE::DiscretizationFaces& discretization,          ///< faces discretization
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+    Core::FE::DiscretizationFaces& discretization,           ///< faces discretization
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: assemble_internal_faces_using_neighbor_data");

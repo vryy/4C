@@ -88,13 +88,16 @@ namespace CONTACT
     \brief Return Lagrange multiplier vector (t_n+1)
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier() const override { return z_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier() const override
+    {
+      return z_;
+    }
 
     /*!
     \brief Return old Lagrange multiplier vector (t_n)
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_old() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_old() const override
     {
       return zold_;
     }
@@ -103,19 +106,22 @@ namespace CONTACT
     \brief Return Lagrange multiplier vector from last Uzawa step
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector> lagr_mult_uzawa() const { return zuzawa_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagr_mult_uzawa() const { return zuzawa_; }
 
     /*!
     \brief Return constraint rhs vector (only in saddle-point formulation
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector> constraint_rhs() const override { return constrrhs_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> constraint_rhs() const override
+    {
+      return constrrhs_;
+    }
 
     /*!
     \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_increment() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrange_multiplier_increment() const override
     {
       return zincr_;
     }
@@ -195,16 +201,17 @@ namespace CONTACT
     \brief Global evaluation method called from time integrator
 
     */
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
-        const int step, const int iter, bool predictor = false) override;
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+        bool predictor = false) override;
 
     /*! \brief Reset call at the beginning of the apply_force(), apply_stiff() and
      * apply_force_stiff() [derived]
      *
      *  \date 02/2016
      *  \author hiermeier */
-    virtual void reset(const Core::LinAlg::Vector& dis)
+    virtual void reset(const Core::LinAlg::Vector<double>& dis)
     {
       FOUR_C_THROW("Not yet considered for meshtying!");
     };
@@ -246,7 +253,7 @@ namespace CONTACT
 
     */
     void set_state(
-        const enum Mortar::StateType& statetype, const Core::LinAlg::Vector& vec) override;
+        const enum Mortar::StateType& statetype, const Core::LinAlg::Vector<double>& vec) override;
 
     /*!
     \brief Do mortar coupling in reference configuration
@@ -269,7 +276,7 @@ namespace CONTACT
     use the overloaded function call in the derived class and refer back to this function.
 
     */
-    void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector>& dis) override;
+    void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dis) override;
 
     //@}
 
@@ -310,7 +317,7 @@ namespace CONTACT
     \param dis (in):  current displacements (-> old displacements)
 
     */
-    void update(Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
+    void update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Perform a write restart
@@ -322,7 +329,7 @@ namespace CONTACT
 
     */
     void do_read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
 
     //@}
 
@@ -421,21 +428,22 @@ namespace CONTACT
 
     double constraint_norm() const override = 0;
     void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector> dis) override = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) override = 0;
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff) override = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) override = 0;
     double initial_penalty() const override = 0;
-    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override = 0;
+    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) override = 0;
     void reset_penalty() override = 0;
     void modify_penalty() override = 0;
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Core::LinAlg::Vector> fd, Teuchos::RCP<Core::LinAlg::Vector> sold,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Core::LinAlg::Vector>& blocksol,
-        Teuchos::RCP<Core::LinAlg::Vector>& blockrhs) override = 0;
-    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector> sold,
-        Teuchos::RCP<const Core::LinAlg::Vector> blocksol) override = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs) override = 0;
+    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol) override = 0;
     void update_uzawa_augmented_lagrange() override = 0;
     void update_constraint_norm(int uzawaiter = 0) override = 0;
 
@@ -455,25 +463,25 @@ namespace CONTACT
     bool is_in_contact() const override { return true; }
     bool was_in_contact() const override { return true; }
     bool was_in_contact_last_time_step() const override { return true; }
-    Teuchos::RCP<const Core::LinAlg::Vector> contact_normal_stress() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_stress() const override
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector> contact_tangential_stress() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_stress() const override
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector> contact_normal_force() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_normal_force() const override
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector> contact_tangential_force() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_tangential_force() const override
     {
       return Teuchos::null;
     }
     void assemble_mortar() override {}
     void do_write_restart(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>& restart_vectors,
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>& restart_vectors,
         bool forcedrestart = false) const override
     {
     }
@@ -485,19 +493,19 @@ namespace CONTACT
     int number_of_active_nodes() const override { return 0; }
     int number_of_slip_nodes() const override { return 0; }
     void compute_contact_stresses() final{};
-    void aug_forces(Core::LinAlg::Vector& augfs_lm, Core::LinAlg::Vector& augfs_g,
-        Core::LinAlg::Vector& augfm_lm, Core::LinAlg::Vector& augfm_g){};
-    bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector> dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) final
+    void aug_forces(Core::LinAlg::Vector<double>& augfs_lm, Core::LinAlg::Vector<double>& augfs_g,
+        Core::LinAlg::Vector<double>& augfm_lm, Core::LinAlg::Vector<double>& augfm_g){};
+    bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) final
     {
       return false;
     }
     void reset_active_set() override {}
-    void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector> dis) override {}
+    void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override {}
     void update_active_set() override {}
     void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
     Teuchos::RCP<Core::LinAlg::SparseMatrix> evaluate_normals(
-        Teuchos::RCP<Core::LinAlg::Vector> dis) override
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) override
     {
       return Teuchos::null;
     }
@@ -536,7 +544,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const = 0;
 
     /*! \brief Return the desired matrix block pointer (read-only)
@@ -566,27 +574,28 @@ namespace CONTACT
 
     //! Modify system before linear solve
     virtual void run_pre_apply_jacobian_inverse(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Core::LinAlg::Vector& rhs)
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Core::LinAlg::Vector<double>& rhs)
     { /* do nothing */
     }
 
     //! modify result after linear solve
-    virtual void run_post_apply_jacobian_inverse(Core::LinAlg::Vector& result)
+    virtual void run_post_apply_jacobian_inverse(Core::LinAlg::Vector<double>& result)
     { /* do nothing */
     }
 
     //! evaluate force terms
-    virtual bool evaluate_force(const Teuchos::RCP<const Core::LinAlg::Vector> dis) = 0;
+    virtual bool evaluate_force(const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
 
     //! evaluate stiffness terms
-    virtual bool evaluate_stiff(const Teuchos::RCP<const Core::LinAlg::Vector> dis) = 0;
+    virtual bool evaluate_stiff(const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
 
     //! evaluate force and stiffness terms
-    virtual bool evaluate_force_stiff(const Teuchos::RCP<const Core::LinAlg::Vector> dis) = 0;
+    virtual bool evaluate_force_stiff(
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) = 0;
 
     //! after applying Newton increment
-    virtual void run_post_compute_x(const Core::LinAlg::Vector& xold,
-        const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew){};
+    virtual void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
+        const Core::LinAlg::Vector<double>& dir, const Core::LinAlg::Vector<double>& xnew){};
 
     /*! \brief Get the correct RHS for convergence check
      *
@@ -594,7 +603,8 @@ namespace CONTACT
      *
      * @param[in/out] rhs Right-hand side vector
      */
-    virtual void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector& rhs) const {};
+    virtual void remove_condensed_contributions_from_rhs(
+        Core::LinAlg::Vector<double>& rhs) const {};
 
     //!@}
 
@@ -608,7 +618,7 @@ namespace CONTACT
 
     */
     void assemble_coords(
-        const std::string& sidename, bool ref, Teuchos::RCP<Core::LinAlg::Vector> vec);
+        const std::string& sidename, bool ref, Teuchos::RCP<Core::LinAlg::Vector<double>> vec);
 
     /*!
     \brief Do mesh initialization for rotational invariance
@@ -627,7 +637,7 @@ namespace CONTACT
 
     \param Xslavemod (in): modified slave reference configuration
     */
-    virtual void mesh_initialization(Teuchos::RCP<Core::LinAlg::Vector> Xslavemod);
+    virtual void mesh_initialization(Teuchos::RCP<Core::LinAlg::Vector<double>> Xslavemod);
 
    private:
     /*!
@@ -646,7 +656,8 @@ namespace CONTACT
 
     */
     void evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector> dis) override;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Restrict slave boundary to actual meshtying zone
@@ -723,7 +734,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Map> non_redist_gsmdofrowmap_;
 
     //! Global dirichlet toggle of all slave dofs (before parallel redistribution)
-    Teuchos::RCP<Core::LinAlg::Vector> non_redist_gsdirichtoggle_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> non_redist_gsdirichtoggle_;
 
     //!@}
 
@@ -740,25 +751,25 @@ namespace CONTACT
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_;
 
     //! Global weighted gap vector \f$g\f$
-    Teuchos::RCP<Core::LinAlg::Vector> g_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> g_;
 
     //! Global constraint right-hand side vector (only for saddlepoint problems)
-    Teuchos::RCP<Core::LinAlg::Vector> constrrhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> constrrhs_;
 
     //! Current vector of Lagrange multipliers at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> z_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> z_;
 
     //! Old vector of Lagrange multipliers at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector> zold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zold_;
 
     /*! \brief Lagrange multiplier vector increment within SaddlePointSolve
      *
      *  \remark This is \em not the increment of #z_ between \f$t_{n+1}\f$ and \f$t_{n}\f$!)
      */
-    Teuchos::RCP<Core::LinAlg::Vector> zincr_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zincr_;
 
     //! Vector of Lagrange multipliers from last Uzawa step
-    Teuchos::RCP<Core::LinAlg::Vector> zuzawa_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zuzawa_;
 
     //! @name Status flags
     //!@{
@@ -802,10 +813,10 @@ namespace CONTACT
     double inttime_;
 
     //! Structural force
-    Teuchos::RCP<Core::LinAlg::Vector> f_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> f_;
 
     //! Structural force (slave)
-    Teuchos::RCP<Core::LinAlg::Vector> fs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fs_;
 
     //! Matrix containing \f$D\f$ and \f$-M\f$
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dm_matrix_;

@@ -32,7 +32,7 @@ Adapter::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
 }
 
 void Adapter::PASIStructureWrapper::apply_interface_force(
-    Teuchos::RCP<const Core::LinAlg::Vector> intfforce)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforce)
 {
   pasi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 

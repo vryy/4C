@@ -72,7 +72,8 @@ class PostVtiWriter : public PostVtkWriter
   const std::string& writer_suffix() const override;
 
   //! Write a single result step
-  void write_dof_result_step(std::ofstream& file, const Teuchos::RCP<Core::LinAlg::Vector>& data,
+  void write_dof_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) override;

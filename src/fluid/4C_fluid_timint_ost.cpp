@@ -107,11 +107,11 @@ void FLD::TimIntOneStepTheta::set_state_tim_int()
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::calculate_acceleration(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> veln,
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnm,
-    const Teuchos::RCP<const Core::LinAlg::Vector> accn,
-    const Teuchos::RCP<Core::LinAlg::Vector> accnp)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp)
 {
   /*
 
@@ -149,11 +149,12 @@ void FLD::TimIntOneStepTheta::sep_multiply() { Sep_->multiply(false, *velnp_, *f
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::outputof_filtered_vel(
-    Teuchos::RCP<Core::LinAlg::Vector> outvec, Teuchos::RCP<Core::LinAlg::Vector> fsoutvec)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
+  row_finescaleveltmp = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
@@ -232,7 +233,7 @@ void FLD::TimIntOneStepTheta::apply_external_forces(Teuchos::RCP<Epetra_MultiVec
   // initialize external force for t_n
   if (step_ <= numstasteps_)
   {
-    external_loadsn_ = Teuchos::rcp(new Core::LinAlg::Vector(*(*fext)(0)));
+    external_loadsn_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*fext)(0)));
     external_loadsnp_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   }

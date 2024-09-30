@@ -72,13 +72,13 @@ class StruResultTest : public Core::UTILS::ResultTest
   //!@{
 
   //! global displacement DOFs
-  Teuchos::RCP<const Core::LinAlg::Vector> dis_;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dis_;
 
   //! global velocity DOFs
-  Teuchos::RCP<const Core::LinAlg::Vector> vel_;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_;
 
   //! global acceleration DOFs
-  Teuchos::RCP<const Core::LinAlg::Vector> acc_;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> acc_;
 
   //!@}
 };

@@ -25,9 +25,15 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
+  template <typename T>
+  class VectorView;
+
   // Sparse Vector which will replace the Epetra_Vector
+  template <typename T>
   class Vector
   {
+    static_assert(std::is_same<T, double>::value, "Only double is supported for now");
+
    public:
     /// Basic vector constructor to create vector based on a map and initialize memory with zeros
     explicit Vector(const Epetra_BlockMap &Map, bool zeroOut = true);
@@ -307,19 +313,20 @@ namespace Core::LinAlg
    private:
     Teuchos::RCP<Epetra_Vector> vector_;
 
-    friend class VectorView;
+    friend class VectorView<T>;
   };
 
   /**
    * Temporary helper class for migration. View an Epetra_Vector as a Vector. Make sure that the
    * viewed vector lives longer than the view.
    */
+  template <typename T>
   class VectorView
   {
    public:
     VectorView(Epetra_Vector &vector)
         // Construct something cheap, it will be overwritten anyway.
-        : view_vector_(Teuchos::make_rcp<Vector>(vector.Map(), false))
+        : view_vector_(Teuchos::make_rcp<Vector<T>>(vector.Map(), false))
     {
       // Replace the internals of the Vector with a viewing RCP.
       view_vector_->vector_ = Teuchos::rcpFromRef(vector);
@@ -333,16 +340,19 @@ namespace Core::LinAlg
     ~VectorView() = default;
 
     //! Allow implicit conversion to Vector for use in new interfaces.
-    operator Vector &() { return *view_vector_; }
+    operator Vector<T> &() { return *view_vector_; }
 
     //! Allow implicit conversion to RCP<Vector> for use in new interfaces.
-    Teuchos::RCP<Vector> &get_non_owning_rcp_ref() { return view_vector_; }
+    Teuchos::RCP<Vector<T>> &get_non_owning_rcp_ref() { return view_vector_; }
 
    private:
     //! Store inside an RCP because our interfaces frequently take references to RCPs.
-    Teuchos::RCP<Vector> view_vector_;
+    Teuchos::RCP<Vector<T>> view_vector_;
   };
 
+
+  // Template deduction guide for view of Epetra_Vector
+  VectorView(Epetra_Vector &)->VectorView<double>;
 
 }  // namespace Core::LinAlg
 

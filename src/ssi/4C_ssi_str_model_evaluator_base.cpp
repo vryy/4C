@@ -102,7 +102,7 @@ void Solid::ModelEvaluator::BaseSSI::setup()
 
   if (discret().num_dof_sets() - 1 == 2)
     mechanical_stress_state_ =
-        Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map(2), true));
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map(2), true));
 
   // set flag
   issetup_ = true;

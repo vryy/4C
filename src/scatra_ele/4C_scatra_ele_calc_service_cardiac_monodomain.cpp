@@ -84,7 +84,7 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
         const double dt = my::scatraparatimint_->dt();
 
         // extract local values from the global vectors
-        Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
         if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
         Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
@@ -135,8 +135,9 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       {
         // access the general material
         Teuchos::RCP<Core::Mat::Material> material = ele->material();
-        Teuchos::RCP<Core::LinAlg::Vector> material_internal_state_component =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector>>("material_internal_state_component");
+        Teuchos::RCP<Core::LinAlg::Vector<double>> material_internal_state_component =
+            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>(
+                "material_internal_state_component");
 
         if (material->material_type() == Core::Materials::m_myocard)
         {

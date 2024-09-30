@@ -29,64 +29,64 @@ namespace Discret::ReducedLung
     EvaluationData() = default;
 
    public:
-    Teuchos::RCP<Core::LinAlg::Vector> acinar_vnp_strain;
-    Teuchos::RCP<Core::LinAlg::Vector> acinar_vnp;
-    Teuchos::RCP<Core::LinAlg::Vector> acinar_vn;
-    Teuchos::RCP<Core::LinAlg::Vector> acinar_v;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_vnp_strain;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_vnp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_vn;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_v;
 
-    Teuchos::RCP<Core::LinAlg::Vector> qin_nm;
-    Teuchos::RCP<Core::LinAlg::Vector> qin_n;
-    Teuchos::RCP<Core::LinAlg::Vector> qin_np;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_nm;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_n;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_np;
 
-    Teuchos::RCP<Core::LinAlg::Vector> x_n;
-    Teuchos::RCP<Core::LinAlg::Vector> x_np;
-    Teuchos::RCP<Core::LinAlg::Vector> open;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> x_n;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> x_np;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> open;
 
-    Teuchos::RCP<Core::LinAlg::Vector> p_extn;
-    Teuchos::RCP<Core::LinAlg::Vector> p_extnp;
-    Teuchos::RCP<Core::LinAlg::Vector> airway_acinus_dep;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extn;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extnp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep;
     bool compute_awacinter{};
 
-    Teuchos::RCP<Core::LinAlg::Vector> qout_np;
-    Teuchos::RCP<Core::LinAlg::Vector> qout_n;
-    Teuchos::RCP<Core::LinAlg::Vector> qout_nm;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_np;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_n;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_nm;
 
-    Teuchos::RCP<Core::LinAlg::Vector> p0np;
-    Teuchos::RCP<Core::LinAlg::Vector> p0n;
-    Teuchos::RCP<Core::LinAlg::Vector> p0nm;
-    Teuchos::RCP<Core::LinAlg::Vector> elemArea0;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p0np;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p0n;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> p0nm;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemArea0;
 
-    Teuchos::RCP<Core::LinAlg::Vector> acini_e_volume;
-    Teuchos::RCP<Core::LinAlg::Vector> elemVolume;
-    Teuchos::RCP<Core::LinAlg::Vector> elemVolumen;
-    Teuchos::RCP<Core::LinAlg::Vector> elemVolumenp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volume;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolume;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumen;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumenp;
 
-    Teuchos::RCP<Core::LinAlg::Vector> generations;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> generations;
 
     bool solveScatra{};
 
-    Teuchos::RCP<Core::LinAlg::Vector> junVolMix_Corrector;
-    Teuchos::RCP<Core::LinAlg::Vector> scatran;
-    Teuchos::RCP<Core::LinAlg::Vector> scatranp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> junVolMix_Corrector;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatran;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scatranp;
 
-    Teuchos::RCP<Core::LinAlg::Vector> e1scatran;
-    Teuchos::RCP<Core::LinAlg::Vector> e2scatran;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatran;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatran;
 
-    Teuchos::RCP<Core::LinAlg::Vector> e1scatranp;
-    Teuchos::RCP<Core::LinAlg::Vector> e2scatranp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatranp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatranp;
 
-    Teuchos::RCP<Core::LinAlg::Vector> dscatranp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dscatranp;
 
-    Teuchos::RCP<Core::LinAlg::Vector> elemRadiusnp;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elemRadiusnp;
 
-    Teuchos::RCP<Core::LinAlg::Vector> cfl;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cfl;
 
-    Teuchos::RCP<Core::LinAlg::Vector> po2;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> po2;
 
-    Teuchos::RCP<Core::LinAlg::Vector> bcval;
-    Teuchos::RCP<Core::LinAlg::Vector> dbctog;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> bcval;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog;
 
-    Teuchos::RCP<Core::LinAlg::Vector> acini_bc;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_bc;
 
     double lungVolume_np{};
     double lungVolume_n{};

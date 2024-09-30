@@ -69,7 +69,7 @@ Core::Conditions::LocsysManager::LocsysManager(Core::FE::Discretization& discret
 /*-------------------------------------------------------------------*
  *-------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::update(const double time,
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>> nodenormals,
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals,
     const Core::UTILS::FunctionManager& function_manager)
 {
   nodenormals_ = std::move(nodenormals);
@@ -175,7 +175,7 @@ void Core::Conditions::LocsysManager::update(const double time,
         {
           // Check, if the updated node positions shall be used for evaluation of the functions
           // 'funct'
-          Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
           if (((*useUpdatedNodePos) == 1) && (time >= 0.0))
           {
             dispnp = discret().get_state("dispnp");
@@ -268,7 +268,7 @@ void Core::Conditions::LocsysManager::update(const double time,
 
   // we need to make sure that two nodes sharing the same dofs are not
   // transformed twice. This is a NURBS/periodic boundary feature.
-  Teuchos::RCP<Core::LinAlg::Vector> already_processed =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> already_processed =
       Core::LinAlg::create_vector(*dofrowmap, true);
   already_processed->PutScalar(0.0);
 
@@ -484,7 +484,8 @@ inline const Epetra_Comm& Core::Conditions::LocsysManager::get_comm() const
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_global_to_local(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Teuchos::RCP<Core::LinAlg::Vector> rhs) const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) const
 {
   // transform rhs vector
   rotate_global_to_local(rhs);
@@ -515,10 +516,10 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
  |  Transform vector global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_global_to_local(
-    Teuchos::RCP<Core::LinAlg::Vector> vec, bool offset) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset) const
 {
   // y = trafo_ . x  with x = vec
-  Core::LinAlg::Vector tmp(*vec);
+  Core::LinAlg::Vector<double> tmp(*vec);
   trafo_->multiply(false, tmp, *vec);
 }
 
@@ -526,8 +527,9 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_local_to_global(
-    Teuchos::RCP<Core::LinAlg::Vector> result, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector> rhs) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> result,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) const
 {
   // transform result
   rotate_local_to_global(result);
@@ -555,9 +557,9 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(
  |  Transform vector local -> global (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_local_to_global(
-    Teuchos::RCP<Core::LinAlg::Vector> vec, bool offset) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset) const
 {
-  Core::LinAlg::Vector tmp(*vec);
+  Core::LinAlg::Vector<double> tmp(*vec);
   trafo_->multiply(true, tmp, *vec);
 }
 /*----------------------------------------------------------------------*
@@ -582,7 +584,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   // Take care for "negative times", where no information about dispnp_ is available
   if (time < 0.0)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> zeroVector =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeroVector =
         Core::LinAlg::create_vector(*discret().dof_row_map(), true);
     discret_.set_state("dispnp", zeroVector);
   }
@@ -599,7 +601,8 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   }
 
   // Declare node normal variable
-  Teuchos::RCP<Core::LinAlg::Vector> massConsistentNodeNormals = nodenormals_[numLocsysCond];
+  Teuchos::RCP<Core::LinAlg::Vector<double>> massConsistentNodeNormals =
+      nodenormals_[numLocsysCond];
 
   // Loop through all nodes in the condition
   // *******************************************************************

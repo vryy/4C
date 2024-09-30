@@ -156,7 +156,7 @@ namespace
         !is_scalar || num_scalars == 1, "numscalars must be 1 if result type is not a vector!");
 
     // get quantitiy from discretization
-    Teuchos::RCP<const Core::LinAlg::Vector> quantitites_np =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> quantitites_np =
         discretization.get_state(*field_index, field_name);
 
     if (quantitites_np == Teuchos::null)

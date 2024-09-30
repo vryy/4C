@@ -44,16 +44,16 @@ namespace Solid
       void compute(::NOX::Abstract::Group& grp) override;
 
       //! return the dbc increment
-      const Core::LinAlg::Vector& get_dbc_incr() const;
+      const Core::LinAlg::Vector<double>& get_dbc_incr() const;
 
       //! return the switch for the pre/post operator
       const bool& is_apply_linear_reaction_forces() const;
 
       //! derived
-      bool pre_apply_force_external(Core::LinAlg::Vector& fextnp) const override;
+      bool pre_apply_force_external(Core::LinAlg::Vector<double>& fextnp) const override;
 
      private:
-      Teuchos::RCP<Core::LinAlg::Vector> dbc_incr_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> dbc_incr_ptr_;
 
       bool apply_linear_reaction_forces_;
     };  // class TangDis
@@ -83,7 +83,8 @@ namespace NOX
           TangDis(const Teuchos::RCP<const Solid::Predict::TangDis>& tang_predict_ptr);
 
           //! add the linear reaction forces
-          void run_post_compute_f(Core::LinAlg::Vector& F, const NOX::Nln::Group& grp) override;
+          void run_post_compute_f(
+              Core::LinAlg::Vector<double>& F, const NOX::Nln::Group& grp) override;
 
          private:
           //! pointer to the tangdis object (read-only)

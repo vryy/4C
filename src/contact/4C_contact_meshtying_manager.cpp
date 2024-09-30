@@ -640,7 +640,7 @@ void CONTACT::MtManager::write_restart(Core::IO::DiscretizationWriter& output, b
  |  read restart information for meshtying (public)           popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::read_restart(Core::IO::DiscretizationReader& reader,
-    Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::Vector<double>> zero)
 {
   // this is meshtying, thus we need zeros for restart
   // let strategy object do all the work
@@ -656,18 +656,21 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
 {
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = get_strategy().problem_dofs();
-  Teuchos::RCP<Core::LinAlg::Vector> traction =
-      Teuchos::rcp(new Core::LinAlg::Vector(*(get_strategy().lagrange_multiplier_old())));
-  Teuchos::RCP<Core::LinAlg::Vector> tractionexp = Teuchos::rcp(new Core::LinAlg::Vector(*problem));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> traction =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(get_strategy().lagrange_multiplier_old())));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionexp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem));
   Core::LinAlg::export_to(*traction, *tractionexp);
 
   // evaluate slave and master forces
-  Teuchos::RCP<Core::LinAlg::Vector> fcslave =
-      Teuchos::rcp(new Core::LinAlg::Vector(get_strategy().d_matrix()->row_map()));
-  Teuchos::RCP<Core::LinAlg::Vector> fcmaster =
-      Teuchos::rcp(new Core::LinAlg::Vector(get_strategy().m_matrix()->domain_map()));
-  Teuchos::RCP<Core::LinAlg::Vector> fcslaveexp = Teuchos::rcp(new Core::LinAlg::Vector(*problem));
-  Teuchos::RCP<Core::LinAlg::Vector> fcmasterexp = Teuchos::rcp(new Core::LinAlg::Vector(*problem));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslave =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(get_strategy().d_matrix()->row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmaster =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(get_strategy().m_matrix()->domain_map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslaveexp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmasterexp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem));
   get_strategy().d_matrix()->multiply(true, *traction, *fcslave);
   get_strategy().m_matrix()->multiply(true, *traction, *fcmaster);
   Core::LinAlg::export_to(*fcslave, *fcslaveexp);

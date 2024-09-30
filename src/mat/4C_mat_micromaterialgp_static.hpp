@@ -103,10 +103,10 @@ namespace Mat
     double density_;
 
     /// my vector of old displacements
-    Teuchos::RCP<Core::LinAlg::Vector> dis_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis_;
 
     /// my vector of new displacements
-    Teuchos::RCP<Core::LinAlg::Vector> disn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disn_;
 
     // my EAS history data -> note that microstructure is not parallel
     Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha_;

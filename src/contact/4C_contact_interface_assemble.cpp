@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|
  *----------------------------------------------------------------*/
-void CONTACT::Interface::assemble_slave_coord(Teuchos::RCP<Core::LinAlg::Vector>& xsmod)
+void CONTACT::Interface::assemble_slave_coord(Teuchos::RCP<Core::LinAlg::Vector<double>>& xsmod)
 {
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
@@ -1490,7 +1490,7 @@ void CONTACT::Interface::assemble_lin_dm(
 /*----------------------------------------------------------------------*
  |  Assemble normal weighted gap                              popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_g(Core::LinAlg::Vector& gglobal)
+void CONTACT::Interface::assemble_g(Core::LinAlg::Vector<double>& gglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -1580,7 +1580,7 @@ void CONTACT::Interface::assemble_g(Core::LinAlg::Vector& gglobal)
 /*----------------------------------------------------------------------*
  |  Assemble inactive right hand side                    hiermeier 08/13|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_inactiverhs(Core::LinAlg::Vector& inactiverhs)
+void CONTACT::Interface::assemble_inactiverhs(Core::LinAlg::Vector<double>& inactiverhs)
 {
   // FIXME It's possible to improve the performance, if only recently active nodes of the inactive
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
@@ -1635,7 +1635,7 @@ void CONTACT::Interface::assemble_inactiverhs(Core::LinAlg::Vector& inactiverhs)
 /*----------------------------------------------------------------------*
  |  Assemble tangential right-hand side                  hiermeier 08/13|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_tangrhs(Core::LinAlg::Vector& tangrhs)
+void CONTACT::Interface::assemble_tangrhs(Core::LinAlg::Vector<double>& tangrhs)
 {
   static std::vector<int> lm_gid(Interface::n_dim() - 1);
   static std::vector<int> lm_owner(Interface::n_dim() - 1);
@@ -1727,7 +1727,7 @@ void CONTACT::Interface::assemble_tangrhs(Core::LinAlg::Vector& tangrhs)
  |  Assemble matrix LinStick with tangential+D+M derivatives  mgit 02/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstickLMglobal,
-    Core::LinAlg::SparseMatrix& linstickDISglobal, Core::LinAlg::Vector& linstickRHSglobal)
+    Core::LinAlg::SparseMatrix& linstickDISglobal, Core::LinAlg::Vector<double>& linstickRHSglobal)
 {
   // FIXGIT: Assemble LinStick is containing a matrix for the de-
   // rivatives of the Lagrange multipliers. This is according to Hueeber.
@@ -2559,7 +2559,7 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
  | Assemble matrix LinSlip with tangential+D+M derivatives  mgit 02/09 |
  *---------------------------------------------------------------------*/
 void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLMglobal,
-    Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::Vector& linslipRHSglobal)
+    Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::Vector<double>& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
@@ -4244,8 +4244,8 @@ void CONTACT::Interface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLM
   return;
 }
 
-void CONTACT::Interface::assemble_normal_contact_regularization(
-    Core::LinAlg::SparseMatrix& d_disp, Core::LinAlg::SparseMatrix& d_lm, Core::LinAlg::Vector& f)
+void CONTACT::Interface::assemble_normal_contact_regularization(Core::LinAlg::SparseMatrix& d_disp,
+    Core::LinAlg::SparseMatrix& d_lm, Core::LinAlg::Vector<double>& f)
 {
   const bool regularization = interface_params().get<bool>("REGULARIZED_NORMAL_CONTACT");
   if (!regularization) FOUR_C_THROW("you should not be here");
@@ -4319,7 +4319,7 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
 
 void CONTACT::Interface::assemble_lin_slip_normal_regularization(
     Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal,
-    Core::LinAlg::Vector& linslipRHSglobal)
+    Core::LinAlg::Vector<double>& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
@@ -5128,7 +5128,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 /*---------------------------------------------------------------------------*
  |  Assemble normal coupling weighted condition for poro contact   ager 07/14|
  *--------------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_normal_coupling(Core::LinAlg::Vector& gglobal)
+void CONTACT::Interface::assemble_normal_coupling(Core::LinAlg::Vector<double>& gglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -5240,7 +5240,7 @@ void CONTACT::Interface::assemble_normal_coupling_linearisation(Core::LinAlg::Sp
  | Derivative of D-matrix multiplied with a slave dof vector              |
  *------------------------------------------------------------------------*/
 void CONTACT::Interface::assemble_coup_lin_d(
-    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector> x)
+    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x)
 {
   // we have: D_jk,c with j = Slave dof
   //                 with k = Displacement slave dof
@@ -5318,7 +5318,7 @@ void CONTACT::Interface::assemble_coup_lin_d(
  | Derivative of transposed M-matrix multiplied with a slave dof vector  seitz 01/18 |
  *-----------------------------------------------------------------------------------*/
 void CONTACT::Interface::assemble_coup_lin_m(
-    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector> x)
+    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x)
 {
   // we have: M_jl,c with j = Slave dof
   //                 with l = Displacement master dof

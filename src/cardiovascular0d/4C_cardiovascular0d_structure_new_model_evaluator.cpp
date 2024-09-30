@@ -54,7 +54,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
 
   // contributions of 0D model to structural rhs and stiffness
   fstructcardio_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view()));
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
   stiff_cardio_ptr_ = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
@@ -79,7 +79,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Cardiovascular0D::reset(const Core::LinAlg::Vector& x)
+void Solid::ModelEvaluator::Cardiovascular0D::reset(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
@@ -149,9 +149,9 @@ bool Solid::ModelEvaluator::Cardiovascular0D::evaluate_force_stiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Cardiovascular0D::assemble_force(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> block_vec_ptr = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> block_vec_ptr = Teuchos::null;
 
   // assemble and scale with str time-integrator dependent value
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
@@ -236,12 +236,13 @@ void Solid::ModelEvaluator::Cardiovascular0D::read_restart(Core::IO::Discretizat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Cardiovascular0D::run_post_compute_x(const Core::LinAlg::Vector& xold,
-    const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew)
+void Solid::ModelEvaluator::Cardiovascular0D::run_post_compute_x(
+    const Core::LinAlg::Vector<double>& xold, const Core::LinAlg::Vector<double>& dir,
+    const Core::LinAlg::Vector<double>& xnew)
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::Vector> cv0d_incr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> cv0d_incr =
       global_state().extract_model_entries(Inpar::Solid::model_cardiovascular0d, dir);
 
   cardvasc0dman_->update_cv0_d_dof(cv0d_incr);
@@ -266,7 +267,8 @@ void Solid::ModelEvaluator::Cardiovascular0D::update_step_state(const double& ti
   // residual state vector
   if (not fstructcardio_np_ptr_.is_null())
   {
-    Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr =
+        global_state().get_fstructure_old();
     fstructold_ptr->Update(timefac_n, *fstructcardio_np_ptr_, 1.0);
   }
 
@@ -338,7 +340,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Cardiovascular0D::get_bloc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Cardiovascular0D::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
@@ -347,7 +349,7 @@ Solid::ModelEvaluator::Cardiovascular0D::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Cardiovascular0D::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries

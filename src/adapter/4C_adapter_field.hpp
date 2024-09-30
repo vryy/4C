@@ -64,7 +64,7 @@ namespace Adapter
     //! @name Vector access
 
     /// Return the already evaluated RHS of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() = 0;
 
     //@}
 
@@ -105,7 +105,7 @@ namespace Adapter
     which is then transformed into an iteration increment
     */
     virtual void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector> disi  ///< iterative solution increment
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
         ) = 0;
 
     /*!
@@ -123,14 +123,14 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
             iterinc  ///< dof increment between Newton iteration i and
                      ///< i+1 or between timestep n and n+1
         ) = 0;
 
     /// Evaluate with different eval. for first iteration, has to be overload by relevant fields
     /// (coupled fields)
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
                               iterinc,  ///< dof increment between Newton iteration i
                                         ///< and i+1 or between timestep n and n+1
         bool firstiter)

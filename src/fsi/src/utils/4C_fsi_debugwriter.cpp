@@ -77,7 +77,8 @@ void FSI::UTILS::DebugWriter::new_iteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::write_vector(const std::string& name, const Core::LinAlg::Vector& v)
+void FSI::UTILS::DebugWriter::write_vector(
+    const std::string& name, const Core::LinAlg::Vector<double>& v)
 {
   writer_->write_vector(name, coup_->master_to_slave(Teuchos::rcp(&v, false)));
 }
@@ -129,7 +130,8 @@ void FSI::UTILS::SimpleDebugWriter::new_iteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::write_vector(const std::string& name, Core::LinAlg::Vector& v)
+void FSI::UTILS::SimpleDebugWriter::write_vector(
+    const std::string& name, Core::LinAlg::Vector<double>& v)
 {
   writer_->write_vector(name, Teuchos::rcp(&v, false));
 }
@@ -173,17 +175,17 @@ void FSI::UTILS::MonolithicDebugWriter::new_iteration()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::MonolithicDebugWriter::write_vector(
-    const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector>& v)
+    const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector<double>>& v)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector> fx;
-  Teuchos::RCP<const Core::LinAlg::Vector> ax;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
 
   algorithm_.extract_field_vectors(v, sx, fx, ax);
 
-  Core::LinAlg::Vector s(*sx);
-  Core::LinAlg::Vector f(*fx);
-  Core::LinAlg::Vector a(*ax);
+  Core::LinAlg::Vector<double> s(*sx);
+  Core::LinAlg::Vector<double> f(*fx);
+  Core::LinAlg::Vector<double> a(*ax);
 
   struct_writer_->write_vector(name, s);
   fluid_writer_->write_vector(name, f);

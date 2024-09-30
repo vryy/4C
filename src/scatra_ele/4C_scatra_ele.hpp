@@ -65,9 +65,9 @@ namespace Discret
       void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
           Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-          Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
-          Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
-          Teuchos::RCP<Core::LinAlg::Vector> systemvector3) override;
+          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
+          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
+          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3) override;
 
       /// initialize the element type
       int initialize(Core::FE::Discretization& dis) override;

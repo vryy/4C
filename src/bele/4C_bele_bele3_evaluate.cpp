@@ -89,7 +89,8 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
       if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+            discretization.get_state("displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -105,7 +106,8 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
     case calc_struct_volconstrstiff:
     {
       // element geometry update
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);

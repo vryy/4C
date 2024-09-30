@@ -405,7 +405,7 @@ void CONTACT::Beam3cmanager::print(std::ostream& os) const
  |  evaluate contact (public)                                 popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
-    Core::LinAlg::Vector& fres, const Core::LinAlg::Vector& disrow,
+    Core::LinAlg::Vector<double>& fres, const Core::LinAlg::Vector<double>& disrow,
     Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
@@ -424,7 +424,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
   currentpositions.clear();
   // extract fully overlapping displacement vector on contact discretization from
   // displacement vector in row map format on problem discretization
-  Core::LinAlg::Vector disccol(*bt_sol_discret().dof_col_map(), true);
+  Core::LinAlg::Vector<double> disccol(*bt_sol_discret().dof_col_map(), true);
   shift_dis_map(disrow, disccol);
   // update currentpositions
   set_current_positions(currentpositions, disccol);
@@ -601,10 +601,10 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
  |  Shift map of displacement vector                         meier 05/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::shift_dis_map(
-    const Core::LinAlg::Vector& disrow, Core::LinAlg::Vector& disccol)
+    const Core::LinAlg::Vector<double>& disrow, Core::LinAlg::Vector<double>& disccol)
 {
   // export displacements into fully overlapping column map format
-  Core::LinAlg::Vector discrow(*bt_sol_discret().dof_row_map(), true);
+  Core::LinAlg::Vector<double> discrow(*bt_sol_discret().dof_row_map(), true);
   int numbtsdofs = (*bt_sol_discret().dof_row_map()).NumMyElements();
 
   for (int i = 0; i < numbtsdofs; i++)
@@ -975,7 +975,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::set_current_positions(
     std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
-    const Core::LinAlg::Vector& disccol)
+    const Core::LinAlg::Vector<double>& disccol)
 {
   //**********************************************************************
   // get positions of all nodes (fully overlapping map) and store
@@ -1015,7 +1015,7 @@ void CONTACT::Beam3cmanager::set_current_positions(
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
-    const Core::LinAlg::Vector& disccol)
+    const Core::LinAlg::Vector<double>& disccol)
 {
   // map to store the nodal tangent vectors (necessary for Kirchhoff type beams) and adress it with
   // the node ID
@@ -2001,7 +2001,7 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
  |  Update contact forces at the end of time step             popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::update(
-    const Core::LinAlg::Vector& disrow, const int& timestep, const int& newtonstep)
+    const Core::LinAlg::Vector<double>& disrow, const int& timestep, const int& newtonstep)
 {
   // store values of fc_ into fcold_ (generalized alpha)
   fcold_->Update(1.0, *fc_, 0.0);
@@ -2121,8 +2121,8 @@ void CONTACT::Beam3cmanager::update(
 /*----------------------------------------------------------------------*
  |  Write Gmsh data for current state                          popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector& disrow, const int& timestep,
-    const int& newtonstep, bool endoftimestep)
+void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& disrow,
+    const int& timestep, const int& newtonstep, bool endoftimestep)
 {
   //**********************************************************************
   // create filename for ASCII-file for output
@@ -2195,7 +2195,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector& disrow, con
 
   // extract fully overlapping displacement vector on contact discretization from
   // displacement vector in row map format on problem discretization
-  Core::LinAlg::Vector disccol(*bt_sol_discret().dof_col_map(), true);
+  Core::LinAlg::Vector<double> disccol(*bt_sol_discret().dof_col_map(), true);
   shift_dis_map(disrow, disccol);
 
   // do output to file in c-style
@@ -3167,10 +3167,10 @@ void CONTACT::Beam3cmanager::update_constr_norm()
 
   // Calculate contact work
   double deltapenaltywork = 0.0;
-  Core::LinAlg::Vector delta_disp(*dis_);
+  Core::LinAlg::Vector<double> delta_disp(*dis_);
   delta_disp.Update(-1.0, *dis_old_, 1.0);
 
-  Core::LinAlg::Vector fc_alpha(*fc_);
+  Core::LinAlg::Vector<double> fc_alpha(*fc_);
   fc_alpha.Update(alphaf_, *fcold_, 1.0 - alphaf_);
 
   delta_disp.Dot(fc_alpha, &deltapenaltywork);
@@ -4744,7 +4744,7 @@ void CONTACT::Beam3cmanager::gmsh_refine_icosphere(std::vector<std::vector<doubl
  | Compute Gmsh output for solid elements                               |
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_solid(const Core::Elements::Element* element,
-    const Core::LinAlg::Vector& disrow, std::stringstream& gmshfilecontent)
+    const Core::LinAlg::Vector<double>& disrow, std::stringstream& gmshfilecontent)
 {
   // Prepare storage for nodal coordinates
   int nnodes = element->num_node();
@@ -4850,7 +4850,7 @@ void CONTACT::Beam3cmanager::gmsh_solid(const Core::Elements::Element* element,
  | Compute Gmsh output for solid surface element numbers                |
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_solid_surface_element_numbers(
-    const Core::Elements::Element* element, const Core::LinAlg::Vector& disrow,
+    const Core::Elements::Element* element, const Core::LinAlg::Vector<double>& disrow,
     std::stringstream& gmshfilecontent)
 {
   // Prepare storage for nodal coordinates

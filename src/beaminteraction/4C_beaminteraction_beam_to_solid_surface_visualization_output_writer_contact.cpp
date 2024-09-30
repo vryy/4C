@@ -239,9 +239,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact::
     {
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter list
       // that will be passed to the pairs.
-      Teuchos::RCP<Core::LinAlg::Vector> lambda =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
           indirect_assembly_manager->get_mortar_manager()->get_global_lambda_col();
-      visualization_params.set<Teuchos::RCP<Core::LinAlg::Vector>>("lambda", lambda);
+      visualization_params.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda", lambda);
 
       // The pairs will need the mortar manager to extract their Lambda DOFs.
       visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(

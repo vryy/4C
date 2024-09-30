@@ -237,13 +237,13 @@ void PoroElast::Monolithic::solve()
 }
 
 void PoroElast::Monolithic::update_state_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector> iterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::update_state_incrementally");
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc = Teuchos::null;
 
   // do nothing in the case no increment vector is given
   if (iterinc == Teuchos::null)
@@ -264,8 +264,8 @@ void PoroElast::Monolithic::update_state_incrementally(
 }
 
 void PoroElast::Monolithic::update_state_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc,
-    Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc)
 {
   // Newton update of the fluid field
   // update velocities and pressures before passed to the structural field
@@ -298,7 +298,7 @@ void PoroElast::Monolithic::update_state_incrementally(
 }
 
 void PoroElast::Monolithic::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector> iterinc, bool firstiter)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc, bool firstiter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::Evaluate");
 
@@ -321,8 +321,8 @@ void PoroElast::Monolithic::evaluate(
   eval_poro_mortar();
 }
 
-void PoroElast::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc,
-    Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc, bool firstiter)
+void PoroElast::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc, bool firstiter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::Evaluate");
 
@@ -345,8 +345,9 @@ void PoroElast::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> s_
   eval_poro_mortar();
 }
 
-void PoroElast::Monolithic::evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc,
-    Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc)
+void PoroElast::Monolithic::evaluate_fields(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc)
 {
   // Update State incrementally
   update_state_incrementally(s_iterinc, f_iterinc);
@@ -362,7 +363,8 @@ void PoroElast::Monolithic::evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vec
   fluid_field()->evaluate(Teuchos::null);
 }
 
-void PoroElast::Monolithic::evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vector> iterinc)
+void PoroElast::Monolithic::evaluate_fields(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc)
 {
   // Update State incrementally
   update_state_incrementally(iterinc);
@@ -378,9 +380,10 @@ void PoroElast::Monolithic::evaluate_fields(Teuchos::RCP<const Core::LinAlg::Vec
   fluid_field()->evaluate(Teuchos::null);
 }
 
-void PoroElast::Monolithic::extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
-    Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
-    bool firstcall)
+void PoroElast::Monolithic::extract_field_vectors(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::extract_field_vectors");
 
@@ -539,7 +542,8 @@ void PoroElast::Monolithic::setup_rhs(bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::setup_rhs");
 
   // create full monolithic rhs vector
-  if (rhs_ == Teuchos::null) rhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  if (rhs_ == Teuchos::null)
+    rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   setup_vector(*rhs_, structure_field()->rhs(), fluid_field()->rhs());
@@ -698,7 +702,7 @@ void PoroElast::Monolithic::create_linear_solver()
   }
 }
 
-void PoroElast::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig)
+void PoroElast::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::initial_guess");
 
@@ -711,8 +715,9 @@ void PoroElast::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig)
       fluid_field()->initial_guess());
 }
 
-void PoroElast::Monolithic::setup_vector(Core::LinAlg::Vector& f,
-    Teuchos::RCP<const Core::LinAlg::Vector> sv, Teuchos::RCP<const Core::LinAlg::Vector> fv)
+void PoroElast::Monolithic::setup_vector(Core::LinAlg::Vector<double>& f,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv)
 {
   // extract dofs of the two fields
   // and put the structural/fluid field vector into the global vector f
@@ -1139,8 +1144,8 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
   std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
 
-  Teuchos::RCP<Core::LinAlg::Vector> iterinc = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector> abs_iterinc = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> abs_iterinc = Teuchos::null;
   iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
   abs_iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
@@ -1157,11 +1162,11 @@ void PoroElast::Monolithic::apply_fluid_coupl_matrix(
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_old =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_copy =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
@@ -1511,10 +1516,10 @@ void PoroElast::Monolithic::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_s;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_f;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fvel;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fpres;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_f;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fvel;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fpres;
 
   // process structure unknowns of the first field
   rhs_s = extractor()->extract_vector(rhs_, 0);
@@ -1525,9 +1530,9 @@ void PoroElast::Monolithic::build_convergence_norms()
 
   if (porosity_dof_)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs_poro =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_poro =
         porosity_splitter_->extract_cond_vector(rhs_s);
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs_sdisp =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_sdisp =
         porosity_splitter_->extract_other_vector(rhs_s);
 
     normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_sdisp);
@@ -1545,10 +1550,10 @@ void PoroElast::Monolithic::build_convergence_norms()
   iterinc_->Norm2(&norminc_);
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector> interincs;
-  Teuchos::RCP<const Core::LinAlg::Vector> interincf;
-  Teuchos::RCP<const Core::LinAlg::Vector> interincfvel;
-  Teuchos::RCP<const Core::LinAlg::Vector> interincfpres;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincs;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincf;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfvel;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfpres;
   // process structure unknowns of the first field
   interincs = extractor()->extract_vector(iterinc_, 0);
   // process fluid unknowns of the second field
@@ -1558,9 +1563,9 @@ void PoroElast::Monolithic::build_convergence_norms()
 
   if (porosity_dof_)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> interincporo =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> interincporo =
         porosity_splitter_->extract_cond_vector(interincs);
-    Teuchos::RCP<const Core::LinAlg::Vector> interincsdisp =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> interincsdisp =
         porosity_splitter_->extract_other_vector(interincs);
 
     normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, interincsdisp);
@@ -1644,7 +1649,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> PoroElast::Monolithic::system_matrix()
 
 void PoroElast::Monolithic::increment_poro_iter() { iter_ += 1; }
 
-void PoroElast::Monolithic::update_poro_iterinc(Teuchos::RCP<const Core::LinAlg::Vector> poroinc)
+void PoroElast::Monolithic::update_poro_iterinc(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> poroinc)
 {
   iterinc_->PutScalar(0.0);
   iterinc_->Update(1.0, *poroinc, 0.0);
@@ -1735,7 +1741,7 @@ Teuchos::RCP<const Epetra_Map> PoroElast::Monolithic::dof_row_map_fluid()
 }
 
 void PoroElast::Monolithic::recover_lagrange_multiplier_after_newton_step(
-    Teuchos::RCP<const Core::LinAlg::Vector> iterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc)
 {
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
@@ -1751,15 +1757,17 @@ void PoroElast::Monolithic::recover_lagrange_multiplier_after_newton_step(
             structure_field()->meshtying_contact_bridge()->contact_manager()->get_strategy());
 
         // displacement and fluid velocity & pressure incremental vector
-        Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc;
-        Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc;
         extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
         // RecoverStructuralLM
-        Teuchos::RCP<Core::LinAlg::Vector> tmpsx =
-            Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*s_iterinc));
-        Teuchos::RCP<Core::LinAlg::Vector> tmpfx =
-            Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*f_iterinc));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> tmpsx =
+            Teuchos::rcp<Core::LinAlg::Vector<double>>(
+                new Core::LinAlg::Vector<double>(*s_iterinc));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> tmpfx =
+            Teuchos::rcp<Core::LinAlg::Vector<double>>(
+                new Core::LinAlg::Vector<double>(*f_iterinc));
 
         costrategy.recover_coupled(tmpsx, tmpfx);
         if (no_penetration_) costrategy.recover_poro_no_pen(tmpsx, tmpfx);
@@ -1771,12 +1779,13 @@ void PoroElast::Monolithic::recover_lagrange_multiplier_after_newton_step(
             structure_field()->meshtying_contact_bridge()->mt_manager()->get_strategy());
 
         // displacement and fluid velocity & pressure incremental vector
-        Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc;
-        Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc;
         extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
-        Teuchos::RCP<Core::LinAlg::Vector> tmpfx =
-            Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*f_iterinc));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> tmpfx =
+            Teuchos::rcp<Core::LinAlg::Vector<double>>(
+                new Core::LinAlg::Vector<double>(*f_iterinc));
 
         // Recover part of LM stemming from offdiagonal coupling matrix
         costrategy.recover_coupling_matrix_partof_lmp(tmpfx);
@@ -1798,17 +1807,18 @@ void PoroElast::Monolithic::set_poro_contact_states()
         {
           CONTACT::LagrangeStrategyPoro& costrategy = static_cast<CONTACT::LagrangeStrategyPoro&>(
               structure_field()->meshtying_contact_bridge()->contact_manager()->get_strategy());
-          Teuchos::RCP<Core::LinAlg::Vector> fvel = Teuchos::rcp(new Core::LinAlg::Vector(
-              *fluid_field()->extract_velocity_part(fluid_field()->velnp())));
+          Teuchos::RCP<Core::LinAlg::Vector<double>> fvel =
+              Teuchos::rcp(new Core::LinAlg::Vector<double>(
+                  *fluid_field()->extract_velocity_part(fluid_field()->velnp())));
           fvel = fluid_structure_coupling().slave_to_master(fvel);
           costrategy.set_state(Mortar::state_fvelocity, *fvel);
 
           // To get pressure dofs into first structural component!!! - any idea for nice
           // implementation?
-          Teuchos::RCP<const Core::LinAlg::Vector> fpres =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> fpres =
               fluid_field()->extract_pressure_part(fluid_field()->velnp());
-          Teuchos::RCP<Core::LinAlg::Vector> modfpres =
-              Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->velocity_row_map(), true));
+          Teuchos::RCP<Core::LinAlg::Vector<double>> modfpres = Teuchos::rcp(
+              new Core::LinAlg::Vector<double>(*fluid_field()->velocity_row_map(), true));
 
           int* mygids = fpres->Map().MyGlobalElements();
           double* val = fpres->Values();
@@ -1822,8 +1832,8 @@ void PoroElast::Monolithic::set_poro_contact_states()
           modfpres = fluid_structure_coupling().slave_to_master(modfpres);
           costrategy.set_state(Mortar::state_fpressure, *modfpres);
 
-          Teuchos::RCP<Core::LinAlg::Vector> dis =
-              Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->dispnp()));
+          Teuchos::RCP<Core::LinAlg::Vector<double>> dis =
+              Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->dispnp()));
           costrategy.set_parent_state(Mortar::StateType::state_new_displacement, *dis,
               *structure_field()->discretization());  // add displacements of the parent element!!!
         }
@@ -1863,7 +1873,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
           Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf =
               Teuchos::rcp<Core::LinAlg::SparseMatrix>(
                   new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(0, 1)));
-          Teuchos::RCP<Core::LinAlg::Vector> rhs_s = extractor()->extract_vector(rhs_, 0);
+          Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_s = extractor()->extract_vector(rhs_, 0);
 
           // Evaluate Poro Contact Condensation for K_ss, K_sf
           costrategy.apply_force_stiff_cmt_coupled(
@@ -1889,7 +1899,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
                 Teuchos::rcp<Core::LinAlg::SparseMatrix>(
                     new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(1, 0)));
 
-            Teuchos::RCP<Core::LinAlg::Vector> frhs = extractor()->extract_vector(rhs_, 1);
+            Teuchos::RCP<Core::LinAlg::Vector<double>> frhs = extractor()->extract_vector(rhs_, 1);
 
             // Evaluate Poro No Penetration Contact Condensation
             costrategy.evaluate_poro_no_pen_contact(k_fs, f, frhs);

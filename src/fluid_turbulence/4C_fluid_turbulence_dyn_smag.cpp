@@ -149,9 +149,9 @@ void FLD::DynSmagFilter::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatr
  |                                                           gammi 09/08|
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   const Epetra_Map* nodecolmap = discret_->node_col_map();
 
@@ -172,8 +172,9 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
     if (physicaltype_ == Inpar::FLUID::loma)
     {
       col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
-      col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-      col_filtered_dens_strainrate_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+      col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+      col_filtered_dens_strainrate_ =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
       boxf_->get_filtered_dens_velocity(col_filtered_dens_vel_);
       boxf_->get_density(col_filtered_dens_);
       boxf_->get_density_strainrate(col_filtered_dens_strainrate_);
@@ -215,8 +216,8 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
  |                                                       rasthofer 08/12|
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
-    const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle,
     Teuchos::ParameterList& extraparams, const int ndsvel)
 {
   const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
@@ -227,9 +228,9 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
   col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   col_filtered_dens_vel_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
   col_filtered_dens_rateofstrain_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
-  col_filtered_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-  col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
-  col_filtered_dens_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(*nodecolmap, true));
+  col_filtered_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  col_filtered_dens_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  col_filtered_dens_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
   boxfsc_->get_filtered_velocity(col_filtered_vel_);
   boxfsc_->get_filtered_dens_velocity(col_filtered_dens_vel_);
   boxfsc_->get_filtered_dens_velocity_temp(col_filtered_dens_vel_temp_);
@@ -315,10 +316,10 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
 
   // final constants (Cs*delta)^2 and (Ci*delta)^2 (loma only)
   const Epetra_Map* elerowmap = discret_->element_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector> Cs_delta_sq =
-      Teuchos::rcp(new Core::LinAlg::Vector(*elerowmap, true));
-  Teuchos::RCP<Core::LinAlg::Vector> Ci_delta_sq =
-      Teuchos::rcp(new Core::LinAlg::Vector(*elerowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> Cs_delta_sq =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*elerowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> Ci_delta_sq =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*elerowmap, true));
 
   if (homdir_)
   {
@@ -587,21 +588,21 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
 
   // export from row to column map
   const Epetra_Map* elecolmap = discret_->element_col_map();
-  Teuchos::RCP<Core::LinAlg::Vector> col_Cs_delta_sq =
-      Teuchos::rcp(new Core::LinAlg::Vector(*elecolmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> col_Cs_delta_sq =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*elecolmap, true));
   col_Cs_delta_sq->PutScalar(0.0);
 
   Core::LinAlg::export_to(*Cs_delta_sq, *col_Cs_delta_sq);
-  Teuchos::RCP<Core::LinAlg::Vector> col_Ci_delta_sq =
-      Teuchos::rcp(new Core::LinAlg::Vector(*elecolmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> col_Ci_delta_sq =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*elecolmap, true));
   col_Ci_delta_sq->PutScalar(0.0);
 
   Core::LinAlg::export_to(*Ci_delta_sq, *col_Ci_delta_sq);
 
   // store in parameters
   Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
-  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector>>("col_Cs_delta_sq", col_Cs_delta_sq);
-  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector>>("col_Ci_delta_sq", col_Ci_delta_sq);
+  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Cs_delta_sq", col_Cs_delta_sq);
+  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Ci_delta_sq", col_Ci_delta_sq);
 
   // ----------------------------------------------------
   // global in plane averaging of quantities for
@@ -700,7 +701,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   TEUCHOS_FUNC_TIME_MONITOR("ComputePrt");
 
   const Epetra_Map* elerowmap = scatradiscret_->element_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector> Prt = Teuchos::rcp(new Core::LinAlg::Vector(*elerowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> Prt =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*elerowmap, true));
 
   // for special flows, LijMij and MijMij averaged in each
   // hom. direction
@@ -956,13 +958,13 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
 
   // export from row to column map
   const Epetra_Map* elecolmap = scatradiscret_->element_col_map();
-  Teuchos::RCP<Core::LinAlg::Vector> col_Prt =
-      Teuchos::rcp(new Core::LinAlg::Vector(*elecolmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> col_Prt =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*elecolmap, true));
   col_Prt->PutScalar(0.0);
   Core::LinAlg::export_to(*Prt, *col_Prt);
   // store in parameters
   Teuchos::ParameterList* modelparams = &(extraparams.sublist("TURBULENCE MODEL"));
-  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector>>("col_ele_Prt", col_Prt);
+  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_ele_Prt", col_Prt);
 
   // ----------------------------------------------------
   // global in plane averaging of quantities for

@@ -143,8 +143,8 @@ bool NOX::Solid::LinearSystem::applyJacobianInverse(
   // Structure
   if (jacType_ == SparseMatrix)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> fres =
-        Teuchos::rcp(new Core::LinAlg::Vector(input.getEpetraVector()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fres =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(input.getEpetraVector()));
     Core::LinAlg::VectorView result_view(result.getEpetraVector());
     Core::LinAlg::SparseMatrix* J = dynamic_cast<Core::LinAlg::SparseMatrix*>(jacPtr_.get());
     Core::LinAlg::SolverParams solver_params;

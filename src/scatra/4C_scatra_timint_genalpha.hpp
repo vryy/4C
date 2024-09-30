@@ -57,15 +57,15 @@ namespace ScaTra
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector> phiaf() override { return phiaf_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf() override { return phiaf_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> phiafnp() override { return phiaf_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiafnp() override { return phiaf_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> phiam() override { return phiam_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiam() override { return phiam_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> phidtam() override { return phidtam_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtam() override { return phidtam_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> fs_phi() override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fs_phi() override
     {
       if (Sep_ != Teuchos::null) Sep_->multiply(false, *phiaf_, *fsphiaf_);
       return fsphiaf_;
@@ -122,14 +122,14 @@ namespace ScaTra
     double residual_scaling() const override { return 1.0 / (dta_ * genalphafac_); }
 
     /// scalar at time n+alpha_F and n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector> phiaf_;
-    Teuchos::RCP<Core::LinAlg::Vector> phiam_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiam_;
 
     /// scalar time derivative at time n+alpha_M
-    Teuchos::RCP<Core::LinAlg::Vector> phidtam_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtam_;
 
     /// fine-scale part at time n+alpha_F
-    Teuchos::RCP<Core::LinAlg::Vector> fsphiaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fsphiaf_;
 
     /// time factors for generalized-alpha time integration
     double alphaM_;

@@ -81,9 +81,10 @@ namespace UTILS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vector that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            sysvec1,  ///< distributed vector that may be filled by
+                      ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
         ) override;
 
@@ -97,11 +98,13 @@ namespace UTILS
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat3,  ///< Cardiovascular0D offdiagonal matrix dfext/dp
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vectors that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec2, Teuchos::RCP<Core::LinAlg::Vector> sysvec3,
-        const Teuchos::RCP<Core::LinAlg::Vector> sysvec4,
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec5) override;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            sysvec1,  ///< distributed vectors that may be filled by
+                      ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5) override;
 
    private:
     // don't want = operator, cctor and destructor

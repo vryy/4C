@@ -70,8 +70,8 @@ double Adapter::FluidImmersed::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidImmersed::nonlinear_solve(
-    Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel)
+void Adapter::FluidImmersed::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
 {
   fluid_field()->solve();
 }
@@ -79,8 +79,8 @@ void Adapter::FluidImmersed::nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::relaxation_solve(
-    Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt)
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::relaxation_solve(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt)
 {
   // the displacement -> velocity conversion at the interface
   idisp->Scale(1. / dt);
@@ -91,7 +91,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::relaxation_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::extract_interface_forces()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_forces()
 {
   return fluid_field()->extract_interface_forces();
 }
@@ -99,7 +99,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::extract_interface_for
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::extract_interface_velnp()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
   return fluid_field()->extract_interface_velnp();
@@ -108,7 +108,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::extract_interface_vel
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::extract_interface_veln()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_veln()
 {
   return fluid_field()->extract_interface_veln();
 }
@@ -116,7 +116,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::extract_interface_vel
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidImmersed::integrate_interface_shape()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::integrate_interface_shape()
 {
   return fluid_field()->integrate_interface_shape();
 }

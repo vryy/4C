@@ -148,49 +148,49 @@ void FPSI::MonolithicBase::output()
 /*----------------------------------------------------------------------*/
 /*                          Coupling Methods                            */
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::fluid_to_ale(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::fluid_to_ale(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->master_to_slave(iv);
 }
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::ale_to_fluid(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_fluid(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
 /// Just in use for problems with FSI-interface ///
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::struct_to_fluid_fsi(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::struct_to_fluid_fsi(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_fsi_->master_to_slave(iv);
 }
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::fluid_to_struct_fsi(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::fluid_to_struct_fsi(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_fsi_->slave_to_master(iv);
 }
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::struct_to_ale_fsi(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::struct_to_ale_fsi(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_fsi_->master_to_slave(iv);
 }
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::ale_to_struct_fsi(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_struct_fsi(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_fsi_->slave_to_master(iv);
 }
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::fluid_to_ale_fsi(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::fluid_to_ale_fsi(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_fsi_->master_to_slave(iv);
 }
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::ale_to_fluid_fsi(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_fluid_fsi(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_fsi_->slave_to_master(iv);
 }
-Teuchos::RCP<Core::LinAlg::Vector> FPSI::MonolithicBase::ale_to_fluid_interface_fsi(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_fluid_interface_fsi(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_fsi_->slave_to_master(iv);
 }
@@ -424,7 +424,7 @@ void FPSI::Monolithic::time_step()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FPSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc)
+void FPSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::Evaluate");
 
@@ -439,10 +439,10 @@ void FPSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc
   }
 
 
-  Teuchos::RCP<const Core::LinAlg::Vector> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector> fx;
-  Teuchos::RCP<const Core::LinAlg::Vector> pfx;
-  Teuchos::RCP<const Core::LinAlg::Vector> ax;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> pfx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
 
   if (stepinc != Teuchos::null)
   {
@@ -457,14 +457,14 @@ void FPSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc
   poro_field()->evaluate_fields(Teuchos::null);
   poro_field()->setup_system_matrix();
 
-  Teuchos::RCP<Core::LinAlg::Vector> porointerfacedisplacements_FPSI =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> porointerfacedisplacements_FPSI =
       fpsi_coupl()->i_porostruct_to_ale(
           poro_field()->structure_field()->extract_interface_dispnp(true));
   ale_field()->apply_interface_displacements(porointerfacedisplacements_FPSI);
 
   if (FSI_Interface_exists_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> porointerfacedisplacements_FSI =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> porointerfacedisplacements_FSI =
         struct_to_ale_fsi(poro_field()->structure_field()->extract_interface_dispnp(false));
     ale_field()->apply_fsi_interface_displacements(porointerfacedisplacements_FSI);
   }
@@ -473,7 +473,8 @@ void FPSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc
       1.0, *ax, 1.0);  // displacement increments on the interfaces are zero!!!
   ale_field()->evaluate(Teuchos::null);
 
-  Teuchos::RCP<const Core::LinAlg::Vector> aledisplacements = ale_to_fluid(ale_field()->dispnp());
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> aledisplacements =
+      ale_to_fluid(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(aledisplacements);
 
   fluid_field()->update_newton(fx);
@@ -834,19 +835,19 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
                 << "   residual = " << normofrhs_ << " > " << normofrhsold_ << std::endl;
 
       // substract the old interinc_ from all fields (undo the update)
-      Teuchos::RCP<Core::LinAlg::Vector> sx;
-      Teuchos::RCP<Core::LinAlg::Vector> pfx;
-      Teuchos::RCP<Core::LinAlg::Vector> fx;
-      Teuchos::RCP<const Core::LinAlg::Vector> constsx;
-      Teuchos::RCP<const Core::LinAlg::Vector> constfpx;
-      Teuchos::RCP<const Core::LinAlg::Vector> constfx;
-      Teuchos::RCP<const Core::LinAlg::Vector> ax;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> sx;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> pfx;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> fx;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> constsx;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> constfpx;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> constfx;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
 
       sx = Teuchos::rcp(
-          new Core::LinAlg::Vector(*poro_field()->structure_field()->dof_row_map(), true));
-      pfx =
-          Teuchos::rcp(new Core::LinAlg::Vector(*poro_field()->fluid_field()->dof_row_map(), true));
-      fx = Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map(), true));
+          new Core::LinAlg::Vector<double>(*poro_field()->structure_field()->dof_row_map(), true));
+      pfx = Teuchos::rcp(
+          new Core::LinAlg::Vector<double>(*poro_field()->fluid_field()->dof_row_map(), true));
+      fx = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
 
       extract_field_vectors(iterinc_, constsx, constfpx, constfx, ax, iter_ == 1);
       iterinc_->Norm2(&normofiterinc_);
@@ -864,7 +865,8 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
       poro_field()->evaluate_fields(Teuchos::null);
       poro_field()->setup_system_matrix();
 
-      fluid_field()->update_newton(Teuchos::rcp_dynamic_cast<const Core::LinAlg::Vector>(fx));
+      fluid_field()->update_newton(
+          Teuchos::rcp_dynamic_cast<const Core::LinAlg::Vector<double>>(fx));
       // ale_field()   ->ResetNewton(ax);
 
       fluid_field()->apply_mesh_displacement(meshdispold_);
@@ -911,7 +913,8 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
   if (islinesearch_ == false)
   {
     // check whether iterinc_ points in right direction
-    Teuchos::RCP<Core::LinAlg::Vector> tempvec = Core::LinAlg::create_vector(*dof_row_map(), true);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
+        Core::LinAlg::create_vector(*dof_row_map(), true);
     sparse->multiply(true, *rhs_, *tempvec);
     double climb = 0.0;
     tempvec->Dot(*iterinc_, &climb);
@@ -1048,16 +1051,16 @@ bool FPSI::Monolithic::converged()
 void FPSI::Monolithic::build_convergence_norms()
 {
   rhs_->Norm2(&normofrhs_);
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fluid;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fluidvelocity;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fluidpressure;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_porofluidvelocity;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_porofluidpressure;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_porointerface;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fluidinterface;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_porofluid;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_porostruct;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_ale;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fluid;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fluidvelocity;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fluidpressure;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_porofluidvelocity;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_porofluidpressure;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_porointerface;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fluidinterface;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_porofluid;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_porostruct;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_ale;
 
 
   rhs_porostruct = extractor().extract_vector(rhs_, structure_block_);
@@ -1068,10 +1071,10 @@ void FPSI::Monolithic::build_convergence_norms()
       fpsi_coupl()->poro_fluid_fpsi_vel_pres_extractor()->extract_cond_vector(rhs_porofluid);
 
   rhs_fluid = extractor().extract_vector(rhs_, fluid_block_);
-  //  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fullfluid = Teuchos::rcp(new
-  //  Core::LinAlg::Vector(*fluid_field()->dof_row_map())); Teuchos::RCP<const Core::LinAlg::Vector>
-  //  rhs_fsi = Teuchos::rcp(new
-  //  Core::LinAlg::Vector(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
+  //  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fullfluid = Teuchos::rcp(new
+  //  Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map())); Teuchos::RCP<const
+  //  Core::LinAlg::Vector<double>> rhs_fsi = Teuchos::rcp(new
+  //  Core::LinAlg::Vector<double>(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
   //  rhs_fullfluid = Core::LinAlg::MergeVector(rhs_fluid,rhs_fsi,false);
 
   rhs_fluidvelocity = fluid_field()->extract_velocity_part(rhs_fluid);
@@ -1110,16 +1113,16 @@ void FPSI::Monolithic::build_convergence_norms()
 
   if (islinesearch_ == false) iterinc_->Norm2(&normofiterinc_);
 
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincporostruct;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincporofluid;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincfluid;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincfluidvelocity;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincfluidpressure;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincporofluidvelocity;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincporofluidpressure;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincale;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincporointerface;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincfluidinterface;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincporostruct;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincporofluid;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfluid;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfluidvelocity;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfluidpressure;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincporofluidvelocity;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincporofluidpressure;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincale;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincporointerface;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfluidinterface;
 
   iterincporostruct = extractor().extract_vector(iterinc_, structure_block_);
   iterincporofluid = extractor().extract_vector(iterinc_, porofluid_block_);
@@ -1130,10 +1133,10 @@ void FPSI::Monolithic::build_convergence_norms()
 
   iterincfluid = extractor().extract_vector(iterinc_, fluid_block_);
 
-  //  Teuchos::RCP<const Core::LinAlg::Vector> iterincfullfluid = Teuchos::rcp(new
-  //  Core::LinAlg::Vector(*fluid_field()->dof_row_map())); Teuchos::RCP<const Core::LinAlg::Vector>
-  //  iterincfsi = Teuchos::rcp(new
-  //  Core::LinAlg::Vector(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
+  //  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfullfluid = Teuchos::rcp(new
+  //  Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map())); Teuchos::RCP<const
+  //  Core::LinAlg::Vector<double>> iterincfsi = Teuchos::rcp(new
+  //  Core::LinAlg::Vector<double>(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
   //  iterincfullfluid = Core::LinAlg::MergeVector(iterincfluid,iterincfsi,false);
 
   iterincfluidvelocity = fluid_field()->extract_velocity_part(iterincfluid);
@@ -1158,16 +1161,16 @@ void FPSI::Monolithic::build_convergence_norms()
 
   // Get Norm1 of dof values for each field
 
-  Teuchos::RCP<const Core::LinAlg::Vector> porofluiddof;
-  Teuchos::RCP<const Core::LinAlg::Vector> porofluidvelocity;
-  Teuchos::RCP<const Core::LinAlg::Vector> porofluidpressure;
-  Teuchos::RCP<const Core::LinAlg::Vector> porostructdisplacements;
-  Teuchos::RCP<const Core::LinAlg::Vector> fluiddof;
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidvelocity;
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidpressure;
-  Teuchos::RCP<const Core::LinAlg::Vector> aledisplacements;
-  Teuchos::RCP<const Core::LinAlg::Vector> porointerface;
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidinterface;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluiddof;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluidvelocity;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluidpressure;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> porostructdisplacements;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddof;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvelocity;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidpressure;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> aledisplacements;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> porointerface;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidinterface;
 
   porofluiddof = poro_field()->fluid_field()->velnp();
   porofluidvelocity = poro_field()->fluid_field()->extract_velocity_part(porofluiddof);
@@ -1544,7 +1547,8 @@ void FPSI::Monolithic::fpsifd_check()
   // matrices and vectors
   //////////////////////////////////////////////////////////////
   // build artificial iteration increment
-  Teuchos::RCP<Core::LinAlg::Vector> iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc =
+      Core::LinAlg::create_vector(*dof_row_map(), true);
   const int dofs = iterinc->GlobalLength();
   iterinc->PutScalar(0.0);
   iterinc->ReplaceGlobalValue(0, 0, delta);
@@ -1553,12 +1557,12 @@ void FPSI::Monolithic::fpsifd_check()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   // store old rhs
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_old =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_copy =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 

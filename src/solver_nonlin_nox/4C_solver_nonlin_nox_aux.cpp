@@ -173,17 +173,19 @@ NOX::Nln::LinSystem::LinearSystemType NOX::Nln::Aux::get_linear_system_type(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::Nln::Aux::root_mean_square_norm(const double& atol, const double& rtol,
-    Teuchos::RCP<const Core::LinAlg::Vector> xnew, Teuchos::RCP<const Core::LinAlg::Vector> xincr,
-    const bool& disable_implicit_weighting)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> xnew,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> xincr, const bool& disable_implicit_weighting)
 {
   double rval = 0.0;
 
   // calculate the old iterate (k-1)
-  Teuchos::RCP<Core::LinAlg::Vector> v = Teuchos::rcp(new Core::LinAlg::Vector(*xnew));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*xnew));
   v->Update(-1.0, *xincr, 1.0);
 
   // new auxiliary vector
-  Teuchos::RCP<Core::LinAlg::Vector> u = Teuchos::rcp(new Core::LinAlg::Vector(xnew->Map(), false));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> u =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(xnew->Map(), false));
 
   // create the weighting factor u = RTOL |x^(k-1)| + ATOL
   u->PutScalar(1.0);

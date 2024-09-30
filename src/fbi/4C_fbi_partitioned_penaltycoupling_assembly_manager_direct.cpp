@@ -49,8 +49,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel)
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel)
 {
   // resulting discrete element force vectors of the two interacting elements
   std::vector<Core::LinAlg::SerialDenseVector> eleforce(2);

@@ -146,7 +146,8 @@ void Adapter::FBIConstraintenforcer::evaluate()
 
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIConstraintenforcer::structure_to_fluid(int step)
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIConstraintenforcer::structure_to_fluid(
+    int step)
 {
   // todo only access the parameter list once
 
@@ -184,7 +185,7 @@ void Adapter::FBIConstraintenforcer::recompute_coupling_without_pair_creation()
 
 /*----------------------------------------------------------------------*/
 // return the structure force
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIConstraintenforcer::fluid_to_structure()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIConstraintenforcer::fluid_to_structure()
 {
   return assemble_structure_coupling_residual();
 };

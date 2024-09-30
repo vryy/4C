@@ -65,13 +65,14 @@ namespace CONTACT
         FOUR_C_THROW("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
-        const int step, const int iter, bool predictor) override;
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+        bool predictor) override;
 
     //! Set Contact State and update search tree and normals
     void set_state(
-        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) override;
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) override;
 
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated

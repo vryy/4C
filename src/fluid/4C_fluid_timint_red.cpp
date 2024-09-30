@@ -377,13 +377,13 @@ void FLD::TimIntRedModels::output()
  | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::insert_volumetric_surface_flow_cond_vector(
-    Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> res)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vel, Teuchos::RCP<Core::LinAlg::Vector<double>> res)
 {
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
-  //    Teuchos::RCP<Core::LinAlg::Vector> temp_vec = Teuchos::rcp(new
-  //    Core::LinAlg::Vector(*vol_surf_flow_bc_maps_,true)); vol_surf_flow_bc_->insert_cond_vector(
-  //    *temp_vec , *residual_);
+  //    Teuchos::RCP<Core::LinAlg::Vector<double>> temp_vec = Teuchos::rcp(new
+  //    Core::LinAlg::Vector<double>(*vol_surf_flow_bc_maps_,true));
+  //    vol_surf_flow_bc_->insert_cond_vector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->insert_volumetric_surface_flow_cond_vector(
       vol_flow_rates_bc_extractor_->extract_volumetric_surface_flow_cond_vector(vel), res);
@@ -425,7 +425,7 @@ void FLD::TimIntRedModels::avm3_preparation()
 /*----------------------------------------------------------------------*
  | RedModels - specific BC in linear_relaxation_solve            bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::custom_solve(Teuchos::RCP<Core::LinAlg::Vector> relax)
+void FLD::TimIntRedModels::custom_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> relax)
 {
   // apply Womersley as a Dirichlet BC
   Core::LinAlg::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));

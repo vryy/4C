@@ -150,7 +150,7 @@ void FLD::TimIntPoro::set_initial_porosity_field(
 }
 
 void FLD::TimIntPoro::update_iter_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector> vel)  //!< input residual velocities
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)  //!< input residual velocities
 
 {
   FluidImplicitTimeInt::update_iter_incrementally(vel);
@@ -159,7 +159,7 @@ void FLD::TimIntPoro::update_iter_incrementally(
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Core::LinAlg::Vector> aux =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> aux =
         Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
 
     // only one step theta
@@ -178,7 +178,8 @@ void FLD::TimIntPoro::output()
   // output of solution
   if (step_ % upres_ == 0)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> convel = Teuchos::rcp(new Core::LinAlg::Vector(*velnp_));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> convel =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*velnp_));
     convel->Update(-1.0, *gridv_, 1.0);
     output_->write_vector("convel", convel);
     output_->write_vector("gridv", gridv_);

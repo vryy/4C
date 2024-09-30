@@ -51,7 +51,7 @@ namespace FSI
     //! 1) the single fields residuals
     //! 2) the Lagrange multiplier field lambda_
     //! 3) terms in the first nonlinear iteration
-    void setup_rhs(Core::LinAlg::Vector& f,  ///< empty rhs vector (to be filled)
+    void setup_rhs(Core::LinAlg::Vector<double>& f,  ///< empty rhs vector (to be filled)
         bool firstcall = false  ///< indicates whether this is the first nonlinear iteration or not
         ) override;
 
@@ -63,7 +63,7 @@ namespace FSI
     void create_combined_dof_row_map() override;
 
     /// initial guess for subsequent fields
-    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig) override;
+    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig) override;
 
     /// create merged Dirichlet map from single field maps
     Teuchos::RCP<Epetra_Map> combined_dbc_map() override;
@@ -84,9 +84,10 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
-        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector>& ax) override;
+    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax) override;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
     void recover_lagrange_multiplier() override;
@@ -120,9 +121,10 @@ namespace FSI
 
    private:
     /// build block vector from field vectors
-    void setup_vector(Core::LinAlg::Vector& f, Teuchos::RCP<const Core::LinAlg::Vector> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector> fv, Teuchos::RCP<const Core::LinAlg::Vector> av,
-        double fluidscale);
+    void setup_vector(Core::LinAlg::Vector<double>& f,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> av, double fluidscale);
 
     /// access type-cast pointer to problem-specific fluid-wrapper
     const Teuchos::RCP<Adapter::FluidFluidFSI>& fluid_field() { return MonolithicNoNOX::fluid_; }
@@ -145,7 +147,7 @@ namespace FSI
     //@{
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! fluid) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> lambda_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggprev_;
@@ -173,13 +175,13 @@ namespace FSI
 
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector> ddialeinc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ddialeinc_;
     //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
     //! current iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector> ddginc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ddginc_;
     //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector> duiinc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> duiinc_;
     //@}
   };
 }  // namespace FSI

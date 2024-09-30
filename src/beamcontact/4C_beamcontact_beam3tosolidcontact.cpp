@@ -89,7 +89,7 @@ CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Beam3tosoli
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evaluate(
-    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint, const double& pp)
+    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint, const double& pp)
 {
   const int dim1 = 3 * numnodes * numnodalvalues;
   const int dim2 = 3 * numnodessol;
@@ -1382,7 +1382,8 @@ template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
     assemble_fc_and_stiffc_contact(
         const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> fc1,
-        const Core::LinAlg::Matrix<3 * numnodessol, 1, TYPEBTS> fc2, Core::LinAlg::Vector* fint,
+        const Core::LinAlg::Matrix<3 * numnodessol, 1, TYPEBTS> fc2,
+        Core::LinAlg::Vector<double>* fint,
         const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues,
             3 * numnodes * numnodalvalues + 3 * numnodessol, TYPEBTS>
             stiffc1,

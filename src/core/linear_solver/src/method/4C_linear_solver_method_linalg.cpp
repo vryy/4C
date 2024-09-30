@@ -215,7 +215,7 @@ int Core::LinAlg::Solver::solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> 
 }
 
 int Core::LinAlg::Solver::solve(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Core::LinAlg::Vector> x, Teuchos::RCP<Core::LinAlg::Vector> b,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> x, Teuchos::RCP<Core::LinAlg::Vector<double>> b,
     const SolverParams &params)
 {
   setup(matrix, x->get_ptr_of_Epetra_Vector(), b->get_ptr_of_Epetra_Vector(), params);

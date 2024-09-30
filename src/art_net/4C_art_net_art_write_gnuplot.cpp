@@ -314,7 +314,7 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
               pow(xyze(2, 0) - xyze(2, 1), 2));
 
     // get the degrees of freedom
-    Teuchos::RCP<const Core::LinAlg::Vector> qanp = discret->get_state("qanp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discret->get_state("qanp");
     std::vector<double> myqanp(lm.size());
     Core::FE::extract_my_values(*qanp, myqanp, lm);
 

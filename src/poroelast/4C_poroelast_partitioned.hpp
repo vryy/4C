@@ -60,16 +60,17 @@ namespace PoroElast
     bool convergence_check(int itnum);
 
     //! fluid increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> fluidincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidincnp_;
     //! structure increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> structincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> structincnp_;
 
     //! maximum iteration steps
     int itmax_;
     //! convergence tolerance
     double ittol_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> fluidveln_;  //!< global fluid velocities and pressures
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        fluidveln_;  //!< global fluid velocities and pressures
   };
 
 }  // namespace PoroElast

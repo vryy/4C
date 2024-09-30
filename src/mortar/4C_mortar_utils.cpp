@@ -961,8 +961,8 @@ void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::Sparse
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_rhs_condensation(
-    Teuchos::RCP<Core::LinAlg::Vector>& rhs, const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p)
+void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p)
 {
   // prepare maps
   Teuchos::RCP<Epetra_Map> gsdofrowmap =
@@ -970,17 +970,20 @@ void Mortar::UTILS::mortar_rhs_condensation(
   Teuchos::RCP<Epetra_Map> gmdofrowmap =
       Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p->domain_map()));
 
-  Teuchos::RCP<Core::LinAlg::Vector> fs = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap));
-  Teuchos::RCP<Core::LinAlg::Vector> fm_cond = Teuchos::rcp(new Core::LinAlg::Vector(*gmdofrowmap));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fs =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fm_cond =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap));
   Core::LinAlg::export_to(*rhs, *fs);
-  Teuchos::RCP<Core::LinAlg::Vector> fs_full = Teuchos::rcp(new Core::LinAlg::Vector(rhs->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fs_full =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(rhs->Map()));
   Core::LinAlg::export_to(*fs, *fs_full);
   if (rhs->Update(-1., *fs_full, 1.)) FOUR_C_THROW("update failed");
 
   if (p->multiply(true, *fs, *fm_cond)) FOUR_C_THROW("multiply failed");
 
-  Teuchos::RCP<Core::LinAlg::Vector> fm_cond_full =
-      Teuchos::rcp(new Core::LinAlg::Vector(rhs->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fm_cond_full =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(rhs->Map()));
   Core::LinAlg::export_to(*fm_cond, *fm_cond_full);
   if (rhs->Update(1., *fm_cond_full, 1.)) FOUR_C_THROW("update failed");
 
@@ -989,8 +992,8 @@ void Mortar::UTILS::mortar_rhs_condensation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_recover(
-    Teuchos::RCP<Core::LinAlg::Vector>& inc, const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p)
+void Mortar::UTILS::mortar_recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p)
 {
   // prepare maps
   Teuchos::RCP<Epetra_Map> gsdofrowmap =
@@ -998,13 +1001,15 @@ void Mortar::UTILS::mortar_recover(
   Teuchos::RCP<Epetra_Map> gmdofrowmap =
       Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p->domain_map()));
 
-  Teuchos::RCP<Core::LinAlg::Vector> m_inc = Teuchos::rcp(new Core::LinAlg::Vector(*gmdofrowmap));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> m_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap));
   Core::LinAlg::export_to(*inc, *m_inc);
 
-  Teuchos::RCP<Core::LinAlg::Vector> s_inc = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> s_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap));
   if (p->multiply(false, *m_inc, *s_inc)) FOUR_C_THROW("multiply failed");
-  Teuchos::RCP<Core::LinAlg::Vector> s_inc_full =
-      Teuchos::rcp(new Core::LinAlg::Vector(inc->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> s_inc_full =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(inc->Map()));
   Core::LinAlg::export_to(*s_inc, *s_inc_full);
   if (inc->Update(1., *s_inc_full, 1.)) FOUR_C_THROW("update failed");
 
@@ -1036,7 +1041,7 @@ void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector>& rhs,
+void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
   for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(rhs, p[i++]))
@@ -1045,7 +1050,7 @@ void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector>& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_recover(Teuchos::RCP<Core::LinAlg::Vector>& inc,
+void Mortar::UTILS::mortar_recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
   for (unsigned i = 0; i < p.size(); mortar_recover(inc, p[i++]))

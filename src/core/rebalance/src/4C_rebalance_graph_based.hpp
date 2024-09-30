@@ -30,6 +30,7 @@ namespace Core::FE
 
 namespace Core::LinAlg
 {
+  template <typename T>
   class Vector;
 }
 
@@ -56,7 +57,7 @@ namespace Core::Rebalance
   std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> rebalance_node_maps(
       Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
-      const Teuchos::RCP<Core::LinAlg::Vector>& initialNodeWeights = Teuchos::null,
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates = Teuchos::null);
 
@@ -80,7 +81,7 @@ namespace Core::Rebalance
   */
   Teuchos::RCP<Epetra_CrsGraph> rebalance_graph(const Epetra_CrsGraph& initialGraph,
       const Teuchos::ParameterList& rebalanceParams,
-      const Teuchos::RCP<Core::LinAlg::Vector>& initialNodeWeights = Teuchos::null,
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates = Teuchos::null);
 
@@ -107,8 +108,8 @@ namespace Core::Rebalance
 
   @return Node and edge weights to be used for repartitioning
   */
-  std::pair<Teuchos::RCP<Core::LinAlg::Vector>, Teuchos::RCP<Epetra_CrsMatrix>> build_weights(
-      const Core::FE::Discretization& dis);
+  std::pair<Teuchos::RCP<Core::LinAlg::Vector<double>>, Teuchos::RCP<Epetra_CrsMatrix>>
+  build_weights(const Core::FE::Discretization& dis);
 
   /*!
   \brief Build node graph of a given  discretization

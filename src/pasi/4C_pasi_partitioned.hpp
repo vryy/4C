@@ -176,9 +176,9 @@ namespace PaSI
      * \param[in] intfvelnp  interface velocity
      * \param[in] intfaccnp  interface acceleration
      */
-    void set_interface_states(Teuchos::RCP<const Core::LinAlg::Vector> intfdispnp,
-        Teuchos::RCP<const Core::LinAlg::Vector> intfvelnp,
-        Teuchos::RCP<const Core::LinAlg::Vector> intfaccnp);
+    void set_interface_states(Teuchos::RCP<const Core::LinAlg::Vector<double>> intfdispnp,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> intfvelnp,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> intfaccnp);
 
     /*!
      * \brief output of structure field
@@ -216,13 +216,13 @@ namespace PaSI
     Teuchos::RCP<const Solid::MapExtractor> interface_;
 
     //! interface displacement
-    Teuchos::RCP<Core::LinAlg::Vector> intfdispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intfdispnp_;
 
     //! interface velocity
-    Teuchos::RCP<Core::LinAlg::Vector> intfvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intfvelnp_;
 
     //! interface acceleration
-    Teuchos::RCP<Core::LinAlg::Vector> intfaccnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intfaccnp_;
 
    private:
     /*!

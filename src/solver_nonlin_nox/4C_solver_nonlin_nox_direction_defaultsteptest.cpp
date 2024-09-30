@@ -72,8 +72,8 @@ void NOX::Nln::Direction::Test::VolumeChange::compute_primal_direction_measures(
 
   // range map and domain map are expected to coincide
   const Epetra_Map& rangemap = nln_grp.get_jacobian_range_map(0, 0);
-  Teuchos::RCP<Core::LinAlg::Vector> primal_dir =
-      Core::LinAlg::extract_my_vector(Core::LinAlg::Vector(dir_epetra.getEpetraVector()), rangemap);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> primal_dir = Core::LinAlg::extract_my_vector(
+      Core::LinAlg::Vector<double>(dir_epetra.getEpetraVector()), rangemap);
   ::NOX::Epetra::Vector nox_primal_dir(
       primal_dir->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
@@ -122,7 +122,8 @@ void NOX::Nln::Direction::Test::VolumeChange::identify_bad_elements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Direction::Test::VolumeChange::get_current_diagonal(
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+NOX::Nln::Direction::Test::VolumeChange::get_current_diagonal(
     const ::NOX::Abstract::Group& grp) const
 {
   return get_current_diagonal(dynamic_cast<const Nln::Group&>(grp));
@@ -130,10 +131,10 @@ Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Direction::Test::VolumeChange::get_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Direction::Test::VolumeChange::get_current_diagonal(
-    const NOX::Nln::Group& grp) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+NOX::Nln::Direction::Test::VolumeChange::get_current_diagonal(const NOX::Nln::Group& grp) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> diagonal = get_empty_diagonal(grp);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> diagonal = get_empty_diagonal(grp);
   fill_diagonal_at_bad_dofs(*diagonal);
 
   return diagonal;
@@ -142,7 +143,7 @@ Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Direction::Test::VolumeChange::get_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
-    Core::LinAlg::Vector& diagonal) const
+    Core::LinAlg::Vector<double>& diagonal) const
 {
   for (int i : my_bad_dofs_)
   {
@@ -155,12 +156,12 @@ void NOX::Nln::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Direction::Test::VolumeChange::get_empty_diagonal(
-    const NOX::Nln::Group& grp) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+NOX::Nln::Direction::Test::VolumeChange::get_empty_diagonal(const NOX::Nln::Group& grp) const
 {
   const Epetra_Map& jac_rmap = grp.get_jacobian_range_map(0, 0);
-  Teuchos::RCP<Core::LinAlg::Vector> diagonal =
-      Teuchos::rcp(new Core::LinAlg::Vector(jac_rmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> diagonal =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(jac_rmap, true));
 
   return diagonal;
 }

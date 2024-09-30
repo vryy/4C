@@ -74,7 +74,7 @@ namespace Mat
       }
 
      private:
-      std::vector<Teuchos::RCP<Core::LinAlg::Vector>> matparams_;
+      std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> matparams_;
 
     };  // class ElectromagneticMat
 

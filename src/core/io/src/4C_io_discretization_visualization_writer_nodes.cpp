@@ -75,7 +75,7 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterNodes::append_dof_based_result_data_vector(
-      const Teuchos::RCP<Core::LinAlg::Vector>& result_data_dofbased,
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& result_data_dofbased,
       unsigned int result_num_dofs_per_node, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the

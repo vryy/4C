@@ -142,7 +142,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
@@ -157,7 +157,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-    double time, const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors,
+    double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
     const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
@@ -179,7 +179,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
-  Teuchos::RCP<Core::LinAlg::Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+  Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectoraux =
+      Teuchos::null;  // auxiliar system vector
   if (systemvectors[0] != Teuchos::null)
   {
     deg = 0;

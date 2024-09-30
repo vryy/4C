@@ -116,7 +116,7 @@ namespace Wear
     */
     void assemble_lin_stick(Core::LinAlg::SparseMatrix& linstickLMglobal,
         Core::LinAlg::SparseMatrix& linstickDISglobal,
-        Core::LinAlg::Vector& linstickRHSglobal) override;
+        Core::LinAlg::Vector<double>& linstickRHSglobal) override;
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -128,7 +128,7 @@ namespace Wear
     */
     void assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLMglobal,
         Core::LinAlg::SparseMatrix& linslipDISglobal,
-        Core::LinAlg::Vector& linslipRHSglobal) override;
+        Core::LinAlg::Vector<double>& linslipRHSglobal) override;
 
     /*!
     \brief Assemble matrix LinSlip containing w linearizations
@@ -153,7 +153,7 @@ namespace Wear
 
      This method assembles the weighted wear vector.
      */
-    virtual void assemble_wear(Core::LinAlg::Vector& wglobal);
+    virtual void assemble_wear(Core::LinAlg::Vector<double>& wglobal);
 
     /*!
     \brief Build active set (nodes / dofs) of this interface
@@ -257,7 +257,7 @@ namespace Wear
     /*!
     \brief Assemble inactive rhs (incremental delta_w_)
     */
-    virtual void assemble_inactive_wear_rhs(Core::LinAlg::Vector& inactiverhs);
+    virtual void assemble_inactive_wear_rhs(Core::LinAlg::Vector<double>& inactiverhs);
 
     /*!
     \brief Assemble inactive rhs (incremental delta_w_)
@@ -267,7 +267,7 @@ namespace Wear
     /*!
     \brief Assemble wear-cond. rhs
     */
-    virtual void assemble_wear_cond_rhs(Core::LinAlg::Vector& rhs);
+    virtual void assemble_wear_cond_rhs(Core::LinAlg::Vector<double>& rhs);
 
     /*!
     \brief Assemble wear-cond. rhs

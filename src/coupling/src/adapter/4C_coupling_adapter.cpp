@@ -582,10 +582,11 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::Coupling::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::Vector> mv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::master_to_slave(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> sv = Teuchos::rcp(new Core::LinAlg::Vector(*slavedofmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavedofmap_));
 
   master_to_slave(mv->get_ptr_of_const_Epetra_Vector(), sv->get_ptr_of_Epetra_Vector());
 
@@ -595,10 +596,11 @@ Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::Coupling::master_to_slave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::Coupling::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::Vector> sv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::slave_to_master(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> mv = Teuchos::rcp(new Core::LinAlg::Vector(*masterdofmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*masterdofmap_));
 
   slave_to_master(sv->get_ptr_of_const_Epetra_Vector(), mv->get_ptr_of_Epetra_Vector());
 

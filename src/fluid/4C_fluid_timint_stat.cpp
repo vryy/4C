@@ -169,11 +169,11 @@ void FLD::TimIntStationary::set_state_tim_int()
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntStationary::calculate_acceleration(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> veln,
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnm,
-    const Teuchos::RCP<const Core::LinAlg::Vector> accn,
-    const Teuchos::RCP<Core::LinAlg::Vector> accnp)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp)
 {
   accnp->PutScalar(0.0);
 
@@ -201,8 +201,8 @@ void FLD::TimIntStationary::sep_multiply()
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntStationary::outputof_filtered_vel(
-    Teuchos::RCP<Core::LinAlg::Vector> outvec, Teuchos::RCP<Core::LinAlg::Vector> fsoutvec)
+void FLD::TimIntStationary::outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec)
 {
   // no output since subgrid-scale modeling does not make sense for stationary problems!!!
   return;

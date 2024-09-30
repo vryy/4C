@@ -70,9 +70,9 @@ namespace FLD
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vectors to be initialized
-    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> veln_;
-    Teuchos::RCP<Core::LinAlg::Vector> velnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> veln_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velnm_;
     //! type of energy spectrum for initialization
     Inpar::FLUID::InitialField type_;
 
@@ -102,9 +102,9 @@ namespace FLD
     void calculate_initial_field() override;
 
    protected:
-    Teuchos::RCP<Core::LinAlg::Vector> intveln_;
-    Teuchos::RCP<Core::LinAlg::Vector> intvelnm_;
-    Teuchos::RCP<Core::LinAlg::Vector> intvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intveln_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnp_;
   };
 
 }  // namespace FLD

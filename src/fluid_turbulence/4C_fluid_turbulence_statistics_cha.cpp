@@ -35,9 +35,9 @@ FOUR_C_NAMESPACE_OPEN
 
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Discretization> actdis,
-    bool alefluid, Teuchos::RCP<Core::LinAlg::Vector> dispnp, Teuchos::ParameterList& params,
-    const std::string& statistics_outfilename, bool subgrid_dissipation,
-    Teuchos::RCP<FLD::XWall> xwallobj)
+    bool alefluid, Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
+    Teuchos::ParameterList& params, const std::string& statistics_outfilename,
+    bool subgrid_dissipation, Teuchos::RCP<FLD::XWall> xwallobj)
     : discret_(actdis),
       scatradiscret_(Teuchos::null),
       alefluid_(alefluid),
@@ -1355,8 +1355,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
 
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::do_time_sample(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> force)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> force)
 {
   // we have an additional sample
   numsamp_++;
@@ -1500,9 +1500,9 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::do_loma_time_sample(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> scanp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> force, const double eosfac)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> force, const double eosfac)
 {
   // we have an additional sample
 
@@ -1660,9 +1660,9 @@ void FLD::TurbulenceStatisticsCha::do_loma_time_sample(
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::do_scatra_time_sample(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> scanp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> force)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> force)
 {
   // we have an additional sample
 
@@ -2791,8 +2791,8 @@ void FLD::TurbulenceStatisticsCha::add_dynamic_smagorinsky_quantities()
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> fsvelnp, const bool withscatra)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvelnp, const bool withscatra)
 {
   // action for elements
   Teuchos::ParameterList paramsele;
@@ -3040,10 +3040,10 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
 
 
 void FLD::TurbulenceStatisticsCha::evaluate_residuals(
-    std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs,
+    std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> scatrastatevecs,
+    std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrastatevecs,
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> scatrafieldvecs)
 {
   if (subgrid_dissipation_)
@@ -3058,7 +3058,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
     if (stabparams->get<bool>("Reconstruct_Sec_Der"))
     {
-      for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>::iterator state =
+      for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator state =
                statevecs.begin();
            state != statevecs.end(); ++state)
       {
@@ -3077,7 +3077,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     eleparams_.set<double>("thermpressderiv at n+alpha_M/n+1", thermpressdtam);
 
     // set state vectors for element call
-    for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>::iterator state =
+    for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator state =
              statevecs.begin();
          state != statevecs.end(); ++state)
     {
@@ -3123,7 +3123,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       scatraeleparams_.set<double>("thermodynamic pressure at n+alpha_M", thermpressam);
 
       // set state vectors for element call
-      for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>::iterator state =
+      for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator state =
                scatrastatevecs.begin();
            state != scatrastatevecs.end(); ++state)
       {

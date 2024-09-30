@@ -64,14 +64,14 @@ namespace SSI
     //! \param stress_state   mechanical stress state vector to set
     //! \param nds            number of dofset to write state on
     virtual void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
-        Teuchos::RCP<const Core::LinAlg::Vector> stress_state, unsigned nds) = 0;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_state, unsigned nds) = 0;
 
     //! \brief set structure mesh displacement on other field
     //!
     //! \param scatra    underlying scatra problem of the SSI problem
     //! \param disp      displacement field to set
     virtual void set_mesh_disp(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> disp) = 0;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) = 0;
 
     //! \brief set structure velocity fields on other field
     //!
@@ -79,8 +79,8 @@ namespace SSI
     //! \param convvel   convective velocity field to set
     //! \param vel       velocity field to set
     virtual void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> convvel,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) = 0;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) = 0;
 
     //! \brief set scatra solution on other field
     //!
@@ -88,7 +88,7 @@ namespace SSI
     //! \param phi    scalar field solution
     //! \param nds    number of dofset to write state on
     virtual void set_scalar_field(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) = 0;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) = 0;
 
     //! \brief set micro soultion of scatra field other field
     //!
@@ -96,11 +96,11 @@ namespace SSI
     //! \param phi     micro scatra solution
     //! \param nds     number of dofset to write micro scatra solution on
     virtual void set_scalar_field_micro(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) = 0;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) = 0;
 
     //! set temperature field on structure field
-    virtual void set_temperature_field(
-        Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector> temp) = 0;
+    virtual void set_temperature_field(Core::FE::Discretization& structdis,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> temp) = 0;
   };
 
   //! solid-scatra coupling for matching volume meshes
@@ -117,23 +117,23 @@ namespace SSI
         Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
     void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
-        Teuchos::RCP<const Core::LinAlg::Vector> stress_statetemp, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_statetemp, unsigned nds) override;
 
     void set_mesh_disp(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> disp) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) override;
 
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> convvel,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
 
     void set_scalar_field(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
     void set_scalar_field_micro(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
     void set_temperature_field(Core::FE::Discretization& structdis,
-        Teuchos::RCP<const Core::LinAlg::Vector> temp) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> temp) override;
 
    private:
     //! flag indicating if class is setup
@@ -187,26 +187,26 @@ namespace SSI
         Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
     void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
-        Teuchos::RCP<const Core::LinAlg::Vector> stress_state, unsigned nds) override
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
     void set_mesh_disp(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> disp) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) override;
 
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> convvel,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
 
     void set_scalar_field(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
     void set_scalar_field_micro(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
-    void set_temperature_field(
-        Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector> temp) override
+    void set_temperature_field(Core::FE::Discretization& structdis,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> temp) override
     {
       FOUR_C_THROW("only for matching nodes");
     };
@@ -276,26 +276,26 @@ namespace SSI
         Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
     void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
-        Teuchos::RCP<const Core::LinAlg::Vector> stress_state, unsigned nds) override
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
     void set_mesh_disp(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> disp) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) override;
 
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> convvel,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
 
     void set_scalar_field(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
     void set_scalar_field_micro(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
-    void set_temperature_field(
-        Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector> temp) override
+    void set_temperature_field(Core::FE::Discretization& structdis,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> temp) override
     {
       FOUR_C_THROW("only for matching nodes");
     };
@@ -353,26 +353,26 @@ namespace SSI
         Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
     void set_mechanical_stress_state(Core::FE::Discretization& scatradis,
-        Teuchos::RCP<const Core::LinAlg::Vector> stress_state, unsigned nds) override
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_state, unsigned nds) override
     {
       FOUR_C_THROW("only implemented for 'SSICouplingMatchingVolume'");
     }
 
     void set_mesh_disp(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> disp) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) override;
 
     void set_velocity_fields(Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> convvel,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
 
     void set_scalar_field(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
     void set_scalar_field_micro(Core::FE::Discretization& dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> phi, unsigned nds) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds) override;
 
     void set_temperature_field(Core::FE::Discretization& structdis,
-        Teuchos::RCP<const Core::LinAlg::Vector> temp) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> temp) override;
 
    private:
     //! flag indicating if class is setup

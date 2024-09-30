@@ -1065,15 +1065,15 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
 void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
 {
   // create vectors of initial primary variables
-  Teuchos::RCP<Core::LinAlg::Vector> var_A =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> var_A =
       Core::LinAlg::create_vector(*discret1()->dof_row_map(0), true);
-  Teuchos::RCP<Core::LinAlg::Vector> var_B =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> var_B =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
 
   // solution
-  Teuchos::RCP<Core::LinAlg::Vector> result_A =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> result_A =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
-  Teuchos::RCP<Core::LinAlg::Vector> result_B =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> result_B =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
 
   // node positions for Discr A
@@ -1156,9 +1156,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
   int maxiter = 1;
 
   // init zero residuum vector for old iteration
-  Teuchos::RCP<Core::LinAlg::Vector> ResoldA =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> ResoldA =
       Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta), true);
-  Teuchos::RCP<Core::LinAlg::Vector> ResoldB =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> ResoldB =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb), true);
 
   // output
@@ -1226,11 +1226,11 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
 
     mergedmap_ = Core::LinAlg::merge_map(
         *discret1()->dof_row_map(dofseta), *discret2()->dof_row_map(dofsetb), false);
-    Teuchos::RCP<Core::LinAlg::Vector> mergedsol = Core::LinAlg::create_vector(*mergedmap_);
-    Teuchos::RCP<Core::LinAlg::Vector> mergedX = Core::LinAlg::create_vector(*mergedmap_);
-    Teuchos::RCP<Core::LinAlg::Vector> mergedXa =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedsol = Core::LinAlg::create_vector(*mergedmap_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedX = Core::LinAlg::create_vector(*mergedmap_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedXa =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector> mergedXb =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedXb =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->node_row_map()->NumMyElements(); ++n)
@@ -1284,9 +1284,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
-    Teuchos::RCP<Core::LinAlg::Vector> solDA =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> solDA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector> solMA =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> solMA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
 
     int err = 0;
@@ -1296,9 +1296,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     err = mmatrix_xa_->multiply(false, *mergedXb, *solMA);
     if (err != 0) FOUR_C_THROW("stop");
 
-    Teuchos::RCP<Core::LinAlg::Vector> solDB =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> solDB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
-    Teuchos::RCP<Core::LinAlg::Vector> solMB =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> solMB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->multiply(false, *mergedXb, *solDB);
@@ -1331,9 +1331,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     if (mi > 0)
     {
       double fac = 0.0;
-      Teuchos::RCP<Core::LinAlg::Vector> DiffA =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> DiffA =
           Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta), true);
-      Teuchos::RCP<Core::LinAlg::Vector> DiffB =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> DiffB =
           Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb), true);
       err = DiffA->Update(1.0, *solDA, 0.0);
       if (err != 0) FOUR_C_THROW("stop");
@@ -1383,7 +1383,8 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     k->add(*dmatrix_xb_, false, -1.0 * omega, 1.0);
     k->add(*mmatrix_xb_, false, 1.0 * omega, 1.0);
 
-    Teuchos::RCP<Core::LinAlg::Vector> ones = Teuchos::rcp(new Core::LinAlg::Vector(*mergedmap_));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*mergedmap_));
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
@@ -1402,9 +1403,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     solver_params.refactor = true;
     solver.solve(k->epetra_operator(), mergedsol, mergedX, solver_params);
 
-    Teuchos::RCP<Core::LinAlg::Vector> sola =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sola =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector> solb =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> solb =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     Core::LinAlg::MapExtractor mapext(*mergedmap_,
@@ -1458,9 +1459,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     dis2_->fill_complete(false, true, true);
 
     // last check:
-    Teuchos::RCP<Core::LinAlg::Vector> checka =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> checka =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector> checkb =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> checkb =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->node_row_map()->NumMyElements(); ++n)
@@ -1512,9 +1513,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
-    Teuchos::RCP<Core::LinAlg::Vector> finalDA =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finalDA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector> finalMA =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finalMA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
 
     err = dmatrix_xa_->multiply(false, *checka, *finalDA);
@@ -1523,9 +1524,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     err = mmatrix_xa_->multiply(false, *checkb, *finalMA);
     if (err != 0) FOUR_C_THROW("stop");
 
-    Teuchos::RCP<Core::LinAlg::Vector> finalDB =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finalDB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
-    Teuchos::RCP<Core::LinAlg::Vector> finalMB =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finalMB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->multiply(false, *checkb, *finalDB);
@@ -3681,7 +3682,8 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   /********************************************************************/
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd1 =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*d1_));
-  Teuchos::RCP<Core::LinAlg::Vector> diag1 = Core::LinAlg::create_vector(*p12_dofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> diag1 =
+      Core::LinAlg::create_vector(*p12_dofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -3707,7 +3709,8 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   /********************************************************************/
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd2 =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*d2_));
-  Teuchos::RCP<Core::LinAlg::Vector> diag2 = Core::LinAlg::create_vector(*p21_dofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> diag2 =
+      Core::LinAlg::create_vector(*p21_dofrowmap_, true);
 
   // extract diagonal of invd into diag
   invd2->extract_diagonal_copy(*diag2);

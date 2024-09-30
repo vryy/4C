@@ -43,15 +43,16 @@ namespace Solid
 
       void prepare_time_step() override;
 
-      void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override;
+      void update_state_incrementally(
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
 
       void determine_stress_strain() override;
 
       void evaluate() override;
 
-      void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override;
+      void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
 
-      void set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x) override;
+      void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) override;
 
       void reset_step() override;
 
@@ -67,11 +68,11 @@ namespace Solid
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
-      Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override;
 
-      Teuchos::RCP<const Core::LinAlg::Vector> get_f() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_f() const override;
 
-      Teuchos::RCP<Core::LinAlg::Vector> freact() override;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override;
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
 

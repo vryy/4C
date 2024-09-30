@@ -2216,8 +2216,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix>
 Core::LinearSolver::AMGNxN::SimpleSmootherFactory::approximate_inverse(
     const Core::LinAlg::SparseMatrixBase& A, const std::string& method)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> invAVector =
-      Teuchos::rcp(new Core::LinAlg::Vector(A.row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> invAVector =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(A.row_map()));
   if (method == "diagonal")
   {
     A.extract_diagonal_copy(*invAVector);

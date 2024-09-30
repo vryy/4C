@@ -65,18 +65,19 @@ void Adapter::StructureConstrMerged::setup()
 
 /*----------------------------------------------------------------------*/
 /* */
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::initial_guess()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged::initial_guess()
 {
   if (not issetup_) FOUR_C_THROW("Call setup() first!");
 
   // get initial guesses from structure and constraintmanager
-  Teuchos::RCP<const Core::LinAlg::Vector> strucGuess = structure_->initial_guess();
-  Teuchos::RCP<const Core::LinAlg::Vector> lagrGuess = Teuchos::rcp(new Core::LinAlg::Vector(
-      *(structure_->get_constraint_manager()->get_constraint_map()), true));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> strucGuess = structure_->initial_guess();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrGuess =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+          *(structure_->get_constraint_manager()->get_constraint_map()), true));
 
   // merge stuff together
-  Teuchos::RCP<Core::LinAlg::Vector> mergedGuess =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedGuess =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
   conmerger_->add_cond_vector(strucGuess, mergedGuess);
   conmerger_->add_other_vector(lagrGuess, mergedGuess);
 
@@ -85,16 +86,16 @@ Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::initial
 
 /*----------------------------------------------------------------------*/
 /* right-hand side alias the dynamic force residual */
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::rhs()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged::rhs()
 {
   // get rhs-vectors from structure and constraintmanager
-  Teuchos::RCP<const Core::LinAlg::Vector> struRHS = structure_->rhs();
-  Teuchos::RCP<const Core::LinAlg::Vector> lagrRHS =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> struRHS = structure_->rhs();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrRHS =
       structure_->get_constraint_manager()->get_error();
 
   // merge stuff together
-  Teuchos::RCP<Core::LinAlg::Vector> mergedRHS =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedRHS =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
   conmerger_->add_cond_vector(struRHS, mergedRHS);
   conmerger_->add_other_vector(-1.0, lagrRHS, mergedRHS);
 
@@ -104,16 +105,16 @@ Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::rhs()
 
 /*----------------------------------------------------------------------*/
 /* get current displacements D_{n+1} */
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::dispnp() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged::dispnp() const
 {
   // get current state from structure and constraintmanager
-  Teuchos::RCP<const Core::LinAlg::Vector> strudis = structure_->dispnp();
-  Teuchos::RCP<const Core::LinAlg::Vector> lagrmult =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> strudis = structure_->dispnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrmult =
       structure_->get_constraint_manager()->get_lagr_mult_vector();
 
   // merge stuff together
-  Teuchos::RCP<Core::LinAlg::Vector> mergedstat =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
   conmerger_->add_cond_vector(strudis, mergedstat);
   conmerger_->add_other_vector(lagrmult, mergedstat);
 
@@ -123,16 +124,16 @@ Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::dispnp(
 
 /*----------------------------------------------------------------------*/
 /* get last converged displacements D_{n} */
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::dispn() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged::dispn() const
 {
   // get last converged state from structure and constraintmanager
-  Teuchos::RCP<const Core::LinAlg::Vector> strudis = structure_->dispn();
-  Teuchos::RCP<const Core::LinAlg::Vector> lagrmult =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> strudis = structure_->dispn();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrmult =
       structure_->get_constraint_manager()->get_lagr_mult_vector_old();
 
   // merge stuff together
-  Teuchos::RCP<Core::LinAlg::Vector> mergedstat =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
   conmerger_->add_cond_vector(strudis, mergedstat);
   conmerger_->add_other_vector(lagrmult, mergedstat);
 
@@ -141,16 +142,17 @@ Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::dispn()
 
 /*----------------------------------------------------------------------*/
 /* get last converged velocities V_{n} with zeroed Lagrange multiplier */
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::veln() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged::veln() const
 {
   // get last converged state from structure and constraintmanager
-  Teuchos::RCP<const Core::LinAlg::Vector> strudis = structure_->veln();
-  Teuchos::RCP<const Core::LinAlg::Vector> lagrmult = Teuchos::rcp(new Core::LinAlg::Vector(
-      structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> strudis = structure_->veln();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrmult =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+          structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true));
 
   // merge stuff together
-  Teuchos::RCP<Core::LinAlg::Vector> mergedstat =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
   conmerger_->add_cond_vector(strudis, mergedstat);
   conmerger_->add_other_vector(lagrmult, mergedstat);
 
@@ -159,16 +161,17 @@ Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::veln() 
 
 /*----------------------------------------------------------------------*/
 /* get last converged accelerations A_{n} with zeroed Lagrange multiplier */
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::StructureConstrMerged::accn() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged::accn() const
 {
   // get last converged state from structure and constraintmanager
-  Teuchos::RCP<const Core::LinAlg::Vector> strudis = structure_->accn();
-  Teuchos::RCP<const Core::LinAlg::Vector> lagrmult = Teuchos::rcp(new Core::LinAlg::Vector(
-      structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> strudis = structure_->accn();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrmult =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+          structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true));
 
   // merge stuff together
-  Teuchos::RCP<Core::LinAlg::Vector> mergedstat =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
   conmerger_->add_cond_vector(strudis, mergedstat);
   conmerger_->add_other_vector(lagrmult, mergedstat);
 
@@ -220,16 +223,18 @@ Adapter::StructureConstrMerged::block_system_matrix()
 /* build linear system stiffness matrix and rhs/force residual
  *
  * Monolithic FSI accesses the linearised structure problem. */
-void Adapter::StructureConstrMerged::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> dispstepinc)
+void Adapter::StructureConstrMerged::evaluate(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispstepinc)
 {
   // 'initialize' structural displacement as null-pointer
-  Teuchos::RCP<Core::LinAlg::Vector> dispstructstepinc = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dispstructstepinc = Teuchos::null;
 
   // Compute residual increments, update total increments and update lagrange multipliers
   if (dispstepinc != Teuchos::null)
   {
     // Extract increments for lagr multipliers and do update
-    Teuchos::RCP<Core::LinAlg::Vector> lagrincr = conmerger_->extract_other_vector(dispstepinc);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr =
+        conmerger_->extract_other_vector(dispstepinc);
     structure_->update_iter_incr_constr(lagrincr);
     dispstructstepinc = conmerger_->extract_cond_vector(dispstepinc);
   }
@@ -250,16 +255,17 @@ const Epetra_Map& Adapter::StructureConstrMerged::domain_map() const
 /*----------------------------------------------------------------------*/
 // Apply interface forces
 void Adapter::StructureConstrMerged::apply_interface_forces_temporary_deprecated(
-    Teuchos::RCP<Core::LinAlg::Vector> iforce)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce)
 {
   // create vector with displacement and constraint DOFs
-  Teuchos::RCP<Core::LinAlg::Vector> fifc = Core::LinAlg::create_vector(*dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fifc =
+      Core::LinAlg::create_vector(*dof_row_map(), true);
 
   // insert interface forces
   interface_->add_fsi_cond_vector(iforce, fifc);
 
   // extract the force values from the displacement DOFs only
-  Teuchos::RCP<Core::LinAlg::Vector> fifcdisp =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fifcdisp =
       Core::LinAlg::create_vector(*conmerger_->cond_map(), true);
   conmerger_->extract_cond_vector(fifc, fifcdisp);
 

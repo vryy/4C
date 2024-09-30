@@ -51,13 +51,13 @@ void CONTACT::MtNoxInterface::setup()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::MtNoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vector& F,
+double CONTACT::MtNoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vector<double>& F,
     NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_meshtying) return -1.0;
 
-  Teuchos::RCP<Core::LinAlg::Vector> constrRhs =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> constrRhs =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, F);
 
   // no constraint contributions present
@@ -75,18 +75,19 @@ double CONTACT::MtNoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(const Core::LinAlg::Vector& xNew,
-    const Core::LinAlg::Vector& xOld, double aTol, double rTol,
-    NOX::Nln::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
+double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(
+    const Core::LinAlg::Vector<double>& xNew, const Core::LinAlg::Vector<double>& xOld, double aTol,
+    double rTol, NOX::Nln::StatusTest::QuantityType checkQuantity,
+    bool disable_implicit_weighting) const
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_meshtying) return -1.0;
 
   double rms = -1.0;
 
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector> lagincr_ptr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
-  Teuchos::RCP<const Core::LinAlg::Vector> lagnew_ptr =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagnew_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
@@ -103,16 +104,16 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(const Core::L
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_norms(
-    const Core::LinAlg::Vector& xNew, const Core::LinAlg::Vector& xOld,
+    const Core::LinAlg::Vector<double>& xNew, const Core::LinAlg::Vector<double>& xOld,
     NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_meshtying) return -1.0;
 
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector> lagincr_ptr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
-  Teuchos::RCP<const Core::LinAlg::Vector> lagnew_ptr =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagnew_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
@@ -132,13 +133,13 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_norms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::MtNoxInterface::get_previous_lagrange_multiplier_norms(
-    const Core::LinAlg::Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
+    const Core::LinAlg::Vector<double>& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
     ::NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_meshtying) return -1.0;
 
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector> lagold_ptr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lagold_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
 
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(

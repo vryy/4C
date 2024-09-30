@@ -102,15 +102,15 @@ namespace ScaTra
     //! solve resulting linear system of equations
     void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Core::LinAlg::Vector>& increment,             //!< increment vector
-        const Teuchos::RCP<Core::LinAlg::Vector>& residual,              //!< residual vector
-        const Teuchos::RCP<Core::LinAlg::Vector>& phinp,  //!< state vector at time n+1
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
         const int iteration,  //!< number of current Newton-Raphson iteration
         Core::LinAlg::SolverParams& solver_params) const override;
 
     void setup_system(
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Core::LinAlg::Vector>& residual               //!< residual vector
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual       //!< residual vector
     ) const;
 
     //! init the convergence check
@@ -138,10 +138,13 @@ namespace ScaTra
     }
 
     //! get the combined rhs
-    Teuchos::RCP<Core::LinAlg::Vector> combined_rhs() const { return rhs_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> combined_rhs() const { return rhs_; }
 
     //! get the combined increment
-    Teuchos::RCP<Core::LinAlg::Vector> combined_increment() const { return comb_increment_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> combined_increment() const
+    {
+      return comb_increment_;
+    }
 
     //! access to time integrator
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> art_scatra_field() { return artscatratimint_; }
@@ -150,7 +153,7 @@ namespace ScaTra
     void check_initial_fields() const;
 
     //! update increment of 1D discretization
-    void update_art_scatra_iter(Teuchos::RCP<const Core::LinAlg::Vector> combined_inc);
+    void update_art_scatra_iter(Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_inc);
 
     /*!
      * extract single field vectors
@@ -158,9 +161,9 @@ namespace ScaTra
      * @param[o] vec_cont  3D vector
      * @param[o] vec_art   1D vector
      */
-    void extract_single_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> globalvec,
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec_art) const;
+    void extract_single_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art) const;
 
    private:
     //! initialize the linear solver
@@ -180,10 +183,10 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;
 
     //! combined rhs
-    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
 
     //! combined rhs
-    Teuchos::RCP<Core::LinAlg::Vector> comb_increment_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> comb_increment_;
 
   };  // class MeshtyingStrategyArtery
 

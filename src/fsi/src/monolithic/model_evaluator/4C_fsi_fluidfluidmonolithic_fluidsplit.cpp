@@ -124,10 +124,10 @@ void FSI::FluidFluidMonolithicFluidSplit::output()
     // the Lagrange multiplier lives on the FSI interface
     // for output, we want to insert lambda into a full vector, defined on the embedded fluid field
     // 1. insert into vector containing all fluid DOF
-    Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
         fluid_field()->interface()->insert_fsi_cond_vector(FSI::MonolithicFluidSplit::get_lambda());
     // 2. extract the embedded fluid part
-    Teuchos::RCP<Core::LinAlg::Vector> lambdaemb =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaemb =
         fluid_field()->x_fluid_fluid_map_extractor()->extract_fluid_vector(lambdafull);
 
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
@@ -154,13 +154,14 @@ void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
 {
   // Read Lagrange Multiplier (associated with embedded fluid)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> lambdaemb = Teuchos::rcp(new Core::LinAlg::Vector(
-        *(fluid_field()->x_fluid_fluid_map_extractor()->fluid_map()), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaemb =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(
+            *(fluid_field()->x_fluid_fluid_map_extractor()->fluid_map()), true));
     Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
         fluid_field()->discretization(), Global::Problem::instance()->input_control_file(), step);
     reader.read_vector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
-    Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
         fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(lambdaemb);
     FSI::MonolithicFluidSplit::set_lambda(
         fluid_field()->interface()->extract_fsi_cond_vector(lambdafull));

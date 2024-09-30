@@ -1230,8 +1230,8 @@ namespace Discret
       // FLD::RotationallySymmetricPeriodicBC<distype> & rotsymmpbc, ///<
       //  {
       //    // get state of the global vector
-      //    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.GetState(state);
-      //    if(matrix_state == Teuchos::null)
+      //    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      //    discretization.GetState(state); if(matrix_state == Teuchos::null)
       //      FOUR_C_THROW("Cannot get state vector %s", state.c_str());
       //
       //    // extract local values of the global vectors

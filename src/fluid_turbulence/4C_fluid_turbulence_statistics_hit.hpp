@@ -48,14 +48,14 @@ namespace FLD
 
     //! space and time (only forced but not decaying case) averaging
     //! get energy spectrum
-    virtual void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp);
+    virtual void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp);
     //! version with scalar field
-    virtual void do_scatra_time_sample(
-        Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> phinp);
+    virtual void do_scatra_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> phinp);
 
     // evaluation of dissipation rate and rbvmm-related quantities
     virtual void evaluate_residuals(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs);
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs);
 
     //! dump the result to file
     virtual void dump_statistics(int step, bool multiple_records = false);
@@ -155,9 +155,9 @@ namespace FLD
     Teuchos::RCP<std::vector<int>> outsteps_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglew_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
   };
 
   class TurbulenceStatisticsHitHDG : public TurbulenceStatisticsHit
@@ -178,10 +178,10 @@ namespace FLD
 
     //! space and time (only forced but not decaying case) averaging
     //! get energy spectrum
-    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp) override;
+    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp) override;
     //! version with scalar field
-    void do_scatra_time_sample(
-        Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> phinp) override
+    void do_scatra_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> phinp) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;
@@ -189,7 +189,7 @@ namespace FLD
 
     // evaluation of dissipation rate and rbvmm-related quantities
     void evaluate_residuals(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs) override
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs) override
     {
       FOUR_C_THROW("not implemented for hdg");
       return;

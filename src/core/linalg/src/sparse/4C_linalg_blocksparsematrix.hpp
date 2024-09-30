@@ -99,7 +99,8 @@ namespace Core::LinAlg
 
     void un_complete() override;
 
-    void apply_dirichlet(const Core::LinAlg::Vector& dbctoggle, bool diagonalblock = true) override;
+    void apply_dirichlet(
+        const Core::LinAlg::Vector<double>& dbctoggle, bool diagonalblock = true) override;
 
     void apply_dirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true) override;
 

@@ -71,9 +71,10 @@ namespace ScaTra
 
     /// set convective velocity field (+ pressure and acceleration field as
     /// well as fine-scale velocity field, if required) (function for coupled fluid problems)
-    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector> convvel,
-        Teuchos::RCP<const Core::LinAlg::Vector> acc, Teuchos::RCP<const Core::LinAlg::Vector> vel,
-        Teuchos::RCP<const Core::LinAlg::Vector> fsvel, bool setpressure = false,
+    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel, bool setpressure = false,
         bool init = false);
 
 
@@ -103,7 +104,7 @@ namespace ScaTra
 
    protected:
     virtual void get_initial_volume_of_minus_domain(
-        const Teuchos::RCP<const Core::LinAlg::Vector>& phinp,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& phinp,
         const Teuchos::RCP<const Core::FE::Discretization>& scatradis,
         double& volumedomainminus) const;
 
@@ -156,8 +157,8 @@ namespace ScaTra
     // -----------------------------------------------------------------
     // Reconstructing nodal curvature
     // -----------------------------------------------------------------
-    void reconstructed_nodal_curvature(Teuchos::RCP<Core::LinAlg::Vector> curvature,
-        const Teuchos::RCP<const Core::LinAlg::Vector> phi,
+    void reconstructed_nodal_curvature(Teuchos::RCP<Core::LinAlg::Vector<double>> curvature,
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
         const Teuchos::RCP<const Epetra_MultiVector> gradphi);
 
     // -----------------------------------------------------------------
@@ -303,7 +304,7 @@ namespace ScaTra
     double initvolminus_;
 
     /// phinp before reinitialization (reinit_eq() only)
-    Teuchos::RCP<Core::LinAlg::Vector> initialphireinit_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> initialphireinit_;
 
     /// nodal gradient-based values for reinitialization (reinit_eq() only; Sussman and Elliptic)
     Teuchos::RCP<Epetra_MultiVector> nb_grad_val_;
@@ -331,10 +332,10 @@ namespace ScaTra
 
     // TODO:
     //    /// vector containing denominator of penalty parameter for each element (reinit_eq() only)
-    //    Teuchos::RCP<Core::LinAlg::Vector> lambda_ele_denominator_;
+    //    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_ele_denominator_;
     //
     //    /// vector containing smoothed haevyside function for each dof (reinit_eq() only)
-    //    Teuchos::RCP<Core::LinAlg::Vector> node_deriv_smoothfunct_;
+    //    Teuchos::RCP<Core::LinAlg::Vector<double>> node_deriv_smoothfunct_;
 
     /// tolerance for convergence check according to Sussman et al. 1994 (turned off negative)
     /// (reinit_eq() only)

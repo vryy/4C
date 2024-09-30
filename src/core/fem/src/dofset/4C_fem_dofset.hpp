@@ -47,7 +47,7 @@ This class represents one set of degrees of freedom for the
 discretization class in the usual parallel fashion. That is there is a
 dof_row_map() and a DofColMap() that return the maps of the global FE
 system of equation in row and column setting respectively. These maps
-are used by the algorithm's Core::LinAlg::Vector classes among others.
+are used by the algorithm's Core::LinAlg::Vector<double> classes among others.
 
 There can be dofs in nodes, faces, and elements. And additionally to the
 above maps this class needs to know the global dof ids of all nodes

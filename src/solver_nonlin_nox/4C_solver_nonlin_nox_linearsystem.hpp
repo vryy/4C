@@ -28,6 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   class Solver;
+  template <typename T>
   class Vector;
   struct SolverParams;
   class SparseOperator;
@@ -172,12 +173,13 @@ namespace NOX
       /** \brief get a copy of the block diagonal
        *
        *  \param diag_bid  diagonal block id */
-      Teuchos::RCP<Core::LinAlg::Vector> get_diagonal_of_jacobian(unsigned diag_bid) const;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> get_diagonal_of_jacobian(unsigned diag_bid) const;
 
       /** \brief replace the diagonal of the diagonal block in the Jacobian
        *
        *  \param diag_bid  diagonal block id */
-      void replace_diagonal_of_jacobian(const Core::LinAlg::Vector& new_diag, unsigned diag_bid);
+      void replace_diagonal_of_jacobian(
+          const Core::LinAlg::Vector<double>& new_diag, unsigned diag_bid);
 
       //! Returns Jacobian Epetra_Operator pointer
       Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const override;
@@ -274,8 +276,8 @@ namespace NOX
 
       //! Set-up the linear problem object
       virtual void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
-          Core::LinAlg::SparseOperator& jac, Core::LinAlg::Vector& lhs,
-          Core::LinAlg::Vector& rhs) const;
+          Core::LinAlg::SparseOperator& jac, Core::LinAlg::Vector<double>& lhs,
+          Core::LinAlg::Vector<double>& rhs) const;
 
       /*! \brief Complete the solution vector after a linear solver attempt
        *
@@ -287,7 +289,7 @@ namespace NOX
        *
        *  \author hiermeier \date 04/17 */
       virtual void complete_solution_after_solve(
-          const Epetra_LinearProblem& linProblem, Core::LinAlg::Vector& lhs) const;
+          const Epetra_LinearProblem& linProblem, Core::LinAlg::Vector<double>& lhs) const;
 
       /// convert jacobian matrix to dense matrix
       void convert_jacobian_to_dense_matrix(Core::LinAlg::SerialDenseMatrix& dense) const;

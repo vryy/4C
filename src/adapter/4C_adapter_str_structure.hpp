@@ -155,31 +155,31 @@ namespace Adapter
     //@{
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() = 0;
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const = 0;
 
     /// known displacements at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> dispn() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> velnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp() const = 0;
 
     /// known velocity at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> veln() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> veln() const = 0;
 
     /// known velocity at \f$t_{n-1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> velnm() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm() const = 0;
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> accnp() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> accnp() const = 0;
 
     /// known acceleration at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> accn() const = 0;
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> accn() const = 0;
 
     virtual void resize_m_step_tim_ada() = 0;
 
@@ -342,7 +342,7 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
@@ -360,12 +360,12 @@ namespace Adapter
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void update_iter_incr_constr(Teuchos::RCP<Core::LinAlg::Vector> lagrincr) = 0;
+    virtual void update_iter_incr_constr(Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr) = 0;
 
     /// Update iteration
     /// Add residual increment to pressures stored in Cardiovascular0D manager
     virtual void update_iter_incr_cardiovascular0_d(
-        Teuchos::RCP<Core::LinAlg::Vector> presincr) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> presincr) = 0;
 
     /// Access to output object
     virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() = 0;
@@ -375,9 +375,10 @@ namespace Adapter
 
     // Get restart data
     virtual void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-        Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector> veln,
-        Teuchos::RCP<Core::LinAlg::Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
-        Teuchos::RCP<std::vector<char>> nodedata) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
+        Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// output results
     void output(bool forced_writerestart = false) override = 0;
@@ -401,12 +402,13 @@ namespace Adapter
     virtual void reset_step() = 0;
 
     /// set restart information for parameter continuation
-    virtual void set_restart(int step, double time, Teuchos::RCP<Core::LinAlg::Vector> disn,
-        Teuchos::RCP<Core::LinAlg::Vector> veln, Teuchos::RCP<Core::LinAlg::Vector> accn,
+    virtual void set_restart(int step, double time, Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
         Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
 
     /// set the state of the nox group and the global state data container (implicit only)
-    virtual void set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x) = 0;
+    virtual void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) = 0;
 
     /// wrapper for things that should be done before prepare_time_step is called
     virtual void pre_predict() = 0;
@@ -447,7 +449,7 @@ namespace Adapter
 
     \note Can only be called after a valid structural solve.
     */
-    virtual Teuchos::RCP<Core::LinAlg::Vector> solve_relaxation_linear() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> solve_relaxation_linear() = 0;
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
@@ -458,21 +460,21 @@ namespace Adapter
     //@{
 
     /// write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() = 0;
 
     /// write access to extract velocities at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_velnp() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_velnp() = 0;
 
     /// write access to extract displacements at \f$t^{n}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_dispn() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispn() = 0;
 
     /// write access to extract velocities at \f$t^{n}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_veln() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_veln() = 0;
 
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
-    virtual Teuchos::RCP<Core::LinAlg::Vector> freact() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> freact() = 0;
 
 
     //! @name volume coupled specific methods
@@ -504,7 +506,7 @@ namespace Adapter
     virtual void reset() = 0;
 
     /// set structure displacement vector due to biofilm growth
-    virtual void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector> struct_growth_disp) = 0;
+    virtual void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector<double>> struct_growth_disp) = 0;
 
     /// Write Gmsh output for structural field
     virtual void write_gmsh_struc_output_step() = 0;

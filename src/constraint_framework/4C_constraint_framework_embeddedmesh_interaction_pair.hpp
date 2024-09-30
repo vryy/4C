@@ -107,7 +107,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     */
     virtual void get_pair_visualization(
         const Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
-        Teuchos::RCP<Core::LinAlg::Vector> lambda,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> lambda,
         const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
         Teuchos::RCP<std::unordered_set<int>> interface_tracker) = 0;
 
@@ -141,7 +141,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      * @param dispnp (in) Displacement at \f$t_{n}\f$
      */
     virtual void set_current_element_position(Core::FE::Discretization const& discret,
-        const Core::LinAlg::Vector& displacement_vector) = 0;
+        const Core::LinAlg::Vector<double>& displacement_vector) = 0;
 
     //! Get the cutwizard
     Teuchos::RCP<Cut::CutWizard> get_cutwizard()

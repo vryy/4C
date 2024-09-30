@@ -98,7 +98,7 @@ void Solid::IMPLICIT::OneStepTheta::post_setup()
     if (tim_int().is_restarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
@@ -135,7 +135,7 @@ double Solid::IMPLICIT::OneStepTheta::get_theta() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector& x)
+void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
@@ -147,7 +147,7 @@ void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -188,7 +188,7 @@ void Solid::IMPLICIT::OneStepTheta::update_constant_state_contributions()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::apply_force(
-    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f)
+    const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f)
 {
   check_init_setup();
 
@@ -203,7 +203,7 @@ bool Solid::IMPLICIT::OneStepTheta::apply_force(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::apply_stiff(
-    const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector<double>& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -223,8 +223,8 @@ bool Solid::IMPLICIT::OneStepTheta::apply_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(
-    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, Core::LinAlg::SparseOperator& jac)
+bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(const Core::LinAlg::Vector<double>& x,
+    Core::LinAlg::Vector<double>& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -243,15 +243,16 @@ bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::IMPLICIT::OneStepTheta::assemble_force(
-    Core::LinAlg::Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+bool Solid::IMPLICIT::OneStepTheta::assemble_force(Core::LinAlg::Vector<double>& f,
+    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   return model_eval().assemble_force(theta_, f, without_these_models);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Core::LinAlg::Vector& f) const
+void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
+    Core::LinAlg::Vector<double>& f) const
 {
   // viscous damping forces at t_{n}
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
@@ -352,12 +353,13 @@ void Solid::IMPLICIT::OneStepTheta::post_update() { update_constant_state_contri
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
-    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
+    Core::LinAlg::Vector<double>& disnp, Core::LinAlg::Vector<double>& velnp,
+    Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // constant predictor: displacement in domain
@@ -379,13 +381,14 @@ void Solid::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
-    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
+    Core::LinAlg::Vector<double>& disnp, Core::LinAlg::Vector<double>& velnp,
+    Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
 
-  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   /* extrapolated displacements based upon constant velocities
@@ -406,14 +409,14 @@ bool Solid::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::IMPLICIT::OneStepTheta::predict_const_acc(
-    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
+bool Solid::IMPLICIT::OneStepTheta::predict_const_acc(Core::LinAlg::Vector<double>& disnp,
+    Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
 
-  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   /* extrapolated displacements based upon constant accelerations

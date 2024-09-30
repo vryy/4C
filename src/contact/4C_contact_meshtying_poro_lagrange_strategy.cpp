@@ -168,16 +168,18 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
  | Poro Recovery method for structural displacement LM  h.Willmann  2015|
  *----------------------------------------------------------------------*/
 void CONTACT::PoroMtLagrangeStrategy::recover_coupling_matrix_partof_lmp(
-    Teuchos::RCP<Core::LinAlg::Vector> veli)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> veli)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> zfluid =
-      Teuchos::rcp(new Core::LinAlg::Vector(z_->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> zfluid =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(z_->Map(), true));
 
-  Teuchos::RCP<Core::LinAlg::Vector> mod = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
 
   cs_->multiply(false, *veli, *mod);
   zfluid->Update(-1.0, *mod, 1.0);
-  Teuchos::RCP<Core::LinAlg::Vector> zcopy = Teuchos::rcp(new Core::LinAlg::Vector(*zfluid));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*zfluid));
   get_d_inverse()->multiply(true, *zcopy, *zfluid);
   zfluid->Scale(1 / (1 - alphaf_));
 

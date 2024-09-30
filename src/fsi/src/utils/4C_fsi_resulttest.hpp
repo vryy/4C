@@ -91,7 +91,7 @@ namespace FSI
     Teuchos::RCP<Core::FE::Discretization> slavedisc_;
 
     //! Lagrange multiplier living on the slave discretization
-    Teuchos::RCP<Core::LinAlg::Vector> fsilambda_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fsilambda_;
 
     //! the monolithic solver object itself
     Teuchos::RCP<FSI::Monolithic> fsi_;

@@ -81,12 +81,12 @@ namespace XFEM
     //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate
     //! routine
     void evaluate_edge_stab_ghost_penalty(
-        Teuchos::ParameterList& eleparams,                      ///< element parameter list
-        Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
-        Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector,        ///< systemvector
-        Teuchos::RCP<Cut::CutWizard> wizard,                    ///< cut wizard
+        Teuchos::ParameterList& eleparams,                        ///< element parameter list
+        Teuchos::RCP<Core::FE::Discretization> discret,           ///< discretization
+        Discret::ELEMENTS::FluidIntFace* faceele,                 ///< face element
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
+        Teuchos::RCP<Cut::CutWizard> wizard,                      ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
         bool gmsh_eos_out = true   ///< stabilization gmsh output
@@ -103,8 +103,8 @@ namespace XFEM
         std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
         std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
         Core::FE::DiscretizationFaces& xdiscret,  ///< discretization with faces
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
     );
 
     //! prepares edge based stabilization for standard fluid
@@ -112,7 +112,7 @@ namespace XFEM
         Teuchos::RCP<Core::FE::Discretization> discret,             ///< discretization
         Discret::ELEMENTS::FluidIntFace* faceele,                   ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,      ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector             ///< systemvector
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector     ///< systemvector
     );
 
     //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
@@ -122,9 +122,9 @@ namespace XFEM
         Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
         Teuchos::RCP<Core::FE::Discretization>
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-        Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+        Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
     );
 
     //! returns a map containing the ghost penalty stabilized internal face elements
