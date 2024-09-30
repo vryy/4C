@@ -51,8 +51,6 @@ namespace Thermo
     ba_none,
     calc_thermo_fextconvection,
     calc_thermo_fextconvection_coupltang,
-    calc_normal_vectors,
-    ba_integrate_shape_functions
   };
 
   /*!
@@ -101,10 +99,6 @@ namespace Thermo
         return "calc_thermo_fextconvection";
       case calc_thermo_fextconvection_coupltang:
         return "calc_thermo_fextconvection_coupltang";
-      case calc_normal_vectors:
-        return "calc_normal_vectors";
-      case ba_integrate_shape_functions:
-        return "ba_integrate_shape_functions";
       default:
         FOUR_C_THROW("no string for the boundary action %d defined!", baction);
     };
