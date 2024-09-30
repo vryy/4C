@@ -9,6 +9,11 @@
 
 #include <Epetra_Vector.h>
 
+// Do not lint the file for identifier names, since the naming of the Wrapper functions follow the
+// naming of the Epetra_Vector
+
+// NOLINTBEGIN(readability-identifier-naming)
+
 FOUR_C_NAMESPACE_OPEN
 template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Epetra_BlockMap& Map, bool zeroOut)
@@ -164,4 +169,47 @@ int Core::LinAlg::Vector<T>::PutScalar(double ScalarConstant)
 // explicit instantiation
 template class Core::LinAlg::Vector<double>;
 
+
+
+Core::LinAlg::Vector<int>::Vector(const Epetra_BlockMap& map, bool zeroOut)
+    : vector_(Teuchos::make_rcp<Epetra_IntVector>(map, zeroOut))
+{
+}
+
+Core::LinAlg::Vector<int>::Vector(const Epetra_BlockMap& map, int* values)
+    : vector_(Teuchos::make_rcp<Epetra_IntVector>(Epetra_DataAccess::Copy, map, values))
+{
+}
+
+Core::LinAlg::Vector<int>::Vector(const Vector& other)
+    : vector_(Teuchos::make_rcp<Epetra_IntVector>(*other.vector_))
+{
+}
+
+Core::LinAlg::Vector<int>::Vector(Vector&& other) noexcept : vector_(std::move(other.vector_)) {}
+
+Core::LinAlg::Vector<int>& Core::LinAlg::Vector<int>::operator=(const Vector& other)
+{
+  vector_ = Teuchos::rcp(new Epetra_IntVector(*other.vector_));
+  return *this;
+}
+
+Core::LinAlg::Vector<int>& Core::LinAlg::Vector<int>::operator=(Vector&& other) noexcept
+{
+  vector_ = std::move(other.vector_);
+  return *this;
+}
+
+
+int Core::LinAlg::Vector<int>::PutValue(int Value) { return vector_->PutValue(Value); }
+
+int Core::LinAlg::Vector<int>::MaxValue() { return vector_->MaxValue(); }
+
+int Core::LinAlg::Vector<int>::MinValue() { return vector_->MinValue(); }
+
+void Core::LinAlg::Vector<int>::Print(std::ostream& os) const { vector_->Print(os); }
+
+
 FOUR_C_NAMESPACE_CLOSE
+
+// NOLINTEND(readability-identifier-naming)
