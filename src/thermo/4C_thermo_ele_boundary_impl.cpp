@@ -151,49 +151,8 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 
   // Now, check for the action parameter
   const auto action = Teuchos::getIntegralValue<Thermo::BoundaryAction>(params, "action");
-  if (action == Thermo::calc_normal_vectors)
-  {
-    // access the global vector
-    const Teuchos::RCP<Epetra_MultiVector> normals =
-        params.get<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", Teuchos::null);
-    if (normals == Teuchos::null) FOUR_C_THROW("Could not access vector 'normal vectors'");
-
-    // get node coordinates (we have a nsd_+1 dimensional domain!)
-    Core::Geo::fill_initial_position_array<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
-        ele, xyze_);
-
-    // determine constant normal to this element
-    get_const_normal(normal_, xyze_);
-
-    // loop over the boundary element nodes
-    for (int j = 0; j < nen_; j++)
-    {
-      const int nodegid = (ele->nodes()[j])->id();
-      if (normals->Map().MyGID(nodegid))
-      {  // OK, the node belongs to this processor
-
-        // scaling to a unit vector is performed on the global level after
-        // assembly of nodal contributions since we have no reliable information
-        // about the number of boundary elements adjacent to a node
-        for (int dim = 0; dim < (nsd_ + 1); dim++)
-        {
-          normals->SumIntoGlobalValue(nodegid, dim, normal_(dim));
-        }
-      }
-      // else: the node belongs to another processor; the ghosted
-      //       element will contribute the right value on that proc
-    }
-  }
-
-  else if (action == Thermo::ba_integrate_shape_functions)
-  {
-    // NOTE: add area value only for elements which are NOT ghosted!
-    const bool addarea = (ele->owner() == discretization.get_comm().MyPID());
-    integrate_shape_functions(ele, params, elevec1_epetra, addarea);
-  }
-
   // surface heat transfer boundary condition q^_c = h (T - T_infty)
-  else if (action == Thermo::calc_thermo_fextconvection)
+  if (action == Thermo::calc_thermo_fextconvection)
   {
     // get node coordinates ( (nsd_+1): domain, nsd_: boundary )
     Core::Geo::fill_initial_position_array<distype, nsd_ + 1, Core::LinAlg::Matrix<nsd_ + 1, nen_>>(
