@@ -59,7 +59,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
 
   // node owner
   {
-    auto nodeowner = Epetra_Vector(*walldiscretization_->node_col_map(), true);
+    auto nodeowner = Core::LinAlg::Vector(*walldiscretization_->node_col_map(), true);
     for (int inode = 0; inode < walldiscretization_->num_my_col_nodes(); ++inode)
     {
       const Core::Nodes::Node* node = walldiscretization_->l_col_node(inode);
@@ -76,7 +76,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::write_wall_discretization
 
   // element id
   {
-    auto eleid = Epetra_Vector(*walldiscretization_->element_row_map(), true);
+    auto eleid = Core::LinAlg::Vector(*walldiscretization_->element_row_map(), true);
     for (int iele = 0; iele < walldiscretization_->num_my_row_elements(); ++iele)
     {
       const Core::Elements::Element* ele = walldiscretization_->l_row_element(iele);

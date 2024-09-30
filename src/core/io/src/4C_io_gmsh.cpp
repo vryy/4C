@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::scalar_field_to_gmsh(const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
+    const Teuchos::RCP<const Core::LinAlg::Vector> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Epetra_Vector> scalarfield =
+  const Teuchos::RCP<const Core::LinAlg::Vector> scalarfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row);
 
   // loop all row elements on this processor
@@ -77,10 +77,10 @@ void Core::IO::Gmsh::scalar_field_to_gmsh(const Teuchos::RCP<Core::FE::Discretiz
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
     const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_Vector> scalarfield_row, const int nds, std::ostream& s)
+    const Teuchos::RCP<const Core::LinAlg::Vector> scalarfield_row, const int nds, std::ostream& s)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Epetra_Vector> scalarfield =
+  const Teuchos::RCP<const Core::LinAlg::Vector> scalarfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row, nds);
 
   // loop all row elements on this processor
@@ -147,7 +147,7 @@ void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::scalar_element_field_to_gmsh(
     const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_Vector> scalarfield_ele_row, std::ostream& s)
+    const Teuchos::RCP<const Core::LinAlg::Vector> scalarfield_ele_row, std::ostream& s)
 {
   if (scalarfield_ele_row->Map().SameAs(*discret->element_row_map()) == false)
   {
@@ -200,11 +200,11 @@ void Core::IO::Gmsh::scalar_element_field_to_gmsh(
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(
     const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_Vector> vectorfield_row, std::ostream& s, const int nds,
+    const Teuchos::RCP<const Core::LinAlg::Vector> vectorfield_row, std::ostream& s, const int nds,
     bool displacenodes)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Epetra_Vector> vectorfield =
+  const Teuchos::RCP<const Core::LinAlg::Vector> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor
@@ -326,12 +326,12 @@ void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
     const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_Vector> vectorfield_row,
+    const Teuchos::RCP<const Core::LinAlg::Vector> vectorfield_row,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Epetra_Vector> vectorfield =
+  const Teuchos::RCP<const Core::LinAlg::Vector> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row);
 
   // loop all row elements on this processor
@@ -388,11 +388,11 @@ void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
     const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_Vector> vectorfield_row, const std::string field,
+    const Teuchos::RCP<const Core::LinAlg::Vector> vectorfield_row, const std::string field,
     std::ostream& s, const int nds)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Epetra_Vector> vectorfield =
+  const Teuchos::RCP<const Core::LinAlg::Vector> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor
@@ -482,8 +482,8 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(
     const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
-  // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for Epetra_Vectors
-  // on dof_row_map
+  // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
+  // Core::LinAlg::Vectors on dof_row_map
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->node_col_map(), 3, true));
   Core::LinAlg::export_to(*vectorfield_row, *vectorfield);
@@ -527,15 +527,15 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(
     const Teuchos::RCP<const Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
+    const Teuchos::RCP<const Core::LinAlg::Vector> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
-  // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for Epetra_Vectors
-  // on dof_row_map
+  // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
+  // Core::LinAlg::Vectors on dof_row_map
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for
   //         Epetra_MultiVectors
-  const Teuchos::RCP<Epetra_Vector> scalarfield =
-      Teuchos::rcp(new Epetra_Vector(*discret->node_col_map(), true));
+  const Teuchos::RCP<Core::LinAlg::Vector> scalarfield =
+      Teuchos::rcp(new Core::LinAlg::Vector(*discret->node_col_map(), true));
   Core::LinAlg::export_to(*scalarfield_row, *scalarfield);
 
   // loop all row elements on this processor
@@ -563,7 +563,8 @@ void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector myscalarfield(numnode);
-    Core::FE::extract_my_node_based_values(ele, myscalarfield, scalarfield, 1);
+    Core::FE::extract_my_node_based_values(
+        ele, myscalarfield, scalarfield->get_ptr_of_Epetra_MultiVector(), 1);
 
     // write vector field to Gmsh stream
     scalar_field_to_stream(myscalarfield, distype, s);

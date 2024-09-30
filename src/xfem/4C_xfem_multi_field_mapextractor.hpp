@@ -17,10 +17,10 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_xfem_enum_lists.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>
@@ -233,14 +233,14 @@ namespace XFEM
 
     /// @name Extract vector routines
     /// @{
-    Teuchos::RCP<Epetra_Vector> extract_vector(
-        const Epetra_Vector& full, enum FieldName field, enum MapType map_type = map_dofs) const;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_vector(const Core::LinAlg::Vector& full,
+        enum FieldName field, enum MapType map_type = map_dofs) const;
 
     Teuchos::RCP<Epetra_MultiVector> extract_vector(const Epetra_MultiVector& full,
         enum FieldName field, enum MapType map_type = map_dofs) const;
 
-    inline void extract_vector(Teuchos::RCP<const Epetra_Vector> full, enum FieldName field,
-        Teuchos::RCP<Epetra_Vector> partial, enum MapType map_type = map_dofs) const
+    inline void extract_vector(Teuchos::RCP<const Core::LinAlg::Vector> full, enum FieldName field,
+        Teuchos::RCP<Core::LinAlg::Vector> partial, enum MapType map_type = map_dofs) const
     {
       extract_vector(*full, field, *partial, map_type);
     }
@@ -267,14 +267,14 @@ namespace XFEM
     /// @name Routines to insert a partial vector into a full vector
     /// @{
 
-    /** \brief Put a partial vector into a full Epetra_Vector
+    /** \brief Put a partial vector into a full Core::LinAlg::Vector
      *
-     *  \param partial (in): vector to copy into full vector (Epetra_Vector)
+     *  \param partial (in): vector to copy into full vector (Core::LinAlg::Vector)
      *  \param field   (in): field name enumerator of the partial vector
      *
      *  \author hiermeier \date 10/16 */
-    Teuchos::RCP<Epetra_Vector> insert_vector(
-        const Epetra_Vector& partial, enum FieldName field, enum MapType map_type = map_dofs) const;
+    Teuchos::RCP<Core::LinAlg::Vector> insert_vector(const Core::LinAlg::Vector& partial,
+        enum FieldName field, enum MapType map_type = map_dofs) const;
 
     /** \brief Put a partial vector into a full vector (Epetra_MultiVector)
      *
@@ -285,15 +285,15 @@ namespace XFEM
     Teuchos::RCP<Epetra_MultiVector> insert_vector(const Epetra_MultiVector& partial,
         enum FieldName field, enum MapType map_type = map_dofs) const;
 
-    /** \brief Put a partial vector into a full vector (Epetra_Vector)
+    /** \brief Put a partial vector into a full vector (Core::LinAlg::Vector)
      *
      *  \param partial (in): vector to copy into full vector
      *  \param field   (in): field name enumerator of the partial vector
      *  \param full   (out): vector to copy into
      *
      *  \author hiermeier \date 10/16 */
-    void insert_vector(Teuchos::RCP<const Epetra_Vector> partial, enum FieldName field,
-        Teuchos::RCP<Epetra_Vector> full, enum MapType map_type = map_dofs) const
+    void insert_vector(Teuchos::RCP<const Core::LinAlg::Vector> partial, enum FieldName field,
+        Teuchos::RCP<Core::LinAlg::Vector> full, enum MapType map_type = map_dofs) const
     {
       insert_vector(*partial, field, *full, map_type);
     }
@@ -329,7 +329,7 @@ namespace XFEM
 
     /// @name Routines to add a partial vector to the full vector
     /// @{
-    /** \brief Add a partial vector to a full vector (Epetra_Vector)
+    /** \brief Add a partial vector to a full vector (Core::LinAlg::Vector)
      *
      *  \param partial (in): vector which is added to full vector
      *  \param field   (in): field name enumerator of the partial vector
@@ -337,8 +337,9 @@ namespace XFEM
      *  \param scale   (in): scaling factor for partial vector
      *
      *  \author hiermeier \date 10/16 */
-    inline void add_vector(Teuchos::RCP<const Epetra_Vector> partial, enum FieldName field,
-        Teuchos::RCP<Epetra_Vector> full, double scale, enum MapType map_type = map_dofs) const
+    inline void add_vector(Teuchos::RCP<const Core::LinAlg::Vector> partial, enum FieldName field,
+        Teuchos::RCP<Core::LinAlg::Vector> full, double scale,
+        enum MapType map_type = map_dofs) const
     {
       add_vector(*partial, slave_id(field), *full, scale, map_type);
     }

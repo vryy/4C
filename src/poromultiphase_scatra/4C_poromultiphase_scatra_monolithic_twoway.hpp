@@ -98,7 +98,7 @@ namespace PoroMultiPhaseScaTra
     Teuchos::RCP<const Epetra_Map> dof_row_map();
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> iterinc);
 
     //! extract the field vectors from a given composed vector x.
     /*!
@@ -109,9 +109,10 @@ namespace PoroMultiPhaseScaTra
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
       and mass fractions in 1D artery network
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
-        Teuchos::RCP<const Epetra_Vector>& scx);
+    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& stx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& flx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& scx);
 
     //! extract only the 3D field vectors from a given composed vector x.
     /*!
@@ -122,15 +123,16 @@ namespace PoroMultiPhaseScaTra
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
      of 3D field
      */
-    void extract_3d_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
-        Teuchos::RCP<const Epetra_Vector>& scx);
+    void extract_3d_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& stx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& flx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& scx);
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void setup_vector(Epetra_Vector& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector>
+    void setup_vector(Core::LinAlg::Vector& f,  //!< vector of length of all dofs
+        Teuchos::RCP<const Core::LinAlg::Vector>
             pv,  //!< vector containing structural + fluid dofs, i.e. poro dofs
-        Teuchos::RCP<const Epetra_Vector> sv  //!< vector containing only scatra dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> sv  //!< vector containing only scatra dofs
     );
 
     //! setup monolithic system matrix
@@ -158,7 +160,7 @@ namespace PoroMultiPhaseScaTra
     void update_fields_after_convergence();
 
     //! update the scatra field
-    virtual void update_scatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
+    virtual void update_scatra(Teuchos::RCP<const Core::LinAlg::Vector> scatrainc);
 
     //! return structure fluid coupling sparse matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> poro_fluid_scatra_coupling_matrix();
@@ -214,12 +216,12 @@ namespace PoroMultiPhaseScaTra
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
 
     //! @name Global vectors
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
 
-    Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of struct-fluid-scatra system
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_;  //!< rhs of struct-fluid-scatra system
 
     Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
     double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
@@ -306,7 +308,7 @@ namespace PoroMultiPhaseScaTra
     void setup_maps() override;
 
     // update the scatra field
-    void update_scatra(Teuchos::RCP<const Epetra_Vector> scatrainc) override;
+    void update_scatra(Teuchos::RCP<const Core::LinAlg::Vector> scatrainc) override;
 
     //! extract the field vectors from a given composed vector x.
     /*!
@@ -317,9 +319,10 @@ namespace PoroMultiPhaseScaTra
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
       and mass fractions in 1D artery network
      */
-    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
-        Teuchos::RCP<const Epetra_Vector>& scx) override;
+    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& stx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& flx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& scx) override;
 
     //! setup monolithic system matrix
     void setup_system_matrix() override;

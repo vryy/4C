@@ -1176,7 +1176,7 @@ void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, boo
   output.clear_map_cache();
 
   // quantities to be written for restart
-  std::map<std::string, Teuchos::RCP<Epetra_Vector>> restart_vectors;
+  std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> restart_vectors;
 
   // quantities to be written for restart
   get_strategy().do_write_restart(restart_vectors, forcedrestart);
@@ -1185,7 +1185,7 @@ void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, boo
     output.write_vector("lagrmultold", get_strategy().lagrange_multiplier_old());
 
   // write all vectors specified by used strategy
-  for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::const_iterator p =
+  for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>::const_iterator p =
            restart_vectors.begin();
        p != restart_vectors.end(); ++p)
     output.write_vector(p->first, p->second);
@@ -1197,7 +1197,7 @@ void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, boo
  |  read restart information for contact (public)             popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::read_restart(Core::IO::DiscretizationReader& reader,
-    Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
+    Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero)
 {
   // If Parent Elements are required, we need to reconnect them before contact restart!
   auto atype =
@@ -1237,39 +1237,41 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // *********************************************************************
 
   // evaluate active set and slip set
-  Teuchos::RCP<Epetra_Vector> activeset =
-      Teuchos::rcp(new Epetra_Vector(*get_strategy().active_row_nodes()));
+  Teuchos::RCP<Core::LinAlg::Vector> activeset =
+      Teuchos::rcp(new Core::LinAlg::Vector(*get_strategy().active_row_nodes()));
   activeset->PutScalar(1.0);
   if (get_strategy().is_friction())
   {
-    Teuchos::RCP<Epetra_Vector> slipset =
-        Teuchos::rcp(new Epetra_Vector(*get_strategy().slip_row_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector> slipset =
+        Teuchos::rcp(new Core::LinAlg::Vector(*get_strategy().slip_row_nodes()));
     slipset->PutScalar(1.0);
-    Teuchos::RCP<Epetra_Vector> slipsetexp =
-        Teuchos::rcp(new Epetra_Vector(*get_strategy().active_row_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector> slipsetexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*get_strategy().active_row_nodes()));
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<Epetra_Map> problemnodes = get_strategy().problem_nodes();
-  Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
+  Teuchos::RCP<Core::LinAlg::Vector> activesetexp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*problemnodes));
   Core::LinAlg::export_to(*activeset, *activesetexp);
 
   if (get_strategy().wear_both_discrete())
   {
-    Teuchos::RCP<Epetra_Vector> mactiveset =
-        Teuchos::rcp(new Epetra_Vector(*get_strategy().master_active_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector> mactiveset =
+        Teuchos::rcp(new Core::LinAlg::Vector(*get_strategy().master_active_nodes()));
     mactiveset->PutScalar(1.0);
-    Teuchos::RCP<Epetra_Vector> slipset =
-        Teuchos::rcp(new Epetra_Vector(*get_strategy().master_slip_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector> slipset =
+        Teuchos::rcp(new Core::LinAlg::Vector(*get_strategy().master_slip_nodes()));
     slipset->PutScalar(1.0);
-    Teuchos::RCP<Epetra_Vector> slipsetexp =
-        Teuchos::rcp(new Epetra_Vector(*get_strategy().master_active_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector> slipsetexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*get_strategy().master_active_nodes()));
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
-    Teuchos::RCP<Epetra_Vector> mactivesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
+    Teuchos::RCP<Core::LinAlg::Vector> mactivesetexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*problemnodes));
     Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
@@ -1281,11 +1283,11 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // *********************************************************************
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> gapnodes = get_strategy().problem_nodes();
-  Teuchos::RCP<const Epetra_Vector> gaps =
+  Teuchos::RCP<const Core::LinAlg::Vector> gaps =
       Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strategy_)->contact_wgap();
   if (gaps != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
+    Teuchos::RCP<Core::LinAlg::Vector> gapsexp = Teuchos::rcp(new Core::LinAlg::Vector(*gapnodes));
     Core::LinAlg::export_to(*gaps, *gapsexp);
 
     output.write_vector("gap", gapsexp);
@@ -1302,13 +1304,16 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   Teuchos::RCP<Epetra_Map> problemdofs = get_strategy().problem_dofs();
 
   // normal direction
-  Teuchos::RCP<const Epetra_Vector> normalstresses = get_strategy().contact_normal_stress();
-  Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  Teuchos::RCP<const Core::LinAlg::Vector> normalstresses = get_strategy().contact_normal_stress();
+  Teuchos::RCP<Core::LinAlg::Vector> normalstressesexp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
   Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
-  Teuchos::RCP<const Epetra_Vector> tangentialstresses = get_strategy().contact_tangential_stress();
-  Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  Teuchos::RCP<const Core::LinAlg::Vector> tangentialstresses =
+      get_strategy().contact_tangential_stress();
+  Teuchos::RCP<Core::LinAlg::Vector> tangentialstressesexp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
   Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
@@ -1319,13 +1324,16 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   if (get_strategy().contact_normal_force() != Teuchos::null)
   {
     // normal direction
-    Teuchos::RCP<const Epetra_Vector> normalforce = get_strategy().contact_normal_force();
-    Teuchos::RCP<Epetra_Vector> normalforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    Teuchos::RCP<const Core::LinAlg::Vector> normalforce = get_strategy().contact_normal_force();
+    Teuchos::RCP<Core::LinAlg::Vector> normalforceexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
     Core::LinAlg::export_to(*normalforce, *normalforceexp);
 
     // tangential plane
-    Teuchos::RCP<const Epetra_Vector> tangentialforce = get_strategy().contact_tangential_force();
-    Teuchos::RCP<Epetra_Vector> tangentialforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    Teuchos::RCP<const Core::LinAlg::Vector> tangentialforce =
+        get_strategy().contact_tangential_force();
+    Teuchos::RCP<Core::LinAlg::Vector> tangentialforceexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
     Core::LinAlg::export_to(*tangentialforce, *tangentialforceexp);
 
     // write to output
@@ -1351,8 +1359,9 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     get_strategy().output_wear();
 
     // write output
-    Teuchos::RCP<const Epetra_Vector> wearoutput = get_strategy().contact_wear();
-    Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    Teuchos::RCP<const Core::LinAlg::Vector> wearoutput = get_strategy().contact_wear();
+    Teuchos::RCP<Core::LinAlg::Vector> wearoutputexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
     Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     output.write_vector("wear", wearoutputexp);
     get_strategy().reset_wear();
@@ -1367,8 +1376,9 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     // output of poro no penetration lagrange multiplier!
     CONTACT::LagrangeStrategyPoro& costrategy =
         dynamic_cast<CONTACT::LagrangeStrategyPoro&>(get_strategy());
-    Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.lambda_no_pen();
-    Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    Teuchos::RCP<Core::LinAlg::Vector> lambdaout = costrategy.lambda_no_pen();
+    Teuchos::RCP<Core::LinAlg::Vector> lambdaoutexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
     Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     output.write_vector("poronopen_lambda", lambdaoutexp);
   }

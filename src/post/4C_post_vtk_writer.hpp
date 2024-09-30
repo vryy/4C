@@ -14,6 +14,7 @@
 #include "4C_config.hpp"
 
 #include "4C_io_vtk_writer_base.hpp"  // LIBB64
+#include "4C_linalg_vector.hpp"
 #include "4C_post_writer_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -78,7 +79,8 @@ class PostVtkWriter : public PostWriterBase
   virtual const std::string& writer_suffix() const = 0;
 
   //! Write a single result step
-  virtual void write_dof_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+  virtual void write_dof_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::Vector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) = 0;
@@ -101,7 +103,7 @@ class PostVtkWriter : public PostWriterBase
    \brief write one time step of a result
 
    The results are taken from a reconstructed
-   Epetra_Vector. In many cases this vector will contain just one
+   Core::LinAlg::Vector. In many cases this vector will contain just one
    variable (displacements) and thus is easy to write as a whole. At
    other times, however, there is more than one result (velocity,
    pressure) and we want to write just one part of it. So we have to

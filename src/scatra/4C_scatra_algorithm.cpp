@@ -46,8 +46,8 @@ void ScaTra::ScaTraAlgorithm::setup()
 
   // create vectors
   velincnp_ = Teuchos::rcp(
-      new Epetra_Vector(*(fluid_field()->extract_velocity_part(fluid_field()->velnp()))));
-  phiincnp_ = Teuchos::rcp(new Epetra_Vector(*(scatra_field()->phinp())));
+      new Core::LinAlg::Vector(*(fluid_field()->extract_velocity_part(fluid_field()->velnp()))));
+  phiincnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*(scatra_field()->phinp())));
 
   if (velincnp_ == Teuchos::null) FOUR_C_THROW("velincnp_ == Teuchos::null");
   if (phiincnp_ == Teuchos::null) FOUR_C_THROW("phiincnp_ == Teuchos::null");
@@ -300,7 +300,7 @@ void ScaTra::ScaTraAlgorithm::set_velocity_field()
   // this is ugly, but FsVel() may give a Null pointer which we canNOT give to the volmortart
   // framework
   // TODO (thon): make this somehow prettier..
-  Teuchos::RCP<const Epetra_Vector> fsvel = fluid_field()->fs_vel();
+  Teuchos::RCP<const Core::LinAlg::Vector> fsvel = fluid_field()->fs_vel();
   if (fsvel != Teuchos::null) fsvel = fluid_to_scatra(fsvel);
 
   switch (fluid_field()->tim_int_scheme())

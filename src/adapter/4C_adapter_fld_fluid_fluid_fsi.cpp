@@ -140,10 +140,12 @@ Adapter::FluidFluidFSI::x_fluid_fluid_map_extractor()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+void Adapter::FluidFluidFSI::apply_mesh_displacement(
+    Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp)
 {
   // store old state
-  Teuchos::RCP<const Epetra_Vector> disp = meshmap_->extract_cond_vector(fluidimpl_->dispnp());
+  Teuchos::RCP<const Core::LinAlg::Vector> disp =
+      meshmap_->extract_cond_vector(fluidimpl_->dispnp());
   meshmap_->insert_cond_vector(disp, xfluidfluid_->write_access_disp_old_state());
   // apply mesh displacement and update grid velocity
   FluidFSI::apply_mesh_displacement(fluiddisp);
@@ -170,8 +172,8 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::block_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::evaluate(
-    Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
+void Adapter::FluidFluidFSI::evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+        stepinc  ///< solution increment between time step n and n+1
 )
 {
   if (monolithic_approach_ == Inpar::XFEM::XFFSI_Full_Newton)
@@ -190,32 +192,38 @@ void Adapter::FluidFluidFSI::evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Adapter::FluidFluidFSI::grid_vel()
+Teuchos::RCP<const Core::LinAlg::Vector> Adapter::FluidFluidFSI::grid_vel()
 {
   return fluidimpl_->grid_vel();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidFluidFSI::write_access_grid_vel()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidFluidFSI::write_access_grid_vel()
 {
   return fluidimpl_->write_access_grid_vel();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Adapter::FluidFluidFSI::dispnp() { return fluidimpl_->dispnp(); }
+Teuchos::RCP<const Core::LinAlg::Vector> Adapter::FluidFluidFSI::dispnp()
+{
+  return fluidimpl_->dispnp();
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidFluidFSI::write_access_dispnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidFluidFSI::write_access_dispnp()
 {
   return fluidimpl_->write_access_dispnp();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Adapter::FluidFluidFSI::dispn() { return fluidimpl_->dispn(); }
+Teuchos::RCP<const Core::LinAlg::Vector> Adapter::FluidFluidFSI::dispn()
+{
+  return fluidimpl_->dispn();
+}
 
 
 /*----------------------------------------------------------------------*

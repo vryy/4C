@@ -103,8 +103,8 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
-  //  Teuchos::RCP<Epetra_Vector> Wfnp        = discretization.GetState("Wfnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> qanp = discretization.get_state("qanp");
+  //  Teuchos::RCP<Core::LinAlg::Vector> Wfnp        = discretization.GetState("Wfnp");
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
@@ -229,14 +229,15 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<Epetra_Vector> qanp = params.get<Teuchos::RCP<Epetra_Vector>>("qanp");
-  Teuchos::RCP<Epetra_Vector> qan = params.get<Teuchos::RCP<Epetra_Vector>>("qan");
-  Teuchos::RCP<Epetra_Vector> wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
-  Teuchos::RCP<Epetra_Vector> wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
-  Teuchos::RCP<Epetra_Vector> wfo = params.get<Teuchos::RCP<Epetra_Vector>>("Wfo");
-  Teuchos::RCP<Epetra_Vector> wbo = params.get<Teuchos::RCP<Epetra_Vector>>("Wbo");
+  Teuchos::RCP<Core::LinAlg::Vector> qanp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("qanp");
+  Teuchos::RCP<Core::LinAlg::Vector> qan = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("qan");
+  Teuchos::RCP<Core::LinAlg::Vector> wfnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wfnp");
+  Teuchos::RCP<Core::LinAlg::Vector> wbnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wbnp");
+  Teuchos::RCP<Core::LinAlg::Vector> wfo = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wfo");
+  Teuchos::RCP<Core::LinAlg::Vector> wbo = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wbo");
 
-  Teuchos::RCP<Epetra_Vector> scatran = params.get<Teuchos::RCP<Epetra_Vector>>("scatran");
+  Teuchos::RCP<Core::LinAlg::Vector> scatran =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("scatran");
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
@@ -288,9 +289,9 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::initial(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> qa0 = params.get<Teuchos::RCP<Epetra_Vector>>("qa0");
-  Teuchos::RCP<Epetra_Vector> wfo = params.get<Teuchos::RCP<Epetra_Vector>>("wfo");
-  Teuchos::RCP<Epetra_Vector> wbo = params.get<Teuchos::RCP<Epetra_Vector>>("wbo");
+  Teuchos::RCP<Core::LinAlg::Vector> qa0 = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("qa0");
+  Teuchos::RCP<Core::LinAlg::Vector> wfo = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("wfo");
+  Teuchos::RCP<Core::LinAlg::Vector> wbo = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("wbo");
 
   Core::Nodes::Node** nodes = ele->nodes();
 
@@ -981,9 +982,9 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
   const int numnode = my::iel_;
   std::vector<int>::iterator it_vcr;
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
-  Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
-  Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> qanp = discretization.get_state("qanp");
+  Teuchos::RCP<Core::LinAlg::Vector> Wfnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wfnp");
+  Teuchos::RCP<Core::LinAlg::Vector> Wbnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wbnp");
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
@@ -1157,8 +1158,8 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
-  Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
+  Teuchos::RCP<Core::LinAlg::Vector> Wfnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wfnp");
+  Teuchos::RCP<Core::LinAlg::Vector> Wbnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wbnp");
 
   // get time-step size
   const double dt = params.get<double>("time step size");
@@ -1224,7 +1225,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
   const int numnode = my::iel_;
   std::vector<int>::iterator it_vcr;
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
+  Teuchos::RCP<const Core::LinAlg::Vector> qanp = discretization.get_state("qanp");
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
@@ -1272,8 +1273,10 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
             "Something is severely wrong! In/Out terminal condition should be either \"outlet\" or "
             "\"inlet\"");
 
-      Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-      Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
+      Teuchos::RCP<Core::LinAlg::Vector> bcval =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("bcval");
+      Teuchos::RCP<Core::LinAlg::Vector> dbctog =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("dbctog");
 
       if (bcval == Teuchos::null || dbctog == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'bcval' and 'dbctog'");
@@ -1436,8 +1439,10 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
           Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
           "Junctions Parameters");
 
-      Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-      Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
+      Teuchos::RCP<Core::LinAlg::Vector> bcval =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("bcval");
+      Teuchos::RCP<Core::LinAlg::Vector> dbctog =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("dbctog");
 
       // -------------------------------------------------------------------------------
       // Update the Dirichlet BC vector
@@ -1480,8 +1485,10 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
   {
     if (ele->nodes()[i]->get_condition("ArtInOutCond"))
     {
-      Teuchos::RCP<Epetra_Vector> bcval = params.get<Teuchos::RCP<Epetra_Vector>>("bcval");
-      Teuchos::RCP<Epetra_Vector> dbctog = params.get<Teuchos::RCP<Epetra_Vector>>("dbctog");
+      Teuchos::RCP<Core::LinAlg::Vector> bcval =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("bcval");
+      Teuchos::RCP<Core::LinAlg::Vector> dbctog =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("dbctog");
       double time = params.get<double>("time");
 
       //
@@ -1541,13 +1548,15 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
-  //  Teuchos::RCP<const Epetra_Vector> Wfnp  = discretization.GetState("Wfnp");
-  //  Teuchos::RCP<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> qanp = discretization.get_state("qanp");
+  //  Teuchos::RCP<const Core::LinAlg::Vector> Wfnp  = discretization.GetState("Wfnp");
+  //  Teuchos::RCP<const Core::LinAlg::Vector> Wbnp  = discretization.GetState("Wbnp");
 
-  Teuchos::RCP<Epetra_Vector> pn = params.get<Teuchos::RCP<Epetra_Vector>>("pressure");
-  Teuchos::RCP<Epetra_Vector> qn = params.get<Teuchos::RCP<Epetra_Vector>>("flow");
-  Teuchos::RCP<Epetra_Vector> an = params.get<Teuchos::RCP<Epetra_Vector>>("art_area");
+  Teuchos::RCP<Core::LinAlg::Vector> pn =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("pressure");
+  Teuchos::RCP<Core::LinAlg::Vector> qn = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("flow");
+  Teuchos::RCP<Core::LinAlg::Vector> an =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("art_area");
 
   // get time-step size
   //  const double dt = params.get<double>("time step size");
@@ -1687,8 +1696,10 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  Teuchos::RCP<Epetra_Vector> scatra_fb = params.get<Teuchos::RCP<Epetra_Vector>>("scatra_fb");
-  Teuchos::RCP<Epetra_Vector> scatra = params.get<Teuchos::RCP<Epetra_Vector>>("scatra");
+  Teuchos::RCP<Core::LinAlg::Vector> scatra_fb =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("scatra_fb");
+  Teuchos::RCP<Core::LinAlg::Vector> scatra =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("scatra");
 
   // the number of nodes
   const int numnode = my::iel_;
@@ -1779,9 +1790,9 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
   const int numnode = my::iel_;
   std::vector<int>::iterator it_vcr;
 
-  Teuchos::RCP<const Epetra_Vector> qanp = discretization.get_state("qanp");
-  Teuchos::RCP<Epetra_Vector> Wfnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wfnp");
-  Teuchos::RCP<Epetra_Vector> Wbnp = params.get<Teuchos::RCP<Epetra_Vector>>("Wbnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> qanp = discretization.get_state("qanp");
+  Teuchos::RCP<Core::LinAlg::Vector> Wfnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wfnp");
+  Teuchos::RCP<Core::LinAlg::Vector> Wbnp = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wbnp");
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
@@ -1875,13 +1886,15 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(
   // ---------------------------------------------------------------------
   // get all general state vectors: flow./area.,
   // ---------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> wfn = params.get<Teuchos::RCP<Epetra_Vector>>("Wfn");
-  Teuchos::RCP<Epetra_Vector> wbn = params.get<Teuchos::RCP<Epetra_Vector>>("Wbn");
-  Teuchos::RCP<Epetra_Vector> wfo = params.get<Teuchos::RCP<Epetra_Vector>>("Wfo");
-  Teuchos::RCP<Epetra_Vector> wbo = params.get<Teuchos::RCP<Epetra_Vector>>("Wbo");
+  Teuchos::RCP<Core::LinAlg::Vector> wfn = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wfn");
+  Teuchos::RCP<Core::LinAlg::Vector> wbn = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wbn");
+  Teuchos::RCP<Core::LinAlg::Vector> wfo = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wfo");
+  Teuchos::RCP<Core::LinAlg::Vector> wbo = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("Wbo");
 
-  Teuchos::RCP<Epetra_Vector> scatran = params.get<Teuchos::RCP<Epetra_Vector>>("scatran");
-  Teuchos::RCP<Epetra_Vector> scatranp = params.get<Teuchos::RCP<Epetra_Vector>>("scatranp");
+  Teuchos::RCP<Core::LinAlg::Vector> scatran =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("scatran");
+  Teuchos::RCP<Core::LinAlg::Vector> scatranp =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("scatranp");
 
   // extract local values from the global vectors
   std::vector<double> myescatran(lm.size());

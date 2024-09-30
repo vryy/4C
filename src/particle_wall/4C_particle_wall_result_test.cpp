@@ -83,7 +83,7 @@ void PARTICLEWALL::WallResultTest::test_node(
     if (quantity == "posx" or quantity == "posy" or quantity == "posz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->get_disp_col();
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = walldatastate->get_disp_col();
 
       int idx = -1;
       if (quantity == "posx")
@@ -112,7 +112,7 @@ void PARTICLEWALL::WallResultTest::test_node(
     else if (quantity == "dispx" or quantity == "dispy" or quantity == "dispz")
     {
       // get wall displacements
-      Teuchos::RCP<const Epetra_Vector> disp = walldatastate->get_disp_col();
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = walldatastate->get_disp_col();
 
       if (disp == Teuchos::null) return;
 

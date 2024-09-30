@@ -16,6 +16,7 @@
 #include "4C_fem_geometry_intersection_math.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_direction_factory.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
@@ -26,7 +27,6 @@
 #include "4C_solver_nonlin_nox_statustest_normf.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <NOX_Direction_Generic.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_GlobalData.H>
@@ -149,7 +149,7 @@ void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
           Teuchos::rcp_dynamic_cast<const ::NOX::Epetra::Vector>(solnPtr->getXPtr());
       if (epetraXPtr.is_null()) FOUR_C_THROW("Cast to ::NOX::Epetra::Vector failed!");
       scalingDiagOpPtr_ =
-          Teuchos::rcp(new Epetra_Vector(epetraXPtr->getEpetraVector().Map(), false));
+          Teuchos::rcp(new Core::LinAlg::Vector(epetraXPtr->getEpetraVector().Map(), false));
 
       scalingDiagOpPtr_->PutScalar(1.0);
 
@@ -160,7 +160,7 @@ void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
     case NOX::Nln::Solver::PseudoTransient::scale_op_lumped_mass:
     {
       // get the lumped mass matrix
-      scalingDiagOpPtr_ = Teuchos::rcp(new Epetra_Vector(
+      scalingDiagOpPtr_ = Teuchos::rcp(new Core::LinAlg::Vector(
           *(Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr)->get_lumped_mass_matrix_ptr())));
       break;
     }
@@ -664,7 +664,7 @@ NOX::Nln::Solver::PseudoTransient::get_scaling_operator_type() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Vector& NOX::Nln::Solver::PseudoTransient::get_scaling_diag_operator() const
+const Core::LinAlg::Vector& NOX::Nln::Solver::PseudoTransient::get_scaling_diag_operator() const
 {
   if (scalingDiagOpPtr_.is_null())
     throw_error("get_scaling_diag_operator", "The scaling operator is not initialized!");
@@ -778,7 +778,7 @@ void NOX::Nln::Solver::PseudoTransient::throw_error(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::Nln::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
-    Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
+    Teuchos::RCP<Core::LinAlg::Vector>& scalingDiagOpPtr,
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
     const NOX::Nln::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
@@ -791,7 +791,8 @@ NOX::Nln::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
-    Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys)
+    Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
+    const NOX::Nln::LinearSystem& linsys)
 {
   if (not ptcsolver_.is_ptc_solve()) return;
 
@@ -828,7 +829,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_fand_jacobian(
-    Epetra_Vector& rhs, Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
+    Core::LinAlg::Vector& rhs, Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
     const NOX::Nln::LinearSystem& linsys)
 {
   run_post_compute_jacobian(jac, x, linsys);
@@ -854,11 +855,12 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
        * pseudo time step. Finally, we modify the jacobian.
        *
        *        (\delta^{-1} \boldsymbol{I} + \boldsymbol{J}) */
-      Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*scaling_diag_op_ptr_));
+      Teuchos::RCP<Core::LinAlg::Vector> v =
+          Teuchos::rcp(new Core::LinAlg::Vector(*scaling_diag_op_ptr_));
       // Scale v with scaling factor
       v->Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
-      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(jac.row_map(), false);
+      Teuchos::RCP<Core::LinAlg::Vector> diag = Core::LinAlg::create_vector(jac.row_map(), false);
       jac.extract_diagonal_copy(*diag);
       diag->Update(1.0, *v, 1.0);
       // Finally modify the jacobian
@@ -895,7 +897,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::Nln::GROUP::PrePostOp::PseudoTransient::PseudoTransient(
-    Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
+    Teuchos::RCP<Core::LinAlg::Vector>& scalingDiagOpPtr,
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
     const NOX::Nln::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
@@ -931,7 +933,8 @@ NOX::Nln::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
   {
     case NOX::Nln::Solver::PseudoTransient::scale_op_identity:
     {
-      ::NOX::Epetra::Vector v = ::NOX::Epetra::Vector(scaling_diag_op_ptr_);
+      ::NOX::Epetra::Vector v =
+          ::NOX::Epetra::Vector(scaling_diag_op_ptr_->get_ptr_of_Epetra_Vector());
       v.scale(ptcsolver_.get_inverse_pseudo_time_step());
       xUpdate->scale(v);
 
@@ -957,7 +960,7 @@ NOX::Nln::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_post_compute_f(
-    Epetra_Vector& F, const NOX::Nln::Group& grp)
+    Core::LinAlg::Vector& F, const NOX::Nln::Group& grp)
 {
   if (not ptcsolver_.is_ptc_solve()) return;
 
@@ -981,7 +984,7 @@ void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_post_compute_f(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_pre_compute_f(
-    Epetra_Vector& F, const NOX::Nln::Group& grp)
+    Core::LinAlg::Vector& F, const NOX::Nln::Group& grp)
 {
   if (not ptcsolver_.is_ptc_solve()) return;
 

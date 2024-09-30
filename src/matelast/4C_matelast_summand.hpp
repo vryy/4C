@@ -17,8 +17,7 @@
 #include "4C_legacy_enum_definitions_materials.hpp"
 #include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

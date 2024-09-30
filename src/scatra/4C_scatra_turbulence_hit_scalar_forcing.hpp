@@ -19,8 +19,8 @@ passive-scalar transport
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -75,11 +75,11 @@ namespace ScaTra
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Epetra_Vector> forcing_;
+    Teuchos::RCP<Core::LinAlg::Vector> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Epetra_Vector> phinp_;
-    Teuchos::RCP<Epetra_Vector> phiaf_;
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector> phiaf_;
 
     //! threshold wave number for forcing
     //! i.e., forcing is applied to wave numbers <= threshold wave number

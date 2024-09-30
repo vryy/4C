@@ -235,7 +235,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::solve(
 
   b_->Update(1., Xmv, 0.);
   Core::LinAlg::SolverParams solver_params;
-  solver_->solve(a_, x_, b_, solver_params);
+  solver_->solve_with_multi_vector(a_, x_, b_, solver_params);
   Ymv.Update(1., *x_, 0.);
 
   for (int i = 0; i < X.get_num_blocks(); i++) domain_ex.extract_vector(Ymv, i, *(Y.get_vector(i)));
@@ -814,10 +814,9 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::apply(
 
   b_->Update(1., X, 0.);
   Core::LinAlg::SolverParams solver_params;
-  solver_->solve(a_, x_, b_, solver_params);
+  solver_->solve_with_multi_vector(a_, x_, b_, solver_params);
   Y.Update(1., *x_, 0.);
 }
-
 
 
 /*------------------------------------------------------------------------------*/
@@ -2217,7 +2216,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix>
 Core::LinearSolver::AMGNxN::SimpleSmootherFactory::approximate_inverse(
     const Core::LinAlg::SparseMatrixBase& A, const std::string& method)
 {
-  Teuchos::RCP<Epetra_Vector> invAVector = Teuchos::rcp(new Epetra_Vector(A.row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> invAVector =
+      Teuchos::rcp(new Core::LinAlg::Vector(A.row_map()));
   if (method == "diagonal")
   {
     A.extract_diagonal_copy(*invAVector);
@@ -2226,7 +2226,7 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::approximate_inverse(
   }
   else if (method == "row sums" or method == "row sums diagonal blocks")
   {
-    int err = A.epetra_matrix()->InvRowSums(*invAVector);
+    int err = A.epetra_matrix()->InvRowSums(invAVector->get_ref_of_Epetra_Vector());
     if (err) FOUR_C_THROW("Epetra_CrsMatrix::InvRowSums returned %d, are we dividing by 0?", err);
   }
   else

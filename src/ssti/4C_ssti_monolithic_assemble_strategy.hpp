@@ -12,12 +12,11 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_ssi_utils.hpp"
 #include "4C_ssti_monolithic.hpp"
 #include "4C_ssti_utils.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -65,9 +64,10 @@ namespace SSTI
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) = 0;
 
     //! assemble RHS
-    void assemble_rhs(Teuchos::RCP<Epetra_Vector> RHS, Teuchos::RCP<const Epetra_Vector> RHSscatra,
-        Teuchos::RCP<const Epetra_Vector> RHSstructure,
-        Teuchos::RCP<const Epetra_Vector> RHSthermo);
+    void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector> RHS,
+        Teuchos::RCP<const Core::LinAlg::Vector> RHSscatra,
+        Teuchos::RCP<const Core::LinAlg::Vector> RHSstructure,
+        Teuchos::RCP<const Core::LinAlg::Vector> RHSthermo);
 
     //! assemble ScaTra-Block into system matrix
     virtual void assemble_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,

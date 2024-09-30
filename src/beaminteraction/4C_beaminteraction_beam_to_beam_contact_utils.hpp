@@ -18,8 +18,8 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 

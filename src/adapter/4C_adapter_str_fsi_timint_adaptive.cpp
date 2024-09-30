@@ -73,17 +73,17 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
     double& errinf, double& errinfcond, double& errinfother)
 {
   // vector with local discretization error for each DOF
-  Teuchos::RCP<Epetra_Vector> error = str_ada()->loc_err_dis();
+  Teuchos::RCP<Core::LinAlg::Vector> error = str_ada()->loc_err_dis();
 
   // extract the condition part of the full error vector
   // (i.e. only interface displacement DOFs)
-  Teuchos::RCP<Epetra_Vector> errorcond =
-      Teuchos::rcp(new Epetra_Vector(*interface_->extract_fsi_cond_vector(error)));
+  Teuchos::RCP<Core::LinAlg::Vector> errorcond =
+      Teuchos::rcp(new Core::LinAlg::Vector(*interface_->extract_fsi_cond_vector(error)));
 
   // in case of structure split: extract the other part of the full error vector
   // (i.e. only interior displacement DOFs)
-  Teuchos::RCP<Epetra_Vector> errorother =
-      Teuchos::rcp(new Epetra_Vector(*interface_->extract_fsi_cond_vector(error)));
+  Teuchos::RCP<Core::LinAlg::Vector> errorother =
+      Teuchos::rcp(new Core::LinAlg::Vector(*interface_->extract_fsi_cond_vector(error)));
 
   // calculate L2-norms of different subsets of local discretization error vector
   err = Solid::calculate_vector_norm(errnorm_, *error, numdbcdofs_);

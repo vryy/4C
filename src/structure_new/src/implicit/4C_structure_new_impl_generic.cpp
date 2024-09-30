@@ -24,6 +24,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  Epetra_Vector& extract_epetra_vector(::NOX::Abstract::Vector& vec)
+  {
+    ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<::NOX::Epetra::Vector*>(&vec);
+    FOUR_C_ASSERT(
+        epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
+
+    return epetra_vec->getEpetraVector();
+  }
+
+  Core::LinAlg::Vector copy_to_our_vector(const ::NOX::Abstract::Vector& vec)
+  {
+    const ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<const ::NOX::Epetra::Vector*>(&vec);
+    FOUR_C_ASSERT(
+        epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
+
+    return Core::LinAlg::Vector(epetra_vec->getEpetraVector());
+  }
+}  // namespace
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::IMPLICIT::Generic::Generic() : ispredictor_state_(false)
@@ -126,8 +147,8 @@ void Solid::IMPLICIT::Generic::print_jacobian_in_matlab_format(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::CorrectionType type,
-    const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
-    Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
+    const std::vector<Inpar::Solid::ModelType>& constraint_models, const Core::LinAlg::Vector& x,
+    Core::LinAlg::Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -183,30 +204,29 @@ void Solid::IMPLICIT::Generic::condition_number(const NOX::Nln::Group& grp) cons
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_pre_compute_x(const NOX::Nln::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
+    const Core::LinAlg::Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // set the evaluation parameters
-  const Epetra_Vector& xold =
-      dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
-  Epetra_Vector& dir_mutable = const_cast<Epetra_Vector&>(dir);
+  const auto& xold = dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
+  Core::LinAlg::Vector& dir_mutable = const_cast<Core::LinAlg::Vector&>(dir);
 
   const bool isdefaultstep = (step == default_step_);
-  impl_.model_eval().run_pre_compute_x(xold, dir_mutable, step, curr_grp, isdefaultstep);
+  impl_.model_eval().run_pre_compute_x(
+      Core::LinAlg::Vector(xold), dir_mutable, step, curr_grp, isdefaultstep);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_compute_x(const NOX::Nln::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
+    const Core::LinAlg::Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // set the evaluation parameters
-  const Epetra_Vector& xold =
-      dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
-  const Epetra_Vector& xnew =
-      dynamic_cast<const ::NOX::Epetra::Vector&>(curr_grp.getX()).getEpetraVector();
+  const auto& xold = dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
+  const auto& xnew = dynamic_cast<const ::NOX::Epetra::Vector&>(curr_grp.getX()).getEpetraVector();
 
   bool isdefaultstep = (step == default_step_);
-  impl_.model_eval().run_post_compute_x(xold, dir, step, xnew, isdefaultstep);
+  impl_.model_eval().run_post_compute_x(
+      Core::LinAlg::Vector(xold), dir, step, Core::LinAlg::Vector(xnew), isdefaultstep);
 }
 
 /*----------------------------------------------------------------------------*
@@ -236,8 +256,16 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_pre_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::Nln::Group& grp)
 {
-  impl_.model_eval().run_pre_apply_jacobian_inverse(convert2_epetra_vector(rhs),
-      convert2_epetra_vector(result), convert2_epetra_vector(xold), grp);
+  Core::LinAlg::VectorView result_view(extract_epetra_vector(result));
+
+  // Some inherited classes break const-correctness. Thus, we need to provide something
+  // that may be safely const_casted. fixme
+  auto rhs_our = copy_to_our_vector(rhs);
+
+  impl_.model_eval().run_pre_apply_jacobian_inverse(
+      rhs_our, result_view, copy_to_our_vector(xold), grp);
+  const ::NOX::Epetra::Vector* epetra_rhs = dynamic_cast<const ::NOX::Epetra::Vector*>(&rhs);
+  const_cast<Epetra_Vector&>(epetra_rhs->getEpetraVector()).Update(1.0, rhs_our, 0.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -246,8 +274,9 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
     const ::NOX::Abstract::Vector& rhs, ::NOX::Abstract::Vector& result,
     const ::NOX::Abstract::Vector& xold, const NOX::Nln::Group& grp)
 {
-  impl_.model_eval().run_post_apply_jacobian_inverse(convert2_epetra_vector(rhs),
-      convert2_epetra_vector(result), convert2_epetra_vector(xold), grp);
+  Core::LinAlg::VectorView result_view(extract_epetra_vector(result));
+  impl_.model_eval().run_post_apply_jacobian_inverse(
+      copy_to_our_vector(rhs), result_view, copy_to_our_vector(xold), grp);
 
   impl_.print_jacobian_in_matlab_format(grp);
   impl_.condition_number(grp);
@@ -258,29 +287,7 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
       NOX::Nln::CorrectionType::vague);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Epetra_Vector& NOX::Nln::PrePostOp::IMPLICIT::Generic::convert2_epetra_vector(
-    ::NOX::Abstract::Vector& vec) const
-{
-  ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<::NOX::Epetra::Vector*>(&vec);
-  FOUR_C_ASSERT(
-      epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
 
-  return epetra_vec->getEpetraVector();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-const Epetra_Vector& NOX::Nln::PrePostOp::IMPLICIT::Generic::convert2_epetra_vector(
-    const ::NOX::Abstract::Vector& vec) const
-{
-  const ::NOX::Epetra::Vector* epetra_vec = dynamic_cast<const ::NOX::Epetra::Vector*>(&vec);
-  FOUR_C_ASSERT(
-      epetra_vec != nullptr, "The given ::NOX::Abstract::Vector is no ::NOX::Epetra::Vector!");
-
-  return epetra_vec->getEpetraVector();
-}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -332,7 +339,8 @@ void Solid::IMPLICIT::Generic::compute_jacobian_contributions_from_element_level
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
+void Solid::IMPLICIT::Generic::remove_condensed_contributions_from_rhs(
+    Core::LinAlg::Vector& rhs) const
 {
   model_eval().remove_condensed_contributions_from_rhs(rhs);
 }

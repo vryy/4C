@@ -165,15 +165,17 @@ namespace BEAMINTERACTION
     void add_global_force_stiffness_contributions(Teuchos::RCP<Epetra_FEVector> fluid_force,
         Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kbf, Teuchos::RCP<Core::LinAlg::SparseMatrix> kff,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb, Teuchos::RCP<const Epetra_Vector> beam_vel,
-        Teuchos::RCP<const Epetra_Vector> fluid_vel) const;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb,
+        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers.
      * @param[in] vel Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> get_global_lambda(Teuchos::RCP<const Epetra_Vector> vel) const;
+    Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda(
+        Teuchos::RCP<const Core::LinAlg::Vector> vel) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
@@ -181,7 +183,8 @@ namespace BEAMINTERACTION
      * @param vel (in) Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> get_global_lambda_col(Teuchos::RCP<const Epetra_Vector> vel) const;
+    Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda_col(
+        Teuchos::RCP<const Core::LinAlg::Vector> vel) const;
 
    protected:
     /**
@@ -216,7 +219,7 @@ namespace BEAMINTERACTION
      *
      * @return Inverted global_kappa_ vector.
      */
-    Teuchos::RCP<Epetra_Vector> invert_kappa() const;
+    Teuchos::RCP<Core::LinAlg::Vector> invert_kappa() const;
 
    private:
     //! Flag if setup was called.

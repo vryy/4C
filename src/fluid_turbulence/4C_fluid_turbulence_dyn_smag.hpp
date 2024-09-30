@@ -37,9 +37,9 @@ References are
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -85,12 +85,13 @@ namespace FLD
 
     */
     void apply_filter_for_dynamic_computation_of_cs(
-        const Teuchos::RCP<const Epetra_Vector> velocity,
-        const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
-        const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
+        const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
+        const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
+        const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle);
 
-    void apply_filter_for_dynamic_computation_of_prt(const Teuchos::RCP<const Epetra_Vector> scalar,
-        const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+    void apply_filter_for_dynamic_computation_of_prt(
+        const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
+        const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
         Teuchos::ParameterList& extraparams, const int ndsvel);
 
 
@@ -187,9 +188,9 @@ namespace FLD
     //! the filtered velocities times rho exported to column map
     Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_;
     //! the filtered density exported to column map
-    Teuchos::RCP<Epetra_Vector> col_filtered_dens_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens_;
     //! the filtered strainrate times rho exported to column map
-    Teuchos::RCP<Epetra_Vector> col_filtered_dens_strainrate_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens_strainrate_;
     //! the modeled fine scale velocities exported to column map
     Teuchos::RCP<Epetra_MultiVector> col_fs_vel_;
     //! the filtered density times temperature times velocity exported to column map (scalar)
@@ -200,9 +201,9 @@ namespace FLD
     //  //! the filtered temperature gradient exported to column map (scalar)
     //  Teuchos::RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
     //! the filtered temperature exported to column map (scalar)
-    Teuchos::RCP<Epetra_Vector> col_filtered_temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_temp_;
     //! the filtered density times temperature exported to column map (scalar)
-    Teuchos::RCP<Epetra_Vector> col_filtered_dens_temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens_temp_;
     //@}
 
     //! @name homogeneous flow specials

@@ -76,8 +76,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
         visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
             "mortar_manager");
-    Teuchos::RCP<Epetra_Vector> lambda =
-        visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
+    Teuchos::RCP<Core::LinAlg::Vector> lambda =
+        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector>>("lambda");
 
     // Get the lambda GIDs of this pair.
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);

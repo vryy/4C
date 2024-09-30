@@ -515,10 +515,12 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
   double CiDeltaSq = 0.0;
   if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
   {
-    Teuchos::RCP<Epetra_Vector> ele_CsDeltaSq =
-        params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector>>("col_Cs_delta_sq");
-    Teuchos::RCP<Epetra_Vector> ele_CiDeltaSq =
-        params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector>>("col_Ci_delta_sq");
+    Teuchos::RCP<Core::LinAlg::Vector> ele_CsDeltaSq =
+        params.sublist("TURBULENCE MODEL")
+            .get<Teuchos::RCP<Core::LinAlg::Vector>>("col_Cs_delta_sq");
+    Teuchos::RCP<Core::LinAlg::Vector> ele_CiDeltaSq =
+        params.sublist("TURBULENCE MODEL")
+            .get<Teuchos::RCP<Core::LinAlg::Vector>>("col_Ci_delta_sq");
     const int id = ele->lid();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
@@ -7092,7 +7094,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::extract_values_from_glob
     const std::string state)  ///< state of the global vector
 {
   // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(state);
+  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(state);
 
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
@@ -7272,10 +7274,12 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
   double CiDeltaSq = 0.0;
   if (fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
   {
-    Teuchos::RCP<Epetra_Vector> ele_CsDeltaSq =
-        params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector>>("col_Cs_delta_sq");
-    Teuchos::RCP<Epetra_Vector> ele_CiDeltaSq =
-        params.sublist("TURBULENCE MODEL").get<Teuchos::RCP<Epetra_Vector>>("col_Ci_delta_sq");
+    Teuchos::RCP<Core::LinAlg::Vector> ele_CsDeltaSq =
+        params.sublist("TURBULENCE MODEL")
+            .get<Teuchos::RCP<Core::LinAlg::Vector>>("col_Cs_delta_sq");
+    Teuchos::RCP<Core::LinAlg::Vector> ele_CiDeltaSq =
+        params.sublist("TURBULENCE MODEL")
+            .get<Teuchos::RCP<Core::LinAlg::Vector>>("col_Ci_delta_sq");
     const int id = ele->lid();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
@@ -8758,7 +8762,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
   // evaluate derivatives of element shape functions at given point in reference configuration
   Core::FE::shape_function_deriv1<distype>(xi, pderiv_loc);
   // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> state = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> state = discretization.get_state("velnp");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", "velnp");
@@ -9259,7 +9263,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
 
     // get element velocity at time n+1
     Core::LinAlg::Matrix<nsd_, nen_> evelnp;
-    Teuchos::RCP<const Epetra_Vector> state;
+    Teuchos::RCP<const Core::LinAlg::Vector> state;
     std::vector<double> myvalues(1);
     state = discretization.get_state("velnp");
 
@@ -9649,7 +9653,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
   // distributed vectors
   // --------------------------------------------------
   // velocity and pressure values (n+1)
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("u and p (n+1,converged)");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp =
+      discretization.get_state("u and p (n+1,converged)");
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
   // extract local values from the global vectors

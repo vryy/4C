@@ -39,8 +39,8 @@ CONSTRAINTS::MPConstraint::MPConstraint(
 
 /// Set state of the underlying constraint discretization
 void CONSTRAINTS::MPConstraint::set_constr_state(
-    const std::string& state,            ///< name of state to set
-    Teuchos::RCP<const Epetra_Vector> V  ///< values to set
+    const std::string& state,                   ///< name of state to set
+    Teuchos::RCP<const Core::LinAlg::Vector> V  ///< values to set
 )
 {
   if (constrtype_ != none)
@@ -48,7 +48,7 @@ void CONSTRAINTS::MPConstraint::set_constr_state(
     std::map<int, Teuchos::RCP<Core::FE::Discretization>>::iterator discrit;
     for (discrit = constraintdis_.begin(); discrit != constraintdis_.end(); ++discrit)
     {
-      Teuchos::RCP<Epetra_Vector> tmp =
+      Teuchos::RCP<Core::LinAlg::Vector> tmp =
           Core::LinAlg::create_vector(*(discrit->second)->dof_col_map(), false);
       Core::LinAlg::export_to(*V, *tmp);
       (discrit->second)->clear_state();

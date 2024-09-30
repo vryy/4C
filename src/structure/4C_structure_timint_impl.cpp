@@ -454,9 +454,9 @@ void Solid::TimIntImpl::predict()
   // split norms
   if (pressure_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> fres = pressure_->extract_other_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector> fres = pressure_->extract_other_vector(fres_);
     normfres_ = Solid::calculate_vector_norm(iternorm_, *fres);
-    Teuchos::RCP<Epetra_Vector> fpres = pressure_->extract_cond_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector> fpres = pressure_->extract_cond_vector(fres_);
     normpfres_ = Solid::calculate_vector_norm(iternorm_, *fpres);
   }
   else
@@ -516,9 +516,9 @@ void Solid::TimIntImpl::prepare_partition_step()
   // split norms
   if (pressure_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> fres = pressure_->extract_other_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector> fres = pressure_->extract_other_vector(fres_);
     normfres_ = Solid::calculate_vector_norm(iternorm_, *fres);
-    Teuchos::RCP<Epetra_Vector> fpres = pressure_->extract_cond_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector> fpres = pressure_->extract_cond_vector(fres_);
     normpfres_ = Solid::calculate_vector_norm(iternorm_, *fpres);
   }
   else
@@ -594,7 +594,8 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   disi_->PutScalar(0.0);
 
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> dbcinc =
+      Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *(*dis_)(0), 0.0);
@@ -618,7 +619,8 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+    Teuchos::RCP<Core::LinAlg::Vector> freact =
+        Core::LinAlg::create_vector(*dof_row_map_view(), true);
     stiff_->multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -699,15 +701,15 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   }
   if (bPressure)
   {
-    Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(disi_);
-    Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(disi_);
+    Teuchos::RCP<const Core::LinAlg::Vector> pres = pressure_->extract_cond_vector(disi_);
+    Teuchos::RCP<const Core::LinAlg::Vector> disp = pressure_->extract_other_vector(disi_);
     normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
     normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
   }
   if (bContactSP)
   {
     // extract subvectors
-    Teuchos::RCP<const Epetra_Vector> lagrincr =
+    Teuchos::RCP<const Core::LinAlg::Vector> lagrincr =
         cmtbridge_->get_strategy().lagrange_multiplier_increment();
 
     // build residual displacement norm
@@ -810,8 +812,8 @@ void Solid::TimIntImpl::update_krylov_space_projection()
   // sort vector of nullspace data into kernel vector c_
   for (size_t i = 0; i < Teuchos::as<size_t>(modeids.size()); i++)
   {
-    Epetra_Vector* ci = (*c)(i);
-    Epetra_Vector* ni = (*nullspace)(modeids[i]);
+    auto* ci = (*c)(i);
+    auto* ni = (*nullspace)(modeids[i]);
     const size_t myLength = ci->MyLength();
     for (size_t j = 0; j < myLength; j++)
     {
@@ -826,10 +828,10 @@ void Solid::TimIntImpl::update_krylov_space_projection()
 /*----------------------------------------------------------------------*/
 /* evaluate external forces and its linearization at t_{n+1} */
 void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> dis,                             //!< old displacement state
-    const Teuchos::RCP<Epetra_Vector> disn,                            //!< new displacement state
-    const Teuchos::RCP<Epetra_Vector> vel,                             //!< velocity state
-    Teuchos::RCP<Epetra_Vector>& fext,                                 //!< external force
+    const Teuchos::RCP<Core::LinAlg::Vector> dis,                      //!< old displacement state
+    const Teuchos::RCP<Core::LinAlg::Vector> disn,                     //!< new displacement state
+    const Teuchos::RCP<Core::LinAlg::Vector> vel,                      //!< velocity state
+    Teuchos::RCP<Core::LinAlg::Vector>& fext,                          //!< external force
     Teuchos::RCP<Core::LinAlg::SparseOperator>& fextlin  //!< linearization of external force
 )
 {
@@ -863,8 +865,8 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force, its stiffness at state */
 void Solid::TimIntImpl::apply_force_stiff_internal(const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disi,
-    const Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> fint,
+    const Teuchos::RCP<Core::LinAlg::Vector> dis, const Teuchos::RCP<Core::LinAlg::Vector> disi,
+    const Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> fint,
     Teuchos::RCP<Core::LinAlg::SparseOperator> stiff, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> damp)
 {
@@ -907,10 +909,11 @@ void Solid::TimIntImpl::apply_force_stiff_internal(const double time, const doub
 /*----------------------------------------------------------------------*/
 /* evaluate inertia force and its linearization */
 void Solid::TimIntImpl::apply_force_stiff_internal_and_inertial(const double time, const double dt,
-    const double timintfac_dis, const double timintfac_vel, const Teuchos::RCP<Epetra_Vector> dis,
-    const Teuchos::RCP<Epetra_Vector> disi, const Teuchos::RCP<Epetra_Vector> vel,
-    const Teuchos::RCP<Epetra_Vector> acc, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<Epetra_Vector> finert, Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,
+    const double timintfac_dis, const double timintfac_vel,
+    const Teuchos::RCP<Core::LinAlg::Vector> dis, const Teuchos::RCP<Core::LinAlg::Vector> disi,
+    const Teuchos::RCP<Core::LinAlg::Vector> vel, const Teuchos::RCP<Core::LinAlg::Vector> acc,
+    Teuchos::RCP<Core::LinAlg::Vector> fint, Teuchos::RCP<Core::LinAlg::Vector> finert,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,
     Teuchos::RCP<Core::LinAlg::SparseOperator> mass, Teuchos::ParameterList& params,
     const double beta, const double gamma, const double alphaf, const double alpham)
 {
@@ -956,8 +959,8 @@ void Solid::TimIntImpl::apply_force_stiff_internal_and_inertial(const double tim
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to constraints */
 void Solid::TimIntImpl::apply_force_stiff_constraint(const double time,
-    const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disn,
-    Teuchos::RCP<Epetra_Vector>& fint, Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,
+    const Teuchos::RCP<Core::LinAlg::Vector> dis, const Teuchos::RCP<Core::LinAlg::Vector> disn,
+    Teuchos::RCP<Core::LinAlg::Vector>& fint, Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,
     Teuchos::ParameterList pcon)
 {
   if (conman_->have_constraint())
@@ -971,7 +974,7 @@ void Solid::TimIntImpl::apply_force_stiff_constraint(const double time,
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to Cardiovascular0D bcs */
 void Solid::TimIntImpl::apply_force_stiff_cardiovascular0_d(const double time,
-    const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector>& fint,
+    const Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector>& fint,
     Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::ParameterList pwindk)
 {
   if (cardvasc0dman_->have_cardiovascular0_d())
@@ -985,8 +988,8 @@ void Solid::TimIntImpl::apply_force_stiff_cardiovascular0_d(const double time,
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to spring dashpot BCs */
 void Solid::TimIntImpl::apply_force_stiff_spring_dashpot(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> stiff, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln, bool predict,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> stiff, Teuchos::RCP<Core::LinAlg::Vector> fint,
+    Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector> veln, bool predict,
     Teuchos::ParameterList psprdash)
 {
   psprdash.set("total time", time());
@@ -1004,8 +1007,8 @@ void Solid::TimIntImpl::apply_force_stiff_spring_dashpot(
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to contact / meshtying */
 void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
-    Teuchos::RCP<Epetra_Vector>& dis, bool predict)
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::RCP<Core::LinAlg::Vector>& fresm,
+    Teuchos::RCP<Core::LinAlg::Vector>& dis, bool predict)
 {
   if (have_contact_meshtying())
   {
@@ -1021,7 +1024,7 @@ void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
       if (cmtbridge_->contact_manager()->get_strategy().has_poro_no_penetration())
       {
         // set structural velocity for poro normal no penetration
-        Teuchos::RCP<Epetra_Vector> svel = Teuchos::rcp(new Epetra_Vector(*velnp()));
+        Teuchos::RCP<Core::LinAlg::Vector> svel = Teuchos::rcp(new Core::LinAlg::Vector(*velnp()));
         cmtbridge_->contact_manager()->get_strategy().set_state(Mortar::state_svelocity, *svel);
       }
     }
@@ -1060,8 +1063,8 @@ void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to beam contact */
 void Solid::TimIntImpl::apply_force_stiff_beam_contact(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
-    Teuchos::RCP<Epetra_Vector>& dis, bool predict)
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff, Teuchos::RCP<Core::LinAlg::Vector>& fresm,
+    Teuchos::RCP<Core::LinAlg::Vector>& dis, bool predict)
 {
   if (have_beam_contact())
   {
@@ -1103,7 +1106,7 @@ void Solid::TimIntImpl::apply_force_stiff_beam_contact(
 
 /*----------------------------------------------------------------------*/
 /* Check residual displacement and limit it if necessary*/
-void Solid::TimIntImpl::limit_stepsize_beam_contact(Teuchos::RCP<Epetra_Vector>& disi)
+void Solid::TimIntImpl::limit_stepsize_beam_contact(Teuchos::RCP<Core::LinAlg::Vector>& disi)
 {
   if (have_beam_contact())
   {
@@ -1144,7 +1147,7 @@ double Solid::TimIntImpl::calc_ref_norm_displacement()
   double charnormdis = 0.0;
   if (pressure_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector((*dis_)(0));
+    Teuchos::RCP<Core::LinAlg::Vector> disp = pressure_->extract_other_vector((*dis_)(0));
     charnormdis = Solid::calculate_vector_norm(iternorm_, *disp);
   }
   else
@@ -1616,8 +1619,8 @@ int Solid::TimIntImpl::newton_full()
     }
     if (bPressure)
     {
-      Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
-      Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
+      Teuchos::RCP<const Core::LinAlg::Vector> pres = pressure_->extract_cond_vector(fres_);
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = pressure_->extract_other_vector(fres_);
       normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
       normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
@@ -1629,9 +1632,10 @@ int Solid::TimIntImpl::newton_full()
     if (bContactSP)
     {
       // extract subvectors (for mt and contact use only contact lm)
-      Teuchos::RCP<const Epetra_Vector> lagrincr =
+      Teuchos::RCP<const Core::LinAlg::Vector> lagrincr =
           cmtbridge_->get_strategy().lagrange_multiplier_increment();
-      Teuchos::RCP<const Epetra_Vector> constrrhs = cmtbridge_->get_strategy().constraint_rhs();
+      Teuchos::RCP<const Core::LinAlg::Vector> constrrhs =
+          cmtbridge_->get_strategy().constraint_rhs();
 
       // build residual force norm
       normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
@@ -1657,8 +1661,8 @@ int Solid::TimIntImpl::newton_full()
 
       if (wtype == Inpar::Wear::wear_primvar)
       {
-        Teuchos::RCP<const Epetra_Vector> wincr = cmtbridge_->get_strategy().w_solve_incr();
-        Teuchos::RCP<const Epetra_Vector> wearrhs = cmtbridge_->get_strategy().wear_rhs();
+        Teuchos::RCP<const Core::LinAlg::Vector> wincr = cmtbridge_->get_strategy().w_solve_incr();
+        Teuchos::RCP<const Core::LinAlg::Vector> wearrhs = cmtbridge_->get_strategy().wear_rhs();
 
         if (wearrhs != Teuchos::null)
           normwrhs_ = Solid::calculate_vector_norm(iternorm_, *wearrhs);
@@ -1672,8 +1676,10 @@ int Solid::TimIntImpl::newton_full()
 
         if (wside == Inpar::Wear::wear_both)
         {
-          Teuchos::RCP<const Epetra_Vector> wmincr = cmtbridge_->get_strategy().wm_solve_incr();
-          Teuchos::RCP<const Epetra_Vector> wearmrhs = cmtbridge_->get_strategy().wear_m_rhs();
+          Teuchos::RCP<const Core::LinAlg::Vector> wmincr =
+              cmtbridge_->get_strategy().wm_solve_incr();
+          Teuchos::RCP<const Core::LinAlg::Vector> wearmrhs =
+              cmtbridge_->get_strategy().wear_m_rhs();
 
           if (wearmrhs != Teuchos::null)
             normwmrhs_ = Solid::calculate_vector_norm(iternorm_, *wearmrhs);
@@ -1860,9 +1866,9 @@ int Solid::TimIntImpl::newton_ls()
   std::vector<double> merit_fct(2);
 
   // Temporal copies of different vectors. Necessary for the sufficient decrease check.
-  Teuchos::RCP<Epetra_Vector> tdisn = Teuchos::rcp(new Epetra_Vector(*disn_));
-  Teuchos::RCP<Epetra_Vector> tveln = Teuchos::rcp(new Epetra_Vector(*veln_));
-  Teuchos::RCP<Epetra_Vector> taccn = Teuchos::rcp(new Epetra_Vector(*accn_));
+  Teuchos::RCP<Core::LinAlg::Vector> tdisn = Teuchos::rcp(new Core::LinAlg::Vector(*disn_));
+  Teuchos::RCP<Core::LinAlg::Vector> tveln = Teuchos::rcp(new Core::LinAlg::Vector(*veln_));
+  Teuchos::RCP<Core::LinAlg::Vector> taccn = Teuchos::rcp(new Core::LinAlg::Vector(*accn_));
 
   // equilibrium iteration loop (outer full Newton loop)
   while (
@@ -2437,7 +2443,7 @@ bool Solid::TimIntImpl::have_spring_dashpot() { return springman_->have_spring_d
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Solid::TimIntImpl::update_iter_incr_constr(
-    Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
+    Teuchos::RCP<Core::LinAlg::Vector> lagrincr  ///< Lagrange multiplier increment
 )
 {
   conman_->update_lagr_mult(lagrincr);
@@ -2446,7 +2452,7 @@ void Solid::TimIntImpl::update_iter_incr_constr(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Solid::TimIntImpl::update_iter_incr_cardiovascular0_d(
-    Teuchos::RCP<Epetra_Vector> cv0ddofincr  ///< wk dof increment
+    Teuchos::RCP<Core::LinAlg::Vector> cv0ddofincr  ///< wk dof increment
 )
 {
   cardvasc0dman_->update_cv0_d_dof(cv0ddofincr);
@@ -2462,10 +2468,11 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
   if (conman_->have_constraint())
   {
     // allocate additional vectors and matrices
-    Teuchos::RCP<Epetra_Vector> conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->get_error())));
+    Teuchos::RCP<Core::LinAlg::Vector> conrhs =
+        Teuchos::rcp(new Core::LinAlg::Vector(*(conman_->get_error())));
 
-    Teuchos::RCP<Epetra_Vector> lagrincr =
-        Teuchos::rcp(new Epetra_Vector(*(conman_->get_constraint_map())));
+    Teuchos::RCP<Core::LinAlg::Vector> lagrincr =
+        Teuchos::rcp(new Core::LinAlg::Vector(*(conman_->get_constraint_map())));
 
     // check whether we have a sanely filled stiffness matrix
     if (not stiff_->filled())
@@ -2577,7 +2584,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
         element_error = element_error_check(params.get<bool>("eval_error"));
 
       // compute residual and stiffness of constraint equations
-      conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->get_error())));
+      conrhs = Teuchos::rcp(new Core::LinAlg::Vector(*(conman_->get_error())));
 
       // blank residual at (locally oriented) Dirichlet DOFs
       // rotate to local co-ordinate systems
@@ -2605,8 +2612,8 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       if (pressure_ != Teuchos::null)
       {
-        Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
-        Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
+        Teuchos::RCP<const Core::LinAlg::Vector> pres = pressure_->extract_cond_vector(fres_);
+        Teuchos::RCP<const Core::LinAlg::Vector> disp = pressure_->extract_other_vector(fres_);
         normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
         normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
@@ -2773,8 +2780,8 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       if (pressure_ != Teuchos::null)
       {
-        Teuchos::RCP<const Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
-        Teuchos::RCP<const Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
+        Teuchos::RCP<const Core::LinAlg::Vector> pres = pressure_->extract_cond_vector(fres_);
+        Teuchos::RCP<const Core::LinAlg::Vector> disp = pressure_->extract_other_vector(fres_);
         normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
         normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
@@ -2788,11 +2795,11 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
         if (mor_->have_mor())
         {
           // build residual force norm with reduced force residual
-          Teuchos::RCP<Epetra_Vector> fres_r = mor_->reduce_residual(fres_);
+          Teuchos::RCP<Core::LinAlg::Vector> fres_r = mor_->reduce_residual(fres_);
           normfresr_ = Solid::calculate_vector_norm(iternorm_, *fres_r);
 
           // build residual displacement norm with reduced residual displacements
-          Teuchos::RCP<Epetra_Vector> disi_r = mor_->reduce_residual(disi_);
+          Teuchos::RCP<Core::LinAlg::Vector> disi_r = mor_->reduce_residual(disi_);
           normdisir_ = Solid::calculate_vector_norm(iternorm_, *disi_r);
         }
 
@@ -3145,8 +3152,8 @@ void Solid::TimIntImpl::cmt_linear_solve()
       // otherwise, solve the saddle point linear system
 
       Teuchos::RCP<Epetra_Operator> blockMat = Teuchos::null;
-      Teuchos::RCP<Epetra_Vector> blocksol = Teuchos::null;
-      Teuchos::RCP<Epetra_Vector> blockrhs = Teuchos::null;
+      Teuchos::RCP<Core::LinAlg::Vector> blocksol = Teuchos::null;
+      Teuchos::RCP<Core::LinAlg::Vector> blockrhs = Teuchos::null;
 
       // build the saddle point system
       cmtbridge_->get_strategy().build_saddle_point_system(
@@ -3297,10 +3304,10 @@ int Solid::TimIntImpl::ptc()
 
     // modify stiffness matrix with dti
     {
-      Teuchos::RCP<Epetra_Vector> tmp =
+      Teuchos::RCP<Core::LinAlg::Vector> tmp =
           Core::LinAlg::create_vector(system_matrix()->row_map(), false);
       tmp->PutScalar(dti);
-      Teuchos::RCP<Epetra_Vector> diag =
+      Teuchos::RCP<Core::LinAlg::Vector> diag =
           Core::LinAlg::create_vector(system_matrix()->row_map(), false);
       system_matrix()->extract_diagonal_copy(*diag);
       diag->Update(1.0, *tmp, 1.0);
@@ -3430,8 +3437,8 @@ int Solid::TimIntImpl::ptc()
     }
     if (bPressure)
     {
-      Teuchos::RCP<Epetra_Vector> pres = pressure_->extract_cond_vector(fres_);
-      Teuchos::RCP<Epetra_Vector> disp = pressure_->extract_other_vector(fres_);
+      Teuchos::RCP<Core::LinAlg::Vector> pres = pressure_->extract_cond_vector(fres_);
+      Teuchos::RCP<Core::LinAlg::Vector> disp = pressure_->extract_other_vector(fres_);
       normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
       normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
@@ -3443,9 +3450,10 @@ int Solid::TimIntImpl::ptc()
     if (bContactSP)
     {
       // extract subvectors
-      Teuchos::RCP<const Epetra_Vector> lagrincr =
+      Teuchos::RCP<const Core::LinAlg::Vector> lagrincr =
           cmtbridge_->get_strategy().lagrange_multiplier_increment();
-      Teuchos::RCP<const Epetra_Vector> constrrhs = cmtbridge_->get_strategy().constraint_rhs();
+      Teuchos::RCP<const Core::LinAlg::Vector> constrrhs =
+          cmtbridge_->get_strategy().constraint_rhs();
 
       // build residual force norm
       normfres_ = Solid::calculate_vector_norm(iternorm_, *fres_);
@@ -3523,7 +3531,7 @@ void Solid::TimIntImpl::update_iter(const int iter  //!< iteration counter
 /*----------------------------------------------------------------------*/
 /* Update iteration incrementally with prescribed residual displacements */
 void Solid::TimIntImpl::update_iter_incrementally(
-    const Teuchos::RCP<const Epetra_Vector> disi  //!< input residual displacements
+    const Teuchos::RCP<const Core::LinAlg::Vector> disi  //!< input residual displacements
 )
 {
   // select residual displacements
@@ -4043,7 +4051,7 @@ void Solid::TimIntImpl::print_step_text(FILE* ofile)
 
 /*----------------------------------------------------------------------*/
 /* Linear structure solve with just an interface load */
-Teuchos::RCP<Epetra_Vector> Solid::TimIntImpl::solve_relaxation_linear()
+Teuchos::RCP<Core::LinAlg::Vector> Solid::TimIntImpl::solve_relaxation_linear()
 {
   // create parameter list
   Teuchos::ParameterList params;
@@ -4138,7 +4146,7 @@ void Solid::TimIntImpl::use_block_matrix(
 
   // recalculate mass and damping matrices
 
-  Teuchos::RCP<Epetra_Vector> fint =
+  Teuchos::RCP<Core::LinAlg::Vector> fint =
       Core::LinAlg::create_vector(*dof_row_map_view(), true);  // internal force
 
   stiff_->zero();
@@ -4153,7 +4161,7 @@ void Solid::TimIntImpl::use_block_matrix(
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
 
-    Teuchos::RCP<Epetra_Vector> finert = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::Vector> finert = Teuchos::null;
     if (have_nonlinear_mass())
     {
       finert = Core::LinAlg::create_vector(*dof_row_map_view(), true);  // intertial force
@@ -4222,7 +4230,8 @@ void Solid::TimIntImpl::stc_preconditioning()
       stiff_ = matrix_multiply(*stcmat_, true,
           *(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(stiff_)), false, true, false,
           true);
-      Teuchos::RCP<Epetra_Vector> fressdc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+      Teuchos::RCP<Core::LinAlg::Vector> fressdc =
+          Core::LinAlg::create_vector(*dof_row_map_view(), true);
       stcmat_->multiply(true, *fres_, *fressdc);
       fres_->Update(1.0, *fressdc, 0.0);
     }
@@ -4298,7 +4307,8 @@ void Solid::TimIntImpl::recover_stc_solution()
 {
   if (stcscale_ != Inpar::Solid::stc_none)
   {
-    Teuchos::RCP<Epetra_Vector> disisdc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+    Teuchos::RCP<Core::LinAlg::Vector> disisdc =
+        Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
     stcmat_->multiply(false, *disi_, *disisdc);
     disi_->Update(1.0, *disisdc, 0.0);

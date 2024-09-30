@@ -236,7 +236,7 @@ void PostVtuWriter::write_geo()
 
 
 void PostVtuWriter::write_dof_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_Vector>& data,
+    const Teuchos::RCP<Core::LinAlg::Vector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -255,7 +255,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
   int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
 
-  Teuchos::RCP<Epetra_Vector> ghostedData;
+  Teuchos::RCP<Core::LinAlg::Vector> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
@@ -269,7 +269,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
-    Teuchos::RCP<Epetra_Vector> dofvec = Core::LinAlg::create_vector(*rowmap, false);
+    Teuchos::RCP<Core::LinAlg::Vector> dofvec = Core::LinAlg::create_vector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
     ghostedData = Core::LinAlg::create_vector(*colmap, true);
@@ -412,8 +412,9 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
       {
         for (int idf = 0; idf < numdf; ++idf)
         {
-          Epetra_Vector* column = (*ghostedData)(idf);
-
+          // Core::LinAlg::Vector* column = (*ghostedData)(idf);
+          Teuchos::RCP<Core::LinAlg::Vector> column =
+              Teuchos::rcp(new Core::LinAlg::Vector(*(*ghostedData)(idf)));
           int lid = ghostedData->Map().LID(ele->nodes()[numbering[n]]->id());
 
           if (lid > -1)
@@ -487,7 +488,8 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
   {
     for (int d = 0; d < numdf; ++d)
     {
-      Epetra_Vector* column = (*importedData)(d + from);
+      Teuchos::RCP<Core::LinAlg::Vector> column =
+          Teuchos::rcp(new Core::LinAlg::Vector(*(*importedData)(d + from)));
       solution.push_back((*column)[e]);
     }
     for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.0);
@@ -695,7 +697,7 @@ void PostVtuWriter::write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* beame
 
 void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const
+    Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from, const bool fillzeros) const
 {
   using namespace FourC;
 
@@ -750,7 +752,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
 template <Core::FE::CellType nurbs_type>
 void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const
+    Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from, const bool fillzeros) const
 {
   using namespace FourC;
 
@@ -824,7 +826,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
 
 void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
-    Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
+    Teuchos::RCP<Core::LinAlg::Vector>& ghostedData, const int& from, const bool fillzeros)
 {
   using namespace FourC;
 
@@ -986,8 +988,9 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
 
     for (int idf = 0; idf < numdf; ++idf)
     {
-      Epetra_Vector* column = (*ghostedData)(idf);
-
+      // Core::LinAlg::Vector* column = (*ghostedData)(idf);
+      Teuchos::RCP<Core::LinAlg::Vector> column =
+          Teuchos::rcp(new Core::LinAlg::Vector(*(*ghostedData)(idf)));
       for (unsigned m = 0; m < NUMNODES; ++m)
       {
         int lid = ghostedData->Map().LID(ele->nodes()[m]->id());
@@ -1027,27 +1030,27 @@ template void PostVtuWriter::write_geo_nurbs_ele<Core::FE::CellType::nurbs27>(
 /*----------------------------------------------------------------------------*/
 template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs2>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+    std::vector<double>& solution, Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from,
     const bool fillzeros) const;
 template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs3>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+    std::vector<double>& solution, Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from,
     const bool fillzeros) const;
 template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs4>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+    std::vector<double>& solution, Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from,
     const bool fillzeros) const;
 template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs9>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+    std::vector<double>& solution, Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from,
     const bool fillzeros) const;
 template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs8>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+    std::vector<double>& solution, Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from,
     const bool fillzeros) const;
 template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType::nurbs27>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
+    std::vector<double>& solution, Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from,
     const bool fillzeros) const;
 
 /*----------------------------------------------------------------------------*/

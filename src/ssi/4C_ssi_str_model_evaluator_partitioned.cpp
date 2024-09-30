@@ -119,8 +119,8 @@ bool Solid::ModelEvaluator::PartitionedSSI::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::PartitionedSSI::run_pre_compute_x(
-    const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::Nln::Group& curr_grp)
+void Solid::ModelEvaluator::PartitionedSSI::run_pre_compute_x(const Core::LinAlg::Vector& xold,
+    Core::LinAlg::Vector& dir_mutable, const NOX::Nln::Group& curr_grp)
 {
   // perform structural meshtying
   if (ssi_part_->ssi_interface_meshtying())
@@ -153,7 +153,7 @@ void Solid::ModelEvaluator::PartitionedSSI::setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::PartitionedSSI::assemble_force(
-    Epetra_Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector& f, const double& timefac_np) const
 {
   // perform structural meshtying
   if (ssi_part_->ssi_interface_meshtying() and ssi_part_->is_setup())

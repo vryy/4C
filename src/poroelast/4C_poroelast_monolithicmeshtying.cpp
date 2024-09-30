@@ -53,24 +53,24 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
 void PoroElast::MonolithicMeshtying::setup_system() { Monolithic::setup_system(); }
 
 void PoroElast::MonolithicMeshtying::evaluate(
-    Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
+    Teuchos::RCP<const Core::LinAlg::Vector> iterinc, bool firstiter)
 {
   // evaluate monolithic system for newton iterations
   Monolithic::evaluate(iterinc, firstiter);
 
   // get state vectors to store in contact data container
-  Teuchos::RCP<Epetra_Vector> fvel = fluid_structure_coupling().slave_to_master(
+  Teuchos::RCP<Core::LinAlg::Vector> fvel = fluid_structure_coupling().slave_to_master(
       fluid_field()->extract_velocity_part(fluid_field()->velnp()));
 
   // modified pressure vector modfpres is used to get pressure values to mortar/contact integrator.
   // the pressure values will be written on first displacement DOF
 
   // extract fluid pressures from full fluid state vector
-  Teuchos::RCP<const Epetra_Vector> fpres =
+  Teuchos::RCP<const Core::LinAlg::Vector> fpres =
       fluid_field()->extract_pressure_part(fluid_field()->velnp());
   // initialize modified pressure vector with fluid velocity dof map
-  Teuchos::RCP<Epetra_Vector> modfpres =
-      Teuchos::rcp(new Epetra_Vector(*fluid_field()->velocity_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> modfpres =
+      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->velocity_row_map(), true));
 
   const int ndim = Global::Problem::instance()->n_dim();
   int* mygids = fpres->Map().MyGlobalElements();
@@ -86,8 +86,8 @@ void PoroElast::MonolithicMeshtying::evaluate(
 
   // for the set_state() methods in EvaluatePoroMt() non const state vectores are needed
   // ->WriteAccess... methods are used (even though we will not change the states ...)
-  Teuchos::RCP<Epetra_Vector> svel = structure_field()->write_access_velnp();
-  Teuchos::RCP<Epetra_Vector> sdisp = structure_field()->write_access_dispnp();
+  Teuchos::RCP<Core::LinAlg::Vector> svel = structure_field()->write_access_velnp();
+  Teuchos::RCP<Core::LinAlg::Vector> sdisp = structure_field()->write_access_dispnp();
 
   // for the EvaluatePoroMt() method RCPs on the matrices are needed...
   Teuchos::RCP<Core::LinAlg::SparseMatrix> f =
@@ -95,7 +95,7 @@ void PoroElast::MonolithicMeshtying::evaluate(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs =
       Teuchos::rcpFromRef<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 0));
 
-  Teuchos::RCP<Epetra_Vector> frhs = extractor()->extract_vector(rhs_, 1);
+  Teuchos::RCP<Core::LinAlg::Vector> frhs = extractor()->extract_vector(rhs_, 1);
 
   // modify system matrix and rhs for meshtying
   mortar_adapter_->evaluate_poro_mt(fvel, svel, modfpres, sdisp,
@@ -121,18 +121,20 @@ void PoroElast::MonolithicMeshtying::update()
 }
 
 void PoroElast::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_step(
-    Teuchos::RCP<const Epetra_Vector> iterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector> iterinc)
 {
   Monolithic::recover_lagrange_multiplier_after_newton_step(iterinc);
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> s_iterinc;
-  Teuchos::RCP<const Epetra_Vector> f_iterinc;
+  Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc;
+  Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc;
   extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
   // RecoverStructuralLM
-  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*s_iterinc));
-  Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*f_iterinc));
+  Teuchos::RCP<Core::LinAlg::Vector> tmpsx =
+      Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*s_iterinc));
+  Teuchos::RCP<Core::LinAlg::Vector> tmpfx =
+      Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*f_iterinc));
 
   mortar_adapter_->recover_fluid_lm_poro_mt(tmpsx, tmpfx);
 }
@@ -141,14 +143,14 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
-  Teuchos::RCP<const Epetra_Vector> rhs_s;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_s;
 
-  Teuchos::RCP<const Epetra_Vector> rhs_f;
-  Teuchos::RCP<const Epetra_Vector> rhs_fvel;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_f;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fvel;
   // split velocity into part of normal coupling & tangential condition and velocities
-  Teuchos::RCP<const Epetra_Vector> rhs_fvel_activen;
-  Teuchos::RCP<const Epetra_Vector> rhs_fvel_other;
-  Teuchos::RCP<const Epetra_Vector> rhs_fpres;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fvel_activen;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fvel_other;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fpres;
 
   // process structure unknowns of the first field (structure)
   rhs_s = extractor()->extract_vector(rhs_, 0);
@@ -186,10 +188,10 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   iterinc_->Norm2(&norminc_);
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> interincs;
-  Teuchos::RCP<const Epetra_Vector> interincf;
-  Teuchos::RCP<const Epetra_Vector> interincfvel;
-  Teuchos::RCP<const Epetra_Vector> interincfpres;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincs;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincf;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincfvel;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincfpres;
   // process structure unknowns of the first field
   interincs = extractor()->extract_vector(iterinc_, 0);
   // process fluid unknowns of the second field

@@ -107,7 +107,7 @@ void Thermo::TimIntImpl::integrate_step()
  | build linear system tangent matrix, rhs/force residual   bborn 08/09 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void Thermo::TimIntImpl::evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
+void Thermo::TimIntImpl::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -118,7 +118,7 @@ void Thermo::TimIntImpl::evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
   //  {
   //    // residual temperatures (or iteration increments or iteratively
   //    // incremental temperatures)
-  //    Teuchos::RCP<Epetra_Vector> tempi = Teuchos::rcp(new Epetra_Vector(*temp));
+  //    Teuchos::RCP<Core::LinAlg::Vector> tempi = Teuchos::rcp(new Core::LinAlg::Vector(*temp));
   //    tempi->Update(-1.0, *tempinc_, 1.0);
   //
   //    // update incremental temperature member to provided step increments
@@ -287,7 +287,8 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   tempi_->PutScalar(0.0);
 
   // for temperature increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> dbcinc =
+      Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // copy last converged temperatures
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
@@ -307,7 +308,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact =
+    Teuchos::RCP<Core::LinAlg::Vector> freact =
         Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     tang_->multiply(false, *dbcinc, *freact);
 
@@ -744,7 +745,7 @@ void Thermo::TimIntImpl::update_iter(const int iter  //!< iteration counter
  | residual temperatures                                                |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntImpl::update_iter_incrementally(
-    const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
+    const Teuchos::RCP<const Core::LinAlg::Vector> tempi  //!< input residual temperatures
 )
 {
   // select residual temperatures
@@ -785,7 +786,7 @@ void Thermo::TimIntImpl::update()
 /*----------------------------------------------------------------------*
  | update Newton step                                        dano 02/11 |
  *----------------------------------------------------------------------*/
-void Thermo::TimIntImpl::update_newton(Teuchos::RCP<const Epetra_Vector> tempi)
+void Thermo::TimIntImpl::update_newton(Teuchos::RCP<const Core::LinAlg::Vector> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -1041,17 +1042,18 @@ void Thermo::TimIntImpl::fd_check()
   // ------------------------------------------ initialise matrices and vectors
 
   // initialise discurbed increment vector
-  Teuchos::RCP<Epetra_Vector> disturbtempi = Core::LinAlg::create_vector(*dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> disturbtempi =
+      Core::LinAlg::create_vector(*dof_row_map(), true);
   const int dofs = disturbtempi->GlobalLength();
   disturbtempi->PutScalar(0.0);
   disturbtempi->ReplaceGlobalValue(0, 0, delta);
 
   // initialise rhs
-  Teuchos::RCP<Epetra_Vector> rhs_old =
-      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> rhs_old =
+      Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map(), true));
   rhs_old->Update(1.0, *fres_, 0.0);
-  Teuchos::RCP<Epetra_Vector> rhs_copy =
-      Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> rhs_copy =
+      Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map(), true));
 
   // initialise approximation of tangent
   Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::create_matrix((tang_->row_map()), 81);

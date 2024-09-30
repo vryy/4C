@@ -13,9 +13,9 @@
 #include "4C_fsi_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Common.H>

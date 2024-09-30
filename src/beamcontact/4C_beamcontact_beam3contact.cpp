@@ -222,7 +222,7 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 bool CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate(
-    Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
+    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint, const double& pp,
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
 {
@@ -424,7 +424,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_large_angle_pai
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_large_angle_pairs(
-    Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint)
+    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint)
 {
   for (int numcp = 0; numcp < (int)cpvariables_.size(); numcp++)
   {
@@ -889,8 +889,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_small_angle_pai
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_small_angle_pairs(
-    Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, std::pair<int, int>* iminmax,
-    std::pair<bool, bool>* leftrightsolutionwithinsegment,
+    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint,
+    std::pair<int, int>* iminmax, std::pair<bool, bool>* leftrightsolutionwithinsegment,
     std::pair<double, double>* eta1_leftrightboundary)
 {
 // Compute linearizations of integration interval boundaries if necessary
@@ -1332,7 +1332,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_end_point_pairs(
-    Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint)
+    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint)
 {
   for (int numep = 0; numep < (int)epvariables_.size(); numep++)
   {
@@ -2978,10 +2978,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::check_unconverged_segment_
  |  Compute contact forces                                   meier 10/14|
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
-void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_fc_contact(Epetra_Vector* fint,
-    const Core::LinAlg::Matrix<3, 1, TYPE>& r1, const Core::LinAlg::Matrix<3, 1, TYPE>& r2,
-    const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, const Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
-    const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xixi,
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_fc_contact(
+    Core::LinAlg::Vector* fint, const Core::LinAlg::Matrix<3, 1, TYPE>& r1,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& r2, const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi,
+    const Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi, const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xixi,
     const Core::LinAlg::Matrix<3, 1, TYPE>& r2_xixi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
@@ -5417,7 +5417,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fad_check_lin_orthogonalit
 *-----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
-    Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
+    Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint, const double& pp,
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
     Teuchos::ParameterList& timeintparams, bool fdcheck)
 {
@@ -5427,9 +5427,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::fd_check(
   if (fint.GlobalLength() > 2 * 3 * numnodes * numnodalvalues)
     FOUR_C_THROW("So far, this fd_check only works for simualtions with two elements!!!");
 
-  Epetra_Vector fint1(fint);
+  Core::LinAlg::Vector fint1(fint);
   fint1.PutScalar(0.0);
-  Epetra_Vector fint2(fint);
+  Core::LinAlg::Vector fint2(fint);
   fint2.PutScalar(0.0);
 
   Core::LinAlg::SparseMatrix stiffmatrix_analyt(stiffmatrix);

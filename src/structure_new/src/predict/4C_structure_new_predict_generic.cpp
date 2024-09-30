@@ -228,7 +228,7 @@ void Solid::Predict::Generic::print() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Predict::Generic::pre_apply_force_external(Epetra_Vector& fextnp) const
+bool Solid::Predict::Generic::pre_apply_force_external(Core::LinAlg::Vector& fextnp) const
 {
   // do nothing
   return false;

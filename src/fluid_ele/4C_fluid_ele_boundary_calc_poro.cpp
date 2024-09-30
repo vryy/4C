@@ -311,11 +311,11 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   Core::LinAlg::Matrix<nsd_, nenparent>
       xcurr_n;  // current  coord. of parent element at previous time step n
 
-  Teuchos::RCP<const Epetra_Vector> displacements_np = discretization.get_state("dispnp");
-  Teuchos::RCP<const Epetra_Vector> displacements_n = discretization.get_state("dispn");
-  Teuchos::RCP<const Epetra_Vector> fluidvelocity_np = discretization.get_state("velnp");
-  Teuchos::RCP<const Epetra_Vector> fluidvelocity_n = discretization.get_state("veln");
-  Teuchos::RCP<const Epetra_Vector> gridvelocity = discretization.get_state("gridv");
+  Teuchos::RCP<const Core::LinAlg::Vector> displacements_np = discretization.get_state("dispnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> displacements_n = discretization.get_state("dispn");
+  Teuchos::RCP<const Core::LinAlg::Vector> fluidvelocity_np = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> fluidvelocity_n = discretization.get_state("veln");
+  Teuchos::RCP<const Core::LinAlg::Vector> gridvelocity = discretization.get_state("gridv");
 
   if (fluidvelocity_np == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvelocity_np'");
   if (gridvelocity == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridvelocity'");
@@ -1830,7 +1830,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
   std::vector<double> parentdispnp;
 
@@ -1867,8 +1867,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
 
   // extract local values from the global vectors
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velaf");
-  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.get_state("gridv");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector> gridvel = discretization.get_state("gridv");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
   if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
@@ -2069,7 +2069,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
 
   dispnp = discretization.get_state("dispnp");
@@ -2085,7 +2085,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     for (int idim = 0; idim < nsd_; ++idim)
       Base::xyze_(idim, inode) += mydispnp[Base::numdofpernode_ * inode + idim];
 
-  Teuchos::RCP<const Epetra_Vector> condVector;
+  Teuchos::RCP<const Core::LinAlg::Vector> condVector;
   std::vector<double> mycondVector;
 
   condVector = discretization.get_state("condVector");
@@ -2152,8 +2152,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
   else if (coupling == PoroElast::fluidstructure)
   {
     // extract local values from the global vectors
-    Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
-    Teuchos::RCP<const Epetra_Vector> gridvel = discretization.get_state("gridv");
+    Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+    Teuchos::RCP<const Core::LinAlg::Vector> gridvel = discretization.get_state("gridv");
 
     if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
     if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
@@ -2301,7 +2301,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -2540,7 +2540,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
   std::vector<double> parentdispnp;
 
@@ -2576,9 +2576,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
-  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.get_state("gridv");
-  Teuchos::RCP<const Epetra_Vector> scaaf = discretization.get_state("scaaf");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> gridvel = discretization.get_state("gridv");
+  Teuchos::RCP<const Core::LinAlg::Vector> scaaf = discretization.get_state("scaaf");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
   if (gridvel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'gridv'");
@@ -2894,7 +2894,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -2918,7 +2918,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
@@ -3210,7 +3210,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -3234,8 +3234,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
-  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.get_state("gridv");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> gridvel = discretization.get_state("gridv");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
@@ -3585,7 +3585,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   if (Base::fldparatimint_->is_stationary()) timescale = 0.0;
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -3609,8 +3609,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
-  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.get_state("gridv");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> gridvel = discretization.get_state("gridv");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
@@ -3634,7 +3634,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     }
   }
 
-  Teuchos::RCP<const Epetra_Vector> glambda = discretization.get_state("lambda");
+  Teuchos::RCP<const Core::LinAlg::Vector> glambda = discretization.get_state("lambda");
 
   if (glambda == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'lambda'");
 
@@ -4193,7 +4193,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -4217,8 +4217,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
-  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.get_state("gridv");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> gridvel = discretization.get_state("gridv");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
@@ -4561,7 +4561,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
       ele, Base::xyze_);
 
   // displacements
-  Teuchos::RCP<const Epetra_Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -4585,8 +4585,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velnp");
-  Teuchos::RCP<const Epetra_Vector> gridvel = discretization.get_state("gridv");
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> gridvel = discretization.get_state("gridv");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 

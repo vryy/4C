@@ -16,6 +16,7 @@
 #include "4C_config.hpp"
 
 #include "4C_io_visualization_manager.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
@@ -78,8 +79,11 @@ namespace BEAMINTERACTION
      * @param data_name (in) name of the added data.
      * @param vector (in) Global state vector. The size of this vector has to be 3 * n_nodes.
      */
-    void add_discretization_nodal_data(
+    void add_discretization_nodal_data_from_multivector(
         const std::string& data_name, const Teuchos::RCP<const Epetra_MultiVector>& vector);
+
+    void add_discretization_nodal_data(
+        const std::string& data_name, const Teuchos::RCP<const Core::LinAlg::Vector>& vector);
 
     /**
      * \brief Write the object to disc.

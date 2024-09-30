@@ -78,8 +78,9 @@ namespace ScaTra
     void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3, const std::string& condstring,
         const int condid) override;
 
     /*!
@@ -96,8 +97,8 @@ namespace ScaTra
     \date 12/16
     \author rauch
     */
-    void set_state(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) override;
+    void set_state(unsigned nds, const std::string& name,
+        Teuchos::RCP<const Core::LinAlg::Vector> state) override;
 
    private:
     //! the discretization for the reaction

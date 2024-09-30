@@ -21,10 +21,10 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <array>

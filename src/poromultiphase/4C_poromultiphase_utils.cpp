@@ -197,7 +197,8 @@ POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
  | calculate vector norm                             kremheller 07/17   |
  *----------------------------------------------------------------------*/
 double POROMULTIPHASE::UTILS::calculate_vector_norm(
-    const enum Inpar::POROMULTIPHASE::VectorNorm norm, const Teuchos::RCP<const Epetra_Vector> vect)
+    const enum Inpar::POROMULTIPHASE::VectorNorm norm,
+    const Teuchos::RCP<const Core::LinAlg::Vector> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]

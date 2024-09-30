@@ -113,20 +113,21 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
 
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get residual displacements
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
       if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);
 
       // Only in the dynamic case the velocities are needed.
       // get element velocities only if example is static in nature
-      Teuchos::RCP<const Epetra_Vector> vel;
+      Teuchos::RCP<const Core::LinAlg::Vector> vel;
       std::vector<double> myvel(lm.size(), 0.0);
       myvel.clear();
       const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
@@ -167,13 +168,13 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
+      Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::extract_my_values(*vel, myvel, lm);
@@ -237,7 +238,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   set_params_interface_ptr(params);
 
   // get element displacements
-  Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
+  Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement new");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
   Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -256,7 +257,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   if (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
       Inpar::Solid::dyna_statics)
   {
-    Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
+    Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state("velocity");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     std::vector<double> myvel(lm.size());
     Core::FE::extract_my_values(*vel, myvel, lm);

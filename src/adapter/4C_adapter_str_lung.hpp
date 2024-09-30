@@ -21,8 +21,8 @@ attached parenchyma balloon
 
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_fem_condition.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>
@@ -49,26 +49,29 @@ namespace Adapter
     void list_lung_vol_cons(std::set<int>& LungVolConIDs, int& MinLungVolConID);
 
     /// Initialize structural part of lung volume constraint
-    void initialize_vol_con(Teuchos::RCP<Epetra_Vector> initvol,  ///< vector of initial volumes
-        Teuchos::RCP<Epetra_Vector> signvol,  ///< vector of signs of initial volumes
-        const int offsetID);                  ///< ID of first volume constraint -> offset
+    void initialize_vol_con(
+        Teuchos::RCP<Core::LinAlg::Vector> initvol,  ///< vector of initial volumes
+        Teuchos::RCP<Core::LinAlg::Vector> signvol,  ///< vector of signs of initial volumes
+        const int offsetID);                         ///< ID of first volume constraint -> offset
 
     /// Evaluate structural part of lung volume constraint
     void evaluate_vol_con(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> StructMatrix,
-        Teuchos::RCP<Epetra_Vector> StructRHS, Teuchos::RCP<Epetra_Vector> CurrVols,
-        Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
-        const int offsetID);
+        Teuchos::RCP<Core::LinAlg::Vector> StructRHS, Teuchos::RCP<Core::LinAlg::Vector> CurrVols,
+        Teuchos::RCP<Core::LinAlg::Vector> SignVols,
+        Teuchos::RCP<Core::LinAlg::Vector> lagrMultVecRed, const int offsetID);
 
     /// Write additional forces due to volume constraint
-    void output_forces(Teuchos::RCP<Epetra_Vector> Forces);
+    void output_forces(Teuchos::RCP<Core::LinAlg::Vector> Forces);
 
     /// Write additional volume constraint stuff
-    void write_vol_con_restart(Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
-        Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
+    void write_vol_con_restart(Teuchos::RCP<Core::LinAlg::Vector> OldFlowRatesRed,
+        Teuchos::RCP<Core::LinAlg::Vector> OldVolsRed,
+        Teuchos::RCP<Core::LinAlg::Vector> OldLagrMultRed);
 
     /// Read additional volume constraint stuff
-    void read_vol_con_restart(const int step, Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
-        Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
+    void read_vol_con_restart(const int step, Teuchos::RCP<Core::LinAlg::Vector> OldFlowRatesRed,
+        Teuchos::RCP<Core::LinAlg::Vector> OldVolsRed,
+        Teuchos::RCP<Core::LinAlg::Vector> OldLagrMultRed);
 
     /// Get MapExtractor for fsi <-> full map
     Teuchos::RCP<const Core::LinAlg::MapExtractor> fsi_interface() { return fsiinterface_; }

@@ -5359,7 +5359,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 // template<unsigned int numnodes, unsigned int numnodalvalues>
 // void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 // numnodalvalues>::fd_check(Core::LinAlg::SparseMatrix& stiffmatrix,
-//                                                              Epetra_Vector& fint,
+//                                                              Core::LinAlg::Vector& fint,
 //                                                              const double& pp,
 //                                                              std::map<std::pair<int,int>,
 //                                                              Teuchos::RCP<Beam3contactinterface >
@@ -5373,9 +5373,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //  if(fint.GlobalLength()>2*3*numnodes*numnodalvalues)
 //    FOUR_C_THROW("So far, this fd_check only works for simualtions with two elements!!!");
 //
-//  Epetra_Vector fint1(fint);
+//  Core::LinAlg::Vector fint1(fint);
 //  fint1.PutScalar(0.0);
-//  Epetra_Vector fint2(fint);
+//  Core::LinAlg::Vector fint2(fint);
 //  fint2.PutScalar(0.0);
 //
 //  Core::LinAlg::SparseMatrix stiffmatrix_analyt(stiffmatrix);

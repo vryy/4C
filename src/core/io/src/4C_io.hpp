@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 
-class Epetra_Vector;
 class Epetra_MultiVector;
 class Epetra_Map;
 class Epetra_BlockMap;
@@ -100,7 +99,7 @@ namespace Core::IO
      * \param[in]     name  name of vector to read in
      */
     void read_vector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
-
+    void read_vector(Teuchos::RCP<Core::LinAlg::Vector> vec, std::string name);
     /**
      * \brief read in and return multi-vector
      *
@@ -288,8 +287,13 @@ namespace Core::IO
       \param vec  : the result data vector
       \param vt   : vector type
     */
-    virtual void write_vector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec,
+    virtual void write_vector(const std::string name, Teuchos::RCP<const Core::LinAlg::Vector> vec,
         VectorType vt = dofvector);
+
+    virtual void write_multi_vector(const std::string name,
+        Teuchos::RCP<const Epetra_MultiVector> vec, VectorType vt = dofvector);
+
+
 
     //! write a result vector
     /*!

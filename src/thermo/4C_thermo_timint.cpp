@@ -123,10 +123,10 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
 
   // temperatures T_{n}
   temp_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, discret_->dof_row_map(), true));
   // temperature rates R_{n}
   rate_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, discret_->dof_row_map(), true));
 
   // temperatures T_{n+1} at t_{n+1}
   tempn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
@@ -161,9 +161,9 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
 void Thermo::TimInt::determine_capa_consist_temp_rate()
 {
   // temporary force vectors in this routine
-  Teuchos::RCP<Epetra_Vector> fext =
+  Teuchos::RCP<Core::LinAlg::Vector> fext =
       Core::LinAlg::create_vector(*discret_->dof_row_map(), true);  //!< external force
-  Teuchos::RCP<Epetra_Vector> fint =
+  Teuchos::RCP<Core::LinAlg::Vector> fint =
       Core::LinAlg::create_vector(*discret_->dof_row_map(), true);  //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
@@ -210,7 +210,8 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
   {
     // rhs corresponds to residual on the rhs
     // K . DT = - R_n+1 = - R_n - (fint_n+1 - fext_n+1)
-    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
+    Teuchos::RCP<Core::LinAlg::Vector> rhs =
+        Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), rhs);
@@ -236,8 +237,8 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet BC at t_{n+1}                         bborn 06/08 |
  *----------------------------------------------------------------------*/
-void Thermo::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vector> temp,
-    Teuchos::RCP<Epetra_Vector> rate, bool recreatemap)
+void Thermo::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Core::LinAlg::Vector> temp,
+    Teuchos::RCP<Core::LinAlg::Vector> rate, bool recreatemap)
 {
   // apply DBCs
   // needed parameters
@@ -619,8 +620,8 @@ Teuchos::RCP<Core::UTILS::ResultTest> Thermo::TimInt::create_field_test()
  | evaluate external forces at t_{n+1}                      bborn 06/08 |
  *----------------------------------------------------------------------*/
 void Thermo::TimInt::apply_force_external(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> temp,                   //!< temperature state
-    Teuchos::RCP<Epetra_Vector>& fext                         //!< external force
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,            //!< temperature state
+    Teuchos::RCP<Core::LinAlg::Vector>& fext                  //!< external force
 )
 {
   Teuchos::ParameterList p;
@@ -651,9 +652,9 @@ void Thermo::TimInt::apply_force_external(const double time,  //!< evaluation ti
  *----------------------------------------------------------------------*/
 void Thermo::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
     const double time,                               //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> tempn,         //!< temperature state T_n
-    const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
-    Teuchos::RCP<Epetra_Vector>& fext,               //!< external force
+    const Teuchos::RCP<Core::LinAlg::Vector> tempn,  //!< temperature state T_n
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state T_n+1
+    Teuchos::RCP<Core::LinAlg::Vector>& fext,        //!< external force
     Teuchos::RCP<Core::LinAlg::SparseOperator> tang  //!< tangent at time n+1
 )
 {
@@ -697,10 +698,10 @@ void Thermo::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
  *----------------------------------------------------------------------*/
 void Thermo::TimInt::apply_force_tang_internal(
     Teuchos::ParameterList& p, const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
-    Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+    const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< residual temperature
+    Teuchos::RCP<Core::LinAlg::Vector> fint,         //!< internal force
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
 )
 {
   // type of calling time integrator
@@ -749,11 +750,11 @@ void Thermo::TimInt::apply_force_tang_internal(
  *----------------------------------------------------------------------*/
 void Thermo::TimInt::apply_force_tang_internal(
     Teuchos::ParameterList& p, const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
-    Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
-    Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+    const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< residual temperature
+    Teuchos::RCP<Core::LinAlg::Vector> fcap,         //!< capacity force
+    Teuchos::RCP<Core::LinAlg::Vector> fint,         //!< internal force
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
 )
 {
   // type of calling time integrator
@@ -776,8 +777,8 @@ void Thermo::TimInt::apply_force_tang_internal(
   // extract it after ClearState() is called.
   if (method_name() == Inpar::Thermo::dyna_genalpha)
   {
-    Teuchos::RCP<const Epetra_Vector> ratem =
-        p.get<Teuchos::RCP<const Epetra_Vector>>("mid-temprate");
+    Teuchos::RCP<const Core::LinAlg::Vector> ratem =
+        p.get<Teuchos::RCP<const Core::LinAlg::Vector>>("mid-temprate");
     if (ratem != Teuchos::null) discret_->set_state(0, "mid-temprate", ratem);
   }
 
@@ -812,9 +813,9 @@ void Thermo::TimInt::apply_force_tang_internal(
  *----------------------------------------------------------------------*/
 void Thermo::TimInt::apply_force_internal(
     Teuchos::ParameterList& p, const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperature
-    Teuchos::RCP<Epetra_Vector> fint          //!< internal force
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+    const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< incremental temperature
+    Teuchos::RCP<Core::LinAlg::Vector> fint          //!< internal force
 )
 {
   // type of calling time integrator
@@ -857,7 +858,7 @@ void Thermo::TimInt::set_initial_field(
     case Inpar::Thermo::initfield_zero_field:
     {
       // extract temperature vector at time t_n (temp_ contains various vectors of
-      // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
+      // old(er) temperatures and is of type TimIntMStep<Core::LinAlg::Vector>)
       (*temp_)(0)->PutScalar(0.0);
       tempn_->PutScalar(0.0);
       break;
@@ -886,7 +887,7 @@ void Thermo::TimInt::set_initial_field(
                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
-          // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
+          // old(er) temperatures and is of type TimIntMStep<Core::LinAlg::Vector>)
           int err1 = (*temp_)(0)->ReplaceMyValues(1, &initialval, &doflid);
           if (err1 != 0) FOUR_C_THROW("dof not on proc");
           // initialise also the solution vector. These values are a pretty good
@@ -925,7 +926,7 @@ void Thermo::TimInt::set_initial_field(
 /*----------------------------------------------------------------------*
  | apply interface loads to the thermo field                ghamm 12/10 |
  *----------------------------------------------------------------------*/
-void Thermo::TimInt::set_force_interface(Teuchos::RCP<Epetra_Vector> ithermoload)
+void Thermo::TimInt::set_force_interface(Teuchos::RCP<Core::LinAlg::Vector> ithermoload)
 {
   fifc_->Update(1.0, *ithermoload, 0.0);
 }  // SetForceInterface()

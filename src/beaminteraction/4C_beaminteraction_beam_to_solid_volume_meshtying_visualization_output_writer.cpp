@@ -180,7 +180,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
       output_writer_base_ptr_->get_visualization_writer("btsv-nodal-forces");
   if (visualization != Teuchos::null)
     add_beam_interaction_nodal_forces(visualization, beam_contact->discret_ptr(),
-        beam_contact->beam_interaction_data_state().get_dis_np(),
+        beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_const_Epetra_Vector(),
         beam_contact->beam_interaction_data_state().get_force_np(),
         output_params_ptr_->get_write_unique_i_ds_flag());
 
@@ -205,9 +205,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     {
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter
       // list that will be passed to the pairs.
-      Teuchos::RCP<Epetra_Vector> lambda =
+      Teuchos::RCP<Core::LinAlg::Vector> lambda =
           indirect_assembly_manager->get_mortar_manager()->get_global_lambda_col();
-      visualization_params.set<Teuchos::RCP<Epetra_Vector>>("lambda", lambda);
+      visualization_params.set<Teuchos::RCP<Core::LinAlg::Vector>>("lambda", lambda);
 
       // The pairs will need the mortar manager to extract their Lambda DOFs.
       visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(

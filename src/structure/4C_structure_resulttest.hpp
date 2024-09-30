@@ -12,9 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -73,13 +72,13 @@ class StruResultTest : public Core::UTILS::ResultTest
   //!@{
 
   //! global displacement DOFs
-  Teuchos::RCP<const Epetra_Vector> dis_;
+  Teuchos::RCP<const Core::LinAlg::Vector> dis_;
 
   //! global velocity DOFs
-  Teuchos::RCP<const Epetra_Vector> vel_;
+  Teuchos::RCP<const Core::LinAlg::Vector> vel_;
 
   //! global acceleration DOFs
-  Teuchos::RCP<const Epetra_Vector> acc_;
+  Teuchos::RCP<const Core::LinAlg::Vector> acc_;
 
   //!@}
 };

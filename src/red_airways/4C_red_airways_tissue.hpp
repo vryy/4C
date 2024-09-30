@@ -16,10 +16,10 @@
 
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_inpar_bio.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_red_airways_resulttest.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -59,9 +59,10 @@ namespace Airway
     /// flag whether iteration between fields should be finished
     bool not_converged(int iter);
 
-    void output_iteration(Teuchos::RCP<Epetra_Vector> pres_inc,
-        Teuchos::RCP<Epetra_Vector> scaled_pres_inc, Teuchos::RCP<Epetra_Vector> flux_inc,
-        Teuchos::RCP<Epetra_Vector> scaled_flux_inc, int iter);
+    void output_iteration(Teuchos::RCP<Core::LinAlg::Vector> pres_inc,
+        Teuchos::RCP<Core::LinAlg::Vector> scaled_pres_inc,
+        Teuchos::RCP<Core::LinAlg::Vector> flux_inc,
+        Teuchos::RCP<Core::LinAlg::Vector> scaled_flux_inc, int iter);
 
     void update_and_output();
 
@@ -79,37 +80,37 @@ namespace Airway
     Teuchos::RCP<RedAirwayImplicitTimeInt> redairways_;
 
     /// redundant vector of outlet pressures (new iteration step)
-    Teuchos::RCP<Epetra_Vector> couppres_ip_;
+    Teuchos::RCP<Core::LinAlg::Vector> couppres_ip_;
 
     /// redundant vector of outlet pressures (old iteration step)
-    Teuchos::RCP<Epetra_Vector> couppres_im_;
+    Teuchos::RCP<Core::LinAlg::Vector> couppres_im_;
 
 
     // Aitken Variables:
     // Relaxation factor
-    Teuchos::RCP<Epetra_Vector> omega_np_;
+    Teuchos::RCP<Core::LinAlg::Vector> omega_np_;
 
     /// redundant vector of outlet pressures (before old iteration step), p^{i}_{n+1}
-    Teuchos::RCP<Epetra_Vector> couppres_il_;
+    Teuchos::RCP<Core::LinAlg::Vector> couppres_il_;
 
     /// redundant vector of outlet pressures (old iteration step guess), \tilde{p}^{i+1}_{n+1}
-    Teuchos::RCP<Epetra_Vector> couppres_im_tilde_;
+    Teuchos::RCP<Core::LinAlg::Vector> couppres_im_tilde_;
 
     /// redundant vector of outlet pressures (new iteration step guess), \tilde{p}^{i+2}_{n+1}
-    Teuchos::RCP<Epetra_Vector> couppres_ip_tilde_;
+    Teuchos::RCP<Core::LinAlg::Vector> couppres_ip_tilde_;
 
 
     /// redundant vector of outlet fluxes (new iteration step)
-    Teuchos::RCP<Epetra_Vector> coupflux_ip_;
+    Teuchos::RCP<Core::LinAlg::Vector> coupflux_ip_;
 
     /// redundant vector of outlet fluxes (old iteration step)
-    Teuchos::RCP<Epetra_Vector> coupflux_im_;
+    Teuchos::RCP<Core::LinAlg::Vector> coupflux_im_;
 
     /// redundant vector of 3D volumes (new iteration step)
-    Teuchos::RCP<Epetra_Vector> coupvol_ip_;
+    Teuchos::RCP<Core::LinAlg::Vector> coupvol_ip_;
 
     /// redundant vector of 3D volumes (old iteration step)
-    Teuchos::RCP<Epetra_Vector> coupvol_im_;
+    Teuchos::RCP<Core::LinAlg::Vector> coupvol_im_;
 
     /// internal iteration step
     int itermax_;

@@ -576,7 +576,7 @@ namespace Solid
       }
 
       //! set element volume data vector
-      inline void set_element_volume_data(const Teuchos::RCP<Epetra_Vector>& ele_volumes)
+      inline void set_element_volume_data(const Teuchos::RCP<Core::LinAlg::Vector>& ele_volumes)
       {
         elevolumes_ptr_ = ele_volumes;
       }
@@ -642,7 +642,7 @@ namespace Solid
       void reset_my_norms(const bool& isdefaultstep);
 
       //! return element volume data vector (read-only)
-      const Epetra_Vector& current_element_volume_data() const;
+      const Core::LinAlg::Vector& current_element_volume_data() const;
 
       //! return the stress data (read-only)
       const std::vector<char>& stress_data() const;
@@ -900,7 +900,7 @@ namespace Solid
       //!@{
 
       //! element volume data vector
-      Teuchos::RCP<Epetra_Vector> elevolumes_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> elevolumes_ptr_;
 
       //! stress data vector
       Teuchos::RCP<std::vector<char>> stressdata_ptr_;

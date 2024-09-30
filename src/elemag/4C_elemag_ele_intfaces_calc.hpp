@@ -17,10 +17,10 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -67,7 +67,7 @@ namespace Discret
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::DiscretizationFaces& discretization,  ///< faces discretization
           Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-          Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
+          Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
           ) = 0;
 
       //! Evaluate internal faces
@@ -136,7 +136,7 @@ namespace Discret
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::DiscretizationFaces& discretization,  ///< faces discretization
           Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-          Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
+          Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
           ) override;
 
       //! Evaluate internal faces

@@ -85,15 +85,16 @@ namespace FLD
     global vectors. This method allows to do the time average of the
     nodal values after a certain amount of timesteps.
     */
-    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses);
+    void do_time_sample(
+        Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> stresses);
 
     /*!
     \brief The values of velocity, pressure, temperature and its squared
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void do_loma_time_sample(
-        Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp, const double eosfac);
+    void do_loma_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector> scanp, const double eosfac);
 
     /*!
     \brief The values of velocity, pressure, phi and its squared
@@ -101,7 +102,7 @@ namespace FLD
     average of the nodal values after a certain amount of timesteps.
     */
     void do_scatra_time_sample(
-        Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp);
+        Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> scanp);
 
     /*!
     \brief Dump the result to file.
@@ -197,19 +198,19 @@ namespace FLD
     const std::string statistics_outfilename_;
 
     //! pointer to vel/pres^2 field (space allocated in constructor)
-    Teuchos::RCP<Epetra_Vector> squaredvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> squaredvelnp_;
     //! pointer to T^2 field (space allocated in constructor)
-    Teuchos::RCP<Epetra_Vector> squaredscanp_;
+    Teuchos::RCP<Core::LinAlg::Vector> squaredscanp_;
     //! pointer to 1/T field (space allocated in constructor)
-    Teuchos::RCP<Epetra_Vector> invscanp_;
+    Teuchos::RCP<Core::LinAlg::Vector> invscanp_;
     //! pointer to (1/T)^2 field (space allocated in constructor)
-    Teuchos::RCP<Epetra_Vector> squaredinvscanp_;
+    Teuchos::RCP<Core::LinAlg::Vector> squaredinvscanp_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Epetra_Vector> toggleu_;
-    Teuchos::RCP<Epetra_Vector> togglev_;
-    Teuchos::RCP<Epetra_Vector> togglew_;
-    Teuchos::RCP<Epetra_Vector> togglep_;
+    Teuchos::RCP<Core::LinAlg::Vector> toggleu_;
+    Teuchos::RCP<Core::LinAlg::Vector> togglev_;
+    Teuchos::RCP<Core::LinAlg::Vector> togglew_;
+    Teuchos::RCP<Core::LinAlg::Vector> togglep_;
 
     //! available x1- and x2-coordinates
     Teuchos::RCP<std::vector<double>> x1coordinates_;

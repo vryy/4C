@@ -435,11 +435,12 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
 /*----------------------------------------------------------------------*
  | calculate velocities by a FD approximation                Thon 14/11 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SSI::SSIPart2WC::calc_velocity(Teuchos::RCP<const Epetra_Vector> dispnp)
+Teuchos::RCP<Core::LinAlg::Vector> SSI::SSIPart2WC::calc_velocity(
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp)
 {
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector(*(structure_field()->dispn())));
+  vel = Teuchos::rcp(new Core::LinAlg::Vector(*(structure_field()->dispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / dt(), *dispnp, -1. / dt());
@@ -495,9 +496,9 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
   }
 
   // these are the relaxed inputs
-  Teuchos::RCP<Epetra_Vector> dispnp =
+  Teuchos::RCP<Core::LinAlg::Vector> dispnp =
       Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
-  Teuchos::RCP<Epetra_Vector> velnp =
+  Teuchos::RCP<Core::LinAlg::Vector> velnp =
       Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
 
   while (!stopnonliniter)
@@ -613,7 +614,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
 
   // calculate difference of current (i+1) and old (i) residual vector
   // dispincnpdiff = ( r^{i+1}_{n+1} - r^i_{n+1} )
-  Teuchos::RCP<Epetra_Vector> dispincnpdiff =
+  Teuchos::RCP<Core::LinAlg::Vector> dispincnpdiff =
       Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
   dispincnpdiff->Update(
       1.0, *dispincnp_, (-1.0), *dispincnpold_, 0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
@@ -731,7 +732,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
   }
 
   // this is the relaxed input
-  Teuchos::RCP<Epetra_Vector> phinp =
+  Teuchos::RCP<Core::LinAlg::Vector> phinp =
       Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(0), true);
 
   while (!stopnonliniter)
@@ -831,7 +832,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
   const double minomega = ssicontrolpart.get<double>("MINOMEGA");
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
-  Teuchos::RCP<Epetra_Vector> scaincnpdiff =
+  Teuchos::RCP<Core::LinAlg::Vector> scaincnpdiff =
       Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 

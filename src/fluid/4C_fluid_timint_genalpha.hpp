@@ -103,11 +103,12 @@ namespace FLD
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    void calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
-        const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
-        const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
-        const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
-        const Teuchos::RCP<Epetra_Vector> accnp         ///< acceleration at n+1
+    void calculate_acceleration(
+        const Teuchos::RCP<const Core::LinAlg::Vector> velnp,  ///< velocity at n+1
+        const Teuchos::RCP<const Core::LinAlg::Vector> veln,   ///< velocity at     n
+        const Teuchos::RCP<const Core::LinAlg::Vector> velnm,  ///< velocity at     n-1
+        const Teuchos::RCP<const Core::LinAlg::Vector> accn,   ///< acceleration at n-1
+        const Teuchos::RCP<Core::LinAlg::Vector> accnp         ///< acceleration at n+1
         ) override;
 
     /*!
@@ -116,8 +117,8 @@ namespace FLD
            Helper method which can be called from outside fluid (e.g. for coupled problems)
 
     */
-    void gen_alpha_intermediate_values(
-        Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn) override;
+    void gen_alpha_intermediate_values(Teuchos::RCP<Core::LinAlg::Vector>& vecnp,
+        Teuchos::RCP<Core::LinAlg::Vector>& vecn) override;
 
     /*!
     \brief Set gamma to a value
@@ -141,8 +142,8 @@ namespace FLD
     \brief Output of filtered velocity
 
     */
-    void outputof_filtered_vel(
-        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
+    void outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector> outvec,
+        Teuchos::RCP<Core::LinAlg::Vector> fsoutvec) override;
 
     /*!
 
@@ -163,9 +164,9 @@ namespace FLD
 
     //! @name methods for fsi
     /// Extrapolation of vectors from mid-point to end-point t_{n+1}
-    Teuchos::RCP<Epetra_Vector> extrapolate_end_point(
-        Teuchos::RCP<Epetra_Vector> vecn,  ///< vector at time level t_n
-        Teuchos::RCP<Epetra_Vector> vecm   ///< vector at time level of equilibrium
+    Teuchos::RCP<Core::LinAlg::Vector> extrapolate_end_point(
+        Teuchos::RCP<Core::LinAlg::Vector> vecn,  ///< vector at time level t_n
+        Teuchos::RCP<Core::LinAlg::Vector> vecm   ///< vector at time level of equilibrium
         ) override;
 
     /*!
@@ -238,7 +239,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return velaf_; };
+    Teuchos::RCP<const Core::LinAlg::Vector> evaluation_vel() override { return velaf_; };
 
     /// time factors for generalized-alpha time integration
     double alphaM_;

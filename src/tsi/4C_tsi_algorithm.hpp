@@ -22,8 +22,7 @@
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
-
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -122,20 +121,20 @@ namespace TSI
 
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
-    void output_deformation_in_thr(
-        Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<Core::FE::Discretization> structdis);
+    void output_deformation_in_thr(Teuchos::RCP<const Core::LinAlg::Vector> dispnp,
+        Teuchos::RCP<Core::FE::Discretization> structdis);
 
     //@}
 
     //! @name Transfer methods
 
     //! apply temperature state on structure discretization
-    virtual void apply_thermo_coupling_state(Teuchos::RCP<const Epetra_Vector> temp,
-        Teuchos::RCP<const Epetra_Vector> temp_res = Teuchos::null);
+    virtual void apply_thermo_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector> temp,
+        Teuchos::RCP<const Core::LinAlg::Vector> temp_res = Teuchos::null);
 
     //! apply structural displacements and velocities on thermo discretization
-    virtual void apply_struct_coupling_state(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
+    virtual void apply_struct_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        Teuchos::RCP<const Core::LinAlg::Vector> vel);
 
     //! Prepare a ptr to the contact strategy from the structural field,
     //! store it in tsi and hand it to the thermal field
@@ -148,7 +147,8 @@ namespace TSI
     //! @name Access methods
 
     //! velocity calculation given the displacements (like in FSI)
-    Teuchos::RCP<const Epetra_Vector> calc_velocity(Teuchos::RCP<const Epetra_Vector> dispnp);
+    Teuchos::RCP<const Core::LinAlg::Vector> calc_velocity(
+        Teuchos::RCP<const Core::LinAlg::Vector> dispnp);
 
     //! displacements at time n+1 for thermal output
     Teuchos::RCP<Epetra_MultiVector> dispnp_;

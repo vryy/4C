@@ -803,13 +803,13 @@ void Solid::TimIntGenAlpha::update_step_element()
     discret_->set_state("velocity", (*vel_)(0));
     discret_->set_state("acceleration", (*acc_)(0));
 
-    Teuchos::RCP<Epetra_Vector> update_disp;
+    Teuchos::RCP<Core::LinAlg::Vector> update_disp;
     update_disp = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Epetra_Vector> update_vel;
+    Teuchos::RCP<Core::LinAlg::Vector> update_vel;
     update_vel = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Epetra_Vector> update_acc;
+    Teuchos::RCP<Core::LinAlg::Vector> update_acc;
     update_acc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
 
@@ -850,9 +850,9 @@ void Solid::TimIntGenAlpha::write_restart_force(Teuchos::RCP<Core::IO::Discretiz
  * Build total residual vector and effective tangential stiffness    meier 05/14
  * matrix in case of nonlinear, rotational inertia effects
  *----------------------------------------------------------------------------*/
-void Solid::TimIntGenAlpha::build_res_stiff_nl_mass_rot(Teuchos::RCP<Epetra_Vector> fres_,
-    Teuchos::RCP<Epetra_Vector> fextn_, Teuchos::RCP<Epetra_Vector> fintn_,
-    Teuchos::RCP<Epetra_Vector> finertn_, Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_,
+void Solid::TimIntGenAlpha::build_res_stiff_nl_mass_rot(Teuchos::RCP<Core::LinAlg::Vector> fres_,
+    Teuchos::RCP<Core::LinAlg::Vector> fextn_, Teuchos::RCP<Core::LinAlg::Vector> fintn_,
+    Teuchos::RCP<Core::LinAlg::Vector> finertn_, Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_,
     Teuchos::RCP<Core::LinAlg::SparseOperator> mass_)
 {
   /* build residual

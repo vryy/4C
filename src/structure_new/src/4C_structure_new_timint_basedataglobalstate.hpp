@@ -158,20 +158,22 @@ namespace Solid
        * extract velocities of those DOFs associated with translations.
        *
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Epetra_Vector> extract_displ_entries(const Epetra_Vector& source) const;
+      Teuchos::RCP<Core::LinAlg::Vector> extract_displ_entries(
+          const Core::LinAlg::Vector& source) const;
 
       /*! \brief Extract the part of a vector which belongs to the model dofs.
        *
        * \param mt (in)     : model type of the desired block.
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Epetra_Vector> extract_model_entries(
-          const Inpar::Solid::ModelType& mt, const Epetra_Vector& source) const;
+      Teuchos::RCP<Core::LinAlg::Vector> extract_model_entries(
+          const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector& source) const;
 
       /* \brief Extract the part of a vector which belongs to non-additive rotation
        * (pseudo-)vector dofs.
        *
        * \param source (in) : full vector to extract from. */
-      Teuchos::RCP<Epetra_Vector> extract_rot_vec_entries(const Epetra_Vector& source) const;
+      Teuchos::RCP<Core::LinAlg::Vector> extract_rot_vec_entries(
+          const Core::LinAlg::Vector& source) const;
 
       /** \brief Read-only access of the desired block of the global jacobian
        *  matrix in the global state data container.
@@ -410,119 +412,119 @@ namespace Solid
       ///@{
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_dis_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_dis_np() const
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_dis_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_dis_n() const
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return velocities \f$V_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_vel_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_vel_np() const
       {
         check_init_setup();
         return velnp_;
       }
 
       /// Return velocities \f$V_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_vel_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_vel_n() const
       {
         check_init_setup();
         return (*vel_)(0);
       }
 
       /// Return velocities \f$V_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_vel_nm() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_vel_nm() const
       {
         check_init_setup();
         return (*vel_)(-1);
       }
 
       /// Return accelerations \f$A_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_acc_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_acc_np() const
       {
         check_init_setup();
         return accnp_;
       }
 
       /// Return accelerations \f$A_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_acc_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_acc_n() const
       {
         check_init_setup();
         return (*acc_)(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_fint_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_fint_n() const
       {
         check_init_setup();
         return fintn_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_fint_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_fint_np() const
       {
         check_init_setup();
         return fintnp_;
       }
 
       /// Return external force \f$fext_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_fext_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_fext_n() const
       {
         check_init_setup();
         return fextn_;
       }
 
       /// Return external force \f$fext_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_fext_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_fext_np() const
       {
         check_init_setup();
         return fextnp_;
       }
 
       /// Return reaction force \f$freact_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_freact_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_freact_n() const
       {
         check_init_setup();
         return freactn_;
       }
 
       /// Return reaction force \f$freact_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_freact_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_freact_np() const
       {
         check_init_setup();
         return freactnp_;
       }
 
       /// Return inertia force \f$finertial_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_finertial_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_finertial_n() const
       {
         check_init_setup();
         return finertialn_;
       }
 
       /// Return inertial force \f$finertial_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_finertial_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_finertial_np() const
       {
         check_init_setup();
         return finertialnp_;
       }
 
       /// Return visco force \f$fvisco_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> get_fvisco_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_fvisco_n() const
       {
         check_init_setup();
         return fviscon_;
       }
 
       /// Return visco force \f$fvisco_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> get_fvisco_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_fvisco_np() const
       {
         check_init_setup();
         return fvisconp_;
@@ -533,7 +535,7 @@ namespace Solid
        *
        *  Please note that this old structural residual is already scaled by the
        *  different time integration factors! */
-      Teuchos::RCP<const Epetra_Vector> get_fstructure_old() const
+      Teuchos::RCP<const Core::LinAlg::Vector> get_fstructure_old() const
       {
         check_init_setup();
         return fstructold_;
@@ -712,147 +714,147 @@ namespace Solid
       ///@{
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_dis_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_dis_np()
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Epetra_Vector> get_dis_n()
+      Teuchos::RCP<Core::LinAlg::Vector> get_dis_n()
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& get_multi_dis()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>>& get_multi_dis()
       {
         check_init_setup();
         return dis_;
       }
 
       /// Return velocities \f$V_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_vel_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_vel_np()
       {
         check_init_setup();
         return velnp_;
       }
 
       /// Return velocities \f$V_{n}\f$
-      Teuchos::RCP<Epetra_Vector> get_vel_n()
+      Teuchos::RCP<Core::LinAlg::Vector> get_vel_n()
       {
         check_init_setup();
         return (*vel_)(0);
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& get_multi_vel()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>>& get_multi_vel()
       {
         check_init_setup();
         return vel_;
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      const Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& get_multi_vel() const
+      const Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>>& get_multi_vel() const
       {
         check_init_setup();
         return vel_;
       }
 
       /// Return accelerations \f$A_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_acc_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_acc_np()
       {
         check_init_setup();
         return accnp_;
       }
 
       /// Return accelerations \f$A_{n}\f$
-      Teuchos::RCP<Epetra_Vector> get_acc_n()
+      Teuchos::RCP<Core::LinAlg::Vector> get_acc_n()
       {
         check_init_setup();
         return (*acc_)(0);
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& get_multi_acc()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>>& get_multi_acc()
       {
         check_init_setup();
         return acc_;
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      const Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>>& get_multi_acc() const
+      const Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>>& get_multi_acc() const
       {
         check_init_setup();
         return acc_;
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& get_fint_n()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_fint_n()
       {
         check_init_setup();
         return fintn_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_fint_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_fint_np()
       {
         check_init_setup();
         return fintnp_;
       }
 
       /// Return external force \f$fext_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& get_fext_n()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_fext_n()
       {
         check_init_setup();
         return fextn_;
       }
 
       /// Return external force \f$fext_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_fext_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_fext_np()
       {
         check_init_setup();
         return fextnp_;
       }
 
       /// Return reaction force \f$freact_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& get_freact_n()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_freact_n()
       {
         check_init_setup();
         return freactn_;
       }
 
       /// Return reaction force \f$freact_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_freact_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_freact_np()
       {
         check_init_setup();
         return freactnp_;
       }
 
       /// Return inertia force \f$finertial_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& get_finertial_n()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_finertial_n()
       {
         check_init_setup();
         return finertialn_;
       }
 
       /// Return inertial force \f$finertial_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_finertial_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_finertial_np()
       {
         check_init_setup();
         return finertialnp_;
       }
 
       /// Return viscous force \f$f_{viscous,n}\f$
-      Teuchos::RCP<Epetra_Vector>& get_fvisco_n()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_fvisco_n()
       {
         check_init_setup();
         return fviscon_;
       }
 
       /// Return viscous force \f$fviscous_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& get_fvisco_np()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_fvisco_np()
       {
         check_init_setup();
         return fvisconp_;
@@ -862,7 +864,7 @@ namespace Solid
        *
        *  Please note that this old structural residual is already scaled by the
        *  different time integration factors! */
-      Teuchos::RCP<Epetra_Vector>& get_fstructure_old()
+      Teuchos::RCP<Core::LinAlg::Vector>& get_fstructure_old()
       {
         check_init_setup();
         return fstructold_;
@@ -970,52 +972,52 @@ namespace Solid
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dis_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> dis_;
 
       /// global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> vel_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> vel_;
 
       /// global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> acc_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> acc_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> disnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> disnp_;
 
       /// global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> velnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> velnp_;
 
       /// global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> accnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> accnp_;
 
       /// global internal force vector at \f$t_{n}\f$
-      Teuchos::RCP<Epetra_Vector> fintn_;
+      Teuchos::RCP<Core::LinAlg::Vector> fintn_;
 
       /// global internal force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> fintnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> fintnp_;
 
       /// global external force vector at \f$t_{n}\f$
-      Teuchos::RCP<Epetra_Vector> fextn_;
+      Teuchos::RCP<Core::LinAlg::Vector> fextn_;
 
       /// global external force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> fextnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> fextnp_;
 
       /// global reaction force vector at \f$t_{n}\f$
-      Teuchos::RCP<Epetra_Vector> freactn_;
+      Teuchos::RCP<Core::LinAlg::Vector> freactn_;
 
       /// global reaction force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> freactnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> freactnp_;
 
       /// global inertial force vector at \f$t_{n}\f$
-      Teuchos::RCP<Epetra_Vector> finertialn_;
+      Teuchos::RCP<Core::LinAlg::Vector> finertialn_;
 
       /// global inertial force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> finertialnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> finertialnp_;
 
       /// global viscous force vector at \f$t_{n}\f$
-      Teuchos::RCP<Epetra_Vector> fviscon_;
+      Teuchos::RCP<Core::LinAlg::Vector> fviscon_;
 
       /// global viscous force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> fvisconp_;
+      Teuchos::RCP<Core::LinAlg::Vector> fvisconp_;
 
       /** \brief dynamic structural right hand side of the previous time step
        *
@@ -1026,7 +1028,7 @@ namespace Solid
        * f_{cardio,n} ..., where a_n, b_n, c_n represent different time integration factors.
        *
        *  */
-      Teuchos::RCP<Epetra_Vector> fstructold_;
+      Teuchos::RCP<Core::LinAlg::Vector> fstructold_;
       ///@}
       /// @name System matrices
       ///@{
@@ -1123,8 +1125,9 @@ namespace NOX
              * NOX::Nln::Group::computeX()
              *
              *  This method is used to update non-additive rotation vector DoFs */
-            void run_pre_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
-                const double& step, const NOX::Nln::Group& curr_grp) override;
+            void run_pre_compute_x(const NOX::Nln::Group& input_grp,
+                const Core::LinAlg::Vector& dir, const double& step,
+                const NOX::Nln::Group& curr_grp) override;
 
            private:
             //! pointer to the FourC::Solid::TimeInt::BaseDataGlobalState object (read-only)

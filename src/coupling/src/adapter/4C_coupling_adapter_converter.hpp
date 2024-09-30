@@ -16,8 +16,8 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <map>
@@ -46,9 +46,11 @@ namespace Coupling::Adapter
   {
    public:
     virtual ~CouplingConverter() = default;
-    virtual Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> src_to_dst(
+        Teuchos::RCP<const Core::LinAlg::Vector> s) const = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> dst_to_src(
+        Teuchos::RCP<const Core::LinAlg::Vector> d) const = 0;
 
     virtual Teuchos::RCP<const Epetra_Map> src_map() const = 0;
 
@@ -67,9 +69,11 @@ namespace Coupling::Adapter
    public:
     explicit CouplingMasterConverter(const Coupling& coup) : coup_(coup) {}
 
-    Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const override;
+    Teuchos::RCP<Core::LinAlg::Vector> src_to_dst(
+        Teuchos::RCP<const Core::LinAlg::Vector> s) const override;
 
-    Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const override;
+    Teuchos::RCP<Core::LinAlg::Vector> dst_to_src(
+        Teuchos::RCP<const Core::LinAlg::Vector> d) const override;
 
     Teuchos::RCP<const Epetra_Map> src_map() const override;
 
@@ -91,9 +95,11 @@ namespace Coupling::Adapter
    public:
     explicit CouplingSlaveConverter(const Coupling& coup) : coup_(coup) {}
 
-    Teuchos::RCP<Epetra_Vector> src_to_dst(Teuchos::RCP<const Epetra_Vector> s) const override;
+    Teuchos::RCP<Core::LinAlg::Vector> src_to_dst(
+        Teuchos::RCP<const Core::LinAlg::Vector> s) const override;
 
-    Teuchos::RCP<Epetra_Vector> dst_to_src(Teuchos::RCP<const Epetra_Vector> d) const override;
+    Teuchos::RCP<Core::LinAlg::Vector> dst_to_src(
+        Teuchos::RCP<const Core::LinAlg::Vector> d) const override;
 
     Teuchos::RCP<const Epetra_Map> src_map() const override;
 
@@ -193,7 +199,7 @@ namespace Coupling::Adapter
       Internal method called by internal_add.
      */
     void add_into_filled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-        const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
+        const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector& selector,
         const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
         double scale);
 
@@ -202,7 +208,7 @@ namespace Coupling::Adapter
       Internal method called by internal_add.
      */
     void add_into_unfilled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-        const Epetra_Map& logical_domain_map, const Epetra_Vector& selector,
+        const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector& selector,
         const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
         double scale);
 

@@ -62,7 +62,7 @@ int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList&
       if (zero_size) return 0;
 
       // Get current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);

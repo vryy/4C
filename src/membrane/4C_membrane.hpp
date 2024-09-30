@@ -19,10 +19,10 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_membrane_eletypes.hpp"
 #include "4C_thermo_ele_impl_utils.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

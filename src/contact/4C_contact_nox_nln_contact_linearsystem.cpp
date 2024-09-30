@@ -148,8 +148,8 @@ Core::LinAlg::SolverParams NOX::Nln::CONTACT::LinearSystem::set_solver_options(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
-    Epetra_LinearProblem& linear_problem, Core::LinAlg::SparseOperator& jac, Epetra_Vector& lhs,
-    Epetra_Vector& rhs) const
+    Epetra_LinearProblem& linear_problem, Core::LinAlg::SparseOperator& jac,
+    Core::LinAlg::Vector& lhs, Core::LinAlg::Vector& rhs) const
 {
   switch (jacType_)
   {
@@ -178,7 +178,7 @@ void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::Nln::CONTACT::LinearSystem::complete_solution_after_solve(
-    const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
+    const Epetra_LinearProblem& linProblem, Core::LinAlg::Vector& lhs) const
 {
   p_lin_prob_.insert_into_global_lhs(lhs);
   p_lin_prob_.reset();
@@ -265,7 +265,7 @@ Teuchos::RCP<Core::LinAlg::Solver> NOX::Nln::CONTACT::LinearSystem::get_linear_c
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::insert_into_global_lhs(
-    Epetra_Vector& glhs) const
+    Core::LinAlg::Vector& glhs) const
 {
   if (p_lhs_.is_null() or p_lhs_.get() == &glhs) return;
 
@@ -275,7 +275,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::insert_into_global_lhs(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::set_original_system(
-    Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
+    Core::LinAlg::SparseOperator& mat, Core::LinAlg::Vector& lhs, Core::LinAlg::Vector& rhs)
 {
   p_jac_ = Teuchos::rcpFromRef(mat);
   p_rhs_ = Teuchos::rcpFromRef(rhs);
@@ -285,7 +285,7 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::set_original_system(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
-    Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
+    Core::LinAlg::SparseOperator& mat, Core::LinAlg::Vector& lhs, Core::LinAlg::Vector& rhs)
 {
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>& block_mat =
       dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>&>(mat);
@@ -409,19 +409,19 @@ void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::extract_active_blocks(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(
-    Core::LinAlg::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
+void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(Core::LinAlg::SparseMatrix& mat,
+    Core::LinAlg::Vector& lhs, const Core::LinAlg::Vector& rhs) const
 {
   if (mat.epetra_matrix()->NumGlobalDiagonals() != mat.epetra_matrix()->NumGlobalNonzeros())
     FOUR_C_THROW("The given matrix seems to be no diagonal matrix!");
 
-  Epetra_Vector lhs_block(mat.domain_map(), true);
+  Core::LinAlg::Vector lhs_block(mat.domain_map(), true);
   Core::LinAlg::extract_my_vector(lhs, lhs_block);
 
-  Epetra_Vector rhs_block(mat.range_map(), true);
+  Core::LinAlg::Vector rhs_block(mat.range_map(), true);
   Core::LinAlg::extract_my_vector(rhs, rhs_block);
 
-  Epetra_Vector diag_mat(mat.range_map(), true);
+  Core::LinAlg::Vector diag_mat(mat.range_map(), true);
   int err = mat.extract_diagonal_copy(diag_mat);
   if (err) FOUR_C_THROW("ExtractDiagonalCopy failed! (err=%d)", err);
 

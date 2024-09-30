@@ -13,10 +13,10 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -113,7 +113,7 @@ namespace BEAMINTERACTION
      * \brief Update state of rotational DoFs of both elements
      */
     virtual void reset_rotation_state(const Core::FE::Discretization& discret,
-        const Teuchos::RCP<const Epetra_Vector>& ia_discolnp){};
+        const Teuchos::RCP<const Core::LinAlg::Vector>& ia_discolnp){};
 
     //@}
 
@@ -254,7 +254,7 @@ namespace BEAMINTERACTION
     virtual void evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
+        const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector){};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -279,7 +279,8 @@ namespace BEAMINTERACTION
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector){};
+        const Core::LinAlg::Vector& global_lambda,
+        const Core::LinAlg::Vector& displacement_vector){};
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
@@ -323,7 +324,7 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
+        const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector){};
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer.

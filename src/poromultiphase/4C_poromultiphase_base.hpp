@@ -93,29 +93,30 @@ namespace POROMULTIPHASE
     }
 
     /// set structure solution on scatra field
-    void set_struct_solution(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) override;
+    void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        Teuchos::RCP<const Core::LinAlg::Vector> vel) override;
 
     /// set scatra solution on fluid field
-    void set_scatra_solution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars) override;
+    void set_scatra_solution(
+        unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector> scalars) override;
 
     //! setup solver (for monolithic only)
     bool setup_solver() override { return false; };
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> struct_dispnp() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> struct_dispnp() const override;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> struct_velnp() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> struct_velnp() const override;
 
     /// return fluid flux
     Teuchos::RCP<const Epetra_MultiVector> fluid_flux() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> fluid_phinp() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> fluid_phinp() const override;
 
     /// return relaxed fluid solution variable (partitioned coupling will overwrite this method)
-    Teuchos::RCP<const Epetra_Vector> relaxed_fluid_phinp() const override
+    Teuchos::RCP<const Core::LinAlg::Vector> relaxed_fluid_phinp() const override
     {
       return fluid_phinp();
     };
@@ -129,13 +130,13 @@ namespace POROMULTIPHASE
     };
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> fluid_saturation() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> fluid_saturation() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> fluid_pressure() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> fluid_pressure() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Epetra_Vector> solid_pressure() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> solid_pressure() const override;
 
     //! unique map of all dofs that should be constrained with DBC
     Teuchos::RCP<const Epetra_Map> combined_dbc_map() const override
@@ -160,8 +161,8 @@ namespace POROMULTIPHASE
     };
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
-        const bool firstcall) override
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> sx,
+        Teuchos::RCP<const Core::LinAlg::Vector> fx, const bool firstcall) override
     {
       FOUR_C_THROW("evaluate() only available for monolithic schemes!");
       return;
@@ -169,22 +170,22 @@ namespace POROMULTIPHASE
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
-    void update_fields_after_convergence(
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override
+    void update_fields_after_convergence(Teuchos::RCP<const Core::LinAlg::Vector>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& fx) override
     {
       FOUR_C_THROW("update_fields_after_convergence() only available for monolithic schemes!");
       return;
     };
 
     /// perform relaxaton (only for partitioned schemes)
-    void perform_relaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override
+    void perform_relaxation(Teuchos::RCP<const Core::LinAlg::Vector> phi, const int itnum) override
     {
       FOUR_C_THROW("PerformRelaxation() only available for partitioned schemes!");
       return;
     };
 
     //! get monolithic rhs vector
-    Teuchos::RCP<const Epetra_Vector> rhs() const override
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() const override
     {
       FOUR_C_THROW("RHS() only available for monolithic schemes!");
       return Teuchos::null;
@@ -206,10 +207,10 @@ namespace POROMULTIPHASE
 
    private:
     /// set structure mesh displacement on fluid field
-    void set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector> disp);
 
     /// set structure velocity field on fluid field
-    void set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel);
+    void set_velocity_fields(Teuchos::RCP<const Core::LinAlg::Vector> vel);
 
     /// underlying structure of the PoroMultiPhase problem
     Teuchos::RCP<Adapter::Structure> structure_;
@@ -219,7 +220,7 @@ namespace POROMULTIPHASE
 
    protected:
     /// a zero vector of full length of structure dofs
-    Teuchos::RCP<Epetra_Vector> struct_zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector> struct_zeros_;
     //! here the computation of the structure can be skipped, this is helpful if only fluid-scatra
     //! coupling should be calculated
     bool solve_structure_;

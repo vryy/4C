@@ -361,7 +361,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
   if (discretization.has_state("trace"))  // in case of "update interior variables"
   {
     elemagele->elenodeTrace2d_.size(lm.size());
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state("trace");
+    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state("trace");
     Core::FE::extract_my_values(*matrix_state, elemagele->elenodeTrace2d_, lm);
   }
 
@@ -391,8 +391,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
   std::vector<int> localDofs = discretization.dof(1, ele);
   const Epetra_Map* intdofcolmap = discretization.dof_col_map(1);
   {
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "intVar");
-    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
+    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "intVar");
+    Core::LinAlg::Vector& secondary = const_cast<Core::LinAlg::Vector&>(*matrix_state);
     for (unsigned int i = 0; i < localDofs.size(); ++i)
     {
       const int lid = intdofcolmap->LID(localDofs[i]);
@@ -407,8 +407,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
   }
 
   // Here the magnetic field is not stored because there is no need for the time integration
-  Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.get_state(1, "intVarnm");
-  Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*intVarnm);
+  Teuchos::RCP<const Core::LinAlg::Vector> intVarnm = discretization.get_state(1, "intVarnm");
+  Core::LinAlg::Vector& secondary = const_cast<Core::LinAlg::Vector&>(*intVarnm);
   for (unsigned int i = size; i < localDofs.size(); ++i)
   {
     const int lid = intdofcolmap->LID(localDofs[i]);
@@ -430,7 +430,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
 
   std::vector<double> interiorVar(size * 2);
 
-  Teuchos::RCP<const Epetra_Vector> intVar = discretization.get_state(1, "intVar");
+  Teuchos::RCP<const Core::LinAlg::Vector> intVar = discretization.get_state(1, "intVar");
   std::vector<int> localDofs1 = discretization.dof(1, ele);
   Core::FE::extract_my_values(*intVar, interiorVar, localDofs1);
   // now write this in corresponding eleinteriorElectric_ and eleinteriorMagnetic_
@@ -442,7 +442,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
 
   std::vector<double> interiorVarnm(size * 2);
 
-  Teuchos::RCP<const Epetra_Vector> intVarnm = discretization.get_state(1, "intVarnm");
+  Teuchos::RCP<const Core::LinAlg::Vector> intVarnm = discretization.get_state(1, "intVarnm");
   Core::FE::extract_my_values(*intVarnm, interiorVarnm, localDofs1);
   for (unsigned int i = 0; i < size; ++i)
   {

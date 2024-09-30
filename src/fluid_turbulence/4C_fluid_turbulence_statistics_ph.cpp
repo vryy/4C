@@ -481,7 +481,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discr
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsPh::do_time_sample(
-    Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses)
+    Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> stresses)
 {
   if (discret_->get_comm().MyPID() == 0)
     std::cout << "------------Time Sampling Routine begins---------" << std::endl;

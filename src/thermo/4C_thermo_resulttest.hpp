@@ -56,11 +56,11 @@ namespace Thermo
     Teuchos::RCP<Core::FE::Discretization> thrdisc_;
     // our solution
     //! global temperature DOFs
-    Teuchos::RCP<Epetra_Vector> temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> temp_;
     //! global temperature rate DOFs
-    Teuchos::RCP<Epetra_Vector> rate_;
+    Teuchos::RCP<Core::LinAlg::Vector> rate_;
     //! global temperature DOFs
-    Teuchos::RCP<Epetra_Vector> flux_;
+    Teuchos::RCP<Core::LinAlg::Vector> flux_;
     //! NOTE: these have to be present explicitly
     //! as they are not part of the problem instance like in fluid3
 

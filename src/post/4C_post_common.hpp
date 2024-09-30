@@ -29,9 +29,9 @@ specific output operations can be done by the elements themselves.
 #include "4C_io_legacy_types.hpp"
 #include "4C_legacy_enum_definitions_problem_type.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_CommandLineProcessor.hpp>
 #include <Teuchos_RCP.hpp>
 
@@ -432,7 +432,7 @@ class PostResult
    *
    *  \returns vector with results read
    */
-  Teuchos::RCP<Epetra_Vector> read_result(const std::string name);
+  Teuchos::RCP<Core::LinAlg::Vector> read_result(const std::string name);
 
   /*! \brief Reads the data of the result vector 'name' from the current result block
    *

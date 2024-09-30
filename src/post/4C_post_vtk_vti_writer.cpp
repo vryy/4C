@@ -15,10 +15,9 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_post_common.hpp"
 #include "4C_utils_exceptions.hpp"
-
-#include <Epetra_Vector.h>
 
 #include <sstream>
 
@@ -133,7 +132,7 @@ void PostVtiWriter::write_geo()
 
 
 void PostVtiWriter::write_dof_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_Vector>& data,
+    const Teuchos::RCP<Core::LinAlg::Vector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -152,7 +151,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
   // TODO: wic, once the vtu pressure writer is fixed, apply the same solution here.
   const int offset = (fillzeros) ? 0 : vecmap.MinAllGID() - dis->dof_row_map(0)->MinAllGID();
 
-  Teuchos::RCP<Epetra_Vector> ghostedData;
+  Teuchos::RCP<Core::LinAlg::Vector> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
@@ -274,7 +273,8 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
       for (int idf = 0; idf < numdf; ++idf)
       {
-        Epetra_Vector* column = (*ghostedData)(idf);
+        Teuchos::RCP<Core::LinAlg::Vector> column =
+            Teuchos::rcp(new Core::LinAlg::Vector(*(*ghostedData)(idf)));
 
         const int lid = ghostedData->Map().LID(gid);
 
@@ -353,7 +353,8 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
     const int inpos = ncomponents * (eidmapping_.find(egid)->second);
     for (int d = 0; d < numdf; ++d)
     {
-      Epetra_Vector* column = (*importedData)(d + from);
+      Teuchos::RCP<Core::LinAlg::Vector> column =
+          Teuchos::rcp(new Core::LinAlg::Vector(*(*importedData)(d + from)));
       solution[inpos + d] = (*column)[e];
     }
   }

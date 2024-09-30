@@ -20,9 +20,9 @@
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_red_airways_elem_params.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

@@ -14,6 +14,7 @@
 #include "4C_io.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
@@ -21,8 +22,6 @@
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_structure_new_utils.hpp"
 #include "4C_utils_exceptions.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -99,7 +98,7 @@ void Solid::IMPLICIT::OneStepTheta::post_setup()
     if (tim_int().is_restarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().get_acc_np();
+    Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
@@ -136,7 +135,7 @@ double Solid::IMPLICIT::OneStepTheta::get_theta() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
+void Solid::IMPLICIT::OneStepTheta::set_state(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
 
@@ -148,7 +147,7 @@ void Solid::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -188,7 +187,8 @@ void Solid::IMPLICIT::OneStepTheta::update_constant_state_contributions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::IMPLICIT::OneStepTheta::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::IMPLICIT::OneStepTheta::apply_force(
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f)
 {
   check_init_setup();
 
@@ -203,7 +203,7 @@ bool Solid::IMPLICIT::OneStepTheta::apply_force(const Epetra_Vector& x, Epetra_V
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::apply_stiff(
-    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -224,7 +224,7 @@ bool Solid::IMPLICIT::OneStepTheta::apply_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(
-    const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -244,14 +244,14 @@ bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    Core::LinAlg::Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   return model_eval().assemble_force(theta_, f, without_these_models);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Core::LinAlg::Vector& f) const
 {
   // viscous damping forces at t_{n}
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
@@ -352,12 +352,12 @@ void Solid::IMPLICIT::OneStepTheta::post_update() { update_constant_state_contri
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Epetra_Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Epetra_Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // constant predictor: displacement in domain
@@ -379,13 +379,13 @@ void Solid::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
 
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Epetra_Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Epetra_Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   /* extrapolated displacements based upon constant velocities
@@ -407,13 +407,13 @@ bool Solid::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::OneStepTheta::predict_const_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
 
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Epetra_Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Epetra_Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   /* extrapolated displacements based upon constant accelerations

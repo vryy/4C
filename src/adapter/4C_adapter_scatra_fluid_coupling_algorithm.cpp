@@ -189,8 +189,8 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup_field_coupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Adapter::ScaTraFluidCouplingAlgorithm::fluid_to_scatra(
-    const Teuchos::RCP<const Epetra_Vector> fluidvector) const
+Teuchos::RCP<const Core::LinAlg::Vector> Adapter::ScaTraFluidCouplingAlgorithm::fluid_to_scatra(
+    const Teuchos::RCP<const Core::LinAlg::Vector> fluidvector) const
 {
   switch (fieldcoupling_)
   {
@@ -209,8 +209,8 @@ Teuchos::RCP<const Epetra_Vector> Adapter::ScaTraFluidCouplingAlgorithm::fluid_t
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Adapter::ScaTraFluidCouplingAlgorithm::scatra_to_fluid(
-    const Teuchos::RCP<const Epetra_Vector> scatravector) const
+Teuchos::RCP<const Core::LinAlg::Vector> Adapter::ScaTraFluidCouplingAlgorithm::scatra_to_fluid(
+    const Teuchos::RCP<const Core::LinAlg::Vector> scatravector) const
 {
   switch (fieldcoupling_)
   {

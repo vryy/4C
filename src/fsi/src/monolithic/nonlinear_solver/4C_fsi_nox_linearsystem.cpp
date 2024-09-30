@@ -14,6 +14,7 @@
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
 #include <Epetra_CrsMatrix.h>
@@ -21,7 +22,6 @@
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_VbrMatrix.h>
-#include <Epetra_Vector.h>
 
 #include <vector>
 
@@ -124,8 +124,9 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   const int maxit = p.get("Max Iterations", 30);
   const double tol = p.get("Tolerance", 1.0e-10);
 
-  Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(input.getEpetraVector()));
-  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(&(result.getEpetraVector()), false);
+  Teuchos::RCP<Core::LinAlg::Vector> fres =
+      Teuchos::rcp(new Core::LinAlg::Vector(input.getEpetraVector()));
+  Core::LinAlg::VectorView disi = Core::LinAlg::VectorView(result.getEpetraVector());
 
   // get the hopefully adaptive linear solver convergence tolerance
   solver_->params()
@@ -135,7 +136,7 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = callcount_ == 0;
-  solver_->solve(jac_ptr_, disi, fres, solver_params);
+  solver_->solve(jac_ptr_, disi.get_non_owning_rcp_ref(), fres, solver_params);
 
   callcount_ += 1;
 

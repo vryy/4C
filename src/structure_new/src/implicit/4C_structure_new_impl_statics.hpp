@@ -37,22 +37,22 @@ namespace Solid
       void post_setup() override;
 
       //! Reset state variables (derived)
-      void set_state(const Epetra_Vector& x) override;
+      void set_state(const Core::LinAlg::Vector& x) override;
 
       //! Apply the rhs only (derived)
-      bool apply_force(const Epetra_Vector& x, Epetra_Vector& f) override;
+      bool apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      bool apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
-      bool apply_force_stiff(
-          const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_force_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+          Core::LinAlg::SparseOperator& jac) override;
 
       //! (derived)
-      bool assemble_force(
-          Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models =
-                                nullptr) const override;
+      bool assemble_force(Core::LinAlg::Vector& f,
+          const std::vector<Inpar::Solid::ModelType>* without_these_models =
+              nullptr) const override;
 
       //! (derived)
       void write_restart(
@@ -68,7 +68,7 @@ namespace Solid
       [[nodiscard]] double get_int_param() const override;
 
       //! derived
-      double get_model_value(const Epetra_Vector& x) override;
+      double get_model_value(const Core::LinAlg::Vector& x) override;
 
       //! @name Monolithic update routines
       //! @{
@@ -85,18 +85,18 @@ namespace Solid
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! predict constant displacements, consistent velocities and accelerations (derived) */
-      void predict_const_dis_consist_vel_acc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
+      void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector& disnp,
+          Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const override;
 
       /*! predict displacements based on constant velocities and consistent accelerations (derived)
        */
-      bool predict_const_vel_consist_acc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
+      bool predict_const_vel_consist_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
+          Core::LinAlg::Vector& accnp) const override;
 
       /*! predict displacements based on constant accelerations and consistent velocities (derived)
        */
-      bool predict_const_acc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
+      bool predict_const_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
+          Core::LinAlg::Vector& accnp) const override;
       //! @}
 
       //! @name Attribute access functions
@@ -145,7 +145,7 @@ namespace Solid
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      void add_visco_mass_contributions(Epetra_Vector& f) const override{};
+      void add_visco_mass_contributions(Core::LinAlg::Vector& f) const override{};
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *

@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Cut::CutWizard::BackMesh::init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
-    const Teuchos::RCP<const Epetra_Vector>& back_levelset_col)
+void Cut::CutWizard::BackMesh::init(const Teuchos::RCP<const Core::LinAlg::Vector>& back_disp_col,
+    const Teuchos::RCP<const Core::LinAlg::Vector>& back_levelset_col)
 {
   back_disp_col_ = back_disp_col;
   back_levelset_col_ = back_levelset_col;
@@ -135,9 +135,9 @@ void Cut::CutWizard::set_options(
  * set displacement and level-set vectors used during the cut
  *--------------------------------------------------------------*/
 void Cut::CutWizard::set_background_state(
-    Teuchos::RCP<const Epetra_Vector>
+    Teuchos::RCP<const Core::LinAlg::Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
-    Teuchos::RCP<const Epetra_Vector>
+    Teuchos::RCP<const Core::LinAlg::Vector>
         back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
     int level_set_sid       //!< global id for level-set side
 )
@@ -155,7 +155,7 @@ void Cut::CutWizard::set_background_state(
  *--------------------------------------------------------------*/
 void Cut::CutWizard::add_cutter_state(const int mc_idx,
     Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col)
+    Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col)
 {
   add_cutter_state(0, cutter_dis, cutter_disp_col, 0);
 }
@@ -165,7 +165,7 @@ void Cut::CutWizard::add_cutter_state(const int mc_idx,
  *--------------------------------------------------------------*/
 void Cut::CutWizard::add_cutter_state(const int mc_idx,
     Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
+    Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col, const int start_ele_gid)
 {
   std::map<int, Teuchos::RCP<CutterMesh>>::iterator cm = cutter_meshes_.find(mc_idx);
 
@@ -183,7 +183,7 @@ void Cut::CutWizard::add_cutter_state(const int mc_idx,
 void Cut::CutWizard::set_marked_condition_sides(
     // const int mc_idx,                                       //Not needed (for now?)
     Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-    // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,      //Not needed (for now?)
+    // Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col,      //Not needed (for now?)
     const int start_ele_gid)
 {
   // Set the counter to the gid.
@@ -364,7 +364,7 @@ void Cut::CutWizard::add_mesh_cutting_side()
 void evaluate_position_on_nurbs9(Core::Elements::Element* element,
     Core::LinAlg::SerialDenseMatrix& element_current_position,
     Teuchos::RCP<Core::FE::Discretization>& cutterdis,
-    Teuchos::RCP<const Epetra_Vector>& cutter_disp_col)
+    Teuchos::RCP<const Core::LinAlg::Vector>& cutter_disp_col)
 {
   // Initialize the information needed for NURBS elements
   Core::LinAlg::Matrix<9, 1, double> weights(true);
@@ -447,7 +447,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
 void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
     Core::LinAlg::SerialDenseMatrix& element_current_position,
     Teuchos::RCP<Core::FE::Discretization>& cutterdis,
-    Teuchos::RCP<const Epetra_Vector>& cutter_disp_col)
+    Teuchos::RCP<const Core::LinAlg::Vector>& cutter_disp_col)
 {
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -500,7 +500,7 @@ void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Cut::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization> cutterdis,
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+    Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col,
     const int start_ele_gid  ///< mesh coupling index
 )
 {
@@ -1010,7 +1010,7 @@ bool Cut::CutWizard::has_ls_cutting_side(int sid)
 }
 
 void Cut::CutWizard::update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discretization> cutterdis,
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
+    Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col, const int start_ele_gid)
 {
   if (cutterdis == Teuchos::null)
     FOUR_C_THROW("cannot add mesh cutting sides for invalid cutter discretization!");

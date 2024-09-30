@@ -61,12 +61,12 @@ Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(
 
 
 /*----------------------------------------------------------------------*
- |  create a Epetra_Vector                                   mwgee 12/06|
+ |  create a Core::LinAlg::Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Core::LinAlg::create_vector(
+Teuchos::RCP<Core::LinAlg::Vector> Core::LinAlg::create_vector(
     const Epetra_BlockMap& rowmap, const bool init)
 {
-  return Teuchos::rcp(new Epetra_Vector(rowmap, init));
+  return Teuchos::rcp(new Core::LinAlg::Vector(rowmap, init));
 }
 
 /*----------------------------------------------------------------------*

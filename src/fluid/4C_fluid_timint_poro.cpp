@@ -150,7 +150,7 @@ void FLD::TimIntPoro::set_initial_porosity_field(
 }
 
 void FLD::TimIntPoro::update_iter_incrementally(
-    Teuchos::RCP<const Epetra_Vector> vel)  //!< input residual velocities
+    Teuchos::RCP<const Core::LinAlg::Vector> vel)  //!< input residual velocities
 
 {
   FluidImplicitTimeInt::update_iter_incrementally(vel);
@@ -159,13 +159,13 @@ void FLD::TimIntPoro::update_iter_incrementally(
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux =
+    Teuchos::RCP<Core::LinAlg::Vector> aux =
         Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
 
     // only one step theta
     // new end-point accelerations
-    aux->Update(1.0 / (theta_ * dta_), *velnp_, -1.0 / (theta_ * dta_), *(*veln_)(0), 0.0);
-    aux->Update(-(1.0 - theta_) / theta_, *(*accn_)(0), 1.0);
+    aux->Update(1.0 / (theta_ * dta_), *velnp_, -1.0 / (theta_ * dta_), *veln_, 0.0);
+    aux->Update(-(1.0 - theta_) / theta_, *accn_, 1.0);
     // put only to free/non-DBC DOFs
     dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(accnp_), aux);
     *accnp_ = *aux;
@@ -178,7 +178,7 @@ void FLD::TimIntPoro::output()
   // output of solution
   if (step_ % upres_ == 0)
   {
-    Teuchos::RCP<Epetra_Vector> convel = Teuchos::rcp(new Epetra_Vector(*velnp_));
+    Teuchos::RCP<Core::LinAlg::Vector> convel = Teuchos::rcp(new Core::LinAlg::Vector(*velnp_));
     convel->Update(-1.0, *gridv_, 1.0);
     output_->write_vector("convel", convel);
     output_->write_vector("gridv", gridv_);

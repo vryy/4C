@@ -126,8 +126,8 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void do_dirichlet_cond(const Teuchos::RCP<Epetra_Vector>& statevector,
-        const Teuchos::RCP<const Epetra_Vector>& dirichvals,
+    void do_dirichlet_cond(const Teuchos::RCP<Core::LinAlg::Vector>& statevector,
+        const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_new,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_orig);
 
@@ -140,8 +140,8 @@ namespace Immersed
     \author rauch
     \date 02/17
     */
-    void do_dirichlet_cond(const Teuchos::RCP<Epetra_Vector>& statevector,
-        const Teuchos::RCP<const Epetra_Vector>& dirichvals,
+    void do_dirichlet_cond(const Teuchos::RCP<Core::LinAlg::Vector>& statevector,
+        const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_new);
 
 
@@ -154,7 +154,7 @@ namespace Immersed
     virtual void apply_dirichlet(const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
         const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-        const Teuchos::RCP<const Epetra_Vector>& dirichvals);
+        const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals);
 
 
     /*!
@@ -166,7 +166,7 @@ namespace Immersed
     void apply_dirichlet_to_fluid(const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper,
         const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-        const Teuchos::RCP<const Epetra_Vector>& dirichvals);
+        const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals);
 
 
     /*!
@@ -300,7 +300,7 @@ namespace Immersed
     */
     std::vector<double> calc_global_resultantfrom_epetra_vector(const Epetra_Comm& comm,
         const Teuchos::RCP<const Core::FE::Discretization>& dis,
-        const Teuchos::RCP<const Epetra_Vector>& vec_epetra);
+        const Teuchos::RCP<const Core::LinAlg::Vector>& vec_epetra);
 
    private:
     //! flag indicating if class is setup
@@ -512,7 +512,7 @@ namespace Immersed
 
             if (isALE)
             {
-              Teuchos::RCP<const Epetra_Vector> state = sourcedis->get_state("dispnp");
+              Teuchos::RCP<const Core::LinAlg::Vector> state = sourcedis->get_state("dispnp");
 
               Core::Elements::LocationArray la(1);
               curr->second->location_vector(*sourcedis, la, false);
@@ -897,7 +897,7 @@ namespace Immersed
     if (numproc == 1) doCommunication = false;
     if (doCommunication == false) numproc = 1;
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->get_state("displacement");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = sourcedis->get_state("displacement");
     Core::Elements::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
@@ -1233,8 +1233,8 @@ namespace Immersed
                                       pow(fluidnode[1]->x()[2] - fluidnode[7]->x()[2], 2));
 
     // get current displacements and velocities of structure discretization
-    Teuchos::RCP<const Epetra_Vector> dispnp = structdis->get_state("displacement");
-    Teuchos::RCP<const Epetra_Vector> velnp = structdis->get_state("velocity");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = structdis->get_state("displacement");
+    Teuchos::RCP<const Core::LinAlg::Vector> velnp = structdis->get_state("velocity");
     Core::Elements::LocationArray la(structdis->num_dof_sets());
 
     // get current global coordinates of the given fluid node fluid_xi

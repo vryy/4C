@@ -14,10 +14,10 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -102,8 +102,8 @@ namespace Adapter
      */
     virtual void evaluate(Teuchos::RCP<const Core::FE::Discretization> discretization1,
         Teuchos::RCP<const Core::FE::Discretization> discretization2,
-        Teuchos::RCP<const Epetra_Vector> fluid_vel,
-        Teuchos::RCP<const Epetra_Vector> beam_vel) = 0;
+        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel) = 0;
 
     /**
      * \brief Wraps the ResetState function of the pair

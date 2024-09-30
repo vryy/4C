@@ -120,8 +120,8 @@ void SSI::SSIBase::setup()
   ssicoupling_->setup();
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
-  auto dummy_vec = Teuchos::rcp(
-      new Epetra_Vector(*Global::Problem::instance()->get_dis("structure")->dof_row_map(), true));
+  auto dummy_vec = Teuchos::rcp(new Core::LinAlg::Vector(
+      *Global::Problem::instance()->get_dis("structure")->dof_row_map(), true));
   ssicoupling_->set_mesh_disp(scatra_base_algorithm(), dummy_vec);
 
   // set up scalar transport field
@@ -153,7 +153,7 @@ void SSI::SSIBase::setup()
     //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
-      temperature_vector_ = Teuchos::rcp(new Epetra_Vector(
+      temperature_vector_ = Teuchos::rcp(new Core::LinAlg::Vector(
           *Global::Problem::instance()->get_dis("structure")->dof_row_map(2), true));
 
       temperature_vector_->PutScalar(
@@ -188,8 +188,8 @@ void SSI::SSIBase::setup()
 
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
-    auto dummy_stress_state =
-        Teuchos::rcp(new Epetra_Vector(*structure_field()->discretization()->dof_row_map(2), true));
+    auto dummy_stress_state = Teuchos::rcp(
+        new Core::LinAlg::Vector(*structure_field()->discretization()->dof_row_map(2), true));
     ssicoupling_->set_mechanical_stress_state(*scatra_field()->discretization(), dummy_stress_state,
         scatra_field()->nds_two_tensor_quantity());
   }
@@ -507,8 +507,8 @@ void SSI::SSIBase::test_results(const Epetra_Comm& comm) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
-    Teuchos::RCP<const Epetra_Vector> vel, const bool set_mechanical_stress)
+void SSI::SSIBase::set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector> disp,
+    Teuchos::RCP<const Core::LinAlg::Vector> vel, const bool set_mechanical_stress)
 {
   // safety checks
   check_is_init();
@@ -523,7 +523,7 @@ void SSI::SSIBase::set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::set_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const
+void SSI::SSIBase::set_scatra_solution(Teuchos::RCP<const Core::LinAlg::Vector> phi) const
 {
   // safety checks
   check_is_init();
@@ -537,14 +537,14 @@ void SSI::SSIBase::set_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) co
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSIBase::set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const
+void SSI::SSIBase::set_ssi_contact_states(Teuchos::RCP<const Core::LinAlg::Vector> phi) const
 {
   contact_strategy_nitsche_->set_state(Mortar::state_scalar, *phi);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const
+void SSI::SSIBase::set_micro_scatra_solution(Teuchos::RCP<const Core::LinAlg::Vector> phi) const
 {
   // safety checks
   check_is_init();
@@ -574,7 +574,7 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel)
+void SSI::SSIBase::set_velocity_fields(Teuchos::RCP<const Core::LinAlg::Vector> vel)
 {
   // safety checks
   check_is_init();
@@ -588,7 +588,7 @@ void SSI::SSIBase::set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::set_mechanical_stress_state(
-    Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const
+    Teuchos::RCP<const Core::LinAlg::Vector> mechanical_stress_state) const
 {
   check_is_init();
   check_is_setup();
@@ -599,7 +599,7 @@ void SSI::SSIBase::set_mechanical_stress_state(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp)
+void SSI::SSIBase::set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector> disp)
 {
   // safety checks
   check_is_init();

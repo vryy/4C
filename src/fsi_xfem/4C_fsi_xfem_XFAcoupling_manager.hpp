@@ -61,7 +61,7 @@ namespace XFEM
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void add_coupling_rhs(Teuchos::RCP<Epetra_Vector> rhs,
+    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep) -- nothing to do here

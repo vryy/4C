@@ -10,12 +10,12 @@
 
 #include "4C_solver_nonlin_nox_inner_statustest_volume_change.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_inner_statustest_interface_required.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 #include <NOX_Solver_Generic.H>
 #include <NOX_Utils.H>
 
@@ -87,7 +87,7 @@ std::ostream& NOX::Nln::Inner::StatusTest::VolumeChange::print(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Inner::StatusTest::VolumeChange::set_element_volumes(
-    const ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& ele_vols) const
+    const ::NOX::Abstract::Group& grp, Teuchos::RCP<Core::LinAlg::Vector>& ele_vols) const
 {
   const NOX::Nln::Group& nln_grp = dynamic_cast<const NOX::Nln::Group&>(grp);
 

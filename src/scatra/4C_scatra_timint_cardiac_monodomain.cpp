@@ -118,7 +118,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
       std::ostringstream temp;
       temp << k + 1;
       material_internal_state_np_component_ =
-          Teuchos::rcp((*material_internal_state_np_)(k), false);
+          Teuchos::rcp(new Core::LinAlg::Vector(*(*material_internal_state_np_)(k)));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_internal_state_np_component_, Core::IO::OutputEntity::element,
@@ -143,7 +143,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
       std::ostringstream temp;
       temp << k + 1;
       material_ionic_currents_np_component_ =
-          Teuchos::rcp((*material_ionic_currents_np_)(k), false);
+          Teuchos::rcp(new Core::LinAlg::Vector(*(*material_ionic_currents_np_)(k)));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_ionic_currents_np_component_, Core::IO::OutputEntity::element,

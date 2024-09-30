@@ -13,10 +13,10 @@
 
 #include "4C_fem_condition.hpp"
 #include "4C_inpar_contact.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -136,19 +136,19 @@ namespace CONTACT
     \brief read restart
 
     */
-    void read_restart(Core::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero);
+    void read_restart(Core::IO::DiscretizationReader& reader,
+        Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero);
     /*!
     \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
 
     */
-    void recover(Teuchos::RCP<Epetra_Vector> disi);
+    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi);
 
     /*!
     \brief set state vector
 
     */
-    void set_state(Teuchos::RCP<Epetra_Vector> zeros);
+    void set_state(Teuchos::RCP<Core::LinAlg::Vector> zeros);
 
     /*!
     \brief store dirichlet status
@@ -160,7 +160,7 @@ namespace CONTACT
     \brief update
 
     */
-    void update(Teuchos::RCP<Epetra_Vector> dis);
+    void update(Teuchos::RCP<Core::LinAlg::Vector> dis);
 
     /*!
     \brief visualize stuff with gmsh

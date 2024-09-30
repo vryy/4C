@@ -189,11 +189,11 @@ void Core::LinAlg::BlockSparseMatrixBase::un_complete()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::BlockSparseMatrixBase::apply_dirichlet(
-    const Epetra_Vector& dbctoggle, bool diagonalblock)
+    const Core::LinAlg::Vector& dbctoggle, bool diagonalblock)
 {
   for (int rblock = 0; rblock < rows(); ++rblock)
   {
-    Teuchos::RCP<Epetra_Vector> rowtoggle = rangemaps_.extract_vector(dbctoggle, rblock);
+    Teuchos::RCP<Core::LinAlg::Vector> rowtoggle = rangemaps_.extract_vector(dbctoggle, rblock);
     for (int cblock = 0; cblock < cols(); ++cblock)
     {
       Core::LinAlg::SparseMatrix& bmat = matrix(rblock, cblock);

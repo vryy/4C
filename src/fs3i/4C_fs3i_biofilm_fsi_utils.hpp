@@ -13,7 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -30,7 +31,7 @@ namespace FS3I
     namespace UTILS
     {
       void scatra_change_config(Teuchos::RCP<Core::FE::Discretization> scatradis,
-          Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
+          Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::Vector> disp);
 
     } /* namespace UTILS */
   }   // namespace BioFilm

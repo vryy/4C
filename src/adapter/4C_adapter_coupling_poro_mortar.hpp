@@ -22,10 +22,10 @@
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 #include "4C_contact_lagrange_strategy_poro.hpp"
 #include "4C_coupling_adapter.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -61,17 +61,17 @@ namespace Adapter
         Core::FE::ShapeFunctionType shape_function_type);
 
 
-    virtual void evaluate_poro_mt(Teuchos::RCP<Epetra_Vector> fvel,
-        Teuchos::RCP<Epetra_Vector> svel, Teuchos::RCP<Epetra_Vector> fpres,
-        Teuchos::RCP<Epetra_Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
+    virtual void evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Vector> fvel,
+        Teuchos::RCP<Core::LinAlg::Vector> svel, Teuchos::RCP<Core::LinAlg::Vector> fpres,
+        Teuchos::RCP<Core::LinAlg::Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
-        Teuchos::RCP<Epetra_Vector>& frhs, Coupling::Adapter::Coupling& coupfs,
+        Teuchos::RCP<Core::LinAlg::Vector>& frhs, Coupling::Adapter::Coupling& coupfs,
         Teuchos::RCP<const Epetra_Map> fdofrowmap);
 
     void update_poro_mt();
 
-    void recover_fluid_lm_poro_mt(
-        Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> veli);  // h.Willmann
+    void recover_fluid_lm_poro_mt(Teuchos::RCP<Core::LinAlg::Vector> disi,
+        Teuchos::RCP<Core::LinAlg::Vector> veli);  // h.Willmann
 
     // return the used poro lagrange strategy
     Teuchos::RCP<CONTACT::LagrangeStrategyPoro> get_poro_strategy()

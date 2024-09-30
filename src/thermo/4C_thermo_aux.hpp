@@ -18,8 +18,8 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_thermo.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -35,7 +35,7 @@ namespace Thermo
   {
     //! Determine norm of force residual
     double calculate_vector_norm(const enum Inpar::Thermo::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
+        const Teuchos::RCP<Core::LinAlg::Vector> vect  //!< the vector of interest
     );
 
   }  // namespace Aux

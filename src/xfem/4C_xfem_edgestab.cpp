@@ -42,7 +42,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
     Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
     Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector,        ///< systemvector
     Teuchos::RCP<Cut::CutWizard> wizard,                    ///< cut wizard
     bool include_inner,        ///< stabilize also facets with inside position
     bool include_inner_faces,  ///< stabilize also faces with inside position if possible
@@ -603,7 +603,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
     std::vector<int>& nds_slave,                    ///< nodal dofset vector w.r.t. slave element
     Core::FE::DiscretizationFaces& xdiscret,        ///< XFEM discretization
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
 )
 {
   // If Saftey check is passed, both elements contain the same material and with the same settings
@@ -670,7 +670,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
     Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
     Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
 )
 {
   Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
@@ -725,7 +725,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
         boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
     Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
 )
 {
   Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =

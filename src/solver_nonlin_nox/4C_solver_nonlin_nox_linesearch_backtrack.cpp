@@ -12,13 +12,13 @@
 
 #include "4C_solver_nonlin_nox_linesearch_backtrack.hpp"  // class definition
 
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_linesearch_prepostoperator.hpp"
 #include "4C_solver_nonlin_nox_solver_linesearchbased.hpp"
 #include "4C_solver_nonlin_nox_statustest_normf.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>

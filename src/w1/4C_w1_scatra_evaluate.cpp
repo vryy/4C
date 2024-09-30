@@ -37,7 +37,7 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
     if (discretization.has_state(1, "scalarfield"))
     {
       // check if you can get the scalar state
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state(1, "scalarfield");
+      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state(1, "scalarfield");
 
       if (phinp == Teuchos::null) FOUR_C_THROW("pre_evaluate: Cannot get state vector 'phinp' ");
 

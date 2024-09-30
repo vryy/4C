@@ -90,14 +90,14 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::post_setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int t_order>
-void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Epetra_Vector& x)
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
 
   // ---------------------------------------------------------------------------
   // new end-point acceleration
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().extract_displ_entries(x);
+  Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_acc_np()->Scale(1.0, *accnp_ptr);
   if (compute_phase_ < t_order)
   {
@@ -166,7 +166,8 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Epetra_Vector& x
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int t_order>
-void Solid::EXPLICIT::AdamsBashforthX<t_order>::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::add_visco_mass_contributions(
+    Core::LinAlg::Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -204,14 +205,14 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::write_restart(
     {
       std::stringstream velname;
       velname << "histvel_" << i;
-      Teuchos::RCP<const Epetra_Vector> vel_ptr_ =
-          Teuchos::rcpFromRef<const Epetra_Vector>((*(global_state().get_multi_vel()))[-i]);
+      Teuchos::RCP<const Core::LinAlg::Vector> vel_ptr_ =
+          Teuchos::rcpFromRef<const Core::LinAlg::Vector>((*(global_state().get_multi_vel()))[-i]);
       iowriter.write_vector(velname.str(), vel_ptr_);
 
       std::stringstream accname;
       accname << "histacc_" << i;
-      Teuchos::RCP<const Epetra_Vector> acc_ptr_ =
-          Teuchos::rcpFromRef<const Epetra_Vector>((*(global_state().get_multi_acc()))[-i]);
+      Teuchos::RCP<const Core::LinAlg::Vector> acc_ptr_ =
+          Teuchos::rcpFromRef<const Core::LinAlg::Vector>((*(global_state().get_multi_acc()))[-i]);
       iowriter.write_vector(accname.str(), acc_ptr_);
     }
   }
@@ -247,15 +248,15 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::read_restart(
     {
       std::stringstream velname;
       velname << "histvel_" << i;
-      Teuchos::RCP<Epetra_Vector> vel_ptr =
-          Teuchos::rcp(new Epetra_Vector(*global_state().get_vel_n()));
+      Teuchos::RCP<Core::LinAlg::Vector> vel_ptr =
+          Teuchos::rcp(new Core::LinAlg::Vector(*global_state().get_vel_n()));
       ioreader.read_vector(vel_ptr, velname.str());
       global_state().get_multi_vel()->update_steps(*vel_ptr);
 
       std::stringstream accname;
       accname << "histacc_" << i;
-      Teuchos::RCP<Epetra_Vector> acc_ptr =
-          Teuchos::rcp(new Epetra_Vector(*global_state().get_acc_n()));
+      Teuchos::RCP<Core::LinAlg::Vector> acc_ptr =
+          Teuchos::rcp(new Core::LinAlg::Vector(*global_state().get_acc_n()));
       ioreader.read_vector(acc_ptr, accname.str());
       global_state().get_multi_acc()->update_steps(*acc_ptr);
     }

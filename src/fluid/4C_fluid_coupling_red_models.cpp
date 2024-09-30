@@ -539,7 +539,8 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingWrapperBase::update_residual(Teuchos::RCP<Epetra_Vector> residual)
+void FLD::UTILS::FluidCouplingWrapperBase::update_residual(
+    Teuchos::RCP<Core::LinAlg::Vector> residual)
 {
   std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
 
@@ -565,7 +566,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::update_residual(Teuchos::RCP<Epetra_V
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidCouplingWrapperBase::evaluate_dirichlet(
-    Teuchos::RCP<Epetra_Vector> velnp, const Epetra_Map& condmap, double time)
+    Teuchos::RCP<Core::LinAlg::Vector> velnp, const Epetra_Map& condmap, double time)
 {
   std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
 
@@ -945,7 +946,7 @@ double FLD::UTILS::FluidCouplingBc::flow_rate_calculation(double time, double dt
   const Epetra_Map* dofrowmap = discret_3d_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
   const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3d_->evaluate_condition(eleparams, flowrates, condstring, condid);
 
@@ -1000,7 +1001,8 @@ double FLD::UTILS::FluidCouplingBc::pressure_calculation(double time, double dta
   const Epetra_Map* dofrowmap = discret_3d_->dof_row_map();
 
   // get elemental flowrates ...
-  Teuchos::RCP<Epetra_Vector> myStoredPressures = Teuchos::rcp(new Epetra_Vector(*dofrowmap, 100));
+  Teuchos::RCP<Core::LinAlg::Vector> myStoredPressures =
+      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, 100));
   const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3d_->evaluate_condition(eleparams, myStoredPressures, condstring, condid);
 
@@ -1116,7 +1118,7 @@ void FLD::UTILS::FluidCouplingBc::inflow_boundary(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
  */
-void FLD::UTILS::FluidCouplingBc::update_residual(Teuchos::RCP<Epetra_Vector> residual)
+void FLD::UTILS::FluidCouplingBc::update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual)
 {
   residual->Update(1.0, *couplingbc_, 1.0);
 }
@@ -1133,7 +1135,7 @@ void FLD::UTILS::FluidCouplingBc::update_residual(Teuchos::RCP<Epetra_Vector> re
 /*!
  */
 void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
-    Teuchos::RCP<Epetra_Vector> velnp, const Epetra_Map& condmap, double time)
+    Teuchos::RCP<Core::LinAlg::Vector> velnp, const Epetra_Map& condmap, double time)
 {
   return;
   std::cout << "Evaluating Dirich!" << std::endl;

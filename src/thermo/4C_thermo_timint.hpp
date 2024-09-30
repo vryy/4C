@@ -110,16 +110,16 @@ namespace Thermo
     void determine_capa_consist_temp_rate();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
-    void apply_dirichlet_bc(const double time,  //!< at time
-        Teuchos::RCP<Epetra_Vector> temp,       //!< temperatures
-                                                //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> rate,       //!< temperature rate
-                                                //!< (may be Teuchos::null)
-        bool recreatemap                        //!< recreate mapextractor/toggle-vector
-                                                //!< which stores the DOF IDs subjected
-                                                //!< to Dirichlet BCs
-                                                //!< This needs to be true if the bounded DOFs
-                                                //!< have been changed.
+    void apply_dirichlet_bc(const double time,    //!< at time
+        Teuchos::RCP<Core::LinAlg::Vector> temp,  //!< temperatures
+                                                  //!< (may be Teuchos::null)
+        Teuchos::RCP<Core::LinAlg::Vector> rate,  //!< temperature rate
+                                                  //!< (may be Teuchos::null)
+        bool recreatemap                          //!< recreate mapextractor/toggle-vector
+                                                  //!< which stores the DOF IDs subjected
+                                                  //!< to Dirichlet BCs
+                                                  //!< This needs to be true if the bounded DOFs
+                                                  //!< have been changed.
     );
 
     //! prepare thermal contact
@@ -156,7 +156,7 @@ namespace Thermo
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> tempi) override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -182,7 +182,7 @@ namespace Thermo
     void update() override = 0;
 
     //! update Newton step
-    void update_newton(Teuchos::RCP<const Epetra_Vector> tempi) override = 0;
+    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector> tempi) override = 0;
 
     //! Reset configuration after time step
     //!
@@ -286,41 +286,41 @@ namespace Thermo
     //@{
 
     //! Apply external force
-    void apply_force_external(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-        Teuchos::RCP<Epetra_Vector>& fext         //!< external force
+    void apply_force_external(const double time,        //!< evaluation time
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,  //!< temperature state
+        Teuchos::RCP<Core::LinAlg::Vector>& fext        //!< external force
     );
 
     //! Apply convective boundary conditions force
     void apply_force_external_conv(Teuchos::ParameterList& p,
         const double time,                               //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> tempn,         //!< old temperature state T_n
-        const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
-        Teuchos::RCP<Epetra_Vector>& fext,               //!< external force
+        const Teuchos::RCP<Core::LinAlg::Vector> tempn,  //!< old temperature state T_n
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state T_n+1
+        Teuchos::RCP<Core::LinAlg::Vector>& fext,        //!< external force
         Teuchos::RCP<Core::LinAlg::SparseOperator> tang  //!< tangent at time n+1
     );
 
     //! Evaluate ordinary internal force, its tangent at state
     void apply_force_tang_internal(
-        Teuchos::ParameterList& p,                     //!< parameter list handed down to elements
-        const double time,                             //!< evaluation time
-        const double dt,                               //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
-        Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+        Teuchos::ParameterList& p,                       //!< parameter list handed down to elements
+        const double time,                               //!< evaluation time
+        const double dt,                                 //!< step size
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< residual temperatures
+        Teuchos::RCP<Core::LinAlg::Vector> fint,         //!< internal force
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force, its tangent and the stored force at state
     void apply_force_tang_internal(
-        Teuchos::ParameterList& p,                     //!< parameter list handed down to elements
-        const double time,                             //!< evaluation time
-        const double dt,                               //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
-        Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
-        Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+        Teuchos::ParameterList& p,                       //!< parameter list handed down to elements
+        const double time,                               //!< evaluation time
+        const double dt,                                 //!< step size
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< residual temperatures
+        Teuchos::RCP<Core::LinAlg::Vector> fcap,         //!< capacity force
+        Teuchos::RCP<Core::LinAlg::Vector> fint,         //!< internal force
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
@@ -335,12 +335,12 @@ namespace Thermo
     //! residual temperatures replaced by the full-step temperature
     //! increment \f$T_{n+1}-T_{n}\f$.
     void apply_force_internal(
-        Teuchos::ParameterList& p,                //!< parameter list handed down to elements
-        const double time,                        //!< evaluation time
-        const double dt,                          //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
-        Teuchos::RCP<Epetra_Vector> fint          //!< internal force
+        Teuchos::ParameterList& p,                       //!< parameter list handed down to elements
+        const double time,                               //!< evaluation time
+        const double dt,                                 //!< step size
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< incremental temperatures
+        Teuchos::RCP<Core::LinAlg::Vector> fint          //!< internal force
     );
 
     //@}
@@ -349,7 +349,8 @@ namespace Thermo
     //@{
 
     //! Set external loads (heat flux) due to tfsi interface
-    void set_force_interface(Teuchos::RCP<Epetra_Vector> ithermoload  //!< thermal interface load
+    void set_force_interface(
+        Teuchos::RCP<Core::LinAlg::Vector> ithermoload  //!< thermal interface load
         ) override;
 
     //@}
@@ -424,37 +425,37 @@ namespace Thermo
     virtual void read_restart_force() = 0;
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Epetra_Vector> temp() { return (*temp_)(0); }
+    Teuchos::RCP<Core::LinAlg::Vector> temp() { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Epetra_Vector> write_access_tempn() override { return (*temp_)(0); }
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_tempn() override { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> tempn() override { return (*temp_)(0); }
+    Teuchos::RCP<const Core::LinAlg::Vector> tempn() override { return (*temp_)(0); }
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override = 0;
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> write_access_tempnp() override { return tempn_; }
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_tempnp() override { return tempn_; }
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> tempnp() override { return tempn_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> tempnp() override { return tempn_; }
 
     //! Return temperature rates \f$R_{n}\f$
-    Teuchos::RCP<Epetra_Vector> rate() { return (*rate_)(0); }
+    Teuchos::RCP<Core::LinAlg::Vector> rate() { return (*rate_)(0); }
 
     //! Return temperature rates \f$R_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> rate_new() { return raten_; }
+    Teuchos::RCP<Core::LinAlg::Vector> rate_new() { return raten_; }
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> fext() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fext() = 0;
 
     //! Return reaction forces
-    virtual Teuchos::RCP<Epetra_Vector> freact() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> freact() = 0;
 
     //! right-hand side alias the dynamic thermal residual
-    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override = 0;
 
     //! Return tangent, i.e. thermal residual differentiated by temperatures
     //! (system_matrix()/stiff_ in STR)
@@ -577,7 +578,7 @@ namespace Thermo
     //! @name Global vectors
     //@{
 
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
 
     //@}
 
@@ -586,21 +587,21 @@ namespace Thermo
     //@{
 
     //! global temperatures \f${T}_{n}, T_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> temp_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> temp_;
     //! global temperature rates \f${R}_{n}, R_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> rate_;
-    Teuchos::RCP<Epetra_Vector> tempn_;  //!< global temperatures
-                                         //!< \f${T}_{n+1}\f$
-                                         //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> raten_;  //!< global temperature rates
-                                         //!< \f${R}_{n+1}\f$
-                                         //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> rate_;
+    Teuchos::RCP<Core::LinAlg::Vector> tempn_;  //!< global temperatures
+                                                //!< \f${T}_{n+1}\f$
+                                                //!< at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> raten_;  //!< global temperature rates
+                                                //!< \f${R}_{n+1}\f$
+                                                //!< at \f$t_{n+1}\f$
     //@}
 
     //! @name Interface stuff
     //@{
 
-    Teuchos::RCP<Epetra_Vector> fifc_;  //!< external interface loads
+    Teuchos::RCP<Core::LinAlg::Vector> fifc_;  //!< external interface loads
 
     //@}
 

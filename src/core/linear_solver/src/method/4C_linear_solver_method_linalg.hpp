@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include "4C_io_pstream.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_LinearProblem.h>
@@ -27,7 +28,9 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::LinAlg
 {
   class SparseMatrix;
+
   class SparseOperator;
+
   class KrylovProjector;
 }  // namespace Core::LinAlg
 
@@ -99,8 +102,8 @@ namespace Core::LinAlg
     \param translate_params_to_belos  (in): translate parameters to Belos
 
     */
-    Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm,
-        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+    Solver(const Teuchos::ParameterList &inparams, const Epetra_Comm &comm,
+        const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
         Core::IO::Verbositylevel verbosity, bool translate_params_to_belos = true);
 
     //! @name Solve and ApplyInverse methods
@@ -116,7 +119,7 @@ namespace Core::LinAlg
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
     void setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-        Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
+        Teuchos::RCP<Epetra_MultiVector> b, const SolverParams &params);
 
     /*!
     \brief Solve system of equations in one go
@@ -131,8 +134,12 @@ namespace Core::LinAlg
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
-    int solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-        Teuchos::RCP<Epetra_MultiVector> b, const SolverParams& params);
+    int solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> matrix,
+        Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
+        const SolverParams &params);
+
+    int solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Core::LinAlg::Vector> x,
+        Teuchos::RCP<Core::LinAlg::Vector> b, const SolverParams &params);
 
     /*!
     \brief Reset the solver and clear data
@@ -177,8 +184,8 @@ namespace Core::LinAlg
                           with #params_
     */
     static Teuchos::ParameterList translate_solver_parameters(
-        const Teuchos::ParameterList& inparams,
-        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+        const Teuchos::ParameterList &inparams,
+        const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
         Core::IO::Verbositylevel verbosity);
 
     /*!
@@ -196,8 +203,8 @@ namespace Core::LinAlg
     \date 11/08
     */
     void put_solver_params_to_sub_params(const std::string name,
-        const Teuchos::ParameterList& inparams,
-        const std::function<const Teuchos::ParameterList&(int)>& get_solver_params,
+        const Teuchos::ParameterList &inparams,
+        const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
         Core::IO::Verbositylevel verbosity)
     {
       (*params_).sublist(name) =
@@ -211,13 +218,13 @@ namespace Core::LinAlg
     \brief Get communicator
 
     */
-    inline const Epetra_Comm& get_comm() const { return comm_; }
+    inline const Epetra_Comm &get_comm() const { return comm_; }
 
     /*!
     \brief Get solver parameters
 
     */
-    inline Teuchos::ParameterList& params() const { return *params_; }
+    inline Teuchos::ParameterList &params() const { return *params_; }
 
     //@}
 
@@ -271,7 +278,7 @@ namespace Core::LinAlg
     void set_tolerance(double tolerance);
 
     //! a communicator
-    const Epetra_Comm& comm_;
+    const Epetra_Comm &comm_;
 
     //! (internal) parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -281,10 +288,10 @@ namespace Core::LinAlg
 
    private:
     //! don't want = operator
-    Solver operator=(const Solver& old) = delete;
+    Solver operator=(const Solver &old) = delete;
 
     //! don't want cctor
-    Solver(const Solver& old) = delete;
+    Solver(const Solver &old) = delete;
 
   };  // class Solver
 

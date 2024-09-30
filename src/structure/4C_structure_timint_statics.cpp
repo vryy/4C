@@ -134,7 +134,8 @@ void Solid::TimIntStatics::predict_const_vel_consist_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+    Teuchos::RCP<Core::LinAlg::Vector> disp_inc =
+        Core::LinAlg::create_vector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->cond_map()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -165,7 +166,8 @@ void Solid::TimIntStatics::predict_const_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+    Teuchos::RCP<Core::LinAlg::Vector> disp_inc =
+        Core::LinAlg::create_vector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
     Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->cond_map()));
@@ -451,8 +453,9 @@ void Solid::TimIntStatics::write_restart_force(Teuchos::RCP<Core::IO::Discretiza
 
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
-void Solid::TimIntStatics::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap)
+void Solid::TimIntStatics::apply_dirichlet_bc(const double time,
+    Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> vel,
+    Teuchos::RCP<Core::LinAlg::Vector> acc, bool recreatemap)
 {
   // call base apply_dirichlet_bc
   Solid::TimInt::apply_dirichlet_bc(time, dis, vel, acc, recreatemap);

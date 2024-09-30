@@ -810,7 +810,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       // extract values of artery-scatra discretization
       if (numscalart_ > 0)
       {
-        Teuchos::RCP<const Epetra_Vector> artscalarnp =
+        Teuchos::RCP<const Core::LinAlg::Vector> artscalarnp =
             artdis->get_state(ndsartery_scatra_, "one_d_artery_phinp");
         if (artscalarnp != Teuchos::null)
         {
@@ -830,7 +830,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       if (numscalcont_ > 0)
       {
         // get state vector from discretization
-        Teuchos::RCP<const Epetra_Vector> contscalarnp = contdis->get_state(3, "scalars");
+        Teuchos::RCP<const Core::LinAlg::Vector> contscalarnp = contdis->get_state(3, "scalars");
         if (contscalarnp != Teuchos::null)
         {
           Core::Elements::LocationArray la(contdis->num_dof_sets());
@@ -860,7 +860,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
           *artdis->get_state("one_d_artery_phinp"), artelephinp_, la_art[0].lm_);
 
       // extract artery pressure
-      Teuchos::RCP<const Epetra_Vector> artpressnp =
+      Teuchos::RCP<const Core::LinAlg::Vector> artpressnp =
           artdis->get_state(ndsscatra_artery_, "one_d_artery_pressure");
       if (artpressnp != Teuchos::null)
       {
@@ -1093,7 +1093,7 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art,
 
   if (!firstcall)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = contdis->get_state(1, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = contdis->get_state(1, "dispnp");
     Core::Elements::LocationArray la(contdis->num_dof_sets());
     element2_->location_vector(*contdis, la, false);
 
@@ -2088,7 +2088,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   // no need for this
   if (evaluate_in_ref_config_) return;
 
-  Teuchos::RCP<const Epetra_Vector> velocity = contdis->get_state(1, "velocity field");
+  Teuchos::RCP<const Core::LinAlg::Vector> velocity = contdis->get_state(1, "velocity field");
   Core::Elements::LocationArray la(contdis->num_dof_sets());
   element2_->location_vector(*contdis, la, false);
 

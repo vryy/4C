@@ -92,11 +92,12 @@ void FPSI::FpsiCoupling::init_coupling_matrixes_rhs()
   c_fa_ = Teuchos::RCP<Core::LinAlg::SparseMatrix>(
       new Core::LinAlg::SparseMatrix(*fluid_->dof_row_map(), 81, true, true));
 
-  c_rhs_s_ = Teuchos::RCP<Epetra_Vector>(
-      new Epetra_Vector(*poro_->structure_field()->dof_row_map(), true));
-  c_rhs_pf_ =
-      Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*poro_->fluid_field()->dof_row_map(), true));
-  c_rhs_f_ = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*fluid_->dof_row_map(), true));
+  c_rhs_s_ = Teuchos::RCP<Core::LinAlg::Vector>(
+      new Core::LinAlg::Vector(*poro_->structure_field()->dof_row_map(), true));
+  c_rhs_pf_ = Teuchos::RCP<Core::LinAlg::Vector>(
+      new Core::LinAlg::Vector(*poro_->fluid_field()->dof_row_map(), true));
+  c_rhs_f_ =
+      Teuchos::RCP<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*fluid_->dof_row_map(), true));
 
   return;
 }
@@ -545,13 +546,13 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     //////                          //////
     //////////////////////////////////////
 
-    Teuchos::RCP<Epetra_Vector> temprhs = Teuchos::null;
-    Teuchos::RCP<Epetra_Vector> temprhs2 = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::Vector> temprhs = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::Vector> temprhs2 = Teuchos::null;
 
     fparams.set<std::string>("fillblock", "conti");
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
-    temprhs2 = Teuchos::rcp(new Epetra_Vector(*poro_field()->dof_row_map(), true));
+    temprhs = Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map(), true));
+    temprhs2 = Teuchos::rcp(new Core::LinAlg::Vector(*poro_field()->dof_row_map(), true));
     temprhs->PutScalar(0.0);
     temprhs2->PutScalar(0.0);
 
@@ -581,8 +582,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "structure");
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(), true));
-    temprhs2 = Teuchos::rcp(new Epetra_Vector(*poro_field()->dof_row_map(), true));
+    temprhs = Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map(), true));
+    temprhs2 = Teuchos::rcp(new Core::LinAlg::Vector(*poro_field()->dof_row_map(), true));
 
     Core::FE::AssembleStrategy rhsstructurestrategy(0,  // fluid dofset for row
         0,                                              // fluid dofset for column
@@ -605,8 +606,9 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "fluid");
     fparams.set("InterfaceFacingElementMap", poro_fluid_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*poro_field()->fluid_field()->dof_row_map(0), true));
-    temprhs2 = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(0), true));
+    temprhs =
+        Teuchos::rcp(new Core::LinAlg::Vector(*poro_field()->fluid_field()->dof_row_map(0), true));
+    temprhs2 = Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map(0), true));
 
     Core::FE::AssembleStrategy rhsfluidstrategy(0,  // fluid dofset for row
         0,                                          // fluid dofset for column
@@ -631,7 +633,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "fluidfluid");  // (wot,tangentialfac*uot) part
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::rcp(new Epetra_Vector(*fluid_field()->dof_row_map(0), true));
+    temprhs = Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map(0), true));
 
     Core::FE::AssembleStrategy rhsfluidfluidstrategy(0,  // fluid dofset for row
         0,                                               // fluid dofset for column

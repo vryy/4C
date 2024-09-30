@@ -51,7 +51,8 @@ XFEM::XfsCouplingManager::XfsCouplingManager(Teuchos::RCP<ConditionManager> cond
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*mcfsi_->get_coupling_dis()->dof_row_map(), true));
+  lambda_ =
+      Teuchos::rcp(new Core::LinAlg::Vector(*mcfsi_->get_coupling_dis()->dof_row_map(), true));
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -80,8 +81,8 @@ void XFEM::XfsCouplingManager::set_coupling_states()
   insert_vector(0, struct_->dispnp(), 0, mcfsi_->i_dispnp(), CouplingCommManager::full_to_partial);
 
   // get interface velocity at t(n)
-  Teuchos::RCP<Epetra_Vector> velnp =
-      Teuchos::rcp(new Epetra_Vector(mcfsi_->i_velnp()->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> velnp =
+      Teuchos::rcp(new Core::LinAlg::Vector(mcfsi_->i_velnp()->Map(), true));
   velnp->Update(1.0, *mcfsi_->i_dispnp(), -1.0, *mcfsi_->i_dispn(), 0.0);
 
   // inverse of FSI (1st order, 2nd order) scaling
@@ -100,8 +101,8 @@ void XFEM::XfsCouplingManager::set_coupling_states()
     // Set Dispnp (used to calc local coord of gausspoints)
     struct_->discretization()->set_state("dispnp", struct_->dispnp());
     // Set Velnp (used for interface integration)
-    Teuchos::RCP<Epetra_Vector> fullvelnp =
-        Teuchos::rcp(new Epetra_Vector(struct_->velnp()->Map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector> fullvelnp =
+        Teuchos::rcp(new Core::LinAlg::Vector(struct_->velnp()->Map(), true));
     fullvelnp->Update(1.0, *struct_->dispnp(), -1.0, *struct_->dispn(), 0.0);
     fullvelnp->Update(-(dt - 1 / scaling_FSI) * scaling_FSI, *struct_->veln(), scaling_FSI);
     struct_->discretization()->set_state("velaf", fullvelnp);
@@ -173,11 +174,12 @@ void XFEM::XfsCouplingManager::add_coupling_matrix(
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XfsCouplingManager::add_coupling_rhs(
-    Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
+void XFEM::XfsCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+    const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
-  Teuchos::RCP<Epetra_Vector> coup_rhs_sum = Teuchos::rcp(new Epetra_Vector(*xfluid_->rhs_s_vec(
-      cond_name_)));  // REMARK: Copy this vector to store the correct lambda_ in update!
+  Teuchos::RCP<Core::LinAlg::Vector> coup_rhs_sum =
+      Teuchos::rcp(new Core::LinAlg::Vector(*xfluid_->rhs_s_vec(
+          cond_name_)));  // REMARK: Copy this vector to store the correct lambda_ in update!
   /// Lagrange multiplier \lambda_\Gamma^n at the interface (ie forces onto the structure,
   /// Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
   if (lambda_ != Teuchos::null)
@@ -204,7 +206,8 @@ void XFEM::XfsCouplingManager::add_coupling_rhs(
     coup_rhs_sum->Scale(scaling);
   }
 
-  Teuchos::RCP<Epetra_Vector> coup_rhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]), true));
+  Teuchos::RCP<Core::LinAlg::Vector> coup_rhs =
+      Teuchos::rcp(new Core::LinAlg::Vector(*me.Map(idx_[0]), true));
   Core::LinAlg::export_to(
       *coup_rhs_sum, *coup_rhs);  // use this command as long as poro ist not split
                                   // into two bocks in the monolithic algorithm!
@@ -237,8 +240,8 @@ void XFEM::XfsCouplingManager::output(Core::IO::DiscretizationWriter& writer)
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
-  Teuchos::RCP<Epetra_Vector> lambdafull =
-      Teuchos::rcp(new Epetra_Vector(*get_map_extractor(0)->full_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
+      Teuchos::rcp(new Core::LinAlg::Vector(*get_map_extractor(0)->full_map(), true));
   insert_vector(0, lambda_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fsilambda", lambdafull);
   return;
@@ -248,8 +251,8 @@ void XFEM::XfsCouplingManager::output(Core::IO::DiscretizationWriter& writer)
  *-----------------------------------------------------------------------*/
 void XFEM::XfsCouplingManager::read_restart(Core::IO::DiscretizationReader& reader)
 {
-  Teuchos::RCP<Epetra_Vector> lambdafull =
-      Teuchos::rcp(new Epetra_Vector(*get_map_extractor(0)->full_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
+      Teuchos::rcp(new Core::LinAlg::Vector(*get_map_extractor(0)->full_map(), true));
   reader.read_vector(lambdafull, "fsilambda");
   insert_vector(0, lambdafull, 0, lambda_, CouplingCommManager::full_to_partial);
   return;

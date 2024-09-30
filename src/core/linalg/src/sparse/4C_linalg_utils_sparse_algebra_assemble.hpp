@@ -16,11 +16,11 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -53,7 +53,7 @@ namespace Core::LinAlg
       const std::vector<int>& lmcol);
 
   /*!
-   \brief Assemble an Core::LinAlg::SerialDenseVector into an Epetra_Vector
+   \brief Assemble an Core::LinAlg::SerialDenseVector into an Core::LinAlg::Vector
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -65,9 +65,10 @@ namespace Core::LinAlg
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
+  void assemble(Core::LinAlg::Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
+      const std::vector<int>& lm, const std::vector<int>& lmowner);
   void assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
-
   /*!
    \brief Assemble a Core::LinAlg::SerialDenseVector into a Epetra_MultiVector
 
@@ -85,7 +86,7 @@ namespace Core::LinAlg
   void assemble(Epetra_MultiVector& V, const int n, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
-  /*! \brief Assemble a source Epetra_Vector into a target Epetra_Vector
+  /*! \brief Assemble a source Core::LinAlg::Vector into a target Core::LinAlg::Vector
    *
    *  The map of the source vector has to be a sub-map of the target vector and
    *  the maps must have the same processor distribution. This method does not
@@ -102,8 +103,8 @@ namespace Core::LinAlg
    *  \param source        (in) : source vector
    *
    *  \author hiermeier \date 03/17 */
-  void assemble_my_vector(double scalar_target, Epetra_Vector& target, double scalar_source,
-      const Epetra_Vector& source);
+  void assemble_my_vector(double scalar_target, Core::LinAlg::Vector& target, double scalar_source,
+      const Core::LinAlg::Vector& source);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -145,8 +146,9 @@ namespace Core::LinAlg
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
      */
-  void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
-      Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle);
+  void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Core::LinAlg::Vector& x,
+      Core::LinAlg::Vector& b, const Core::LinAlg::Vector& dbcval,
+      const Core::LinAlg::Vector& dbctoggle);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -165,8 +167,8 @@ namespace Core::LinAlg
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
-      Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
+  void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Core::LinAlg::Vector& x,
+      Core::LinAlg::Vector& b, const Core::LinAlg::Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -191,9 +193,9 @@ namespace Core::LinAlg
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
-      const Core::LinAlg::SparseMatrix& trafo, const Epetra_Vector& dbcval,
-      const Epetra_Map& dbcmap);
+  void apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Core::LinAlg::Vector& x,
+      Core::LinAlg::Vector& b, const Core::LinAlg::SparseMatrix& trafo,
+      const Core::LinAlg::Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -205,8 +207,8 @@ namespace Core::LinAlg
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
    */
-  void apply_dirichlet_to_system(Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval,
-      const Epetra_Vector& dbctoggle);
+  void apply_dirichlet_to_system(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b,
+      const Core::LinAlg::Vector& dbcval, const Core::LinAlg::Vector& dbctoggle);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -225,8 +227,8 @@ namespace Core::LinAlg
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void apply_dirichlet_to_system(
-      Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
+  void apply_dirichlet_to_system(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b,
+      const Core::LinAlg::Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -246,7 +248,7 @@ namespace Core::LinAlg
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
   void apply_dirichlet_to_system(
-      Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
+      Core::LinAlg::Vector& b, const Core::LinAlg::Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Convert a Dirichlet toggle vector in a Dirichlet map
@@ -264,7 +266,7 @@ namespace Core::LinAlg
    \date 10/08
    */
   Teuchos::RCP<Core::LinAlg::MapExtractor> convert_dirichlet_toggle_vector_to_maps(
-      const Teuchos::RCP<const Epetra_Vector>& dbctoggle);
+      const Teuchos::RCP<const Core::LinAlg::Vector>& dbctoggle);
 
 }  // namespace Core::LinAlg
 

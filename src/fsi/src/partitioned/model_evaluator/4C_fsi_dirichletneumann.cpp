@@ -39,30 +39,30 @@ void FSI::DirichletNeumann::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::DirichletNeumann::fsi_op(
-    const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& F, const FillType fillFlag)
 {
   if (kinematiccoupling_)  // coupling variable: interface displacements/velocity
   {
-    const Teuchos::RCP<Epetra_Vector> icoupn = Teuchos::rcp(new Epetra_Vector(x));
+    const Teuchos::RCP<Core::LinAlg::Vector> icoupn = Teuchos::rcp(new Core::LinAlg::Vector(x));
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("icoupn", *icoupn);
 
-    const Teuchos::RCP<Epetra_Vector> iforce = fluid_op(icoupn, fillFlag);
+    const Teuchos::RCP<Core::LinAlg::Vector> iforce = fluid_op(icoupn, fillFlag);
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("icoupn", *iforce);
 
-    const Teuchos::RCP<Epetra_Vector> icoupnp = struct_op(iforce, fillFlag);
+    const Teuchos::RCP<Core::LinAlg::Vector> icoupnp = struct_op(iforce, fillFlag);
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("icoupnp", *icoupnp);
 
     F.Update(1.0, *icoupnp, -1.0, *icoupn, 0.0);
   }
   else  // coupling variable: interface forces
   {
-    const Teuchos::RCP<Epetra_Vector> iforcen = Teuchos::rcp(new Epetra_Vector(x));
+    const Teuchos::RCP<Core::LinAlg::Vector> iforcen = Teuchos::rcp(new Core::LinAlg::Vector(x));
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("iforcen", *iforcen);
 
-    const Teuchos::RCP<Epetra_Vector> icoupn = struct_op(iforcen, fillFlag);
+    const Teuchos::RCP<Core::LinAlg::Vector> icoupn = struct_op(iforcen, fillFlag);
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("icoupn", *icoupn);
 
-    const Teuchos::RCP<Epetra_Vector> iforcenp = fluid_op(icoupn, fillFlag);
+    const Teuchos::RCP<Core::LinAlg::Vector> iforcenp = fluid_op(icoupn, fillFlag);
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("iforcenp", *iforcenp);
 
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);

@@ -38,9 +38,9 @@ Adapter::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_veln()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIStructureWrapper::extract_interface_veln()
 {
-  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(veln()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> veli = Teuchos::rcp(new Core::LinAlg::Vector(veln()->Map()));
   veli->Update(1.0, *veln(), 0.0);
   return veli;
 }
@@ -48,24 +48,24 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_veln
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_velnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIStructureWrapper::extract_interface_velnp()
 {
-  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(velnp()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> veli = Teuchos::rcp(new Core::LinAlg::Vector(velnp()->Map()));
   veli->Update(1.0, *velnp(), 0.0);
   return veli;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::predict_interface_velnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIStructureWrapper::predict_interface_velnp()
 {
-  Teuchos::RCP<Epetra_Vector> veli = Teuchos::rcp(new Epetra_Vector(veln()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> veli = Teuchos::rcp(new Core::LinAlg::Vector(veln()->Map()));
   veli->Update(1.0, *veln(), 0.0);
   return veli;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::relaxation_solve(
-    Teuchos::RCP<Epetra_Vector> iforce)
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIStructureWrapper::relaxation_solve(
+    Teuchos::RCP<Core::LinAlg::Vector> iforce)
 {
   FOUR_C_THROW("RelaxationSolve not implemented for immersed fluid-beam interaction\n");
   return Teuchos::null;
@@ -76,26 +76,26 @@ void Adapter::FBIStructureWrapper::rebuild_interface() { FOUR_C_THROW("Not imple
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::predict_interface_dispnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIStructureWrapper::predict_interface_dispnp()
 {
-  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(dispn()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> disi = Teuchos::rcp(new Core::LinAlg::Vector(dispn()->Map()));
   disi->Update(1.0, *dispnp(), 0.0);
   return disi;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_dispnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIStructureWrapper::extract_interface_dispnp()
 {
-  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(dispnp()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> disi = Teuchos::rcp(new Core::LinAlg::Vector(dispnp()->Map()));
   disi->Update(1.0, *dispnp(), 0.0);
   return disi;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_dispn()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIStructureWrapper::extract_interface_dispn()
 {
-  Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(dispn()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> disi = Teuchos::rcp(new Core::LinAlg::Vector(dispn()->Map()));
   disi->Update(1.0, *dispn(), 0.0);
   return disi;
 }
@@ -103,7 +103,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIStructureWrapper::extract_interface_disp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 // Apply interface forces
-void Adapter::FBIStructureWrapper::apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce)
+void Adapter::FBIStructureWrapper::apply_interface_forces(Teuchos::RCP<Core::LinAlg::Vector> iforce)
 {
   fsi_model_evaluator()->get_interface_force_np_ptr()->Update(
       1.0, *iforce, 0.0);  // todo This has to be changed for mixed structure

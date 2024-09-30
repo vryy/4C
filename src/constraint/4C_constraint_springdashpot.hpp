@@ -14,11 +14,11 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_condition.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_pairedvector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 
@@ -70,36 +70,38 @@ namespace CONSTRAINTS
 
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
-    void evaluate_force(Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
-        const Teuchos::RCP<const Epetra_Vector> vel, const Teuchos::ParameterList& p);
+    void evaluate_force(Core::LinAlg::Vector& fint,
+        const Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        const Teuchos::RCP<const Core::LinAlg::Vector> vel, const Teuchos::ParameterList& p);
 
     //! add contribution of spring dashpot BC to stiffness matrix
     // old version, NOT consistently integrated over element surface!!
     // ToDo: remove redundant code in evaluate_force and evaluate_force_stiff
     // -> however should migrate to new EvaluateRobin... mhv 08/2016
-    void evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff, Epetra_Vector& fint,
-        const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
-        Teuchos::ParameterList p);
+    void evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff, Core::LinAlg::Vector& fint,
+        const Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        const Teuchos::RCP<const Core::LinAlg::Vector> vel, Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!
     void evaluate_robin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
-        const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p);
+        Teuchos::RCP<Core::LinAlg::Vector> fint,
+        const Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        const Teuchos::RCP<const Core::LinAlg::Vector> velo, Teuchos::ParameterList p);
 
     //! reset after Newton step
     void reset_newton();
 
     //! reset after prestressing with MULF
-    void reset_prestress(Teuchos::RCP<const Epetra_Vector> dis);
+    void reset_prestress(Teuchos::RCP<const Core::LinAlg::Vector> dis);
 
     //! set reset after prestressing with MULF
-    void set_restart(Teuchos::RCP<Epetra_Vector> vec);
+    void set_restart(Teuchos::RCP<Core::LinAlg::Vector> vec);
 
     //! set reset after prestressing with MULF
     void set_restart_old(Teuchos::RCP<Epetra_MultiVector> vec);
 
     //! output of gap, normal, and nodal stiffness
-    void output_gap_normal(Teuchos::RCP<Epetra_Vector>& gap,
+    void output_gap_normal(Teuchos::RCP<Core::LinAlg::Vector>& gap,
         Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const;
 
     //! select spring stiffness for tensile or compressive spring
@@ -112,7 +114,7 @@ namespace CONSTRAINTS
     }
 
     //! output of spring offset
-    void output_prestr_offset(Teuchos::RCP<Epetra_Vector>& springprestroffset) const;
+    void output_prestr_offset(Teuchos::RCP<Core::LinAlg::Vector>& springprestroffset) const;
 
     //! output of spring offset
     void output_prestr_offset_old(Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const;
@@ -144,7 +146,8 @@ namespace CONSTRAINTS
     void get_area(const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom);
 
     //! get current normal
-    void get_cur_normals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);
+    void get_cur_normals(
+        const Teuchos::RCP<const Core::LinAlg::Vector>& disp, Teuchos::ParameterList p);
 
     //! initialize prestr offset
     void initialize_prestr_offset();
@@ -223,7 +226,7 @@ namespace CONSTRAINTS
      *  This is a pointer to the accumulated whole displacement vector of all last load steps
      *  has dimension of full problem
      */
-    Teuchos::RCP<Epetra_Vector> offset_prestr_new_;
+    Teuchos::RCP<Core::LinAlg::Vector> offset_prestr_new_;
 
    private:
     //! Type of spring

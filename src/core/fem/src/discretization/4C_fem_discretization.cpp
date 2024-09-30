@@ -523,7 +523,7 @@ Core::FE::Discretization::get_pbc_slave_to_master_node_connectivity()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::set_state(
-    const unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    const unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Discretization::set_state");
 
@@ -544,7 +544,7 @@ void Core::FE::Discretization::set_state(
         "col map of discretization %s and state vector %s are different. This is a fatal bug!",
         name_.c_str(), name.c_str());
     // make a copy as in parallel such that no additional RCP points to the state vector
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
+    Teuchos::RCP<Core::LinAlg::Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
     tmp->Update(1.0, *state, 0.0);
     state_[nds][name] = tmp;
   }
@@ -553,7 +553,7 @@ void Core::FE::Discretization::set_state(
     FOUR_C_ASSERT(dof_row_map(nds)->SameAs(state->Map()),
         "row map of discretization %s and state vector %s are different. This is a fatal bug!",
         name_.c_str(), name.c_str());
-    Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
+    Teuchos::RCP<Core::LinAlg::Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
 
     // this is necessary to find out the number of nodesets in the beginning
     if (stateimporter_.size() <= nds)
@@ -572,7 +572,7 @@ void Core::FE::Discretization::set_state(
     // transfer data
     int err = tmp->Import(*state, (*stateimporter_[nds]), Insert);
     FOUR_C_THROW_UNLESS(
-        !err, "Export using importer failed for Epetra_Vector: return value = %d", err);
+        !err, "Export using importer failed for Core::LinAlg::Vector: return value = %d", err);
 
     // save state
     state_[nds][name] = tmp;

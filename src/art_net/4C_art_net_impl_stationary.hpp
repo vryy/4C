@@ -63,7 +63,8 @@ namespace Arteries
     void reset_artery_diam_previous_time_step();
 
     //! Apply Neumann boundary conditions
-    void apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    void apply_neumann_bc(
+        const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads  //!< Neumann loads
     );
 
     /// add neumann BC to residual
@@ -122,16 +123,16 @@ namespace Arteries
     void solve_scatra() override;
 
     // get solution vector = pressure
-    Teuchos::RCP<const Epetra_Vector> pressurenp() const override { return pressurenp_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> pressurenp() const override { return pressurenp_; }
 
     //! get element volume flow
-    Teuchos::RCP<const Epetra_Vector> ele_volflow() const { return ele_volflow_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> ele_volflow() const { return ele_volflow_; }
 
     //! get element radius
-    Teuchos::RCP<const Epetra_Vector> ele_radius() const { return ele_radius_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> ele_radius() const { return ele_radius_; }
 
     //! iterative update of primary variable
-    void update_iter(const Teuchos::RCP<const Epetra_Vector> inc) override
+    void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector> inc) override
     {
       pressurenp_->Update(1.0, *inc, 1.0);
       return;
@@ -140,17 +141,17 @@ namespace Arteries
 
    private:
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
     //! pressure at time n+1
-    Teuchos::RCP<Epetra_Vector> pressurenp_;
+    Teuchos::RCP<Core::LinAlg::Vector> pressurenp_;
     //! pressure increment at time n+1
-    Teuchos::RCP<Epetra_Vector> pressureincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> pressureincnp_;
     //! the vector containing body and surface forces
-    Teuchos::RCP<Epetra_Vector> neumann_loads_;
+    Teuchos::RCP<Core::LinAlg::Vector> neumann_loads_;
     //! volumetric flow (for output)
-    Teuchos::RCP<Epetra_Vector> ele_volflow_;
+    Teuchos::RCP<Core::LinAlg::Vector> ele_volflow_;
     //! element radius (for output)
-    Teuchos::RCP<Epetra_Vector> ele_radius_;
+    Teuchos::RCP<Core::LinAlg::Vector> ele_radius_;
     /// underlying scatra problem
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
 

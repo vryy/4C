@@ -30,9 +30,8 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_mortar_utils.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -490,7 +489,7 @@ void Adapter::CouplingNonLinMortar::init_matrices()
   T_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
   N_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
 
-  gap_ = Teuchos::rcp(new Epetra_Vector(*slavenoderowmap_, true));
+  gap_ = Teuchos::rcp(new Core::LinAlg::Vector(*slavenoderowmap_, true));
 
   // init as fe matrix --> nonlocal assembly
   DLin_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
@@ -761,7 +760,7 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   // interface displacement (=0) has to be merged from slave and master discretization
   Teuchos::RCP<Epetra_Map> dofrowmap =
       Core::LinAlg::merge_map(masterdofrowmap_, slavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> dispn = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> dispn = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // set displacement state in mortar interface
   interface_->set_state(Mortar::state_new_displacement, *dispn);
@@ -786,7 +785,7 @@ void Adapter::CouplingNonLinMortar::print_interface(std::ostream& os) { interfac
  |  Integrate slave-side matrix + linearization (D matrix)   farah 10/14|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
+    const Teuchos::RCP<Core::LinAlg::Vector> vec, const Teuchos::RCP<Core::LinAlg::Vector> veclm)
 {
   // safety check
   check_setup();
@@ -851,7 +850,7 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
  |  Integrate mortar matrices + linearization (D/M matrix)   farah 01/16|
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::integrate_lin_dm(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
+    const Teuchos::RCP<Core::LinAlg::Vector> vec, const Teuchos::RCP<Core::LinAlg::Vector> veclm)
 {
   // safety check
   check_setup();
@@ -935,7 +934,8 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
     // transform gap vector
     if (gap_ != Teuchos::null)
     {
-      Teuchos::RCP<Epetra_Vector> pgap = Core::LinAlg::create_vector(*pslavenoderowmap_, true);
+      Teuchos::RCP<Core::LinAlg::Vector> pgap =
+          Core::LinAlg::create_vector(*pslavenoderowmap_, true);
       Core::LinAlg::export_to(*gap_, *pgap);
       gap_ = pgap;
     }
@@ -950,7 +950,7 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
  |  + compute projection operator P                         wirtz 01/16 |
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::integrate_all(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
+    const Teuchos::RCP<Core::LinAlg::Vector> vec, const Teuchos::RCP<Core::LinAlg::Vector> veclm)
 {
   // safety check
   check_setup();
@@ -994,7 +994,7 @@ void Adapter::CouplingNonLinMortar::integrate_all(const std::string& statename,
  |                                                          wirtz 02/16 |
  *----------------------------------------------------------------------*/
 void Adapter::CouplingNonLinMortar::evaluate_sliding(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm)
+    const Teuchos::RCP<Core::LinAlg::Vector> vec, const Teuchos::RCP<Core::LinAlg::Vector> veclm)
 {
   // safety check
   check_setup();
@@ -1059,7 +1059,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   /********************************************************************/
   D_->complete();
   Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
-  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(*slavedofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector> diag = Core::LinAlg::create_vector(*slavedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag

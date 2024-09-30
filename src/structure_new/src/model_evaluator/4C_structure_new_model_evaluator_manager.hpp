@@ -20,7 +20,7 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-class Epetra_Vector;
+
 namespace NOX
 {
   namespace Solver
@@ -39,6 +39,7 @@ namespace Core::IO
 
 namespace Core::LinAlg
 {
+  class Vector;
   class SparseOperator;
   class SparseMatrix;
 }  // namespace Core::LinAlg
@@ -116,9 +117,10 @@ namespace Solid
     //! @name General evaluate routines
     //!@{
 
-    bool initialize_inertia_and_damping(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac);
+    bool initialize_inertia_and_damping(
+        const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac);
 
-    bool apply_initial_force(const Epetra_Vector& x, Epetra_Vector& f);
+    bool apply_initial_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f);
 
     /*! \brie Apply force
      *
@@ -128,7 +130,8 @@ namespace Solid
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool apply_force(const Epetra_Vector& x, Epetra_Vector& f, const double& timefac_np) const;
+    bool apply_force(
+        const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, const double& timefac_np) const;
 
     /*! \brief Apply stiffness
      *
@@ -138,8 +141,8 @@ namespace Solid
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool apply_stiff(
-        const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
+    bool apply_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac,
+        const double& timefac_np) const;
 
     /*! \brief Apply model specific stiff
      *
@@ -150,7 +153,7 @@ namespace Solid
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool apply_stiff(const Inpar::Solid::ModelType& mt, const Epetra_Vector& x,
+    bool apply_stiff(const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector& x,
         Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Apply force and stiffness
@@ -162,7 +165,7 @@ namespace Solid
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool apply_force_stiff(const Epetra_Vector& x, Epetra_Vector& f,
+    bool apply_force_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
         Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Compute cheap second order correction right hand side
@@ -178,8 +181,8 @@ namespace Solid
      * @return Boolean flag to indicate success (true) or failure (false)
      */
     bool apply_cheap_soc_rhs(const enum NOX::Nln::CorrectionType type,
-        const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
-        Epetra_Vector& f, const double& timefac_np) const;
+        const std::vector<Inpar::Solid::ModelType>& constraint_models,
+        const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, const double& timefac_np) const;
 
     bool correct_parameters(const enum NOX::Nln::CorrectionType type) const;
 
@@ -190,7 +193,7 @@ namespace Solid
      *  example is the condensed contact.
      *
      *  \author hiermeier \date 03/18 */
-    void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const;
+    void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector& rhs) const;
 
     /*! \brief predict all internal variables in model evaluators
      *
@@ -208,7 +211,7 @@ namespace Solid
      *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author hiermeier \date 03/17 */
-    bool assemble_force(const double timefac_np, Epetra_Vector& f,
+    bool assemble_force(const double timefac_np, Core::LinAlg::Vector& f,
         const std::vector<Inpar::Solid::ModelType>* without_these_models) const;
 
 
@@ -234,7 +237,7 @@ namespace Solid
      *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author hiermeier \date 03/17 */
-    inline bool assemble_force(const double timefac_np, Epetra_Vector& f) const
+    inline bool assemble_force(const double timefac_np, Core::LinAlg::Vector& f) const
     {
       return assemble_force(*me_vec_ptr_, timefac_np, f);
     }
@@ -261,7 +264,7 @@ namespace Solid
      *
      *  \author hiermeier \date 03/17 */
     inline bool assemble_force(
-        const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
+        const Vector& me_vec, const double timefac_np, Core::LinAlg::Vector& f) const
     {
       bool ok = true;
       assemble_force(ok, me_vec, timefac_np, f);
@@ -296,21 +299,21 @@ namespace Solid
 
     //!@}
 
-    void create_backup_state(const Epetra_Vector& dir);
+    void create_backup_state(const Core::LinAlg::Vector& dir);
 
     void recover_from_backup_state();
 
     /*! \brief reset all model states (incl. the structural dynamic state)
      *
      *  \param x (in) : current full state vector */
-    void reset_states(const Epetra_Vector& x) const;
+    void reset_states(const Core::LinAlg::Vector& x) const;
 
     /*! \brief reset all model states (optional even. the structural dynamic
      *  state)
      *
      *  \param x (in) : current full state vector
      *  \param setstate (in) : flag to set state */
-    void reset_states(const Epetra_Vector& x, bool setstate) const;
+    void reset_states(const Core::LinAlg::Vector& x, bool setstate) const;
 
     /*! \brief reset a sub-set of all model states (optional even the structural
      *  dynamic state)
@@ -318,7 +321,7 @@ namespace Solid
      *  \param x (in) : current full state vector
      *  \param setstate (in) : flag to set state
      *  \param me_vec (in) : vector containing the sub-set of model evaluators */
-    void reset_states(const Epetra_Vector& x, bool setstate, Vector& me_vec) const;
+    void reset_states(const Core::LinAlg::Vector& x, bool setstate, Vector& me_vec) const;
 
     //! Write current restart
     void write_restart(
@@ -398,13 +401,13 @@ namespace Solid
     /*! \brief Recover the current state
      *
      * Necessary for condensed systems, e.g. EAS, dual mortar, etc.*/
-    void run_post_compute_x(const Epetra_Vector& xold, const Epetra_Vector& dir, const double& step,
-        const Epetra_Vector& xnew, const bool isdefaultstep) const;
+    void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+        const double& step, const Core::LinAlg::Vector& xnew, const bool isdefaultstep) const;
 
     /*! \brief Executed before the solution vector is going to be updated
      *
      *  \author hiermeier \date 03/17 */
-    void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+    void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
         const double& step, const NOX::Nln::Group& curr_grp, const bool isdefaultstep) const;
 
     /*! \brief Executed at the end of the ::NOX::Solver::Step() (f.k.a. Iterate()) method
@@ -423,14 +426,16 @@ namespace Solid
      *  method
      *
      *  \author hiermeier \date 12/17 */
-    void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-        const Epetra_Vector& xold, const NOX::Nln::Group& grp) const;
+    void run_post_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
+        Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+        const NOX::Nln::Group& grp) const;
 
     /*! \brief Executed before the solution of the linear system
      *
      *  \author seitz \date 04/17 */
-    void run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-        const Epetra_Vector& xold, const NOX::Nln::Group& grp) const;
+    void run_pre_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
+        Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+        const NOX::Nln::Group& grp) const;
 
     //!@}
 
@@ -466,7 +471,7 @@ namespace Solid
      *
      *  \author hiermeier \date 03/17 */
     void assemble_force(
-        bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const;
+        bool& ok, const Vector& me_vec, const double timefac_np, Core::LinAlg::Vector& f) const;
 
     /** \brief Assembly of all jacobian contributions
      *
@@ -480,7 +485,7 @@ namespace Solid
         Core::LinAlg::SparseOperator& jac) const;
 
     void assemble_cheap_soc_rhs(
-        bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const;
+        bool& ok, const Vector& me_vec, const double timefac_np, Core::LinAlg::Vector& f) const;
 
     void evaluate_force(bool& ok, const Vector& me_vec) const;
 

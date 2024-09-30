@@ -72,16 +72,16 @@ namespace POROMULTIPHASE
     }
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
-        const bool firstcall) override;
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> sx,
+        Teuchos::RCP<const Core::LinAlg::Vector> fx, const bool firstcall) override;
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables) public for access from monolithic scatra problem
-    void update_fields_after_convergence(
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
+    void update_fields_after_convergence(Teuchos::RCP<const Core::LinAlg::Vector>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& fx) override;
 
     // access to monolithic rhs vector
-    Teuchos::RCP<const Epetra_Vector> rhs() const override { return rhs_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() const override { return rhs_; }
 
     // access to monolithic block system matrix
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() const override
@@ -107,12 +107,12 @@ namespace POROMULTIPHASE
 
     virtual void setup_rhs();
 
-    virtual Teuchos::RCP<Epetra_Vector> setup_structure_partof_rhs();
+    virtual Teuchos::RCP<Core::LinAlg::Vector> setup_structure_partof_rhs();
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
+    void setup_vector(Core::LinAlg::Vector& f,        //!< vector of length of all dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> fv   //!< vector containing only fluid dofs
     );
 
     //! extract the field vectors from a given composed vector x.
@@ -122,8 +122,8 @@ namespace POROMULTIPHASE
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations,
      and 1D artery pressure)
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
+    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx);
 
     //! extract only the structure and fluid field vectors from a given composed vector x.
     /*!
@@ -131,8 +131,8 @@ namespace POROMULTIPHASE
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
      */
-    void extract_structure_and_fluid_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
+    void extract_structure_and_fluid_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx);
 
     /// setup composed system matrix from field solvers
     virtual void setup_system_matrix() { setup_system_matrix(*systemmatrix_); }
@@ -160,7 +160,7 @@ namespace POROMULTIPHASE
     );
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> iterinc);
 
     //! return structure fluid coupling sparse matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_fluid_coupling_matrix();
@@ -207,12 +207,12 @@ namespace POROMULTIPHASE
     //! current iteration step
     int itnum_;
     //! @name Global vectors
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
 
-    Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of Poroelasticity system
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_;  //!< rhs of Poroelasticity system
 
     Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
     double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
@@ -303,8 +303,9 @@ namespace POROMULTIPHASE
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations,
      and 1D artery pressure)
      */
-    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) override;
+    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& fx) override;
 
     //! build norms for convergence check
     void build_convergence_norms() override;

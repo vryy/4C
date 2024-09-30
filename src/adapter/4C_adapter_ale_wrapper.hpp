@@ -39,19 +39,19 @@ namespace Adapter
     //@{
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> initial_guess() const override
+    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() const override
     {
       return ale_->initial_guess();
     }
 
     //! right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> rhs() const override { return ale_->rhs(); }
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() const override { return ale_->rhs(); }
 
     //! unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> dispnp() const override { return ale_->dispnp(); }
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const override { return ale_->dispnp(); }
 
     //! known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> dispn() const override { return ale_->dispn(); }
+    Teuchos::RCP<const Core::LinAlg::Vector> dispn() const override { return ale_->dispn(); }
 
     //@}
 
@@ -155,7 +155,7 @@ namespace Adapter
     void prepare_time_step() override { ale_->prepare_time_step(); }
 
     //! update displacement and evaluate elements
-    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc =
                               Teuchos::null  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                              ///< x_{n}^{converged}+ stepinc \f$
     )
@@ -164,9 +164,9 @@ namespace Adapter
     }
 
     //! update displacement and evaluate elements
-    void evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc,  ///< step increment such that \f$ x_{n+1}^{k+1}
-                                                    ///< = x_{n}^{converged}+ stepinc \f$
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+                      stepinc,  ///< step increment such that \f$ x_{n+1}^{k+1}
+                                ///< = x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType
             dbc_type  ///< application-specific type of Dirichlet set
         ) override
@@ -223,7 +223,7 @@ namespace Adapter
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> write_access_dispnp() const override
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() const override
     {
       return ale_->write_access_dispnp();
     }
@@ -251,7 +251,10 @@ namespace Adapter
     }
 
     //! update slave dofs for fsi simulations with ale mesh tying
-    void update_slave_dof(Teuchos::RCP<Epetra_Vector>& a) override { ale_->update_slave_dof(a); }
+    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector>& a) override
+    {
+      ale_->update_slave_dof(a);
+    }
 
    private:
     Teuchos::RCP<Ale> ale_;  //!< underlying ALE time integration
@@ -284,7 +287,7 @@ namespace Adapter
      *
      *  \author mayr.mt \date 10/2014
      */
-    void evaluate(Teuchos::RCP<const Epetra_Vector> stepinc  ///< step increment
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc  ///< step increment
         ) override;
 
    private:
@@ -295,7 +298,7 @@ namespace Adapter
     //! x^n+1_i+1 = x^n+1_i + stepinc  (also referred to as residual increment)
     //!
     //! x^n+1_i+1 = x^n     + disstepinc
-    Teuchos::RCP<Epetra_Vector> stepinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> stepinc_;
   };
 }  // namespace Adapter
 

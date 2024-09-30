@@ -67,7 +67,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
   {
     case calc_ale_solid:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -77,7 +77,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_solid_linear:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 
@@ -87,7 +87,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_laplace_material:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, spatialconfiguration);
@@ -96,7 +96,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_laplace_spatial:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
       static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, true);
@@ -105,7 +105,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_springs_material:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp =
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp =
           discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
@@ -116,7 +116,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_ale_springs_spatial:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp =
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp =
           discretization.get_state("dispnp");  // get the displacements
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
@@ -150,7 +150,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
     }
     case calc_det_jac:
     {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("dispnp");
       std::vector<double> my_dispnp(lm.size());
       Core::FE::extract_my_values(*dispnp, my_dispnp, lm);
 

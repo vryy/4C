@@ -17,9 +17,9 @@
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -80,8 +80,9 @@ namespace Core::Elements
     virtual inline void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3)
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
     {
       return;
     }

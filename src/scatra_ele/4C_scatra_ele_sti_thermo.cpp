@@ -28,7 +28,7 @@ void Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::extract_element_and_node_va
 )
 {
   // extract thermo state vector from discretization
-  Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(2, "thermo");
+  Teuchos::RCP<const Core::LinAlg::Vector> tempnp = discretization.get_state(2, "thermo");
   if (tempnp == Teuchos::null)
     FOUR_C_THROW("Cannot extract thermo state vector from discretization!");
 

@@ -102,8 +102,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_linstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -124,8 +125,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
@@ -149,11 +151,12 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_internalinertiaforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
       // need current velocities and accelerations (for non constant mass matrix)
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
-      Teuchos::RCP<const Epetra_Vector> acc = discretization.get_state("acceleration");
+      Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state("velocity");
+      Teuchos::RCP<const Core::LinAlg::Vector> acc = discretization.get_state("acceleration");
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
@@ -223,7 +226,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       double mass_cur = 0.0;
 
       // get displacements and extract values of this element
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -332,7 +335,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::analyse_jacobian_determinant:
     {
       // get displacements and extract values of this element
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -361,8 +364,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_recover:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
 
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW(
@@ -382,8 +386,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case Core::Elements::struct_calc_stress:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> plstraindata = Teuchos::null;
@@ -551,7 +556,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case Core::Elements::struct_calc_update_istep:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -614,7 +619,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       const static std::vector<double> weights = soh8_weights();
 
       // get displacements of this processor
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
@@ -850,8 +855,8 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_interpolate_velocity_to_point:
     {
       // get displacements and extract values of this element (set in prepare_fluid_op())
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("displacement");
-      Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state("velocity");
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velocity");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
@@ -994,7 +999,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_update_prestress:
     {
       time_ = params.get<double>("total time");
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -1045,8 +1050,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       // nothing to do for ghost elements
       if (discretization.get_comm().MyPID() == owner())
       {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
-        Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+        Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
+        Teuchos::RCP<const Core::LinAlg::Vector> res =
+            discretization.get_state("residual displacement");
         Teuchos::RCP<std::vector<char>> stressdata =
             params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         Teuchos::RCP<std::vector<char>> straindata =
@@ -1151,7 +1157,8 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
     // create a backup state for all internally stored variables (e.g. EAS)
     case Core::Elements::struct_create_backup:
     {
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
       if (res.is_null()) FOUR_C_THROW("Cannot get state vector \"residual displacement\"");
 
       // extract the part for this element

@@ -281,7 +281,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize height vectors
-  Teuchos::RCP<Epetra_Vector> height =
+  Teuchos::RCP<Core::LinAlg::Vector> height =
       Core::LinAlg::create_vector(*discret_->dof_row_map(nds), true);
 
   int err(0);
@@ -326,7 +326,8 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> vel = Core::LinAlg::create_vector(*discret_->dof_row_map(nds), true);
+  Teuchos::RCP<Core::LinAlg::Vector> vel =
+      Core::LinAlg::create_vector(*discret_->dof_row_map(nds), true);
 
   int err(0);
   const int velfuncno = params_->get<int>("VELFUNCNO");
@@ -433,7 +434,8 @@ void LUBRICATION::TimIntImpl::solve()
 /*----------------------------------------------------------------------*
  | apply moving mesh data                                     gjb 05/09 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp, int nds)
+void LUBRICATION::TimIntImpl::apply_mesh_movement(
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp, int nds)
 {
   //---------------------------------------------------------------------------
   // only required in ALE case
@@ -521,8 +523,8 @@ void LUBRICATION::TimIntImpl::output(const int num)
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet boundary conditions at t_{n+1}        wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::apply_dirichlet_bc(
-    const double time, Teuchos::RCP<Epetra_Vector> prenp, Teuchos::RCP<Epetra_Vector> predt)
+void LUBRICATION::TimIntImpl::apply_dirichlet_bc(const double time,
+    Teuchos::RCP<Core::LinAlg::Vector> prenp, Teuchos::RCP<Core::LinAlg::Vector> predt)
 {
   // time measurement: apply Dirichlet conditions
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:      + apply dirich cond.");
@@ -565,7 +567,7 @@ void LUBRICATION::TimIntImpl::scaling_and_neumann()
  | evaluate Neumann boundary conditions                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::apply_neumann_bc(
-    const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads  //!< Neumann loads
 )
 {
   // prepare load vector
@@ -853,7 +855,8 @@ bool LUBRICATION::TimIntImpl::abort_nonlin_iter(const int itnum, const int itema
 /*----------------------------------------------------------------------*
  | Set the nodal film height at time n+1                    Seitz 12/17 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_height_field(const int nds, Teuchos::RCP<const Epetra_Vector> gap)
+void LUBRICATION::TimIntImpl::set_height_field(
+    const int nds, Teuchos::RCP<const Core::LinAlg::Vector> gap)
 {
   if (gap == Teuchos::null) FOUR_C_THROW("Gap vector is empty.");
   discret_->set_state(nds, "height", gap);
@@ -866,7 +869,7 @@ void LUBRICATION::TimIntImpl::set_height_field(const int nds, Teuchos::RCP<const
    at time n+1
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::set_height_dot_field(
-    const int nds, Teuchos::RCP<const Epetra_Vector> heightdot)
+    const int nds, Teuchos::RCP<const Core::LinAlg::Vector> heightdot)
 {
   if (heightdot == Teuchos::null) FOUR_C_THROW("hdot vector is empty.");
   discret_->set_state(nds, "heightdot", heightdot);
@@ -878,7 +881,7 @@ void LUBRICATION::TimIntImpl::set_height_dot_field(
  | Set nodal value of Relative Velocity at time n+1        Faraji 02/19 |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::set_relative_velocity_field(
-    const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel)
+    const int nds, Teuchos::RCP<const Core::LinAlg::Vector> rel_vel)
 {
   if (nds >= discret_->num_dof_sets())
     FOUR_C_THROW("Too few dofsets on lubrication discretization!");
@@ -890,7 +893,7 @@ void LUBRICATION::TimIntImpl::set_relative_velocity_field(
  | Set the nodal average tangential velocity at time n+1    Seitz 12/17 |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::set_average_velocity_field(
-    const int nds, Teuchos::RCP<const Epetra_Vector> av_vel)
+    const int nds, Teuchos::RCP<const Core::LinAlg::Vector> av_vel)
 {
   if (nds >= discret_->num_dof_sets())
     FOUR_C_THROW("Too few dofsets on lubrication discretization!");
@@ -1005,7 +1008,7 @@ void LUBRICATION::TimIntImpl::output_state()
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->get_state(nds_disp_, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discret_->get_state(nds_disp_, "dispnp");
     if (dispnp == Teuchos::null)
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
@@ -1020,7 +1023,7 @@ void LUBRICATION::TimIntImpl::output_state()
             (*dispnp)[dispnp->Map().LID(discret_->dof(nds_disp_, node, idim))];
     }
 
-    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_multi_vector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
 
   return;
@@ -1264,7 +1267,7 @@ void LUBRICATION::TimIntImpl::evaluate()
  | residual pressures                                                   |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::update_iter_incrementally(
-    const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual pressures
+    const Teuchos::RCP<const Core::LinAlg::Vector> prei  //!< input residual pressures
 )
 {
   // select residual pressures
@@ -1284,7 +1287,7 @@ void LUBRICATION::TimIntImpl::update_iter_incrementally(
 /*----------------------------------------------------------------------*
  | update Newton step                                       wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::update_newton(Teuchos::RCP<const Epetra_Vector> prei)
+void LUBRICATION::TimIntImpl::update_newton(Teuchos::RCP<const Core::LinAlg::Vector> prei)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And

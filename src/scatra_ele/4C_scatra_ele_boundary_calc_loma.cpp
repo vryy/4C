@@ -118,7 +118,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   const int ndsvel = my::scatraparams_->nds_vel();
 
   // get velocity values at nodes
-  const Teuchos::RCP<const Epetra_Vector> convel =
+  const Teuchos::RCP<const Core::LinAlg::Vector> convel =
       discretization.get_state(ndsvel, "convective velocity field");
 
   // safety check

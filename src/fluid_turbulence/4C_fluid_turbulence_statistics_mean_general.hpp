@@ -15,7 +15,8 @@ means are computed as time averages
 
 #include "4C_config.hpp"
 
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -91,9 +92,9 @@ namespace FLD
     \param vec (in) vector to add to time average
 
     */
-    void add_to_current_time_average(const double dt, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<Epetra_Vector> scavec = Teuchos::null,
-        const Teuchos::RCP<Epetra_Vector> scatravec = Teuchos::null);
+    void add_to_current_time_average(const double dt, const Teuchos::RCP<Core::LinAlg::Vector> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector> scavec = Teuchos::null,
+        const Teuchos::RCP<Core::LinAlg::Vector> scatravec = Teuchos::null);
 
     /*!
     \brief Perform a averaging of the current, already time averaged
@@ -175,8 +176,8 @@ namespace FLD
     \brief Add results from scalar transport field solver to statistics
 
     */
-    void add_scatra_results(
-        Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> myphinp);
+    void add_scatra_results(Teuchos::RCP<Core::FE::Discretization> scatradis,
+        Teuchos::RCP<Core::LinAlg::Vector> myphinp);
 
     /*!
     \brief Do output of ScaTra mean field for visualization/restart
@@ -204,7 +205,7 @@ namespace FLD
     std::vector<int> homdir_;
 
     //! previous averages, done in time and space
-    Teuchos::RCP<Epetra_Vector> prev_avg_;
+    Teuchos::RCP<Core::LinAlg::Vector> prev_avg_;
     //! number of time steps included in the previous average
     int prev_n_;
     //! time covered by previous average
@@ -212,7 +213,7 @@ namespace FLD
 
 
     //! current averages, done in time and space
-    Teuchos::RCP<Epetra_Vector> curr_avg_;
+    Teuchos::RCP<Core::LinAlg::Vector> curr_avg_;
     //! number of time steps included in the current average
     int curr_n_;
     //! time covered by current average
@@ -221,13 +222,13 @@ namespace FLD
     //! flag for additional averaging of scalar field
     bool withscatra_;
     //! previous scalar field averages, done in time and space
-    Teuchos::RCP<Epetra_Vector> prev_avg_sca_;
+    Teuchos::RCP<Core::LinAlg::Vector> prev_avg_sca_;
     //! current scalar field averages, done in time and space
-    Teuchos::RCP<Epetra_Vector> curr_avg_sca_;
+    Teuchos::RCP<Core::LinAlg::Vector> curr_avg_sca_;
     //! previous scalar field averages, done in time and space
-    Teuchos::RCP<Epetra_Vector> prev_avg_scatra_;
+    Teuchos::RCP<Core::LinAlg::Vector> prev_avg_scatra_;
     //! current scalar field averages, done in time and space
-    Teuchos::RCP<Epetra_Vector> curr_avg_scatra_;
+    Teuchos::RCP<Core::LinAlg::Vector> curr_avg_scatra_;
 
     //! compare operator for doubles up to a precision of 1e-8
     struct Doublecomp

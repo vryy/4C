@@ -39,7 +39,6 @@ output.
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
@@ -49,6 +48,11 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
+
+namespace Core::LinAlg
+{
+  class Vector;
+}
 
 namespace FLD
 {
@@ -67,7 +71,7 @@ namespace FLD
 
     */
     TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Discretization> actdis, bool alefluid,
-        Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
+        Teuchos::RCP<Core::LinAlg::Vector> dispnp, Teuchos::ParameterList& params,
         const std::string& statistics_outfilename, const bool withscatra);
 
     /*!
@@ -83,8 +87,8 @@ namespace FLD
     \brief Compute the in-shell mean values of first and second order
     moments for velocities, pressure (and transported scalar fields).
     */
-    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp,
-        Teuchos::RCP<Epetra_Vector> fullphinp);
+    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector> scanp, Teuchos::RCP<Core::LinAlg::Vector> fullphinp);
 
 
     /*!
@@ -134,7 +138,7 @@ namespace FLD
 
     // Add results from scalar transport field solver to statistics
     void add_scatra_results(
-        Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp);
+        Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Core::LinAlg::Vector> phinp);
 
    protected:
     /*!
@@ -169,7 +173,7 @@ namespace FLD
     Teuchos::RCP<Core::FE::Discretization> scatradis_;
 
     //! node displacements due to mesh motion
-    Teuchos::RCP<Epetra_Vector> dispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> dispnp_;
 
     //! contains plane normal direction etc --- this is the original
     //! fluid dynamic parameterlist
@@ -185,7 +189,7 @@ namespace FLD
     Teuchos::ParameterList eleparams_;
 
     //! pointer to mean vel/pres field
-    Teuchos::RCP<Epetra_Vector> meanvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> meanvelnp_;
 
     //! the dim_-coordinates of the homogeneous planes containing nodes
     Teuchos::RCP<std::vector<double>> nodeshells_;
@@ -233,10 +237,10 @@ namespace FLD
     int numscatradofpernode_;
 
     //! pointer to mean scalar field
-    Teuchos::RCP<Epetra_Vector> meanscanp_;
+    Teuchos::RCP<Core::LinAlg::Vector> meanscanp_;
 
     //! pointer to mean field of all scatra results
-    Teuchos::RCP<Epetra_Vector> meanfullphinp_;
+    Teuchos::RCP<Core::LinAlg::Vector> meanfullphinp_;
 
     //! sum over c (over one plane in each component)
     Teuchos::RCP<std::vector<double>> pointsumc_;

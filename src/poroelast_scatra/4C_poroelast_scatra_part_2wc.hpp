@@ -13,9 +13,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_poroelast_scatra_part.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -59,11 +58,11 @@ namespace PoroElastScaTra
     bool convergence_check(int itnum);
 
     //! scalar increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> scaincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> scaincnp_;
     //! structure increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> structincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> structincnp_;
     //! fluid increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> fluidincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> fluidincnp_;
 
     //! maximum iteration steps
     int itmax_;

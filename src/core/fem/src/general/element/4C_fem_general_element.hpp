@@ -20,9 +20,9 @@
 #include "4C_fem_general_cell_type_traits.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_io_input_parameter_container.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
@@ -1218,7 +1218,7 @@ might become invalid after a redistribution of the discretization.
      * @return Number of points added by this element.
      */
     virtual unsigned int append_visualization_dof_based_result_data_vector(
-        const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+        const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
         unsigned int result_num_dofs_per_node, unsigned int read_result_data_from_dofindex,
         std::vector<double>& vtu_point_result_data) const;
 
@@ -1240,7 +1240,7 @@ might become invalid after a redistribution of the discretization.
      * \brief Add the current position of all nodes of the element to a boundary volume.
      */
     virtual Core::GeometricSearch::BoundingVolume get_bounding_volume(
-        const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+        const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
         const Core::GeometricSearch::GeometricSearchParams& params) const;
     /// @}
 

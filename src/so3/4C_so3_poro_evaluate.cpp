@@ -192,7 +192,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Epetra_Vector> matrix_state =
+            Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -271,7 +271,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Epetra_Vector> matrix_state =
+            Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -340,7 +340,8 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
+          Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+              discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
           Core::LinAlg::Matrix<numdim_, numnod_> mydisp(true);
@@ -395,7 +396,8 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::my_evaluate(Teuchos::ParameterL
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(1, "porofluid");
+          Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+              discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
           // calculate tangent stiffness matrix
@@ -1260,7 +1262,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::extract_values_from_global_vec
     Core::LinAlg::Matrix<numnod_, 1>* vectortofill, const std::string& state)
 {
   // get state of the global vector
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(dofset, state);
+  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(dofset, state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   // ask for the number of dofs of dofset

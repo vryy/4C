@@ -76,13 +76,13 @@ namespace BEAMINTERACTION
     void evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
+        const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector) override;
 
     /**
      * \brief Update state of rotational DoFs of both elements
      */
     void reset_rotation_state(const Core::FE::Discretization& discret,
-        const Teuchos::RCP<const Epetra_Vector>& ia_discolnp) override;
+        const Teuchos::RCP<const Core::LinAlg::Vector>& ia_discolnp) override;
 
    protected:
     /**

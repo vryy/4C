@@ -51,7 +51,7 @@ int Discret::ELEMENTS::ConstraintElement3::evaluate(Teuchos::ParameterList& para
     break;
     case calc_MPC_state:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -93,7 +93,7 @@ int Discret::ELEMENTS::ConstraintElement3::evaluate(Teuchos::ParameterList& para
     break;
     case calc_MPC_stiff:
     {
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);

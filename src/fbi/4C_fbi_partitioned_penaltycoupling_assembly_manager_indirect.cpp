@@ -60,8 +60,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
         Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
-        Teuchos::RCP<const Epetra_Vector> beam_vel)
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
+        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel)
 {
   Teuchos::RCP<Teuchos::Time> t =
       Teuchos::TimeMonitor::getNewTimer("FBI::PartitionedAssemblyManagerIndirect");

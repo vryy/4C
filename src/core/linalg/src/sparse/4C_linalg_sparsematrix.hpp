@@ -124,8 +124,8 @@ namespace Core::LinAlg
 
       Allocates new memory for the Epetra_CrsMatrix or Epetra_FECrsMatrix
      */
-    SparseMatrix(const Epetra_Vector& diag, bool explicitdirichlet = true, bool savegraph = false,
-        MatrixType matrixtype = CRS_MATRIX);
+    SparseMatrix(const Core::LinAlg::Vector& diag, bool explicitdirichlet = true,
+        bool savegraph = false, MatrixType matrixtype = CRS_MATRIX);
 
     /// Copy constructor. Deep copy or view on matrix.
     /*!
@@ -278,7 +278,7 @@ namespace Core::LinAlg
 
     void un_complete() override;
 
-    void apply_dirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) override;
+    void apply_dirichlet(const Core::LinAlg::Vector& dbctoggle, bool diagonalblock = true) override;
 
     /// Apply dirichlet boundary condition to a matrix.
     ///
@@ -302,7 +302,8 @@ namespace Core::LinAlg
         const Epetra_Map& dbctoggle, bool diagonalblock = true, bool complete = true);
 
     /// create matrix that contains all Dirichlet lines from my
-    Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+    Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(
+        const Teuchos::RCP<Core::LinAlg::Vector> dbctoggle);
 
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(const Epetra_Map& dbctoggle);

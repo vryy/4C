@@ -136,7 +136,7 @@ void ScaTra::ScaTraTimIntElch::setup()
   // initialize dirichlet toggle:
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries for the standard element call
-  Teuchos::RCP<Epetra_Vector> dirichones =
+  Teuchos::RCP<Core::LinAlg::Vector> dirichones =
       Core::LinAlg::create_vector(*(dbcmaps_->cond_map()), false);
   dirichones->PutScalar(1.0);
   dctoggle_ = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
@@ -1972,7 +1972,7 @@ void ScaTra::ScaTraTimIntElch::calc_initial_potential_field()
         *sysmat_, *increment_, *residual_, *zeros_, *(splitter_->other_map()));
 
     // compute L2 norm of electric potential state vector
-    Teuchos::RCP<Epetra_Vector> pot_vector = splitter_->extract_cond_vector(phinp_);
+    Teuchos::RCP<Core::LinAlg::Vector> pot_vector = splitter_->extract_cond_vector(phinp_);
     double pot_state_L2(0.0);
     pot_vector->Norm2(&pot_state_L2);
 
@@ -2621,7 +2621,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::evaluate_electrode_kinetics_conditions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Core::LinAlg::Vector> rhs,
     const std::string& condstring)
 {
   // time measurement
@@ -2654,7 +2654,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_kinetics_conditions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_conditions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Core::LinAlg::Vector> rhs)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKineticsPoint'");
@@ -2782,7 +2782,7 @@ void ScaTra::ScaTraTimIntElch::linearization_nernst_condition()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::evaluate_solution_depending_conditions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Core::LinAlg::Vector> rhs)
 {
   // evaluate domain conditions for electrode kinetics
   if (discret_->get_condition("ElchDomainKinetics") != nullptr)
@@ -2802,7 +2802,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_solution_depending_conditions(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::check_concentration_values(Teuchos::RCP<Epetra_Vector> vec)
+void ScaTra::ScaTraTimIntElch::check_concentration_values(Teuchos::RCP<Core::LinAlg::Vector> vec)
 {
   // action only for ELCH applications
 
@@ -2851,8 +2851,8 @@ void ScaTra::ScaTraTimIntElch::check_concentration_values(Teuchos::RCP<Epetra_Ve
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::apply_dirichlet_bc(
-    const double time, Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidt)
+void ScaTra::ScaTraTimIntElch::apply_dirichlet_bc(const double time,
+    Teuchos::RCP<Core::LinAlg::Vector> phinp, Teuchos::RCP<Core::LinAlg::Vector> phidt)
 {
   // call base class routine
   ScaTraTimIntImpl::apply_dirichlet_bc(time, phinp, phidt);
@@ -2945,7 +2945,8 @@ void ScaTra::ScaTraTimIntElch::apply_dirichlet_bc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads)
+void ScaTra::ScaTraTimIntElch::apply_neumann_bc(
+    const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads)
 {
   // call base class routine
   ScaTraTimIntImpl::apply_neumann_bc(neumann_loads);
@@ -3054,7 +3055,7 @@ bool ScaTra::ScaTraTimIntElch::not_finished() const
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::perform_aitken_relaxation(
-    Epetra_Vector& phinp, const Epetra_Vector& phinp_inc_diff)
+    Core::LinAlg::Vector& phinp, const Core::LinAlg::Vector& phinp_inc_diff)
 {
   if (solvtype_ == Inpar::ScaTra::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit)
   {
@@ -3066,9 +3067,9 @@ void ScaTra::ScaTraTimIntElch::perform_aitken_relaxation(
     for (int idof = 0; idof < splitter_macro_->num_maps(); ++idof)
     {
       // extract subvectors associated with current degree of freedom
-      const Teuchos::RCP<const Epetra_Vector> phinp_inc_dof =
+      const Teuchos::RCP<const Core::LinAlg::Vector> phinp_inc_dof =
           splitter_macro_->extract_vector(*phinp_inc_, idof);
-      const Teuchos::RCP<const Epetra_Vector> phinp_inc_diff_dof =
+      const Teuchos::RCP<const Core::LinAlg::Vector> phinp_inc_diff_dof =
           splitter_macro_->extract_vector(phinp_inc_diff, idof);
 
       // compute L2 norm of difference between current and previous increments of current degree

@@ -14,6 +14,7 @@
 
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
@@ -22,7 +23,6 @@
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -59,7 +59,7 @@ namespace Core::LinAlg
    */
   void export_to(const Epetra_IntVector& source, Epetra_IntVector& target);
 
-  /*! \brief Extract a partial Epetra_Vector from a given source vector
+  /*! \brief Extract a partial Core::LinAlg::Vector from a given source vector
    *         on each proc without communication
    *
    *  This methods uses a given partial map to create the partial target vector.
@@ -67,11 +67,11 @@ namespace Core::LinAlg
    *  \param source     (in) : source vector ( read-only )
    *  \param target_map (in) : map of the new target vector ( read-only )
    *
-   *  \return the extracted partial Epetra_Vector as RCP
+   *  \return the extracted partial Core::LinAlg::Vector as RCP
    *
    *  \author hiermeier \date 03/17 */
-  Teuchos::RCP<Epetra_Vector> extract_my_vector(
-      const Epetra_Vector& source, const Epetra_Map& target_map);
+  Teuchos::RCP<Core::LinAlg::Vector> extract_my_vector(
+      const Core::LinAlg::Vector& source, const Epetra_Map& target_map);
 
   /*! \brief Extract a partial Eptra_Vector from a given source vector
    *         on each proc without communication
@@ -80,7 +80,7 @@ namespace Core::LinAlg
    *  \param target (out): this target vector is going to be filled
    *
    *  \author hiermeier \date 03/17 */
-  void extract_my_vector(const Epetra_Vector& source, Epetra_Vector& target);
+  void extract_my_vector(const Core::LinAlg::Vector& source, Core::LinAlg::Vector& target);
 
   /*!
    \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
@@ -187,7 +187,7 @@ namespace Core::LinAlg
    *
    *  \author hiermeier \date 03/17 */
   int insert_my_row_diagonal_into_unfilled_matrix(
-      Core::LinAlg::SparseMatrix& mat, const Epetra_Vector& diag);
+      Core::LinAlg::SparseMatrix& mat, const Core::LinAlg::Vector& diag);
 
   /*!
    \brief Split an Epetra_Map and return the part complementary to \c Agiven
@@ -256,9 +256,9 @@ namespace Core::LinAlg
      \param x2      : second vector to be extracted
 
      */
-  bool split_vector(const Epetra_Map& xmap, const Epetra_Vector& x, Teuchos::RCP<Epetra_Map>& x1map,
-      Teuchos::RCP<Epetra_Vector>& x1, Teuchos::RCP<Epetra_Map>& x2map,
-      Teuchos::RCP<Epetra_Vector>& x2);
+  bool split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector& x,
+      Teuchos::RCP<Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector>& x1,
+      Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector>& x2);
 
   /*!
    \brief split a vector into 2 non-overlapping pieces (Teuchos::RCP version)
@@ -271,9 +271,9 @@ namespace Core::LinAlg
    \param x2      : second vector to be extracted
 
    */
-  bool split_vector(const Epetra_Map& xmap, const Epetra_Vector& x,
-      Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
-      Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2);
+  bool split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector& x,
+      Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector>& x1,
+      Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector>& x2);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *

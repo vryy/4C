@@ -95,8 +95,8 @@ namespace Core::Communication
 
    - The intention of this class is to pack and communicate rather 'small' units of data. Though
    possible, it is not meant to be used at the system level to communicate huge data sets such as
-   sparse matrices or vectors of system length. It does therefore not support any Epetra_Vector or
-   Epetra_CrsMatrix objects and is not supposed to in the future either.
+   sparse matrices or vectors of system length. It does therefore not support any
+  Core::LinAlg::Vector or Epetra_CrsMatrix objects and is not supposed to in the future either.
 
    <br>
    Here is a list of data types that are currently supported by the existing

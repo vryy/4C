@@ -17,10 +17,10 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_porofluidmultiphase_ele_phasemanager.hpp"
 #include "4C_porofluidmultiphase_ele_variablemanager.hpp"
 
-#include <Epetra_Vector.h>
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 

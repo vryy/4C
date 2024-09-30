@@ -133,8 +133,8 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const double dt,
-    const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> scavec,
-    const Teuchos::RCP<Epetra_Vector> scatravec)
+    const Teuchos::RCP<Core::LinAlg::Vector> vec, const Teuchos::RCP<Core::LinAlg::Vector> scavec,
+    const Teuchos::RCP<Core::LinAlg::Vector> scatravec)
 {
   // remember time included in this average
   const double old_time = curr_avg_time_;
@@ -1078,7 +1078,7 @@ void FLD::TurbulenceStatisticsGeneralMean::write_old_average_vec(
   if (withscatra_) output.write_vector("averaged_scanp", prev_avg_sca_);
 
   // output real pressure
-  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.extract_cond_vector(prev_avg_);
+  Teuchos::RCP<Core::LinAlg::Vector> pressure = velpressplitter_.extract_cond_vector(prev_avg_);
   output.write_vector("averaged_pressure", pressure);
 }  // FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec
 
@@ -1208,19 +1208,19 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
   Core::LinAlg::create_map_extractor_from_discretization(
       *discret, *standarddofset_, 3, velpressplitter_);
 
-  Teuchos::RCP<Epetra_Vector> old;
+  Teuchos::RCP<Core::LinAlg::Vector> old;
 
   if (curr_avg_ != Teuchos::null)
   {
     old = curr_avg_;
-    curr_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
+    curr_avg_ = Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap), true);
     Core::LinAlg::export_to(*old, *curr_avg_);
   }
 
   if (prev_avg_ != Teuchos::null)
   {
     old = prev_avg_;
-    prev_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
+    prev_avg_ = Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap), true);
     Core::LinAlg::export_to(*old, *prev_avg_);
   }
 
@@ -1229,14 +1229,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
     if (curr_avg_sca_ != Teuchos::null)
     {
       old = curr_avg_sca_;
-      curr_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
+      curr_avg_sca_ = Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap), true);
       Core::LinAlg::export_to(*old, *curr_avg_sca_);
     }
 
     if (prev_avg_sca_ != Teuchos::null)
     {
       old = prev_avg_sca_;
-      prev_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
+      prev_avg_sca_ = Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap), true);
       Core::LinAlg::export_to(*old, *prev_avg_sca_);
     }
 
@@ -1247,14 +1247,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
       if (curr_avg_scatra_ != Teuchos::null)
       {
         old = curr_avg_scatra_;
-        curr_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
+        curr_avg_scatra_ = Teuchos::rcp(new Core::LinAlg::Vector(*scatradofrowmap), true);
         Core::LinAlg::export_to(*old, *curr_avg_scatra_);
       }
 
       if (prev_avg_scatra_ != Teuchos::null)
       {
         old = prev_avg_scatra_;
-        prev_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
+        prev_avg_scatra_ = Teuchos::rcp(new Core::LinAlg::Vector(*scatradofrowmap), true);
         Core::LinAlg::export_to(*old, *prev_avg_scatra_);
       }
     }
@@ -1268,7 +1268,7 @@ Add results from scalar transport field solver to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsGeneralMean::add_scatra_results(
-    Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Core::LinAlg::Vector> phinp)
 {
   withscatra_ = true;  // now it is clear: we have scatra results as well!
 

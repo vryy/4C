@@ -58,7 +58,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! activation_time at times n+1
-    Teuchos::RCP<Epetra_Vector> activation_time_np_;
+    Teuchos::RCP<Core::LinAlg::Vector> activation_time_np_;
 
     //! activation threshold for postprocessing
     double activation_threshold_;
@@ -70,7 +70,7 @@ namespace ScaTra
     Teuchos::RCP<Epetra_MultiVector> material_internal_state_np_;
 
     //! one component of the material internal state at times n+1 (for separated postprocessing)
-    Teuchos::RCP<Epetra_Vector> material_internal_state_np_component_;
+    Teuchos::RCP<Core::LinAlg::Vector> material_internal_state_np_component_;
 
     //! maximum expected number of material ionic currents
     int nb_max_mat_ionic_currents_;
@@ -79,7 +79,7 @@ namespace ScaTra
     Teuchos::RCP<Epetra_MultiVector> material_ionic_currents_np_;
 
     //! one component of the material ionic currents at times n+1 (for separated postprocessing)
-    Teuchos::RCP<Epetra_Vector> material_ionic_currents_np_component_;
+    Teuchos::RCP<Core::LinAlg::Vector> material_ionic_currents_np_component_;
 
     //! parameter list
     const Teuchos::RCP<Teuchos::ParameterList> ep_params_;

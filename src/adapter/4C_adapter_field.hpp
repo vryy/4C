@@ -25,8 +25,9 @@ functions there exist also for fields.
 // includes
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
+
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -63,7 +64,7 @@ namespace Adapter
     //! @name Vector access
 
     /// Return the already evaluated RHS of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> rhs() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() = 0;
 
     //@}
 
@@ -104,7 +105,7 @@ namespace Adapter
     which is then transformed into an iteration increment
     */
     virtual void update_state_incrementally(
-        Teuchos::RCP<const Epetra_Vector> disi  ///< iterative solution increment
+        Teuchos::RCP<const Core::LinAlg::Vector> disi  ///< iterative solution increment
         ) = 0;
 
     /*!
@@ -122,16 +123,16 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    virtual void evaluate(
-        Teuchos::RCP<const Epetra_Vector> iterinc  ///< dof increment between Newton iteration i and
-                                                   ///< i+1 or between timestep n and n+1
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+            iterinc  ///< dof increment between Newton iteration i and
+                     ///< i+1 or between timestep n and n+1
         ) = 0;
 
     /// Evaluate with different eval. for first iteration, has to be overload by relevant fields
     /// (coupled fields)
-    virtual void evaluate(
-        Teuchos::RCP<const Epetra_Vector> iterinc,  ///< dof increment between Newton iteration i
-                                                    ///< and i+1 or between timestep n and n+1
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+                              iterinc,  ///< dof increment between Newton iteration i
+                                        ///< and i+1 or between timestep n and n+1
         bool firstiter)
     {
       evaluate(iterinc);

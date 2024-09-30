@@ -77,12 +77,12 @@ for gas exchange in the human lungs", J Theor biol (2006)
 #include "4C_cardiovascular0d.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_cardiovascular0d.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -124,9 +124,9 @@ namespace UTILS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vector that may be filled by assembly
-                                              ///< of element contributions
-        Teuchos::RCP<Epetra_Vector>
+        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vector that may be filled by
+                                                     ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
         ) override;
 
@@ -139,11 +139,12 @@ namespace UTILS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
         Teuchos::RCP<Core::LinAlg::SparseOperator>
-            sysmat3,                          ///< Cardiovascular0D offdiagonal matrix dfext/dp
-        Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
-                                              ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
-        const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5) override;
+            sysmat3,  ///< Cardiovascular0D offdiagonal matrix dfext/dp
+        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vectors that may be filled by
+                                                     ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> sysvec2, Teuchos::RCP<Core::LinAlg::Vector> sysvec3,
+        const Teuchos::RCP<Core::LinAlg::Vector> sysvec4,
+        Teuchos::RCP<Core::LinAlg::Vector> sysvec5) override;
 
     // cbO2 and its derivatives
     double cb_o2(double ppCO2, double ppO2);
@@ -180,7 +181,8 @@ namespace UTILS
     //! #EvaluateCardiovascular0D routine is called
     virtual void evaluate_respiratory(Teuchos::ParameterList& params, std::vector<double>& df_np,
         std::vector<double>& f_np, Core::LinAlg::SerialDenseMatrix& wkstiff,
-        Teuchos::RCP<Epetra_Vector> dofvec, Teuchos::RCP<Epetra_Vector> volvec, bool evalstiff);
+        Teuchos::RCP<Core::LinAlg::Vector> dofvec, Teuchos::RCP<Core::LinAlg::Vector> volvec,
+        bool evalstiff);
 
    private:
     // number of degrees of freedom for submodels

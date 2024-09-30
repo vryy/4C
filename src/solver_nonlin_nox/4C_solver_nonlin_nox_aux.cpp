@@ -14,6 +14,7 @@
 
 #include "4C_inpar_boolifyparameters.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 #include "4C_solver_nonlin_nox_statustest_activeset.hpp"
 #include "4C_solver_nonlin_nox_statustest_combo.hpp"
@@ -21,7 +22,6 @@
 #include "4C_solver_nonlin_nox_statustest_normupdate.hpp"
 #include "4C_solver_nonlin_nox_statustest_normwrms.hpp"
 
-#include <Epetra_Vector.h>
 #include <NOX_Abstract_ImplicitWeighting.H>
 #include <NOX_Observer_Vector.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -173,17 +173,17 @@ NOX::Nln::LinSystem::LinearSystemType NOX::Nln::Aux::get_linear_system_type(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::Nln::Aux::root_mean_square_norm(const double& atol, const double& rtol,
-    Teuchos::RCP<const Epetra_Vector> xnew, Teuchos::RCP<const Epetra_Vector> xincr,
+    Teuchos::RCP<const Core::LinAlg::Vector> xnew, Teuchos::RCP<const Core::LinAlg::Vector> xincr,
     const bool& disable_implicit_weighting)
 {
   double rval = 0.0;
 
   // calculate the old iterate (k-1)
-  Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*xnew));
+  Teuchos::RCP<Core::LinAlg::Vector> v = Teuchos::rcp(new Core::LinAlg::Vector(*xnew));
   v->Update(-1.0, *xincr, 1.0);
 
   // new auxiliary vector
-  Teuchos::RCP<Epetra_Vector> u = Teuchos::rcp(new Epetra_Vector(xnew->Map(), false));
+  Teuchos::RCP<Core::LinAlg::Vector> u = Teuchos::rcp(new Core::LinAlg::Vector(xnew->Map(), false));
 
   // create the weighting factor u = RTOL |x^(k-1)| + ATOL
   u->PutScalar(1.0);
@@ -192,23 +192,9 @@ double NOX::Nln::Aux::root_mean_square_norm(const double& atol, const double& rt
   // v = xincr/u (elementwise)
   v->ReciprocalMultiply(1.0, *u, *xincr, 0);
 
-  // Turn off implicit scaling of norm if the vector supports it
-  // ToDo Check if this makes any sense for pure Epetra_Vectors
-  Teuchos::RCP<::NOX::Abstract::ImplicitWeighting> iw_v;
-  iw_v = Teuchos::rcp_dynamic_cast<::NOX::Abstract::ImplicitWeighting>(v, false);
-  bool saved_status = false;
-  if (Teuchos::nonnull(iw_v) and disable_implicit_weighting)
-  {
-    saved_status = iw_v->getImplicitWeighting();
-    iw_v->setImplicitWeighting(false);
-  }
-
   // rval = sqrt (v * v / N)
   v->Norm2(&rval);
   rval /= std::sqrt(static_cast<double>(v->GlobalLength()));
-
-  // Set the implicit scaling back to original value
-  if (nonnull(iw_v) && disable_implicit_weighting) iw_v->setImplicitWeighting(saved_status);
 
   return rval;
 }

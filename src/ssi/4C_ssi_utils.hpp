@@ -14,10 +14,10 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_condition.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 
 #include <set>
 
@@ -237,37 +237,37 @@ namespace SSI
       void clear_residuals();
 
       //! global increment vector for Newton-Raphson iteration
-      Teuchos::RCP<Epetra_Vector> increment() { return increment_; }
+      Teuchos::RCP<Core::LinAlg::Vector> increment() { return increment_; }
 
       //! residual vector on right-hand side of global system of equations
-      Teuchos::RCP<Epetra_Vector> residual() { return residual_; }
+      Teuchos::RCP<Core::LinAlg::Vector> residual() { return residual_; }
 
       //! residual vector on right-hand side of scalar transport system
-      Teuchos::RCP<Epetra_Vector> scatra_residual() { return scatra_residual_; }
+      Teuchos::RCP<Core::LinAlg::Vector> scatra_residual() { return scatra_residual_; }
 
       //! residual vector on right-hand side of structure system
-      Teuchos::RCP<Epetra_Vector> structure_residual() { return structure_residual_; }
+      Teuchos::RCP<Core::LinAlg::Vector> structure_residual() { return structure_residual_; }
 
-      Teuchos::RCP<Epetra_Vector> manifold_residual() { return manifold_residual_; }
+      Teuchos::RCP<Core::LinAlg::Vector> manifold_residual() { return manifold_residual_; }
 
      private:
       //! global increment vector for Newton-Raphson iteration
-      Teuchos::RCP<Epetra_Vector> increment_;
+      Teuchos::RCP<Core::LinAlg::Vector> increment_;
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
 
       //! residual vector on right-hand side of manifold scalar transport system
-      Teuchos::RCP<Epetra_Vector> manifold_residual_;
+      Teuchos::RCP<Core::LinAlg::Vector> manifold_residual_;
 
       //! residual vector on right-hand side of global system of equations
-      Teuchos::RCP<Epetra_Vector> residual_;
+      Teuchos::RCP<Core::LinAlg::Vector> residual_;
 
       //! residual vector on right-hand side of scalar transport system
-      Teuchos::RCP<Epetra_Vector> scatra_residual_;
+      Teuchos::RCP<Core::LinAlg::Vector> scatra_residual_;
 
       //! residual vector on right-hand side of structure system
-      Teuchos::RCP<Epetra_Vector> structure_residual_;
+      Teuchos::RCP<Core::LinAlg::Vector> structure_residual_;
     };
 
     /*---------------------------------------------------------------------------------*

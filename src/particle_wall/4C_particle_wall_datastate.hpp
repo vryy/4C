@@ -16,9 +16,9 @@
  *---------------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
@@ -86,25 +86,25 @@ namespace PARTICLEWALL
     //! @{
 
     //! get wall displacements (row map based)
-    inline Teuchos::RCP<const Epetra_Vector> get_disp_row() const { return disp_row_; };
+    inline Teuchos::RCP<const Core::LinAlg::Vector> get_disp_row() const { return disp_row_; };
 
     //! get wall displacements (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> get_disp_col() const { return disp_col_; };
+    inline Teuchos::RCP<const Core::LinAlg::Vector> get_disp_col() const { return disp_col_; };
 
     //! get wall displacements (row map based) after last transfer
-    inline Teuchos::RCP<const Epetra_Vector> get_disp_row_last_transfer() const
+    inline Teuchos::RCP<const Core::LinAlg::Vector> get_disp_row_last_transfer() const
     {
       return disp_row_last_transfer_;
     };
 
     //! get wall velocities (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> get_vel_col() const { return vel_col_; };
+    inline Teuchos::RCP<const Core::LinAlg::Vector> get_vel_col() const { return vel_col_; };
 
     //! get wall accelerations (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> get_acc_col() const { return acc_col_; };
+    inline Teuchos::RCP<const Core::LinAlg::Vector> get_acc_col() const { return acc_col_; };
 
     //! get wall forces (column map based)
-    inline Teuchos::RCP<const Epetra_Vector> get_force_col() const { return force_col_; };
+    inline Teuchos::RCP<const Core::LinAlg::Vector> get_force_col() const { return force_col_; };
 
     //! @}
 
@@ -112,27 +112,27 @@ namespace PARTICLEWALL
     //! @{
 
     //! get wall displacements (row map based)
-    inline Teuchos::RCP<Epetra_Vector> get_disp_row() { return disp_row_; };
-    inline Teuchos::RCP<Epetra_Vector>& get_ref_disp_row() { return disp_row_; };
+    inline Teuchos::RCP<Core::LinAlg::Vector> get_disp_row() { return disp_row_; };
+    inline Teuchos::RCP<Core::LinAlg::Vector>& get_ref_disp_row() { return disp_row_; };
 
     //! get wall displacements (column map based)
-    inline Teuchos::RCP<Epetra_Vector> get_disp_col() { return disp_col_; };
-    inline Teuchos::RCP<Epetra_Vector>& get_ref_disp_col() { return disp_col_; };
+    inline Teuchos::RCP<Core::LinAlg::Vector> get_disp_col() { return disp_col_; };
+    inline Teuchos::RCP<Core::LinAlg::Vector>& get_ref_disp_col() { return disp_col_; };
 
     //! get wall displacements (row map based) after last transfer
-    inline Teuchos::RCP<Epetra_Vector> get_disp_row_last_transfer()
+    inline Teuchos::RCP<Core::LinAlg::Vector> get_disp_row_last_transfer()
     {
       return disp_row_last_transfer_;
     };
 
     //! get wall velocities (column map based)
-    inline Teuchos::RCP<Epetra_Vector> get_vel_col() { return vel_col_; };
+    inline Teuchos::RCP<Core::LinAlg::Vector> get_vel_col() { return vel_col_; };
 
     //! get wall accelerations (column map based)
-    inline Teuchos::RCP<Epetra_Vector> get_acc_col() { return acc_col_; };
+    inline Teuchos::RCP<Core::LinAlg::Vector> get_acc_col() { return acc_col_; };
 
     //! get wall forces (column map based)
-    inline Teuchos::RCP<Epetra_Vector> get_force_col() { return force_col_; };
+    inline Teuchos::RCP<Core::LinAlg::Vector> get_force_col() { return force_col_; };
 
     //! @}
 
@@ -150,22 +150,22 @@ namespace PARTICLEWALL
     //! @{
 
     //! wall displacements (row map based)
-    Teuchos::RCP<Epetra_Vector> disp_row_;
+    Teuchos::RCP<Core::LinAlg::Vector> disp_row_;
 
     //! wall displacements (column map based)
-    Teuchos::RCP<Epetra_Vector> disp_col_;
+    Teuchos::RCP<Core::LinAlg::Vector> disp_col_;
 
     //! wall displacements (row map based) after last transfer
-    Teuchos::RCP<Epetra_Vector> disp_row_last_transfer_;
+    Teuchos::RCP<Core::LinAlg::Vector> disp_row_last_transfer_;
 
     //! wall velocities (column map based)
-    Teuchos::RCP<Epetra_Vector> vel_col_;
+    Teuchos::RCP<Core::LinAlg::Vector> vel_col_;
 
     //! wall accelerations (column map based)
-    Teuchos::RCP<Epetra_Vector> acc_col_;
+    Teuchos::RCP<Core::LinAlg::Vector> acc_col_;
 
     //! wall forces (column map based)
-    Teuchos::RCP<Epetra_Vector> force_col_;
+    Teuchos::RCP<Core::LinAlg::Vector> force_col_;
 
     //! @}
   };

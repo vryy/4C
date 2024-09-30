@@ -830,25 +830,26 @@ namespace FLD
               FOUR_C_THROW("No dissipation rates for this flow type!");
 
             // set vector values needed by elements
-            std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs;
+            std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs;
             std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss;
-            std::map<std::string, Teuchos::RCP<Epetra_Vector>> scatrastatevecs;
+            std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> scatrastatevecs;
             std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> scatrafieldvecs;
 
-            statevecs.insert(std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("hist", myhist_));
             statevecs.insert(
-                std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("accam", myaccam_));
+                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("hist", myhist_));
             statevecs.insert(
-                std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("scaaf", myscaaf_));
+                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("accam", myaccam_));
             statevecs.insert(
-                std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("scaam", myscaam_));
+                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("scaaf", myscaaf_));
+            statevecs.insert(
+                std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("scaam", myscaam_));
 
             if (alefluid_)
             {
               statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("dispnp", mydispnp_));
-              statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("gridv", mygridvelaf_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("dispnp", mydispnp_));
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+                  "gridv", mygridvelaf_));
               if (scatradis_ != Teuchos::null) FOUR_C_THROW("Not supported!");
             }
 
@@ -859,31 +860,31 @@ namespace FLD
                 time_int_algo == Inpar::FLUID::timeint_npgenalpha)
             {
               statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velaf", myvelaf_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velaf", myvelaf_));
               if (time_int_algo == Inpar::FLUID::timeint_npgenalpha)
                 statevecs.insert(
-                    std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velnp", myvelnp_));
+                    std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velnp", myvelnp_));
 
               // additional scatra vectors
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("phinp", myphiaf_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("phinp", myphiaf_));
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("phiam", myphiam_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("phiam", myphiam_));
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("hist", myphidtam_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("hist", myphidtam_));
             }
             else
             {
               statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velaf", myvelnp_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velaf", myvelnp_));
               statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("velaf", myvelnp_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("velaf", myvelnp_));
 
               // additional scatra vectors
               scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("phinp", myphinp_));
-              scatrastatevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("hist", myscatrahist_));
+                  std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>("phinp", myphinp_));
+              scatrastatevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+                  "hist", myscatrahist_));
             }
 
             if (Teuchos::getIntegralValue<Inpar::FLUID::FineSubgridVisc>(
@@ -891,24 +892,24 @@ namespace FLD
                     Inpar::FLUID::FineSubgridVisc::no_fssgv or
                 turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
             {
-              statevecs.insert(
-                  std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsvelaf", myfsvelaf_));
+              statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+                  "fsvelaf", myfsvelaf_));
               if (myfsvelaf_ == Teuchos::null) FOUR_C_THROW("Have not got fsvel!");
 
               if (Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(
                       *params_, "Physical Type") == Inpar::FLUID::loma and
                   turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
               {
-                statevecs.insert(
-                    std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsscaaf", myfsscaaf_));
+                statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+                    "fsscaaf", myfsscaaf_));
                 if (myfsscaaf_ == Teuchos::null) FOUR_C_THROW("Have not got fssca!");
               }
 
               // additional scatra vectors
               if (withscatra_)
               {
-                scatrastatevecs.insert(
-                    std::pair<std::string, Teuchos::RCP<Epetra_Vector>>("fsphinp", myfsphi_));
+                scatrastatevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector>>(
+                    "fsphinp", myfsphi_));
                 if (myfsphi_ == Teuchos::null) FOUR_C_THROW("Have not got fsphi!");
               }
             }
@@ -1036,9 +1037,9 @@ namespace FLD
     Include current quantities in the time averaging procedure
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::do_time_sample(int step, Teuchos::RCP<Epetra_Vector> velnp,
-      Teuchos::RCP<Epetra_Vector> force, Teuchos::RCP<Epetra_Vector> phi,
-      Teuchos::RCP<const Core::DOFSets::DofSet> stddofset)
+  void TurbulenceStatisticManager::do_time_sample(int step,
+      Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> force,
+      Teuchos::RCP<Core::LinAlg::Vector> phi, Teuchos::RCP<const Core::DOFSets::DofSet> stddofset)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1080,7 +1081,7 @@ namespace FLD
     get current velnp pointer from fluid
     necessary for meshtying                                    bk 02/14
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::get_current_velnp(Teuchos::RCP<Epetra_Vector> velnp)
+  void TurbulenceStatisticManager::get_current_velnp(Teuchos::RCP<Core::LinAlg::Vector> velnp)
   {
     myvelnp_ = velnp;
     return;

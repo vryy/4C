@@ -16,8 +16,8 @@
 
 #include "4C_inpar_fluid.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -96,11 +96,11 @@ namespace FLD
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Epetra_Vector> forcing_;
+    Teuchos::RCP<Core::LinAlg::Vector> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Epetra_Vector> velnp_;
-    Teuchos::RCP<Epetra_Vector> velaf_;
+    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> velaf_;
 
     //! threshold wave number for forcing
     //! i.e., forcing is applied to wave numbers <= threshold wave number
@@ -209,11 +209,11 @@ namespace FLD
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Epetra_Vector> forcing_;
+    Teuchos::RCP<Core::LinAlg::Vector> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Epetra_Vector> velnp_;
-    Teuchos::RCP<Epetra_Vector> velaf_;
+    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> velaf_;
 
     //! xwall object is required for evaluating inner element planes of channel
     Teuchos::RCP<FLD::XWall> myxwall_;

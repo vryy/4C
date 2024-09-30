@@ -55,12 +55,12 @@ int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
 
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
-      Teuchos::RCP<const Epetra_Vector> vel;
+      Teuchos::RCP<const Core::LinAlg::Vector> vel;
       std::vector<double> myvel(lm.size());
       myvel.clear();
 
@@ -94,13 +94,13 @@ int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state("velocity");
+      Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state("velocity");
       if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::extract_my_values(*vel, myvel, lm);
@@ -334,7 +334,7 @@ int Discret::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::get_bounding_volume(
-    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   // Get the element displacements.

@@ -13,10 +13,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -53,10 +53,10 @@ namespace Cardiovascular0D
     Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Teuchos::RCP<Epetra_MultiVector> v);
 
     //! v_red = V^T * v
-    Teuchos::RCP<Epetra_Vector> reduce_residual(Teuchos::RCP<Epetra_Vector> v);
+    Teuchos::RCP<Core::LinAlg::Vector> reduce_residual(Teuchos::RCP<Core::LinAlg::Vector> v);
 
     //! v = V * v_red
-    Teuchos::RCP<Epetra_Vector> extend_solution(Teuchos::RCP<Epetra_Vector> v);
+    Teuchos::RCP<Core::LinAlg::Vector> extend_solution(Teuchos::RCP<Core::LinAlg::Vector> v);
 
     bool have_mor() { return havemor_; };
 

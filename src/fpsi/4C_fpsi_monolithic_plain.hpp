@@ -90,29 +90,31 @@ namespace FPSI
     void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extract the three field vectors from a given composed vector
-    void extract_field_vectors(
-        Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector>& pfx,  ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& fx,   ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& ax,   ///< ale displacements
-        bool firstiter_                          ///< firstiteration?
+    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector>
+                                   x,  ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx,   ///< structural displacements
+        Teuchos::RCP<const Core::LinAlg::Vector>& pfx,  ///< fluid velocities and pressure
+        Teuchos::RCP<const Core::LinAlg::Vector>& fx,   ///< fluid velocities and pressure
+        Teuchos::RCP<const Core::LinAlg::Vector>& ax,   ///< ale displacements
+        bool firstiter_                                 ///< firstiteration?
         ) override;
 
    private:
     /// build block vector from field vectors
-    void setup_vector(Epetra_Vector& f,         ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural dofs
-        Teuchos::RCP<const Epetra_Vector> pfv,  ///< poro fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector> av,   ///< ale displacements
-        double fluidscale                       ///< residual scaling for fluid
+    void setup_vector(Core::LinAlg::Vector& f,  ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Core::LinAlg::Vector> sv,   ///< structural dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> pfv,  ///< poro fluid velocities and pressure
+        Teuchos::RCP<const Core::LinAlg::Vector> fv,   ///< fluid velocities and pressure
+        Teuchos::RCP<const Core::LinAlg::Vector> av,   ///< ale displacements
+        double fluidscale                              ///< residual scaling for fluid
     );
 
-    void setup_rhs_lambda(Epetra_Vector& f  ///< composed vector that contains all field vectors
+    void setup_rhs_lambda(
+        Core::LinAlg::Vector& f  ///< composed vector that contains all field vectors
     );
 
-    void setup_rhs_first_iter(Epetra_Vector& f  ///< composed vector that contains all field vectors
+    void setup_rhs_first_iter(
+        Core::LinAlg::Vector& f  ///< composed vector that contains all field vectors
     );
 
     /// @name Matrix block transform objects
@@ -159,53 +161,53 @@ namespace FPSI
 
     /// @name infnorm scaling
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;
-    Teuchos::RCP<Epetra_Vector> scolsum_;
-    Teuchos::RCP<Epetra_Vector> arowsum_;
-    Teuchos::RCP<Epetra_Vector> acolsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> srowsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> scolsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> arowsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> acolsum_;
 
     //@}
 
     /// additional ale residual to avoid incremental ale errors
-    Teuchos::RCP<Epetra_Vector> aleresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector> aleresidual_;
 
 
     /// @name Recovery of Lagrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! fluid) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> lambda_;
+    Teuchos::RCP<Core::LinAlg::Vector> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{F,n+1}\f$ onto the fluid at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<const Epetra_Vector> fgcur_;
+    Teuchos::RCP<const Core::LinAlg::Vector> fgcur_;
 
     //! interface force \f$f_{\Gamma,i}^{F,n+1}\f$ onto the fluid at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Epetra_Vector> fgprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> fgprev_;
 
     //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
     //! current NOX iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> ddginc_;
+    Teuchos::RCP<Core::LinAlg::Vector> ddginc_;
 
     //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> duiinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> duiinc_;
 
     //! interface displacement solution of the structure at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> disgprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> disgprev_;
 
     //! inner velocity solution of fluid at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> soliprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> soliprev_;
 
     //! interface velocity solution of the fluid at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> solgprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solgprev_;
 
     //! inner ALE displacement solution at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> solialeprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solialeprev_;
 
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> ddialeinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> ddialeinc_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgicur_;

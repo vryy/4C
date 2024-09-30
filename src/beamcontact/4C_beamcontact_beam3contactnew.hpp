@@ -289,7 +289,8 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
+    bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint,
+        const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) override;
 
@@ -493,7 +494,7 @@ namespace CONTACT
     /*!
     \brief Evaluate contact forces
     */
-    void evaluate_fc_contact(const double& pp, Epetra_Vector* fint,
+    void evaluate_fc_contact(const double& pp, Core::LinAlg::Vector* fint,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,
@@ -519,7 +520,7 @@ namespace CONTACT
     /*!
     \brief Evaluate algorithmic forces that make convergence more robust / faster
     */
-    void evaluate_algorithmic_force(const double& pp, Epetra_Vector* fint,
+    void evaluate_algorithmic_force(const double& pp, Core::LinAlg::Vector* fint,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,

@@ -136,7 +136,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(
  | extractor of boundary condition                                      |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
-    const Teuchos::RCP<Epetra_Vector> velocities, const double time)
+    const Teuchos::RCP<Core::LinAlg::Vector> velocities, const double time)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -992,9 +992,9 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
  |  Evaluates the Velocities (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
-    Teuchos::RCP<Core::FE::Discretization> disc, Teuchos::RCP<Epetra_Vector> bcdof,
-    Teuchos::RCP<Epetra_Map> cond_noderowmap, Teuchos::RCP<Epetra_Vector> local_radii,
-    Teuchos::RCP<Epetra_Vector> border_radii, Teuchos::RCP<std::vector<double>> normal,
+    Teuchos::RCP<Core::FE::Discretization> disc, Teuchos::RCP<Core::LinAlg::Vector> bcdof,
+    Teuchos::RCP<Epetra_Map> cond_noderowmap, Teuchos::RCP<Core::LinAlg::Vector> local_radii,
+    Teuchos::RCP<Core::LinAlg::Vector> border_radii, Teuchos::RCP<std::vector<double>> normal,
     Teuchos::RCP<Teuchos::ParameterList> params)
 
 
@@ -1228,7 +1228,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   }
 
   // loop over all of the nodes
-  Teuchos::RCP<Epetra_Vector> correction_velnp =
+  Teuchos::RCP<Core::LinAlg::Vector> correction_velnp =
       Core::LinAlg::create_vector(*cond_dofrowmap_, true);
 
   params->set<int>("Number of Harmonics", 0);
@@ -1302,7 +1302,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
  |  Apply velocities         (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::set_velocities(
-    const Teuchos::RCP<Epetra_Vector> velocities)
+    const Teuchos::RCP<Core::LinAlg::Vector> velocities)
 {
   for (int lid = 0; lid < cond_velocities_->MyLength(); lid++)
   {
@@ -1345,7 +1345,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
 
@@ -1381,7 +1381,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::pressure_calculation(
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
   discret_->evaluate_condition(eleparams, flowrates, condstring, condid);
@@ -1768,7 +1768,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vec
 
 }  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate
 
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::update_residual(Teuchos::RCP<Epetra_Vector> residual)
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::update_residual(
+    Teuchos::RCP<Core::LinAlg::Vector> residual)
 {
   residual->Update(1.0, *cond_traction_vel_, 1.0);
 }
@@ -1854,7 +1855,7 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
  | extractor of boundary condition                                      |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::TotalTractionCorrector::evaluate_velocities(
-    Teuchos::RCP<Epetra_Vector> velocities, double time, double theta, double dta)
+    Teuchos::RCP<Core::LinAlg::Vector> velocities, double time, double theta, double dta)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -1895,7 +1896,8 @@ void FLD::UTILS::TotalTractionCorrector::evaluate_velocities(
 /*----------------------------------------------------------------------*
  | Update residual                                         ismail 04/11 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::TotalTractionCorrector::update_residual(Teuchos::RCP<Epetra_Vector> residual)
+void FLD::UTILS::TotalTractionCorrector::update_residual(
+    Teuchos::RCP<Core::LinAlg::Vector> residual)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -1943,7 +1945,8 @@ void FLD::UTILS::TotalTractionCorrector::read_restart(Core::IO::DiscretizationRe
  |  Export boundary values and setstate                     ismail 07/14|
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
-    Teuchos::RCP<Epetra_Vector> source, Teuchos::RCP<Epetra_Vector> target, std::string name)
+    Teuchos::RCP<Core::LinAlg::Vector> source, Teuchos::RCP<Core::LinAlg::Vector> target,
+    std::string name)
 {
   // define the exporter
   Epetra_Export exporter(source->Map(), target->Map());
@@ -1959,7 +1962,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
  |  Export boundary values and setstate                     ismail 07/14|
  *----------------------------------------------------------------------*/
 void FLD::UTILS::TotalTractionCorrector::export_and_set_boundary_values(
-    Teuchos::RCP<Epetra_Vector> source, Teuchos::RCP<Epetra_Vector> target, std::string name)
+    Teuchos::RCP<Core::LinAlg::Vector> source, Teuchos::RCP<Core::LinAlg::Vector> target,
+    std::string name)
 {
   // define the exporter
   Epetra_Export exporter(source->Map(), target->Map());

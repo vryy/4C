@@ -65,7 +65,7 @@ namespace ElCh
 
     /// compute interface displacement and velocity
     void compute_interface_vectors(
-        Teuchos::RCP<Epetra_Vector> idispnp_, Teuchos::RCP<Epetra_Vector> iveln_);
+        Teuchos::RCP<Core::LinAlg::Vector> idispnp_, Teuchos::RCP<Core::LinAlg::Vector> iveln_);
 
     /// take current results for converged and save for next time step
     void update() override;
@@ -80,13 +80,13 @@ namespace ElCh
     const double molarvolume_;
 
     /// interface displacement at time t^{n}
-    Teuchos::RCP<Epetra_Vector> idispn_;
+    Teuchos::RCP<Core::LinAlg::Vector> idispn_;
 
     /// interface displacement at time t^{n+1}
-    Teuchos::RCP<Epetra_Vector> idispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> idispnp_;
 
     /// fluid velocity at interface (always zero!)
-    Teuchos::RCP<Epetra_Vector> iveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> iveln_;
 
     /// old flux
     Teuchos::RCP<Epetra_MultiVector> fluxn_;

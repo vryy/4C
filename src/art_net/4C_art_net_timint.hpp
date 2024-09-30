@@ -124,10 +124,10 @@ namespace Arteries
     };
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> rhs() const override { return rhs_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() const override { return rhs_; }
 
     //! iterative update of primary variable
-    void update_iter(const Teuchos::RCP<const Epetra_Vector> inc) override
+    void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector> inc) override
     {
       // each artery integration should overwrite this if used
       FOUR_C_THROW("not implemented");
@@ -135,7 +135,7 @@ namespace Arteries
     }
 
     // get solution vector
-    Teuchos::RCP<const Epetra_Vector> pressurenp() const override
+    Teuchos::RCP<const Core::LinAlg::Vector> pressurenp() const override
     {
       // each artery integration should overwrite this if used
       FOUR_C_THROW("not implemented");
@@ -186,13 +186,13 @@ namespace Arteries
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// rhs: right hand side vector
-    Teuchos::RCP<Epetra_Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
 
     /// (scatra) system matrix
     Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_sysmat_;
 
     /// rhs: right hand side vector of scatra
-    Teuchos::RCP<Epetra_Vector> scatra_rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector> scatra_rhs_;
 
     //! @name time step sizes
     double dta_;

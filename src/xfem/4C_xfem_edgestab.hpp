@@ -16,8 +16,8 @@ continuous interior penalty) scheme
 #include "4C_config.hpp"
 
 #include "4C_inpar_xfem.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -85,7 +85,7 @@ namespace XFEM
         Teuchos::RCP<Core::FE::Discretization> discret,         ///< discretization
         Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector,        ///< systemvector
         Teuchos::RCP<Cut::CutWizard> wizard,                    ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
@@ -104,7 +104,7 @@ namespace XFEM
         std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
         Core::FE::DiscretizationFaces& xdiscret,  ///< discretization with faces
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
     );
 
     //! prepares edge based stabilization for standard fluid
@@ -112,7 +112,7 @@ namespace XFEM
         Teuchos::RCP<Core::FE::Discretization> discret,             ///< discretization
         Discret::ELEMENTS::FluidIntFace* faceele,                   ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,      ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector                    ///< systemvector
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector             ///< systemvector
     );
 
     //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
@@ -124,7 +124,7 @@ namespace XFEM
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
         Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
     );
 
     //! returns a map containing the ghost penalty stabilized internal face elements

@@ -304,7 +304,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   {
     Core::Elements::LocationArray laf(1);
     fluidele->location_vector(*fluiddis_, fluid_nds, laf, false);
-    Teuchos::RCP<const Epetra_Vector> matrix_state = fluiddis_->get_state("velaf");
+    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = fluiddis_->get_state("velaf");
     Core::FE::extract_my_values(*matrix_state, velpres, laf[0].lm_);
 
     std::vector<int> lmdisp;
@@ -314,14 +314,14 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
     {
       for (std::size_t n = 0; n < fluid_nds.size(); ++n)
         for (int dof = 0; dof < 3; ++dof) lmdisp[n * 3 + dof] = laf[0].lm_[n * 4 + dof];
-      Teuchos::RCP<const Epetra_Vector> matrix_state_disp = fluiddis_->get_state("dispnp");
+      Teuchos::RCP<const Core::LinAlg::Vector> matrix_state_disp = fluiddis_->get_state("dispnp");
       Core::FE::extract_my_values(*matrix_state_disp, disp, lmdisp);
     }
   }
   {
     Core::Elements::LocationArray las(1);
     sele->location_vector(*mc_[mcidx_]->get_cutter_dis(), las, false);
-    Teuchos::RCP<const Epetra_Vector> matrix_state =
+    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
         mc_[mcidx_]->get_cutter_dis()->get_state("ivelnp");
     Core::FE::extract_my_values(*matrix_state, ivel, las[0].lm_);
   }
@@ -330,7 +330,7 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
   {
     Core::Elements::LocationArray las(1);
     sele->location_vector(*mcfpi_ps_pf_->get_cutter_dis(), las, false);
-    Teuchos::RCP<const Epetra_Vector> matrix_state =
+    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
         mcfpi_ps_pf_->get_cutter_dis()->get_state("ivelnp");
     Core::FE::extract_my_values(*matrix_state, ipfvel, las[0].lm_);
   }

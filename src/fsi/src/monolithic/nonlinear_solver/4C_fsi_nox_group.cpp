@@ -32,7 +32,8 @@ void NOX::FSI::Group::capture_system_state()
 {
   // we know we already have the first linear system calculated
 
-  mfsi_.setup_rhs(RHSVector.getEpetraVector(), true);
+  Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+  mfsi_.setup_rhs(rhs_view, true);
   mfsi_.setup_system_matrix();
 
   sharedLinearSystem.getObject(this);
@@ -68,7 +69,8 @@ void NOX::FSI::Group::capture_system_state()
   {
     if (not isValidRHS)
     {
-      mfsi_.setup_rhs(RHSVector.getEpetraVector());
+      Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+      mfsi_.setup_rhs(rhs_view);
       isValidRHS = true;
     }
   }
@@ -80,9 +82,13 @@ void NOX::FSI::Group::capture_system_state()
  *----------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::FSI::Group::computeNewton(Teuchos::ParameterList& p)
 {
-  mfsi_.scale_system(RHSVector.getEpetraVector());
+  Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+  mfsi_.scale_system(rhs_view);
+
   ::NOX::Abstract::Group::ReturnType status = ::NOX::Epetra::Group::computeNewton(p);
-  mfsi_.unscale_solution(NewtonVector.getEpetraVector(), RHSVector.getEpetraVector());
+  Core::LinAlg::VectorView newton_vector_view(NewtonVector.getEpetraVector());
+
+  mfsi_.unscale_solution(newton_vector_view, rhs_view);
 
   // check return value of computeNewton call
   if (status == ::NOX::Abstract::Group::NotConverged || status == ::NOX::Abstract::Group::Failed)

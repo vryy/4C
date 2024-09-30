@@ -147,11 +147,11 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
   // bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // Get all general state vectors: flow, pressure,
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnm = discretization.get_state("pnm");
 
-  Teuchos::RCP<const Epetra_Vector> ial = discretization.get_state("intr_ac_link");
+  Teuchos::RCP<const Core::LinAlg::Vector> ial = discretization.get_state("intr_ac_link");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -298,7 +298,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
   // The number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
 
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
@@ -714,9 +714,9 @@ void Discret::ELEMENTS::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
   //  bool higher_order_ele = ele->is_higher_order_element(distype);
 
   // Get all general state vectors: flow, pressure,
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnm = discretization.get_state("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -836,7 +836,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
   // The number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
 
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
@@ -1003,7 +1003,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
 {
   const int myrank = discretization.get_comm().MyPID();
 
-  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
+  Teuchos::RCP<const Core::LinAlg::Vector> dscatranp = discretization.get_state("dscatranp");
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
 
@@ -1037,9 +1037,10 @@ void Discret::ELEMENTS::AcinusImpl<distype>::update_elem12_scatra(RedAcinus* ele
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
-  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
-  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.get_state("junctionVolumeInMix");
+  Teuchos::RCP<const Core::LinAlg::Vector> scatranp = discretization.get_state("scatranp");
+  Teuchos::RCP<const Core::LinAlg::Vector> dscatranp = discretization.get_state("dscatranp");
+  Teuchos::RCP<const Core::LinAlg::Vector> volumeMix =
+      discretization.get_state("junctionVolumeInMix");
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -1091,7 +1092,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcin
       Discret::ReducedLung::EvaluationData::get();
   const auto acinus_params = ele->get_acinus_params();
 
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
+  Teuchos::RCP<const Core::LinAlg::Vector> scatranp = discretization.get_state("scatranp");
 
   // Extract scatra values
   // Extract local values from the global vectors

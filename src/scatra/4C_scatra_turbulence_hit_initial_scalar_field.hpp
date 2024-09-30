@@ -17,8 +17,8 @@ transport
 #include "4C_config.hpp"
 
 #include "4C_inpar_scatra.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -64,8 +64,8 @@ namespace ScaTra
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vectors to be initialized
-    Teuchos::RCP<Epetra_Vector> phinp_;
-    Teuchos::RCP<Epetra_Vector> phin_;
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector> phin_;
 
     //! type of energy spectrum for initialization
     Inpar::ScaTra::InitialField type_;

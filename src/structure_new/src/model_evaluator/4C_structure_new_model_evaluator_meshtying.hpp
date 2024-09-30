@@ -73,10 +73,10 @@ namespace Solid
       Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_meshtying; }
 
       //! [derived]
-      void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) override;
+      void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector& rhs) override;
 
       //! [derived]
-      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
       bool assemble_jacobian(
@@ -93,23 +93,25 @@ namespace Solid
       void predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! [derived]
-      void run_post_compute_x(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
+      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+          const Core::LinAlg::Vector& xnew) override;
 
       //! [derived]
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
           const NOX::Nln::Group& curr_grp) override{};
 
       //! [derived]
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override{};
 
       //! [derived]
-      void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::Nln::Group& grp) override;
+      void run_post_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
+          Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+          const NOX::Nln::Group& grp) override;
 
       //! [derived]
-      void run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::Nln::Group& grp) override;
+      void run_pre_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
+          Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+          const NOX::Nln::Group& grp) override;
 
       //! [derived]
       void update_step_state(const double& timefac_n) override{};
@@ -136,10 +138,10 @@ namespace Solid
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
       void post_output() override{};
@@ -150,7 +152,7 @@ namespace Solid
        *
        * \param[in] x Current full state vector
        */
-      void reset(const Epetra_Vector& x) override{};
+      void reset(const Core::LinAlg::Vector& x) override{};
 
       //! \brief Perform actions just before the evaluate() call [derived]
       void pre_evaluate() override{};
@@ -173,7 +175,7 @@ namespace Solid
        *  \param[in] apply_dbc             Apply Dirichlet boundary conditions
        *
        *  \author hiermeier \date 08/17 */
-      Teuchos::RCP<Epetra_Vector> assemble_force_of_models(
+      Teuchos::RCP<Core::LinAlg::Vector> assemble_force_of_models(
           const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
@@ -203,7 +205,7 @@ namespace Solid
 
       @param[in] Xslavemod Vector with modified nodal positions
       */
-      void apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
+      void apply_mesh_initialization(Teuchos::RCP<const Core::LinAlg::Vector> Xslavemod);
 
       //!@}
 
@@ -228,7 +230,7 @@ namespace Solid
       Teuchos::RCP<CONTACT::MtAbstractStrategy> strategy_ptr_;
 
       //! Mesh relocation for conservation of angular momentum
-      Teuchos::RCP<Epetra_Vector> mesh_relocation_;
+      Teuchos::RCP<Core::LinAlg::Vector> mesh_relocation_;
     };  // namespace ModelEvaluator
 
   }  // namespace ModelEvaluator

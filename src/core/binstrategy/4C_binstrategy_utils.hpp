@@ -13,7 +13,8 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 #include <set>
@@ -95,7 +96,7 @@ namespace Core::Binstrategy::Utils
    * @param[out] currpos current position of node
    */
   void get_current_node_pos(const Core::FE::Discretization& discret, Core::Nodes::Node const* node,
-      Teuchos::RCP<const Epetra_Vector> const disnp, double* currpos);
+      Teuchos::RCP<const Core::LinAlg::Vector> const disnp, double* currpos);
 
 }  // namespace Core::Binstrategy::Utils
 

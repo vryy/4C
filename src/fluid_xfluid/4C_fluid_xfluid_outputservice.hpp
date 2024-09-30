@@ -18,8 +18,7 @@
 #include "4C_cut_enum.hpp"
 #include "4C_inpar_xfem.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
-
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -82,8 +81,8 @@ namespace FLD
     /// standard output routine
     void output(int step, double time, bool write_restart_data,
         Teuchos::RCP<const FLD::XFluidState> state,
-        Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::null,
-        Teuchos::RCP<Epetra_Vector> gridvnp = Teuchos::null);
+        Teuchos::RCP<Core::LinAlg::Vector> dispnp = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::Vector> gridvnp = Teuchos::null);
 
     /// Gmsh solution output
     virtual void gmsh_solution_output(const std::string& filename_base,  ///< name for output file
@@ -132,8 +131,10 @@ namespace FLD
         int step,                                               ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+        Teuchos::RCP<const Core::LinAlg::Vector>
+            vel,  ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> acc =
+            Teuchos::null  ///< vector holding acceleration
     ){};
 
     /// Gmsh output for EOS
@@ -154,7 +155,7 @@ namespace FLD
     Teuchos::RCP<Core::DOFSets::IndependentDofSet> dofset_out_;
 
     //! output vector (mapped to initial fluid dofrowmap)
-    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
+    Teuchos::RCP<Core::LinAlg::Vector> outvec_fluid_;
 
     //! vel-pres splitter for output purpose
     Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_out_;
@@ -218,9 +219,11 @@ namespace FLD
         int step,                                       ///< step number
         int count,  ///< counter for iterations within a global time step
         const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
-        Teuchos::RCP<const Epetra_Vector> dispnp =
+        Teuchos::RCP<const Core::LinAlg::Vector>
+            vel,  ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> acc =
+            Teuchos::null,  ///< vector holding acceleration
+        Teuchos::RCP<const Core::LinAlg::Vector> dispnp =
             Teuchos::null  ///< vector holding ale displacements
     );
 
@@ -232,30 +235,34 @@ namespace FLD
    private:
     /// Gmsh output function for elements without an Cut::ElementHandle
     void gmsh_output_element(
-        Core::FE::Discretization& discret,      ///< background fluid discretization
-        std::ofstream& vel_f,                   ///< output file stream for velocity
-        std::ofstream& press_f,                 ///< output file stream for pressure
-        std::ofstream& acc_f,                   ///< output file stream for acceleration
-        Core::Elements::Element* actele,        ///< element
-        std::vector<int>& nds,                  ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null,  ///< vector holding acceleration
-        Teuchos::RCP<const Epetra_Vector> dispnp =
+        Core::FE::Discretization& discret,  ///< background fluid discretization
+        std::ofstream& vel_f,               ///< output file stream for velocity
+        std::ofstream& press_f,             ///< output file stream for pressure
+        std::ofstream& acc_f,               ///< output file stream for acceleration
+        Core::Elements::Element* actele,    ///< element
+        std::vector<int>& nds,              ///< vector holding the nodal dofsets
+        Teuchos::RCP<const Core::LinAlg::Vector>
+            vel,  ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> acc =
+            Teuchos::null,  ///< vector holding acceleration
+        Teuchos::RCP<const Core::LinAlg::Vector> dispnp =
             Teuchos::null  ///< vector holding ale displacements
     );
 
     /// Gmsh output function for volumecells
     void gmsh_output_volume_cell(
-        Core::FE::Discretization& discret,         ///< background fluid discretization
-        std::ofstream& vel_f,                      ///< output file stream for velocity
-        std::ofstream& press_f,                    ///< output file stream for pressure
-        std::ofstream& acc_f,                      ///< output file stream for acceleration
-        Core::Elements::Element* actele,           ///< element
-        Cut::ElementHandle* e,                     ///< elementhandle
-        Cut::VolumeCell* vc,                       ///< volumecell
-        const std::vector<int>& nds,               ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Epetra_Vector> accvec = Teuchos::null  ///< vector holding acceleration
+        Core::FE::Discretization& discret,  ///< background fluid discretization
+        std::ofstream& vel_f,               ///< output file stream for velocity
+        std::ofstream& press_f,             ///< output file stream for pressure
+        std::ofstream& acc_f,               ///< output file stream for acceleration
+        Core::Elements::Element* actele,    ///< element
+        Cut::ElementHandle* e,              ///< elementhandle
+        Cut::VolumeCell* vc,                ///< volumecell
+        const std::vector<int>& nds,        ///< vector holding the nodal dofsets
+        Teuchos::RCP<const Core::LinAlg::Vector>
+            velvec,  ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> accvec =
+            Teuchos::null  ///< vector holding acceleration
     );
 
     /// Gmsh output function for boundarycells

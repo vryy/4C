@@ -18,9 +18,9 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -73,9 +73,9 @@ void Solid::ModelEvaluator::BeamInteractionDataState::setup(
 
   // displacements
   dis_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, ia_discret->dof_row_map(), true));
-  disnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->dof_col_map()));
-  discolnp_ = Teuchos::rcp(new Epetra_Vector(*ia_discret->dof_col_map()));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, ia_discret->dof_row_map(), true));
+  disnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*ia_discret->dof_col_map()));
+  discolnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*ia_discret->dof_col_map()));
 
   // force
   forcen_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->dof_row_map()));

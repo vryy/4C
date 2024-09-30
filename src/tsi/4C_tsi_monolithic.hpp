@@ -152,12 +152,12 @@ namespace TSI
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void evaluate(
-        Teuchos::RCP<Epetra_Vector> stepinc  //!< increment between time step n and n+1
+        Teuchos::RCP<Core::LinAlg::Vector> stepinc  //!< increment between time step n and n+1
     );
 
     //! extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
-    virtual void initial_guess(Teuchos::RCP<Epetra_Vector> ig);
+    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -200,17 +200,17 @@ namespace TSI
 
     //! Determine norm of force residual
     double calculate_vector_norm(const enum Inpar::TSI::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
+        const Teuchos::RCP<const Core::LinAlg::Vector> vect  //!< the vector of interest
     );
 
     //@}
 
     //! apply infnorm scaling to linear block system
-    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b);
 
     //! undo infnorm scaling from scaled solution
     virtual void unscale_solution(
-        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b);
 
    protected:
     //! @name Time loop building blocks
@@ -234,8 +234,8 @@ namespace TSI
       \param sx (o) structural vector (e.g. displacements)
       \param tx (o) thermal vector (e.g. temperatures)
       */
-    virtual void extract_field_vectors(Teuchos::RCP<Epetra_Vector> x,
-        Teuchos::RCP<Epetra_Vector>& sx, Teuchos::RCP<Epetra_Vector>& tx);
+    virtual void extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector> x,
+        Teuchos::RCP<Core::LinAlg::Vector>& sx, Teuchos::RCP<Core::LinAlg::Vector>& tx);
 
     //! @name Access methods for subclasses
 
@@ -288,15 +288,15 @@ namespace TSI
     //@}
 
     //! @name Global vectors
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
     //@}
 
     //! enum for STR time integartion
     enum Inpar::Solid::DynamicType strmethodname_;
 
     //! apply structural displacements and velocities on thermo discretization
-    void apply_struct_coupling_state(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) override;
+    void apply_struct_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        Teuchos::RCP<const Core::LinAlg::Vector> vel) override;
 
    private:
     //! if just rho_inf is specified for genAlpha, the other parameters in the global parameter
@@ -310,9 +310,9 @@ namespace TSI
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> tv   //!< vector containing only thermal dofs
+    void setup_vector(Core::LinAlg::Vector& f,        //!< vector of length of all dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> tv   //!< vector containing only thermal dofs
     );
 
     //! check if step is admissible for line search
@@ -393,13 +393,13 @@ namespace TSI
     //! @name Various global forces
 
     //! rhs of TSI system
-    Teuchos::RCP<Epetra_Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
 
     //! increment between Newton steps k and k+1 \f$\Delta{x}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> iterinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;
 
     //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> vel_;
+    Teuchos::RCP<const Core::LinAlg::Vector> vel_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
@@ -408,13 +408,13 @@ namespace TSI
 
     //! @name infnorm scaling
 
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         srowsum_;  //!< sum of absolute values of the rows of the structural block
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         scolsum_;  //!< sum of absolute values of the column of the structural block
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         trowsum_;  //!< sum of absolute values of the rows of the thermal block
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         tcolsum_;  //!< sum of absolute values of the column of the thermal block
 
     //@}

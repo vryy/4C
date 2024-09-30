@@ -38,7 +38,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
     if (discretization.has_state(1, scalarfield))
     {
       // get the scalar state
-      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(1, scalarfield);
+      Teuchos::RCP<const Core::LinAlg::Vector> scalarnp = discretization.get_state(1, scalarfield);
 
       if (scalarnp == Teuchos::null)
         FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());

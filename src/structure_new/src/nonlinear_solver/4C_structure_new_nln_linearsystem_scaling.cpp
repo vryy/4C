@@ -90,7 +90,8 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_epetra, Core::LinAlg::View));
 
   // get rhs
-  Epetra_Vector* rhs = dynamic_cast<Epetra_Vector*>(problem.GetRHS());
+  Core::LinAlg::VectorView rhs_view(*dynamic_cast<Epetra_Vector*>(problem.GetRHS()));
+  Core::LinAlg::Vector& rhs(rhs_view);
 
   // right multiplication of stiffness matrix
   stiff_scaled_ =
@@ -102,10 +103,10 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
     stiff_scaled_ =
         Core::LinAlg::matrix_multiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
 
-    Teuchos::RCP<Epetra_Vector> rhs_scaled =
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_scaled =
         Core::LinAlg::create_vector(problem.GetRHS()->Map(), true);
-    stcmat_->multiply(true, *rhs, *rhs_scaled);
-    rhs->Update(1.0, *rhs_scaled, 0.0);
+    stcmat_->multiply(true, rhs, *rhs_scaled);
+    rhs.Update(1.0, *rhs_scaled, 0.0);
   }
 
   // set new stiffness matrix
@@ -116,9 +117,9 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
  *----------------------------------------------------------------------*/
 void Solid::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& problem)
 {
-  Teuchos::RCP<Epetra_MultiVector> disisdc =
+  Teuchos::RCP<Core::LinAlg::Vector> disisdc =
       Core::LinAlg::create_vector(problem.GetLHS()->Map(), true);
-  Epetra_MultiVector* disi = dynamic_cast<Epetra_Vector*>(problem.GetLHS());
+  Epetra_MultiVector* disi = problem.GetLHS();
 
   stcmat_->multiply(false, *disi, *disisdc);
   disi->Update(1.0, *disisdc, 0.0);

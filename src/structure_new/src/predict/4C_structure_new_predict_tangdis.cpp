@@ -123,15 +123,15 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   // reset isValid flags
   grp_ptr->computeX(*grp_ptr, grp_ptr->getNewton(), 1.0);
   // add the DBC values to the current state vector
-  Teuchos::RCP<Epetra_Vector> dbc_incr_exp_ptr =
-      Teuchos::rcp(new Epetra_Vector(global_state().global_problem_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> dbc_incr_exp_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector(global_state().global_problem_map(), true));
   Core::LinAlg::export_to(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
-  grp_ptr->computeX(*grp_ptr, *dbc_incr_exp_ptr, 1.0);
+  grp_ptr->computeX(*grp_ptr, dbc_incr_exp_ptr->get_ref_of_Epetra_Vector(), 1.0);
   // Reset the state variables
   const ::NOX::Epetra::Vector& x_eptra =
       dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
-  impl_int().reset_model_states(x_eptra.getEpetraVector());
+  impl_int().reset_model_states(Core::LinAlg::Vector(x_eptra.getEpetraVector()));
 
   // For safety purposes, we set the dbc_incr vector to zero
   dbc_incr_ptr_->PutScalar(0.0);
@@ -143,7 +143,7 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& Solid::Predict::TangDis::get_dbc_incr() const
+const Core::LinAlg::Vector& Solid::Predict::TangDis::get_dbc_incr() const
 {
   FOUR_C_ASSERT(!dbc_incr_ptr_.is_null(), "The dbc increment is not initialized!");
   return *dbc_incr_ptr_;
@@ -158,7 +158,7 @@ const bool& Solid::Predict::TangDis::is_apply_linear_reaction_forces() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Predict::TangDis::pre_apply_force_external(Epetra_Vector& fextnp) const
+bool Solid::Predict::TangDis::pre_apply_force_external(Core::LinAlg::Vector& fextnp) const
 {
   check_init_setup();
 
@@ -184,14 +184,14 @@ NOX::Nln::GROUP::PrePostOp::TangDis::TangDis(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
-    Epetra_Vector& F, const NOX::Nln::Group& grp)
+    Core::LinAlg::Vector& F, const NOX::Nln::Group& grp)
 {
   // If we do not want to apply linear reaction forces due to changing Dirichlet
   // boundary conditions, we just return.
   if (not tang_predict_ptr_->is_apply_linear_reaction_forces()) return;
 
   // get the new dirichlet boundary increment
-  const Epetra_Vector& dbc_incr = tang_predict_ptr_->get_dbc_incr();
+  const Core::LinAlg::Vector& dbc_incr = tang_predict_ptr_->get_dbc_incr();
 
   double dbc_incr_nrm2 = 0.0;
   dbc_incr.Norm2(&dbc_incr_nrm2);
@@ -207,8 +207,8 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
   // check if the jacobian is filled
   if (not stiff_ptr->filled()) FOUR_C_THROW("The jacobian is not yet filled!");
 
-  Teuchos::RCP<Epetra_Vector> freact_ptr =
-      Teuchos::rcp(new Epetra_Vector(*tang_predict_ptr_->global_state().dof_row_map_view()));
+  Teuchos::RCP<Core::LinAlg::Vector> freact_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector(*tang_predict_ptr_->global_state().dof_row_map_view()));
   if (stiff_ptr->multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs

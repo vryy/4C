@@ -23,9 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::evaluate_dirichlet(const Core::FE::Discretization& discret,
-    const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
-    const Teuchos::RCP<Epetra_Vector>& systemvectord,
-    const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
+    const Teuchos::ParameterList& params, const Teuchos::RCP<Core::LinAlg::Vector>& systemvector,
+    const Teuchos::RCP<Core::LinAlg::Vector>& systemvectord,
+    const Teuchos::RCP<Core::LinAlg::Vector>& systemvectordd,
+    const Teuchos::RCP<Epetra_IntVector>& toggle,
     const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor)
 {
   // create const version
@@ -53,9 +54,10 @@ Teuchos::RCP<const Core::FE::UTILS::Dbc> Core::FE::UTILS::build_dbc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::Dbc::operator()(const Core::FE::Discretization& discret,
-    const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
-    const Teuchos::RCP<Epetra_Vector>& systemvectord,
-    const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
+    const Teuchos::ParameterList& params, const Teuchos::RCP<Core::LinAlg::Vector>& systemvector,
+    const Teuchos::RCP<Core::LinAlg::Vector>& systemvectord,
+    const Teuchos::RCP<Core::LinAlg::Vector>& systemvectordd,
+    const Teuchos::RCP<Epetra_IntVector>& toggle,
     const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const
 {
   if (!discret.filled()) FOUR_C_THROW("fill_complete() was not called");
@@ -75,7 +77,7 @@ void Core::FE::UTILS::Dbc::operator()(const Core::FE::Discretization& discret,
   if (dbcmapextractor != Teuchos::null)
     dbcgids[set_row] = Teuchos::rcp<std::set<int>>(new std::set<int>());
 
-  const std::array<Teuchos::RCP<Epetra_Vector>, 3> systemvectors = {
+  const std::array<Teuchos::RCP<Core::LinAlg::Vector>, 3> systemvectors = {
       systemvector, systemvectord, systemvectordd};
 
   /* If no toggle vector is provided we have to create a temporary one,
@@ -105,7 +107,7 @@ void Core::FE::UTILS::Dbc::operator()(const Core::FE::Discretization& discret,
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_IntVector> Core::FE::UTILS::Dbc::create_toggle_vector(
     const Teuchos::RCP<Epetra_IntVector> toggle_input,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors) const
+    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors) const
 {
   Teuchos::RCP<Epetra_IntVector> toggleaux = Teuchos::null;
 
@@ -141,7 +143,7 @@ Teuchos::RCP<Epetra_IntVector> Core::FE::UTILS::Dbc::create_toggle_vector(
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::Dbc::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
+    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // --------------------------------------------------------------------------
@@ -425,7 +427,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
 void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   do_dirichlet_condition(params, discret, conds, time, systemvectors, toggle, dbcgids,
@@ -443,7 +445,7 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum Core::Conditions::ConditionType& type) const
 {
@@ -460,7 +462,7 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   if (systemvectors[0].is_null() and systemvectors[1].is_null() and systemvectors[2].is_null())

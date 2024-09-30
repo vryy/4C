@@ -57,7 +57,7 @@ namespace Solid
       //! @{
       Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_constraints; }
 
-      void reset(const Epetra_Vector& x) override;
+      void reset(const Core::LinAlg::Vector& x) override;
 
       bool evaluate_force() override;
 
@@ -69,7 +69,7 @@ namespace Solid
 
       void post_evaluate() override {}
 
-      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
 
       bool assemble_jacobian(
           Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
@@ -79,13 +79,13 @@ namespace Solid
 
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
           const NOX::Nln::Group& curr_grp) override
       {
       }
 
-      void run_post_compute_x(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
+      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+          const Core::LinAlg::Vector& xnew) override
       {
       }
 
@@ -113,9 +113,9 @@ namespace Solid
 
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
-      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
 
-      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
 
       void post_output() override;
 
@@ -124,7 +124,7 @@ namespace Solid
       void assemble_jacobian_contributions_from_element_level_for_ptc(
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
-      void create_backup_state(const Epetra_Vector& dir) override;
+      void create_backup_state(const Core::LinAlg::Vector& dir) override;
 
       void recover_from_backup_state() override;
       //! @}
@@ -154,7 +154,7 @@ namespace Solid
       Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_stiff_ptr_;
 
       //! constraint force vector
-      Teuchos::RCP<Epetra_Vector> constraint_force_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> constraint_force_ptr_;
 
       //! visualization parameters
       Core::IO::VisualizationParameters visualization_params_;

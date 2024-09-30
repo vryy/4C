@@ -174,8 +174,10 @@ void PaSI::PartitionedAlgo::extract_interface_states()
   intfaccnp_ = interface_->extract_pasi_cond_vector(structurefield_->accnp());
 }
 
-void PaSI::PartitionedAlgo::set_interface_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,
-    Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp)
+void PaSI::PartitionedAlgo::set_interface_states(
+    Teuchos::RCP<const Core::LinAlg::Vector> intfdispnp,
+    Teuchos::RCP<const Core::LinAlg::Vector> intfvelnp,
+    Teuchos::RCP<const Core::LinAlg::Vector> intfaccnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::set_interface_states");
 

@@ -12,10 +12,10 @@ transform matrixes, vectors, ...
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 
 #define COUP_MANAGER_DEBUG_OUT
 
@@ -81,19 +81,19 @@ namespace XFEM
     virtual ~CouplingCommManager() = default;
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
-    //! RCP<const Epetra_Vector> vecA
-    void insert_vector(const int idxA, Teuchos::RCP<const Epetra_Vector> vecA, const int idxB,
-        Teuchos::RCP<Epetra_Vector> vecB, const CouplingCommManager::TransferType ttype,
-        bool add = false, double scale = 1.0);
+    //! RCP<const Core::LinAlg::Vector> vecA
+    void insert_vector(const int idxA, Teuchos::RCP<const Core::LinAlg::Vector> vecA,
+        const int idxB, Teuchos::RCP<Core::LinAlg::Vector> vecB,
+        const CouplingCommManager::TransferType ttype, bool add = false, double scale = 1.0);
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
-    //! RCP<Epetra_Vector> vecA
-    void insert_vector(const int idxA, Teuchos::RCP<Epetra_Vector> vecA, const int idxB,
-        Teuchos::RCP<Epetra_Vector> vecB, const CouplingCommManager::TransferType ttype,
+    //! RCP<Core::LinAlg::Vector> vecA
+    void insert_vector(const int idxA, Teuchos::RCP<Core::LinAlg::Vector> vecA, const int idxB,
+        Teuchos::RCP<Core::LinAlg::Vector> vecB, const CouplingCommManager::TransferType ttype,
         bool add = false, double scale = 1.0)
     {
-      insert_vector(
-          idxA, Teuchos::rcp_static_cast<const Epetra_Vector>(vecA), idxB, vecB, ttype, add, scale);
+      insert_vector(idxA, Teuchos::rcp_static_cast<const Core::LinAlg::Vector>(vecA), idxB, vecB,
+          ttype, add, scale);
     }
 
     //! Insert a Matrix A (from discretization A) into Matrix B (from discretization B) (choose type

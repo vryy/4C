@@ -50,7 +50,7 @@ namespace Solid
       }
 
       //! derived
-      void reset(const Epetra_Vector& x) override;
+      void reset(const Core::LinAlg::Vector& x) override;
 
       //! derived
       bool evaluate_force() override;
@@ -68,7 +68,7 @@ namespace Solid
       void post_evaluate() override{/* currently unused */};
 
       //! derived
-      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
       bool assemble_jacobian(
@@ -85,15 +85,15 @@ namespace Solid
       void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
           const NOX::Nln::Group& curr_grp) override
       {
         return;
       };
 
       //! derived
-      void run_post_compute_x(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
+      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+          const Core::LinAlg::Vector& xnew) override;
 
       //! derived
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override { return; };
@@ -126,20 +126,20 @@ namespace Solid
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
 
      private:
       //! structural displacement at \f$t_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
+      Teuchos::RCP<const Core::LinAlg::Vector> disnp_ptr_;
 
       //! stiffness contributions from beam interactions
       Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_beaminteract_ptr_;
 
       //! force contributions from beam interaction at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> f_beaminteract_np_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> f_beaminteract_np_ptr_;
 
       //! beam contact manager
       Teuchos::RCP<CONTACT::Beam3cmanager> beamcman_;

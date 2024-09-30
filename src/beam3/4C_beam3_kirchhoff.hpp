@@ -51,9 +51,9 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include "4C_fem_general_node.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_fad.hpp"
 
-#include <Epetra_Vector.h>
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>

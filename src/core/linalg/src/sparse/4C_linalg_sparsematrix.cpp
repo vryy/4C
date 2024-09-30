@@ -143,7 +143,7 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const SparseMatrix& mat, DataAccess acc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::LinAlg::SparseMatrix::SparseMatrix(
-    const Epetra_Vector& diag, bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
+    const Core::LinAlg::Vector& diag, bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
     : graph_(Teuchos::null),
       dbcmaps_(Teuchos::null),
       explicitdirichlet_(explicitdirichlet),
@@ -884,7 +884,8 @@ void Core::LinAlg::SparseMatrix::un_complete()
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::SparseMatrix::apply_dirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock)
+void Core::LinAlg::SparseMatrix::apply_dirichlet(
+    const Core::LinAlg::Vector& dbctoggle, bool diagonalblock)
 {
   // if matrix is filled, global assembly was called already and all nonlocal values are
   // distributed
@@ -1298,7 +1299,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dirichlet_rows(
-    const Teuchos::RCP<Epetra_Vector> dbctoggle)
+    const Teuchos::RCP<Core::LinAlg::Vector> dbctoggle)
 {
   if (not filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");
 
@@ -1309,7 +1310,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dir
   const Epetra_Map& colmap = sysmat_->ColMap();
   const int nummyrows = sysmat_->NumMyRows();
 
-  const Epetra_Vector& dbct = *dbctoggle;
+  const Core::LinAlg::Vector& dbct = *dbctoggle;
 
   std::vector<int> idx(max_num_entries());
 

@@ -17,8 +17,8 @@ surface meshes
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <filesystem>
@@ -78,8 +78,8 @@ namespace Cut
 
       virtual ~BackMesh() = default;
 
-      void init(const Teuchos::RCP<const Epetra_Vector>& back_disp_col,
-          const Teuchos::RCP<const Epetra_Vector>& back_levelset_col);
+      void init(const Teuchos::RCP<const Core::LinAlg::Vector>& back_disp_col,
+          const Teuchos::RCP<const Core::LinAlg::Vector>& back_levelset_col);
 
       const Teuchos::RCP<Core::FE::Discretization>& get_ptr() { return back_discret_; }
 
@@ -93,7 +93,7 @@ namespace Cut
 
       inline bool is_back_disp() const { return (not back_disp_col_.is_null()); }
 
-      const Epetra_Vector& back_disp_col() const
+      const Core::LinAlg::Vector& back_disp_col() const
       {
         if (not is_back_disp())
           FOUR_C_THROW("The background displacement was not initialized correctly!");
@@ -103,7 +103,7 @@ namespace Cut
 
       inline bool is_level_set() const { return (not back_levelset_col_.is_null()); }
 
-      const Epetra_Vector& back_level_set_col() const
+      const Core::LinAlg::Vector& back_level_set_col() const
       {
         if (not is_level_set())
           FOUR_C_THROW("No level-set values set for the background discretization!");
@@ -120,10 +120,10 @@ namespace Cut
       Teuchos::RCP<Core::FE::Discretization> back_discret_;
 
       /// col vector holding background ALE displacements for backdis
-      Teuchos::RCP<const Epetra_Vector> back_disp_col_;
+      Teuchos::RCP<const Core::LinAlg::Vector> back_disp_col_;
 
       /// col vector holding nodal level-set values based on backdis
-      Teuchos::RCP<const Epetra_Vector> back_levelset_col_;
+      Teuchos::RCP<const Core::LinAlg::Vector> back_levelset_col_;
     };
 
     /*------------------------------------------------------------------------*/
@@ -135,7 +135,7 @@ namespace Cut
      public:
       //! ctor
       CutterMesh(Teuchos::RCP<Core::FE::Discretization> cutterdis,
-          Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid)
+          Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col, const int start_ele_gid)
           : cutterdis_(cutterdis), cutter_disp_col_(cutter_disp_col), start_ele_gid_(start_ele_gid)
       {
       }
@@ -151,7 +151,7 @@ namespace Cut
       //---------------------------------state vectors ----------------------------
 
       //! @name state vectors holding displacements
-      Teuchos::RCP<const Epetra_Vector>
+      Teuchos::RCP<const Core::LinAlg::Vector>
           cutter_disp_col_;  ///< col vector holding interface displacements for cutterdis
       //@}
 
@@ -199,25 +199,25 @@ namespace Cut
     );
 
     virtual void set_background_state(
-        Teuchos::RCP<const Epetra_Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
-        Teuchos::RCP<const Epetra_Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector>
             back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
         int level_set_sid       //!< global id for level-set side
     );
 
     void add_cutter_state(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-        Teuchos::RCP<const Epetra_Vector> cutter_disp_col);
+        Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col);
 
     void add_cutter_state(const int mc_idx, Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-        Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
+        Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col, const int start_ele_gid);
 
     // Find marked background-boundary sides.
     //  Extract these sides and create boundary cell for these!
     void set_marked_condition_sides(
         // const int mc_idx,
         Teuchos::RCP<Core::FE::Discretization> cutter_dis,
-        // Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+        // Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col,
         const int start_ele_gid);
 
     //@}
@@ -262,7 +262,7 @@ namespace Cut
 
     //! update the coordinates of the cut boundary cells
     void update_boundary_cell_coords(Teuchos::RCP<Core::FE::Discretization> cutterdis,
-        Teuchos::RCP<const Epetra_Vector> cutter_disp_col, const int start_ele_gid);
+        Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col, const int start_ele_gid);
 
     //! Cubaturedegree for creating of integrationpoints on boundarycells
     int get_bc_cubaturedegree() const;
@@ -326,7 +326,7 @@ namespace Cut
     //! Add all cutting side elements of given cutter discretization with given displacement field
     //! to the intersection class
     void add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization> cutterdis,
-        Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+        Teuchos::RCP<const Core::LinAlg::Vector> cutter_disp_col,
         const int start_ele_gid = 0  ///< global start index for element id numbering
     );
 

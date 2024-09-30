@@ -320,11 +320,11 @@ void FSI::MonolithicNoNOX::linear_solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
+void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> step_increment)
 {
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> fx;
-  Teuchos::RCP<const Epetra_Vector> ax;
+  Teuchos::RCP<const Core::LinAlg::Vector> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector> ax;
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
@@ -369,7 +369,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Epetra_Vector> step_incre
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {

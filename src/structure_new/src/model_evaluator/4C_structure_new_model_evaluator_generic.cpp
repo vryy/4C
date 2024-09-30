@@ -212,13 +212,14 @@ const int& Solid::ModelEvaluator::Generic::dof_offset() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Solid::ModelEvaluator::Generic::get_fext_incr() const
+Teuchos::RCP<Core::LinAlg::Vector> Solid::ModelEvaluator::Generic::get_fext_incr() const
 {
   check_init_setup();
-  const Epetra_Vector& fextn = *global_state().get_fext_n();
-  const Epetra_Vector& fextnp = *global_state().get_fext_np();
+  const Core::LinAlg::Vector& fextn = *global_state().get_fext_n();
+  const Core::LinAlg::Vector& fextnp = *global_state().get_fext_np();
 
-  Teuchos::RCP<Epetra_Vector> fext_incr = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(fextnp));
+  Teuchos::RCP<Core::LinAlg::Vector> fext_incr =
+      Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(fextnp));
   fext_incr->Update(-1.0, fextn, 1.0);
 
   return fext_incr;

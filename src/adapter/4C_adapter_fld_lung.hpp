@@ -52,7 +52,7 @@ namespace Adapter
     void list_lung_vol_cons(std::set<int>& LungVolConIDs, int& MinLungVolConID);
 
     /// Initialize fluid part of lung volume constraint
-    void initialize_vol_con(Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID);
+    void initialize_vol_con(Teuchos::RCP<Core::LinAlg::Vector> initflowrate, const int offsetID);
 
     /// Evaluate fluid/ale part of lung volume constraint
     void evaluate_vol_con(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FluidShapeDerivMatrix,
@@ -60,11 +60,13 @@ namespace Adapter
         Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstrFluidMatrix,
         Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> AleConstrMatrix,
         Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ConstrAleMatrix,
-        Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
-        Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta);
+        Teuchos::RCP<Core::LinAlg::Vector> FluidRHS,
+        Teuchos::RCP<Core::LinAlg::Vector> CurrFlowRates,
+        Teuchos::RCP<Core::LinAlg::Vector> lagrMultVecRed, const int offsetID,
+        const double dttheta);
 
     /// Write additional forces due to volume constraint
-    void output_forces(Teuchos::RCP<Epetra_Vector> Forces);
+    void output_forces(Teuchos::RCP<Core::LinAlg::Vector> Forces);
 
     /// Get map extractor for fsi <-> full map
     Teuchos::RCP<Core::LinAlg::MapExtractor> fsi_interface() { return fsiinterface_; }

@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
     Teuchos::RCP<const Core::FE::Discretization> targetdis, const Teuchos::ParameterList& params,
-    Teuchos::RCP<const Epetra_Vector> sourcedisp)
+    Teuchos::RCP<const Core::LinAlg::Vector> sourcedisp)
     : sourcedis_(sourcedis),
       targetdis_(targetdis),
       searchradius_fac_(
@@ -66,7 +66,8 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const Core::FE::Discretization> 
   }
 }
 
-void XFEM::MeshProjector::set_source_position_vector(Teuchos::RCP<const Epetra_Vector> sourcedisp)
+void XFEM::MeshProjector::set_source_position_vector(
+    Teuchos::RCP<const Core::LinAlg::Vector> sourcedisp)
 {
   src_nodepositions_n_.clear();
   // set position of source nodes
@@ -193,8 +194,8 @@ void XFEM::MeshProjector::setup_search_tree()
 }
 
 void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeToDof,
-    std::vector<Teuchos::RCP<Epetra_Vector>> target_statevecs,
-    Teuchos::RCP<const Epetra_Vector> targetdisp)
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector>> target_statevecs,
+    Teuchos::RCP<const Core::LinAlg::Vector> targetdisp)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "XFEM::MeshProjector::Project" );
 
@@ -300,8 +301,8 @@ void XFEM::MeshProjector::project(std::map<int, std::set<int>>& projection_nodeT
 }
 
 void XFEM::MeshProjector::project_in_full_target_discretization(
-    std::vector<Teuchos::RCP<Epetra_Vector>> target_statevecs,
-    Teuchos::RCP<const Epetra_Vector> targetdisp)
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector>> target_statevecs,
+    Teuchos::RCP<const Core::LinAlg::Vector> targetdisp)
 {
   // this routine supports only non-XFEM discretizations!
   Teuchos::RCP<const XFEM::DiscretizationXFEM> xdiscret =
@@ -597,7 +598,7 @@ void XFEM::MeshProjector::pack_values(std::vector<Core::LinAlg::Matrix<3, 1>>& t
   swap(sblock, data());
 }
 
-void XFEM::MeshProjector::gmsh_output(int step, Teuchos::RCP<const Epetra_Vector> targetdisp)
+void XFEM::MeshProjector::gmsh_output(int step, Teuchos::RCP<const Core::LinAlg::Vector> targetdisp)
 {
   // output of source discretization with element numbers and target nodes together with element id
   // of source element for value projection

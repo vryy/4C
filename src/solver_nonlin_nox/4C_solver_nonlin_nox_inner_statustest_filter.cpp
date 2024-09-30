@@ -18,6 +18,7 @@
 
 #include "4C_solver_nonlin_nox_inner_statustest_filter.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_solver_nonlin_nox_inner_statustest_interface_required.hpp"
 #include "4C_solver_nonlin_nox_linesearch_generic.hpp"
@@ -27,7 +28,6 @@
 #include "4C_solver_nonlin_nox_statustest_normf.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <fenv.h>
 #include <NOX_Direction_Generic.H>
 #include <NOX_Epetra_Vector.H>
@@ -902,9 +902,9 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::solve(
   const Epetra_BlockMap& map =
       dynamic_cast<const ::NOX::Epetra::Vector&>(x).getEpetraVector().Map();
 
-  Teuchos::RCP<Epetra_Vector> dir_ptr = Teuchos::rcp(new Epetra_Vector(map, true));
-  Teuchos::RCP<::NOX::Epetra::Vector> nox_dir =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(dir_ptr, ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<Core::LinAlg::Vector> dir_ptr = Teuchos::rcp(new Core::LinAlg::Vector(map, true));
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_dir = Teuchos::rcp(new ::NOX::Epetra::Vector(
+      dir_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   // compute the new direction
   const NOX::Nln::Solver::LineSearchBased& nln_solver =

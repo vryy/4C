@@ -479,9 +479,10 @@ void SSI::AssembleStrategySparse::assemble_scatramanifold_structure(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<const Epetra_Vector> rhs_scatra, Teuchos::RCP<const Epetra_Vector> rhs_structure,
-    Teuchos::RCP<const Epetra_Vector> rhs_manifold)
+void SSI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs_scatra,
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs_structure,
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs_manifold)
 {
   ssi_maps()->maps_sub_problems()->insert_vector(
       rhs_scatra, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::scalar_transport), rhs);

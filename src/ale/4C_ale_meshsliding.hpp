@@ -35,7 +35,7 @@ namespace ALE
 
     //! Set up mesh sliding framework
     Teuchos::RCP<Core::LinAlg::SparseOperator> setup(
-        std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp) override;
+        std::vector<int> coupleddof, Teuchos::RCP<Core::LinAlg::Vector>& dispnp) override;
 
    private:
     //! Call the constructor and the setup of the mortar coupling adapter
@@ -53,9 +53,10 @@ namespace ALE
     //! Condensation operation for a block matrix
     void condensation_operation_block_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator>&
-            sysmat,                             ///> sysmat established by the element routine
-        Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine
-        Teuchos::RCP<Epetra_Vector>& dispnp) override;  ///> current displacement vector
+            sysmat,  ///> sysmat established by the element routine
+        Teuchos::RCP<Core::LinAlg::Vector>&
+            residual,  ///> residual established by the element routine
+        Teuchos::RCP<Core::LinAlg::Vector>& dispnp) override;  ///> current displacement vector
 
     //! Get functions for the mortar matrices
     void get_mortar_matrices(Teuchos::RCP<Core::LinAlg::SparseMatrix>& Aco_mm,
@@ -72,27 +73,28 @@ namespace ALE
         Teuchos::RCP<const Epetra_Map>& dofrowmap);
 
     //! Compute and update the increments of the slave node (do nothing in the mesh sliding case)
-    void update_slave_dof(
-        Teuchos::RCP<Epetra_Vector>& inc, Teuchos::RCP<Epetra_Vector>& dispnp) override{};
+    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector>& inc,
+        Teuchos::RCP<Core::LinAlg::Vector>& dispnp) override{};
 
     //! Recover method for Lagrange multipliers
-    void recover(Teuchos::RCP<Epetra_Vector>& inc) override;
+    void recover(Teuchos::RCP<Core::LinAlg::Vector>& inc) override;
 
     //! Solve ALE mesh sliding problem
     int solve_meshtying(Core::LinAlg::Solver& solver,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
-        Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp) override;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Core::LinAlg::Vector>& disi,
+        Teuchos::RCP<Core::LinAlg::Vector> residual,
+        Teuchos::RCP<Core::LinAlg::Vector>& dispnp) override;
 
     //! adapter to nonlinear mortar coupling framework
     Teuchos::RCP<Adapter::CouplingNonLinMortar> adaptermeshsliding_;
 
-    Teuchos::RCP<Epetra_Vector> lm_;  // current vector of Lagrange multipliers at t_n+1
+    Teuchos::RCP<Core::LinAlg::Vector> lm_;  // current vector of Lagrange multipliers at t_n+1
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> a_ss_;   // stiffness block A_ss (needed for LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> a_sm_;   // stiffness block A_sm (needed for LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> a_sn_;   // stiffness block A_sn (needed for LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> d_inv_;  // inverse of Mortar matrix D (needed for LM)
-    Teuchos::RCP<Epetra_Vector> rs_;                  // slave side effective forces (needed for LM)
+    Teuchos::RCP<Core::LinAlg::Vector> rs_;           // slave side effective forces (needed for LM)
   };
 
 }  // namespace ALE

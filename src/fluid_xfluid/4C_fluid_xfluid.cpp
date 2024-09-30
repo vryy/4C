@@ -1,3 +1,4 @@
+
 /*----------------------------------------------------------------------*/
 /*! \file
 
@@ -643,11 +644,11 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::get_new_state()
   //-------------------------------------------------------------
 
   // init col vector holding background ALE displacements for backdis
-  Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> dispnpcol = Teuchos::null;
 
   if (alefluid_)
   {
-    dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_col_map()));
+    dispnpcol = Teuchos::rcp(new Core::LinAlg::Vector(*xdiscret_->initial_dof_col_map()));
     Core::LinAlg::export_to(*dispnp_, *dispnpcol);
   }
 
@@ -699,7 +700,8 @@ void FLD::XFluid::update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state)
 }
 
 void FLD::XFluid::extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> dis,
-    std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> dispnp_col)
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
+    Teuchos::RCP<Core::LinAlg::Vector> dispnp_col)
 {
   nodevecmap.clear();
 
@@ -804,7 +806,7 @@ void FLD::XFluid::assemble_mat_and_rhs(int itnum)
     //-------------------------------------------------------------------------------
     // finalize residual vector
     // need to export residual_col to state_->residual_ (row)
-    Epetra_Vector res_tmp(state_->residual_->Map(), true);
+    Core::LinAlg::Vector res_tmp(state_->residual_->Map(), true);
     Epetra_Export exporter(state_->residual_col_->Map(), res_tmp.Map());
     int err2 = res_tmp.Export(*state_->residual_col_, exporter, Add);
     if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
@@ -1289,8 +1291,8 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
 void FLD::XFluid::assemble_mat_and_rhs_face_terms(
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& sysmat,
-    const Teuchos::RCP<Epetra_Vector>& residual_col, const Teuchos::RCP<Cut::CutWizard>& wizard,
-    bool is_ghost_penalty_reconstruct)
+    const Teuchos::RCP<Core::LinAlg::Vector>& residual_col,
+    const Teuchos::RCP<Cut::CutWizard>& wizard, bool is_ghost_penalty_reconstruct)
 {
   // call edge stabilization
   if (eval_eos_ || is_ghost_penalty_reconstruct)
@@ -1334,12 +1336,13 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
  | integrate shape functions over domain                   schott 12/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
-    Core::FE::Discretization& discret, Teuchos::RCP<Epetra_Vector> vec)
+    Core::FE::Discretization& discret, Teuchos::RCP<Core::LinAlg::Vector> vec)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::integrate_shape_function");
 
   // create an column vector for assembly over row elements that has to be communicated at the end
-  Teuchos::RCP<Epetra_Vector> w_col = Core::LinAlg::create_vector(*discret.dof_col_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> w_col =
+      Core::LinAlg::create_vector(*discret.dof_col_map(), true);
 
 
   //----------------------------------------------------------------------
@@ -1517,7 +1520,7 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
 
   //-------------------------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)
-  Epetra_Vector vec_tmp(vec->Map(), false);
+  Core::LinAlg::Vector vec_tmp(vec->Map(), false);
   Epetra_Export exporter(strategy.systemvector1()->Map(), vec_tmp.Map());
   int err2 = vec_tmp.Export(*strategy.systemvector1(), exporter, Add);
   if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
@@ -1530,8 +1533,8 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
  *----------------------------------------------------------------------*/
 void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
     Teuchos::RCP<Core::LinAlg::MapExtractor> ghost_penaly_dbcmaps,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp, Teuchos::RCP<Epetra_Vector> residual_gp,
-    Teuchos::RCP<Epetra_Vector> vec)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp,
+    Teuchos::RCP<Core::LinAlg::Vector> residual_gp, Teuchos::RCP<Core::LinAlg::Vector> vec)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::assemble_mat_and_rhs_gradient_penalty");
 
@@ -1543,7 +1546,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
   //  sysmat_gp->Zero()
 
   residual_gp->PutScalar(0.0);
-  Teuchos::RCP<Epetra_Vector> residual_gp_col =
+  Teuchos::RCP<Core::LinAlg::Vector> residual_gp_col =
       Core::LinAlg::create_vector(*state_->xfluiddofcolmap_, true);
 
   //----------------------------------------------------------------------
@@ -1604,7 +1607,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
 
   //-------------------------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)
-  Epetra_Vector res_tmp(residual_gp->Map(), false);
+  Core::LinAlg::Vector res_tmp(residual_gp->Map(), false);
   Epetra_Export exporter(residual_gp_col->Map(), res_tmp.Map());
   int err2 = res_tmp.Export(*residual_gp_col, exporter, Add);
   if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
@@ -1620,18 +1623,18 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
 }
 
 
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::std_velnp()
+Teuchos::RCP<Core::LinAlg::Vector> FLD::XFluid::std_velnp()
 {
-  Teuchos::RCP<Epetra_Vector> initvec =
-      Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> initvec =
+      Teuchos::rcp(new Core::LinAlg::Vector(*xdiscret_->initial_dof_row_map(), true));
   Core::LinAlg::export_to(*(state_->velnp_), *initvec);
   return initvec;
 }
 
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::std_veln()
+Teuchos::RCP<Core::LinAlg::Vector> FLD::XFluid::std_veln()
 {
-  Teuchos::RCP<Epetra_Vector> initvec =
-      Teuchos::rcp(new Epetra_Vector(*xdiscret_->initial_dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> initvec =
+      Teuchos::rcp(new Core::LinAlg::Vector(*xdiscret_->initial_dof_row_map(), true));
   Core::LinAlg::export_to(*(state_->veln_), *initvec);
   return initvec;
 }
@@ -2595,7 +2598,7 @@ bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velresto
   vresnorm_ = 0.0;
   presnorm_ = 0.0;
 
-  Teuchos::RCP<Epetra_Vector> onlyvel =
+  Teuchos::RCP<Core::LinAlg::Vector> onlyvel =
       state_->vel_pres_splitter()->extract_other_vector(state_->residual());
   onlyvel->Norm2(&vresnorm_);
 
@@ -2605,7 +2608,7 @@ bool FLD::XFluid::convergence_check(int itnum, int itemax, const double velresto
   state_->vel_pres_splitter()->extract_other_vector(state_->velnp(), onlyvel);
   onlyvel->Norm2(&velnorm_L2_);
 
-  Teuchos::RCP<Epetra_Vector> onlypre =
+  Teuchos::RCP<Core::LinAlg::Vector> onlypre =
       state_->vel_pres_splitter()->extract_cond_vector(state_->residual());
   onlypre->Norm2(&presnorm_);
 
@@ -2814,79 +2817,87 @@ void FLD::XFluid::update_krylov_space_projection()
 {
   // get Teuchos::RCP to kernel vector of projector
   Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
-  Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0), false);
-  c0->PutScalar(0.0);
-
-  // extract vector of pressure-dofs
-  Teuchos::RCP<Epetra_Vector> presmode = state_->velpressplitter_->extract_cond_vector(*c0);
-
-  const std::string* weighttype = projector_->weight_type();
-
-  // compute w_ as defined in dat-file
-  if (*weighttype == "pointvalues")
+  // Modify c within this scope
   {
-    // Smart xfluid people put FOUR_C_THROW here. I guess they had there reasons. KN
-    FOUR_C_THROW(
-        "Pointvalues for weights is not supported for xfluid, choose integration in dat-file");
+    Core::LinAlg::VectorView c0_view(*(*c)(0));
+    Core::LinAlg::Vector& c0(c0_view);
+    c0.PutScalar(0.0);
 
-    /*
-    // export to vector to normalize against
-    // Note that in the case of definition pointvalue based,
-    // the average pressure will vanish in a pointwise sense
-    //
-    //    +---+
-    //     \
-    //      +   p_i  = 0
-    //     /
-    //    +---+
-    //
-    // (everything is done below)
-    */
-  }
-  else if (*weighttype == "integration")
-  {
-    // get Teuchos::RCP to weight vector of projector
-    Teuchos::RCP<Epetra_MultiVector> w = projector_->get_non_const_weights();
-    Teuchos::RCP<Epetra_Vector> w0 = Teuchos::rcp((*w)(0), false);
-    w0->PutScalar(0.0);
+    // extract vector of pressure-dofs
+    Teuchos::RCP<Core::LinAlg::Vector> presmode = state_->velpressplitter_->extract_cond_vector(c0);
 
-    // create parameter list for condition evaluate and ...
-    Teuchos::ParameterList mode_params;
-    // ... set action for elements to integration of shape functions
-    mode_params.set<FLD::Action>("action", FLD::integrate_shape);
+    const std::string* weighttype = projector_->weight_type();
 
-    if (alefluid_)
+    // compute w_ as defined in dat-file
+    if (*weighttype == "pointvalues")
     {
-      discret_->set_state("dispnp", state_->dispnp_);
+      // Smart xfluid people put FOUR_C_THROW here. I guess they had there reasons. KN
+      FOUR_C_THROW(
+          "Pointvalues for weights is not supported for xfluid, choose integration in dat-file");
+
+      /*
+      // export to vector to normalize against
+      // Note that in the case of definition pointvalue based,
+      // the average pressure will vanish in a pointwise sense
+      //
+      //    +---+
+      //     \
+      //      +   p_i  = 0
+      //     /
+      //    +---+
+      //
+      // (everything is done below)
+      */
+    }
+    else if (*weighttype == "integration")
+    {
+      // get Teuchos::RCP to weight vector of projector
+      Teuchos::RCP<Epetra_MultiVector> w = projector_->get_non_const_weights();
+
+      Core::LinAlg::VectorView w0_view(*((*w)(0)));
+      Core::LinAlg::Vector& w0(w0_view);
+      w0.PutScalar(0.0);
+
+      // create parameter list for condition evaluate and ...
+      Teuchos::ParameterList mode_params;
+      // ... set action for elements to integration of shape functions
+      mode_params.set<FLD::Action>("action", FLD::integrate_shape);
+
+      if (alefluid_)
+      {
+        discret_->set_state("dispnp", state_->dispnp_);
+      }
+
+      /*
+      // evaluate KrylovSpaceProjection condition in order to get
+      // integrated nodal basis functions w_
+      // Note that in the case of definition integration based,
+      // the average pressure will vanish in an integral sense
+      //
+      //                    /              /                      /
+      //   /    \          |              |  /          \        |  /    \
+      //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+      //   \    /          |              |  \          /        |  \    /
+      //                   /              /                      /
+      */
+
+      // compute w_ by evaluating the integrals of all pressure basis functions
+      integrate_shape_function(mode_params, *discret_, w0_view.get_non_owning_rcp_ref());
+    }
+    else
+    {
+      FOUR_C_THROW("unknown definition of weight vector w for restriction of Krylov space");
     }
 
-    /*
-    // evaluate KrylovSpaceProjection condition in order to get
-    // integrated nodal basis functions w_
-    // Note that in the case of definition integration based,
-    // the average pressure will vanish in an integral sense
-    //
-    //                    /              /                      /
-    //   /    \          |              |  /          \        |  /    \
-    //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
-    //   \    /          |              |  \          /        |  \    /
-    //                   /              /                      /
-    */
-
-    // compute w_ by evaluating the integrals of all pressure basis functions
-    integrate_shape_function(mode_params, *discret_, w0);
+    // construct c by setting all pressure values to 1.0 and export to c
+    presmode->PutScalar(1.0);
+    Teuchos::RCP<Core::LinAlg::Vector> tmpc =
+        Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
+    Core::LinAlg::export_to(*presmode, *tmpc);
+    Teuchos::RCP<Core::LinAlg::Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
+    Core::LinAlg::export_to(*tmpkspc, c0);
   }
-  else
-  {
-    FOUR_C_THROW("unknown definition of weight vector w for restriction of Krylov space");
-  }
-
-  // construct c by setting all pressure values to 1.0 and export to c
-  presmode->PutScalar(1.0);
-  Teuchos::RCP<Epetra_Vector> tmpc = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
-  Core::LinAlg::export_to(*presmode, *tmpc);
-  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->extract_ksp_cond_vector(*tmpc);
-  Core::LinAlg::export_to(*tmpkspc, *c0);
+  // end of scope that updates c
 
   // fillcomplete the projector to compute (w^T c)^(-1)
   projector_->fill_complete();
@@ -2906,7 +2917,7 @@ void FLD::XFluid::check_matrix_nullspace()
     int nsdim = c->NumVectors();
     if (nsdim != 1) FOUR_C_THROW("Only one mode, namely the constant pressure mode, expected.");
 
-    Epetra_Vector result(c->Map(), false);
+    Core::LinAlg::Vector result(c->Map(), false);
 
     state_->sysmat_->Apply(*c, result);
 
@@ -2942,9 +2953,9 @@ void FLD::XFluid::check_matrix_nullspace()
  | cut and set new state-vectors, perform time-integration, apply bcs       |
  |                                                             schott 08/14 |
  *--------------------------------------------------------------------------*/
-void FLD::XFluid::update_by_increments(
-    Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1,
-                                               ///< stepinc has to match the current xfluid dofmaps
+void FLD::XFluid::update_by_increments(Teuchos::RCP<const Core::LinAlg::Vector>
+        stepinc  ///< solution increment between time step n and n+1,
+                 ///< stepinc has to match the current xfluid dofmaps
 )
 {
   //--------------------------------------------------------------------------------------------
@@ -2972,7 +2983,7 @@ void FLD::XFluid::update_by_increments(
     // * further, in the next PrepareXFEMSolve()-call, after performing time-integration,
     //   the DBCs are set again in velnp
 
-    Teuchos::RCP<Epetra_Vector> velnp_tmp =
+    Teuchos::RCP<Core::LinAlg::Vector> velnp_tmp =
         Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
     state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
@@ -3006,8 +3017,8 @@ void FLD::XFluid::update_by_increments(
  | evaluate the fluid at the new interface position            schott 08/14 |
  *--------------------------------------------------------------------------*/
 void FLD::XFluid::evaluate(
-    //  Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and
-    //  n+1, stepinc has to match the current xfluid dofmaps
+    //  Teuchos::RCP<const Core::LinAlg::Vector> stepinc ///< solution increment between time step n
+    //  and n+1, stepinc has to match the current xfluid dofmaps
 )
 {
   //  //--------------------------------------------------------------------------------------------
@@ -3036,7 +3047,7 @@ void FLD::XFluid::evaluate(
   //    // * further, in the next PrepareXFEMSolve()-call, after performing time-integration,
   //    //   the DBCs are set again in velnp
   //
-  //    Teuchos::RCP<Epetra_Vector> velnp_tmp =
+  //    Teuchos::RCP<Core::LinAlg::Vector> velnp_tmp =
   //    Core::LinAlg::create_vector(*discret_->dof_row_map(),true);
   //
   //    state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
@@ -3174,15 +3185,15 @@ void FLD::XFluid::time_update()
 
   // Compute accelerations
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn =
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccn =
         state_->velpressplitter_->extract_other_vector(state_->accn_);
-    Teuchos::RCP<Epetra_Vector> onlyaccnp =
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccnp =
         state_->velpressplitter_->extract_other_vector(state_->accnp_);
-    Teuchos::RCP<Epetra_Vector> onlyvelnm =
+    Teuchos::RCP<Core::LinAlg::Vector> onlyvelnm =
         state_->velpressplitter_->extract_other_vector(state_->velnm_);
-    Teuchos::RCP<Epetra_Vector> onlyveln =
+    Teuchos::RCP<Core::LinAlg::Vector> onlyveln =
         state_->velpressplitter_->extract_other_vector(state_->veln_);
-    Teuchos::RCP<Epetra_Vector> onlyvelnp =
+    Teuchos::RCP<Core::LinAlg::Vector> onlyvelnp =
         state_->velpressplitter_->extract_other_vector(state_->velnp_);
 
     calculate_acceleration(onlyvelnp, onlyveln, onlyvelnm, onlyaccn, onlyaccnp);
@@ -3363,13 +3374,13 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
   if (firstcall_in_timestep)
   {
     // store the solution of the old time step t^n w.r.t the old interface position
-    veln_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
+    veln_Intn_ = Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map()));
     *veln_Intn_ = *(state_->veln_);
-    accn_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
+    accn_Intn_ = Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map()));
     *accn_Intn_ = *(state_->accn_);
 
     // for BDF2
-    velnm_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
+    velnm_Intn_ = Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map()));
     *velnm_Intn_ = *(state_->velnm_);
 
     // safe the old wizard and dofset w.r.t the interface position of the last time-step
@@ -3383,7 +3394,7 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
   //------------------------------------------
   // store the last velocity solution w.r.t the last interface position (last XFSI iteration or last
   // time-step solution for first-call) to get mapped as fluid predictor for next XFSI iteration
-  velnp_Intnpi_ = Teuchos::rcp(new Epetra_Vector(*discret_->dof_row_map()));
+  velnp_Intnpi_ = Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map()));
   *velnp_Intnpi_ = *state_->velnp_;
 
   // get the wizard w.r.t the last interface position (last XFSI iteration)
@@ -3513,8 +3524,8 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   const Epetra_Map* newdofrowmap = discret_->dof_row_map();
 
   // all vectors that have to be transferred from old dofset at t^n to new dofset at t^(n+1=
-  std::vector<Teuchos::RCP<const Epetra_Vector>> oldRowStateVectors;
-  std::vector<Teuchos::RCP<Epetra_Vector>> newRowStateVectors;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> oldRowStateVectors;
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> newRowStateVectors;
 
   // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
   std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>> node_to_reconstr_method;
@@ -3637,15 +3648,15 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   //------------------------------------------------------------------------------------
   if (timint_semi_lagrangean)
   {
-    Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
-    Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::Vector> dispnpcol = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::Vector> dispncol = Teuchos::null;
 
     if (alefluid_)
     {
-      Teuchos::RCP<Epetra_Vector> dispnpcol =
-          Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
-      Teuchos::RCP<Epetra_Vector> dispncol =
-          Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
+      Teuchos::RCP<Core::LinAlg::Vector> dispnpcol =
+          Teuchos::rcp(new Core::LinAlg::Vector(*discretisation_xfem()->initial_dof_col_map()));
+      Teuchos::RCP<Core::LinAlg::Vector> dispncol =
+          Teuchos::rcp(new Core::LinAlg::Vector(*discretisation_xfem()->initial_dof_col_map()));
 
       Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
       Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
@@ -3729,8 +3740,8 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
 
   // all vectors that have to be transferred from old dofset to new dofset
   // vec_n+1(Gamma_n+1,i) -> vec_n+1(Gamma_n+1,i+1)
-  std::vector<Teuchos::RCP<const Epetra_Vector>> rowStateVectors_npi;
-  std::vector<Teuchos::RCP<Epetra_Vector>> rowStateVectors_npip;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> rowStateVectors_npi;
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> rowStateVectors_npip;
 
   // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
   std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>> node_to_reconstr_method;
@@ -3844,15 +3855,15 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
   {
     if (firstcall_in_timestep)  // allow for semi-lagrangean in the first iteration
     {
-      Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
-      Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::null;
+      Teuchos::RCP<Core::LinAlg::Vector> dispnpcol = Teuchos::null;
+      Teuchos::RCP<Core::LinAlg::Vector> dispncol = Teuchos::null;
 
       if (alefluid_)
       {
-        Teuchos::RCP<Epetra_Vector> dispnpcol =
-            Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
-        Teuchos::RCP<Epetra_Vector> dispncol =
-            Teuchos::rcp(new Epetra_Vector(*discretisation_xfem()->initial_dof_col_map()));
+        Teuchos::RCP<Core::LinAlg::Vector> dispnpcol =
+            Teuchos::rcp(new Core::LinAlg::Vector(*discretisation_xfem()->initial_dof_col_map()));
+        Teuchos::RCP<Core::LinAlg::Vector> dispncol =
+            Teuchos::rcp(new Core::LinAlg::Vector(*discretisation_xfem()->initial_dof_col_map()));
 
         Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
         Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
@@ -3939,9 +3950,9 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
  *----------------------------------------------------------------------*/
 void FLD::XFluid::x_timint_transfer_vectors_between_steps(
     const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
-    std::vector<Teuchos::RCP<const Epetra_Vector>>&
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>&
         oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-    std::vector<Teuchos::RCP<Epetra_Vector>>&
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
         newRowStateVectors,  /// row map based vectors w.r.t new interface position
     Teuchos::RCP<std::set<int>>
         dbcgids,  /// set of dof gids that must not be changed by ghost penalty reconstruction
@@ -3967,9 +3978,9 @@ void FLD::XFluid::x_timint_transfer_vectors_between_steps(
 void FLD::XFluid::x_timint_corrective_transfer_vectors_between_steps(
     const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
     const Inpar::XFEM::XFluidTimeIntScheme xfluid_timintapproach,  /// xfluid_timintapproch
-    std::vector<Teuchos::RCP<const Epetra_Vector>>&
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>&
         oldRowStateVectors,  ///< row map based vectors w.r.t old interface position
-    std::vector<Teuchos::RCP<Epetra_Vector>>&
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
         newRowStateVectors,  ///< row map based vectors w.r.t new interface position
     Teuchos::RCP<std::set<int>>
         dbcgids,     ///< set of dof gids that must not be changed by ghost penalty reconstruction
@@ -4080,10 +4091,10 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> FLD::XFluid::create_dbc_map_extractor(
  | reconstruct value which are not fixed by DBCs           schott 08/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::x_timint_ghost_penalty(
-    std::vector<Teuchos::RCP<Epetra_Vector>>& rowVectors,  ///< vectors to be reconstructed
-    const Epetra_Map* dofrowmap,                           ///< dofrowmap
-    const Teuchos::RCP<const std::set<int>> dbcgids,       ///< dbc global ids
-    const bool screen_out                                  ///< screen output?
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& rowVectors,  ///< vectors to be reconstructed
+    const Epetra_Map* dofrowmap,                                  ///< dofrowmap
+    const Teuchos::RCP<const std::set<int>> dbcgids,              ///< dbc global ids
+    const bool screen_out                                         ///< screen output?
 )
 {
   if (myrank_ == 0 and screen_out)
@@ -4097,7 +4108,7 @@ void FLD::XFluid::x_timint_ghost_penalty(
 
   //----------------------------------------
   // perform ghost-penalty reconstruction for all vectors
-  for (std::vector<Teuchos::RCP<Epetra_Vector>>::iterator vecs_it = rowVectors.begin();
+  for (std::vector<Teuchos::RCP<Core::LinAlg::Vector>>::iterator vecs_it = rowVectors.begin();
        vecs_it != rowVectors.end(); vecs_it++)
   {
     // reconstruct values using ghost penalty approach
@@ -4114,7 +4125,7 @@ void FLD::XFluid::x_timint_ghost_penalty(
  |  reconstruct ghost values via ghost penalties           schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::x_timint_reconstruct_ghost_values(
-    Teuchos::RCP<Epetra_Vector> vec,  ///< vector to be reconstructed
+    Teuchos::RCP<Core::LinAlg::Vector> vec,  ///< vector to be reconstructed
     Teuchos::RCP<Core::LinAlg::MapExtractor>
         ghost_penaly_dbcmaps,  ///< which dofs are fixed during the ghost-penalty reconstruction?
     const bool screen_out      ///< screen output?
@@ -4173,11 +4184,11 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
       *state_->xfluiddofrowmap_, numentries, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
 
-  Teuchos::RCP<Epetra_Vector> zeros_gp =
+  Teuchos::RCP<Core::LinAlg::Vector> zeros_gp =
       Core::LinAlg::create_vector(*state_->xfluiddofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> residual_gp =
+  Teuchos::RCP<Core::LinAlg::Vector> residual_gp =
       Core::LinAlg::create_vector(*state_->xfluiddofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> incvel_gp =
+  Teuchos::RCP<Core::LinAlg::Vector> incvel_gp =
       Core::LinAlg::create_vector(*state_->xfluiddofrowmap_, true);
 
   dtsolve_ = 0.0;
@@ -4266,17 +4277,17 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 /*----------------------------------------------------------------------*
  |  reconstruct standard values via semi-Lagrangean method schott 08/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::x_timint_semi_lagrangean(
-    std::vector<Teuchos::RCP<Epetra_Vector>>& newRowStateVectors,  ///< vectors to be reconstructed
+void FLD::XFluid::x_timint_semi_lagrangean(std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+                                               newRowStateVectors,  ///< vectors to be reconstructed
     const Epetra_Map* newdofrowmap,  ///< dofrowmap at current interface position
-    std::vector<Teuchos::RCP<const Epetra_Vector>>&
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>&
         oldRowStateVectors,  ///< vectors from which we reconstruct values (same order of vectors as
                              ///< in newRowStateVectors)
-    Teuchos::RCP<Epetra_Vector> dispn,   ///< displacement initial col - vector timestep n //set to
-                                         ///< Teuchos::null if no ale displacments
-    Teuchos::RCP<Epetra_Vector> dispnp,  ///< displacement initial col - vector timestep n+1 //if
-                                         ///< Teuchos::null ... --> no ale displacments
-    const Epetra_Map* olddofcolmap,      ///< dofcolmap at time and interface position t^n
+    Teuchos::RCP<Core::LinAlg::Vector> dispn,   ///< displacement initial col - vector timestep n
+                                                ///< //set to Teuchos::null if no ale displacments
+    Teuchos::RCP<Core::LinAlg::Vector> dispnp,  ///< displacement initial col - vector timestep n+1
+                                                ///< //if Teuchos::null ... --> no ale displacments
+    const Epetra_Map* olddofcolmap,             ///< dofcolmap at time and interface position t^n
     std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
         node_to_reconstr_method,  ///< reconstruction map for nodes and its dofsets
     const bool screen_out         ///< screen output?
@@ -4292,19 +4303,22 @@ void FLD::XFluid::x_timint_semi_lagrangean(
   //--------------------------------------------------------
   // export veln row vector from t^n to a col vector
 
-  Teuchos::RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*olddofcolmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector> veln_col =
+      Teuchos::rcp(new Core::LinAlg::Vector(*olddofcolmap, true));
   Core::LinAlg::export_to(*veln_Intn_, *veln_col);
 
   //--------------------------------------------------------
   // export row vectors from t^n to col vectors
   // Important: export the vectors used for Semi-Lagrangean method after transfer between interface
   // processors above
-  std::vector<Teuchos::RCP<Epetra_Vector>> oldColStateVectorsn;
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> oldColStateVectorsn;
 
-  for (std::vector<Teuchos::RCP<const Epetra_Vector>>::iterator vec_it = oldRowStateVectors.begin();
+  for (std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>::iterator vec_it =
+           oldRowStateVectors.begin();
        vec_it != oldRowStateVectors.end(); vec_it++)
   {
-    Teuchos::RCP<Epetra_Vector> vec_col = Teuchos::rcp(new Epetra_Vector(*olddofcolmap, true));
+    Teuchos::RCP<Core::LinAlg::Vector> vec_col =
+        Teuchos::rcp(new Core::LinAlg::Vector(*olddofcolmap, true));
     Core::LinAlg::export_to(**vec_it, *vec_col);
     oldColStateVectorsn.push_back(vec_col);
   }
@@ -4733,7 +4747,7 @@ void FLD::XFluid::set_initial_flow_field(
 
     // reconstruct ghost values / use the ghost penalty reconstruction technique as used within the
     // XFEM time integration
-    std::vector<Teuchos::RCP<Epetra_Vector>> rowStateVectors_npip;
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector>> rowStateVectors_npip;
     rowStateVectors_npip.push_back(state_->velnp_);
 
     x_timint_ghost_penalty(rowStateVectors_npip,  ///< vectors to be reconstructed
@@ -4849,7 +4863,8 @@ void FLD::XFluid::explicit_predictor()
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->extract_other_vector(state_->accn_);
+    Teuchos::RCP<Core::LinAlg::Vector> inc =
+        state_->velpressplitter_->extract_other_vector(state_->accn_);
     inc->Scale((1.0 - theta_) * dta_);
 
     state_->velpressplitter_->add_other_vector(inc, state_->velnp_);
@@ -4870,7 +4885,8 @@ void FLD::XFluid::explicit_predictor()
     //
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
-    Teuchos::RCP<Epetra_Vector> inc = state_->velpressplitter_->extract_other_vector(state_->accn_);
+    Teuchos::RCP<Core::LinAlg::Vector> inc =
+        state_->velpressplitter_->extract_other_vector(state_->accn_);
     inc->Scale(dta_);
 
     state_->velpressplitter_->add_other_vector(inc, state_->velnp_);
@@ -4895,8 +4911,9 @@ void FLD::XFluid::explicit_predictor()
     //
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
-    Teuchos::RCP<Epetra_Vector> un = state_->velpressplitter_->extract_other_vector(state_->veln_);
-    Teuchos::RCP<Epetra_Vector> unm =
+    Teuchos::RCP<Core::LinAlg::Vector> un =
+        state_->velpressplitter_->extract_other_vector(state_->veln_);
+    Teuchos::RCP<Core::LinAlg::Vector> unm =
         state_->velpressplitter_->extract_other_vector(state_->velnm_);
     unm->Scale(-1.0);
 
@@ -4928,9 +4945,10 @@ void FLD::XFluid::explicit_predictor()
     state_->velnp_->Update(1.0, *state_->veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> unm =
+    Teuchos::RCP<Core::LinAlg::Vector> unm =
         state_->velpressplitter_->extract_other_vector(state_->velnm_);
-    Teuchos::RCP<Epetra_Vector> an = state_->velpressplitter_->extract_other_vector(state_->accn_);
+    Teuchos::RCP<Core::LinAlg::Vector> an =
+        state_->velpressplitter_->extract_other_vector(state_->accn_);
 
     unm->Update(2.0 * dta_, *an, 1.0);
 
@@ -4971,7 +4989,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   state_->incvel_->PutScalar(0.0);
 
   // for solution increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc =
+  Teuchos::RCP<Core::LinAlg::Vector> dbcinc =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
 
   // copy last converged solution
@@ -5012,7 +5030,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
 
   // add linear reaction forces to residual
   // linear reactions
-  Teuchos::RCP<Epetra_Vector> freact =
+  Teuchos::RCP<Core::LinAlg::Vector> freact =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
   state_->sysmat_->multiply(false, *dbcinc, *freact);
 
@@ -5065,14 +5083,14 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // Overloaded in TimIntPoro and TimIntRedModels bk 12/13
-void FLD::XFluid::update_iter_incrementally(Teuchos::RCP<const Epetra_Vector> vel)
+void FLD::XFluid::update_iter_incrementally(Teuchos::RCP<const Core::LinAlg::Vector> vel)
 {
   // set the new solution we just got
   if (vel != Teuchos::null)
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux =
+    Teuchos::RCP<Core::LinAlg::Vector> aux =
         Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
     aux->Update(1.0, *state_->velnp_, 1.0, *vel, 0.0);
     //    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), velnp_);
@@ -5188,7 +5206,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluid::c_ss_matrix(const std::str
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::rhs_s_vec(const std::string& cond_name)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::XFluid::rhs_s_vec(const std::string& cond_name)
 {
   const int coup_idx = condition_manager_->get_coupling_index(cond_name);
   return state_->coup_state_[coup_idx]->rhC_s_;
@@ -5213,12 +5231,13 @@ void FLD::XFluid::gen_alpha_intermediate_values()
     // only these are allowed to be updated, otherwise you will
     // run into trouble in loma, where the 'pressure' component
     // is used to store the acceleration of the temperature
-    Teuchos::RCP<Epetra_Vector> onlyaccn =
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccn =
         state_->velpressplitter_->extract_other_vector(state_->accn_);
-    Teuchos::RCP<Epetra_Vector> onlyaccnp =
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccnp =
         state_->velpressplitter_->extract_other_vector(state_->accnp_);
 
-    Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccam =
+        Teuchos::rcp(new Core::LinAlg::Vector(onlyaccnp->Map()));
 
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
@@ -5256,14 +5275,15 @@ void FLD::XFluid::gen_alpha_update_acceleration()
   // only these are allowed to be updated, otherwise you will
   // run into trouble in loma, where the 'pressure' component
   // is used to store the acceleration of the temperature
-  Teuchos::RCP<Epetra_Vector> onlyaccn =
+  Teuchos::RCP<Core::LinAlg::Vector> onlyaccn =
       state_->velpressplitter_->extract_other_vector(state_->accn_);
-  Teuchos::RCP<Epetra_Vector> onlyveln =
+  Teuchos::RCP<Core::LinAlg::Vector> onlyveln =
       state_->velpressplitter_->extract_other_vector(state_->veln_);
-  Teuchos::RCP<Epetra_Vector> onlyvelnp =
+  Teuchos::RCP<Core::LinAlg::Vector> onlyvelnp =
       state_->velpressplitter_->extract_other_vector(state_->velnp_);
 
-  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> onlyaccnp =
+      Teuchos::rcp(new Core::LinAlg::Vector(onlyaccn->Map()));
 
   const double fact1 = 1.0 / (gamma_ * dta_);
   const double fact2 = 1.0 - (1.0 / gamma_);
@@ -5285,7 +5305,8 @@ void FLD::XFluid::update_gridv()
       Global::Problem::instance()->fluid_dynamic_params();
   const auto order = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
-  Teuchos::RCP<Epetra_Vector> gridv = Teuchos::rcp(new Epetra_Vector(dispnp_->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> gridv =
+      Teuchos::rcp(new Core::LinAlg::Vector(dispnp_->Map(), true));
 
   switch (order)
   {
@@ -5345,10 +5366,10 @@ void FLD::XFluid::set_old_part_of_righthandside()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::set_old_part_of_righthandside(const Teuchos::RCP<Epetra_Vector>& veln,
-    const Teuchos::RCP<Epetra_Vector>& velnm, const Teuchos::RCP<Epetra_Vector>& accn,
+void FLD::XFluid::set_old_part_of_righthandside(const Teuchos::RCP<Core::LinAlg::Vector>& veln,
+    const Teuchos::RCP<Core::LinAlg::Vector>& velnm, const Teuchos::RCP<Core::LinAlg::Vector>& accn,
     const Inpar::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
-    Teuchos::RCP<Epetra_Vector>& hist)
+    Teuchos::RCP<Core::LinAlg::Vector>& hist)
 {
   /*!
     \brief Set the part of the righthandside belonging to the last
@@ -5432,9 +5453,11 @@ void FLD::XFluid::set_state_tim_int()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
-    const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
-    const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
+void FLD::XFluid::calculate_acceleration(const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector> veln,
+    const Teuchos::RCP<const Core::LinAlg::Vector> velnm,
+    const Teuchos::RCP<const Core::LinAlg::Vector> accn,
+    const Teuchos::RCP<Core::LinAlg::Vector> accnp)
 {
   /*
 

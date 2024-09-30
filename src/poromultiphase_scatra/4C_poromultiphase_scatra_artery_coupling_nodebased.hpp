@@ -39,16 +39,18 @@ namespace PoroMultiPhaseScaTra
 
     //! Evaluate the 1D-3D coupling
     void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs) override
+        Teuchos::RCP<Core::LinAlg::Vector> rhs) override
     {
       // nothing to do here, is done in SetupSystem for this type of coupling
     }
 
     //! set-up linear system of equations of coupled problem
     void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-        Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_art,
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
@@ -59,8 +61,9 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    void setup_vector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
-        Teuchos::RCP<const Epetra_Vector> vec_art) override;
+    void setup_vector(Teuchos::RCP<Core::LinAlg::Vector> vec,
+        Teuchos::RCP<const Core::LinAlg::Vector> vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> vec_art) override;
 
     /*!
      * @brief extract single field vectors
@@ -69,13 +72,13 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    void extract_single_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
-        Teuchos::RCP<const Epetra_Vector>& vec_cont,
-        Teuchos::RCP<const Epetra_Vector>& vec_art) override;
+    void extract_single_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> globalvec,
+        Teuchos::RCP<const Core::LinAlg::Vector>& vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector>& vec_art) override;
 
     //! check if initial fields on coupled DOFs are equal
-    void check_initial_fields(Teuchos::RCP<const Epetra_Vector> vec_cont,
-        Teuchos::RCP<const Epetra_Vector> vec_art) override;
+    void check_initial_fields(Teuchos::RCP<const Core::LinAlg::Vector> vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> vec_art) override;
 
     //! access artery (1D) dof row map
     Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
@@ -93,15 +96,16 @@ namespace PoroMultiPhaseScaTra
     void apply_mesh_movement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
+    Teuchos::RCP<const Core::LinAlg::Vector> blood_vessel_volume_fraction() override;
 
     //! print out the coupling method
     void print_out_coupling_method() const override;
 
    private:
     //! set-up of global rhs vector of coupled problem
-    void setup_rhs(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_cont,
-        Teuchos::RCP<const Epetra_Vector> rhs_art);
+    void setup_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_art);
 
     //! set-up of global matrix of coupled problem
     void setup_matrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,

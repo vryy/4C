@@ -59,8 +59,8 @@ namespace Adapter
         ) override = 0;
 
     /// solve fluid-ale
-    virtual void fluid_ale_nonlinear_solve(Teuchos::RCP<Epetra_Vector> idisp,
-        Teuchos::RCP<Epetra_Vector> ivel, const bool pseudotransient);
+    virtual void fluid_ale_nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector> idisp,
+        Teuchos::RCP<Core::LinAlg::Vector> ivel, const bool pseudotransient);
 
     /// access to ale field
     const Teuchos::RCP<Adapter::AleFluidWrapper>& ale_field() { return ale_; }
@@ -69,17 +69,20 @@ namespace Adapter
     //! @name Transfer helpers
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_field(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(
-        Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_field(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
    private:
     /// ALE-fluid wrapper

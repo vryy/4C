@@ -13,7 +13,7 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -27,7 +27,7 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void setup_rhs(Epetra_Vector& f, bool firstcall = false) = 0;
+    virtual void setup_rhs(Core::LinAlg::Vector& f, bool firstcall = false) = 0;
 
     /// setup composed system matrix from field solvers
     virtual void setup_system_matrix() = 0;
@@ -37,10 +37,10 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void scale_system(Epetra_Vector& b) = 0;
+    virtual void scale_system(Core::LinAlg::Vector& b) = 0;
 
     /// undo infnorm scaling from scaled solution
-    virtual void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) = 0;
+    virtual void unscale_solution(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b) = 0;
 
     //@}
   };

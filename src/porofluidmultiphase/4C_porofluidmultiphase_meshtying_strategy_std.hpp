@@ -42,12 +42,14 @@ namespace POROFLUIDMULTIPHASE
 
     //! solve linear system of equations
     void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-        Teuchos::RCP<Epetra_Vector> residual, Core::LinAlg::SolverParams& solver_params) override;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
+        Teuchos::RCP<Core::LinAlg::Vector> increment, Teuchos::RCP<Core::LinAlg::Vector> residual,
+        Core::LinAlg::SolverParams& solver_params) override;
 
     //! calculate norms for convergence checks
     void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
-        std::vector<double>& prenorm, const Teuchos::RCP<const Epetra_Vector> increment) override;
+        std::vector<double>& prenorm,
+        const Teuchos::RCP<const Core::LinAlg::Vector> increment) override;
 
     //! create the field test
     void create_field_test() override;
@@ -59,15 +61,15 @@ namespace POROFLUIDMULTIPHASE
     void evaluate() override;
 
     //! extract increments and update mesh tying
-    Teuchos::RCP<const Epetra_Vector> extract_and_update_iter(
-        const Teuchos::RCP<const Epetra_Vector> inc) override;
+    Teuchos::RCP<const Core::LinAlg::Vector> extract_and_update_iter(
+        const Teuchos::RCP<const Core::LinAlg::Vector> inc) override;
 
     //! access to global (combined) increment of coupled problem
-    Teuchos::RCP<const Epetra_Vector> combined_increment(
-        const Teuchos::RCP<const Epetra_Vector> inc) const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> combined_increment(
+        const Teuchos::RCP<const Core::LinAlg::Vector> inc) const override;
 
     //! check if initial fields on coupled DOFs are equal
-    void check_initial_fields(Teuchos::RCP<const Epetra_Vector> vec_cont) const override;
+    void check_initial_fields(Teuchos::RCP<const Core::LinAlg::Vector> vec_cont) const override;
 
     //! set the element pairs that are close as found by search algorithm
     void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) override;

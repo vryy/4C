@@ -258,7 +258,8 @@ void Thermo::TimIntOneStepTheta::update_iter_incrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::create_vector(*discret_->dof_row_map(), false);
+  Teuchos::RCP<Core::LinAlg::Vector> aux =
+      Core::LinAlg::create_vector(*discret_->dof_row_map(), false);
 
   // new end-point temperatures
   // T_{n+1}^{i+1} := T_{n+1}^{<k>} + IncT_{n+1}^{i}
@@ -384,11 +385,11 @@ void Thermo::TimIntOneStepTheta::write_restart_force(
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::apply_force_tang_internal(const double time,  //!< evaluation time
     const double dt,                                                           //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
-    Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
-    Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+    const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< residual temperatures
+    Teuchos::RCP<Core::LinAlg::Vector> fcap,         //!< capacity force
+    Teuchos::RCP<Core::LinAlg::Vector> fint,         //!< internal force
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
 )
 {
   // create the parameters for the discretization
@@ -410,9 +411,9 @@ void Thermo::TimIntOneStepTheta::apply_force_tang_internal(const double time,  /
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::apply_force_internal(const double time,  //!< evaluation time
     const double dt,                                                      //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                               //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
-    Teuchos::RCP<Epetra_Vector> fint          //!< internal force
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,                        //!< temperature state
+    const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< incremental temperatures
+    Teuchos::RCP<Core::LinAlg::Vector> fint          //!< internal force
 )
 {
   // create the parameters for the discretization
@@ -431,10 +432,10 @@ void Thermo::TimIntOneStepTheta::apply_force_internal(const double time,  //!< e
  | evaluate the convective boundary condition                dano 12/10 |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::apply_force_external_conv(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> tempn,       //!< old temperature state T_n
-    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
-    Teuchos::RCP<Epetra_Vector> fext,              //!< external force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    const Teuchos::RCP<Core::LinAlg::Vector> tempn,  //!< old temperature state T_n
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state T_n+1
+    Teuchos::RCP<Core::LinAlg::Vector> fext,         //!< external force
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
 )
 {
   // create the parameters for the discretization

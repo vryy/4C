@@ -1147,7 +1147,8 @@ void CONTACT::Interface::create_search_tree()
     if (self_contact())
     {
       // set state in interface to intialize all kinds of quantities
-      Teuchos::RCP<Epetra_Vector> zero = Teuchos::rcp(new Epetra_Vector(*idiscret_->dof_row_map()));
+      Teuchos::RCP<Core::LinAlg::Vector> zero =
+          Teuchos::rcp(new Core::LinAlg::Vector(*idiscret_->dof_row_map()));
       set_state(Mortar::state_new_displacement, *zero);
 
       // create fully overlapping map of all contact elements
@@ -7120,7 +7121,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 /*----------------------------------------------------------------------*
  |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::evaluate_relative_movement(const Teuchos::RCP<Epetra_Vector> xsmod,
+void CONTACT::Interface::evaluate_relative_movement(const Teuchos::RCP<Core::LinAlg::Vector> xsmod,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod)
 {
@@ -7452,7 +7453,7 @@ void CONTACT::Interface::evaluate_relative_movement(const Teuchos::RCP<Epetra_Ve
 /*----------------------------------------------------------------------*
  |  calculate nodal distances (public)                     pfaller Jan15|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::evaluate_distances(const Teuchos::RCP<const Epetra_Vector>& vec,
+void CONTACT::Interface::evaluate_distances(const Teuchos::RCP<const Core::LinAlg::Vector>& vec,
     std::map<int, std::vector<double>>& mynormals,
     std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>>& dmynormals,
     std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap)
@@ -8481,8 +8482,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
    */
   {
     // Get full displacement vector and extract interface displacement
-    RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
-    RCP<Epetra_Vector> iDisp = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector> disp =
+        outputParams.get<RCP<const Core::LinAlg::Vector>>("displacement");
+    RCP<Core::LinAlg::Vector> iDisp = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*disp, *iDisp);
 
     // Write the interface displacement field
@@ -8492,9 +8494,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write Lagrange multiplier field
   {
     // Get full Lagrange multiplier vector and extract values of this interface
-    RCP<const Epetra_Vector> lagMult =
-        outputParams.get<RCP<const Epetra_Vector>>("interface traction");
-    RCP<Epetra_Vector> iLagMult = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector> lagMult =
+        outputParams.get<RCP<const Core::LinAlg::Vector>>("interface traction");
+    RCP<Core::LinAlg::Vector> iLagMult = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
@@ -8504,9 +8506,10 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write normal contact stress
   {
     // Get values from parameter list and export to interface dof_row_map
-    RCP<const Epetra_Vector> normalStresses =
-        outputParams.get<RCP<const Epetra_Vector>>("norcontactstress");
-    RCP<Epetra_Vector> iNormalStresses = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector> normalStresses =
+        outputParams.get<RCP<const Core::LinAlg::Vector>>("norcontactstress");
+    RCP<Core::LinAlg::Vector> iNormalStresses =
+        Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*normalStresses, *iNormalStresses);
 
     // Write this interface's normal contact stress field
@@ -8516,9 +8519,10 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write tangential contact stress
   {
     // Get values from parameter list and export to interface dof_row_map
-    RCP<const Epetra_Vector> tangentialStresses =
-        outputParams.get<RCP<const Epetra_Vector>>("tancontactstress");
-    RCP<Epetra_Vector> iTangentialStresses = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector> tangentialStresses =
+        outputParams.get<RCP<const Core::LinAlg::Vector>>("tancontactstress");
+    RCP<Core::LinAlg::Vector> iTangentialStresses =
+        Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*tangentialStresses, *iTangentialStresses);
 
     // Write this interface's normal contact stress field
@@ -8528,9 +8532,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write nodal forces of slave side
   {
     // Get nodal forces
-    RCP<const Epetra_Vector> slaveforces =
-        outputParams.get<RCP<const Epetra_Vector>>("slave forces");
-    RCP<Epetra_Vector> forces = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector> slaveforces =
+        outputParams.get<RCP<const Core::LinAlg::Vector>>("slave forces");
+    RCP<Core::LinAlg::Vector> forces = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*slaveforces, *forces);
 
     // Write to output
@@ -8540,9 +8544,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write nodal forces of master side
   {
     // Get nodal forces
-    RCP<const Epetra_Vector> masterforces =
-        outputParams.get<RCP<const Epetra_Vector>>("master forces");
-    RCP<Epetra_Vector> forces = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
+    RCP<const Core::LinAlg::Vector> masterforces =
+        outputParams.get<RCP<const Core::LinAlg::Vector>>("master forces");
+    RCP<Core::LinAlg::Vector> forces = Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*masterforces, *forces);
 
     // Write to output
@@ -8552,11 +8556,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
 
   // Nodes: node-based vector with '0' at slave nodes and '1' at master nodes
   {
-    RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*mnoderowmap_));
+    RCP<Core::LinAlg::Vector> masterVec = Teuchos::rcp(new Core::LinAlg::Vector(*mnoderowmap_));
     masterVec->PutScalar(1.0);
 
     RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::create_vector(*nodeRowMap, true);
+    RCP<Core::LinAlg::Vector> masterSlaveVec = Core::LinAlg::create_vector(*nodeRowMap, true);
     Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
@@ -8565,20 +8569,21 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write active set
   {
     // evaluate active set and slip set
-    RCP<Epetra_Vector> activeset = Teuchos::rcp(new Epetra_Vector(*activenodes_));
+    RCP<Core::LinAlg::Vector> activeset = Teuchos::rcp(new Core::LinAlg::Vector(*activenodes_));
     activeset->PutScalar(1.0);
 
     if (is_friction())
     {
-      RCP<Epetra_Vector> slipset = Teuchos::rcp(new Epetra_Vector(*slipnodes_));
+      RCP<Core::LinAlg::Vector> slipset = Teuchos::rcp(new Core::LinAlg::Vector(*slipnodes_));
       slipset->PutScalar(1.0);
-      RCP<Epetra_Vector> slipsetexp = Teuchos::rcp(new Epetra_Vector(*activenodes_));
+      RCP<Core::LinAlg::Vector> slipsetexp = Teuchos::rcp(new Core::LinAlg::Vector(*activenodes_));
       Core::LinAlg::export_to(*slipset, *slipsetexp);
       activeset->Update(1.0, *slipsetexp, 1.0);
     }
 
     // export to interface node row map
-    RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*(idiscret_->node_row_map())));
+    RCP<Core::LinAlg::Vector> activesetexp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*(idiscret_->node_row_map())));
     Core::LinAlg::export_to(*activeset, *activesetexp);
 
     writer->write_vector("activeset", activesetexp, Core::IO::VectorType::nodevector);
@@ -8586,11 +8591,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
 
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
   {
-    RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*melerowmap_));
+    RCP<Core::LinAlg::Vector> masterVec = Teuchos::rcp(new Core::LinAlg::Vector(*melerowmap_));
     masterVec->PutScalar(1.0);
 
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::create_vector(*eleRowMap, true);
+    RCP<Core::LinAlg::Vector> masterSlaveVec = Core::LinAlg::create_vector(*eleRowMap, true);
     Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
 
     writer->write_vector(
@@ -8600,7 +8605,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write element owners
   {
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> owner = Core::LinAlg::create_vector(*eleRowMap);
+    RCP<Core::LinAlg::Vector> owner = Core::LinAlg::create_vector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->element_row_map()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->l_row_element(i)->owner();

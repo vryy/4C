@@ -21,6 +21,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::LinAlg
+{
+  class Vector;
+}
+
 namespace NOX
 {
   namespace Nln
@@ -81,11 +86,11 @@ namespace NOX
 
         /// test the default step, i.e. the (modified) Newton direction of length 1.0
         bool test_default_step_quality(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
-            Teuchos::RCP<Epetra_Vector>& diagonal, bool first_test = false);
+            Teuchos::RCP<Core::LinAlg::Vector>& diagonal, bool first_test = false);
 
         /// compute the modified Newton direction
         bool compute_modified_newton(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
-            const ::NOX::Solver::Generic& solver, Epetra_Vector* diagonal = nullptr);
+            const ::NOX::Solver::Generic& solver, Core::LinAlg::Vector* diagonal = nullptr);
 
         /// solve the unmodified system
         bool solve_unmodified_system(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
@@ -99,9 +104,9 @@ namespace NOX
         void set_stagnation_counter(::NOX::Abstract::Vector& dir);
 
         /// modify the system matrix
-        bool modify_system(::NOX::Abstract::Group& grp, Epetra_Vector* diagonal);
-        bool modify_system(
-            ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr);
+        bool modify_system(::NOX::Abstract::Group& grp, Core::LinAlg::Vector* diagonal);
+        bool modify_system(::NOX::Abstract::Group& grp, Core::LinAlg::Vector* diagonal,
+            const double primal_diag_corr);
 
         /// return the primal diagonal correction
         double get_primal_diag_correction(const bool first) const;
@@ -117,7 +122,7 @@ namespace NOX
         void store_correction_factor();
 
         /// get diagonal vector (currently unused)
-        Teuchos::RCP<Epetra_Vector> get_diagonal(const ::NOX::Abstract::Group& grp) const;
+        Teuchos::RCP<Core::LinAlg::Vector> get_diagonal(const ::NOX::Abstract::Group& grp) const;
 
         /// print info to stream
         void print(std::ostream& os, const NOX::Nln::CorrectionType* corr_type = nullptr) const;
@@ -169,7 +174,7 @@ namespace NOX
         bool use_adjustable_forcing_term_ = false;
 
         /// Unmodified diagonal of the primal system matrix block
-        Teuchos::RCP<const Epetra_Vector> original_diag_ptr_ = Teuchos::null;
+        Teuchos::RCP<const Core::LinAlg::Vector> original_diag_ptr_ = Teuchos::null;
 
         //! NOX_Utils pointer
         Teuchos::RCP<::NOX::Utils> utils_;

@@ -63,7 +63,7 @@ namespace XFEM
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void add_coupling_rhs(Teuchos::RCP<Epetra_Vector> rhs,
+    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep)
@@ -101,7 +101,7 @@ namespace XFEM
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie forces onto the structure,
     //! Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> lambda_;
+    Teuchos::RCP<Core::LinAlg::Vector> lambda_;
   };
 }  // namespace XFEM
 FOUR_C_NAMESPACE_CLOSE

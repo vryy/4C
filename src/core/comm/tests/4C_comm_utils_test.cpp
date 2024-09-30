@@ -9,12 +9,12 @@
 #include "4C_comm_utils.hpp"
 
 #include "4C_io_pstream.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <stdexcept>
@@ -51,9 +51,9 @@ namespace
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(
           new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
-      epetraVector_ = Teuchos::rcp(new Epetra_Vector(*map, false));
+      epetraVector_ = Teuchos::rcp(new Core::LinAlg::Vector(*map, false));
 
-      // fill test Epetra_Vector with entry equals gid
+      // fill test Core::LinAlg::Vector with entry equals gid
       int numMyEles = map->NumMyElements();
       double* values = new double[numMyEles];
       int* indices = new int[numMyEles];
@@ -70,7 +70,7 @@ namespace
    public:
     Teuchos::RCP<Core::Communication::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 791;
-    Teuchos::RCP<Epetra_Vector> epetraVector_;
+    Teuchos::RCP<Core::LinAlg::Vector> epetraVector_;
   };
 
   /**
@@ -224,9 +224,9 @@ namespace
 
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)
   {
-    bool success =
-        Core::Communication::are_distributed_vectors_identical(*communicators_, epetraVector_,  //
-            "epetraVector");
+    bool success = Core::Communication::are_distributed_vectors_identical(*communicators_,
+        epetraVector_->get_ptr_of_Epetra_MultiVector(),  //
+        "epetraVector");
     EXPECT_EQ(success, true);
   }
 
@@ -237,8 +237,8 @@ namespace
     double disturbedValue = static_cast<double>(lastLocalIndex);
     epetraVector_->ReplaceMyValues(1, &disturbedValue, &lastLocalIndex);
 
-    EXPECT_THROW(Core::Communication::are_distributed_vectors_identical(
-                     *communicators_, epetraVector_, "epetraVector"),
+    EXPECT_THROW(Core::Communication::are_distributed_vectors_identical(*communicators_,
+                     epetraVector_->get_ptr_of_Epetra_MultiVector(), "epetraVector"),
         Core::Exception);
   }
 

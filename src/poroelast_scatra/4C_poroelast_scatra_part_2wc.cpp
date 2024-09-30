@@ -24,9 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 PoroElastScaTra::PoroScatraPart2WC::PoroScatraPart2WC(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart(comm, timeparams),
-      scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_field()->phinp())))),
-      structincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->structure_field()()->dispnp())))),
-      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_field()()->velnp()))))
+      scaincnp_(Teuchos::rcp(new Core::LinAlg::Vector(*(scatra_field()->phinp())))),
+      structincnp_(
+          Teuchos::rcp(new Core::LinAlg::Vector(*(poro_field()->structure_field()()->dispnp())))),
+      fluidincnp_(Teuchos::rcp(new Core::LinAlg::Vector(*(poro_field()->fluid_field()()->velnp()))))
 {
   if (comm.MyPID() == 0) std::cout << "\n Create PoroScatraPart2WC algorithm ... \n" << std::endl;
 

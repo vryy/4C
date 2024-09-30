@@ -37,22 +37,22 @@ namespace Solid
       void post_setup() override;
 
       //! Reset state variables (derived)
-      void set_state(const Epetra_Vector& x) override;
+      void set_state(const Core::LinAlg::Vector& x) override;
 
       //! Apply the rhs only (derived)
-      bool apply_force(const Epetra_Vector& x, Epetra_Vector& f) override;
+      bool apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      bool apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
-      bool apply_force_stiff(
-          const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_force_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+          Core::LinAlg::SparseOperator& jac) override;
 
       //! (derived)
-      bool assemble_force(
-          Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models =
-                                nullptr) const override;
+      bool assemble_force(Core::LinAlg::Vector& f,
+          const std::vector<Inpar::Solid::ModelType>* without_these_models =
+              nullptr) const override;
 
       //! (derived)
       void write_restart(
@@ -85,18 +85,18 @@ namespace Solid
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! predict constant displacements, consistent velocities and accelerations (derived) */
-      void predict_const_dis_consist_vel_acc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
+      void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector& disnp,
+          Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const override;
 
       /*! predict displacements based on constant velocities and consistent accelerations (derived)
        */
-      bool predict_const_vel_consist_acc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
+      bool predict_const_vel_consist_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
+          Core::LinAlg::Vector& accnp) const override;
 
       /*! predict displacements based on constant accelerations and consistent velocities (derived)
        */
-      bool predict_const_acc(
-          Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
+      bool predict_const_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
+          Core::LinAlg::Vector& accnp) const override;
       //! @}
 
       /*! \brief Update constant contributions of the current state for the new time step
@@ -177,7 +177,7 @@ namespace Solid
        *        + C \cdot [\theta  * V_{n+1} + (1-\theta) * V_{n}]
        *        + \theta * Res_{\mathrm{statics},n+1} + (1-\theta) * Res_{\mathrm{statics},n}
        *  \f] */
-      void add_visco_mass_contributions(Epetra_Vector& f) const override;
+      void add_visco_mass_contributions(Core::LinAlg::Vector& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
@@ -220,10 +220,10 @@ namespace Solid
       //! @{
 
       //! viscous mid-point force vector F_viscous F_{viscous;n+1}
-      Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> fvisconp_ptr_;
 
       //! viscous mid-point force vector F_viscous F_{viscous;n}
-      Teuchos::RCP<Epetra_Vector> fviscon_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> fviscon_ptr_;
 
       /*! \brief Holds the during a time step constant contributions to
        *  the velocity and acceleration state update.
@@ -237,10 +237,10 @@ namespace Solid
       //! @{
 
       //! pointer to inertial force vector F_{inertial,n} at last time
-      Teuchos::RCP<Epetra_Vector> finertian_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> finertian_ptr_;
 
       //! pointer to inertial force vector F_{inertial,n+1} at new time
-      Teuchos::RCP<Epetra_Vector> finertianp_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> finertianp_ptr_;
       //! @}
     };
   }  // namespace IMPLICIT

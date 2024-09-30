@@ -398,7 +398,7 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
 
   auto determine_relevant_points =
       [correct_node](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
-          Teuchos::RCP<const Epetra_Vector> disnp) -> std::vector<std::array<double, 3>>
+          Teuchos::RCP<const Core::LinAlg::Vector> disnp) -> std::vector<std::array<double, 3>>
   {
     if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
     {
@@ -536,8 +536,8 @@ void FS3I::PartFS3I::setup_system()
   {
     for (unsigned i = 0; i < scatravec_.size(); ++i)
     {
-      Teuchos::RCP<Epetra_Vector> scatracoupforce =
-          Teuchos::rcp(new Epetra_Vector(*(scatraglobalex_->Map(i)), true));
+      Teuchos::RCP<Core::LinAlg::Vector> scatracoupforce =
+          Teuchos::rcp(new Core::LinAlg::Vector(*(scatraglobalex_->Map(i)), true));
       scatracoupforce_.push_back(scatracoupforce);
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> scatracoupmat =
@@ -545,7 +545,7 @@ void FS3I::PartFS3I::setup_system()
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->scatra_field()->discretization()->dof_row_map();
-      Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dofrowmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector> zeros = Core::LinAlg::create_vector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
   }
@@ -556,10 +556,10 @@ void FS3I::PartFS3I::setup_system()
           *scatraglobalex_, *scatraglobalex_, 27, false, true));
 
   // create scatra rhs vector
-  scatrarhs_ = Teuchos::rcp(new Epetra_Vector(*scatraglobalex_->full_map(), true));
+  scatrarhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*scatraglobalex_->full_map(), true));
 
   // create scatra increment vector
-  scatraincrement_ = Teuchos::rcp(new Epetra_Vector(*scatraglobalex_->full_map(), true));
+  scatraincrement_ = Teuchos::rcp(new Core::LinAlg::Vector(*scatraglobalex_->full_map(), true));
 
   // check whether potential Dirichlet conditions at scatra interface are
   // defined for both discretizations
@@ -700,8 +700,8 @@ void FS3I::PartFS3I::set_mesh_disp() const
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::set_velocity_fields() const
 {
-  std::vector<Teuchos::RCP<const Epetra_Vector>> convel;
-  std::vector<Teuchos::RCP<const Epetra_Vector>> vel;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> convel;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> vel;
   extract_vel(convel, vel);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -715,8 +715,8 @@ void FS3I::PartFS3I::set_velocity_fields() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::PartFS3I::extract_vel(std::vector<Teuchos::RCP<const Epetra_Vector>>& convel,
-    std::vector<Teuchos::RCP<const Epetra_Vector>>& vel) const
+void FS3I::PartFS3I::extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& convel,
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& vel) const
 {
   // extract fluid velocities
 
@@ -724,8 +724,8 @@ void FS3I::PartFS3I::extract_vel(std::vector<Teuchos::RCP<const Epetra_Vector>>&
   {
     case Inpar::FLUID::timeint_afgenalpha:
     {
-      Teuchos::RCP<Epetra_Vector> fluidconvel =
-          Teuchos::rcp(new Epetra_Vector(*(fsi_->fluid_field()->velaf())));
+      Teuchos::RCP<Core::LinAlg::Vector> fluidconvel =
+          Teuchos::rcp(new Core::LinAlg::Vector(*(fsi_->fluid_field()->velaf())));
       vel.push_back(fluidconvel);
       // now subtract the grid velocity
       fluidconvel->Update(-1.0, *(fsi_->fluid_field()->grid_vel()), 1.0);
@@ -745,11 +745,12 @@ void FS3I::PartFS3I::extract_vel(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   // extract structure velocities and accelerations
 
-  Teuchos::RCP<Epetra_Vector> velocity =
-      Teuchos::rcp(new Epetra_Vector(*(fsi_->structure_field()->velnp())));
+  Teuchos::RCP<Core::LinAlg::Vector> velocity =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(fsi_->structure_field()->velnp())));
   vel.push_back(velocity);
   // structure ScaTra: velocity and grid velocity are identical!
-  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(velocity->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> zeros =
+      Teuchos::rcp(new Core::LinAlg::Vector(velocity->Map(), true));
   convel.push_back(zeros);
 }
 
@@ -758,7 +759,7 @@ void FS3I::PartFS3I::extract_vel(std::vector<Teuchos::RCP<const Epetra_Vector>>&
  *----------------------------------------------------------------------*/
 void FS3I::PartFS3I::set_wall_shear_stresses() const
 {
-  std::vector<Teuchos::RCP<const Epetra_Vector>> wss;
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> wss;
   extract_wss(wss);
 
   for (unsigned i = 0; i < scatravec_.size(); ++i)
@@ -771,7 +772,7 @@ void FS3I::PartFS3I::set_wall_shear_stresses() const
 /*----------------------------------------------------------------------*
  |  Extract wall shear stresses                              Thon 11/14 |
  *----------------------------------------------------------------------*/
-void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>& wss) const
+void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& wss) const
 {
   // ############ Fluid Field ###############
 
@@ -779,7 +780,7 @@ void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>&
       Teuchos::rcp_dynamic_cast<Adapter::FluidFSI>(fsi_->fluid_field());
   if (fluid == Teuchos::null) FOUR_C_THROW("Dynamic cast to Adapter::FluidFSI failed!");
 
-  Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->calculate_wall_shear_stresses();
+  Teuchos::RCP<Core::LinAlg::Vector> WallShearStress = fluid->calculate_wall_shear_stresses();
 
   if (Teuchos::getIntegralValue<Inpar::FLUID::WSSType>(
           Global::Problem::instance()->fluid_dynamic_params(), "WSS_TYPE") !=
@@ -797,7 +798,7 @@ void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>&
   WallShearStress = fsi_->fluid_to_struct(WallShearStress);
 
   // insert structure interface entries into vector with full structure length
-  Teuchos::RCP<Epetra_Vector> structure =
+  Teuchos::RCP<Core::LinAlg::Vector> structure =
       Core::LinAlg::create_vector(*(fsi_->structure_field()->interface()->full_map()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
@@ -809,8 +810,8 @@ void FS3I::PartFS3I::extract_wss(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid to fluid-scalar            Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::fluid_to_fluid_scalar(
-    const Teuchos::RCP<const Epetra_Vector> fluidvector) const
+Teuchos::RCP<const Core::LinAlg::Vector> FS3I::PartFS3I::fluid_to_fluid_scalar(
+    const Teuchos::RCP<const Core::LinAlg::Vector> fluidvector) const
 {
   return vol_mortar_master_to_slavei(0, fluidvector);
 }
@@ -818,8 +819,8 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::fluid_to_fluid_scalar(
 /*----------------------------------------------------------------------*
  |  transport quantity from fluid-scalar to fluid            Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::fluid_scalar_to_fluid(
-    const Teuchos::RCP<const Epetra_Vector> fluidscalarvector) const
+Teuchos::RCP<const Core::LinAlg::Vector> FS3I::PartFS3I::fluid_scalar_to_fluid(
+    const Teuchos::RCP<const Core::LinAlg::Vector> fluidscalarvector) const
 {
   return vol_mortar_slave_to_masteri(0, fluidscalarvector);
 }
@@ -827,8 +828,8 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::fluid_scalar_to_fluid(
 /*----------------------------------------------------------------------*
  |  transport quantity from structure to structure-scalar    Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::structure_to_structure_scalar(
-    const Teuchos::RCP<const Epetra_Vector> structurevector) const
+Teuchos::RCP<const Core::LinAlg::Vector> FS3I::PartFS3I::structure_to_structure_scalar(
+    const Teuchos::RCP<const Core::LinAlg::Vector> structurevector) const
 {
   return vol_mortar_master_to_slavei(1, structurevector);
 }
@@ -836,8 +837,8 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::structure_to_structure_scalar(
 /*----------------------------------------------------------------------*
  |  transport quantity from structure-scalar to structure    Thon 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::structure_scalar_to_structure(
-    const Teuchos::RCP<const Epetra_Vector> structurescalavector) const
+Teuchos::RCP<const Core::LinAlg::Vector> FS3I::PartFS3I::structure_scalar_to_structure(
+    const Teuchos::RCP<const Core::LinAlg::Vector> structurescalavector) const
 {
   return vol_mortar_slave_to_masteri(1, structurescalavector);
 }
@@ -845,8 +846,8 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::structure_scalar_to_structure(
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar master to i-th volmortar slave   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::vol_mortar_master_to_slavei(
-    const int i, const Teuchos::RCP<const Epetra_Vector> mastervector) const
+Teuchos::RCP<const Core::LinAlg::Vector> FS3I::PartFS3I::vol_mortar_master_to_slavei(
+    const int i, const Teuchos::RCP<const Core::LinAlg::Vector> mastervector) const
 {
   switch (volume_fieldcouplings_[i])
   {
@@ -866,8 +867,8 @@ Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::vol_mortar_master_to_slavei(
 /*-------------------------------------------------------------------------------------*
  |  transport quantity from i-th volmortar slave to i-th volmortar master   Thon 08/16 |
  *-------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> FS3I::PartFS3I::vol_mortar_slave_to_masteri(
-    const int i, const Teuchos::RCP<const Epetra_Vector> slavevector) const
+Teuchos::RCP<const Core::LinAlg::Vector> FS3I::PartFS3I::vol_mortar_slave_to_masteri(
+    const int i, const Teuchos::RCP<const Core::LinAlg::Vector> slavevector) const
 {
   switch (volume_fieldcouplings_[i])
   {

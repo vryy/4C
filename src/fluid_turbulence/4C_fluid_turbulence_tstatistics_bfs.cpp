@@ -580,7 +580,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::do_time_sample(
-    Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses)
+    Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> stresses)
 {
   // compute squared values of velocity
   squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);
@@ -819,8 +819,8 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(
 //----------------------------------------------------------------------
 // sampling of velocity, pressure and temperature values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
-    Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp, const double eosfac)
+void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp,
+    Teuchos::RCP<Core::LinAlg::Vector> scanp, const double eosfac)
 {
   // compute squared values of velocity
   squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);
@@ -1129,7 +1129,7 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
 // sampling of velocity, pressure and scalar values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
-    Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> scanp)
+    Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> scanp)
 {
   // compute squared values of velocity
   squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);

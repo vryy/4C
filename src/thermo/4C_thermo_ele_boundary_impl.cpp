@@ -253,7 +253,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
       {
         // get actual values of temperature from global location vector
         std::vector<double> mytempnp((la[0].lm_).size());
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state("temperature");
+        Teuchos::RCP<const Core::LinAlg::Vector> tempnp = discretization.get_state("temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
@@ -271,7 +271,8 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
       {
         // get actual values of temperature from global location vector
         std::vector<double> mytempn((la[0].lm_).size());
-        Teuchos::RCP<const Epetra_Vector> tempn = discretization.get_state("old temperature");
+        Teuchos::RCP<const Core::LinAlg::Vector> tempn =
+            discretization.get_state("old temperature");
         if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
         Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
@@ -331,7 +332,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
       if (discretization.has_state(1, "displacement"))
       {
         // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(1, "displacement");
+        Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(1, "displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
@@ -469,7 +470,8 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
           {
             // get actual values of temperature from global location vector
             std::vector<double> mytempnp((la[0].lm_).size());
-            Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state("temperature");
+            Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+                discretization.get_state("temperature");
             if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
             Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
@@ -487,7 +489,8 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
           {
             // get actual values of temperature from global location vector
             std::vector<double> mytempn((la[0].lm_).size());
-            Teuchos::RCP<const Epetra_Vector> tempn = discretization.get_state("old temperature");
+            Teuchos::RCP<const Core::LinAlg::Vector> tempn =
+                discretization.get_state("old temperature");
             if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
             Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
@@ -515,7 +518,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 #endif  // THRASOUTPUT
 
         // get the displacements
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(1, "displacement");
+        Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(1, "displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);

@@ -25,19 +25,19 @@
 FOUR_C_NAMESPACE_OPEN
 
 void CONTACT::NitscheStrategyTsi::set_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec)
 {
   if (statename == Mortar::state_temperature)
   {
     double inf_delta = 0.;
     if (curr_state_temp_ == Teuchos::null)
     {
-      curr_state_temp_ = Teuchos::rcp(new Epetra_Vector(vec));
+      curr_state_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(vec));
       inf_delta = 1.e12;
     }
     else
     {
-      Epetra_Vector delta(vec);
+      Core::LinAlg::Vector delta(vec);
       delta.Update(-1., *curr_state_temp_, 1.);
       delta.NormInf(&inf_delta);
     }
@@ -60,11 +60,12 @@ void CONTACT::NitscheStrategyTsi::set_state(
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategyTsi::set_parent_state(const enum Mortar::StateType& statename,
-    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
+    const Core::LinAlg::Vector& vec, const Core::FE::Discretization& dis)
 {
   if (statename == Mortar::state_temperature)
   {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector> global =
+        Teuchos::rcp(new Core::LinAlg::Vector(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -134,7 +135,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::setup_rhs_block_vec(
   }
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr(
+Teuchos::RCP<const Core::LinAlg::Vector> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (bt == CONTACT::VecBlockType::constraint) return Teuchos::null;
@@ -146,7 +147,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr
   switch (bt)
   {
     case CONTACT::VecBlockType::temp:
-      return Teuchos::rcp(new Epetra_Vector(Copy, *(ft_), 0));
+      return Teuchos::rcp(new Core::LinAlg::Vector(*ft_));
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bt);
   }

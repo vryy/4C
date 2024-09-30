@@ -20,7 +20,7 @@
 
 // forward declarations
 class Epetra_Map;
-class Epetra_Vector;
+
 #include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -67,7 +67,7 @@ namespace Solid
 
     //! Initialize class variables
     virtual void init(const Teuchos::RCP<Core::FE::Discretization>& discret,
-        const Teuchos::RCP<Epetra_Vector>& freact,
+        const Teuchos::RCP<Core::LinAlg::Vector>& freact,
         const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
 
     //! Setup class variables
@@ -77,37 +77,38 @@ namespace Solid
      *
      *  \note Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
     void apply_dirichlet_to_local_system(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> A, Teuchos::RCP<Core::LinAlg::Vector>& b) const;
 
     /*! \brief Apply the DBC to a vector
      *
      *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const;
+    void apply_dirichlet_to_vector(Teuchos::RCP<Core::LinAlg::Vector>& vec) const;
 
     /*! \brief Apply the DBC to the rhs vector and calculate and save the reaction forces
      *
      *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void apply_dirichlet_to_rhs(Teuchos::RCP<Epetra_Vector>& b) const;
+    void apply_dirichlet_to_rhs(Teuchos::RCP<Core::LinAlg::Vector>& b) const;
 
     //! Update the locsys manager
     void update_loc_sys_manager();
 
     //! Calculate the dirichlet increment of the current (time) step
-    Teuchos::RCP<Epetra_Vector> get_dirichlet_increment();
+    Teuchos::RCP<Core::LinAlg::Vector> get_dirichlet_increment();
 
     /*! \brief Evaluate and apply the DBC
      *
      * \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    virtual void apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap) const;
+    virtual void apply_dirichlet_bc(const double& time, Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> acc,
+        bool recreatemap) const;
 
     /*! \brief Insert non-dbc dof values of source vector into the non-dbc dofs of target vector
      *
      *  \param[in] source_ptr Source vector with values to be inserted
      *  \param[in/out] target_ptr Target vector where values shall be inserted into
      */
-    void insert_vector_in_non_dbc_dofs(
-        Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const;
+    void insert_vector_in_non_dbc_dofs(Teuchos::RCP<const Core::LinAlg::Vector> source_ptr,
+        Teuchos::RCP<Core::LinAlg::Vector> target_ptr) const;
 
     //! @name Access functions
     //!@{
@@ -119,8 +120,8 @@ namespace Solid
     Teuchos::RCP<Core::Conditions::LocsysManager> loc_sys_manager_ptr();
 
     //! Get the zeros vector
-    const Epetra_Vector& get_zeros() const;
-    Teuchos::RCP<const Epetra_Vector> get_zeros_ptr() const;
+    const Core::LinAlg::Vector& get_zeros() const;
+    Teuchos::RCP<const Core::LinAlg::Vector> get_zeros_ptr() const;
 
     //!@}
 
@@ -144,7 +145,7 @@ namespace Solid
      *
      *  \param[in] v Vector to be rotated
      */
-    bool rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v) const;
+    bool rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::Vector>& v) const;
 
     /*! \brief Rotate the rhs vector from the global to the local coordinate system
      *
@@ -153,7 +154,7 @@ namespace Solid
      *  \param[in] v Vector to be rotated
      *  \param[in] offset ??
      */
-    bool rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
+    bool rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::Vector>& v, bool offset) const;
 
     /*! \brief Rotate a vector from the local to the global coordinate system
      *
@@ -161,7 +162,7 @@ namespace Solid
      *
      *  \param[in] v Vector to be rotated
      */
-    bool rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v) const;
+    bool rotate_local_to_global(const Teuchos::RCP<Core::LinAlg::Vector>& v) const;
 
     /*! \brief Rotate a vector from the local to the global coordinate system
      *
@@ -170,7 +171,7 @@ namespace Solid
      *  \param[in] v Vector to be rotated
      *  \param[in] offset ??
      */
-    bool rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const;
+    bool rotate_local_to_global(const Teuchos::RCP<Core::LinAlg::Vector>& v, bool offset) const;
 
    protected:
     //! Returns the initialization status
@@ -190,7 +191,7 @@ namespace Solid
     Teuchos::RCP<const Core::FE::Discretization> discret_ptr() const;
 
     //! Access the reaction force
-    Epetra_Vector& freact() const;
+    Core::LinAlg::Vector& freact() const;
 
     //! Get the locsys transformation matrix
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
@@ -205,11 +206,11 @@ namespace Solid
      *
      *  \param b ??
      */
-    void extract_freact(Teuchos::RCP<Epetra_Vector>& b) const;
+    void extract_freact(Teuchos::RCP<Core::LinAlg::Vector>& b) const;
 
     /*! Apply the DBC to the right hand side in the local coordinate system and
      *  do not rotate it back to the global coordinate system. */
-    void apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) const;
+    void apply_dirichlet_to_local_rhs(Teuchos::RCP<Core::LinAlg::Vector>& b) const;
 
     /*! \brief Apply the DBC to the Jacobian in the local coordinate system
      *
@@ -239,14 +240,14 @@ namespace Solid
     Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_ptr_;
 
     //! Some vector with system size and filled with zeros.
-    Teuchos::RCP<Epetra_Vector> zeros_ptr_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_ptr_;
 
     //! Dirichlet boundary condition map extractor.
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmap_ptr_;
 
    private:
     //! Reaction force
-    Epetra_Vector* freact_ptr_;
+    Core::LinAlg::Vector* freact_ptr_;
 
   };  // namespace Solid
 }  // namespace Solid

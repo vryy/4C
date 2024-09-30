@@ -626,7 +626,7 @@ namespace BEAMINTERACTION
     //    \brief FD-Check of stiffness matrix
     //  */
     //  void fd_check( Core::LinAlg::SparseMatrix& stiffmatrix,
-    //                Epetra_Vector& fint,
+    //                Core::LinAlg::Vector& fint,
     //                const double& pp,
     //                std::map<std::pair<int,int>, Teuchos::RCP<BeamContactPair> >& contactpairmap,
     //                Teuchos::ParameterList& timeintparams,

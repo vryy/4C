@@ -53,7 +53,7 @@ namespace Coupling::Adapter
    *  general reside on the same processors.
    *
    *  This class handles the transfer of dof values at the interface
-   *  (Epetra_Vectors build on the interface dof map of either side) to
+   *  (Core::LinAlg::Vectors build on the interface dof map of either side) to
    *  the other side. To distinguish both sides lets speak of master and
    *  slave, even though no side really dominates the other. On the
    *  contrary we provide perfect symmetry once the setup is done.
@@ -71,8 +71,8 @@ namespace Coupling::Adapter
    *  master dof map and a permuted slave dof map. These permuted
    *  maps are bound to have the same layout as the normal maps from the
    *  other side. So we can exchange dof values between fields by simply
-   *  copying from a normal Epetra_Vector to the permuted
-   *  Epetra_Vector from the other side without actually looking at the
+   *  copying from a normal Core::LinAlg::Vector to the permuted
+   *  Core::LinAlg::Vector from the other side without actually looking at the
    *  respective maps. Afterwards the communication happens within one
    *  field in the usual fashion. So the transfer functions
    *  master_to_slave() and slave_to_master() are quite simple. The hard
@@ -289,16 +289,16 @@ namespace Coupling::Adapter
     /// idea is the same for all of them.
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_Vector> master_to_slave(
-        Teuchos::RCP<Epetra_Vector> mv  ///< master vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
+        Teuchos::RCP<Core::LinAlg::Vector> mv  ///< master vector (to be transferred)
     ) const override
     {
       return master_to_slave(mv.getConst());
     }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_Vector> slave_to_master(
-        Teuchos::RCP<Epetra_Vector> sv  ///< slave vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
+        Teuchos::RCP<Core::LinAlg::Vector> sv  ///< slave vector (to be transferred)
     ) const override
     {
       return slave_to_master(sv.getConst());
@@ -337,13 +337,13 @@ namespace Coupling::Adapter
     }
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_Vector> master_to_slave(
-        Teuchos::RCP<const Epetra_Vector> mv  ///< master vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
+        Teuchos::RCP<const Core::LinAlg::Vector> mv  ///< master vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_Vector> slave_to_master(
-        Teuchos::RCP<const Epetra_Vector> sv  ///< slave vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
+        Teuchos::RCP<const Core::LinAlg::Vector> sv  ///< slave vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from master to slave

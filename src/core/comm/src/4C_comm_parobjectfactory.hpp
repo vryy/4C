@@ -14,9 +14,9 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <map>
@@ -124,8 +124,9 @@ namespace Core::Communication
     void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3);
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3);
 
     /// setup definition of element input file lines
     void setup_element_definition(

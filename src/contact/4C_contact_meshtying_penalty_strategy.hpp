@@ -74,7 +74,7 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
+    void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector>& dis) override;
 
     /*!
     \brief Mesh initialization for rotational invariance
@@ -89,7 +89,7 @@ namespace CONTACT
 
     \return Vector with modified nodal positions
     */
-    Teuchos::RCP<const Epetra_Vector> mesh_initialization() override;
+    Teuchos::RCP<const Core::LinAlg::Vector> mesh_initialization() override;
 
     /*!
     \brief Evaluate meshtying
@@ -107,7 +107,7 @@ namespace CONTACT
 
     */
     void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector> dis) override;
 
     /*!
     \brief Initialize Uzawa step
@@ -118,7 +118,7 @@ namespace CONTACT
 
     */
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override;
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -169,18 +169,19 @@ namespace CONTACT
     // All these functions only have functionality in Lagrange meshtying simulations,
     // thus they are defined empty here in the case of Penalty meshtying.
 
-    void recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
+    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override { return; };
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
+        Teuchos::RCP<Core::LinAlg::Vector> fd, Teuchos::RCP<Core::LinAlg::Vector> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
+        Teuchos::RCP<Core::LinAlg::Vector>& blocksol,
+        Teuchos::RCP<Core::LinAlg::Vector>& blockrhs) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
           "makes no sense here.");
     };
-    void update_displacements_and_l_mincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
+    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector> sold,
+        Teuchos::RCP<const Core::LinAlg::Vector> blocksol) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
@@ -199,7 +200,7 @@ namespace CONTACT
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool evaluate_force(const Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool evaluate_force(const Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
 
     /*! \brief Evaluate stiffness term
      *
@@ -209,17 +210,17 @@ namespace CONTACT
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool evaluate_stiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool evaluate_stiff(const Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
 
     /*! \brief Evaluate residual and stiffness matrix
      *
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool evaluate_force_stiff(const Teuchos::RCP<const Epetra_Vector> dis) override;
+    bool evaluate_force_stiff(const Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
 
     //! Return the desired right-hand-side block pointer (read-only) [derived]
-    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
@@ -259,7 +260,7 @@ namespace CONTACT
      *
      * \todo Is this the residual or the right-hand side vector?
      */
-    Teuchos::RCP<Epetra_Vector> force_;
+    Teuchos::RCP<Core::LinAlg::Vector> force_;
 
 
   };  // class MtPenaltyStrategy

@@ -135,7 +135,7 @@ void Adapter::FluidLung::list_lung_vol_cons(std::set<int>& LungVolConIDs, int& M
 /*======================================================================*/
 /* determine initial flow rates */
 void Adapter::FluidLung::initialize_vol_con(
-    Teuchos::RCP<Epetra_Vector> initflowrate, const int offsetID)
+    Teuchos::RCP<Core::LinAlg::Vector> initflowrate, const int offsetID)
 {
   if (!(discretization()->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!discretization()->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -211,8 +211,8 @@ void Adapter::FluidLung::evaluate_vol_con(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstrFluidMatrix,
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> AleConstrMatrix,
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ConstrAleMatrix,
-    Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
-    Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta)
+    Teuchos::RCP<Core::LinAlg::Vector> FluidRHS, Teuchos::RCP<Core::LinAlg::Vector> CurrFlowRates,
+    Teuchos::RCP<Core::LinAlg::Vector> lagrMultVecRed, const int offsetID, const double dttheta)
 {
   if (!(discretization()->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!discretization()->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -349,7 +349,7 @@ void Adapter::FluidLung::evaluate_vol_con(
   FluidConstrMatrix->scale(invresscale);
   ConstrFluidMatrix->scale(dttheta);
 
-  Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> zeros = Core::LinAlg::create_vector(*dof_row_map(), true);
   outflowfsiinterface_->insert_cond_vector(
       outflowfsiinterface_->extract_cond_vector(zeros), FluidRHS);
 }
@@ -357,7 +357,7 @@ void Adapter::FluidLung::evaluate_vol_con(
 
 /*======================================================================*/
 /* output of volume constraint related forces*/
-void Adapter::FluidLung::output_forces(Teuchos::RCP<Epetra_Vector> Forces)
+void Adapter::FluidLung::output_forces(Teuchos::RCP<Core::LinAlg::Vector> Forces)
 {
   const Teuchos::RCP<Core::IO::DiscretizationWriter>& output = disc_writer();
   output->write_vector("Add_Forces", Forces);

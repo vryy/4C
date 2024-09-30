@@ -117,7 +117,11 @@ void NOX::Nln::Group::computeX(
     const NOX::Nln::Group& grp, const ::NOX::Epetra::Vector& d, double step)
 {
   skipUpdateX_ = false;
-  prePostOperatorPtr_->run_pre_compute_x(grp, d.getEpetraVector(), step, *this);
+
+  // Some call further down will perform a const-cast on d. fixme
+  Core::LinAlg::VectorView d_view(const_cast<Epetra_Vector&>(d.getEpetraVector()));
+  prePostOperatorPtr_->run_pre_compute_x(grp, d_view, step, *this);
+
 
   if (isPreconditioner()) sharedLinearSystem.getObject(this)->destroyPreconditioner();
 
@@ -125,7 +129,8 @@ void NOX::Nln::Group::computeX(
 
   if (not skipUpdateX_) xVector.update(1.0, grp.xVector, step, d);
 
-  prePostOperatorPtr_->run_post_compute_x(grp, d.getEpetraVector(), step, *this);
+  prePostOperatorPtr_->run_post_compute_x(grp, d_view, step, *this);
+
   return;
 }
 
@@ -168,7 +173,10 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::computeF()
 {
-  prePostOperatorPtr_->run_pre_compute_f(RHSVector.getEpetraVector(), *this);
+  {
+    Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+    prePostOperatorPtr_->run_pre_compute_f(rhs_view, *this);
+  }
 
   if (isF()) return ::NOX::Abstract::Group::Ok;
 
@@ -182,7 +190,10 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 
   isValidRHS = true;
 
-  prePostOperatorPtr_->run_post_compute_f(RHSVector.getEpetraVector(), *this);
+  {
+    Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+    prePostOperatorPtr_->run_post_compute_f(rhs_view, *this);
+  }
   return ::NOX::Abstract::Group::Ok;
 }
 
@@ -202,7 +213,10 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
   else if (!isJacobian())
   {
     isValidRHS = false;
-    prePostOperatorPtr_->run_pre_compute_f(RHSVector.getEpetraVector(), *this);
+    {
+      Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+      prePostOperatorPtr_->run_pre_compute_f(rhs_view, *this);
+    }
     bool status = false;
     Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
         Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
@@ -217,12 +231,18 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
     isValidJacobian = true;
 
     ret = ::NOX::Abstract::Group::Ok;
-    prePostOperatorPtr_->run_post_compute_f(RHSVector.getEpetraVector(), *this);
+    {
+      Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+      prePostOperatorPtr_->run_post_compute_f(rhs_view, *this);
+    }
   }
   // nothing to do, because all quantities are up-to-date
   else
   {
-    prePostOperatorPtr_->run_pre_compute_f(RHSVector.getEpetraVector(), *this);
+    {
+      Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+      prePostOperatorPtr_->run_pre_compute_f(rhs_view, *this);
+    }
     ret = ::NOX::Abstract::Group::Ok;
   }
 
@@ -232,10 +252,11 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_element_volumes(
-    Teuchos::RCP<Epetra_Vector>& ele_vols) const
+    Teuchos::RCP<Core::LinAlg::Vector>& ele_vols) const
 {
-  const bool success =
-      get_nln_req_interface_ptr()->compute_element_volumes(xVector.getEpetraVector(), ele_vols);
+  auto ele_vols_epetra = ele_vols->get_ptr_of_Epetra_Vector();
+  const bool success = get_nln_req_interface_ptr()->compute_element_volumes(
+      xVector.getEpetraVector(), ele_vols_epetra);
 
   return (success ? Ok : Failed);
 }
@@ -243,7 +264,7 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_trial_element_volumes(
-    Teuchos::RCP<Epetra_Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step)
+    Teuchos::RCP<Core::LinAlg::Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step)
 {
   if (tmpVectorPtr.is_null() or !tmpVectorPtr->Map().SameAs(xVector.getEpetraVector().Map()) or
       tmpVectorPtr.get() == &xVector.getEpetraVector())
@@ -254,8 +275,9 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
   const ::NOX::Epetra::Vector& dir_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   tmpVectorPtr->Update(step, dir_epetra.getEpetraVector(), 1.0);
 
+  auto ele_vols_epetra = ele_vols->get_ptr_of_Epetra_Vector();
   const bool success =
-      get_nln_req_interface_ptr()->compute_element_volumes(*tmpVectorPtr, ele_vols);
+      get_nln_req_interface_ptr()->compute_element_volumes(*tmpVectorPtr, ele_vols_epetra);
 
   return (success ? Ok : Failed);
 }
@@ -299,7 +321,10 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_correction_system(
     const enum NOX::Nln::CorrectionType type)
 {
-  prePostOperatorPtr_->run_pre_compute_f(RHSVector.getEpetraVector(), *this);
+  {
+    Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+    prePostOperatorPtr_->run_pre_compute_f(rhs_view, *this);
+  }
 
   Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
       Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
@@ -319,7 +344,10 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
   isValidJacobian = true;
   corr_type_ = type;
 
-  prePostOperatorPtr_->run_post_compute_f(RHSVector.getEpetraVector(), *this);
+  {
+    Core::LinAlg::VectorView rhs_view(RHSVector.getEpetraVector());
+    prePostOperatorPtr_->run_post_compute_f(rhs_view, *this);
+  }
 
   return ::NOX::Abstract::Group::Ok;
 }
@@ -531,7 +559,7 @@ double NOX::Nln::Group::get_linearized_model_terms(const ::NOX::Abstract::Vector
     const enum NOX::Nln::MeritFunction::LinType lintype) const
 {
   const ::NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
-  const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
+  const auto& dir_epetra = dir_nox_epetra.getEpetraVector();
 
   return get_nln_req_interface_ptr()->get_linearized_model_terms(
       this, dir_epetra, mf_type, linorder, lintype);
@@ -591,10 +619,11 @@ void NOX::Nln::Group::adjust_pseudo_time_step(double& delta, const double& stepS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> NOX::Nln::Group::get_lumped_mass_matrix_ptr() const
+Teuchos::RCP<const Core::LinAlg::Vector> NOX::Nln::Group::get_lumped_mass_matrix_ptr() const
 {
-  return Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(userInterfacePtr)
-      ->get_lumped_mass_matrix_ptr();
+  return Teuchos::make_rcp<Core::LinAlg::Vector>(
+      *Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(userInterfacePtr)
+           ->get_lumped_mass_matrix_ptr());
 }
 
 /*----------------------------------------------------------------------------*
@@ -686,7 +715,8 @@ const Epetra_Map& NOX::Nln::Group::get_jacobian_range_map(unsigned rbid, unsigne
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::Nln::Group::get_diagonal_of_jacobian(unsigned diag_bid) const
+Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Group::get_diagonal_of_jacobian(
+    unsigned diag_bid) const
 {
   if (not isJacobian())
     FOUR_C_THROW(
@@ -702,7 +732,7 @@ Teuchos::RCP<Epetra_Vector> NOX::Nln::Group::get_diagonal_of_jacobian(unsigned d
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::Group::replace_diagonal_of_jacobian(
-    const Epetra_Vector& new_diag, unsigned diag_bid) const
+    const Core::LinAlg::Vector& new_diag, unsigned diag_bid) const
 {
   if (not isJacobian())
     FOUR_C_THROW(

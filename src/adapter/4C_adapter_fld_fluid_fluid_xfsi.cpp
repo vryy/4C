@@ -15,11 +15,11 @@ conjunction with XFluidFluid!
 #include "4C_fluid_xfluid_fluid.hpp"
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_xfem_condition_manager.hpp"
 #include "4C_xfem_discretization.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>

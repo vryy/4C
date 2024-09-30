@@ -51,7 +51,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -122,8 +122,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
         visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
             "mortar_manager");
-    Teuchos::RCP<Epetra_Vector> lambda =
-        visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
+    Teuchos::RCP<Core::LinAlg::Vector> lambda =
+        visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector>>("lambda");
 
     // Get the lambda GIDs of this pair.
     const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);

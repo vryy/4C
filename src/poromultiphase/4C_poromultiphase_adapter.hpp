@@ -12,9 +12,9 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -63,10 +63,11 @@ namespace POROMULTIPHASE
     virtual bool setup_solver() = 0;
 
     /// perform relaxation (only for partitioned system)
-    virtual void perform_relaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) = 0;
+    virtual void perform_relaxation(
+        Teuchos::RCP<const Core::LinAlg::Vector> phi, const int itnum) = 0;
 
     /// get relaxed fluid solution (only for partitioned system)
-    virtual Teuchos::RCP<const Epetra_Vector> relaxed_fluid_phinp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> relaxed_fluid_phinp() const = 0;
 
     /// set relaxed fluid solution on structure (only for partitioned system)
     virtual void set_relaxed_fluid_solution() = 0;
@@ -87,20 +88,21 @@ namespace POROMULTIPHASE
     virtual void update_and_output() = 0;
 
     /// set structure solution on scatra field
-    virtual void set_struct_solution(
-        Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel) = 0;
+    virtual void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        Teuchos::RCP<const Core::LinAlg::Vector> vel) = 0;
 
     /// set scatra solution on fluid field
-    virtual void set_scatra_solution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars) = 0;
+    virtual void set_scatra_solution(
+        unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector> scalars) = 0;
 
     /// dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> struct_dof_row_map() const = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> struct_dispnp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> struct_dispnp() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> struct_velnp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> struct_velnp() const = 0;
 
     /// dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> fluid_dof_row_map() const = 0;
@@ -112,31 +114,31 @@ namespace POROMULTIPHASE
     virtual Teuchos::RCP<const Epetra_MultiVector> fluid_flux() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> fluid_phinp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> fluid_phinp() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> fluid_saturation() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> fluid_saturation() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> fluid_pressure() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> fluid_pressure() const = 0;
 
     /// return fluid solution variable
-    virtual Teuchos::RCP<const Epetra_Vector> solid_pressure() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> solid_pressure() const = 0;
 
     //! unique map of all dofs that should be constrained with DBC
     virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map() const = 0;
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<const Epetra_Vector> sx,
-        Teuchos::RCP<const Epetra_Vector> fx, const bool firstcall) = 0;
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> sx,
+        Teuchos::RCP<const Core::LinAlg::Vector> fx, const bool firstcall) = 0;
 
     //! access to monolithic right-hand side vector
-    virtual Teuchos::RCP<const Epetra_Vector> rhs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() const = 0;
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
-    virtual void update_fields_after_convergence(
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) = 0;
+    virtual void update_fields_after_convergence(Teuchos::RCP<const Core::LinAlg::Vector>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& fx) = 0;
 
     //! get the extractor
     virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const = 0;

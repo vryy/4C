@@ -159,13 +159,13 @@ namespace FSI
 
     //! setup RHS contributions based on single field residuals
     //! \sa setup_rhs()
-    void setup_rhs_residual(Epetra_Vector& f);
+    void setup_rhs_residual(Core::LinAlg::Vector& f);
 
     //! Apply Dirichlet BCs to the whole system
     void apply_dbc();
 
     //! Extract initial guess from fields
-    void initial_guess(Teuchos::RCP<Epetra_Vector> ig);
+    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig);
 
     //! Create the combined DOF row map for the FSI problem; row maps of structure and xfluid to an
     //! global FSI DOF row map
@@ -179,9 +179,10 @@ namespace FSI
     //! Put two field vectors together to a monolithic vector
     //!
     //! As usual, the ordering is: structure -- fluid
-    void combine_field_vectors(Epetra_Vector& v,  ///< composed vector containing all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,     ///< structural DOFs
-        Teuchos::RCP<const Epetra_Vector> fv      ///< fluid DOFs
+    void combine_field_vectors(
+        Core::LinAlg::Vector& v,  ///< composed vector containing all field vectors
+        Teuchos::RCP<const Core::LinAlg::Vector> sv,  ///< structural DOFs
+        Teuchos::RCP<const Core::LinAlg::Vector> fv   ///< fluid DOFs
     );
 
 
@@ -192,9 +193,9 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        Teuchos::RCP<const Epetra_Vector>& ax);
+    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& ax);
 
     //@}
 
@@ -240,11 +241,11 @@ namespace FSI
 
     //! forward permutation of fluid dofs - transform vectors (based on dofsets) w.r.t old interface
     //! position forward to a vector (based on dofsets) w.r.t. new interface position
-    void permute_fluid_dofs_forward(Teuchos::RCP<Epetra_Vector>& fx);
+    void permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::Vector>& fx);
 
     //! backward permutation of fluid dofs - transform vectors (based on dofsets) w.r.t new
     //! interface position backward to a vector (based on dofsets) w.r.t. old interface position
-    void permute_fluid_dofs_backward(Teuchos::RCP<Epetra_Vector>& fx);
+    void permute_fluid_dofs_backward(Teuchos::RCP<Core::LinAlg::Vector>& fx);
 
     //@}
 
@@ -259,11 +260,11 @@ namespace FSI
     void linear_solve();
 
     //! apply infnorm scaling to linear block system
-    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b);
 
     //! undo infnorm scaling from scaled solution
     void unscale_solution(
-        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b);
 
     //! create combined Dirichlet boundary condition map, map containing the dofs with Dirichlet BC
     Teuchos::RCP<Epetra_Map> combined_dbc_map();
@@ -318,8 +319,8 @@ namespace FSI
 
     const bool scaling_infnorm_;  //!< inf-norm scaling for blockmatrix for iterative solvers
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;  //!< structural row sum
-    Teuchos::RCP<Epetra_Vector> scolsum_;  //!< structural column sum
+    Teuchos::RCP<Core::LinAlg::Vector> srowsum_;  //!< structural row sum
+    Teuchos::RCP<Core::LinAlg::Vector> scolsum_;  //!< structural column sum
 
     //@}
 
@@ -350,27 +351,27 @@ namespace FSI
     //! @name vectors used within the Newton scheme
 
     //! global sum of increments (step-increment), increment w.r.t the old timestep t^n
-    Teuchos::RCP<Epetra_Vector> x_sum_;
+    Teuchos::RCP<Core::LinAlg::Vector> x_sum_;
 
     //! intermediate step increment for structure based on predictor solution from beginning of time
     //! step
-    Teuchos::RCP<const Epetra_Vector> sx_sum_;
+    Teuchos::RCP<const Core::LinAlg::Vector> sx_sum_;
 
     //! intermediate step increment for fluid based on solution from t^n mapped/transformed to
     //! current interface position and permuted to current dofset ordering
-    Teuchos::RCP<Epetra_Vector> fx_sum_;
+    Teuchos::RCP<Core::LinAlg::Vector> fx_sum_;
 
     //! intermediate step increment for ale based on predictor solution from beginning of time step
-    Teuchos::RCP<Epetra_Vector> ax_sum_;
+    Teuchos::RCP<Core::LinAlg::Vector> ax_sum_;
 
     //! global Newton increment = iteration increment Delta x = x^n+1_i+1 - x^n+1_i
-    Teuchos::RCP<Epetra_Vector> iterinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;
 
     //! global residual vector
-    Teuchos::RCP<Epetra_Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
 
     //! global vector for combined fluid and structure system filled with zeros used for DBCs
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
 
     //@}
 

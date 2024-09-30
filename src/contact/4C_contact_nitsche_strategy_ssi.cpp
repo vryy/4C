@@ -56,7 +56,7 @@ void CONTACT::NitscheStrategySsi::init_trace_he()
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategySsi::set_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec)
 {
   switch (statename)
   {
@@ -66,7 +66,7 @@ void CONTACT::NitscheStrategySsi::set_state(
       double inf_delta = 0.0;
       if (curr_state_scalar_ == Teuchos::null)
       {
-        curr_state_scalar_ = Teuchos::rcp(new Epetra_Vector(vec));
+        curr_state_scalar_ = Teuchos::rcp(new Core::LinAlg::Vector(vec));
         inf_delta = 1.0e12;
       }
       else
@@ -98,14 +98,14 @@ void CONTACT::NitscheStrategySsi::set_state(
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategySsi::set_parent_state(const enum Mortar::StateType& statename,
-    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
+    const Core::LinAlg::Vector& vec, const Core::FE::Discretization& dis)
 {
   switch (statename)
   {
     case Mortar::state_elch:
     case Mortar::state_scalar:
     {
-      auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
+      auto scatra_dofcolmap = Teuchos::rcp(new Core::LinAlg::Vector(*dis.dof_col_map(), true));
       Core::LinAlg::export_to(vec, *scatra_dofcolmap);
 
       // set state on interfaces
@@ -169,7 +169,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::setup_rhs_block_vec(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::get_rhs_block_ptr(
+Teuchos::RCP<const Core::LinAlg::Vector> CONTACT::NitscheStrategySsi::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bp) const
 {
   if (bp == CONTACT::VecBlockType::constraint) return Teuchos::null;
@@ -182,7 +182,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::get_rhs_block_ptr
   {
     case CONTACT::VecBlockType::elch:
     case CONTACT::VecBlockType::scatra:
-      return Teuchos::rcp(new Epetra_Vector(Copy, *(fs_), 0));
+      return Teuchos::rcp(new Core::LinAlg::Vector(*(*fs_)(0)));
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bp);
   }

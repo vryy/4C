@@ -14,11 +14,11 @@
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_io.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
 #include <Epetra_IntVector.h>
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -101,7 +101,8 @@ void Solid::ModelEvaluator::BaseSSI::setup()
   check_init();
 
   if (discret().num_dof_sets() - 1 == 2)
-    mechanical_stress_state_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(2), true));
+    mechanical_stress_state_ =
+        Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map(2), true));
 
   // set flag
   issetup_ = true;

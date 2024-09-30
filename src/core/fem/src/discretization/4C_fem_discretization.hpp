@@ -15,6 +15,7 @@
 
 #include "4C_fem_dofset_interface.hpp"
 #include "4C_fem_general_shape_function_type.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
@@ -24,7 +25,6 @@
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
-#include <Epetra_Vector.h>
 
 #include <functional>
 #include <set>
@@ -1522,7 +1522,7 @@ namespace Core::FE
 
     \note This class will not take ownership or in any way modify the solution vector.
     */
-    void set_state(const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    void set_state(const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state)
     {
       set_state(0, name, state);
     }
@@ -1547,7 +1547,7 @@ namespace Core::FE
     \note This class will not take ownership or in any way modify the solution vector.
     */
     virtual void set_state(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
+        unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state);
 
     /*!
     \brief Get a reference to a data vector at the default dofset (0)
@@ -1560,7 +1560,7 @@ namespace Core::FE
 
     \return Reference to solution state
     */
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> get_state(const std::string& name) const
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> get_state(const std::string& name) const
     {
       return get_state(0, name);
     }
@@ -1577,7 +1577,7 @@ namespace Core::FE
 
     \return Reference to solution state
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> get_state(
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> get_state(
         unsigned nds, const std::string& name) const
     {
       FOUR_C_ASSERT(
@@ -1695,8 +1695,9 @@ namespace Core::FE
     virtual void evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3);
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3);
 
     /// Call elements to evaluate
     virtual void evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy);
@@ -1736,7 +1737,7 @@ namespace Core::FE
      */
     void evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Epetra_Vector> systemvector);
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector);
 
 
     /// Call elements to evaluate
@@ -1775,7 +1776,8 @@ namespace Core::FE
      *                             this method.
      *  \param systemvector (out): Optional matrix to assemble linearization
      *                             of Neumann BCs to. */
-    void evaluate_neumann(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
+    void evaluate_neumann(Teuchos::ParameterList& params,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix = Teuchos::null)
     {
       if (systemmatrix.is_null())
@@ -1803,8 +1805,8 @@ namespace Core::FE
     \param systemvector (out): Vector to assemble Neumann BCs to.
                                The vector is NOT initialized to zero by this method.
     */
-    virtual void evaluate_neumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
-        Core::LinAlg::SparseOperator* systemmatrix = nullptr);
+    virtual void evaluate_neumann(Teuchos::ParameterList& params,
+        Core::LinAlg::Vector& systemvector, Core::LinAlg::SparseOperator* systemmatrix = nullptr);
 
     /*!
     \brief Evaluate Dirichlet boundary conditions
@@ -1839,8 +1841,9 @@ namespace Core::FE
                                   Dirichlet boundary conditions and the remaining/free DOFs
     */
     virtual void evaluate_dirichlet(Teuchos::ParameterList& params,
-        Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
-        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvectord,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor = Teuchos::null) const;
 
     /// Evaluate a specific condition using assemble strategy
@@ -1860,7 +1863,7 @@ namespace Core::FE
      *  \param condstring    (in): Name of condition to be evaluated
      *  \param condid        (in): condition ID */
     void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<Epetra_Vector> systemvector, const std::string& condstring,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector, const std::string& condstring,
         const int condid = -1)
     {
       evaluate_condition(params, Teuchos::null, Teuchos::null, systemvector, Teuchos::null,
@@ -1916,8 +1919,9 @@ namespace Core::FE
     virtual void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3, const std::string& condstring,
         const int condid = -1);
 
     /*!
@@ -1973,7 +1977,7 @@ namespace Core::FE
      *
      * Every element is only called \b once by its owning processor. (We are
      * parsing the element row map.) At this call the element return its value,
-     * i.e. its scalar. The scalar is put in a Epetra_Vector called "element scalar"
+     * i.e. its scalar. The scalar is put in a Core::LinAlg::Vector called "element scalar"
      * iun the parameter list
      *
      * Example: strain energy in structures
@@ -1999,7 +2003,7 @@ namespace Core::FE
 
     */
     void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
-        const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
+        const std::string& fieldstring, Teuchos::RCP<Core::LinAlg::Vector> fieldvector,
         const std::vector<int>& locids) const;
 
     //@}
@@ -2288,7 +2292,7 @@ namespace Core::FE
     //! @}
 
     //! Map of references to solution states
-    std::vector<std::map<std::string, Teuchos::RCP<const Epetra_Vector>>> state_;
+    std::vector<std::map<std::string, Teuchos::RCP<const Core::LinAlg::Vector>>> state_;
 
     ///< Map of import objects for states
     std::vector<Teuchos::RCP<Epetra_Import>> stateimporter_;

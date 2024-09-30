@@ -20,6 +20,11 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
+namespace Core::LinAlg
+{
+  class Vector;
+}
+
 namespace CONTACT
 {
   // forward declarations
@@ -107,8 +112,8 @@ namespace CONTACT
     \param zero (in)  : global dof zero vector
 
     */
-    void read_restart(Core::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> zero) final;
+    void read_restart(Core::IO::DiscretizationReader& reader,
+        Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero) final;
 
     /*!
     \brief Write interface tractions for postprocessing

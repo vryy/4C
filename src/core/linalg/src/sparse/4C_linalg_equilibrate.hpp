@@ -12,13 +12,14 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
 
 // NOLINTBEGIN(readability-identifier-naming)
 class Epetra_Map;
-class Epetra_Vector;
 // NOLINTEND(readability-identifier-naming)
 
 FOUR_C_NAMESPACE_OPEN
@@ -90,7 +91,7 @@ namespace Core::LinAlg
      *
      * @param[in,out] residual  residual vector
      */
-    virtual void equilibrate_rhs(Teuchos::RCP<Epetra_Vector> residual) const = 0;
+    virtual void equilibrate_rhs(Teuchos::RCP<Core::LinAlg::Vector> residual) const = 0;
 
     /*!
      * @brief equilibrate global system of equations if necessary
@@ -100,7 +101,7 @@ namespace Core::LinAlg
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
     void equilibrate_system(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Epetra_Vector> residual,
+        Teuchos::RCP<Core::LinAlg::Vector> residual,
         Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const;
 
     /*!
@@ -108,7 +109,7 @@ namespace Core::LinAlg
      *
      * @param[in,out] increment  increment vector
      */
-    virtual void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const = 0;
+    virtual void unequilibrate_increment(Teuchos::RCP<Core::LinAlg::Vector> increment) const = 0;
 
    protected:
     /*!
@@ -118,7 +119,7 @@ namespace Core::LinAlg
      * @param[out] invcolsums  inverse sums of absolute values of column entries in matrix
      */
     void compute_inv_col_sums(const Core::LinAlg::SparseMatrix& matrix,
-        Teuchos::RCP<Epetra_Vector> invcolsums, const EquilibrationMethod method) const;
+        Teuchos::RCP<Core::LinAlg::Vector> invcolsums, const EquilibrationMethod method) const;
 
     /*!
      * @brief compute inverse sums of absolute values of matrix row entries
@@ -127,7 +128,7 @@ namespace Core::LinAlg
      * @param[out] invrowsums  inverse sums of absolute values of row entries in matrix
      */
     void compute_inv_row_sums(const Core::LinAlg::SparseMatrix& matrix,
-        Teuchos::RCP<Epetra_Vector> invrowsums, const EquilibrationMethod method) const;
+        Teuchos::RCP<Core::LinAlg::Vector> invrowsums, const EquilibrationMethod method) const;
 
     /*!
      * @brief compute scaling of matrix to keep symmetry
@@ -137,8 +138,8 @@ namespace Core::LinAlg
      * @param[in]  matrix      symmetric matrix A
      * @param[out] invsymmetry scale vector to keep symmetry in matrix d
      */
-    void compute_inv_symmetry(
-        const Core::LinAlg::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const;
+    void compute_inv_symmetry(const Core::LinAlg::SparseMatrix& matrix,
+        Teuchos::RCP<Core::LinAlg::Vector> invsymmetry) const;
 
     /*!
      * @brief equilibrate matrix columns
@@ -146,8 +147,8 @@ namespace Core::LinAlg
      * @param[in,out] matrix      matrix
      * @param[in]     invcolsums  sums of absolute values of column entries in matrix
      */
-    void equilibrate_matrix_columns(
-        Core::LinAlg::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const;
+    void equilibrate_matrix_columns(Core::LinAlg::SparseMatrix& matrix,
+        Teuchos::RCP<const Core::LinAlg::Vector> invcolsums) const;
 
     /*!
      * @brief equilibrate matrix rows
@@ -155,14 +156,14 @@ namespace Core::LinAlg
      * @param[in,out] matrix      matrix
      * @param[in]     invrowsums  sums of absolute values of row entries in matrix
      */
-    void equilibrate_matrix_rows(
-        Core::LinAlg::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const;
+    void equilibrate_matrix_rows(Core::LinAlg::SparseMatrix& matrix,
+        Teuchos::RCP<const Core::LinAlg::Vector> invrowsums) const;
 
     //! inverse sums of absolute values of column entries in global system matrix
-    Teuchos::RCP<Epetra_Vector> invcolsums_;
+    Teuchos::RCP<Core::LinAlg::Vector> invcolsums_;
 
     //! inverse sums of absolute values of row entries in global system matrix
-    Teuchos::RCP<Epetra_Vector> invrowsums_;
+    Teuchos::RCP<Core::LinAlg::Vector> invrowsums_;
   };
 
   /*----------------------------------------------------------------------*
@@ -175,9 +176,9 @@ namespace Core::LinAlg
     //! return equilibration method
     EquilibrationMethod method() const { return method_; }
 
-    void equilibrate_rhs(Teuchos::RCP<Epetra_Vector> residual) const override;
+    void equilibrate_rhs(Teuchos::RCP<Core::LinAlg::Vector> residual) const override;
 
-    void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override;
+    void unequilibrate_increment(Teuchos::RCP<Core::LinAlg::Vector> increment) const override;
 
    private:
     EquilibrationMethod method_;
@@ -223,9 +224,9 @@ namespace Core::LinAlg
     void equilibrate_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const override;
 
-    void equilibrate_rhs(const Teuchos::RCP<Epetra_Vector> residual) const override;
+    void equilibrate_rhs(const Teuchos::RCP<Core::LinAlg::Vector> residual) const override;
 
-    void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override;
+    void unequilibrate_increment(Teuchos::RCP<Core::LinAlg::Vector> increment) const override;
 
    private:
     std::vector<EquilibrationMethod> method_blocks_;
@@ -243,9 +244,9 @@ namespace Core::LinAlg
     {
     }
 
-    void equilibrate_rhs(Teuchos::RCP<Epetra_Vector> residual) const override {}
+    void equilibrate_rhs(Teuchos::RCP<Core::LinAlg::Vector> residual) const override {}
 
-    void unequilibrate_increment(Teuchos::RCP<Epetra_Vector> increment) const override {}
+    void unequilibrate_increment(Teuchos::RCP<Core::LinAlg::Vector> increment) const override {}
   };
 
   /*----------------------------------------------------------------------*

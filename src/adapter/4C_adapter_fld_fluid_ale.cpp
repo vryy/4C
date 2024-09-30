@@ -113,7 +113,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
       Inpar::ALE::initdisp_zero_disp)
   {
     fluid_field()->set_mesh_map(coupfa_->master_dof_map(), nds_master);
-    Teuchos::RCP<Epetra_Vector> initfluiddisp = ale_to_fluid_field(ale_field()->dispn());
+    Teuchos::RCP<Core::LinAlg::Vector> initfluiddisp = ale_to_fluid_field(ale_field()->dispn());
     fluid_field()->apply_initial_mesh_displacement(initfluiddisp);
   }
 
@@ -220,8 +220,8 @@ void Adapter::FluidAle::output()
     if ((uprestart != 0 && fluid_field()->step() % uprestart == 0) ||
         fluid_field()->step() % upres == 0)
     {
-      Teuchos::RCP<Epetra_Vector> lambda = fluid_field()->extract_interface_forces();
-      Teuchos::RCP<Epetra_Vector> lambdafull =
+      Teuchos::RCP<Core::LinAlg::Vector> lambda = fluid_field()->extract_interface_forces();
+      Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
           fluid_field()->interface()->insert_fsi_cond_vector(lambda);
       fluid_field()->disc_writer()->write_vector("fsilambda", lambdafull);
     }
@@ -244,7 +244,7 @@ double Adapter::FluidAle::read_restart(int step)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::FluidAle::nonlinear_solve(
-    Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel)
 {
   if (idisp != Teuchos::null)
   {
@@ -256,8 +256,8 @@ void Adapter::FluidAle::nonlinear_solve(
   // Update the ale update part
   if (fluid_field()->interface()->au_cond_relevant())
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Epetra_Vector> audispnp =
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = fluid_field()->dispnp();
+    Teuchos::RCP<Core::LinAlg::Vector> audispnp =
         fluid_field()->interface()->extract_au_cond_vector(dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
@@ -268,7 +268,7 @@ void Adapter::FluidAle::nonlinear_solve(
   // notice.
 
   ale_field()->solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
   fluid_field()->solve();
 }
@@ -276,8 +276,8 @@ void Adapter::FluidAle::nonlinear_solve(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> idisp,
-    Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector)
+void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vector> idisp,
+    Teuchos::RCP<Core::LinAlg::Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector)
 {
   if (idisp != Teuchos::null)
   {
@@ -289,8 +289,8 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> id
   // Update the ale update part
   if (fluid_field()->interface()->au_cond_relevant())
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = fluid_field()->dispnp();
-    Teuchos::RCP<Epetra_Vector> audispnp =
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = fluid_field()->dispnp();
+    Teuchos::RCP<Core::LinAlg::Vector> audispnp =
         fluid_field()->interface()->extract_au_cond_vector(dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
@@ -301,7 +301,7 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> id
   // notice.
 
   ale_field()->solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
 
   icorrector->correct_interface_displacements(fluiddisp, fluid_field()->interface());
   fluid_field()->apply_mesh_displacement(fluiddisp);
@@ -312,7 +312,7 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> id
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::FluidAle::apply_interface_values(
-    Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel)
 {
   if (idisp != Teuchos::null)
   {
@@ -321,15 +321,15 @@ void Adapter::FluidAle::apply_interface_values(
     fluid_field()->apply_interface_velocities(ivel);
   }
 
-  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::relaxation_solve(
-    Teuchos::RCP<Epetra_Vector> idisp, double dt)
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::relaxation_solve(
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt)
 {
   // Here we have a mesh position independent of the
   // given trial vector, but still the grid velocity depends on the
@@ -339,7 +339,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::relaxation_solve(
   ale_field()->apply_interface_displacements(fluid_to_ale(idisp));
 
   ale_field()->solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid_field(ale_field()->dispnp());
   fluiddisp->Scale(1. / dt);
 
   fluid_field()->apply_mesh_velocity(fluiddisp);
@@ -355,7 +355,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::relaxation_solve(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::extract_interface_forces()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::extract_interface_forces()
 {
   return fluid_field()->extract_interface_forces();
 }
@@ -363,7 +363,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::extract_interface_forces()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::extract_interface_velnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::extract_interface_velnp()
 {
   return fluid_field()->extract_interface_velnp();
 }
@@ -371,7 +371,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::extract_interface_velnp()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::extract_interface_veln()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::extract_interface_veln()
 {
   return fluid_field()->extract_interface_veln();
 }
@@ -379,7 +379,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::extract_interface_veln()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::integrate_interface_shape()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::integrate_interface_shape()
 {
   return fluid_field()->integrate_interface_shape();
 }
@@ -395,8 +395,8 @@ Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FluidAle::create_field_test()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::ale_to_fluid_field(
-    Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::ale_to_fluid_field(
+    Teuchos::RCP<Core::LinAlg::Vector> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
@@ -404,8 +404,8 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::ale_to_fluid_field(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::ale_to_fluid_field(
-    Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::ale_to_fluid_field(
+    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
@@ -413,7 +413,8 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::ale_to_fluid_field(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::fluid_to_ale(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::fluid_to_ale(
+    Teuchos::RCP<Core::LinAlg::Vector> iv) const
 {
   return icoupfa_->master_to_slave(iv);
 }
@@ -421,8 +422,8 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::fluid_to_ale(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidAle::fluid_to_ale(
-    Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidAle::fluid_to_ale(
+    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
 {
   return icoupfa_->master_to_slave(iv);
 }

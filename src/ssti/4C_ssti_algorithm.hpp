@@ -13,8 +13,7 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_algorithmbase.hpp"
-
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

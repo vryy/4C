@@ -13,9 +13,9 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_scatra_interface.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -38,7 +38,7 @@ namespace Adapter
     /// compute contribution of mechanical state to eq. system
     virtual void evaluate_additional_solution_depending_models(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
+        Teuchos::RCP<Core::LinAlg::Vector> rhs                    //!< rhs vector
     );
 
 
@@ -59,7 +59,7 @@ namespace Adapter
     virtual int nds_disp() { return scatra_timint_->nds_disp(); };
 
     /// return rcp ptr to neumann loads vector
-    Teuchos::RCP<Epetra_Vector> get_neumann_loads_ptr() override
+    Teuchos::RCP<Core::LinAlg::Vector> get_neumann_loads_ptr() override
     {
       return scatra_timint_->get_neumann_loads_ptr();
     };
@@ -71,7 +71,7 @@ namespace Adapter
     };
 
     //! return scalar field phi at time n
-    Teuchos::RCP<Epetra_Vector> phin() override { return scatra_timint_->phin(); }
+    Teuchos::RCP<Core::LinAlg::Vector> phin() override { return scatra_timint_->phin(); }
 
    private:
     Teuchos::RCP<ScatraInterface> scatra_timint_;  ///< underlying structural time integration

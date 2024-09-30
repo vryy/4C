@@ -13,9 +13,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -66,11 +66,11 @@ namespace Arteries
     /// Teuchos::RCP to scalar transport discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
-    Teuchos::RCP<const Epetra_Vector> mysol_;
+    Teuchos::RCP<const Core::LinAlg::Vector> mysol_;
     /// Teuchos::RCP to element volumetric flow
-    Teuchos::RCP<const Epetra_Vector> myelevolflow_;
+    Teuchos::RCP<const Core::LinAlg::Vector> myelevolflow_;
     /// Teuchos::RCP to element radius
-    Teuchos::RCP<const Epetra_Vector> myeleradius_;
+    Teuchos::RCP<const Core::LinAlg::Vector> myeleradius_;
   };
 
 }  // namespace Arteries

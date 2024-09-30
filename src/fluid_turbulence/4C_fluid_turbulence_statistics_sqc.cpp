@@ -908,7 +908,7 @@ void FLD::TurbulenceStatisticsSqc::do_lift_drag_time_sample(double dragforce, do
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp)
+void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp)
 {
   // compute squared values of velocity
   squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);

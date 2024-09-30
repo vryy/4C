@@ -12,12 +12,12 @@
 
 #include "4C_solver_nonlin_nox_direction_modified_newton.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_direction_defaultsteptest.hpp"
 #include "4C_solver_nonlin_nox_group.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <NOX_GlobalData.H>
 #include <NOX_Solver_Generic.H>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -102,7 +102,7 @@ bool NOX::Nln::Direction::ModifiedNewton::compute_correction_direction(::NOX::Ab
      * instead the correction of the previous step is used. */
     case NOX::Nln::CorrectionType::soc_full:
     {
-      Teuchos::RCP<Epetra_Vector> diagonal = get_diagonal(grp);
+      Teuchos::RCP<Core::LinAlg::Vector> diagonal = get_diagonal(grp);
       if (not use_unmodified_system()) modify_system(grp, diagonal.get(), primal_diag_corr_last_);
       return solve_modified_system(dir, grp, solver);
     }
@@ -148,7 +148,7 @@ bool NOX::Nln::Direction::ModifiedNewton::compute(
   // Modify the system if a default Newton step failed
   if (not newton_status) mod_newton_status = compute_modified_newton(dir, grp, solver);
 
-  Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> diagonal = Teuchos::null;
   bool dst_success = test_default_step_quality(dir, grp, diagonal, true);
 
   while (not dst_success)
@@ -192,11 +192,11 @@ void NOX::Nln::Direction::ModifiedNewton::update_successive_reduction_counter()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::ModifiedNewton::get_diagonal(
+Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Direction::ModifiedNewton::get_diagonal(
     const ::NOX::Abstract::Group& grp) const
 {
   // fill the diagonal
-  Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> diagonal = Teuchos::null;
 
   return diagonal;
 }
@@ -204,7 +204,7 @@ Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::ModifiedNewton::get_diagonal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::Nln::Direction::ModifiedNewton::test_default_step_quality(::NOX::Abstract::Vector& dir,
-    ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& diagonal, bool first_test)
+    ::NOX::Abstract::Group& grp, Teuchos::RCP<Core::LinAlg::Vector>& diagonal, bool first_test)
 {
   bool status = true;
   // perform the test
@@ -228,7 +228,8 @@ bool NOX::Nln::Direction::ModifiedNewton::test_default_step_quality(::NOX::Abstr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::Nln::Direction::ModifiedNewton::compute_modified_newton(::NOX::Abstract::Vector& dir,
-    ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver, Epetra_Vector* diagonal)
+    ::NOX::Abstract::Group& grp, const ::NOX::Solver::Generic& solver,
+    Core::LinAlg::Vector* diagonal)
 {
   // Compute F and Jacobian at current solution.
   NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
@@ -306,7 +307,7 @@ bool NOX::Nln::Direction::ModifiedNewton::solve_unmodified_system(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::Nln::Direction::ModifiedNewton::modify_system(
-    ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal)
+    ::NOX::Abstract::Group& grp, Core::LinAlg::Vector* diagonal)
 {
   primal_diag_corr_ = get_primal_diag_correction(*corr_counter_ == 0);
 
@@ -338,7 +339,7 @@ void NOX::Nln::Direction::ModifiedNewton::set_stagnation_counter(::NOX::Abstract
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::Nln::Direction::ModifiedNewton::modify_system(
-    ::NOX::Abstract::Group& grp, Epetra_Vector* diagonal, const double primal_diag_corr)
+    ::NOX::Abstract::Group& grp, Core::LinAlg::Vector* diagonal, const double primal_diag_corr)
 {
   NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
 
@@ -348,7 +349,7 @@ bool NOX::Nln::Direction::ModifiedNewton::modify_system(
     original_diag_ptr_ = nln_grp.get_diagonal_of_jacobian(0);
   }
 
-  Teuchos::RCP<Epetra_Vector> mod_diag_ptr = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> mod_diag_ptr = Teuchos::null;
   if (diagonal)
   {
     if (not diagonal->Map().PointSameAs(original_diag_ptr_->Map()))
@@ -359,7 +360,7 @@ bool NOX::Nln::Direction::ModifiedNewton::modify_system(
   else
   {
     const Epetra_BlockMap& map = original_diag_ptr_->Map();
-    mod_diag_ptr = Teuchos::rcp(new Epetra_Vector(map, false));
+    mod_diag_ptr = Teuchos::rcp(new Core::LinAlg::Vector(map, false));
     mod_diag_ptr->PutScalar(1.0);
   }
 

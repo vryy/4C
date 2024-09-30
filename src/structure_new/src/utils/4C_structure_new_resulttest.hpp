@@ -13,10 +13,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_result_test.hpp"
-
-#include <Epetra_Vector.h>
 
 #include <optional>
 
@@ -223,13 +222,13 @@ namespace Solid
     Teuchos::RCP<const Core::FE::Discretization> strudisc_;
     // our solution
     //! global displacement DOFs
-    Teuchos::RCP<const Epetra_Vector> disn_;
+    Teuchos::RCP<const Core::LinAlg::Vector> disn_;
     //! global velocity DOFs
-    Teuchos::RCP<const Epetra_Vector> veln_;
+    Teuchos::RCP<const Core::LinAlg::Vector> veln_;
     //! global acceleration DOFs
-    Teuchos::RCP<const Epetra_Vector> accn_;
+    Teuchos::RCP<const Core::LinAlg::Vector> accn_;
     //! global reaction DOFs
-    Teuchos::RCP<const Epetra_Vector> reactn_;
+    Teuchos::RCP<const Core::LinAlg::Vector> reactn_;
     /* NOTE: these have to be present explicitly
      * as they are not part of the problem instance like in fluid3
      */

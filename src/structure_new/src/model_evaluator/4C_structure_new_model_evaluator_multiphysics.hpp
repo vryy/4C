@@ -18,7 +18,6 @@
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
 // forward declaration
-class Epetra_Vector;
 class Epetra_Map;
 #include "4C_utils_parameter_list.fwd.hpp"
 
@@ -108,7 +107,7 @@ namespace Solid
       }
 
       //! reset class variables (without jacobian) [derived]
-      void reset(const Epetra_Vector& x) override;
+      void reset(const Core::LinAlg::Vector& x) override;
 
       //! [derived]
       bool evaluate_force() override;
@@ -126,7 +125,7 @@ namespace Solid
       void post_evaluate() override{};
 
       //! derived
-      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
       bool assemble_jacobian(
@@ -143,12 +142,12 @@ namespace Solid
       void predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! derived
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
           const NOX::Nln::Group& curr_grp) override{};
 
       //! recover condensed Lagrange multipliers
-      void run_post_compute_x(const Epetra_Vector& xold, const Epetra_Vector& dir,
-          const Epetra_Vector& xnew) override{};
+      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+          const Core::LinAlg::Vector& xnew) override{};
 
       //! derived
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override{};
@@ -188,14 +187,14 @@ namespace Solid
 
       //! Returns a pointer to the current model solution vector (usually the Lagrange multiplier
       //! vector)
-      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override
+      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override
       {
         return Teuchos::null;
       };
 
       //! Returns a pointer to the model solution vector of the last time step (usually the Lagrange
       //! multiplier vector)
-      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override
+      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override
       {
         return Teuchos::null;
       };

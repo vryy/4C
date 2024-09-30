@@ -70,7 +70,8 @@ void NOX::Nln::SINGLESTEP::Group::computeX(
 void NOX::Nln::SINGLESTEP::Group::computeX(
     const NOX::Nln::SINGLESTEP::Group& grp, const ::NOX::Epetra::Vector& d, double step)
 {
-  prePostOperatorPtr_->run_pre_compute_x(grp, d.getEpetraVector(), step, *this);
+  Core::LinAlg::VectorView d_view(const_cast<Epetra_Vector&>(d.getEpetraVector()));
+  prePostOperatorPtr_->run_pre_compute_x(grp, d_view, step, *this);
 
   if (isPreconditioner()) sharedLinearSystem.getObject(this)->destroyPreconditioner();
 
@@ -78,7 +79,9 @@ void NOX::Nln::SINGLESTEP::Group::computeX(
 
   step = 1.0;
   xVector.update(-1.0, d, step, grp.xVector);
-  prePostOperatorPtr_->run_post_compute_x(grp, d.getEpetraVector(), step, *this);
+
+  prePostOperatorPtr_->run_post_compute_x(grp, d_view, step, *this);
+
   return;
 }
 

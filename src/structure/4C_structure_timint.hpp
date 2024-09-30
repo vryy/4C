@@ -18,12 +18,12 @@
 #include "4C_adapter_str_structure.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_timestepping_mstep.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
@@ -237,11 +237,11 @@ namespace Solid
     //! Apply Dirichlet boundary conditions on provided state vectors
     //! (reimplemented in static time integrator)
     virtual void apply_dirichlet_bc(const double time,  //!< at time
-        Teuchos::RCP<Epetra_Vector> dis,                //!< displacements
+        Teuchos::RCP<Core::LinAlg::Vector> dis,         //!< displacements
                                                         //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> vel,                //!< velocities
+        Teuchos::RCP<Core::LinAlg::Vector> vel,         //!< velocities
                                                         //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> acc,                //!< accelerations
+        Teuchos::RCP<Core::LinAlg::Vector> acc,         //!< accelerations
                                                         //!< (may be Teuchos::null)
         bool recreatemap                                //!< recreate map extractor/toggle-vector
                                                         //!< which stores the DOF IDs subjected
@@ -282,7 +282,7 @@ namespace Solid
     Inpar::Solid::ConvergenceStatus solve() override = 0;
 
     //! Linear structure solve with just an interface load
-    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> solve_relaxation_linear() override = 0;
 
     /*! \brief Update displacement in case of coupled problems
      *
@@ -292,7 +292,8 @@ namespace Solid
      *
      *  with n and i being time and Newton iteration step
      */
-    void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
+    void update_state_incrementally(
+        Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override = 0;
 
     /*! \brief Update displacement and evaluate elements in case of coupled problems
      *
@@ -302,7 +303,7 @@ namespace Solid
      *
      *  with n and i being time and Newton iteration step
      */
-    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override = 0;
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override = 0;
 
     /// don't update displacement but evaluate elements (implicit only)
     void evaluate() override { FOUR_C_THROW("new structural time integration only"); }
@@ -316,7 +317,7 @@ namespace Solid
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
     void update_iter_incr_constr(
-        Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
+        Teuchos::RCP<Core::LinAlg::Vector> lagrincr  ///< Lagrange multiplier increment
         ) override = 0;
 
     /// output results
@@ -430,9 +431,9 @@ namespace Solid
     //! Get data that is written during restart
     //! \author biehler \data 06/13
     void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-        Teuchos::RCP<Epetra_Vector> disn,  //!< new displacement state
-        Teuchos::RCP<Epetra_Vector> veln,  //!< new velocity state
-        Teuchos::RCP<Epetra_Vector> accn,  //!< new acceleration state
+        Teuchos::RCP<Core::LinAlg::Vector> disn,  //!< new displacement state
+        Teuchos::RCP<Core::LinAlg::Vector> veln,  //!< new velocity state
+        Teuchos::RCP<Core::LinAlg::Vector> accn,  //!< new acceleration state
         Teuchos::RCP<std::vector<char>>
             elementdata,  //!< internal element/history variables e.g. F_prestress
         Teuchos::RCP<std::vector<char>> nodedata  //
@@ -505,11 +506,11 @@ namespace Solid
     //@{
 
     //! Apply external force
-    void apply_force_external(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> dis,    //!< old displacement state
-        const Teuchos::RCP<Epetra_Vector> disn,   //!< new displacement state
-        const Teuchos::RCP<Epetra_Vector> vel,    // velocity state
-        Teuchos::RCP<Epetra_Vector>& fext         //!< external force
+    void apply_force_external(const double time,        //!< evaluation time
+        const Teuchos::RCP<Core::LinAlg::Vector> dis,   //!< old displacement state
+        const Teuchos::RCP<Core::LinAlg::Vector> disn,  //!< new displacement state
+        const Teuchos::RCP<Core::LinAlg::Vector> vel,   // velocity state
+        Teuchos::RCP<Core::LinAlg::Vector>& fext        //!< external force
     );
 
     /*! \brief Evaluate ordinary internal force
@@ -524,12 +525,12 @@ namespace Solid
      *  residual displacements replaced by the full-step displacement
      *  increment \f$D_{n+1}-D_{n}\f$.
      */
-    void apply_force_internal(const double time,  //!< evaluation time
-        const double dt,                          //!< step size
-        Teuchos::RCP<const Epetra_Vector> dis,    //!< displacement state
-        Teuchos::RCP<const Epetra_Vector> disi,   //!< incremental displacements
-        Teuchos::RCP<const Epetra_Vector> vel,    // velocity state
-        Teuchos::RCP<Epetra_Vector> fint          //!< internal force
+    void apply_force_internal(const double time,        //!< evaluation time
+        const double dt,                                //!< step size
+        Teuchos::RCP<const Core::LinAlg::Vector> dis,   //!< displacement state
+        Teuchos::RCP<const Core::LinAlg::Vector> disi,  //!< incremental displacements
+        Teuchos::RCP<const Core::LinAlg::Vector> vel,   // velocity state
+        Teuchos::RCP<Core::LinAlg::Vector> fint         //!< internal force
     );
 
     //@}
@@ -542,10 +543,10 @@ namespace Solid
 
     //! check whether the initial conditions are fulfilled */
     virtual void nonlinear_mass_sanity_check(
-        Teuchos::RCP<const Epetra_Vector> fext,             ///< external forces
-        Teuchos::RCP<const Epetra_Vector> dis,              ///< displacements
-        Teuchos::RCP<const Epetra_Vector> vel,              ///< velocities
-        Teuchos::RCP<const Epetra_Vector> acc,              ///< accelerations
+        Teuchos::RCP<const Core::LinAlg::Vector> fext,      ///< external forces
+        Teuchos::RCP<const Core::LinAlg::Vector> dis,       ///< displacements
+        Teuchos::RCP<const Core::LinAlg::Vector> vel,       ///< velocities
+        Teuchos::RCP<const Core::LinAlg::Vector> acc,       ///< accelerations
         const Teuchos::ParameterList* sdynparams = nullptr  ///< structural dynamics parameter list
     ) const;
 
@@ -642,15 +643,15 @@ namespace Solid
     //! Set restart values
     void set_restart(int step,                        //!< restart step
         double time,                                  //!< restart time
-        Teuchos::RCP<Epetra_Vector> disn,             //!< restart displacements
-        Teuchos::RCP<Epetra_Vector> veln,             //!< restart velocities
-        Teuchos::RCP<Epetra_Vector> accn,             //!< restart accelerations
+        Teuchos::RCP<Core::LinAlg::Vector> disn,      //!< restart displacements
+        Teuchos::RCP<Core::LinAlg::Vector> veln,      //!< restart velocities
+        Teuchos::RCP<Core::LinAlg::Vector> accn,      //!< restart accelerations
         Teuchos::RCP<std::vector<char>> elementdata,  //!< restart element data
         Teuchos::RCP<std::vector<char>> nodedata      //!< restart element data
         ) override;
 
     //! Set the state of the nox group and the global state data container (implicit only)
-    void set_state(const Teuchos::RCP<Epetra_Vector>& x) override
+    void set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x) override
     {
       FOUR_C_THROW("new structural time integration only...");
     }
@@ -659,11 +660,12 @@ namespace Solid
     virtual void read_restart_state();
 
     //! Set restart state
-    virtual void set_restart_state(Teuchos::RCP<Epetra_Vector> disn,  //!< restart displacements
-        Teuchos::RCP<Epetra_Vector> veln,                             //!< restart velocities
-        Teuchos::RCP<Epetra_Vector> accn,                             //!< restart accelerations
-        Teuchos::RCP<std::vector<char>> elementdata,                  //!< restart element data
-        Teuchos::RCP<std::vector<char>> nodedata                      //!< restart element data
+    virtual void set_restart_state(
+        Teuchos::RCP<Core::LinAlg::Vector> disn,      //!< restart displacements
+        Teuchos::RCP<Core::LinAlg::Vector> veln,      //!< restart velocities
+        Teuchos::RCP<Core::LinAlg::Vector> accn,      //!< restart accelerations
+        Teuchos::RCP<std::vector<char>> elementdata,  //!< restart element data
+        Teuchos::RCP<std::vector<char>> nodedata      //!< restart element data
     );
 
     //! Read and set restart forces
@@ -688,10 +690,10 @@ namespace Solid
     void read_restart_multi_scale();
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override = 0;
 
     //! right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override = 0;
 
     /// set evaluation action
     void set_action_type(const Core::Elements::ActionType& action) override
@@ -703,25 +705,25 @@ namespace Solid
     //@{
 
     //! unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> dispnp() const override { return disn_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const override { return disn_; }
 
     //! known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> dispn() const override { return (*dis_)(0); }
+    Teuchos::RCP<const Core::LinAlg::Vector> dispn() const override { return (*dis_)(0); }
 
     //! unknown velocity at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> velnp() const override { return veln_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> velnp() const override { return veln_; }
 
     //! unknown velocity at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> veln() const override { return (*vel_)(0); }
+    Teuchos::RCP<const Core::LinAlg::Vector> veln() const override { return (*vel_)(0); }
 
     //! known velocity at \f$t_{n-1}\f$
-    Teuchos::RCP<const Epetra_Vector> velnm() const override { return (*vel_)(-1); }
+    Teuchos::RCP<const Core::LinAlg::Vector> velnm() const override { return (*vel_)(-1); }
 
     //! unknown accelerations at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> accnp() const override { return accn_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> accnp() const override { return accn_; }
 
     //! known accelerations at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> accn() const override { return (*acc_)(0); }
+    Teuchos::RCP<const Core::LinAlg::Vector> accn() const override { return (*acc_)(0); }
 
     //@}
 
@@ -730,34 +732,34 @@ namespace Solid
     //@{
 
     //! Return displacements \f$D_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> dis_new() { return disn_; }
+    Teuchos::RCP<Core::LinAlg::Vector> dis_new() { return disn_; }
 
     //! Return displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> dis() { return (*dis_)(0); }
+    Teuchos::RCP<Core::LinAlg::Vector> dis() { return (*dis_)(0); }
 
     //! Return velocities \f$V_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> vel_new() { return veln_; }
+    Teuchos::RCP<Core::LinAlg::Vector> vel_new() { return veln_; }
 
     //! Return velocities \f$V_{n}\f$
-    Teuchos::RCP<Epetra_Vector> vel() { return (*vel_)(0); }
+    Teuchos::RCP<Core::LinAlg::Vector> vel() { return (*vel_)(0); }
 
     //! Return accelerations \f$A_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> acc_new() { return accn_; }
+    Teuchos::RCP<Core::LinAlg::Vector> acc_new() { return accn_; }
 
     //! Return accelerations \f$A_{n}\f$
-    Teuchos::RCP<Epetra_Vector> acc() { return (*acc_)(0); }
+    Teuchos::RCP<Core::LinAlg::Vector> acc() { return (*acc_)(0); }
 
     //@}
 
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> fext() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fext() = 0;
 
     //! Return external force \f$F_{ext,n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> fext_new() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fext_new() = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Epetra_Vector> freact() override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> freact() override = 0;
 
     //! Return element data
     // Teuchos::RCP<std::vector<char> > ElementData() {return discret_->PackMyElements();}
@@ -869,16 +871,16 @@ namespace Solid
     //@{
 
     /// write access to displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> write_access_dispnp() override { return dis_new(); }
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() override { return dis_new(); }
 
     //! write access to velocities at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> write_access_velnp() override { return vel_new(); }
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_velnp() override { return vel_new(); }
 
     /// write access to displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> write_access_dispn() override { return dis(); }
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispn() override { return dis(); }
 
     //! write access to velocities at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> write_access_veln() override { return vel(); }
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_veln() override { return vel(); }
 
     //@}
 
@@ -942,7 +944,7 @@ namespace Solid
 
     @param[in] Xslavemod Vector with modified nodal positions
     */
-    void apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
+    void apply_mesh_initialization(Teuchos::RCP<const Core::LinAlg::Vector> Xslavemod);
 
     //! Prepare contact at the beginning of each new time step
     //! (call dynamic redistribution of contact interface(s) AND
@@ -991,7 +993,7 @@ namespace Solid
     void reset() override;
 
     // set structure displacement vector due to biofilm growth
-    void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override;
+    void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector> struct_growth_disp) override;
 
     virtual bool have_biofilm_growth() const { return (not strgrdisp_.is_null()); }
 
@@ -1139,42 +1141,42 @@ namespace Solid
 
     //! @name Global vectors
     //@{
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
     //@}
 
     //! @name Global state vectors
     //@{
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dis_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> dis_;
 
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> vel_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> vel_;
 
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> acc_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> acc_;
 
     //!< global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> disn_;
+    Teuchos::RCP<Core::LinAlg::Vector> disn_;
 
     //!< global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> veln_;
+    Teuchos::RCP<Core::LinAlg::Vector> veln_;
 
     //!< global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> accn_;
+    Teuchos::RCP<Core::LinAlg::Vector> accn_;
 
     //!< global internal force
-    Teuchos::RCP<Epetra_Vector> fint_;
+    Teuchos::RCP<Core::LinAlg::Vector> fint_;
 
     //! additional external forces (e.g. interface force in FSI)
-    Teuchos::RCP<Epetra_Vector> fifc_;
+    Teuchos::RCP<Core::LinAlg::Vector> fifc_;
 
     //!< pure structural global internal force, i.e. no condensation of EAS, plasticity,...
-    Teuchos::RCP<Epetra_Vector> fresn_str_;
+    Teuchos::RCP<Core::LinAlg::Vector> fresn_str_;
 
     //!< pure structural global internal force at \f$t_n\f$, i.e. no condensation of EAS,
     //!< plasticity,...
-    Teuchos::RCP<Epetra_Vector> fintn_str_;
+    Teuchos::RCP<Core::LinAlg::Vector> fintn_str_;
 
     //@}
 
@@ -1202,7 +1204,7 @@ namespace Solid
 
     //! @name Biofilm specific stuff
     //@{
-    Teuchos::RCP<Epetra_Vector> strgrdisp_;
+    Teuchos::RCP<Core::LinAlg::Vector> strgrdisp_;
     //@}
 
     //! @name porous media specific stuff

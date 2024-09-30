@@ -110,11 +110,11 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
-    void unscale_solution(
-        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
+    void unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x,
+        Core::LinAlg::Vector& b) override;
 
     //@}
 
@@ -155,7 +155,7 @@ namespace FSI
     void read_restart(int step) override;
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
-    Teuchos::RCP<Epetra_Vector> get_lambda() override { return lambda_; };
+    Teuchos::RCP<Core::LinAlg::Vector> get_lambda() override { return lambda_; };
 
     //! @name Time Adaptivity
     //@{
@@ -197,11 +197,11 @@ namespace FSI
     //! all increments up to this point.
     //!
     //! \sa  Adapter::FluidFSI::displacement_to_velocity()
-    void extract_field_vectors(
-        Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector>& fx,  ///< fluid velocities and pressure
-        Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
+    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector>
+                                   x,  ///< composed vector that contains all field vectors
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx,  ///< structural displacements
+        Teuchos::RCP<const Core::LinAlg::Vector>& fx,  ///< fluid velocities and pressure
+        Teuchos::RCP<const Core::LinAlg::Vector>& ax   ///< ale displacements
         ) override;
 
     /*! \brief Create the combined DOF row map for the FSI problem
@@ -212,7 +212,7 @@ namespace FSI
     void create_combined_dof_row_map() override;
 
     //! set the Lagrange multiplier (e.g. after restart, to be called from subclass)
-    virtual void set_lambda(Teuchos::RCP<Epetra_Vector> lambdanew)
+    virtual void set_lambda(Teuchos::RCP<Core::LinAlg::Vector> lambdanew)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (lambdanew == Teuchos::null || !lambdanew->Map().PointSameAs(lambda_->Map()))
@@ -232,16 +232,16 @@ namespace FSI
     void setup_dbc_map_extractor() override;
 
     /// setup RHS contributions based on single field residuals
-    void setup_rhs_residual(Epetra_Vector& f) override;
+    void setup_rhs_residual(Core::LinAlg::Vector& f) override;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void setup_rhs_lambda(Epetra_Vector& f) override;
+    void setup_rhs_lambda(Core::LinAlg::Vector& f) override;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void setup_rhs_firstiter(Epetra_Vector& f) override;
+    void setup_rhs_firstiter(Core::LinAlg::Vector& f) override;
 
-    void combine_field_vectors(Epetra_Vector& v, Teuchos::RCP<const Epetra_Vector> sv,
-        Teuchos::RCP<const Epetra_Vector> fv, Teuchos::RCP<const Epetra_Vector> av,
+    void combine_field_vectors(Core::LinAlg::Vector& v, Teuchos::RCP<const Core::LinAlg::Vector> sv,
+        Teuchos::RCP<const Core::LinAlg::Vector> fv, Teuchos::RCP<const Core::LinAlg::Vector> av,
         bool slave_vectors_contain_interface_dofs) final;
 
     /// block system matrix
@@ -262,15 +262,15 @@ namespace FSI
 
     /// @name infnorm scaling
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;
-    Teuchos::RCP<Epetra_Vector> scolsum_;
-    Teuchos::RCP<Epetra_Vector> arowsum_;
-    Teuchos::RCP<Epetra_Vector> acolsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> srowsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> scolsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> arowsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> acolsum_;
 
     //@}
 
     /// additional ale residual to avoid incremental ale errors
-    Teuchos::RCP<Epetra_Vector> aleresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector> aleresidual_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
@@ -279,34 +279,34 @@ namespace FSI
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! fluid) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> lambda_;
+    Teuchos::RCP<Core::LinAlg::Vector> lambda_;
 
     //! Lagrange multiplier of previous time step
-    Teuchos::RCP<Epetra_Vector> lambdaold_;
+    Teuchos::RCP<Core::LinAlg::Vector> lambdaold_;
 
     //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
     //! current NOX iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> ddginc_;
+    Teuchos::RCP<Core::LinAlg::Vector> ddginc_;
 
     //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> duiinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> duiinc_;
 
     //! interface displacement solution of the structure at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> disgprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> disgprev_;
 
     //! inner velocity solution of fluid at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> soliprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> soliprev_;
 
     //! interface velocity solution of the fluid at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> solgprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solgprev_;
 
     //! inner ALE displacement solution at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> solialeprev_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solialeprev_;
 
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> ddialeinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> ddialeinc_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgicur_;

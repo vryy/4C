@@ -48,7 +48,8 @@ Adapter::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
-    Teuchos::RCP<Epetra_Vector> iforce_fsi, Teuchos::RCP<Epetra_Vector> iforce_immersed)
+    Teuchos::RCP<Core::LinAlg::Vector> iforce_fsi,
+    Teuchos::RCP<Core::LinAlg::Vector> iforce_immersed)
 {
   fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
 
@@ -64,7 +65,7 @@ void Adapter::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>
+Teuchos::RCP<Core::LinAlg::Vector>
 Adapter::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
 {
   FOUR_C_ASSERT(interface_->full_map()->PointSameAs(dispnp()->Map()),
@@ -130,7 +131,7 @@ void Adapter::FSIStructureWrapperImmersed::remove_dirich_dofs(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FSIStructureWrapperImmersed::set_state(const Teuchos::RCP<Epetra_Vector>& x)
+void Adapter::FSIStructureWrapperImmersed::set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x)
 {
   return Teuchos::rcp_dynamic_cast<Solid::TimeInt::Implicit>(structure_, true)->set_state(x);
 }

@@ -330,7 +330,8 @@ void Thermo::TimIntGenAlpha::update_iter_incrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> aux =
+      Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // further auxiliary variables
   // step size \f$\Delta t_{n}\f$
@@ -463,11 +464,11 @@ void Thermo::TimIntGenAlpha::write_restart_force(
  *----------------------------------------------------------------------*/
 void Thermo::TimIntGenAlpha::apply_force_tang_internal(const double time,  //!< evaluation time
     const double dt,                                                       //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                                //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
-    Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
-    Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,                         //!< temperature state
+    const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< residual temperatures
+    Teuchos::RCP<Core::LinAlg::Vector> fcap,         //!< capacity force
+    Teuchos::RCP<Core::LinAlg::Vector> fint,         //!< internal force
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
 )
 {
   //! create the parameters for the discretization
@@ -477,7 +478,7 @@ void Thermo::TimIntGenAlpha::apply_force_tang_internal(const double time,  //!< 
   p.set<double>("alpham", alpham_);
   p.set<double>("gamma", gamma_);
   // set the mid-temperature rate R_{n+alpha_m} required for fcapm_
-  p.set<Teuchos::RCP<const Epetra_Vector>>("mid-temprate", ratem_);
+  p.set<Teuchos::RCP<const Core::LinAlg::Vector>>("mid-temprate", ratem_);
   p.set<double>("timefac", alphaf_);
 
   //! call the base function
@@ -493,9 +494,9 @@ void Thermo::TimIntGenAlpha::apply_force_tang_internal(const double time,  //!< 
  *----------------------------------------------------------------------*/
 void Thermo::TimIntGenAlpha::apply_force_internal(const double time,  //!< evaluation time
     const double dt,                                                  //!< step size
-    const Teuchos::RCP<Epetra_Vector> temp,                           //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,                          //!< incremental temperatures
-    Teuchos::RCP<Epetra_Vector> fint                                  //!< internal force
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,                    //!< temperature state
+    const Teuchos::RCP<Core::LinAlg::Vector> tempi,                   //!< incremental temperatures
+    Teuchos::RCP<Core::LinAlg::Vector> fint                           //!< internal force
 )
 {
   //! create the parameters for the discretization
@@ -516,10 +517,10 @@ void Thermo::TimIntGenAlpha::apply_force_internal(const double time,  //!< evalu
  | evaluate the convective boundary condition                dano 06/13 |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntGenAlpha::apply_force_external_conv(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> tempn,       //!< old temperature state T_n
-    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
-    Teuchos::RCP<Epetra_Vector> fext,              //!< external force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    const Teuchos::RCP<Core::LinAlg::Vector> tempn,  //!< old temperature state T_n
+    const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state T_n+1
+    Teuchos::RCP<Core::LinAlg::Vector> fext,         //!< external force
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
 )
 {
   // create the parameters for the discretization

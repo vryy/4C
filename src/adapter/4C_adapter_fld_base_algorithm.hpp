@@ -17,11 +17,11 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_fld_fluid.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

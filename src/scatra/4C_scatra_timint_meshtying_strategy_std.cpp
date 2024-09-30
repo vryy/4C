@@ -67,9 +67,9 @@ void ScaTra::MeshtyingStrategyStd::init_meshtying()
 void ScaTra::MeshtyingStrategyStd::solve(
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,                //!< solver
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
-    const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
-    const Teuchos::RCP<Epetra_Vector>& phinp,                        //!< state vector at time n+1
+    const Teuchos::RCP<Core::LinAlg::Vector>& increment,             //!< increment vector
+    const Teuchos::RCP<Core::LinAlg::Vector>& residual,              //!< residual vector
+    const Teuchos::RCP<Core::LinAlg::Vector>& phinp,                 //!< state vector at time n+1
     const int iteration,  //!< number of current Newton-Raphson iteration
     Core::LinAlg::SolverParams& solver_params) const
 {

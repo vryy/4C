@@ -39,9 +39,9 @@ Reference:
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -71,12 +71,13 @@ namespace FLD
 
 
     void apply_filter_for_dynamic_computation_of_cv(
-        const Teuchos::RCP<const Epetra_Vector> velocity,
-        const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
-        const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
+        const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
+        const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
+        const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle);
 
-    void apply_filter_for_dynamic_computation_of_dt(const Teuchos::RCP<const Epetra_Vector> scalar,
-        const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+    void apply_filter_for_dynamic_computation_of_dt(
+        const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
+        const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
         Teuchos::ParameterList& extraparams, const int ndsvel);
 
     void add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis);
@@ -119,12 +120,12 @@ namespace FLD
 
     //! the filtered reystress exported to column map
     Teuchos::RCP<Epetra_MultiVector> col_filtered_strainrate_;
-    Teuchos::RCP<Epetra_Vector> col_filtered_expression_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_expression_;
     Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaij_;
-    Teuchos::RCP<Epetra_Vector> col_filtered_alpha2_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_alpha2_;
     Teuchos::RCP<Epetra_MultiVector> col_filtered_phi_;
-    Teuchos::RCP<Epetra_Vector> col_filtered_phi2_;
-    Teuchos::RCP<Epetra_Vector> col_filtered_phiexpression_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_phi2_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_phiexpression_;
     Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaijsc_;
     //@}
 

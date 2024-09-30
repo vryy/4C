@@ -15,8 +15,8 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_condition.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>
@@ -70,7 +70,7 @@ namespace FLD
       \brief Calculate impedance tractions and add it to fluid residual and linearisation
       */
       void add_impedance_bc_to_residual_and_sysmat(const double dta, const double time,
-          Teuchos::RCP<Epetra_Vector>& residual,
+          Teuchos::RCP<Core::LinAlg::Vector>& residual,
           Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
       /*!
@@ -150,8 +150,9 @@ namespace FLD
         to elements
       */
       void calculate_impedance_tractions_and_update_residual_and_sysmat(
-          Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
-          const double dta, const double time, const int condid);
+          Teuchos::RCP<Core::LinAlg::Vector>& residual,
+          Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat, const double dta, const double time,
+          const int condid);
 
       /*!
         \brief Update flowrate and pressure vector
@@ -202,7 +203,7 @@ namespace FLD
       const int functnum_;
 
       //! traction vector for impedance bc
-      Teuchos::RCP<Epetra_Vector> impedancetbc_;
+      Teuchos::RCP<Core::LinAlg::Vector> impedancetbc_;
 
       //! linearisation of traction vector
       Teuchos::RCP<Core::LinAlg::SparseOperator> impedancetbcsysmat_;

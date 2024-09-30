@@ -82,12 +82,13 @@ namespace CONTACT
       \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for
       an overview) \param vec (in): current global state of the quantity defined by statetype
      */
-    void set_state(const enum Mortar::StateType& statetype, const Epetra_Vector& vec) override;
+    void set_state(
+        const enum Mortar::StateType& statetype, const Core::LinAlg::Vector& vec) override;
 
     // Overload CONTACT::AbstractStrategy::apply_force_stiff_cmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
-    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       // structure single-field predictors (e.g.TangDis) may evaluate the structural contact part
@@ -101,25 +102,28 @@ namespace CONTACT
       The "usual" place, i.e. the
       evaluate(
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
+        Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector> dis)
       in the Contact_lagrange_strategy is overloaded to do nothing, since
       in a coupled problem, we need to be very careful, when condensating
       the Lagrange multipliers.
 
      */
     virtual void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Coupling::Adapter::Coupling> coupST,
-        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
+        Teuchos::RCP<Core::LinAlg::Vector>& combined_RHS,
+        Teuchos::RCP<Coupling::Adapter::Coupling> coupST,
+        Teuchos::RCP<const Core::LinAlg::Vector> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector> temp);
 
     /*!
     \brief Overload CONTACT::LagrangeStrategy::recover as this is called in the structure
 
     --> not enough information available for monolithically coupled algorithms!
     */
-    void recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
+    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override { return; };
 
-    virtual void recover_coupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
-        Teuchos::RCP<Epetra_Vector> tinc,                           /// thermal  increment
+    virtual void recover_coupled(
+        Teuchos::RCP<Core::LinAlg::Vector> sinc,  /// displacement  increment
+        Teuchos::RCP<Core::LinAlg::Vector> tinc,  /// thermal  increment
         Teuchos::RCP<Coupling::Adapter::Coupling> coupST);
 
     void store_nodal_quantities(
@@ -131,7 +135,7 @@ namespace CONTACT
      \param dis (in):  current displacements (-> old displacements)
 
      */
-    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
 
     /*!
      \brief Set time integration parameter from Thermo time integration
@@ -148,7 +152,8 @@ namespace CONTACT
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    void do_write_restart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+    void do_write_restart(
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>& restart_vectors,
         bool forcedrestart = false) const override;
 
     /*!
@@ -160,7 +165,7 @@ namespace CONTACT
 
     */
     void do_read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Epetra_Vector> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
     void set_coupling(Teuchos::RCP<Coupling::Adapter::Coupling> coupST) { coupST_ = coupST; };
@@ -180,14 +185,15 @@ namespace CONTACT
     // time integration
     double tsi_alpha_;
 
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         fscn_;  // structural contact forces of last time step (needed for time integration)
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         ftcn_;  // thermal    contact forces of last time step (needed for time integration)
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         ftcnp_;  // thermal   contact forces of this time step (needed for time integration)
 
-    Teuchos::RCP<Epetra_Vector> z_thr_;  // current vector of Thermo-Lagrange multipliers at t_n+1
+    Teuchos::RCP<Core::LinAlg::Vector>
+        z_thr_;  // current vector of Thermo-Lagrange multipliers at t_n+1
     Teuchos::RCP<Epetra_Map> thr_act_dofs_;  // active thermo dofs
     Teuchos::RCP<Epetra_Map> thr_s_dofs_;    // slave thermo dofs
 
@@ -200,7 +206,7 @@ namespace CONTACT
         kss_a_;  // Part of structure-stiffness (kss) that corresponds to active slave rows
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         kst_a_;  // Part of coupling-stiffness  (kst) that corresponds to active slave rows
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         rs_a_;  // Part of structural residual that corresponds to active slave rows
 
     // recovery of thermal LM
@@ -208,7 +214,7 @@ namespace CONTACT
         ktt_a_;  // Part of structure-stiffness (ktt) that corresponds to active slave rows
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         kts_a_;  // Part of coupling-stiffness  (kts) that corresponds to active slave rows
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         rt_a_;  // Part of structural residual that corresponds to active slave rows
 
     // pointer to TSI coupling object
@@ -218,7 +224,7 @@ namespace CONTACT
   namespace UTILS
   {
     //! @name little helpers
-    void add_vector(Epetra_Vector& src, Epetra_Vector& dst);
+    void add_vector(Core::LinAlg::Vector& src, Core::LinAlg::Vector& dst);
   }  // namespace UTILS
 }  // namespace CONTACT
 

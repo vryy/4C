@@ -35,9 +35,11 @@ namespace PoroMultiPhaseScaTra
 
     //! set-up of global system of equations of coupled problem
     void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-        Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_art,
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
@@ -48,11 +50,11 @@ namespace PoroMultiPhaseScaTra
     void apply_mesh_movement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
+    Teuchos::RCP<const Core::LinAlg::Vector> blood_vessel_volume_fraction() override;
 
     //! Evaluate the 1D-3D coupling
     void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs) override;
+        Teuchos::RCP<Core::LinAlg::Vector> rhs) override;
 
    private:
     //! pre-evaluate the pairs

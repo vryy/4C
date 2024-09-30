@@ -75,8 +75,8 @@ namespace FSI
     void output() override = 0;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void evaluate(
-        Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+            step_increment  ///< increment between time step n and n+1
     );
 
     //! @name Apply current field state to system
@@ -87,7 +87,7 @@ namespace FSI
     //! 1) the single fields residuals
     //! 2) the Lagrange multiplier field lambda_
     //! 3) terms in the first nonlinear iteration
-    void setup_rhs(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+    void setup_rhs(Core::LinAlg::Vector& f,  ///< empty rhs vector (to be filled)
         bool firstcall  ///< indicates whether this is the first nonlinear iteration or not
         ) override = 0;
 
@@ -125,23 +125,23 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    virtual void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        Teuchos::RCP<const Epetra_Vector>& ax) = 0;
+    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& ax) = 0;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
     virtual void recover_lagrange_multiplier() = 0;
 
     /// Extract initial guess from fields
-    virtual void initial_guess(Teuchos::RCP<Epetra_Vector> ig) = 0;
+    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig) = 0;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void scale_system(Epetra_Vector& b) override {}
+    void scale_system(Core::LinAlg::Vector& b) override {}
 
     /// undo infnorm scaling from scaled solution
-    void unscale_solution(Epetra_Vector& x, Epetra_Vector& b) override {}
+    void unscale_solution(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b) override {}
 
     //@}
 
@@ -208,7 +208,7 @@ namespace FSI
     bool firstcall_;
 
     // sum of increments
-    Teuchos::RCP<Epetra_Vector> x_sum_;
+    Teuchos::RCP<Core::LinAlg::Vector> x_sum_;
 
     int iter_;     //!< iteration step
     int itermax_;  //!< maximally permitted iterations
@@ -256,10 +256,10 @@ namespace FSI
     double norminterfaceincInf_;  //!< norm of interface residual forces
     //--------------------------------------------------------------------------//
 
-    Teuchos::RCP<Epetra_Vector> iterinc_;        //!< increment between Newton steps k and k+1
-    Teuchos::RCP<Epetra_Vector> rhs_;            //!< rhs of FSI system
-    Teuchos::RCP<Epetra_Vector> zeros_;          //!< a zero vector of full length
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;  //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_;      //!< rhs of FSI system
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;    //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;   //!< linear algebraic solver
 
     /// type-cast pointer to problem-specific fluid-wrapper
     Teuchos::RCP<Adapter::FluidFluidFSI> fluid_;

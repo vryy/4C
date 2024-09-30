@@ -41,8 +41,8 @@ void FSI::DirichletNeumannDisp::setup()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::fluid_op(
-    Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannDisp::fluid_op(
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag)
 {
   FSI::Partitioned::fluid_op(idisp, fillFlag);
 
@@ -56,7 +56,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::fluid_op(
     // normal fluid solve
 
     // the displacement -> velocity conversion at the interface
-    const Teuchos::RCP<Epetra_Vector> ivel = interface_velocity(idisp);
+    const Teuchos::RCP<Core::LinAlg::Vector> ivel = interface_velocity(idisp);
 
     // A rather simple hack. We need something better!
     const int itemax = mb_fluid_field()->itemax();
@@ -71,8 +71,8 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::fluid_op(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::struct_op(
-    Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannDisp::struct_op(
+    Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag)
 {
   FSI::Partitioned::struct_op(iforce, fillFlag);
 
@@ -96,7 +96,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::struct_op(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannDisp::initial_guess()
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannDisp::initial_guess()
 {
   if (get_kinematic_coupling())
   {

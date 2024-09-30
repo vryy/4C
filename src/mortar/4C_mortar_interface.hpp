@@ -14,13 +14,13 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_inpar_mortar.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_mortar_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_pairedvector.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -1158,7 +1158,7 @@ namespace Mortar
     \param[in] Enum to encode type of state
     \param[in] Vector with state data
     */
-    void set_state(const enum StateType& statetype, const Epetra_Vector& vec);
+    void set_state(const enum StateType& statetype, const Core::LinAlg::Vector& vec);
 
     /*!
     \brief Create integration cells for interface
@@ -1256,7 +1256,7 @@ namespace Mortar
     \brief Assemble lagrange multipliers into global z vector (penalty strategy)
 
     */
-    void assemble_lm(Epetra_Vector& zglobal);
+    void assemble_lm(Core::LinAlg::Vector& zglobal);
 
     /*!
     \brief Assemble Mortar matrices D and M

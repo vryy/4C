@@ -13,8 +13,8 @@ fluid-beam interaction).
 #include "4C_config.hpp"
 
 #include "4C_fbi_constraintenforcer.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -103,14 +103,14 @@ namespace Adapter
      *
      * \returns coupling contributions to the structure residual
      */
-    Teuchos::RCP<Epetra_Vector> assemble_structure_coupling_residual() const override;
+    Teuchos::RCP<Core::LinAlg::Vector> assemble_structure_coupling_residual() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the slave field.
      *
      * \returns coupling contributions to the fluid residual
      */
-    Teuchos::RCP<Epetra_Vector> assemble_fluid_coupling_residual() const override;
+    Teuchos::RCP<Core::LinAlg::Vector> assemble_fluid_coupling_residual() const override;
 
     /// Interface to do preparations to solve the fluid
     void prepare_fluid_solve() override;

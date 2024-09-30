@@ -454,9 +454,10 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // Begin Nonlinear Solver ************************************
 
     // Get initial guess
-    Teuchos::RCP<Epetra_Vector> soln = initial_guess();
+    Teuchos::RCP<Core::LinAlg::Vector> soln = initial_guess();
 
-    ::NOX::Epetra::Vector noxSoln(soln, ::NOX::Epetra::Vector::CreateView);
+    ::NOX::Epetra::Vector noxSoln(
+        soln->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
     Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
@@ -759,7 +760,7 @@ void FSI::Partitioned::create_status_test(Teuchos::ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::initial_guess()
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::initial_guess()
 {
   return structure_field()->predict_interface_dispnp();
 }
@@ -767,7 +768,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::initial_guess()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_disp()
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::interface_disp()
 {
   // extract displacements
   return structure_field()->extract_interface_dispnp();
@@ -776,7 +777,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_disp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_force()
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::interface_force()
 {
   // extract forces
   return fluid_to_struct(mb_fluid_field()->extract_interface_forces());
@@ -807,10 +808,13 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
 
   if (debugwriter_ != Teuchos::null) debugwriter_->new_iteration();
 
+  const Core::LinAlg::Vector x_new = Core::LinAlg::Vector(x);
+  Core::LinAlg::Vector F_new = Core::LinAlg::Vector(F);
   // Do the FSI step. The real work is in here.
-  fsi_op(x, F, fillFlag);
+  fsi_op(x_new, F_new, fillFlag);
 
-  if (debugwriter_ != Teuchos::null) debugwriter_->write_vector("F", F);
+  if (debugwriter_ != Teuchos::null) debugwriter_->write_vector("F", F_new);
+  F = F_new;
 
   const double endTime = timer.wallTime();
   if (get_comm().MyPID() == 0)
@@ -825,13 +829,16 @@ void FSI::Partitioned::remeshing() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Partitioned::fsi_op(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) {}
+void FSI::Partitioned::fsi_op(
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& F, const FillType fillFlag)
+{
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_op(
-    Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::fluid_op(
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag)
 {
   if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Fluid operator" << std::endl;
@@ -841,8 +848,8 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_op(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_op(
-    Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::struct_op(
+    Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag)
 {
   if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Structural operator" << std::endl;
@@ -853,20 +860,20 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_op(
 /*----------------------------------------------------------------------*
  | Calculate interface velocity based on given interface displacement   |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_velocity(
-    Teuchos::RCP<const Epetra_Vector> idispnp) const
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::interface_velocity(
+    Teuchos::RCP<const Core::LinAlg::Vector> idispnp) const
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-  Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> ivel = Teuchos::null;
 
   if (fsidyn.get<bool>("SECONDORDER"))
   {
-    ivel = Teuchos::rcp(new Epetra_Vector(*iveln_));
+    ivel = Teuchos::rcp(new Core::LinAlg::Vector(*iveln_));
     ivel->Update(2. / dt(), *idispnp, -2. / dt(), *idispn_, -1.);
   }
   else
   {
-    ivel = Teuchos::rcp(new Epetra_Vector(*idispn_));
+    ivel = Teuchos::rcp(new Core::LinAlg::Vector(*idispn_));
     ivel->Update(1. / dt(), *idispnp, -1. / dt());
   }
   return ivel;
@@ -875,7 +882,8 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::interface_velocity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::struct_to_fluid(
+    Teuchos::RCP<Core::LinAlg::Vector> iv)
 {
   const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
@@ -891,7 +899,8 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::struct_to_fluid(Teuchos::RCP<Epetr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Partitioned::fluid_to_struct(
+    Teuchos::RCP<Core::LinAlg::Vector> iv)
 {
   const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
@@ -901,8 +910,9 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::fluid_to_struct(Teuchos::RCP<Epetr
   else
   {
     // Translate consistent nodal forces to interface loads
-    const Teuchos::RCP<Epetra_Vector> ishape = mb_fluid_field()->integrate_interface_shape();
-    const Teuchos::RCP<Epetra_Vector> iforce = Teuchos::rcp(new Epetra_Vector(iv->Map()));
+    const Teuchos::RCP<Core::LinAlg::Vector> ishape = mb_fluid_field()->integrate_interface_shape();
+    const Teuchos::RCP<Core::LinAlg::Vector> iforce =
+        Teuchos::rcp(new Core::LinAlg::Vector(iv->Map()));
 
     if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
       FOUR_C_THROW("ReciprocalMultiply failed");

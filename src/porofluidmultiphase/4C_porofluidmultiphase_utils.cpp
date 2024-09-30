@@ -133,7 +133,7 @@ void POROFLUIDMULTIPHASE::UTILS::setup_material(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector>
 POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
-    const Core::FE::Discretization& dis, const Epetra_Vector& vector, const int nds,
+    const Core::FE::Discretization& dis, const Core::LinAlg::Vector& vector, const int nds,
     const int numdofpernode)
 {
   // initialize multi vector
@@ -497,7 +497,7 @@ double POROFLUIDMULTIPHASE::UTILS::get_max_nodal_distance(
  *----------------------------------------------------------------------*/
 double POROFLUIDMULTIPHASE::UTILS::calculate_vector_norm(
     const enum Inpar::POROFLUIDMULTIPHASE::VectorNorm norm,
-    const Teuchos::RCP<const Epetra_Vector> vect)
+    const Teuchos::RCP<const Core::LinAlg::Vector> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]

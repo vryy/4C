@@ -22,10 +22,10 @@ the function value as well)
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_function.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -60,7 +60,7 @@ namespace Core::FE
     void apply_nurbs_initial_condition(Core::FE::Discretization& dis,
         const Teuchos::ParameterList& solverparams,
         const Core::UTILS::FunctionOfSpaceTime& start_function,
-        Teuchos::RCP<Epetra_Vector> initialvals);
+        Teuchos::RCP<Core::LinAlg::Vector> initialvals);
 
   }  // namespace Nurbs
 

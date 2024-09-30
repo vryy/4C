@@ -15,6 +15,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
+
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
@@ -27,6 +29,7 @@ namespace Core::FE
 namespace Core::IO
 {
   class VisualizationManager;
+
   struct VisualizationParameters;
 }  // namespace Core::IO
 
@@ -45,7 +48,7 @@ namespace Core::IO
      * @param parameters (in)     Visualization parameters
      */
     DiscretizationVisualizationWriterNodes(
-        const Teuchos::RCP<const Core::FE::Discretization>& discretization,
+        const Teuchos::RCP<const Core::FE::Discretization> &discretization,
         VisualizationParameters parameters);
 
     /**
@@ -67,8 +70,8 @@ namespace Core::IO
      * @param resultname (in) Name of the field to be written to the visualization file
      */
     void append_dof_based_result_data_vector(
-        const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
-        unsigned int result_num_dofs_per_node, const std::string& resultname);
+        const Teuchos::RCP<Core::LinAlg::Vector> &result_data_dofbased,
+        unsigned int result_num_dofs_per_node, const std::string &resultname);
 
     /**
      * @brief Append result vector with num_components values per node to output data
@@ -87,8 +90,8 @@ namespace Core::IO
      * @param resultname (in) Name of the field to be written to the visualization file
      */
     void append_node_based_result_data_vector(
-        const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
-        unsigned int result_num_components_per_node, const std::string& resultname);
+        const Teuchos::RCP<Epetra_MultiVector> &result_data_nodebased,
+        unsigned int result_num_components_per_node, const std::string &resultname);
 
     /**
      * \brief Write the visualization files to disk

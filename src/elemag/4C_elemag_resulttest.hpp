@@ -14,9 +14,8 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -50,7 +49,7 @@ namespace EleMag
     /// Teuchos::RCP to elemagstical discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
-    Teuchos::RCP<Epetra_Vector> mysol_;
+    Teuchos::RCP<Core::LinAlg::Vector> mysol_;
     /// Error vector
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> error_;
 

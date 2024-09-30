@@ -319,58 +319,60 @@ namespace FLD
      public:
       /// constructor
       StressManager(Teuchos::RCP<Core::FE::Discretization> discret,
-          Teuchos::RCP<Epetra_Vector> dispnp, const bool alefluid, const int numdim);
+          Teuchos::RCP<Core::LinAlg::Vector> dispnp, const bool alefluid, const int numdim);
 
       /// initialize smoothing of stresses
       void init_aggr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
 
       /// update and return WSS vector
-      Teuchos::RCP<Epetra_Vector> get_wall_shear_stresses(
-          Teuchos::RCP<const Epetra_Vector> trueresidual, const double dt);
+      Teuchos::RCP<Core::LinAlg::Vector> get_wall_shear_stresses(
+          Teuchos::RCP<const Core::LinAlg::Vector> trueresidual, const double dt);
 
       /// return WSS vector (without updating the mean wss vector)
-      Teuchos::RCP<Epetra_Vector> get_pre_calc_wall_shear_stresses(
-          Teuchos::RCP<const Epetra_Vector> trueresidual);
+      Teuchos::RCP<Core::LinAlg::Vector> get_pre_calc_wall_shear_stresses(
+          Teuchos::RCP<const Core::LinAlg::Vector> trueresidual);
 
       /// return WSS vector always without aggregation, even if scale separation matrix exists
-      Teuchos::RCP<Epetra_Vector> get_wall_shear_stresses_wo_agg(
-          Teuchos::RCP<const Epetra_Vector> trueresidual);
+      Teuchos::RCP<Core::LinAlg::Vector> get_wall_shear_stresses_wo_agg(
+          Teuchos::RCP<const Core::LinAlg::Vector> trueresidual);
 
       /// update and return stress vector
-      Teuchos::RCP<Epetra_Vector> get_stresses(
-          Teuchos::RCP<const Epetra_Vector> trueresidual, const double dt);
+      Teuchos::RCP<Core::LinAlg::Vector> get_stresses(
+          Teuchos::RCP<const Core::LinAlg::Vector> trueresidual, const double dt);
 
       /// return stress vector (without updating the mean stress vector)
-      Teuchos::RCP<Epetra_Vector> get_pre_calc_stresses(
-          Teuchos::RCP<const Epetra_Vector> trueresidual);
+      Teuchos::RCP<Core::LinAlg::Vector> get_pre_calc_stresses(
+          Teuchos::RCP<const Core::LinAlg::Vector> trueresidual);
 
       /// return stress vector always without aggregation, even if scale separation matrix exists
-      Teuchos::RCP<Epetra_Vector> get_stresses_wo_agg(
-          Teuchos::RCP<const Epetra_Vector> trueresidual);
+      Teuchos::RCP<Core::LinAlg::Vector> get_stresses_wo_agg(
+          Teuchos::RCP<const Core::LinAlg::Vector> trueresidual);
 
       /// return flag if StressManager has already been initialized
       bool is_init() { return isinit_; };
 
      private:
       /// return stress vector
-      Teuchos::RCP<Epetra_Vector> calc_stresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
+      Teuchos::RCP<Core::LinAlg::Vector> calc_stresses(
+          Teuchos::RCP<const Core::LinAlg::Vector> trueresidual);
 
       /// integrate shape functions at nodes marked by condition
-      Teuchos::RCP<Epetra_Vector> integrate_interface_shape(std::string condname);
+      Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape(std::string condname);
 
       /// calculate WSS based on residual
-      Teuchos::RCP<Epetra_Vector> calc_wall_shear_stresses(Teuchos::RCP<Epetra_Vector> stresses);
+      Teuchos::RCP<Core::LinAlg::Vector> calc_wall_shear_stresses(
+          Teuchos::RCP<Core::LinAlg::Vector> stresses);
 
       /// smooth stress/wss via ML-aggregation
-      Teuchos::RCP<Epetra_Vector> aggreagte_stresses(Teuchos::RCP<Epetra_Vector> wss);
+      Teuchos::RCP<Core::LinAlg::Vector> aggreagte_stresses(Teuchos::RCP<Core::LinAlg::Vector> wss);
 
       /// time average stresses
-      Teuchos::RCP<Epetra_Vector> time_average_stresses(
-          Teuchos::RCP<const Epetra_Vector> stresses, double dt);
+      Teuchos::RCP<Core::LinAlg::Vector> time_average_stresses(
+          Teuchos::RCP<const Core::LinAlg::Vector> stresses, double dt);
 
       /// time average wss
-      Teuchos::RCP<Epetra_Vector> time_average_wss(
-          Teuchos::RCP<const Epetra_Vector> wss, double dt);
+      Teuchos::RCP<Core::LinAlg::Vector> time_average_wss(
+          Teuchos::RCP<const Core::LinAlg::Vector> wss, double dt);
 
       /// Calculate Aggregation Matrix
       void calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
@@ -379,7 +381,7 @@ namespace FLD
       const Teuchos::RCP<Core::FE::Discretization> discret_;
 
       /// displacement at time \f$t^{n+1}\f$
-      const Teuchos::RCP<Epetra_Vector> dispnp_;
+      const Teuchos::RCP<Core::LinAlg::Vector> dispnp_;
 
       /// do we move the fluid mesh and calculate the fluid on this moving mesh?
       const bool alefluid_;
@@ -394,10 +396,10 @@ namespace FLD
       const Inpar::FLUID::WSSType wss_type_;
 
       /// weighted sum of all prior stresses
-      Teuchos::RCP<Epetra_Vector> sum_stresses_;
+      Teuchos::RCP<Core::LinAlg::Vector> sum_stresses_;
 
       /// weighted sum of all prior wss
-      Teuchos::RCP<Epetra_Vector> sum_wss_;
+      Teuchos::RCP<Core::LinAlg::Vector> sum_wss_;
 
       /// time the stresses are averaged for
       double sum_dt_stresses_;
@@ -442,8 +444,8 @@ namespace FLD
      *                     formulation is used.
      */
     void lift_drag(const Teuchos::RCP<const Core::FE::Discretization> dis,
-        const Teuchos::RCP<const Epetra_Vector> trueresidual,
-        const Teuchos::RCP<const Epetra_Vector> dispnp, const int ndim,
+        const Teuchos::RCP<const Core::LinAlg::Vector> trueresidual,
+        const Teuchos::RCP<const Core::LinAlg::Vector> dispnp, const int ndim,
         Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid);
 
 
@@ -482,7 +484,7 @@ namespace FLD
      *         The sign of the flow rate indicates net inflow (positive) or outflow (negative).
      */
     std::map<int, double> compute_flow_rates(Core::FE::Discretization& dis,
-        const Teuchos::RCP<Epetra_Vector>& velnp, const std::string& condstring,
+        const Teuchos::RCP<Core::LinAlg::Vector>& velnp, const std::string& condstring,
         const Inpar::FLUID::PhysicalType physicaltype);
 
     /**
@@ -497,8 +499,9 @@ namespace FLD
      *         The sign of the flow rate indicates net inflow (positive) or outflow (negative).
      */
     std::map<int, double> compute_flow_rates(Core::FE::Discretization& dis,
-        const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridvel,
-        const Teuchos::RCP<Epetra_Vector>& dispnp, const std::string& condstring,
+        const Teuchos::RCP<Core::LinAlg::Vector>& velnp,
+        const Teuchos::RCP<Core::LinAlg::Vector>& gridvel,
+        const Teuchos::RCP<Core::LinAlg::Vector>& dispnp, const std::string& condstring,
         const Inpar::FLUID::PhysicalType physicaltype);
 
     /**
@@ -511,8 +514,10 @@ namespace FLD
      * \return A map where each condition ID corresponds to the computed volume.
      */
     std::map<int, double> compute_volume(Core::FE::Discretization& dis,
-        const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridvel,
-        const Teuchos::RCP<Epetra_Vector>& dispnp, const Inpar::FLUID::PhysicalType physicaltype);
+        const Teuchos::RCP<Core::LinAlg::Vector>& velnp,
+        const Teuchos::RCP<Core::LinAlg::Vector>& gridvel,
+        const Teuchos::RCP<Core::LinAlg::Vector>& dispnp,
+        const Inpar::FLUID::PhysicalType physicaltype);
 
     /*!
      * \brief proc 0 writes the flow rate values for each condition ID to a file
@@ -532,7 +537,7 @@ namespace FLD
 
     */
     void project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretization> discret,
-        Teuchos::ParameterList& eleparams, Teuchos::RCP<const Epetra_Vector> vel,
+        Teuchos::ParameterList& eleparams, Teuchos::RCP<const Core::LinAlg::Vector> vel,
         const std::string paraname, bool alefluid);
 
     /*!
@@ -540,8 +545,8 @@ namespace FLD
 
     */
     Teuchos::RCP<Epetra_MultiVector> project_gradient(
-        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel,
-        bool alefluid);
+        Teuchos::RCP<Core::FE::Discretization> discret,
+        Teuchos::RCP<const Core::LinAlg::Vector> vel, bool alefluid);
 
   }  // namespace UTILS
 }  // namespace FLD

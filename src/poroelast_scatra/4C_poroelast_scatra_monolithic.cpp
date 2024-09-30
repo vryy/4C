@@ -281,14 +281,14 @@ void PoroElastScaTra::PoroScatraMono::solve()
 /*----------------------------------------------------------------------*
  | evaluate the single fields                              vuong 01/12   |
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraMono::evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void PoroElastScaTra::PoroScatraMono::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PoroScatraMono::Monolithic::Evaluate");
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> porostructinc;
-  Teuchos::RCP<const Epetra_Vector> porofluidinc;
-  Teuchos::RCP<const Epetra_Vector> scatrainc;
+  Teuchos::RCP<const Core::LinAlg::Vector> porostructinc;
+  Teuchos::RCP<const Core::LinAlg::Vector> porofluidinc;
+  Teuchos::RCP<const Core::LinAlg::Vector> scatrainc;
 
   // if an increment vector exists
   if (stepinc != Teuchos::null)
@@ -399,7 +399,7 @@ void PoroElastScaTra::PoroScatraMono::setup_system()
 void PoroElastScaTra::PoroScatraMono::setup_rhs(bool firstcall)
 {
   // create full monolithic rhs vector
-  if (rhs_ == Teuchos::null) rhs_ = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
+  if (rhs_ == Teuchos::null) rhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   setup_vector(*rhs_, poro_field()->rhs(), scatra_field()->residual());
@@ -408,15 +408,15 @@ void PoroElastScaTra::PoroScatraMono::setup_rhs(bool firstcall)
 /*----------------------------------------------------------------------*
  | setup vector of the structure and fluid field            vuong 01/12|
  *----------------------------------------------------------------------*/
-void PoroElastScaTra::PoroScatraMono::setup_vector(
-    Epetra_Vector& f, Teuchos::RCP<const Epetra_Vector> pv, Teuchos::RCP<const Epetra_Vector> sv)
+void PoroElastScaTra::PoroScatraMono::setup_vector(Core::LinAlg::Vector& f,
+    Teuchos::RCP<const Core::LinAlg::Vector> pv, Teuchos::RCP<const Core::LinAlg::Vector> sv)
 {
   // extract dofs of the two fields
   // and put the poro/scatra field vector into the global vector f
   // noticing the block number
 
-  //  Teuchos::RCP<const Epetra_Vector> psx;
-  //  Teuchos::RCP<const Epetra_Vector> pfx;
+  //  Teuchos::RCP<const Core::LinAlg::Vector> psx;
+  //  Teuchos::RCP<const Core::LinAlg::Vector> pfx;
 
   extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(pv, 0)), 0, f);
   extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(pv, 1)), 1, f);
@@ -931,11 +931,11 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   normrhs_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, rhs_);
 
   // split vectors
-  Teuchos::RCP<const Epetra_Vector> rhs_s;
-  Teuchos::RCP<const Epetra_Vector> rhs_f;
-  Teuchos::RCP<const Epetra_Vector> rhs_fvel;
-  Teuchos::RCP<const Epetra_Vector> rhs_fpres;
-  Teuchos::RCP<const Epetra_Vector> rhs_scalar;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_s;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_f;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fvel;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_fpres;
+  Teuchos::RCP<const Core::LinAlg::Vector> rhs_scalar;
 
   // process structure unknowns of the first field
   rhs_s = extractor()->extract_vector(rhs_, 0);
@@ -950,9 +950,9 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
 
   //  if(porositydof_)
   //  {
-  //    Teuchos::RCP<const Epetra_Vector> rhs_poro = porositysplitter_->extract_cond_vector(rhs_s);
-  //    Teuchos::RCP<const Epetra_Vector> rhs_sdisp =
-  //    porositysplitter_->extract_other_vector(rhs_s);
+  //    Teuchos::RCP<const Core::LinAlg::Vector> rhs_poro =
+  //    porositysplitter_->extract_cond_vector(rhs_s); Teuchos::RCP<const Core::LinAlg::Vector>
+  //    rhs_sdisp = porositysplitter_->extract_other_vector(rhs_s);
   //
   //    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_,rhs_sdisp);
   //    normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_,rhs_poro);
@@ -971,11 +971,11 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   iterinc_->Norm2(&norminc_);
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> interincs;
-  Teuchos::RCP<const Epetra_Vector> interincf;
-  Teuchos::RCP<const Epetra_Vector> interincfvel;
-  Teuchos::RCP<const Epetra_Vector> interincfpres;
-  Teuchos::RCP<const Epetra_Vector> interincscalar;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincs;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincf;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincfvel;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincfpres;
+  Teuchos::RCP<const Core::LinAlg::Vector> interincscalar;
 
   // process structure unknowns of the first field
   interincs = extractor()->extract_vector(iterinc_, 0);
@@ -990,8 +990,8 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
 
   //  if(porositydof_)
   //  {
-  //    Teuchos::RCP<const Epetra_Vector> interincporo =
-  //    porositysplitter_->extract_cond_vector(interincs); Teuchos::RCP<const Epetra_Vector>
+  //    Teuchos::RCP<const Core::LinAlg::Vector> interincporo =
+  //    porositysplitter_->extract_cond_vector(interincs); Teuchos::RCP<const Core::LinAlg::Vector>
   //    interincsdisp = porositysplitter_->extract_other_vector(interincs);
   //
   //    normincstruct_     = UTILS::calculate_vector_norm(vectornorminc_,interincsdisp);
@@ -1222,7 +1222,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
   std::cout << "scatra field has " << dof_scatra << " DOFs" << std::endl;
 
-  Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> iterinc = Teuchos::null;
   iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
   const int dofs = iterinc->GlobalLength();
@@ -1236,25 +1236,16 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
-  Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> rhs_old =
+      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> rhs_copy =
+      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*sparse, Core::LinAlg::Copy));
 
-  if (false)
-  {
-    std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
-    std::cout << "iterinc" << std::endl << *iterinc << std::endl;
-    std::cout << "meshdisp: " << std::endl << *(poro_field()->fluid_field()->dispnp());
-    std::cout << "disp: " << std::endl << *(poro_field()->structure_field()->dispnp());
-    std::cout << "fluid vel" << std::endl << *(poro_field()->fluid_field()->velnp());
-    std::cout << "fluid acc" << std::endl << *(poro_field()->fluid_field()->accnp());
-    std::cout << "gridvel fluid" << std::endl << *(poro_field()->fluid_field()->grid_vel());
-    std::cout << "gridvel struct" << std::endl << *(poro_field()->structure_field()->velnp());
-  }
 
   const int zeilennr = -1;
   const int spaltenr = -1;
@@ -1298,7 +1289,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
       {
         std::cout << "\n******************" << zeilennr + 1 << ". Zeile!!***************"
                   << std::endl;
-        std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
+        /*std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
         std::cout << "iterinc" << std::endl << *iterinc << std::endl;
         std::cout << "meshdisp: " << std::endl << *(poro_field()->fluid_field()->dispnp());
         std::cout << "meshdisp scatra: " << std::endl
@@ -1319,6 +1310,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
         std::cout << "value(" << zeilennr << "," << spaltenr << "): " << value << std::endl;
         std::cout << "\n******************" << zeilennr + 1 << ". Zeile Ende!!***************"
                   << std::endl;
+                  */
       }
     }
 

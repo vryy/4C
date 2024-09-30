@@ -249,7 +249,7 @@ void PostVtuWriterNode::write_geo()
 
 
 void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_Vector>& data,
+    const Teuchos::RCP<Core::LinAlg::Vector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -268,7 +268,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
   int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
 
-  Teuchos::RCP<Epetra_Vector> ghostedData;
+  Teuchos::RCP<Core::LinAlg::Vector> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
@@ -282,7 +282,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
-    Teuchos::RCP<Epetra_Vector> dofvec = Core::LinAlg::create_vector(*rowmap, false);
+    Teuchos::RCP<Core::LinAlg::Vector> dofvec = Core::LinAlg::create_vector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
     ghostedData = Core::LinAlg::create_vector(*colmap, true);
@@ -390,7 +390,8 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
   {
     for (int idf = 0; idf < numdf; ++idf)
     {
-      Epetra_Vector* column = (*ghostedData)(idf);
+      Teuchos::RCP<Core::LinAlg::Vector> column =
+          Teuchos::rcp(new Core::LinAlg::Vector(*(*ghostedData)(idf)));
       solution.push_back((*column)[i]);
     }
     for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.);
@@ -448,14 +449,14 @@ void PostVtuWriterNode::write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* b
 
 void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros)
+    Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
 void PostVtuWriterNode::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
-    Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
+    Teuchos::RCP<Core::LinAlg::Vector>& ghostedData, const int& from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }

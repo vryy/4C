@@ -60,14 +60,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(
 
   // initialize increment vectors
   scaincnp_ = Teuchos::rcp(
-      new Epetra_Vector(*(scatra_algo()->scatra_field()->discretization()->dof_row_map())));
-  structincnp_ = Teuchos::rcp(new Epetra_Vector(*(poro_field()->struct_dof_row_map())));
-  fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_dof_row_map()))));
+      new Core::LinAlg::Vector(*(scatra_algo()->scatra_field()->discretization()->dof_row_map())));
+  structincnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*(poro_field()->struct_dof_row_map())));
+  fluidincnp_ = (Teuchos::rcp(new Core::LinAlg::Vector(*(poro_field()->fluid_dof_row_map()))));
   if (artery_coupling_active_)
   {
-    arterypressincnp_ =
-        Teuchos::rcp(new Epetra_Vector(*(poro_field()->fluid_field()->artery_dof_row_map())));
-    artscaincnp_ = Teuchos::rcp(new Epetra_Vector(*(scatramsht_->art_scatra_dof_row_map())));
+    arterypressincnp_ = Teuchos::rcp(
+        new Core::LinAlg::Vector(*(poro_field()->fluid_field()->artery_dof_row_map())));
+    artscaincnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*(scatramsht_->art_scatra_dof_row_map())));
   }
 }
 

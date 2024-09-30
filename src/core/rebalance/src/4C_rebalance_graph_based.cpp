@@ -19,6 +19,7 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_FECrsGraph.h>
 #include <Isorropia_Epetra.hpp>
@@ -34,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::rebalance_node_maps(
     Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams,
-    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
+    const Teuchos::RCP<Core::LinAlg::Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
     const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
 {
@@ -59,14 +60,15 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::r
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> Core::Rebalance::rebalance_graph(const Epetra_CrsGraph& initialGraph,
     const Teuchos::ParameterList& rebalanceParams,
-    const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
+    const Teuchos::RCP<Core::LinAlg::Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
     const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceGraph");
 
   Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
-  if (initialNodeWeights != Teuchos::null) costs.setVertexWeights(initialNodeWeights);
+  if (initialNodeWeights != Teuchos::null)
+    costs.setVertexWeights(initialNodeWeights->get_ptr_of_Epetra_Vector());
   if (initialEdgeWeights != Teuchos::null) costs.setGraphEdgeWeights(initialEdgeWeights);
 
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner;
@@ -108,14 +110,14 @@ Core::Rebalance::rebalance_coordinates(const Epetra_MultiVector& initialCoordina
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
+std::pair<Teuchos::RCP<Core::LinAlg::Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
 Core::Rebalance::build_weights(const Core::FE::Discretization& dis)
 {
   const Epetra_Map* noderowmap = dis.node_row_map();
 
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *noderowmap, 15));
-  Teuchos::RCP<Epetra_Vector> vweights = Core::LinAlg::create_vector(*noderowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> vweights = Core::LinAlg::create_vector(*noderowmap, true);
 
   // loop all row elements and get their cost of evaluation
   for (int i = 0; i < dis.element_row_map()->NumMyElements(); ++i)
@@ -331,7 +333,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
     const Core::FE::Discretization& dis, const Core::GeometricSearch::GeometricSearchParams& params)
 {
   // 1. Do a global geometric search
-  Epetra_Vector zero_vector = Epetra_Vector(*(dis.dof_col_map()), true);
+  Core::LinAlg::Vector zero_vector = Core::LinAlg::Vector(*(dis.dof_col_map()), true);
 
   std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> bounding_boxes;
   for (const auto* element : dis.my_row_element_range())

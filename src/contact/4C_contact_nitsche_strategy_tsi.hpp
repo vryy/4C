@@ -54,8 +54,8 @@ namespace CONTACT
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       FOUR_C_THROW("not implemented");
@@ -71,12 +71,13 @@ namespace CONTACT
     void setup(bool redistributed, bool init) override;
 
     void update_trace_ineq_etimates() override;
-    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) override;
 
-    void set_parent_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec,
+    void set_parent_state(const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec,
         const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
@@ -84,8 +85,8 @@ namespace CONTACT
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     //! [derived]
-    bool redistribute_contact(
-        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) override
+    bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector> vel) override
     {
       if (fix_redistribution_) return false;
       return CONTACT::AbstractStrategy::redistribute_contact(dis, vel);
@@ -113,7 +114,7 @@ namespace CONTACT
     // do not reditribute (during constructor phase)
     bool fix_redistribution_;
 
-    Teuchos::RCP<Epetra_Vector> curr_state_temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> curr_state_temp_;
 
     Teuchos::RCP<Epetra_FEVector> ft_;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> ktt_;

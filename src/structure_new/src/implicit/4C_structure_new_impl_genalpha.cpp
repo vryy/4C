@@ -17,6 +17,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
@@ -25,8 +26,6 @@
 #include "4C_structure_new_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -180,23 +179,23 @@ void Solid::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
+double Solid::IMPLICIT::GenAlpha::get_model_value(const Core::LinAlg::Vector& x)
 {
   // --- kinetic energy increment
-  Teuchos::RCP<const Epetra_Vector> accnp_ptr = global_state().get_acc_np();
-  const Epetra_Vector& accnp = *accnp_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
+  const Core::LinAlg::Vector& accnp = *accnp_ptr;
 
-  Teuchos::RCP<const Epetra_Vector> accn_ptr = global_state().get_acc_n();
-  const Epetra_Vector& accn = *accn_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector> accn_ptr = global_state().get_acc_n();
+  const Core::LinAlg::Vector& accn = *accn_ptr;
 
-  Epetra_Vector accm(accnp);
+  Core::LinAlg::Vector accm(accnp);
   accm.Update(alpham_, accn, 1.0 - alpham_);
 
   const double dt = (*global_state().get_delta_time())[0];
   Teuchos::RCP<const Core::LinAlg::SparseOperator> mass_ptr = global_state().get_mass_matrix();
   const Core::LinAlg::SparseMatrix& mass =
       dynamic_cast<const Core::LinAlg::SparseMatrix&>(*mass_ptr);
-  Epetra_Vector tmp(mass.range_map(), true);
+  Core::LinAlg::Vector tmp(mass.range_map(), true);
 
   double kin_energy_incr = 0.0;
   mass.multiply(false, accm, tmp);
@@ -209,8 +208,8 @@ double Solid::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
   Solid::ModelEvaluator::Structure& str_model =
       dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
 
-  Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
-  const Epetra_Vector& disnp = *disnp_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  const Core::LinAlg::Vector& disnp = *disnp_ptr;
 
   const double af_np = 1.0 - alphaf_;
   str_model.determine_strain_energy(disnp, true);
@@ -246,7 +245,7 @@ double Solid::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
+void Solid::IMPLICIT::GenAlpha::set_state(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
 
@@ -258,7 +257,7 @@ void Solid::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
@@ -300,7 +299,7 @@ void Solid::IMPLICIT::GenAlpha::update_constant_state_contributions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::IMPLICIT::GenAlpha::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::IMPLICIT::GenAlpha::apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f)
 {
   check_init_setup();
 
@@ -315,7 +314,7 @@ bool Solid::IMPLICIT::GenAlpha::apply_force(const Epetra_Vector& x, Epetra_Vecto
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlpha::apply_stiff(
-    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -336,7 +335,7 @@ bool Solid::IMPLICIT::GenAlpha::apply_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlpha::apply_force_stiff(
-    const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -356,7 +355,7 @@ bool Solid::IMPLICIT::GenAlpha::apply_force_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlpha::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    Core::LinAlg::Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
 
@@ -378,7 +377,7 @@ bool Solid::IMPLICIT::GenAlpha::assemble_jac(Core::LinAlg::SparseOperator& jac,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(Core::LinAlg::Vector& f) const
 {
   // viscous damping forces at t_{n+1-alpha_f}
   Core::LinAlg::assemble_my_vector(1.0, f, alphaf_, *fviscon_ptr_);
@@ -494,12 +493,12 @@ void Solid::IMPLICIT::GenAlpha::post_update() { update_constant_state_contributi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Epetra_Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Epetra_Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // constant predictor: displacement in domain
@@ -522,7 +521,7 @@ void Solid::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
   /* In the general dynamic case there is no need to design a special start-up
@@ -530,9 +529,9 @@ bool Solid::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
    * acceleration. The corresponding accelerations are calculated in the
    * equilibrate_initial_state() routine. */
 
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Epetra_Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Epetra_Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // extrapolated displacements based upon constant velocities
@@ -555,7 +554,7 @@ bool Solid::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlpha::predict_const_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
   /* In the general dynamic case there is no need to design a special start-up
@@ -563,9 +562,9 @@ bool Solid::IMPLICIT::GenAlpha::predict_const_acc(
    * acceleration. The corresponding accelerations are calculated in the
    * equilibrate_initial_state() routine. */
 
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Epetra_Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Epetra_Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // extrapolated displacements based upon constant accelerations

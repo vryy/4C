@@ -78,10 +78,10 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
                   Inpar::Solid::dyna_statics);
 
   // initialise internal variables with values
-  tempincnp_ = Teuchos::rcp(new Epetra_Vector(*(thermo_field()->tempnp())));
-  dispincnp_ = Teuchos::rcp(new Epetra_Vector(*(structure_field()->dispnp())));
-  disp_ = Teuchos::rcp(new Epetra_Vector(*(structure_field()->dispn())));
-  temp_ = Teuchos::rcp(new Epetra_Vector(*(thermo_field()->tempn())));
+  tempincnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*(thermo_field()->tempnp())));
+  dispincnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*(structure_field()->dispnp())));
+  disp_ = Teuchos::rcp(new Core::LinAlg::Vector(*(structure_field()->dispn())));
+  temp_ = Teuchos::rcp(new Core::LinAlg::Vector(*(thermo_field()->tempn())));
   // set internal variables to pointer of current velocities
   vel_ = structure_field()->write_access_velnp();
 
@@ -461,7 +461,7 @@ void TSI::Partitioned::outer_iteration_loop()
       // get structure variables of old time step (d_n, v_n)
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
-      Teuchos::RCP<Epetra_Vector> dispnp =
+      Teuchos::RCP<Core::LinAlg::Vector> dispnp =
           Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
       if (step() == 1)
       {
@@ -631,7 +631,7 @@ void TSI::Partitioned::outer_iteration_loop()
       // get structure variables of old time step (d_n, v_n)
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
-      Teuchos::RCP<Epetra_Vector> dispnp =
+      Teuchos::RCP<Core::LinAlg::Vector> dispnp =
           Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
       if (step() == 1)
       {

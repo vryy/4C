@@ -22,9 +22,9 @@
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_inpar_structure.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_local_newton.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -704,7 +704,7 @@ namespace Discret
        * @return bounding volume of the respective element
        */
       Core::GeometricSearch::BoundingVolume get_bounding_volume(
-          const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+          const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
           const Core::GeometricSearch::GeometricSearchParams& params) const override;
 
      private:

@@ -15,10 +15,10 @@
 /* headers */
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -274,15 +274,15 @@ namespace TimeStepping
 
   /*====================================================================*/
   /*! \brief Specialize general #TimIntMStepBase object
-   *         for \c Epetra_Vector as needed for state vectors
+   *         for \c Core::LinAlg::Vector as needed for state vectors
    *         like displacements, velocities and accelerations
    */
   template <>
-  class TimIntMStep<Epetra_Vector> : public TimIntMStepBase<Epetra_Vector>
+  class TimIntMStep<Core::LinAlg::Vector> : public TimIntMStepBase<Core::LinAlg::Vector>
   {
    protected:
     //! base template class
-    typedef TimIntMStepBase<Epetra_Vector> MStepBase;
+    typedef TimIntMStepBase<Core::LinAlg::Vector> MStepBase;
 
    public:
     //! @name Life
@@ -302,7 +302,7 @@ namespace TimeStepping
       // allocate the vectors themselves
       for (int index = 0; index < steps_; ++index)
       {
-        state_.push_back(Epetra_Vector(*dofrowmap, inittozero));
+        state_.push_back(Core::LinAlg::Vector(*dofrowmap, inittozero));
       }
 
       return;
@@ -331,7 +331,7 @@ namespace TimeStepping
         for (int past = MStepBase::steppast_; past > steppast; --past)
         {
           MStepBase::state_.insert(
-              MStepBase::state_.begin(), Epetra_Vector(*dofrowmap, inittozero));
+              MStepBase::state_.begin(), Core::LinAlg::Vector(*dofrowmap, inittozero));
         }
         MStepBase::steppast_ = steppast;
         MStepBase::steps_ = MStepBase::stepfuture_ - MStepBase::steppast_ + 1;
@@ -352,7 +352,7 @@ namespace TimeStepping
       // allocate the vectors themselves
       for (int index = 0; index < steps_; ++index)
       {
-        state_.push_back(Epetra_Vector(*dofrowmap, true));
+        state_.push_back(Core::LinAlg::Vector(*dofrowmap, true));
       }
 
       return;
@@ -370,7 +370,7 @@ namespace TimeStepping
      *       state_{n} := state_{n+1},
      *       etc.
      */
-    void update_steps(const Epetra_Vector& staten  //!< state_{n+1}
+    void update_steps(const Core::LinAlg::Vector& staten  //!< state_{n+1}
     )
     {
       for (int ind = 0; ind < MStepBase::steps_ - 1; ++ind)
@@ -384,7 +384,7 @@ namespace TimeStepping
 
     //@}
 
-  };  // class TimIntMStep<Epetra_Vector>
+  };  // class TimIntMStep<Core::LinAlg::Vector>
 }  // namespace TimeStepping
 
 /*----------------------------------------------------------------------*/

@@ -11,13 +11,13 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_mortar_coupling3d_classes.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -235,15 +235,15 @@ namespace Mortar
         const Teuchos::RCP<const Core::LinAlg::SparseMatrix>& p_col);
 
     void mortar_rhs_condensation(
-        Teuchos::RCP<Epetra_Vector>& rhs, const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p);
+        Teuchos::RCP<Core::LinAlg::Vector>& rhs, const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p);
 
-    void mortar_rhs_condensation(Teuchos::RCP<Epetra_Vector>& rhs,
+    void mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector>& rhs,
         const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p);
 
     void mortar_recover(
-        Teuchos::RCP<Epetra_Vector>& inc, const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p);
+        Teuchos::RCP<Core::LinAlg::Vector>& inc, const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p);
 
-    void mortar_recover(Teuchos::RCP<Epetra_Vector>& inc,
+    void mortar_recover(Teuchos::RCP<Core::LinAlg::Vector>& inc,
         const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p);
   }  // namespace UTILS
 }  // namespace Mortar

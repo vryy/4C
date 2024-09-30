@@ -80,7 +80,7 @@ class PostVtuWriter : public PostVtkWriter
   const std::string& writer_suffix() const override;
 
   //! Write a single result step
-  void write_dof_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+  void write_dof_result_step(std::ofstream& file, const Teuchos::RCP<Core::LinAlg::Vector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) override;
@@ -122,8 +122,8 @@ class PostVtuWriter : public PostVtkWriter
 
   //! Write a single result step for one Nurbs Element
   virtual void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
-      const int from, const bool fillzeros) const;
+      const int numdf, std::vector<double>& solution,
+      Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from, const bool fillzeros) const;
 
   /*! Generalization of the former non-template method for all implemented NURBS
    *  discretization types
@@ -131,12 +131,12 @@ class PostVtuWriter : public PostVtkWriter
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <Core::FE::CellType nurbs_type>
   void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData,
-      const int from, const bool fillzeros) const;
+      const int numdf, std::vector<double>& solution,
+      Teuchos::RCP<Core::LinAlg::Vector> ghostedData, const int from, const bool fillzeros) const;
 
   virtual void write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
-      Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
+      Teuchos::RCP<Core::LinAlg::Vector>& ghostedData, const int& from, const bool fillzeros);
 
   //! Write a single result step for one Nurbs Element
   virtual void write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,

@@ -31,7 +31,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     \brief Standard Constructor
     */
     EmbeddedMeshConstraintManager(
-        Teuchos::RCP<Core::FE::Discretization> discret_ptr, const Epetra_Vector& dispnp);
+        Teuchos::RCP<Core::FE::Discretization> discret_ptr, const Core::LinAlg::Vector& dispnp);
 
     //! @name Public evaluation methods
 
@@ -45,10 +45,10 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     /*! Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
      */
-    bool evaluate_force_stiff(const Epetra_Vector& displacement_vector,
+    bool evaluate_force_stiff(const Core::LinAlg::Vector& displacement_vector,
         Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-        Teuchos::RCP<Epetra_Vector> me_force_ptr) override;
+        Teuchos::RCP<Core::LinAlg::Vector> me_force_ptr) override;
 
     //! Evaluate the matrices of the saddle-point system
     void evaluate_coupling_terms(Solid::TimeInt::BaseDataGlobalState& gstate) override

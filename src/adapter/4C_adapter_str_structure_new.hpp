@@ -62,53 +62,77 @@ namespace Adapter
     /// @name Vector access
     ///@{
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> initial_guess() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override = 0;
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> disp_np() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> dispnp() const override { return disp_np(); }
-    virtual Teuchos::RCP<Epetra_Vector> write_access_disp_np() = 0;
-    Teuchos::RCP<Epetra_Vector> write_access_dispnp() override { return write_access_disp_np(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> disp_np() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const override
+    {
+      return disp_np();
+    }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_disp_np() = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() override
+    {
+      return write_access_disp_np();
+    }
 
     /// known displacements at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> disp_n() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> dispn() const override { return disp_n(); }
-    virtual Teuchos::RCP<Epetra_Vector> write_access_disp_n() = 0;
-    Teuchos::RCP<Epetra_Vector> write_access_dispn() override { return write_access_disp_n(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> disp_n() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> dispn() const override
+    {
+      return disp_n();
+    }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_disp_n() = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispn() override
+    {
+      return write_access_disp_n();
+    }
 
     /// unknown velocity at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> vel_np() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> velnp() const override { return vel_np(); }
-    virtual Teuchos::RCP<Epetra_Vector> write_access_vel_np() = 0;
-    Teuchos::RCP<Epetra_Vector> write_access_velnp() override { return write_access_vel_np(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> vel_np() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> velnp() const override
+    {
+      return vel_np();
+    }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_vel_np() = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_velnp() override
+    {
+      return write_access_vel_np();
+    }
 
     /// known velocity at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> vel_n() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> veln() const override { return vel_n(); }
-    virtual Teuchos::RCP<Epetra_Vector> write_access_vel_n() = 0;
-    Teuchos::RCP<Epetra_Vector> write_access_veln() override { return write_access_vel_n(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> vel_n() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> veln() const override { return vel_n(); }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_vel_n() = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_veln() override { return write_access_vel_n(); }
 
     /// known velocity at \f$t_{n-1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> vel_nm() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> velnm() const override { return vel_nm(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> vel_nm() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> velnm() const override
+    {
+      return vel_nm();
+    }
 
     /// unknown acceleration at \f$t_{n+1}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> acc_np() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> accnp() const override { return acc_np(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> acc_np() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> accnp() const override
+    {
+      return acc_np();
+    }
 
     /// known acceleration at \f$t_{n}\f$
     /// ToDo Replace the deprecated version with the new version
-    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> acc_n() const = 0;
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> accn() const override { return acc_n(); }
+    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> acc_n() const = 0;
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> accn() const override { return acc_n(); }
 
     /// resize the multi step class vector
     void resize_m_step_tim_ada() override = 0;
@@ -218,7 +242,7 @@ namespace Adapter
      In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
      which is then transformed into an iteration increment
      */
-    void update_state_incrementally(Teuchos::RCP<const Epetra_Vector>
+    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
@@ -237,7 +261,7 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    void evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
@@ -252,11 +276,12 @@ namespace Adapter
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    void update_iter_incr_constr(Teuchos::RCP<Epetra_Vector> lagrincr) override = 0;
+    void update_iter_incr_constr(Teuchos::RCP<Core::LinAlg::Vector> lagrincr) override = 0;
 
     /// Update iteration
     /// Add residual increment to pressures stored in Cardiovascular0D manager
-    void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override = 0;
+    void update_iter_incr_cardiovascular0_d(
+        Teuchos::RCP<Core::LinAlg::Vector> presincr) override = 0;
 
     /// Access to output object
     Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override = 0;
@@ -266,8 +291,8 @@ namespace Adapter
 
     // Get restart data
     void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-        Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
-        Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
+        Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector> veln,
+        Teuchos::RCP<Core::LinAlg::Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) override = 0;
 
     /// output results
@@ -292,8 +317,8 @@ namespace Adapter
     void reset_step() override = 0;
 
     /// set restart information for parameter continuation
-    void set_restart(int step, double time, Teuchos::RCP<Epetra_Vector> disn,
-        Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
+    void set_restart(int step, double time, Teuchos::RCP<Core::LinAlg::Vector> disn,
+        Teuchos::RCP<Core::LinAlg::Vector> veln, Teuchos::RCP<Core::LinAlg::Vector> accn,
         Teuchos::RCP<std::vector<char>> elementdata,
         Teuchos::RCP<std::vector<char>> nodedata) override = 0;
 
@@ -336,7 +361,7 @@ namespace Adapter
 
     \note Can only be called after a valid structural solve.
     */
-    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
+    Teuchos::RCP<Core::LinAlg::Vector> solve_relaxation_linear() override
     {
       FOUR_C_THROW(
           "In the new structural timeintegration this method is"
@@ -352,7 +377,7 @@ namespace Adapter
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
-    Teuchos::RCP<Epetra_Vector> freact() override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> freact() override = 0;
 
 
     //! @name volume coupled specific methods
@@ -443,7 +468,7 @@ namespace Adapter
     void reset() override = 0;
 
     /// set structure displacement vector due to biofilm growth
-    void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override = 0;
+    void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector> struct_growth_disp) override = 0;
 
     /// bool indicating if micro material is used
     bool have_micro_mat() override = 0;
@@ -512,7 +537,7 @@ namespace Adapter
      *  \author rauch
      *  \date 10/17
      */
-    void set_state(const Teuchos::RCP<Epetra_Vector>& x) override = 0;
+    void set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x) override = 0;
 
     ///@}
 

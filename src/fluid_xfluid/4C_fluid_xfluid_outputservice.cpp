@@ -58,8 +58,8 @@ void FLD::XFluidOutputService::prepare_output()
 }
 
 void FLD::XFluidOutputService::output(int step, double time, bool write_restart_data,
-    Teuchos::RCP<const FLD::XFluidState> state, Teuchos::RCP<Epetra_Vector> dispnp,
-    Teuchos::RCP<Epetra_Vector> gridvnp)
+    Teuchos::RCP<const FLD::XFluidState> state, Teuchos::RCP<Core::LinAlg::Vector> dispnp,
+    Teuchos::RCP<Core::LinAlg::Vector> gridvnp)
 {
   discret_->writer()->new_step(step, time);
 
@@ -165,7 +165,8 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 
   // output (hydrodynamic) pressure for visualization
 
-  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->extract_cond_vector(outvec_fluid_);
+  Teuchos::RCP<Core::LinAlg::Vector> pressure =
+      velpressplitter_out_->extract_cond_vector(outvec_fluid_);
 
   discret_->writer()->write_vector("velnp", outvec_fluid_);
   discret_->writer()->write_vector("pressure", pressure);
@@ -175,18 +176,18 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
     if (gridvnp == Teuchos::null) FOUR_C_THROW("Missing grid velocities for ALE-xfluid!");
 
     // write ale displacement for t^{n+1}
-    Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp));
+    Teuchos::RCP<Core::LinAlg::Vector> dispnprm = Teuchos::rcp(new Core::LinAlg::Vector(*dispnp));
     dispnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
     discret_->writer()->write_vector("dispnp", dispnprm);
 
     // write grid velocity for t^{n+1}
-    Teuchos::RCP<Epetra_Vector> gridvnprm = Teuchos::rcp(new Epetra_Vector(*gridvnp));
+    Teuchos::RCP<Core::LinAlg::Vector> gridvnprm = Teuchos::rcp(new Core::LinAlg::Vector(*gridvnp));
     gridvnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
     discret_->writer()->write_vector("gridv", gridvnprm);
 
     // write convective velocity for t^{n+1}
-    Teuchos::RCP<Epetra_Vector> convvel =
-        Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector> convvel =
+        Teuchos::rcp(new Core::LinAlg::Vector(outvec_fluid_->Map(), true));
     convvel->Update(1.0, *outvec_fluid_, -1.0, *gridvnprm, 0.0);
     discret_->writer()->write_vector("convel", convvel);
   }
@@ -279,17 +280,17 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output(
 {
   if (!gmsh_sol_out_) return;
 
-  Teuchos::RCP<const Epetra_Vector> output_col_vel =
+  Teuchos::RCP<const Core::LinAlg::Vector> output_col_vel =
       Core::Rebalance::get_col_version_of_row_vector(discret_, state->velnp());
 
-  Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> output_col_acc = Teuchos::null;
 
   if (state->accnp() != Teuchos::null)
   {
     output_col_acc = Core::Rebalance::get_col_version_of_row_vector(discret_, state->accnp());
   }
 
-  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
@@ -310,17 +311,17 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
 {
   if (!gmsh_ref_sol_out_) return;
 
-  Teuchos::RCP<const Epetra_Vector> output_col_vel =
+  Teuchos::RCP<const Core::LinAlg::Vector> output_col_vel =
       Core::Rebalance::get_col_version_of_row_vector(discret_, state->veln());
 
-  Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> output_col_acc = Teuchos::null;
 
   if (state->accn() != Teuchos::null)
   {
     output_col_acc = Core::Rebalance::get_col_version_of_row_vector(discret_, state->accn());
   }
 
-  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
@@ -340,12 +341,12 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
 {
   if (!gmsh_debug_out_) return;
 
-  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
-  Teuchos::RCP<const Epetra_Vector> output_col_vel =
+  Teuchos::RCP<const Core::LinAlg::Vector> output_col_vel =
       Core::Rebalance::get_col_version_of_row_vector(discret_, state->velnp());
   const std::string prefix("SOL");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, Teuchos::null,
@@ -361,13 +362,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
 {
   if (!gmsh_debug_out_) return;
 
-  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
 
-  Teuchos::RCP<const Epetra_Vector> output_col_residual =
+  Teuchos::RCP<const Core::LinAlg::Vector> output_col_residual =
       Core::Rebalance::get_col_version_of_row_vector(discret_, state->residual());
   const std::string prefix("RES");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_residual,
@@ -383,12 +384,12 @@ void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
 {
   if (!gmsh_debug_out_) return;
 
-  Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
 
-  Teuchos::RCP<const Epetra_Vector> output_col_incvel =
+  Teuchos::RCP<const Core::LinAlg::Vector> output_col_incvel =
       Core::Rebalance::get_col_version_of_row_vector(discret_, state->inc_vel());
   const std::string prefix("INC");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_incvel, Teuchos::null,
@@ -400,10 +401,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     const std::string& prefix,         ///< data prefix
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-    Teuchos::RCP<const Epetra_Vector> vel,       ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Epetra_Vector> acc,       ///< vector holding acceleration
-    Teuchos::RCP<const Epetra_Vector> dispnp     ///< vector holding acceleration
+    const Teuchos::RCP<Cut::CutWizard>& wizard,      ///< cut wizard
+    Teuchos::RCP<const Core::LinAlg::Vector> vel,    ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Core::LinAlg::Vector> acc,    ///< vector holding acceleration
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp  ///< vector holding acceleration
 )
 {
   // Todo: should be private
@@ -624,15 +625,15 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
 
 /// Gmsh output function for elements without an Cut::ElementHandle
 void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
-    Core::FE::Discretization& discret,        ///< background fluid discretization
-    std::ofstream& vel_f,                     ///< output file stream for velocity
-    std::ofstream& press_f,                   ///< output file stream for pressure
-    std::ofstream& acc_f,                     ///< output file stream for acceleration
-    Core::Elements::Element* actele,          ///< element
-    std::vector<int>& nds,                    ///< vector holding the nodal dofsets
-    Teuchos::RCP<const Epetra_Vector> vel,    ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Epetra_Vector> acc,    ///< vector holding acceleration
-    Teuchos::RCP<const Epetra_Vector> dispnp  ///< vector holding ale displacements
+    Core::FE::Discretization& discret,               ///< background fluid discretization
+    std::ofstream& vel_f,                            ///< output file stream for velocity
+    std::ofstream& press_f,                          ///< output file stream for pressure
+    std::ofstream& acc_f,                            ///< output file stream for acceleration
+    Core::Elements::Element* actele,                 ///< element
+    std::vector<int>& nds,                           ///< vector holding the nodal dofsets
+    Teuchos::RCP<const Core::LinAlg::Vector> vel,    ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Core::LinAlg::Vector> acc,    ///< vector holding acceleration
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp  ///< vector holding ale displacements
 )
 {
   vel_f.setf(std::ios::scientific, std::ios::floatfield);
@@ -757,16 +758,16 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
 
 /// Gmsh output function for volumecells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
-    Core::FE::Discretization& discret,         ///< background fluid discretization
-    std::ofstream& vel_f,                      ///< output file stream for velocity
-    std::ofstream& press_f,                    ///< output file stream for pressure
-    std::ofstream& acc_f,                      ///< output file stream for acceleration
-    Core::Elements::Element* actele,           ///< element
-    Cut::ElementHandle* e,                     ///< elementhandle
-    Cut::VolumeCell* vc,                       ///< volumecell
-    const std::vector<int>& nds,               ///< vector holding the nodal dofsets
-    Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Epetra_Vector> accvec   ///< vector holding acceleration
+    Core::FE::Discretization& discret,                ///< background fluid discretization
+    std::ofstream& vel_f,                             ///< output file stream for velocity
+    std::ofstream& press_f,                           ///< output file stream for pressure
+    std::ofstream& acc_f,                             ///< output file stream for acceleration
+    Core::Elements::Element* actele,                  ///< element
+    Cut::ElementHandle* e,                            ///< elementhandle
+    Cut::VolumeCell* vc,                              ///< volumecell
+    const std::vector<int>& nds,                      ///< vector holding the nodal dofsets
+    Teuchos::RCP<const Core::LinAlg::Vector> velvec,  ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Core::LinAlg::Vector> accvec   ///< vector holding acceleration
 )
 {
   vel_f.setf(std::ios::scientific, std::ios::floatfield);

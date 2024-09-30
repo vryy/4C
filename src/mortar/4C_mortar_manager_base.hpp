@@ -12,11 +12,11 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -120,7 +120,7 @@ namespace Mortar
 
     //! Read restart data from disk
     virtual void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero) = 0;
 
     //! Write restart data to disk
     virtual void write_restart(

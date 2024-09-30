@@ -74,6 +74,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_vector(std
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_vector(
+    Teuchos::RCP<Core::LinAlg::Vector> vec, std::string name)
+{
+  read_vector(vec->get_ptr_of_Epetra_MultiVector(), name);
+}
+
+
+void Core::IO::DiscretizationReader::read_vector(
     Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -816,6 +823,12 @@ void Core::IO::DiscretizationWriter::write_int(const std::string name, const int
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationWriter::write_vector(
+    const std::string name, Teuchos::RCP<const Core::LinAlg::Vector> vec, IO::VectorType vt)
+{
+  write_multi_vector(name, vec->get_ptr_of_const_Epetra_Vector(), vt);
+}
+
+void Core::IO::DiscretizationWriter::write_multi_vector(
     const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec, IO::VectorType vt)
 {
   if (binio_)
@@ -1340,7 +1353,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
         ele_counter++;
       }
 
-      write_vector(name, Teuchos::rcp(&sysdata, false), elementvector);
+      write_multi_vector(name, Teuchos::rcp(&sysdata, false), elementvector);
     }
   }
 }
@@ -1402,7 +1415,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
       }
 
-      write_vector(fool->first, Teuchos::rcp(&sysdata, false), Core::IO::nodevector);
+      write_multi_vector(fool->first, Teuchos::rcp(&sysdata, false), Core::IO::nodevector);
 
     }  // for (fool = names.begin(); fool!= names.end(); ++fool)
   }

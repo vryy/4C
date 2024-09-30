@@ -94,7 +94,7 @@ void Discret::ELEMENTS::ElemagIntFaceImpl<distype>::assemble_internal_faces_usin
     Teuchos::ParameterList& params,                         // parameter list
     Core::FE::DiscretizationFaces& discretization,          // faces discretization
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  // systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector                // systemvector
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector         // systemvector
 )
 {
   return;

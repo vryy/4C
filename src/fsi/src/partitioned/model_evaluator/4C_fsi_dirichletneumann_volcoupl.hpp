@@ -65,23 +65,26 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Epetra_Vector> fluid_op(
-        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) final;
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_op(
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag) final;
 
 
     void extract_previous_interface_solution() override;
 
     /// structure to ale mapping
-    Teuchos::RCP<Epetra_Vector> stucture_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> stucture_to_ale(Teuchos::RCP<Core::LinAlg::Vector> iv) const;
 
     /// structure to ale mapping
-    Teuchos::RCP<Epetra_Vector> structure_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> structure_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
     /// ale to structure mapping
-    Teuchos::RCP<Epetra_Vector> ale_to_structure(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> ale_to_structure(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
 
     /// ale to structure
-    Teuchos::RCP<Epetra_Vector> ale_to_structure(Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> ale_to_structure(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
     /// coupling of structure and ale at the interface
     Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> coupsa_;
@@ -104,16 +107,16 @@ namespace FSI
     virtual void setup(Teuchos::RCP<Adapter::FluidAle> fluidale);
 
     void set_interface_displacements(
-        Teuchos::RCP<Epetra_Vector>& idisp_struct, Coupling::Adapter::Coupling& icoupfs);
+        Teuchos::RCP<Core::LinAlg::Vector>& idisp_struct, Coupling::Adapter::Coupling& icoupfs);
 
-    virtual void correct_interface_displacements(Teuchos::RCP<Epetra_Vector> idisp_fluid,
+    virtual void correct_interface_displacements(Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
-    Teuchos::RCP<const Epetra_Vector> idisp_;
+    Teuchos::RCP<const Core::LinAlg::Vector> idisp_;
     Teuchos::RCP<Coupling::Adapter::Coupling> icoupfs_;
 
-    Teuchos::RCP<Epetra_Vector> deltadisp_;
+    Teuchos::RCP<Core::LinAlg::Vector> deltadisp_;
     Teuchos::RCP<Adapter::FluidAle> fluidale_;
 
     Teuchos::RCP<VolCorrector> volcorrector_;
@@ -132,16 +135,19 @@ namespace FSI
     virtual void setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale);
 
     virtual void correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
+        Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
+        Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
     virtual void correct_vol_displacements_para_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
+        Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
+        Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
     virtual void correct_vol_displacements_phys_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
+        Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
+        Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
     void init_dop_normals();

@@ -188,10 +188,10 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> fext() override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector> fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Epetra_Vector> freact() override
+    Teuchos::RCP<Core::LinAlg::Vector> freact() override
     {
       FOUR_C_THROW("Not impl.");
       return Teuchos::null;
@@ -204,14 +204,14 @@ namespace Solid
     void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! initial_guess is not available for explicit time integrators
-    Teuchos::RCP<const Epetra_Vector> initial_guess() override
+    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override
     {
       FOUR_C_THROW("initial_guess() is not available for explicit time integrators");
       return Teuchos::null;
     }
 
     //! RHS() is not available for explicit time integrators
-    Teuchos::RCP<const Epetra_Vector> rhs() override
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override
     {
       FOUR_C_THROW("RHS() is not available for explicit time integrators");
       return Teuchos::null;
@@ -237,7 +237,7 @@ namespace Solid
     }
 
     //!  Update displacement state in case of coupled problems
-    void update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override
+    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override
     {
       FOUR_C_THROW(
           "All monolithically coupled problems work with implicit time "
@@ -246,7 +246,8 @@ namespace Solid
     }
 
     //!  Evaluate routine for coupled problems with monolithic approach
-    void evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
+    void evaluate(
+        Teuchos::RCP<const Core::LinAlg::Vector> disiterinc  ///< iterative solution increment
         ) override
     {
       FOUR_C_THROW(
@@ -256,10 +257,10 @@ namespace Solid
     }
 
     //! Apply external force
-    void apply_force_external(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> dis,    //!< displacement state
-        const Teuchos::RCP<Epetra_Vector> vel,    // velocity state
-        Teuchos::RCP<Epetra_Vector>& fext         //!< external force
+    void apply_force_external(const double time,       //!< evaluation time
+        const Teuchos::RCP<Core::LinAlg::Vector> dis,  //!< displacement state
+        const Teuchos::RCP<Core::LinAlg::Vector> vel,  // velocity state
+        Teuchos::RCP<Core::LinAlg::Vector>& fext       //!< external force
     );
 
     /// has to be renamed either here or print_step()
@@ -290,7 +291,7 @@ namespace Solid
 
 
     /* Linear structure solve with just an interface load */
-    Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
+    Teuchos::RCP<Core::LinAlg::Vector> solve_relaxation_linear() override
     {
       FOUR_C_THROW("solve_relaxation_linear() not implemented");
       return Teuchos::null;
@@ -355,7 +356,7 @@ namespace Solid
     };
 
     void update_iter_incr_constr(
-        Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
+        Teuchos::RCP<Core::LinAlg::Vector> lagrincr  ///< Lagrange multiplier increment
         ) override
     {
       FOUR_C_THROW("update_iter_incr_constr() has not been tested for explicit time integrators");
@@ -363,7 +364,7 @@ namespace Solid
     }
 
     void update_iter_incr_cardiovascular0_d(
-        Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
+        Teuchos::RCP<Core::LinAlg::Vector> presincr  ///< pressure increment
         ) override
     {
       FOUR_C_THROW(

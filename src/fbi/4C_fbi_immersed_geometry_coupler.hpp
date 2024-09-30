@@ -12,8 +12,8 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <map>
@@ -70,7 +70,7 @@ namespace FBI
      * \param[in] structure_displacement vector containing the column structure displacement
      */
     virtual void setup(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
-        Teuchos::RCP<const Epetra_Vector> structure_displacement);
+        Teuchos::RCP<const Core::LinAlg::Vector> structure_displacement);
 
     /**
      * \brief Performs the search to find possible beam-fluid element pairs
@@ -87,7 +87,7 @@ namespace FBI
      */
     virtual Teuchos::RCP<std::map<int, std::vector<int>>> search(
         std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-        Teuchos::RCP<const Epetra_Vector>& column_structure_displacement);
+        Teuchos::RCP<const Core::LinAlg::Vector>& column_structure_displacement);
 
     /**
      * \brief Ghosts ALL beams to all processors in order to do the search
@@ -123,7 +123,7 @@ namespace FBI
      * \param[in] structure_displacement vector containing the column structure displacement
      */
     virtual void update_binning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
-        Teuchos::RCP<const Epetra_Vector> structure_column_displacement){};
+        Teuchos::RCP<const Core::LinAlg::Vector> structure_column_displacement){};
 
    protected:
     /**
@@ -151,7 +151,7 @@ namespace FBI
      */
     virtual void compute_current_positions(Core::FE::Discretization& dis,
         Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
-        Teuchos::RCP<const Epetra_Vector> disp) const;
+        Teuchos::RCP<const Core::LinAlg::Vector> disp) const;
 
     /// Get function for the fludi positions
     virtual Teuchos::RCP<const std::map<int, Core::LinAlg::Matrix<3, 1>>> get_fluid_positions()

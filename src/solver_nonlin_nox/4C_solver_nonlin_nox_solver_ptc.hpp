@@ -190,7 +190,7 @@ namespace NOX
         const enum ScaleOpType& get_scaling_operator_type() const;
 
         //! Returns the scaling diagonal operator
-        const Epetra_Vector& get_scaling_diag_operator() const;
+        const Core::LinAlg::Vector& get_scaling_diag_operator() const;
 
         //! Returns the use_pseudo_transient_residual status
         bool use_pseudo_transient_residual() const;
@@ -306,7 +306,7 @@ namespace NOX
         Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prePostGroupPtr_;
 
         //! Pointer to the scaling Operator (Identity scaling)
-        Teuchos::RCP<Epetra_Vector> scalingDiagOpPtr_;
+        Teuchos::RCP<Core::LinAlg::Vector> scalingDiagOpPtr_;
         //! Pointer to the scaling Operator (Element based scaling)
         Teuchos::RCP<Core::LinAlg::SparseMatrix> scalingMatrixOpPtr_;
 
@@ -391,15 +391,16 @@ namespace NOX
         {
          public:
           //! constructor
-          PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOp,
+          PseudoTransient(Teuchos::RCP<Core::LinAlg::Vector>& scalingDiagOp,
               Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
               const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
-          void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
-              const NOX::Nln::LinearSystem& linsys) override;
+          void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac,
+              const Core::LinAlg::Vector& x, const NOX::Nln::LinearSystem& linsys) override;
 
-          void run_post_compute_fand_jacobian(Epetra_Vector& rhs, Core::LinAlg::SparseOperator& jac,
-              const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys) override;
+          void run_post_compute_fand_jacobian(Core::LinAlg::Vector& rhs,
+              Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
+              const NOX::Nln::LinearSystem& linsys) override;
 
          protected:
           //! modify the jacobian as defined by the scaling operator type
@@ -410,7 +411,7 @@ namespace NOX
           const NOX::Nln::Solver::PseudoTransient& ptcsolver_;
 
           //! reference to the scaling diagonal operator
-          Teuchos::RCP<Epetra_Vector>& scaling_diag_op_ptr_;
+          Teuchos::RCP<Core::LinAlg::Vector>& scaling_diag_op_ptr_;
 
           //! reference to the scaling diagonal operator matrix
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& scaling_matrix_op_ptr_;
@@ -432,14 +433,14 @@ namespace NOX
         {
          public:
           //! constructor
-          PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
+          PseudoTransient(Teuchos::RCP<Core::LinAlg::Vector>& scalingDiagOpPtr,
               Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
               const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
 
-          void run_pre_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
+          void run_pre_compute_f(Core::LinAlg::Vector& F, const NOX::Nln::Group& grp) override;
 
-          void run_post_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
+          void run_post_compute_f(Core::LinAlg::Vector& F, const NOX::Nln::Group& grp) override;
 
          protected:
           Teuchos::RCP<::NOX::Epetra::Vector> eval_pseudo_transient_f_update(
@@ -450,7 +451,7 @@ namespace NOX
           const NOX::Nln::Solver::PseudoTransient& ptcsolver_;
 
           //! reference to the scaling diagonal operator
-          Teuchos::RCP<Epetra_Vector>& scaling_diag_op_ptr_;
+          Teuchos::RCP<Core::LinAlg::Vector>& scaling_diag_op_ptr_;
 
           //! reference to the scaling diagonal operator matrix
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& scaling_matrix_op_ptr_;
