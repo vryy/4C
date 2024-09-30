@@ -18,7 +18,6 @@
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_fld_fluid_fsi_msht.hpp"
 #include "4C_adapter_fld_fluid_xfsi.hpp"
-#include "4C_adapter_fld_lung.hpp"
 #include "4C_adapter_fld_poro.hpp"
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_fem_discretization.hpp"

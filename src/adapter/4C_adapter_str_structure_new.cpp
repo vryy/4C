@@ -15,7 +15,6 @@
 #include "4C_adapter_str_fbiwrapper.hpp"
 #include "4C_adapter_str_fpsiwrapper.hpp"
 #include "4C_adapter_str_fsiwrapper_immersed.hpp"
-#include "4C_adapter_str_lung.hpp"
 #include "4C_adapter_str_pasiwrapper.hpp"
 #include "4C_adapter_str_redairway.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
