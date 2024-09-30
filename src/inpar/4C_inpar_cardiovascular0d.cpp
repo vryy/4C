@@ -49,10 +49,9 @@ void Inpar::Cardiovascular0D::set_valid_parameters(Teuchos::RCP<Teuchos::Paramet
       "number of linear solver used for cardiovascular 0D-structural problems", &cardvasc0dstruct);
 
   setStringToIntegralParameter<Cardvasc0DSolveAlgo>("SOLALGORITHM", "direct", "",
-      tuple<std::string>("simple", "direct", "AMGnxn"),
-      tuple<Cardvasc0DSolveAlgo>(Inpar::Cardiovascular0D::cardvasc0dsolve_simple,
-          Inpar::Cardiovascular0D::cardvasc0dsolve_direct,
-          Inpar::Cardiovascular0D::cardvasc0dsolve_AMGnxn),
+      tuple<std::string>("block", "direct"),
+      tuple<Cardvasc0DSolveAlgo>(Inpar::Cardiovascular0D::cardvasc0dsolve_block,
+          Inpar::Cardiovascular0D::cardvasc0dsolve_direct),
       &cardvasc0dstruct);
 
   Core::UTILS::double_parameter("T_PERIOD", -1.0, "periodic time", &cardvasc0dstruct);

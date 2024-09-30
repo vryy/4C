@@ -23,7 +23,7 @@ AZCONV                          AZ_r0
 TIMINT_THETA                    0.5
 TOL_CARDVASC0D_RES              1e-06
 TOL_CARDVASC0D_DOFINCR          1e-06
-SOLALGORITHM                    simple
+SOLALGORITHM                    block
 RESTART_WITH_CARDVASC0D         Yes
 LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
