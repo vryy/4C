@@ -18,7 +18,6 @@
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_IntVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>
@@ -115,7 +114,7 @@ namespace Core::FE
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-        const Teuchos::RCP<Epetra_IntVector>& toggle,
+        const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle,
         const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor);
 
     /** \brief Evaluate Dirichlet boundary conditions
@@ -128,7 +127,7 @@ namespace Core::FE
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-        const Teuchos::RCP<Epetra_IntVector>& toggle)
+        const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle)
     {
       evaluate_dirichlet(
           discret, params, systemvector, systemvectord, systemvectordd, toggle, Teuchos::null);
@@ -183,17 +182,17 @@ namespace Core::FE
         /*!
          * \brief toggle vector to store the fix/free state of a dof
          */
-        Epetra_IntVector toggle;
+        Core::LinAlg::Vector<int> toggle;
 
         /*!
          * \brief record the lowest geometrical order that a dof applies
          */
-        Epetra_IntVector hierarchy;
+        Core::LinAlg::Vector<int> hierarchy;
 
         /*!
          * \brief record the last condition id prescribed and assign value to dof
          */
-        Epetra_IntVector condition;
+        Core::LinAlg::Vector<int> condition;
 
         /*!
          * \brief the prescribed value assigned to dof
@@ -205,10 +204,10 @@ namespace Core::FE
          * \brief constructor using the toggle vector as input
          * \note all the vectors use the same map
          */
-        DbcInfo(const Epetra_IntVector& toggle_input)
+        DbcInfo(const Core::LinAlg::Vector<int>& toggle_input)
             : toggle(toggle_input),
-              hierarchy(Epetra_IntVector(toggle_input.Map())),
-              condition(Epetra_IntVector(toggle_input.Map())),
+              hierarchy(Core::LinAlg::Vector<int>(toggle_input.Map())),
+              condition(Core::LinAlg::Vector<int>(toggle_input.Map())),
               values(Core::LinAlg::Vector<double>(toggle_input.Map(), true))
         {
           hierarchy.PutValue(std::numeric_limits<int>::max());
@@ -220,9 +219,9 @@ namespace Core::FE
          * \note all the vectors use the same map
          */
         DbcInfo(const Epetra_BlockMap& toggle_map)
-            : toggle(Epetra_IntVector(toggle_map)),
-              hierarchy(Epetra_IntVector(toggle_map)),
-              condition(Epetra_IntVector(toggle_map)),
+            : toggle(Core::LinAlg::Vector<int>(toggle_map)),
+              hierarchy(Core::LinAlg::Vector<int>(toggle_map)),
+              condition(Core::LinAlg::Vector<int>(toggle_map)),
               values(Core::LinAlg::Vector<double>(toggle_map, true))
         {
           hierarchy.PutValue(std::numeric_limits<int>::max());
@@ -245,13 +244,13 @@ namespace Core::FE
           const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
           const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
           const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-          const Teuchos::RCP<Epetra_IntVector>& toggle,
+          const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle,
           const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
      protected:
       /// create the toggle vector based on the given systemvector maps
-      Teuchos::RCP<Epetra_IntVector> create_toggle_vector(
-          const Teuchos::RCP<Epetra_IntVector> toggle_input,
+      Teuchos::RCP<Core::LinAlg::Vector<int>> create_toggle_vector(
+          const Teuchos::RCP<Core::LinAlg::Vector<int>> toggle_input,
           const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors) const;
 
       /** \brief Evaluate Dirichlet boundary conditions
@@ -384,14 +383,15 @@ namespace Core::FE
           const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const Core::LinAlg::Vector<int>& toggle,
+          const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret,
           const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids,
+          const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum Core::Conditions::ConditionType& type) const;
 
       /** \brief Apply the Dirichlet values to the system vectors
@@ -436,7 +436,8 @@ namespace Core::FE
       virtual void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+          const Core::LinAlg::Vector<int>& toggle,
+          const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        */

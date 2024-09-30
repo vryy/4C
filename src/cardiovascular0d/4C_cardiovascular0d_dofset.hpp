@@ -16,7 +16,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset.hpp"
 
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 

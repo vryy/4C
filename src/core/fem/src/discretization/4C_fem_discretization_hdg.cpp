@@ -409,8 +409,8 @@ void Core::FE::UTILS::DbcHDG::read_dirichlet_condition(const Teuchos::ParameterL
 void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
 
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, const Epetra_IntVector& toggle,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see build_dbc())
@@ -425,7 +425,7 @@ void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterLis
 void Core::FE::UTILS::DbcHDG::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
     double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-    const Epetra_IntVector& toggle) const
+    const Core::LinAlg::Vector<int>& toggle) const
 {
   // call corresponding method from base class; safety checks inside
   Core::FE::UTILS::Dbc::do_dirichlet_condition(

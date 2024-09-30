@@ -18,7 +18,6 @@ builds the bridge between the xfluid class and the cut-library
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_xfem_utils.hpp"
 
-#include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -376,7 +375,8 @@ void XFEM::ConditionManager::create()
     // element for which we store the index of the level-set coupling object we allow for multiple
     // level-set coupling objects however only for one level-set side
 
-    ele_lsc_coup_idx_col_ = Teuchos::rcp(new Epetra_IntVector(*bg_dis_->element_col_map(), true));
+    ele_lsc_coup_idx_col_ =
+        Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->element_col_map(), true));
   }
 
   //--------------------------------------------------------
@@ -451,12 +451,12 @@ void XFEM::ConditionManager::update_level_set_field()
   // -> 2nd: based on nodal information, we decide which coupling condition has to be evaluated on
   // an element for which the conditions are not unique
 
-  Teuchos::RCP<Epetra_IntVector> node_lsc_coup_idx =
-      Teuchos::rcp(new Epetra_IntVector(*bg_dis_->node_row_map(), true));
-  Teuchos::RCP<Epetra_IntVector> node_lsc_coup_idx_col =
-      Teuchos::rcp(new Epetra_IntVector(*bg_dis_->node_col_map(), true));
-  Teuchos::RCP<Epetra_IntVector> ele_lsc_coup_idx =
-      Teuchos::rcp(new Epetra_IntVector(*bg_dis_->element_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> node_lsc_coup_idx =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->node_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> node_lsc_coup_idx_col =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->node_col_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> ele_lsc_coup_idx =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->element_row_map(), true));
 
   // for each row node, the dominating levelset coupling index
   for (int lsc = 0; lsc < num_level_set_coupling(); ++lsc)
@@ -538,7 +538,7 @@ void XFEM::ConditionManager::update_level_set_field()
 void XFEM::ConditionManager::combine_level_set_field(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx,
+    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx,
     XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type)
 {
   switch (ls_boolean_type)
@@ -572,7 +572,7 @@ void XFEM::ConditionManager::check_for_equal_maps(
 
 void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
+    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
 {
   int err = -1;
 
@@ -600,7 +600,7 @@ void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<doubl
 
 void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
+    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
 {
   int err = -1;
 
@@ -627,7 +627,7 @@ void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<doubl
 
 void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
+    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
 {
   int err = -1;
 
@@ -654,7 +654,7 @@ void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<do
 void XFEM::ConditionManager::set_symmetric_difference(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Epetra_IntVector>& node_lsc_coup_idx)
+    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
 {
   int err = -1;
 

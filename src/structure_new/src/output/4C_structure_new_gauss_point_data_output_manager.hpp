@@ -13,7 +13,6 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_inpar_structure.hpp"
 
-#include <Epetra_IntVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
@@ -60,7 +59,8 @@ namespace Solid
         return data_nodes_;
       }
 
-      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>>& get_nodal_data_count()
+      inline std::unordered_map<std::string, Teuchos::RCP<Core::LinAlg::Vector<int>>>&
+      get_nodal_data_count()
       {
         return data_nodes_count_;
       }
@@ -88,7 +88,7 @@ namespace Solid
         return data_nodes_;
       }
 
-      inline const std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>>&
+      inline const std::unordered_map<std::string, Teuchos::RCP<Core::LinAlg::Vector<int>>>&
       get_nodal_data_count() const
       {
         return data_nodes_count_;
@@ -140,7 +140,7 @@ namespace Solid
       std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>> data_nodes_;
 
       //! map holding the number of elements that share a quantity at each node
-      std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>> data_nodes_count_;
+      std::unordered_map<std::string, Teuchos::RCP<Core::LinAlg::Vector<int>>> data_nodes_count_;
 
       //! map holding element data averaged to the element center
       std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>> data_element_center_;

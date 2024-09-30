@@ -134,13 +134,13 @@ namespace Core::FE
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-          const Epetra_IntVector& toggle,
+          const Core::LinAlg::Vector<int>& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-          const Epetra_IntVector& toggle) const;
+          const Core::LinAlg::Vector<int>& toggle) const;
     };  // class DbcHDG
   }     // namespace UTILS
 }  // namespace Core::FE

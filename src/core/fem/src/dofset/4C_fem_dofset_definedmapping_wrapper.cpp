@@ -161,11 +161,11 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     FOUR_C_THROW("target and permuted source node maps do not match");
 
   // export target nodes to source node distribution
-  Teuchos::RCP<Epetra_IntVector> permsourcenodevec = Teuchos::rcp(
-      new Epetra_IntVector(Copy, *targetnodemap, permsourcenodemap->MyGlobalElements()));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> permsourcenodevec = Teuchos::rcp(
+      new Core::LinAlg::Vector<int>(*targetnodemap, permsourcenodemap->MyGlobalElements()));
 
   // initialize the final mapping
-  targetlidtosourcegidmapping_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
+  targetlidtosourcegidmapping_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
 
   // default value -1
   targetlidtosourcegidmapping_->PutValue(-1);

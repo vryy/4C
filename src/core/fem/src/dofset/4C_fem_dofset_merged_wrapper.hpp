@@ -20,7 +20,6 @@
 #include "4C_fem_dofset_proxy.hpp"
 #include "4C_fem_general_node.hpp"
 
-#include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -256,10 +255,10 @@ namespace Core::DOFSets
     }
 
     //! master node gids in col layout matching conditioned slave nodes
-    Teuchos::RCP<Epetra_IntVector> master_nodegids_col_layout_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> master_nodegids_col_layout_;
 
     //! slave node gids in col layout matching conditioned master nodes
-    Teuchos::RCP<Epetra_IntVector> slave_nodegids_col_layout_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> slave_nodegids_col_layout_;
 
     //! underlying actual dofset
     Teuchos::RCP<DofSetInterface> sourcedofset_;

@@ -22,7 +22,6 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_CrsGraph.h>
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 
@@ -1846,7 +1845,7 @@ namespace Core::FE
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd,
-        Teuchos::RCP<Epetra_IntVector> toggle,
+        Teuchos::RCP<Core::LinAlg::Vector<int>> toggle,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor = Teuchos::null) const;
 
     /// Evaluate a specific condition using assemble strategy

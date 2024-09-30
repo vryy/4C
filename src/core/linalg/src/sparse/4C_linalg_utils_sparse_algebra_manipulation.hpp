@@ -20,7 +20,6 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
@@ -57,7 +56,7 @@ namespace Core::LinAlg
    \param source (in) : source vector values are taken from
    \param target (out): target vector values will be inserted in
    */
-  void export_to(const Epetra_IntVector& source, Epetra_IntVector& target);
+  void export_to(const Core::LinAlg::Vector<int>& source, Core::LinAlg::Vector<int>& target);
 
   /*! \brief Extract a partial Core::LinAlg::Vector<double> from a given source vector
    *         on each proc without communication

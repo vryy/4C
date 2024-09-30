@@ -21,7 +21,6 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>

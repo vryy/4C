@@ -615,7 +615,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
                   str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
-              Epetra_IntVector& global_nodal_element_count =
+              Core::LinAlg::Vector<int>& global_nodal_element_count =
                   *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
                        ->get_nodal_data_count()

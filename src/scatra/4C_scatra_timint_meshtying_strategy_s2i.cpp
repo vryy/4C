@@ -1655,9 +1655,10 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Core::FE::Discret
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2I::evaluate_nts(const Epetra_IntVector& islavenodestomasterelements,
+void ScaTra::MeshtyingStrategyS2I::evaluate_nts(
+    const Core::LinAlg::Vector<int>& islavenodestomasterelements,
     const Core::LinAlg::Vector<double>& islavenodeslumpedareas,
-    const Epetra_IntVector& islavenodesimpltypes, const Core::FE::Discretization& idiscret,
+    const Core::LinAlg::Vector<int>& islavenodesimpltypes, const Core::FE::Discretization& idiscret,
     const Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
     const Inpar::S2I::InterfaceSides matrix1_side_rows,
@@ -1731,7 +1732,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_nts(const Epetra_IntVector& islaveno
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_elements(const Epetra_Map& ielecolmap,
-    const Epetra_IntVector& ieleimpltypes, const Core::FE::Discretization& idiscret,
+    const Core::LinAlg::Vector<int>& ieleimpltypes, const Core::FE::Discretization& idiscret,
     const Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
     const Inpar::S2I::InterfaceSides matrix1_side_rows,
@@ -2275,7 +2276,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
           // assign physical implementation type to each slave-side mortar element by copying the
           // physical implementation type of the corresponding parent volume element
-          Epetra_IntVector impltypes_row(*interface.slave_row_elements());
+          Core::LinAlg::Vector<int> impltypes_row(*interface.slave_row_elements());
           for (int iele = 0; iele < interface.slave_row_elements()->NumMyElements(); ++iele)
           {
             impltypes_row[iele] = dynamic_cast<const Discret::ELEMENTS::Transport*>(
@@ -2310,7 +2311,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
           // assign physical implementation type to each mortar integration cell by copying the
           // physical implementation type of the corresponding slave-side mortar element
-          Epetra_IntVector impltypes_col(*interface.slave_col_elements());
+          Core::LinAlg::Vector<int> impltypes_col(*interface.slave_col_elements());
           Core::LinAlg::export_to(impltypes_row, impltypes_col);
           imortarcells_[condid].resize(imortarcells.size());
           for (unsigned icell = 0; icell < imortarcells.size(); ++icell)
@@ -2355,14 +2356,17 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
           // initialize vector for node-to-segment connectivity, i.e., for pairings between slave
           // nodes and master elements
-          Teuchos::RCP<Epetra_IntVector>& islavenodestomasterelements =
+          Teuchos::RCP<Core::LinAlg::Vector<int>>& islavenodestomasterelements =
               islavenodestomasterelements_[condid];
-          islavenodestomasterelements = Teuchos::rcp(new Epetra_IntVector(noderowmap_slave, false));
+          islavenodestomasterelements =
+              Teuchos::rcp(new Core::LinAlg::Vector<int>(noderowmap_slave, false));
           islavenodestomasterelements->PutValue(-1);
 
           // initialize vector for physical implementation types of slave-side nodes
-          Teuchos::RCP<Epetra_IntVector>& islavenodesimpltypes = islavenodesimpltypes_[condid];
-          islavenodesimpltypes = Teuchos::rcp(new Epetra_IntVector(noderowmap_slave, false));
+          Teuchos::RCP<Core::LinAlg::Vector<int>>& islavenodesimpltypes =
+              islavenodesimpltypes_[condid];
+          islavenodesimpltypes =
+              Teuchos::rcp(new Core::LinAlg::Vector<int>(noderowmap_slave, false));
           islavenodesimpltypes->PutValue(Inpar::ScaTra::impltype_undefined);
 
           // loop over all slave-side nodes
@@ -2433,7 +2437,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           const Epetra_Map& elecolmap_slave = *interface.slave_col_elements();
 
           // initialize vector for physical implementation types of slave-side elements
-          Epetra_IntVector islaveelementsimpltypes(elecolmap_slave, false);
+          Core::LinAlg::Vector<int> islaveelementsimpltypes(elecolmap_slave, false);
           islaveelementsimpltypes.PutValue(Inpar::ScaTra::impltype_undefined);
 
           // loop over all slave-side elements
@@ -3523,8 +3527,8 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
 
     // provide scalar transport discretization with additional dofset for scatra-scatra interface
     // layer thickness
-    const Teuchos::RCP<Epetra_IntVector> numdofpernode =
-        Teuchos::rcp(new Epetra_IntVector(*scatratimint_->discretization()->node_col_map()));
+    const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofpernode = Teuchos::rcp(
+        new Core::LinAlg::Vector<int>(*scatratimint_->discretization()->node_col_map()));
     for (int inode = 0; inode < scatratimint_->discretization()->num_my_col_nodes(); ++inode)
     {
       // add one degree of freedom for scatra-scatra interface layer growth to current node if

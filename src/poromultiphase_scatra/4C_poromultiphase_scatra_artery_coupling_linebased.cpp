@@ -20,7 +20,6 @@
 #include "4C_poromultiphase_scatra_artery_coupling_pair.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -751,8 +750,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
           arterydis_, "conn_comp_dis", true);
 
   // vector to mark visited nodes
-  Teuchos::RCP<Epetra_IntVector> visited =
-      Teuchos::rcp(new Epetra_IntVector(*artconncompdis->node_col_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> visited =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*artconncompdis->node_col_map(), true));
 
   // get fully-overlapping diams vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> ele_diams_artery_full_overlap =
@@ -866,7 +865,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::find_free_hang
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::depth_first_search_util(
-    Core::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+    Core::Nodes::Node* actnode, Teuchos::RCP<Core::LinAlg::Vector<int>> visited,
     Teuchos::RCP<Core::FE::Discretization> artconncompdis,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> ele_diams_artery_full_overlap,
     std::vector<int>& this_connected_comp)

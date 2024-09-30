@@ -283,7 +283,7 @@ namespace Discret::ELEMENTS
             Teuchos::RCP<Epetra_MultiVector> global_data =
                 gp_data_output_manager.get_nodal_data().at(quantity_name);
 
-            Epetra_IntVector& global_nodal_element_count =
+            Core::LinAlg::Vector<int>& global_nodal_element_count =
                 *gp_data_output_manager.get_nodal_data_count().at(quantity_name);
 
             Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<celltype>(

@@ -20,7 +20,6 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
@@ -375,22 +374,22 @@ namespace Core::DOFSets
     Teuchos::RCP<Epetra_Map> dofcolmap_;
 
     /// number of dofs for each node
-    Teuchos::RCP<Epetra_IntVector> numdfcolnodes_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> numdfcolnodes_;
 
     /// number of dofs for each face
-    Teuchos::RCP<Epetra_IntVector> numdfcolfaces_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> numdfcolfaces_;
 
     /// number of dofs for each element
-    Teuchos::RCP<Epetra_IntVector> numdfcolelements_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> numdfcolelements_;
 
     /// column map gid of first dof for each node
-    Teuchos::RCP<Epetra_IntVector> idxcolnodes_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> idxcolnodes_;
 
     /// column map gid of first dof for each face
-    Teuchos::RCP<Epetra_IntVector> idxcolfaces_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> idxcolfaces_;
 
     /// column map gid of first dof for each element
-    Teuchos::RCP<Epetra_IntVector> idxcolelements_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> idxcolelements_;
 
     /*!
     \brief Activate special dof handling due to point coupling conditions?
@@ -410,7 +409,7 @@ namespace Core::DOFSets
     should store not only the first dof for each node, but all(!) dofs for
     each node. The #idxcolnodes_ vector is then replaced by the
     two following data containers:
-       #dofscolnodes_ (Epetra_Map) and #shiftcolnodes_ (Epetra_IntVector)
+       #dofscolnodes_ (Epetra_Map) and #shiftcolnodes_ (Core::LinAlg::Vector<int>)
 
     Nevertheless, for the time being, the old version with #idxcolnodes_ stays
     around, since the new version is only implemented for the standard DofSet
@@ -424,7 +423,7 @@ namespace Core::DOFSets
     Teuchos::RCP<Epetra_Map> dofscolnodes_;
 
     /// shift value for access to column map of all dofs for each node
-    Teuchos::RCP<Epetra_IntVector> shiftcolnodes_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> shiftcolnodes_;
     //***************************************************************************
 
   };  // class DofSet

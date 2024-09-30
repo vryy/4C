@@ -63,8 +63,8 @@ void ScaTra::TimIntHDG::setup()
   if (hdgdis_ == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per element
-  const Teuchos::RCP<Epetra_IntVector> eledofs =
-      Teuchos::rcp(new Epetra_IntVector(*discret_->element_col_map()));
+  const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
 
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
@@ -434,8 +434,8 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   }
 
   // vector to store the dofs per element
-  const Teuchos::RCP<Epetra_IntVector> eledofs =
-      Teuchos::rcp(new Epetra_IntVector(*discret_->element_col_map()));
+  const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
 
   // build new maps for face dofs with adapted element order
   hdgdis_->build_faces();
@@ -1080,8 +1080,8 @@ void ScaTra::TimIntHDG::adapt_degree()
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per single element
-  const Teuchos::RCP<Epetra_IntVector> eledofs =
-      Teuchos::rcp(new Epetra_IntVector(*discret_->element_col_map()));
+  const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
 
   // vector to store the location array of the dofsets before the adaption with the new order
   std::vector<Core::Elements::LocationArray> la_old;

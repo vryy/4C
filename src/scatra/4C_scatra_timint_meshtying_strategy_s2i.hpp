@@ -25,7 +25,6 @@
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -327,10 +326,10 @@ namespace ScaTra
 
     //! vectors for node-to-segment connectivity, i.e., for pairings between slave nodes and master
     //! elements
-    std::map<int, Teuchos::RCP<Epetra_IntVector>> islavenodestomasterelements_;
+    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<int>>> islavenodestomasterelements_;
 
     //! vectors for physical implementation types of slave-side nodes
-    std::map<int, Teuchos::RCP<Epetra_IntVector>> islavenodesimpltypes_;
+    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<int>>> islavenodesimpltypes_;
 
     //! vectors for lumped interface area fractions associated with slave-side nodes
     std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> islavenodeslumpedareas_;
@@ -641,10 +640,10 @@ namespace ScaTra
      * @param systemvector2         system vector 2
      * @param vector2_side          interface side associated with system vector 2
      */
-    void evaluate_nts(const Epetra_IntVector& islavenodestomasterelements,
+    void evaluate_nts(const Core::LinAlg::Vector<int>& islavenodestomasterelements,
         const Core::LinAlg::Vector<double>& islavenodeslumpedareas,
-        const Epetra_IntVector& islavenodesimpltypes, const Core::FE::Discretization& idiscret,
-        const Teuchos::ParameterList& params,
+        const Core::LinAlg::Vector<int>& islavenodesimpltypes,
+        const Core::FE::Discretization& idiscret, const Teuchos::ParameterList& params,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
         const Inpar::S2I::InterfaceSides matrix1_side_cols,
@@ -687,7 +686,7 @@ namespace ScaTra
      * @param vector2_side       interface side associated with system vector 2
      */
     void evaluate_mortar_elements(const Epetra_Map& ielecolmap,
-        const Epetra_IntVector& ieleimpltypes, const Core::FE::Discretization& idiscret,
+        const Core::LinAlg::Vector<int>& ieleimpltypes, const Core::FE::Discretization& idiscret,
         const Teuchos::ParameterList& params,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,

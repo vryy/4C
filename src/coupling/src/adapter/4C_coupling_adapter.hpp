@@ -20,7 +20,6 @@
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
@@ -379,13 +378,14 @@ namespace Coupling::Adapter
     ) const override;
 
     /// transfer a dof vector from master to slave
-    void master_to_slave(const Epetra_IntVector& mv,  ///< master vector (to be transferred)
-        Epetra_IntVector& sv                          ///< slave vector (containing result)
+    void master_to_slave(
+        const Core::LinAlg::Vector<int>& mv,  ///< master vector (to be transferred)
+        Core::LinAlg::Vector<int>& sv         ///< slave vector (containing result)
     ) const;
 
     /// transfer a dof vector from slave to master
-    void slave_to_master(const Epetra_IntVector& sv,  ///< slave vector (to be transferred)
-        Epetra_IntVector& mv                          ///< master vector (containing result)
+    void slave_to_master(const Core::LinAlg::Vector<int>& sv,  ///< slave vector (to be transferred)
+        Core::LinAlg::Vector<int>& mv  ///< master vector (containing result)
     ) const;
 
     //@}

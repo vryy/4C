@@ -186,16 +186,16 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   // or element.
 
   // numdf for all nodes and elements
-  numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
-  numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.element_col_map()));
+  numdfcolnodes_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
+  numdfcolelements_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.element_col_map()));
   if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
-    numdfcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->face_col_map()));
+    numdfcolfaces_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*facedis->face_col_map()));
 
   // index of first dof for all nodes and elements
-  idxcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
-  idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.element_col_map()));
+  idxcolnodes_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
+  idxcolelements_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.element_col_map()));
   if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
-    idxcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->face_col_map()));
+    idxcolfaces_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*facedis->face_col_map()));
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -213,8 +213,8 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     if ((int)couplingconditions.size() > 0) pccdofhandling_ = true;
 
     // do the nodes first
-    Epetra_IntVector numdfrownodes(*dis.node_row_map());
-    Epetra_IntVector idxrownodes(*dis.node_row_map());
+    Core::LinAlg::Vector<int> numdfrownodes(*dis.node_row_map());
+    Core::LinAlg::Vector<int> idxrownodes(*dis.node_row_map());
 
     int numrownodes = dis.num_my_row_nodes();
     for (int i = 0; i < numrownodes; ++i)
@@ -353,8 +353,8 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     // Now do it again for the faces
     if (facedis != Teuchos::null && facedis->face_row_map() != nullptr)
     {
-      Epetra_IntVector numdfrowfaces(*facedis->face_row_map());
-      Epetra_IntVector idxrowfaces(*facedis->face_row_map());
+      Core::LinAlg::Vector<int> numdfrowfaces(*facedis->face_row_map());
+      Core::LinAlg::Vector<int> idxrowfaces(*facedis->face_row_map());
       int numcolelements = dis.num_my_col_elements();
 
       const int mypid = dis.get_comm().MyPID();
@@ -411,8 +411,8 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     //////////////////////////////////////////////////////////////////
 
     // Now do it again for the elements
-    Epetra_IntVector numdfrowelements(*dis.element_row_map());
-    Epetra_IntVector idxrowelements(*dis.element_row_map());
+    Core::LinAlg::Vector<int> numdfrowelements(*dis.element_row_map());
+    Core::LinAlg::Vector<int> idxrowelements(*dis.element_row_map());
 
     int numrowelements = dis.num_my_row_elements();
     for (int i = 0; i < numrowelements; ++i)
@@ -544,7 +544,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       -1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.get_comm()));
 
   // build shift vector
-  shiftcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
+  shiftcolnodes_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
   int numcolnodes = dis.num_my_col_nodes();
   for (int i = 0; i < numcolnodes; ++i)
   {

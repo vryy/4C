@@ -151,8 +151,8 @@ void Core::FE::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, const Epetra_IntVector& toggle,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // default call
   if (dbcgids[set_col].is_null())

@@ -97,9 +97,9 @@ void Core::LinAlg::export_to(const Epetra_MultiVector& source, Epetra_MultiVecto
 }
 
 /*----------------------------------------------------------------------*
- |  export a Epetra_IntVector                                mwgee 01/13|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::export_to(const Epetra_IntVector& source, Epetra_IntVector& target)
+void Core::LinAlg::export_to(
+    const Core::LinAlg::Vector<int>& source, Core::LinAlg::Vector<int>& target)
 {
   try
   {

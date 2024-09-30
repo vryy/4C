@@ -18,7 +18,6 @@
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
-#include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 

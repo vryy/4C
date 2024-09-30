@@ -16,8 +16,6 @@
 #include "4C_inpar_bio.hpp"
 #include "4C_poromultiphase_scatra_artery_coupling_nonconforming.hpp"
 
-// forward declaration
-class Epetra_IntVector;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -97,7 +95,8 @@ namespace PoroMultiPhaseScaTra
      * format
      * @param this_connected_comp : current connected component
      */
-    void depth_first_search_util(Core::Nodes::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+    void depth_first_search_util(Core::Nodes::Node* actnode,
+        Teuchos::RCP<Core::LinAlg::Vector<int>> visited,
         Teuchos::RCP<Core::FE::Discretization> artconncompdis,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> ele_diams_artery_full_overlap,
         std::vector<int>& this_connected_comp);

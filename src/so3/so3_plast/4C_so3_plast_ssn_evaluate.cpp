@@ -555,7 +555,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
                   str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
-              Epetra_IntVector& global_nodal_element_count =
+              Core::LinAlg::Vector<int>& global_nodal_element_count =
                   *str_params_interface()
                        .gauss_point_data_output_manager_ptr()
                        ->get_nodal_data_count()

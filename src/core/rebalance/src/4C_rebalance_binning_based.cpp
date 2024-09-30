@@ -22,8 +22,6 @@
 #include "4C_rebalance_print.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_IntVector.h>
-
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN

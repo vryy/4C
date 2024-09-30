@@ -348,7 +348,7 @@ void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd,
-    Teuchos::RCP<Epetra_IntVector> toggle,
+    Teuchos::RCP<Core::LinAlg::Vector<int>> toggle,
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor) const
 {
   Core::FE::UTILS::evaluate_dirichlet(
